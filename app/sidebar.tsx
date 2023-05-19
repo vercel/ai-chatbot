@@ -7,6 +7,7 @@ import { VercelLogo } from "@/components/ui/vercel-logo";
 import { SidebarItem } from "./sidebar-item";
 import { cn } from "@/lib/utils";
 import { type Session } from "next-auth";
+import { DevGPTLogo } from "@/components/ui/devgpt-logo";
 
 export interface SidebarProps {
   session: Session | null;
@@ -21,8 +22,8 @@ export function Sidebar({ session, newChat }: SidebarProps) {
           <aside className="flex h-full w-full flex-col p-2 shadow-lg ring-1 ring-zinc-900/10 dark:ring-zinc-200/10 relative z-10">
             <div className="flex flex-row gap-1 items-center justify-between text-base font-semibold tracking-tight antialiased bg-black text-white px-4 py-4 -m-2 mb-2">
               <div className="flex flex-row gap-1 whitespace-nowrap items-center">
-                <VercelLogo className="h-3.5" />
-                <span className="select-none">Vercel Chat</span>
+                <DevGPTLogo className="h-6 w-6" />
+                <span className="select-none">DevGPT</span>
               </div>
               <div>
                 {session?.user ? <UserMenu session={session} /> : <Login />}
