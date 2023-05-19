@@ -22,7 +22,7 @@ export function Sidebar({ session, newChat }: SidebarProps) {
             <div className="flex flex-row gap-1 items-center justify-between text-base font-semibold tracking-tight antialiased bg-black text-white px-4 py-4 -m-2 mb-2">
               <div className="flex flex-row gap-1 whitespace-nowrap items-center">
                 <DevGPTLogo className="h-6 w-6" />
-                <span className="select-none">DevGPT</span>
+                <span className="select-none">Next.js Chatbot</span>
               </div>
               <div>
                 {session?.user ? <UserMenu session={session} /> : <Login />}

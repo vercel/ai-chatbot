@@ -7,11 +7,10 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: {
-    default: "Vercel Chat",
-    template: `%s - Vercel Chat`,
+    default: "Next.js Chatbot",
+    template: `%s - Next.js Chatbot`,
   },
-  description:
-    "Vercel Chat is an AI-powered chat app built with Next.js and Vercel.",
+  description: "An AI-powered chatbot built with Next.js and Vercel.",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
