@@ -1,6 +1,6 @@
 import { type Message } from "@prisma/client";
-import CodeBlock from "./codeblock";
-import { MemoizedReactMarkdown } from "./markdown";
+import CodeBlock from "@/components/ui/codeblock";
+import { MemoizedReactMarkdown } from "@/components/markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { cn } from "@/lib/utils";
