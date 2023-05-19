@@ -81,7 +81,7 @@ export function Prompt({
             placeholder="Send a message."
             spellCheck={false}
             className={cn(
-              "m-0 max-h-[200px] w-full sm:text-sm resize-none border-0 bg-transparent p-0 py-[13px] pl-4 pr-7 outline-none ring-0 focus:ring-0 focus-visible:ring-0 dark:bg-transparent",
+              "m-0 max-h-[200px] w-full  resize-none border-0 bg-transparent p-0 py-[13px] pl-4 pr-7 outline-none ring-0 focus:ring-0 focus-visible:ring-0 dark:bg-transparent",
               fontMessage.className
             )}
             style={{

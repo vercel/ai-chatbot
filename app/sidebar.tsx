@@ -1,4 +1,4 @@
-import { DevGPTLogo } from "@/components/ui/devgpt-logo";
+import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { Login } from "@/components/ui/login";
 import { UserMenu } from "@/components/ui/user-menu";
 import { prisma } from "@/lib/prisma";
@@ -21,7 +21,7 @@ export function Sidebar({ session, newChat }: SidebarProps) {
           <aside className="flex h-full w-full flex-col p-2 shadow-lg ring-1 ring-zinc-900/10 dark:ring-zinc-200/10 relative z-10">
             <div className="flex flex-row gap-1 items-center justify-between text-base font-semibold tracking-tight antialiased bg-black text-white px-4 py-4 -m-2 mb-2">
               <div className="flex flex-row gap-1 whitespace-nowrap items-center">
-                <DevGPTLogo className="h-6 w-6" />
+                <NextChatLogo className="h-6 w-6" />
                 <span className="select-none">Next.js Chatbot</span>
               </div>
               <div>
