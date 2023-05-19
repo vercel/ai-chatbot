@@ -27,6 +27,7 @@
     "eventsource-parser": "^1.0.0",
     "focus-trap-react": "^10.1.1",
     "framer-motion": "^10.12.4",
+    "jose": "^4.14.4",
     "jsonwebtoken": "^9.0.0",
     "lucide-react": "0.216.0",
     "nanoid": "^4.0.2",

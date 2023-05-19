@@ -1,5 +1,5 @@
 import { OpenAIStream, openai } from "@/lib/openai";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "@/lib/session/get-server-session";
 
 export const runtime = "edge";
 

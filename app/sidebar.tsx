@@ -1,16 +1,15 @@
-import { Plus } from "lucide-react";
-import Link from "next/link";
+import { DevGPTLogo } from "@/components/ui/devgpt-logo";
 import { Login } from "@/components/ui/login";
 import { UserMenu } from "@/components/ui/user-menu";
 import { prisma } from "@/lib/prisma";
-import { VercelLogo } from "@/components/ui/vercel-logo";
-import { SidebarItem } from "./sidebar-item";
+import { type Session } from "@/lib/session/types";
 import { cn } from "@/lib/utils";
-import { type Session } from "next-auth";
-import { DevGPTLogo } from "@/components/ui/devgpt-logo";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { SidebarItem } from "./sidebar-item";
 
 export interface SidebarProps {
-  session: Session | null;
+  session?: Session;
   newChat?: boolean;
 }
 

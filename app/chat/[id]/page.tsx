@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 import { Chat } from "../../chat";
 import { type Metadata } from "next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession } from "@/lib/session/get-server-session";
 
 export interface ChatPageProps {
   params: {
@@ -30,7 +29,7 @@ export const runtime = "nodejs"; // default
 export const preferredRegion = "home";
 export const dynamic = "force-dynamic";
 export default async function ChatPage({ params }: ChatPageProps) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   const chat = await prisma.chat.findFirst({
     where: {
       id: params.id,

@@ -1,6 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { type Session } from "next-auth";
+import { type Session } from "@/lib/session/types";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Image from "next/image";
 
@@ -14,12 +14,12 @@ export function UserMenu({ session }: UserMenuProps) {
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button className="focus:outline-none">
-            {session.user?.image ? (
+            {session.user?.avatar ? (
               <Image
                 width={24}
                 height={24}
                 className="h-6 w-6 rounded-full select-none ring-zinc-100/10 ring-1 hover:opacity-80 transition-opacity duration-300"
-                src={session.user?.image ? `${session.user.image}&s=60` : ""}
+                src={session.user?.avatar ? `${session.user.avatar}&s=60` : ""}
                 alt={session.user.name ?? "Avatar"}
               />
             ) : (
