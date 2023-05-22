@@ -2,8 +2,6 @@ import { auth } from "@/auth";
 import { OpenAIStream, openai } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 
-export const runtime = "edge";
-
 export const POST = auth(async function POST(req: Request) {
   const json = await req.json();
   console.log(req.auth);
