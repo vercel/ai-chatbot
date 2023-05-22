@@ -13,7 +13,7 @@ export interface ChatList {
 export function ChatList({ messages }: ChatList) {
   return (
     <div className="relative h-full dark:bg-zinc-900">
-      <div className="sticky top-0 border-b w-full bg-black sm:hidden text-white font-semibold">
+      <div className="sticky top-0 border-b w-full bg-black md:hidden text-white font-semibold">
         <div className="px-4 py-2 flex items-center justify-between">
           <div className="flex flex-row gap-1 whitespace-nowrap items-center">
             <NextChatLogo className="h-6 w-6" />
