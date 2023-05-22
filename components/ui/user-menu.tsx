@@ -1,7 +1,9 @@
 "use client";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { type Session } from "@/lib/session/types";
+import { type Session } from "@auth/nextjs/types";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { signOut } from "@auth/nextjs/client";
+
 import Image from "next/image";
 
 export interface UserMenuProps {
@@ -14,12 +16,12 @@ export function UserMenu({ session }: UserMenuProps) {
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button className="focus:outline-none">
-            {session.user?.avatar ? (
+            {session.user?.image ? (
               <Image
                 width={24}
                 height={24}
                 className="h-6 w-6 rounded-full select-none ring-zinc-100/10 ring-1 hover:opacity-80 transition-opacity duration-300"
-                src={session.user?.avatar ? `${session.user.avatar}&s=60` : ""}
+                src={session.user?.image ? `${session.user.image}&s=60` : ""}
                 alt={session.user.name ?? "Avatar"}
               />
             ) : (
@@ -81,9 +83,7 @@ export function UserMenu({ session }: UserMenuProps) {
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="py-2 px-3 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors duration-200 cursor-pointer text-xs focus:outline-none"
-              onClick={() => {
-                window.location.href = "/api/auth/logout";
-              }}
+              onClick={() => signOut()}
             >
               Log Out
             </DropdownMenu.Item>
@@ -94,4 +94,4 @@ export function UserMenu({ session }: UserMenuProps) {
   );
 }
 
-UserMenu.displayName = "Signout";
+UserMenu.displayName = "UserMenu";

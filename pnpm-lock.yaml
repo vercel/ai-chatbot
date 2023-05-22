@@ -1,8 +1,14 @@
 lockfileVersion: '6.0'
 
+overrides:
+  '@auth/core': 0.0.0-manual.527fff6c
+
 dependencies:
+  '@auth/nextjs':
+    specifier: 0.0.0-manual.030e8328
+    version: 0.0.0-manual.030e8328(next@13.4.3-canary.3)(react@18.2.0)
   '@next-auth/prisma-adapter':
-    specifier: ^1.0.6
+    specifier: 1.0.6
     version: 1.0.6(@prisma/client@4.14.0)(next-auth@4.22.1)
   '@prisma/client':
     specifier: ^4.14.0
@@ -172,6 +178,35 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.18
+
+  /@auth/core@0.0.0-manual.527fff6c:
+    resolution: {integrity: sha512-NYWuH+6VAAMV05juyarbMm6rCDUGvS5vPFsE+V13NIfbvbwbEZPj3JfcHVv7vMDrUrPtJ4EhTh00Svejp1Moqg==}
+    peerDependencies:
+      nodemailer: ^6.8.0
+    peerDependenciesMeta:
+      nodemailer:
+        optional: true
+    dependencies:
+      '@panva/hkdf': 1.1.1
+      cookie: 0.5.0
+      jose: 4.14.4
+      oauth4webapi: 2.3.0
+      preact: 10.11.3
+      preact-render-to-string: 5.2.3(preact@10.11.3)
+    dev: false
+
+  /@auth/nextjs@0.0.0-manual.030e8328(next@13.4.3-canary.3)(react@18.2.0):
+    resolution: {integrity: sha512-AAtUl9EVCKqLRneDAq6KfUprWmsBRzsBoQ+8ytz/Nfgs8Uax5CWvCJs2CsnYNk04bXSB4L7eyMJmc1zTzZKaHg==}
+    peerDependencies:
+      next: ^13.4.2
+      react: ^18.2.0
+    dependencies:
+      '@auth/core': 0.0.0-manual.527fff6c
+      next: 13.4.3-canary.3(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+    transitivePeerDependencies:
+      - nodemailer
+    dev: false
 
   /@babel/code-frame@7.21.4:
     resolution: {integrity: sha512-LYvhNKfwWSPpocw8GI7gpK2nq3HSDuEPC/uSYaALSJu9xjsalaaYFOq0Pwt5KmVqwEbZlDu81aLXwBOmD/Fv9g==}
@@ -3532,6 +3567,10 @@ packages:
       path-key: 4.0.0
     dev: true
 
+  /oauth4webapi@2.3.0:
+    resolution: {integrity: sha512-JGkb5doGrwzVDuHwgrR4nHJayzN4h59VCed6EW8Tql6iHDfZIabCJvg6wtbn5q6pyB2hZruI3b77Nudvq7NmvA==}
+    dev: false
+
   /oauth@0.9.15:
     resolution: {integrity: sha512-a5ERWK1kh38ExDEfoO6qUHJb32rd7aYmPHuyCu3Fta/cnICvYmgd2uhuKXvPD+PXB+gCEYYEaQdIRAjCOwAKNA==}
     dev: false
@@ -3824,6 +3863,15 @@ packages:
       picocolors: 1.0.0
       source-map-js: 1.0.2
 
+  /preact-render-to-string@5.2.3(preact@10.11.3):
+    resolution: {integrity: sha512-aPDxUn5o3GhWdtJtW0svRC2SS/l8D9MAgo2+AWml+BhDImb27ALf04Q2d+AHqUUOc6RdSXFIBVa2gxzgMKgtZA==}
+    peerDependencies:
+      preact: '>=10'
+    dependencies:
+      preact: 10.11.3
+      pretty-format: 3.8.0
+    dev: false
+
   /preact-render-to-string@5.2.6(preact@10.14.1):
     resolution: {integrity: sha512-JyhErpYOvBV1hEPwIxc/fHWXPfnEGdRKxc8gFdAZ7XV4tlzyzG847XAyEZqoDnynP88akM4eaHcSOzNcLWFguw==}
     peerDependencies:
@@ -3831,6 +3879,10 @@ packages:
     dependencies:
       preact: 10.14.1
       pretty-format: 3.8.0
+    dev: false
+
+  /preact@10.11.3:
+    resolution: {integrity: sha512-eY93IVpod/zG3uMF22Unl8h9KkrcKIRs2EGar8hwLZZDU1lkjph303V9HZBwufh2s736U6VXuhD109LYqPoffg==}
     dev: false
 
   /preact@10.14.1:
