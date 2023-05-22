@@ -13,7 +13,7 @@ export interface ChatProps {
 }
 
 export function Chat({
-  id: _id,
+  id,
   // create,
   messages,
 }: ChatProps) {
@@ -22,7 +22,7 @@ export function Chat({
   const { isLoading, messageList, appendUserMessage, reloadLastMessage } =
     usePrompt({
       messages,
-      _id,
+      id,
       // onCreate: (id: string) => {
       //   router.push(`/chat/${id}`);
       // },
