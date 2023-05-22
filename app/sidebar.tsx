@@ -2,7 +2,7 @@ import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { Login } from "@/components/ui/login";
 import { UserMenu } from "@/components/ui/user-menu";
 import { prisma } from "@/lib/prisma";
-import { type Session } from "@/lib/session/types";
+import { type Session } from "@auth/nextjs/types";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -70,7 +70,8 @@ async function SidebarList({ session }: { session?: Session }) {
             updatedAt: "desc",
           },
         }),
-      [session?.user.id || ""],
+      // @ts-ignore
+      [session?.user?.id || ""],
       {
         revalidate: 3600,
       }
