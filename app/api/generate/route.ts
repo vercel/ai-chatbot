@@ -1,7 +1,6 @@
 import { OpenAIStream, openai } from "@/lib/openai";
 import { getServerSession } from "@/lib/session/get-server-session";
-
-export const runtime = "edge";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   const json = await req.json();
@@ -20,7 +19,25 @@ export async function POST(req: Request) {
 
   const stream = await OpenAIStream(res);
 
-  return new Response(stream, {
+  let fullResponse = "";
+  const decoder = new TextDecoder();
+  const saveToPrisma = new TransformStream({
+    transform: async (chunk, controller) => {
+      controller.enqueue(chunk);
+      fullResponse += decoder.decode(chunk);
+    },
+    flush: async () => {
+      await prisma.chat.upsert({
+        where: {
+          id: json.id,
+        },
+        create: json,
+        update: json,
+      });
+    },
+  });
+
+  return new Response(stream.pipeThrough(saveToPrisma), {
     status: 200,
     headers: { "Content-Type": "text/event-stream" },
   });
