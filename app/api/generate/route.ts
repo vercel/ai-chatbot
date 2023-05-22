@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const POST = auth(async function POST(req: Request) {
   const json = await req.json();
-  console.log(req.auth);
+  console.log((req as any).auth); // todo fix types
 
   const res = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
