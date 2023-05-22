@@ -1,11 +1,11 @@
 "use server";
 
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "@/lib/session/get-server-session";
 import { revalidatePath } from "next/cache";
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
-  const session = await getServerSession();
+  const session = await auth();
 
   const userId = session?.user?.email;
   if (!userId || !id) {
