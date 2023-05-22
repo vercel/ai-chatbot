@@ -1,11 +1,27 @@
 import NextAuth from "@auth/nextjs";
 import GitHub from "@auth/nextjs/providers/github";
 import { NextResponse } from "next/server";
+
+import {
+  db,
+  users,
+  accounts,
+  sessions,
+  verificationTokens,
+} from "./lib/db/schema";
+import { DrizzleAdapterPg } from "./lib/db";
+
 export const {
   handlers: { GET, POST },
   auth,
   CSRF_experimental,
 } = NextAuth({
+  adapter: DrizzleAdapterPg(db, {
+    accounts,
+    users,
+    sessions,
+    verificationTokens,
+  }),
   // @ts-ignore
   providers: [GitHub],
   session: { strategy: "jwt" },

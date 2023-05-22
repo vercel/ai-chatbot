@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "prisma generate && next dev",
     "build": "prisma generate && next build",
-    "studio": "prisma studio",
+    "db:mg:create": "drizzle-kit generate:pg --config=drizzle.config.ts",
+    "db:mg:apply": "ts-node --project tsconfig.migration.json ./lib/db/migrate --config=drizzle.config.ts",
+    "db:check": "drizzle-kit check:pg --config=drizzle.config.ts",
+    "db:up": "drizzle-kit up:pg --config=drizzle.config.ts",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -21,11 +24,13 @@
     "@radix-ui/react-dropdown-menu": "^2.0.4",
     "@vercel/analytics": "^1.0.0",
     "@vercel/kv": "^0.2.1",
+    "@vercel/postgres": "^0.3.0",
     "body-scroll-lock": "4.0.0-beta.0",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
     "common-tags": "^1.8.2",
     "cookie": "^0.5.0",
+    "drizzle-orm": "^0.26.0",
     "eventsource-parser": "^1.0.0",
     "focus-trap-react": "^10.1.1",
     "framer-motion": "^10.12.4",
@@ -45,7 +50,8 @@
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "tailwind-merge": "^1.12.0",
-    "tailwindcss-animate": "^1.0.5"
+    "tailwindcss-animate": "^1.0.5",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^3.7.1",
@@ -60,6 +66,8 @@
     "@types/react-syntax-highlighter": "^15.5.6",
     "@typescript-eslint/parser": "^5.58.0",
     "autoprefixer": "^10.4.13",
+    "dotenv": "^16.0.3",
+    "drizzle-kit": "^0.18.0",
     "eslint": "^8.31.0",
     "eslint-config-next": "13.4.3-canary.3",
     "eslint-config-prettier": "^8.3.0",
@@ -69,6 +77,7 @@
     "prettier": "^2.7.1",
     "prisma": "^4.14.0",
     "tailwindcss": "^3.3.1",
+    "ts-node": "^10.9.1",
     "typescript": "^4.9.3"
   },
   "pnpm": {
