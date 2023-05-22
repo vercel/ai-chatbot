@@ -1,10 +1,12 @@
+import { auth } from "@/auth";
 import { OpenAIStream, openai } from "@/lib/openai";
-import { getServerSession } from "@/lib/session/get-server-session";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export const runtime = "edge";
+
+export const POST = auth(async function POST(req: Request) {
   const json = await req.json();
-  const session = await getServerSession();
+  console.log(req.auth);
 
   const res = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
@@ -41,4 +43,4 @@ export async function POST(req: Request) {
     status: 200,
     headers: { "Content-Type": "text/event-stream" },
   });
-}
+});
