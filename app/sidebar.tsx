@@ -6,6 +6,7 @@ import { type Session } from "@/lib/session/types";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { SidebarItem } from "./sidebar-item";
 
 export interface SidebarProps {
@@ -57,15 +58,25 @@ export function Sidebar({ session, newChat }: SidebarProps) {
 Sidebar.displayName = "Sidebar";
 
 async function SidebarList({ session }: { session?: Session }) {
-  const chats = await prisma.chat.findMany({
-    where: {
-      // This is for debugging, need to add scope to the query later
-      // userId: session?.user.id,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  const chats = await (
+    await unstable_cache(
+      () =>
+        prisma.chat.findMany({
+          where: {
+            // This is for debugging, need to add scope to the query later
+            // userId: session?.user.id,
+          },
+          orderBy: {
+            updatedAt: "desc",
+          },
+        }),
+      [session?.user.id || ""],
+      {
+        revalidate: 3600,
+      }
+    )
+  )();
+
   return chats.map((c) => (
     <SidebarItem key={c.id} title={c.title} href={`/chat/${c.id}`} id={c.id} />
   ));
