@@ -58,7 +58,7 @@ export function Sidebar({ session, newChat }: SidebarProps) {
 Sidebar.displayName = "Sidebar";
 
 async function SidebarList({ session }: { session?: Session }) {
-  const chats = (
+  const chats = await (
     await unstable_cache(
       () =>
         prisma.chat.findMany({
