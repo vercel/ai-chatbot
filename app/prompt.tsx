@@ -32,7 +32,7 @@ export function Prompt({
         await onSubmit(input);
       }}
       ref={formRef}
-      className="stretch flex w-full flex-row gap-3 md:max-w-2xl lg:max-w-xl xl:max-w-3xl mx-auto px-4 lg:pl-16"
+      className="stretch flex w-full flex-row gap-3 md:max-w-2xl lg:max-w-xl xl:max-w-3xl mx-auto px-4"
     >
       <div className="relative flex h-full flex-1 flex-row-reverse items-stretch md:flex-col">
         <div>
