@@ -5,6 +5,7 @@ import { type Message } from "@prisma/client";
 import { ChatMessage } from "./chat-message";
 import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { Plus } from "lucide-react";
+import { EmptyScreen } from "./empty";
 
 export interface ChatList {
   messages: Message[];
@@ -36,7 +37,9 @@ export function ChatList({ messages }: ChatList) {
               />
             ))}
           </div>
-        ) : null}
+        ) : (
+          <EmptyScreen />
+        )}
       </div>
     </div>
   );
