@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { SidebarItem } from "./sidebar-item";
+import { ExternalLink } from "./external-link";
 
 export interface SidebarProps {
   session?: Session;
@@ -46,6 +47,33 @@ export function Sidebar({ session, newChat }: SidebarProps) {
               <div className="flex flex-col pb-2 text-sm text-zinc-100">
                 {/* @ts-ignore */}
                 <SidebarList session={session} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex gap-4 items-center justify-center text-sm font-medium leading-4 whitespace-nowrap">
+                <a
+                  href="https://github.com/vercel/nextjs-ai-chatbot/"
+                  target="_blank"
+                  className="inline-flex gap-2 px-3 py-2 items-center border border-zinc-300 rounded-md hover:border-zinc-600 transition-colors"
+                >
+                  <svg
+                    aria-label="Vercel logomark"
+                    height="13"
+                    role="img"
+                    className="w-auto overflow-hidden"
+                    viewBox="0 0 74 64"
+                  >
+                    <path
+                      d="M37.5896 0.25L74.5396 64.25H0.639648L37.5896 0.25Z"
+                      fill="var(--geist-foreground)"
+                    ></path>
+                  </svg>
+                  <span>Deploy</span>
+                </a>
+                <ExternalLink href="https://github.com/vercel/nextjs-ai-chatbot/">
+                  View on GitHub
+                </ExternalLink>
               </div>
             </div>
           </aside>
