@@ -31,7 +31,6 @@
     "common-tags": "^1.8.2",
     "cookie": "^0.5.0",
     "drizzle-orm": "^0.26.0",
-    "eventsource-parser": "^1.0.0",
     "focus-trap-react": "^10.1.1",
     "framer-motion": "^10.12.4",
     "jose": "^4.14.4",

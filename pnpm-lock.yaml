@@ -43,9 +43,6 @@ dependencies:
   drizzle-orm:
     specifier: ^0.26.0
     version: 0.26.0(@vercel/postgres@0.3.0)
-  eventsource-parser:
-    specifier: ^1.0.0
-    version: 1.0.0
   focus-trap-react:
     specifier: ^10.1.1
     version: 10.1.1(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)

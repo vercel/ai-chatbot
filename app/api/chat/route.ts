@@ -1,9 +1,19 @@
 import { auth } from "@/auth";
 import { chats, db } from "@/lib/db/schema";
-import { openai } from "@/lib/openai";
 import { OpenAIStream, StreamingTextResponse } from "ai-connector";
+import { Configuration, OpenAIApi } from "openai-edge";
 
 export const runtime = "edge";
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const openai = new OpenAIApi(configuration);
+
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error("Missing env var from OpenAI");
+}
 
 export const POST = auth(async function POST(req: Request) {
   const json = await req.json();
