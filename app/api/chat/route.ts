@@ -10,13 +10,13 @@ export const POST = auth(async function POST(req: Request) {
   const json = await req.json();
   // @ts-ignore
   console.log(req.auth); // todo fix types
-
+  const messages = json.messages.map((m: any) => ({
+    content: m.content,
+    role: m.role,
+  }));
   const res = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    messages: json.messages.map((m: any) => ({
-      content: m.content,
-      role: m.role,
-    })),
+    messages,
     temperature: 0.7,
     top_p: 1,
     frequency_penalty: 1,
@@ -33,23 +33,26 @@ export const POST = auth(async function POST(req: Request) {
       }
       const title = json.messages[0].content.substring(0, 20);
       const payload = {
-        id: json.id ?? crypto.randomUUID(),
+        id: crypto.randomUUID(),
         title,
         userId: (req as any).auth?.user?.email,
-        messages: json.messages.concat({
-          content: completion,
-          role: "assistant",
-          id: nanoid(),
-        }),
+        messages: [
+          ...messages,
+          {
+            content: completion,
+            role: "assistant",
+          },
+        ],
       };
-      await db
+      const chat = await db
         .insert(chats)
         .values(payload)
-        .onConflictDoUpdate({
-          target: json.id,
-          set: payload,
-        })
-        .execute();
+        // .onConflictDoUpdate({
+        //   target: payload.id,
+        //   set: payload,
+        // })
+        .returning();
+      console.log(chat);
     },
   });
 

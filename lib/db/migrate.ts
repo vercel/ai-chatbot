@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
+// @ts-ignore
 migrate(db, {
   migrationsFolder: "lib/db/migrations",
 })

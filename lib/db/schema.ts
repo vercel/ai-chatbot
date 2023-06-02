@@ -1,5 +1,5 @@
 import { sql } from "@vercel/postgres";
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { json, pgTable, text } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/vercel-postgres";
 
 // const connection = createPool({ connectionString: process.env.POSTGRES_URL });
@@ -8,7 +8,7 @@ export const chats = pgTable("chats", {
   id: text("id").notNull().primaryKey(),
   title: text("role").notNull(),
   userId: text("userId").notNull(),
-  // messages: json("messages").notNull().default({}),
+  messages: json("messages").notNull().default({}),
   // .references(() => users.id),
 });
 
