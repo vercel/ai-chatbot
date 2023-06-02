@@ -1,10 +1,11 @@
 import { Sidebar } from "@/app/sidebar";
-import { prisma } from "@/lib/prisma";
 
-import { Chat } from "../../chat";
 import { type Metadata } from "next";
 import { auth } from "@/auth";
-
+import { db, chats } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { Chat } from "@/app/chat";
+import { Message } from "ai-connector";
 export interface ChatPageProps {
   params: {
     id: string;
@@ -14,10 +15,8 @@ export interface ChatPageProps {
 export async function generateMetadata({
   params,
 }: ChatPageProps): Promise<Metadata> {
-  const chat = await prisma.chat.findFirst({
-    where: {
-      id: params.id,
-    },
+  const chat = await db.query.chats.findFirst({
+    where: eq(chats.id, params.id),
   });
   return {
     title: chat?.title.slice(0, 50) ?? "Chat",
@@ -30,14 +29,10 @@ export const preferredRegion = "home";
 export const dynamic = "force-dynamic";
 export default async function ChatPage({ params }: ChatPageProps) {
   const session = await auth();
-  const chat = await prisma.chat.findFirst({
-    where: {
-      id: params.id,
-    },
-    include: {
-      messages: true,
-    },
+  const chat = await db.query.chats.findFirst({
+    where: eq(chats.id, params.id),
   });
+
   if (!chat) {
     throw new Error("Chat not found");
   }
@@ -46,7 +41,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
     <div className="relative flex h-full w-full overflow-hidden">
       <Sidebar session={session} />
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <Chat id={chat.id} initialMessages={chat.messages} />
+        <Chat id={chat.id} initialMessages={chat.messages as Message[]} />
       </div>
     </div>
   );

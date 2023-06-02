@@ -1,10 +1,9 @@
 "use client";
 
-import { type Message } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { ChatList } from "./chat-list";
 import { Prompt } from "./prompt";
-import { useChat } from "ai-connector";
+import { useChat, type Message } from "ai-connector";
 
 export interface ChatProps {
   // create?: (input: string) => Chat | undefined;

@@ -2,10 +2,8 @@ import { Chat } from "./chat";
 import { Sidebar } from "./sidebar";
 import { auth } from "@/auth";
 
-// Prisma does not support Edge without the Data Proxy currently
-export const runtime = "nodejs"; // default
+export const runtime = "edge"; // default
 export const preferredRegion = "home";
-export const dynamic = "force-dynamic";
 
 export default async function IndexPage() {
   const session = await auth();
