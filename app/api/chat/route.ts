@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { chats, db } from "@/lib/db/schema";
 import { openai } from "@/lib/openai";
+import { nanoid } from "@/lib/utils";
 import { OpenAIStream, StreamingTextResponse } from "ai-connector";
 
 export const runtime = "edge";
@@ -31,11 +32,24 @@ export const POST = auth(async function POST(req: Request) {
         return;
       }
       const title = json.messages[0].content.substring(0, 20);
-      await db.insert(chats).values({
-        id: crypto.randomUUID(),
+      const payload = {
+        id: json.id ?? crypto.randomUUID(),
         title,
         userId: (req as any).auth?.user?.email,
-      });
+        messages: json.messages.concat({
+          content: completion,
+          role: "assistant",
+          id: nanoid(),
+        }),
+      };
+      await db
+        .insert(chats)
+        .values(payload)
+        .onConflictDoUpdate({
+          target: json.id,
+          set: payload,
+        })
+        .execute();
     },
   });
 
