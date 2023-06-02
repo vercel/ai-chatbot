@@ -98,7 +98,7 @@ async function SidebarList({ session }: { session?: Session }) {
           where: eq(chats.userId, session?.user?.email || ""),
         }),
       // @ts-ignore
-      [session?.user?.id || ""],
+      [session?.user?.email ?? ""],
       {
         revalidate: 3600,
       }
@@ -106,6 +106,12 @@ async function SidebarList({ session }: { session?: Session }) {
   )();
 
   return results.map((c) => (
-    <SidebarItem key={c.id} title={c.title} href={`/chat/${c.id}`} id={c.id} />
+    <SidebarItem
+      key={c.id}
+      title={c.title}
+      userId={session?.user?.email ?? ""}
+      href={`/chat/${c.id}`}
+      id={c.id}
+    />
   ));
 }

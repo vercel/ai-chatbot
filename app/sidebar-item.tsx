@@ -11,10 +11,12 @@ export function SidebarItem({
   title,
   href,
   id,
+  userId,
 }: {
   title: string;
   href: string;
   id: string;
+  userId: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -49,7 +51,7 @@ export function SidebarItem({
         onClick={(e) => {
           e.preventDefault();
           startTransition(() => {
-            removeChat({ id, path: href }).then(() => {
+            removeChat({ id, userId, path: href }).then(() => {
               router.push("/");
             });
           });
