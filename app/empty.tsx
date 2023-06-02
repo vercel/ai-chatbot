@@ -37,8 +37,8 @@ export function EmptyScreen() {
             <p className="mt-2">
               This is an open source AI chatbot app built with{' '}
               <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-              <ExternalLink href="https://vercel.com/storage/postgres">
-                Vercel Postgres
+              <ExternalLink href="https://vercel.com/storage/kv">
+                Vercel KV
               </ExternalLink>
               . You can start a conversation here or try the following examples:
             </p>
