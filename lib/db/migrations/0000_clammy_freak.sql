@@ -15,23 +15,23 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_provider_providerAccountId" PRIMARY KEY("provider","providerAccountId");
 
 CREATE TABLE IF NOT EXISTS "sessions" (
-	"sessionToken" text PRIMARY KEY NOT NULL,
 	"userId" text NOT NULL,
-	"expires" timestamp NOT NULL
+	"sessionToken" text PRIMARY KEY NOT NULL,
+	"expires" integer NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text,
 	"email" text NOT NULL,
-	"emailVerified" timestamp,
+	"emailVerified" integer,
 	"image" text
 );
 
 CREATE TABLE IF NOT EXISTS "verificationToken" (
 	"identifier" text NOT NULL,
 	"token" text NOT NULL,
-	"expires" timestamp NOT NULL
+	"expires" integer NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "verificationToken" ADD CONSTRAINT "verificationToken_identifier_token" PRIMARY KEY("identifier","token");

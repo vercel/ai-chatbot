@@ -46,7 +46,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
     <div className="relative flex h-full w-full overflow-hidden">
       <Sidebar session={session} />
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <Chat id={chat.id} messages={chat.messages} />
+        <Chat id={chat.id} initialMessages={chat.messages} />
       </div>
     </div>
   );
