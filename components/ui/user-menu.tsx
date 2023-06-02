@@ -2,15 +2,16 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import { type Session } from "@auth/nextjs/types";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { signOut } from "@auth/nextjs/client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export interface UserMenuProps {
   session: Session;
 }
 
 export function UserMenu({ session }: UserMenuProps) {
+  const router = useRouter();
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu.Root>
@@ -83,7 +84,7 @@ export function UserMenu({ session }: UserMenuProps) {
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="py-2 px-3 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors duration-200 cursor-pointer text-xs focus:outline-none"
-              onClick={() => signOut()}
+              onClick={() => router.push("/api/auth/signout")}
             >
               Log Out
             </DropdownMenu.Item>
