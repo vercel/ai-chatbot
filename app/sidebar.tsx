@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { SidebarItem } from "./sidebar-item";
+import { ExternalLink } from "./external-link";
 
 export interface SidebarProps {
   session?: Session;
@@ -22,7 +23,7 @@ export function Sidebar({ session, newChat }: SidebarProps) {
         <div className="scrollbar-trigger relative h-full w-full flex-1 items-start">
           <aside className="flex h-full w-full flex-col p-2 shadow-lg ring-1 ring-zinc-900/10 dark:ring-zinc-200/10 relative z-10">
             <div className="flex flex-row gap-1 items-center justify-between text-base font-semibold tracking-tight antialiased bg-black text-white px-4 py-4 -m-2 mb-2">
-              <div className="flex flex-row gap-1 whitespace-nowrap items-center">
+              <div className="flex flex-row gap-2 whitespace-nowrap items-center">
                 <NextChatLogo className="h-6 w-6" />
                 <span className="select-none">Next.js Chatbot</span>
               </div>
@@ -47,6 +48,33 @@ export function Sidebar({ session, newChat }: SidebarProps) {
               <div className="flex flex-col pb-2 text-sm text-zinc-100">
                 {/* @ts-ignore */}
                 <SidebarList session={session} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex gap-4 items-center justify-center text-sm font-medium leading-4 whitespace-nowrap">
+                <a
+                  href="https://github.com/vercel/nextjs-ai-chatbot/"
+                  target="_blank"
+                  className="inline-flex gap-2 px-3 py-2 items-center border border-zinc-300 rounded-md hover:border-zinc-600 transition-colors"
+                >
+                  <svg
+                    aria-label="Vercel logomark"
+                    height="13"
+                    role="img"
+                    className="w-auto overflow-hidden"
+                    viewBox="0 0 74 64"
+                  >
+                    <path
+                      d="M37.5896 0.25L74.5396 64.25H0.639648L37.5896 0.25Z"
+                      fill="var(--geist-foreground)"
+                    ></path>
+                  </svg>
+                  <span>Deploy</span>
+                </a>
+                <ExternalLink href="https://github.com/vercel/nextjs-ai-chatbot/">
+                  View on GitHub
+                </ExternalLink>
               </div>
             </div>
           </aside>

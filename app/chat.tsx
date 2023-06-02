@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChatList } from "./chat-list";
 import { Prompt } from "./prompt";
 import { useChat, type Message } from "ai-connector";
+import { ChatList } from "./chat-list";
 
 export interface ChatProps {
   // create?: (input: string) => Chat | undefined;
