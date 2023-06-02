@@ -23,10 +23,9 @@ export async function generateMetadata({
   };
 }
 
-// Prisma does not support Edge without the Data Proxy currently
-export const runtime = "nodejs"; // default
+export const runtime = "edge"; // default
 export const preferredRegion = "home";
-export const dynamic = "force-dynamic";
+
 export default async function ChatPage({ params }: ChatPageProps) {
   const session = await auth();
   const chat = await db.query.chats.findFirst({
