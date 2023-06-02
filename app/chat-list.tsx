@@ -1,6 +1,6 @@
 "use client";
 
-import { type Message } from "@prisma/client";
+import { type Message } from "ai-connector";
 
 import { ChatMessage } from "./chat-message";
 import { NextChatLogo } from "@/components/ui/nextchat-logo";

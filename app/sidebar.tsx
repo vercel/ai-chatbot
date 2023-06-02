@@ -1,12 +1,13 @@
-import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { Login } from "@/components/ui/login";
+import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { UserMenu } from "@/components/ui/user-menu";
-import { prisma } from "@/lib/prisma";
-import { type Session } from "@auth/nextjs/types";
+import { db, chats } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
+import { type Session } from "@auth/nextjs/types";
+import { eq } from "drizzle-orm";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import { unstable_cache } from "next/cache";
+import Link from "next/link";
 import { SidebarItem } from "./sidebar-item";
 import { ExternalLink } from "./external-link";
 
@@ -86,27 +87,31 @@ export function Sidebar({ session, newChat }: SidebarProps) {
 Sidebar.displayName = "Sidebar";
 
 async function SidebarList({ session }: { session?: Session }) {
-  const chats = await (
+  const results: any[] = await (
     await unstable_cache(
       () =>
-        prisma.chat.findMany({
-          where: {
-            // This is for debugging, need to add scope to the query later
-            // userId: session?.user.id,
+        db.query.chats.findMany({
+          columns: {
+            id: true,
+            title: true,
           },
-          orderBy: {
-            updatedAt: "desc",
-          },
+          where: eq(chats.userId, session?.user?.email || ""),
         }),
       // @ts-ignore
-      [session?.user?.id || ""],
+      [session?.user?.email ?? ""],
       {
         revalidate: 3600,
       }
     )
   )();
 
-  return chats.map((c) => (
-    <SidebarItem key={c.id} title={c.title} href={`/chat/${c.id}`} id={c.id} />
+  return results.map((c) => (
+    <SidebarItem
+      key={c.id}
+      title={c.title}
+      userId={session?.user?.email ?? ""}
+      href={`/chat/${c.id}`}
+      id={c.id}
+    />
   ));
 }
