@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
-import { chats, db } from "@/lib/db/schema";
+import { kv } from "@vercel/kv";
+import { nanoid } from "@/lib/utils";
 import { OpenAIStream, StreamingTextResponse } from "ai-connector";
 import { Configuration, OpenAIApi } from "openai-edge";
 
@@ -41,10 +42,14 @@ export const POST = auth(async function POST(req: Request) {
         return;
       }
       const title = json.messages[0].content.substring(0, 20);
+      const userId = (req as any).auth?.user?.email;
+      const id = json.id ?? nanoid();
+      const createdAt = Date.now();
       const payload = {
-        id: crypto.randomUUID(),
+        id,
         title,
-        userId: (req as any).auth?.user?.email,
+        userId,
+        createdAt,
         messages: [
           ...messages,
           {
@@ -53,15 +58,11 @@ export const POST = auth(async function POST(req: Request) {
           },
         ],
       };
-      const chat = await db
-        .insert(chats)
-        .values(payload)
-        // .onConflictDoUpdate({
-        //   target: payload.id,
-        //   set: payload,
-        // })
-        .returning();
-      console.log(chat);
+      await kv.hmset(`chat:${id}`, payload);
+      await kv.zadd(`user:chat:${userId}`, {
+        score: createdAt,
+        member: `chat:${id}`,
+      });
     },
   });
 
