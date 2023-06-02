@@ -1,50 +1,50 @@
-import { auth } from "@/auth";
-import { kv } from "@vercel/kv";
-import { nanoid } from "@/lib/utils";
-import { OpenAIStream, StreamingTextResponse } from "ai-connector";
-import { Configuration, OpenAIApi } from "openai-edge";
+import { auth } from '@/auth'
+import { kv } from '@vercel/kv'
+import { nanoid } from '@/lib/utils'
+import { OpenAIStream, StreamingTextResponse } from 'ai-connector'
+import { Configuration, OpenAIApi } from 'openai-edge'
 
-export const runtime = "edge";
+export const runtime = 'edge'
 
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+  apiKey: process.env.OPENAI_API_KEY
+})
 
-const openai = new OpenAIApi(configuration);
+const openai = new OpenAIApi(configuration)
 
 if (!process.env.OPENAI_API_KEY) {
-  throw new Error("Missing env var from OpenAI");
+  throw new Error('Missing env var from OpenAI')
 }
 
 export const POST = auth(async function POST(req: Request) {
-  const json = await req.json();
+  const json = await req.json()
   // @ts-ignore
-  console.log(req.auth); // todo fix types
+  console.log(req.auth) // todo fix types
   const messages = json.messages.map((m: any) => ({
     content: m.content,
-    role: m.role,
-  }));
+    role: m.role
+  }))
   const res = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
+    model: 'gpt-3.5-turbo',
     messages,
     temperature: 0.7,
     top_p: 1,
     frequency_penalty: 1,
     max_tokens: 500,
     n: 1,
-    stream: true,
-  });
+    stream: true
+  })
 
   const stream = await OpenAIStream(res, {
     async onCompletion(completion) {
       // @ts-ignore
       if (req.auth?.user?.email == null) {
-        return;
+        return
       }
-      const title = json.messages[0].content.substring(0, 20);
-      const userId = (req as any).auth?.user?.email;
-      const id = json.id ?? nanoid();
-      const createdAt = Date.now();
+      const title = json.messages[0].content.substring(0, 20)
+      const userId = (req as any).auth?.user?.email
+      const id = json.id ?? nanoid()
+      const createdAt = Date.now()
       const payload = {
         id,
         title,
@@ -54,17 +54,17 @@ export const POST = auth(async function POST(req: Request) {
           ...messages,
           {
             content: completion,
-            role: "assistant",
-          },
-        ],
-      };
-      await kv.hmset(`chat:${id}`, payload);
+            role: 'assistant'
+          }
+        ]
+      }
+      await kv.hmset(`chat:${id}`, payload)
       await kv.zadd(`user:chat:${userId}`, {
         score: createdAt,
-        member: `chat:${id}`,
-      });
-    },
-  });
+        member: `chat:${id}`
+      })
+    }
+  })
 
-  return new StreamingTextResponse(stream);
-});
+  return new StreamingTextResponse(stream)
+})

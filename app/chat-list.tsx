@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
-import { type Message } from "ai-connector";
+import { type Message } from 'ai-connector'
 
-import { ChatMessage } from "./chat-message";
-import { NextChatLogo } from "@/components/ui/nextchat-logo";
-import { Plus } from "lucide-react";
-import { EmptyScreen } from "./empty";
+import { ChatMessage } from './chat-message'
+import { NextChatLogo } from '@/components/ui/nextchat-logo'
+import { Plus } from 'lucide-react'
+import { EmptyScreen } from './empty'
 
 export interface ChatList {
-  messages: Message[];
+  messages: Message[]
 }
 
 export function ChatList({ messages }: ChatList) {
@@ -30,7 +30,7 @@ export function ChatList({ messages }: ChatList) {
       <div className="h-full w-full overflow-auto">
         {messages.length > 0 ? (
           <div className="group w-full text-zinc-900 dark:text-white divide-y dark:divide-zinc-800">
-            {messages.map((message) => (
+            {messages.map(message => (
               <ChatMessage
                 key={message.id || message.content}
                 message={message}
@@ -42,5 +42,5 @@ export function ChatList({ messages }: ChatList) {
         )}
       </div>
     </div>
-  );
+  )
 }

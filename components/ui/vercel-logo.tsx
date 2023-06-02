@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils'
 
 export const VercelLogo = ({ className }: { className?: string }) => (
   <svg
@@ -7,8 +7,8 @@ export const VercelLogo = ({ className }: { className?: string }) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     aria-label="Vercel Logo"
-    className={cn(className, "dark:fill-white fill-black")}
+    className={cn(className, 'dark:fill-white fill-black')}
   >
     <path d="M117.082 0L234.164 202.794H0L117.082 0Z" fill="currentColor" />
   </svg>
-);
+)
