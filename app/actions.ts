@@ -1,7 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { chats, db } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
@@ -12,13 +13,10 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     throw new Error("Unauthorized");
   }
 
-  await prisma.chat.delete({
-    where: {
-      id,
-      // TODO: Add scoping
-      // userId,
-    },
-  });
+  await db
+    .delete(chats)
+    .where(and(eq(chats.id, id), eq(chats.userId, userId)))
+    .execute();
 
   revalidatePath("/");
   revalidatePath("/chat/[id]");
