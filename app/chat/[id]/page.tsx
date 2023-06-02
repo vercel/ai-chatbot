@@ -6,6 +6,9 @@ import { db, chats } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Chat } from "@/app/chat";
 import { Message } from "ai-connector";
+
+export const runtime = "edge";
+export const preferredRegion = "home";
 export interface ChatPageProps {
   params: {
     id: string;
@@ -22,9 +25,6 @@ export async function generateMetadata({
     title: chat?.title.slice(0, 50) ?? "Chat",
   };
 }
-
-export const runtime = "edge"; // default
-export const preferredRegion = "home";
 
 export default async function ChatPage({ params }: ChatPageProps) {
   const session = await auth();

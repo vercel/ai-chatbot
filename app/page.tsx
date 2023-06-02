@@ -2,7 +2,7 @@ import { Chat } from "./chat";
 import { Sidebar } from "./sidebar";
 import { auth } from "@/auth";
 
-export const runtime = "edge"; // default
+export const runtime = "edge";
 export const preferredRegion = "home";
 
 export default async function IndexPage() {
