@@ -1,10 +1,11 @@
 import { Sidebar } from "@/app/sidebar";
 
-import { type Metadata } from "next";
 import { auth } from "@/auth";
-import { db, chats } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { type Metadata } from "next";
+
 import { Chat } from "@/app/chat";
+import { type Chat as ChatType } from "@/lib/types";
+import { kv } from "@vercel/kv";
 import { Message } from "ai-connector";
 
 export const runtime = "edge";
@@ -18,9 +19,8 @@ export interface ChatPageProps {
 export async function generateMetadata({
   params,
 }: ChatPageProps): Promise<Metadata> {
-  const chat = await db.query.chats.findFirst({
-    where: eq(chats.id, params.id),
-  });
+  const session = await auth();
+  const chat = await getChat(params.id, session?.user?.email ?? "");
   return {
     title: chat?.title.slice(0, 50) ?? "Chat",
   };
@@ -28,13 +28,7 @@ export async function generateMetadata({
 
 export default async function ChatPage({ params }: ChatPageProps) {
   const session = await auth();
-  const chat = await db.query.chats.findFirst({
-    where: eq(chats.id, params.id),
-  });
-
-  if (!chat) {
-    throw new Error("Chat not found");
-  }
+  const chat = await getChat(params.id, session?.user?.email ?? "");
 
   return (
     <div className="relative flex h-full w-full overflow-hidden">
@@ -47,3 +41,16 @@ export default async function ChatPage({ params }: ChatPageProps) {
 }
 
 ChatPage.displayName = "ChatPage";
+
+async function getChat(id: string, userId: string) {
+  const chat = await kv.hgetall<ChatType>(`chat:${id}`);
+  if (!chat) {
+    throw new Error("Not found");
+  }
+
+  if (userId && chat.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  return chat;
+}

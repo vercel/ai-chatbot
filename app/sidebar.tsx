@@ -1,15 +1,14 @@
 import { Login } from "@/components/ui/login";
 import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { UserMenu } from "@/components/ui/user-menu";
-import { db, chats } from "@/lib/db/schema";
+import { kv } from "@vercel/kv";
+import { Chat } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { type Session } from "@auth/nextjs/types";
-import { eq } from "drizzle-orm";
 import { Plus } from "lucide-react";
-import { unstable_cache } from "next/cache";
 import Link from "next/link";
-import { SidebarItem } from "./sidebar-item";
 import { ExternalLink } from "./external-link";
+import { SidebarItem } from "./sidebar-item";
 
 export interface SidebarProps {
   session?: Session;
@@ -87,23 +86,7 @@ export function Sidebar({ session, newChat }: SidebarProps) {
 Sidebar.displayName = "Sidebar";
 
 async function SidebarList({ session }: { session?: Session }) {
-  const results: any[] = await (
-    await unstable_cache(
-      () =>
-        db.query.chats.findMany({
-          columns: {
-            id: true,
-            title: true,
-          },
-          where: eq(chats.userId, session?.user?.email || ""),
-        }),
-      // @ts-ignore
-      [session?.user?.email ?? ""],
-      {
-        revalidate: 3600,
-      }
-    )
-  )();
+  const results: Chat[] = await getChats(session?.user?.email ?? "");
 
   return results.map((c) => (
     <SidebarItem
@@ -114,4 +97,21 @@ async function SidebarList({ session }: { session?: Session }) {
       id={c.id}
     />
   ));
+}
+
+async function getChats(userId: string) {
+  try {
+    const pipeline = kv.pipeline();
+    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1);
+
+    for (const chat of chats) {
+      pipeline.hgetall(chat);
+    }
+
+    const results = await pipeline.exec();
+
+    return results as Chat[];
+  } catch (error) {
+    return [];
+  }
 }
