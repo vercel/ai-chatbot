@@ -1,18 +1,18 @@
-import { Login } from "@/components/ui/login";
-import { NextChatLogo } from "@/components/ui/nextchat-logo";
-import { UserMenu } from "@/components/ui/user-menu";
-import { kv } from "@vercel/kv";
-import { Chat } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { type Session } from "@auth/nextjs/types";
-import { Plus } from "lucide-react";
-import Link from "next/link";
-import { ExternalLink } from "./external-link";
-import { SidebarItem } from "./sidebar-item";
+import { Login } from '@/components/ui/login'
+import { NextChatLogo } from '@/components/ui/nextchat-logo'
+import { UserMenu } from '@/components/ui/user-menu'
+import { kv } from '@vercel/kv'
+import { Chat } from '@/lib/types'
+import { cn } from '@/lib/utils'
+import { type Session } from '@auth/nextjs/types'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
+import { ExternalLink } from './external-link'
+import { SidebarItem } from './sidebar-item'
 
 export interface SidebarProps {
-  session?: Session;
-  newChat?: boolean;
+  session?: Session
+  newChat?: boolean
 }
 
 export function Sidebar({ session, newChat }: SidebarProps) {
@@ -33,10 +33,10 @@ export function Sidebar({ session, newChat }: SidebarProps) {
             <Link
               href="/"
               className={cn(
-                "flex shrink-0 cursor-pointer items-center gap-2 rounded p-2 text-sm text-zinc-800 dark:text-zinc-200 font-medium transition-colors duration-300 dark:hover:bg-zinc-300/20 select-none",
+                'flex shrink-0 cursor-pointer items-center gap-2 rounded p-2 text-sm text-zinc-800 dark:text-zinc-200 font-medium transition-colors duration-300 dark:hover:bg-zinc-300/20 select-none',
                 newChat
-                  ? "bg-zinc-500/20 text-zinc-900 font-semibold hover:bg-zinc-500/30 dark:text-white"
-                  : "hover:bg-zinc-500/10"
+                  ? 'bg-zinc-500/20 text-zinc-900 font-semibold hover:bg-zinc-500/30 dark:text-white'
+                  : 'hover:bg-zinc-500/10'
               )}
             >
               <Plus className="h-4 w-4" />
@@ -80,38 +80,38 @@ export function Sidebar({ session, newChat }: SidebarProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-Sidebar.displayName = "Sidebar";
+Sidebar.displayName = 'Sidebar'
 
 async function SidebarList({ session }: { session?: Session }) {
-  const results: Chat[] = await getChats(session?.user?.email ?? "");
+  const results: Chat[] = await getChats(session?.user?.email ?? '')
 
-  return results.map((c) => (
+  return results.map(c => (
     <SidebarItem
       key={c.id}
       title={c.title}
-      userId={session?.user?.email ?? ""}
+      userId={session?.user?.email ?? ''}
       href={`/chat/${c.id}`}
       id={c.id}
     />
-  ));
+  ))
 }
 
 async function getChats(userId: string) {
   try {
-    const pipeline = kv.pipeline();
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1);
+    const pipeline = kv.pipeline()
+    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1)
 
     for (const chat of chats) {
-      pipeline.hgetall(chat);
+      pipeline.hgetall(chat)
     }
 
-    const results = await pipeline.exec();
+    const results = await pipeline.exec()
 
-    return results as Chat[];
+    return results as Chat[]
   } catch (error) {
-    return [];
+    return []
   }
 }

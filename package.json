@@ -61,5 +61,13 @@
     "overrides": {
       "@auth/core": "0.0.0-manual.527fff6c"
     }
+  },
+  "prettier": {
+    "tabWidth": 2,
+    "semi": false,
+    "useTabs": false,
+    "singleQuote": true,
+    "arrowParens": "avoid",
+    "trailingComma": "none"
   }
 }

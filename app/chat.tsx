@@ -1,30 +1,30 @@
-"use client";
+'use client'
 
-import { useRouter } from "next/navigation";
-import { Prompt } from "./prompt";
-import { useChat, type Message } from "ai-connector";
-import { ChatList } from "./chat-list";
+import { useRouter } from 'next/navigation'
+import { Prompt } from './prompt'
+import { useChat, type Message } from 'ai-connector'
+import { ChatList } from './chat-list'
 
 export interface ChatProps {
   // create?: (input: string) => Chat | undefined;
-  initialMessages?: Message[];
-  id?: string;
+  initialMessages?: Message[]
+  id?: string
 }
 
 export function Chat({
   id,
   // create,
-  initialMessages,
+  initialMessages
 }: ChatProps) {
-  const router = useRouter();
+  const router = useRouter()
 
   const { isLoading, messages, reload, append } = useChat({
     initialMessages: initialMessages as any[],
-    id,
+    id
     // onCreate: (id: string) => {
     //   router.push(`/chat/${id}`);
     // },
-  });
+  })
 
   return (
     <main className="transition-width relative min-h-full w-full flex-1 overflow-y-auto flex flex-col">
@@ -33,18 +33,18 @@ export function Chat({
       </div>
       <div className="sticky light-gradient dark:bg-gradient-to-b dark:from-zinc-900 dark:to-zinc-950 bottom-0 left-0 w-full border-t bg-white dark:bg-black md:border-t-0 py-4 md:border-transparent md:!bg-transparent md:dark:border-transparent pr-0 lg:pr-[260px] flex dark:border-transparent items-center justify-center">
         <Prompt
-          onSubmit={(value) => {
+          onSubmit={value => {
             append({
               content: value,
-              role: "user",
-            });
+              role: 'user'
+            })
           }}
           onRefresh={messages.length ? reload : undefined}
           isLoading={isLoading}
         />
       </div>
     </main>
-  );
+  )
 }
 
-Chat.displayName = "Chat";
+Chat.displayName = 'Chat'

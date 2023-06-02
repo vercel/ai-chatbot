@@ -1,29 +1,29 @@
-import "./globals.css";
-import { Metadata } from "next";
+import './globals.css'
+import { Metadata } from 'next'
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { fontMono, fontSans } from "@/lib/fonts";
-import { cn } from "@/lib/utils";
+import { ThemeProvider } from '@/components/theme-provider'
+import { fontMono, fontSans } from '@/lib/fonts'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: {
-    default: "Next.js Chatbot",
-    template: `%s - Next.js Chatbot`,
+    default: 'Next.js Chatbot',
+    template: `%s - Next.js Chatbot`
   },
-  description: "An AI-powered chatbot built with Next.js and Vercel.",
+  description: 'An AI-powered chatbot built with Next.js and Vercel.',
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' }
   ],
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
-  },
-};
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png'
+  }
+}
 
 interface RootLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <head />
         <body
           className={cn(
-            "font-sans antialiased",
+            'font-sans antialiased',
             fontSans.variable,
             fontMono.variable
           )}
@@ -45,5 +45,5 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </body>
       </html>
     </>
-  );
+  )
 }

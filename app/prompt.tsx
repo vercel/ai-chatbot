@@ -1,35 +1,35 @@
-"use client";
+'use client'
 
-import { CornerDownLeft, RefreshCcw, StopCircle } from "lucide-react";
-import { useState } from "react";
-import Textarea from "react-textarea-autosize";
+import { CornerDownLeft, RefreshCcw, StopCircle } from 'lucide-react'
+import { useState } from 'react'
+import Textarea from 'react-textarea-autosize'
 
-import { Button } from "@/components/ui/button";
-import { fontMessage } from "@/lib/fonts";
-import { useCmdEnterSubmit } from "@/lib/hooks/use-command-enter-submit";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button'
+import { fontMessage } from '@/lib/fonts'
+import { useCmdEnterSubmit } from '@/lib/hooks/use-command-enter-submit'
+import { cn } from '@/lib/utils'
 
 export interface PromptProps {
-  onSubmit: (value: string) => void;
-  onRefresh?: () => void;
-  onAbort?: () => void;
-  isLoading: boolean;
+  onSubmit: (value: string) => void
+  onRefresh?: () => void
+  onAbort?: () => void
+  isLoading: boolean
 }
 
 export function Prompt({
   onSubmit,
   onRefresh,
   onAbort,
-  isLoading,
+  isLoading
 }: PromptProps) {
-  const [input, setInput] = useState("");
-  const { formRef, onKeyDown } = useCmdEnterSubmit();
+  const [input, setInput] = useState('')
+  const { formRef, onKeyDown } = useCmdEnterSubmit()
   return (
     <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setInput("");
-        await onSubmit(input);
+      onSubmit={async e => {
+        e.preventDefault()
+        setInput('')
+        await onSubmit(input)
       }}
       ref={formRef}
       className="stretch flex w-full flex-row gap-3 md:max-w-2xl lg:max-w-xl xl:max-w-3xl mx-auto px-4"
@@ -77,16 +77,16 @@ export function Prompt({
             onKeyDown={onKeyDown}
             rows={1}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             placeholder="Send a message."
             spellCheck={false}
             className={cn(
-              "m-0 max-h-[200px] w-full  resize-none border-0 bg-transparent p-0 py-[13px] pl-4 pr-7 outline-none ring-0 focus:ring-0 focus-visible:ring-0 dark:bg-transparent",
+              'm-0 max-h-[200px] w-full  resize-none border-0 bg-transparent p-0 py-[13px] pl-4 pr-7 outline-none ring-0 focus:ring-0 focus-visible:ring-0 dark:bg-transparent',
               fontMessage.className
             )}
             style={{
               height: 46,
-              overflowY: "hidden",
+              overflowY: 'hidden'
             }}
           />
           {isLoading ? (
@@ -108,7 +108,7 @@ export function Prompt({
         </div>
       </div>
     </form>
-  );
+  )
 }
 
-Prompt.displayName = "Prompt";
+Prompt.displayName = 'Prompt'

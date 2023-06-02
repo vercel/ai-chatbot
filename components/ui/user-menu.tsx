@@ -1,17 +1,17 @@
-"use client";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { type Session } from "@auth/nextjs/types";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+'use client'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { type Session } from '@auth/nextjs/types'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { signIn } from '@auth/nextjs/client'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 export interface UserMenuProps {
-  session: Session;
+  session: Session
 }
 
 export function UserMenu({ session }: UserMenuProps) {
-  const router = useRouter();
+  const router = useRouter()
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu.Root>
@@ -22,8 +22,8 @@ export function UserMenu({ session }: UserMenuProps) {
                 width={24}
                 height={24}
                 className="h-6 w-6 rounded-full select-none ring-zinc-100/10 ring-1 hover:opacity-80 transition-opacity duration-300"
-                src={session.user?.image ? `${session.user.image}&s=60` : ""}
-                alt={session.user.name ?? "Avatar"}
+                src={session.user?.image ? `${session.user.image}&s=60` : ''}
+                alt={session.user.name ?? 'Avatar'}
               />
             ) : (
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 p-2 select-none">
@@ -84,7 +84,7 @@ export function UserMenu({ session }: UserMenuProps) {
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="py-2 px-3 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors duration-200 cursor-pointer text-xs focus:outline-none"
-              onClick={() => router.push("/api/auth/signout")}
+              onClick={() => router.push('/api/auth/signout')}
             >
               Log Out
             </DropdownMenu.Item>
@@ -92,7 +92,7 @@ export function UserMenu({ session }: UserMenuProps) {
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
     </div>
-  );
+  )
 }
 
-UserMenu.displayName = "UserMenu";
+UserMenu.displayName = 'UserMenu'
