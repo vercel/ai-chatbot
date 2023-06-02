@@ -5,6 +5,7 @@ import { type Message } from "ai-connector";
 import { ChatMessage } from "./chat-message";
 import { NextChatLogo } from "@/components/ui/nextchat-logo";
 import { Plus } from "lucide-react";
+import { EmptyScreen } from "./empty";
 
 export interface ChatList {
   messages: Message[];
@@ -15,7 +16,7 @@ export function ChatList({ messages }: ChatList) {
     <div className="relative h-full dark:bg-zinc-900">
       <div className="sticky top-0 border-b w-full bg-black md:hidden text-white font-semibold">
         <div className="px-4 py-2 flex items-center justify-between">
-          <div className="flex flex-row gap-1 whitespace-nowrap items-center">
+          <div className="flex flex-row gap-2 whitespace-nowrap items-center">
             <NextChatLogo className="h-6 w-6" />
             <span className="select-none">Next.js Chatbot</span>
           </div>
@@ -36,7 +37,9 @@ export function ChatList({ messages }: ChatList) {
               />
             ))}
           </div>
-        ) : null}
+        ) : (
+          <EmptyScreen />
+        )}
       </div>
     </div>
   );

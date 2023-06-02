@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { chats, db } from "@/lib/db/schema";
 import { openai } from "@/lib/openai";
-import { nanoid } from "@/lib/utils";
 import { OpenAIStream, StreamingTextResponse } from "ai-connector";
 
 export const runtime = "edge";
