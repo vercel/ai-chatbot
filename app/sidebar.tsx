@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { SidebarItem } from "./sidebar-item";
+import { db } from "@/lib/db/schema";
 
 export interface SidebarProps {
   session?: Session;
@@ -60,16 +61,7 @@ Sidebar.displayName = "Sidebar";
 async function SidebarList({ session }: { session?: Session }) {
   const chats = await (
     await unstable_cache(
-      () =>
-        prisma.chat.findMany({
-          where: {
-            // This is for debugging, need to add scope to the query later
-            // userId: session?.user.id,
-          },
-          orderBy: {
-            updatedAt: "desc",
-          },
-        }),
+      () => db.query.chats.findMany({}),
       // @ts-ignore
       [session?.user?.id || ""],
       {

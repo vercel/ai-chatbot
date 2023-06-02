@@ -9,15 +9,14 @@
  * ## Installation
  *
  * ```bash npm2yarn2pnpm
- * npm install next-auth drizzle-orm @next-auth/drizzle-adapter
+ * npm install next-auth drizzle-orm @auth/drizzle-adapter
  * npm install drizzle-kit --save-dev
  * ```
  *
- * @module @next-auth/drizzle-adapter
+ * @module @auth/drizzle-adapter
  */
-import type { Adapter } from "@auth/nextjs/adapters";
+import type { Adapter } from "@auth/core/adapters";
 import { and, eq } from "drizzle-orm";
-import { v4 as uuid } from "uuid";
 import type { DbClient, Schema } from "./schema";
 
 /**
@@ -28,7 +27,7 @@ import type { DbClient, Schema } from "./schema";
  * ```js title="pages/api/auth/[...nextauth].js"
  * import NextAuth from "next-auth"
  * import GoogleProvider from "next-auth/providers/google"
- * import { DrizzleAdapter } from "@next-auth/drizzle-adapter"
+ * import { DrizzleAdapter } from "@auth/drizzle-adapter"
  * import { db } from "./db-schema"
  *
  * export default NextAuth({
@@ -109,7 +108,7 @@ import type { DbClient, Schema } from "./schema";
  * ```
  *
  **/
-export function DrizzleAdapterPg(
+export function PgAdapter(
   client: DbClient,
   { users, sessions, verificationTokens, accounts }: Schema
 ): Adapter {
@@ -117,7 +116,7 @@ export function DrizzleAdapterPg(
     createUser: async (data) => {
       return client
         .insert(users)
-        .values({ ...data, id: uuid() })
+        .values({ ...data, id: crypto.randomUUID() as string })
         .returning()
         .then((res) => res[0]);
     },
@@ -188,7 +187,7 @@ export function DrizzleAdapterPg(
 
       // Drizzle will return `null` for fields that are not defined.
       // However, the return type is expecting `undefined`.
-      const account: ReturnType<Adapter["linkAccount"]> = {
+      const account = {
         ...updatedAccount,
         access_token: updatedAccount.access_token ?? undefined,
         token_type: updatedAccount.token_type ?? undefined,
@@ -202,20 +201,19 @@ export function DrizzleAdapterPg(
       return account;
     },
     getUserByAccount: async (account) => {
-      const user =
-        (await client
-          .select()
-          .from(users)
-          .innerJoin(
-            accounts,
-            and(
-              eq(accounts.providerAccountId, account.providerAccountId),
-              eq(accounts.provider, account.provider)
-            )
+      const dbAccount = await client
+        .select()
+        .from(accounts)
+        .where(
+          and(
+            eq(accounts.providerAccountId, account.providerAccountId),
+            eq(accounts.provider, account.provider)
           )
-          .then((res) => res[0])) ?? null;
+        )
+        .leftJoin(users, eq(accounts.userId, users.id))
+        .then((res) => res[0]);
 
-      return user.users;
+      return dbAccount.users;
     },
     deleteSession: async (sessionToken) => {
       await client

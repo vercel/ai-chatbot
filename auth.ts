@@ -9,14 +9,14 @@ import {
   sessions,
   verificationTokens,
 } from "./lib/db/schema";
-import { DrizzleAdapterPg } from "./lib/db";
+import { PgAdapter } from "./lib/db";
 
 export const {
   handlers: { GET, POST },
   auth,
   CSRF_experimental,
 } = NextAuth({
-  adapter: DrizzleAdapterPg(db, {
+  adapter: PgAdapter(db, {
     accounts,
     users,
     sessions,

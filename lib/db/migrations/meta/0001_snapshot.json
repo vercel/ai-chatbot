@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "34122d24-88e0-430e-862c-2168b0f866cb",
-  "prevId": "ea430ef9-8e30-4cb6-9985-d03f43656cf8",
+  "id": "ad52915b-d697-4935-9373-97dca163dd91",
+  "prevId": "c6cb6121-2dc1-49be-8bd9-62f1c0c55939",
   "tables": {
     "accounts": {
       "name": "accounts",
@@ -75,16 +75,7 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "Account_provider_providerAccountId_key": {
-          "name": "Account_provider_providerAccountId_key",
-          "columns": [
-            "provider",
-            "providerAccountId"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "accounts_userId_users_id_fk": {
           "name": "accounts_userId_users_id_fk",
@@ -100,16 +91,30 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {}
+      "compositePrimaryKeys": {
+        "accounts_provider_providerAccountId": {
+          "name": "accounts_provider_providerAccountId",
+          "columns": [
+            "provider",
+            "providerAccountId"
+          ]
+        }
+      }
     },
-    "sessions": {
-      "name": "sessions",
+    "chats": {
+      "name": "chats",
       "schema": "",
       "columns": {
-        "sessionToken": {
-          "name": "sessionToken",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "userId": {
@@ -117,23 +122,50 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "chats_userId_users_id_fk": {
+          "name": "chats_userId_users_id_fk",
+          "tableFrom": "chats",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "sessions": {
+      "name": "sessions",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessionToken": {
+          "name": "sessionToken",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
         },
         "expires": {
           "name": "expires",
-          "type": "timestamp",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {
-        "Session_sessionToken_key": {
-          "name": "Session_sessionToken_key",
-          "columns": [
-            "sessionToken"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "sessions_userId_users_id_fk": {
           "name": "sessions_userId_users_id_fk",
@@ -175,7 +207,7 @@
         },
         "emailVerified": {
           "name": "emailVerified",
-          "type": "timestamp",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -186,15 +218,7 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "User_email_key": {
-          "name": "User_email_key",
-          "columns": [
-            "email"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {}
     },
@@ -216,30 +240,22 @@
         },
         "expires": {
           "name": "expires",
-          "type": "timestamp",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {
-        "VerificationToken_identifier_token_key": {
-          "name": "VerificationToken_identifier_token_key",
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "verificationToken_identifier_token": {
+          "name": "verificationToken_identifier_token",
           "columns": [
             "identifier",
             "token"
-          ],
-          "isUnique": true
-        },
-        "VerificationToken_token_key": {
-          "name": "VerificationToken_token_key",
-          "columns": [
-            "token"
-          ],
-          "isUnique": true
+          ]
         }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {}
+      }
     }
   },
   "enums": {},
