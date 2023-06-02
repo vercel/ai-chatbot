@@ -1,0 +1,1 @@
+ALTER TABLE "chats" ADD COLUMN "messages" json DEFAULT '{}'::json NOT NULL;

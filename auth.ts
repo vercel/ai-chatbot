@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export const {
   handlers: { GET, POST },
   auth,
+  CSRF_experimental,
 } = NextAuth({
   // @ts-ignore
   providers: [GitHub],
