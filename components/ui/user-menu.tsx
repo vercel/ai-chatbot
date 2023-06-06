@@ -1,10 +1,9 @@
 'use client'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { signOut } from '@auth/nextjs/client'
 import { type Session } from '@auth/nextjs/types'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { signOut } from '@auth/nextjs/client'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 
 export interface UserMenuProps {
   session: Session
