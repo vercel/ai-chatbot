@@ -11,7 +11,6 @@ export interface UserMenuProps {
 }
 
 export function UserMenu({ session }: UserMenuProps) {
-  const router = useRouter()
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu.Root>
