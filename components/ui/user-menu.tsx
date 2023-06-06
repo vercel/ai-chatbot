@@ -2,7 +2,7 @@
 import { ThemeToggle } from '@/components/theme-toggle'
 import { type Session } from '@auth/nextjs/types'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { signIn } from '@auth/nextjs/client'
+import { signOut } from '@auth/nextjs/client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
@@ -84,7 +84,7 @@ export function UserMenu({ session }: UserMenuProps) {
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="py-2 px-3 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors duration-200 cursor-pointer text-xs focus:outline-none"
-              onClick={() => router.push('/api/auth/signout')}
+              onClick={() => signOut()}
             >
               Log Out
             </DropdownMenu.Item>
