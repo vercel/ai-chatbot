@@ -11,7 +11,7 @@ const exampleMessages = [
     message: `What is a "serverless function"?`
   },
   {
-    heading: 'Summarize article',
+    heading: 'Summarize an article',
     message: 'Summarize the following article for a 2nd grader: \n'
   },
   {
