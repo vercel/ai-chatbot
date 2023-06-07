@@ -1,9 +1,11 @@
-import './globals.css'
 import { Metadata } from 'next'
+import './globals.css'
 
+import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { ThemeProvider } from '@/components/theme-provider'
 import { fontMono, fontSans } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
+import { Header } from '@/app/header'
 
 export const metadata: Metadata = {
   title: {
@@ -28,22 +30,24 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body
-          className={cn(
-            'font-sans antialiased',
-            fontSans.variable,
-            fontMono.variable
-          )}
-        >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-            {/* <TailwindIndicator /> */}
-          </ThemeProvider>
-        </body>
-      </html>
-    </>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body
+        className={cn(
+          'font-sans antialiased',
+          fontSans.variable,
+          fontMono.variable
+        )}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <div className="h-screen flex flex-col">
+            {/* @ts-ignore */}
+            <Header />
+            <main className="flex-1 overflow-hidden">{children}</main>
+          </div>
+          <TailwindIndicator />
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }

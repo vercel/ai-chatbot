@@ -3,9 +3,7 @@
 import { type Message } from 'ai-connector'
 
 import { ChatMessage } from './chat-message'
-import { NextChatLogo } from '@/components/ui/nextchat-logo'
-import { Plus } from 'lucide-react'
-import { EmptyScreen } from './empty'
+import { EmptyScreen } from './empty-screen'
 
 export interface ChatList {
   messages: Message[]
@@ -13,8 +11,8 @@ export interface ChatList {
 
 export function ChatList({ messages }: ChatList) {
   return (
-    <div className="relative h-full dark:bg-zinc-900">
-      <div className="sticky top-0 border-b w-full bg-black md:hidden text-white font-semibold">
+    <div className="relative max-w-2xl mx-auto">
+      {/* <div className="sticky top-0 border-b w-full bg-black md:hidden text-white font-semibold">
         <div className="px-4 py-2 flex items-center justify-between">
           <div className="flex flex-row gap-2 whitespace-nowrap items-center">
             <NextChatLogo className="h-6 w-6" />
@@ -26,21 +24,21 @@ export function ChatList({ messages }: ChatList) {
             </button>
           </div>
         </div>
-      </div>
-      <div className="h-full w-full overflow-auto">
-        {messages.length > 0 ? (
-          <div className="group w-full text-zinc-900 dark:text-white divide-y dark:divide-zinc-800">
-            {messages.map(message => (
-              <ChatMessage
-                key={message.id || message.content}
-                message={message}
-              />
-            ))}
-          </div>
-        ) : (
+      </div> */}
+      {messages.length > 0 ? (
+        <div className="group">
+          {messages.map(message => (
+            <ChatMessage
+              key={message.id || message.content}
+              message={message}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="pt-10">
           <EmptyScreen />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
