@@ -32,6 +32,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
 
   return (
     <div className="relative flex h-full w-full overflow-hidden">
+      {/* @ts-ignore */}
       <Sidebar session={session} />
       <div className="flex h-full min-w-0 flex-1 flex-col">
         <Chat id={chat.id} initialMessages={chat.messages as Message[]} />

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Prompt } from './prompt'
 import { useChat, type Message } from 'ai-connector'
 import { ChatList } from './chat-list'
+import { ExternalLink } from '@/app/external-link'
 
 export interface ChatProps {
   // create?: (input: string) => Chat | undefined;
@@ -27,24 +28,30 @@ export function Chat({
   })
 
   return (
-    <main className="transition-width relative min-h-full w-full flex-1 overflow-y-auto flex flex-col">
-      <div className="flex-1">
-        <ChatList messages={messages} />
+    <div className="h-full w-full overflow-auto pb-[200px]">
+      <ChatList messages={messages} />
+      <div className="fixed bottom-0 left-1 right-3 p-6 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-lg">
+        <div className="max-w-2xl mx-auto pl-10">
+          <Prompt
+            onSubmit={value => {
+              append({
+                content: value,
+                role: 'user'
+              })
+            }}
+            onRefresh={messages.length ? reload : undefined}
+            isLoading={isLoading}
+          />
+          <p className="text-muted-foreground text-xs leading-normal text-center pt-2">
+            This is an open source AI chatbot app built with{' '}
+            <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
+            <ExternalLink href="https://vercel.com/storage/kv">
+              Vercel KV
+            </ExternalLink>
+            .
+          </p>
+        </div>
       </div>
-      <div className="sticky light-gradient dark:bg-gradient-to-b dark:from-zinc-900 dark:to-zinc-950 bottom-0 left-0 w-full border-t bg-white dark:bg-black md:border-t-0 py-4 md:border-transparent md:!bg-transparent md:dark:border-transparent pr-0 lg:pr-[260px] flex dark:border-transparent items-center justify-center">
-        <Prompt
-          onSubmit={value => {
-            append({
-              content: value,
-              role: 'user'
-            })
-          }}
-          onRefresh={messages.length ? reload : undefined}
-          isLoading={isLoading}
-        />
-      </div>
-    </main>
+    </div>
   )
 }
-
-Chat.displayName = 'Chat'

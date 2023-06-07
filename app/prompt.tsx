@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import { CornerDownLeft, RefreshCcw, StopCircle } from 'lucide-react'
 import { useState } from 'react'
 import Textarea from 'react-textarea-autosize'
@@ -8,6 +9,13 @@ import { Button } from '@/components/ui/button'
 import { fontMessage } from '@/lib/fonts'
 import { useCmdEnterSubmit } from '@/lib/hooks/use-command-enter-submit'
 import { cn } from '@/lib/utils'
+import { useChatStore } from '@/hooks/use-chat-store'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
 
 export interface PromptProps {
   onSubmit: (value: string) => void
@@ -22,8 +30,21 @@ export function Prompt({
   onAbort,
   isLoading
 }: PromptProps) {
-  const [input, setInput] = useState('')
+  const { defaultMessage } = useChatStore()
+  const [input, setInput] = useState(defaultMessage)
   const { formRef, onKeyDown } = useCmdEnterSubmit()
+  const inputRef = React.useRef<HTMLTextAreaElement>(null)
+
+  React.useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [])
+
+  React.useEffect(() => {
+    setInput(defaultMessage)
+  }, [defaultMessage])
+
   return (
     <form
       onSubmit={async e => {
@@ -32,7 +53,6 @@ export function Prompt({
         await onSubmit(input)
       }}
       ref={formRef}
-      className="stretch flex w-full flex-row gap-3 md:max-w-2xl lg:max-w-xl xl:max-w-3xl mx-auto px-4"
     >
       <div className="relative flex h-full flex-1 flex-row-reverse items-stretch md:flex-col">
         <div>
@@ -71,8 +91,9 @@ export function Prompt({
                     </button> */}
           </div>
         </div>
-        <div className="relative flex w-full grow flex-col rounded-md dark:focus:border-white border border-zinc/10 bg-white shadow-[0_10px_20px_-10px_rgba(0,0,0,0.20)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:shadow-[0_5px_15px_rgba(0,0,0,0.10)] focus-within:border-zinc-800 focus-within:shadow-[0_15px_10px_-12px_rgba(0,0,0,0.22)] transition-all duration-200 focus-within:duration-1000 ease-in-out">
+        <div className="relative flex w-full grow flex-col rounded-md border bg-background overflow-hidden pr-12">
           <Textarea
+            ref={inputRef}
             tabIndex={0}
             onKeyDown={onKeyDown}
             rows={1}
@@ -81,34 +102,44 @@ export function Prompt({
             placeholder="Send a message."
             spellCheck={false}
             className={cn(
-              'm-0 max-h-[200px] w-full  resize-none border-0 bg-transparent p-0 py-[13px] pl-4 pr-7 outline-none ring-0 focus:ring-0 focus-visible:ring-0 dark:bg-transparent',
+              'min-h-[60px] text-sm p-4 bg-transparent focus-within:outline-none w-full resize-none',
               fontMessage.className
             )}
-            style={{
-              height: 46,
-              overflowY: 'hidden'
-            }}
           />
-          {isLoading ? (
-            <button
-              type="button"
-              onClick={onAbort}
-              className="absolute top-0 bottom-0 m-auto h-8 w-8 flex items-center justify-center right-2 rounded p-2 text-zinc-500 hover:bg-zinc-100 disabled:opacity-40 disabled:hover:bg-transparent dark:hover:bg-zinc-900 enabled:dark:hover:text-zinc-400 dark:disabled:hover:bg-transparent"
-            >
-              <StopCircle className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="absolute top-0 bottom-0 m-auto h-8 w-8 flex items-center justify-center right-2 rounded p-2 text-zinc-500 hover:bg-zinc-100 disabled:opacity-40 disabled:hover:bg-transparent dark:hover:bg-zinc-900 enabled:dark:hover:text-zinc-400 dark:disabled:hover:bg-transparent"
-            >
-              <CornerDownLeft className="h-4 w-4" />
-            </button>
-          )}
+          <div className="absolute top-4 right-4">
+            <TooltipProvider>
+              {isLoading ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={onAbort}
+                      className="h-8 w-8 p-0"
+                    >
+                      <StopCircle className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Stop generating</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      type="submit"
+                      className="h-8 w-8 p-0"
+                    >
+                      <CornerDownLeft className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Send message</TooltipContent>
+                </Tooltip>
+              )}
+            </TooltipProvider>
+          </div>
         </div>
       </div>
     </form>
   )
 }
-
-Prompt.displayName = 'Prompt'

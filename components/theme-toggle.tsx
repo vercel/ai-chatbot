@@ -12,7 +12,7 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="xs"
+      size="sm"
       className="p-0 leading-4 h-4 font-normal w-full"
       onClick={() => {
         startTransition(() => {
