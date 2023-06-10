@@ -1,21 +1,22 @@
 'use client'
 
 import * as React from 'react'
-import { CornerDownLeft, RefreshCcw, StopCircle } from 'lucide-react'
+import { CornerDownLeft, Plus, RefreshCcw, StopCircle } from 'lucide-react'
 import { useState } from 'react'
 import Textarea from 'react-textarea-autosize'
 
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { fontMessage } from '@/lib/fonts'
-import { useCmdEnterSubmit } from '@/lib/hooks/use-command-enter-submit'
+import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { cn } from '@/lib/utils'
-import { useChatStore } from '@/hooks/use-chat-store'
+import { useChatStore } from '@/lib/hooks/use-chat-store'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+import Link from 'next/link'
 
 export interface PromptProps {
   onSubmit: (value: string) => void
@@ -24,7 +25,7 @@ export interface PromptProps {
   isLoading: boolean
 }
 
-export function Prompt({
+export function PromptForm({
   onSubmit,
   onRefresh,
   onAbort,
@@ -32,7 +33,7 @@ export function Prompt({
 }: PromptProps) {
   const { defaultMessage } = useChatStore()
   const [input, setInput] = useState(defaultMessage)
-  const { formRef, onKeyDown } = useCmdEnterSubmit()
+  const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
 
   React.useEffect(() => {
@@ -69,45 +70,40 @@ export function Prompt({
                 </div>
               </Button>
             ) : null}
-            {/* <button
-                      id="share-button"
-                      className="btn btn-neutral flex justify-center gap-2"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="h-3 w-3"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
-                        />
-                      </svg>
-                      Share
-                    </button> */}
           </div>
         </div>
-        <div className="relative flex w-full grow flex-col rounded-md border bg-background overflow-hidden pr-12">
-          <Textarea
-            ref={inputRef}
-            tabIndex={0}
-            onKeyDown={onKeyDown}
-            rows={1}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder="Send a message."
-            spellCheck={false}
-            className={cn(
-              'min-h-[60px] text-sm p-4 bg-transparent focus-within:outline-none w-full resize-none',
-              fontMessage.className
-            )}
-          />
-          <div className="absolute top-4 right-4">
-            <TooltipProvider>
+        <TooltipProvider>
+          <div className="relative flex w-full grow flex-col rounded-md border bg-background overflow-hidden px-12">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/"
+                  className={cn(
+                    buttonVariants({ size: 'sm', variant: 'outline' }),
+                    'w-8 h-8 p-0 rounded-full absolute top-4 left-4 bg-background'
+                  )}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="sr-only">New Chat</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>New Chat</TooltipContent>
+            </Tooltip>
+            <Textarea
+              ref={inputRef}
+              tabIndex={0}
+              onKeyDown={onKeyDown}
+              rows={1}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Send a message."
+              spellCheck={false}
+              className={cn(
+                'min-h-[60px] text-sm bg-transparent px-4 py-[1.4rem] focus-within:outline-none w-full resize-none',
+                fontMessage.className
+              )}
+            />
+            <div className="absolute top-4 right-4">
               {isLoading ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -125,20 +121,16 @@ export function Prompt({
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      type="submit"
-                      className="h-8 w-8 p-0"
-                    >
+                    <Button type="submit" className="h-8 w-8 p-0">
                       <CornerDownLeft className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Send message</TooltipContent>
                 </Tooltip>
               )}
-            </TooltipProvider>
+            </div>
           </div>
-        </div>
+        </TooltipProvider>
       </div>
     </form>
   )

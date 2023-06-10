@@ -1,7 +1,8 @@
-import { cn } from '@/lib/utils'
-import { ExternalLink } from './external-link'
 import { ArrowRight } from 'lucide-react'
-import { useChatStore } from '@/hooks/use-chat-store'
+
+import { cn } from '@/lib/utils'
+import { useChatStore } from '@/lib/hooks/use-chat-store'
+import { ExternalLink } from '@/components/external-link'
 import { Button } from '@/components/ui/button'
 import { OpenAI } from '@/components/icons'
 
@@ -24,10 +25,10 @@ export function EmptyScreen({ className }: React.ComponentProps<'div'>) {
   const { setDefaultMessage } = useChatStore()
 
   return (
-    <div className="flex items-start space-x-4 mb-4">
+    <div className="flex items-start space-x-4 mb-4 -ml-12">
       <div
         className={cn(
-          'flex h-8 w-8 -ml-2 shrink-0 items-center justify-center rounded-full select-none border bg-primary text-primary-foreground'
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full select-none border bg-primary text-primary-foreground'
         )}
       >
         <OpenAI className="w-4 h-4" />

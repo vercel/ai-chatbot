@@ -1,7 +1,7 @@
 import type { RefObject } from 'react'
 import { useRef } from 'react'
 
-export function useCmdEnterSubmit(): {
+export function useEnterSubmit(): {
   formRef: RefObject<HTMLFormElement>
   onKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
 } {
@@ -10,8 +10,9 @@ export function useCmdEnterSubmit(): {
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ): void => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
       formRef.current?.requestSubmit()
+      event.preventDefault()
     }
   }
 
