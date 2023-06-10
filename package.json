@@ -16,6 +16,7 @@
   "dependencies": {
     "@auth/core": "0.0.0-manual.527fff6c",
     "@auth/nextjs": "0.0.0-manual.030e8328",
+    "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.4",
     "@radix-ui/react-slot": "^1.0.2",

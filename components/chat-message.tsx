@@ -1,11 +1,12 @@
-import CodeBlock from '@/components/ui/codeblock'
-import { MemoizedReactMarkdown } from '@/components/markdown'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import { cn } from '@/lib/utils'
-import { fontMessage } from '@/lib/fonts'
 import { Message } from 'ai-connector'
 import { User } from 'lucide-react'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+
+import { cn } from '@/lib/utils'
+import { fontMessage } from '@/lib/fonts'
+import CodeBlock from '@/components/ui/codeblock'
+import { MemoizedReactMarkdown } from '@/components/markdown'
 import { OpenAI } from '@/components/icons'
 
 export interface ChatMessageProps {
@@ -16,7 +17,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
   return (
     <div
       className={cn(
-        'flex items-start space-x-4 mb-4',
+        'flex items-start space-x-4 mb-4 relative -ml-12',
         fontMessage.className,
         message.role === 'user' && 'mt-12 first:mt-0'
       )}
@@ -24,7 +25,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
     >
       <div
         className={cn(
-          'flex h-8 w-8 -ml-2 shrink-0 items-center justify-center rounded-full select-none border',
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full select-none border',
           message.role === 'assistant' && 'bg-primary text-primary-foreground'
         )}
       >

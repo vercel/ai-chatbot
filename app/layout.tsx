@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
-import './globals.css'
 
-import { TailwindIndicator } from '@/components/tailwind-indicator'
-import { ThemeProvider } from '@/components/theme-provider'
+import '@/app/globals.css'
 import { fontMono, fontSans } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
-import { Header } from '@/app/header'
+import { TailwindIndicator } from '@/components/tailwind-indicator'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Header } from '@/components/header'
 
 export const metadata: Metadata = {
   title: {
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <div className="h-screen flex flex-col">
             {/* @ts-ignore */}
             <Header />
-            <main className="flex-1 overflow-hidden">{children}</main>
+            <main className="flex-1">{children}</main>
           </div>
           <TailwindIndicator />
         </ThemeProvider>
