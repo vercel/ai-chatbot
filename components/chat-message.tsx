@@ -24,7 +24,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
     >
       <div
         className={cn(
-          'hidden h-8 w-8 shrink-0 select-none items-center justify-center rounded-full border md:flex',
+          'flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full border',
           message.role === 'user'
             ? 'bg-background'
             : 'bg-primary text-primary-foreground'
@@ -36,7 +36,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
           <OpenAI className="h-4 w-4" />
         )}
       </div>
-      <div className="md:ml-4">
+      <div className="ml-4">
         <MemoizedReactMarkdown
           className="prose leading-6 dark:prose-invert prose-p:leading-[1.8rem] prose-pre:rounded-md prose-pre:bg-[#282c34]"
           remarkPlugins={[remarkGfm, remarkMath]}
