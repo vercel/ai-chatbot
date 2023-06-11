@@ -1,33 +1,34 @@
-import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
-import { getChats } from '@/app/actions'
+
+import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
-import { UserMenu } from '@/components/user-menu'
 import { GitHub, Separator, Vercel } from '@/components/icons'
 import { Sidebar } from '@/components/sidebar'
+import { UserMenu } from '@/components/user-menu'
+import { getChats } from '@/app/actions'
 
 export async function Header() {
   const session = await auth()
   const chats = session?.user?.email ? await getChats(session.user.email) : []
 
   return (
-    <header className="h-16 shrink-0 z-50 border-b bg-gradient-to-b from-background/10 via-background/50 backdrop-blur-xl to-background/80 px-4 flex sticky top-0 w-full items-center justify-between">
+    <header className="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b bg-gradient-to-b from-background/10 via-background/50 to-background/80 px-4 backdrop-blur-xl">
       <div className="flex items-center">
         {/* @ts-ignore */}
         <Sidebar chats={chats} session={session} />
-        <div className="hidden md:flex items-center">
+        <div className="hidden items-center md:flex">
           <Separator className="h-6 w-6 text-muted-foreground/50" />
           <UserMenu session={session} />
         </div>
       </div>
-      <div className="flex space-x-2 items-center justify-end">
+      <div className="flex items-center justify-end space-x-2">
         <a
           target="_blank"
           href="https://github.com/vercel/nextjs-ai-chatbot/"
           rel="noopener noreferrer"
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
-          <GitHub className="w-4 h-4 mr-2" />
+          <GitHub className="mr-2 h-4 w-4" />
           <span>GitHub</span>
         </a>
         <a
@@ -35,7 +36,7 @@ export async function Header() {
           target="_blank"
           className={cn(buttonVariants())}
         >
-          <Vercel className="w-4 h-4 mr-2" />
+          <Vercel className="mr-2 h-4 w-4" />
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Vercel</span>
         </a>

@@ -2,12 +2,11 @@
 
 import * as React from 'react'
 import { useTransition } from 'react'
-import { Loader2Icon, MessageSquare, Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { Loader2Icon, MessageSquare, Trash2Icon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { removeChat } from '@/app/actions'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +18,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { removeChat } from '@/app/actions'
 
 export function SidebarItem({
   title,
@@ -49,9 +49,9 @@ export function SidebarItem({
           isActive && 'bg-accent'
         )}
       >
-        <MessageSquare className="h-4 w-4 mr-2" />
+        <MessageSquare className="mr-2 h-4 w-4" />
         <div
-          className="relative max-h-5 flex-1 overflow-hidden text-ellipsis break-all select-none"
+          className="relative max-h-5 flex-1 select-none overflow-hidden text-ellipsis break-all"
           title={title}
         >
           <span className="whitespace-nowrap">{title}</span>
@@ -60,7 +60,7 @@ export function SidebarItem({
           <Button
             variant="ghost"
             size="icon"
-            className="w-7 h-7"
+            className="h-7 w-7"
             disabled={isPending}
             onClick={() => setIsOpen(true)}
           >
@@ -92,7 +92,7 @@ export function SidebarItem({
               }}
             >
               {isPending && (
-                <Loader2Icon className="animate-spin h-4 w-4 mr-2" />
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </AlertDialogAction>

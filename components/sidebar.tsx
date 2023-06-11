@@ -1,9 +1,9 @@
 'use client'
 
 import * as React from 'react'
-import { Sidebar as SidebarIcon } from 'lucide-react'
-import { type Session } from '@auth/nextjs/types'
 import { signOut } from '@auth/nextjs/client'
+import { type Session } from '@auth/nextjs/types'
+import { Sidebar as SidebarIcon } from 'lucide-react'
 
 import { type Chat } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -26,16 +26,16 @@ export async function Sidebar({ session, chats }: SidebarProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="w-9 h-9 p-0 -ml-2">
-          <SidebarIcon className="w-6 h-6" />
+        <Button variant="ghost" className="-ml-2 h-9 w-9 p-0">
+          <SidebarIcon className="h-6 w-6" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>
       <SheetContent
         position="left"
-        className="w-[300px] gap-0 top-0 bottom-0 lg:top-2 p-0 rounded-r-lg lg:bottom-2 h-auto flex flex-col"
+        className="inset-y-0 flex h-auto w-[300px] flex-col gap-0 rounded-r-lg p-0 lg:inset-y-2"
       >
-        <SheetHeader className="px-4 py-4">
+        <SheetHeader className="p-4">
           <SheetTitle className="text-sm">Chat History</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-auto">
@@ -52,7 +52,7 @@ export async function Sidebar({ session, chats }: SidebarProps) {
               ))}
             </div>
           ) : (
-            <div className="text-center p-8">
+            <div className="p-8 text-center">
               <p className="text-sm text-muted-foreground">
                 {session?.user ? <>No chat history</> : <>Login for history</>}
               </p>

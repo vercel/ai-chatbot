@@ -3,11 +3,11 @@ import { User } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
-import { cn } from '@/lib/utils'
 import { fontMessage } from '@/lib/fonts'
+import { cn } from '@/lib/utils'
 import { CodeBlock } from '@/components/ui/codeblock'
-import { MemoizedReactMarkdown } from '@/components/markdown'
 import { OpenAI } from '@/components/icons'
+import { MemoizedReactMarkdown } from '@/components/markdown'
 
 export interface ChatMessageProps {
   message: Message
@@ -17,32 +17,32 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
   return (
     <div
       className={cn(
-        'flex items-start mb-4 relative md:-ml-12',
+        'relative mb-4 flex items-start md:-ml-12',
         fontMessage.className
       )}
       {...props}
     >
       <div
         className={cn(
-          'md:flex h-8 w-8 shrink-0 hidden items-center justify-center rounded-full select-none border',
+          'hidden h-8 w-8 shrink-0 select-none items-center justify-center rounded-full border md:flex',
           message.role === 'user'
             ? 'bg-background'
             : 'bg-primary text-primary-foreground'
         )}
       >
         {message.role === 'user' ? (
-          <User className="w-4 h-4" />
+          <User className="h-4 w-4" />
         ) : (
-          <OpenAI className="w-4 h-4" />
+          <OpenAI className="h-4 w-4" />
         )}
       </div>
       <div className="md:ml-4">
         <MemoizedReactMarkdown
-          className="prose dark:prose-invert prose-pre:rounded-md leading-6 prose-p:leading-[1.8rem] prose-pre:bg-[#282c34]"
+          className="prose leading-6 dark:prose-invert prose-p:leading-[1.8rem] prose-pre:rounded-md prose-pre:bg-[#282c34]"
           remarkPlugins={[remarkGfm, remarkMath]}
           components={{
             p({ children }) {
-              return <p className={cn('mb-2 last:mb-0')}>{children}</p>
+              return <p className="mb-2 last:mb-0">{children}</p>
             },
             code({ node, inline, className, children, ...props }) {
               if (children.length) {

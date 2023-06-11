@@ -1,8 +1,8 @@
 import { type Metadata } from 'next'
-
 import { auth } from '@/auth'
-import { getChat } from '@/app/actions'
+
 import { Chat } from '@/components/chat'
+import { getChat } from '@/app/actions'
 
 // export const runtime = 'edge'
 export const preferredRegion = 'home'

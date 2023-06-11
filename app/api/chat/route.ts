@@ -1,8 +1,9 @@
 import { auth } from '@/auth'
 import { kv } from '@vercel/kv'
-import { nanoid } from '@/lib/utils'
 import { OpenAIStream, StreamingTextResponse } from 'ai-connector'
 import { Configuration, OpenAIApi } from 'openai-edge'
+
+import { nanoid } from '@/lib/utils'
 
 // export const runtime = 'edge'
 
