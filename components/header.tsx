@@ -38,7 +38,7 @@ export async function Header() {
         >
           <Vercel className="mr-2 h-4 w-4" />
           <span className="hidden sm:block">Deploy to Vercel</span>
-          <span className="sm:hidden">Vercel</span>
+          <span className="sm:hidden">Deploy</span>
         </a>
       </div>
     </header>
