@@ -124,4 +124,4 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
 })
 CodeBlock.displayName = 'CodeBlock'
 
-export default CodeBlock
+export { CodeBlock }

@@ -1,10 +1,10 @@
 'use client'
 
+import * as React from 'react'
+import { useTransition } from 'react'
 import { Loader2Icon, MessageSquare, Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import * as React from 'react'
-import { useTransition } from 'react'
 
 import { cn } from '@/lib/utils'
 import { removeChat } from '@/app/actions'

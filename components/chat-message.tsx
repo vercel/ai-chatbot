@@ -5,7 +5,7 @@ import remarkMath from 'remark-math'
 
 import { cn } from '@/lib/utils'
 import { fontMessage } from '@/lib/fonts'
-import CodeBlock from '@/components/ui/codeblock'
+import { CodeBlock } from '@/components/ui/codeblock'
 import { MemoizedReactMarkdown } from '@/components/markdown'
 import { OpenAI } from '@/components/icons'
 
@@ -17,16 +17,17 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
   return (
     <div
       className={cn(
-        'flex items-start space-x-4 mb-4 relative -ml-12',
-        fontMessage.className,
-        message.role === 'user' && 'mt-12 first:mt-0'
+        'flex items-start mb-4 relative md:-ml-12',
+        fontMessage.className
       )}
       {...props}
     >
       <div
         className={cn(
-          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full select-none border',
-          message.role === 'assistant' && 'bg-primary text-primary-foreground'
+          'md:flex h-8 w-8 shrink-0 hidden items-center justify-center rounded-full select-none border',
+          message.role === 'user'
+            ? 'bg-background'
+            : 'bg-primary text-primary-foreground'
         )}
       >
         {message.role === 'user' ? (
@@ -35,14 +36,9 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
           <OpenAI className="w-4 h-4" />
         )}
       </div>
-      <div
-        className={cn(
-          'border rounded-lg py-2 px-4',
-          message.role === 'assistant' && 'bg-muted/30'
-        )}
-      >
+      <div className="md:ml-4">
         <MemoizedReactMarkdown
-          className="prose dark:prose-invert prose-sm prose-pre:rounded-md w-full flex-1 leading-6 prose-p:leading-[1.8rem] prose-pre:bg-[#282c34] max-w-full"
+          className="prose dark:prose-invert prose-pre:rounded-md leading-6 prose-p:leading-[1.8rem] prose-pre:bg-[#282c34]"
           remarkPlugins={[remarkGfm, remarkMath]}
           components={{
             p({ children }) {
@@ -50,7 +46,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
                 <p
                   className={cn(
                     'mb-2 last:mb-0',
-                    message.role === 'user' && 'font-medium'
+                    message.role === 'user' && 'font-semibold'
                   )}
                 >
                   {children}

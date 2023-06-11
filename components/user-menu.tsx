@@ -32,5 +32,7 @@ export function UserMenu({ session }: UserMenuProps) {
     )
   }
 
-  return <p className="text-sm font-medium">Logged in as {session.user.name}</p>
+  return (
+    <p className="text-sm font-medium px-2">Logged in as {session.user.name}</p>
+  )
 }

@@ -11,14 +11,16 @@ export async function Header() {
   const chats = session?.user?.email ? await getChats(session.user.email) : []
 
   return (
-    <header className="h-16 shrink-0 z-50 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-lg px-4 flex sticky top-0 w-full items-center justify-between">
-      <div className="flex items-center w-2/5">
+    <header className="h-16 shrink-0 z-50 border-b bg-gradient-to-b from-background/10 via-background/50 backdrop-blur-xl to-background/80 px-4 flex sticky top-0 w-full items-center justify-between">
+      <div className="flex items-center">
         {/* @ts-ignore */}
         <Sidebar chats={chats} session={session} />
-        <Separator className="h-6 w-6 text-muted-foreground/50" />
-        <UserMenu session={session} />
+        <div className="hidden md:flex items-center">
+          <Separator className="h-6 w-6 text-muted-foreground/50" />
+          <UserMenu session={session} />
+        </div>
       </div>
-      <div className="flex space-x-2 items-center justify-end w-2/5">
+      <div className="flex space-x-2 items-center justify-end">
         <a
           target="_blank"
           href="https://github.com/vercel/nextjs-ai-chatbot/"
@@ -34,7 +36,8 @@ export async function Header() {
           className={cn(buttonVariants())}
         >
           <Vercel className="w-4 h-4 mr-2" />
-          Deploy to Vercel
+          <span className="hidden sm:block">Deploy to Vercel</span>
+          <span className="sm:hidden">Vercel</span>
         </a>
       </div>
     </header>

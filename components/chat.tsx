@@ -11,23 +11,22 @@ export interface ChatProps {
 }
 
 export function Chat({ id, initialMessages }: ChatProps) {
-  const { messages, append, reload, isLoading } = useChat({
+  const { messages, append, reload, stop, isLoading } = useChat({
     initialMessages,
     id
   })
 
   return (
-    <div className="h-full overflow-hidden">
-      <div className="h-full w-full overflow-auto pb-[200px]">
-        <ChatList messages={messages} />
-        <ChatPanel
-          id={id}
-          append={append}
-          isLoading={isLoading}
-          reload={reload}
-          messages={messages}
-        />
-      </div>
+    <div className="h-full w-full overflow-auto pt-4 md:pt-10 bg-muted/50 pb-[200px]">
+      <ChatList messages={messages} />
+      <ChatPanel
+        id={id}
+        isLoading={isLoading}
+        stop={stop}
+        append={append}
+        reload={reload}
+        messages={messages}
+      />
     </div>
   )
 }

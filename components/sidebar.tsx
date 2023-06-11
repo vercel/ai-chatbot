@@ -26,21 +26,21 @@ export async function Sidebar({ session, chats }: SidebarProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="w-9 h-9 p-0">
+        <Button variant="ghost" className="w-9 h-9 p-0 -ml-2">
           <SidebarIcon className="w-6 h-6" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>
       <SheetContent
         position="left"
-        className="w-[300px] gap-0 top-2 px-4 rounded-r-lg bottom-2 h-auto flex flex-col"
+        className="w-[300px] gap-0 top-0 bottom-0 lg:top-2 p-0 rounded-r-lg lg:bottom-2 h-auto flex flex-col"
       >
-        <SheetHeader>
-          <SheetTitle>Chat History</SheetTitle>
+        <SheetHeader className="px-4 py-4">
+          <SheetTitle className="text-sm">Chat History</SheetTitle>
         </SheetHeader>
-        <div className="flex-1">
+        <div className="flex-1 overflow-auto">
           {chats?.length ? (
-            <div className="space-y-2 -mx-2 py-4">
+            <div className="space-y-2 px-2">
               {chats.map(chat => (
                 <SidebarItem
                   key={chat.id}
@@ -59,7 +59,7 @@ export async function Sidebar({ session, chats }: SidebarProps) {
             </div>
           )}
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center p-4">
           <ThemeToggle />
           {session?.user && (
             <Button
