@@ -42,16 +42,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
           remarkPlugins={[remarkGfm, remarkMath]}
           components={{
             p({ children }) {
-              return (
-                <p
-                  className={cn(
-                    'mb-2 last:mb-0',
-                    message.role === 'user' && 'font-semibold'
-                  )}
-                >
-                  {children}
-                </p>
-              )
+              return <p className={cn('mb-2 last:mb-0')}>{children}</p>
             },
             code({ node, inline, className, children, ...props }) {
               if (children.length) {
@@ -77,27 +68,6 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
                 <code className={className} {...props}>
                   {children}
                 </code>
-              )
-            },
-            table({ children }) {
-              return (
-                <table className="border-collapse border border-black px-3 py-1 ">
-                  {children}
-                </table>
-              )
-            },
-            th({ children }) {
-              return (
-                <th className="break-words border border-black bg-gray-500 px-3 py-1 text-white ">
-                  {children}
-                </th>
-              )
-            },
-            td({ children }) {
-              return (
-                <td className="break-words border border-black px-3 py-1">
-                  {children}
-                </td>
               )
             }
           }}
