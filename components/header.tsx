@@ -1,5 +1,4 @@
 import { auth } from '@/auth'
-
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { GitHub, Separator, Vercel } from '@/components/icons'
