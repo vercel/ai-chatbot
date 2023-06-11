@@ -40,10 +40,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="flex h-screen flex-col">
+          <div className="flex min-h-screen flex-col">
             {/* @ts-ignore */}
             <Header />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 bg-muted/50">{children}</main>
           </div>
           <TailwindIndicator />
         </ThemeProvider>

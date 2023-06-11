@@ -50,14 +50,14 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
       ref={formRef}
     >
       <TooltipProvider>
-        <div className="relative flex w-full grow flex-col overflow-hidden bg-background px-12 sm:rounded-md sm:border">
+        <div className="relative flex w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
                 href="/"
                 className={cn(
                   buttonVariants({ size: 'sm', variant: 'outline' }),
-                  'absolute left-4 top-4 h-8 w-8 rounded-full bg-background p-0'
+                  'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
                 )}
               >
                 <Plus className="h-4 w-4" />
@@ -75,9 +75,9 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
             onChange={e => setInput(e.target.value)}
             placeholder="Send a message."
             spellCheck={false}
-            className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.4rem] focus-within:outline-none sm:text-sm"
+            className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
           />
-          <div className="absolute right-4 top-4">
+          <div className="absolute right-0 top-4 sm:right-4">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

@@ -6,6 +6,7 @@ import { RefreshCcw, StopCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
 import { PromptForm } from '@/components/prompt-form'
+import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 
 export interface ChatPanelProps
   extends Pick<
@@ -24,15 +25,16 @@ export function ChatPanel({
 }: ChatPanelProps) {
   return (
     <div className="fixed inset-x-0 bottom-0 bg-gradient-to-b from-muted/10 from-10% to-muted/30 to-50%">
+      <ButtonScrollToBottom />
       <div className="mx-auto sm:max-w-2xl sm:px-4">
-        <div className="flex items-center justify-center py-2">
+        <div className="flex h-10 items-center justify-center">
           {isLoading ? (
             <Button
               variant="outline"
               onClick={() => stop()}
               className="bg-background"
             >
-              <StopCircle className="w-4 h-4 mr-2" />
+              <StopCircle className="mr-2 h-4 w-4" />
               Stop generating
             </Button>
           ) : (
@@ -42,13 +44,13 @@ export function ChatPanel({
                 onClick={() => reload()}
                 className="bg-background"
               >
-                <RefreshCcw className="w-4 h-4 mr-2" />
+                <RefreshCcw className="mr-2 h-4 w-4" />
                 Regenerate response
               </Button>
             )
           )}
         </div>
-        <div className="p-4 space-y-4 border-t shadow-lg bg-background sm:rounded-t-xl sm:border">
+        <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
           <PromptForm
             onSubmit={value => {
               append({
@@ -58,7 +60,7 @@ export function ChatPanel({
             }}
             isLoading={isLoading}
           />
-          <p className="hidden px-2 text-xs leading-normal text-center text-muted-foreground sm:block">
+          <p className="hidden px-2 text-center text-xs leading-normal text-muted-foreground sm:block">
             Open source AI chatbot app built with{' '}
             <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
             <ExternalLink href="https://vercel.com/storage/kv">
