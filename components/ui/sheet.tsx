@@ -43,12 +43,12 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  'fixed z-50 scale-100 gap-4 bg-background p-6 opacity-100 shadow-lg border h-full',
+  'fixed z-50 h-full scale-100 gap-4 border bg-background p-6 opacity-100 shadow-lg',
   {
     variants: {
       position: {
-        left: 'data-[state=open]:animate-slide-from-left data-[state=closed]:animate-slide-to-left',
-        right: 'animate-in slide-in-from-right h-full duration-300'
+        left: 'data-[state=closed]:animate-slide-to-left data-[state=open]:animate-slide-from-left',
+        right: 'h-full animate-in slide-in-from-right duration-300'
       }
     },
     defaultVariants: {

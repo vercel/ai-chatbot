@@ -1,5 +1,5 @@
-import type { NextRequest, NextFetchEvent } from 'next/server'
 import type { NextApiRequest } from 'next'
+import type { NextFetchEvent, NextRequest } from 'next/server'
 
 export const initAnalytics = ({
   request,

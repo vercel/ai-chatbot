@@ -16,7 +16,7 @@ export function NextChat({
       viewBox="0 0 17 17"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('w-4 h-4', className)}
+      className={cn('h-4 w-4', className)}
       {...props}
     >
       <defs>
@@ -95,7 +95,7 @@ export function OpenAI({ className, ...props }: React.ComponentProps<'svg'>) {
       viewBox="0 0 24 24"
       role="img"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('w-4 h-4', className)}
+      className={cn('h-4 w-4', className)}
       {...props}
     >
       <title>OpenAI icon</title>
@@ -110,7 +110,7 @@ export function Vercel({ className, ...props }: React.ComponentProps<'svg'>) {
       aria-label="Vercel logomark"
       role="img"
       viewBox="0 0 74 64"
-      className={cn('w-4 h-4', className)}
+      className={cn('h-4 w-4', className)}
       {...props}
     >
       <path
@@ -128,7 +128,7 @@ export function GitHub({ className, ...props }: React.ComponentProps<'svg'>) {
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
-      className={cn('w-4 h-4', className)}
+      className={cn('h-4 w-4', className)}
       {...props}
     >
       <title>GitHub</title>
@@ -151,7 +151,7 @@ export function Separator({
       strokeWidth="1"
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={cn('w-4 h-4', className)}
+      className={cn('h-4 w-4', className)}
       {...props}
     >
       <path d="M16.88 3.549L7.12 20.451"></path>

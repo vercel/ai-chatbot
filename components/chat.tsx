@@ -1,6 +1,7 @@
 'use client'
 
 import { useChat, type Message } from 'ai-connector'
+
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 
@@ -17,7 +18,7 @@ export function Chat({ id, initialMessages }: ChatProps) {
   })
 
   return (
-    <div className="h-full w-full overflow-auto pt-4 md:pt-10 bg-muted/50 pb-[200px]">
+    <div className="h-full w-full overflow-auto bg-muted/50 pb-[200px] pt-4 md:pt-10">
       <ChatList messages={messages} />
       <ChatPanel
         id={id}

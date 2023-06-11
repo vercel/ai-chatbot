@@ -1,20 +1,20 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { CornerDownLeft, Plus } from 'lucide-react'
 import Textarea from 'react-textarea-autosize'
 
-import { Button, buttonVariants } from '@/components/ui/button'
+import { useChatStore } from '@/lib/hooks/use-chat-store'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { cn } from '@/lib/utils'
-import { useChatStore } from '@/lib/hooks/use-chat-store'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import Link from 'next/link'
 
 export interface PromptProps {
   onSubmit: (value: string) => void
@@ -50,14 +50,14 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
       ref={formRef}
     >
       <TooltipProvider>
-        <div className="relative flex w-full grow flex-col sm:rounded-md sm:border bg-background overflow-hidden px-12">
+        <div className="relative flex w-full grow flex-col overflow-hidden bg-background px-12 sm:rounded-md sm:border">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
                 href="/"
                 className={cn(
                   buttonVariants({ size: 'sm', variant: 'outline' }),
-                  'w-8 h-8 p-0 rounded-full absolute top-4 left-4 bg-background'
+                  'absolute left-4 top-4 h-8 w-8 rounded-full bg-background p-0'
                 )}
               >
                 <Plus className="h-4 w-4" />
@@ -75,9 +75,9 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
             onChange={e => setInput(e.target.value)}
             placeholder="Send a message."
             spellCheck={false}
-            className="min-h-[60px] sm:text-sm bg-transparent px-4 py-[1.4rem] focus-within:outline-none w-full resize-none"
+            className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.4rem] focus-within:outline-none sm:text-sm"
           />
-          <div className="absolute top-4 right-4">
+          <div className="absolute right-4 top-4">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

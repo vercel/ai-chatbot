@@ -2,9 +2,9 @@
 
 import { type Message } from 'ai-connector'
 
+import { Separator } from '@/components/ui/separator'
 import { ChatMessage } from '@/components/chat-message'
 import { EmptyScreen } from '@/components/empty-screen'
-import { Separator } from '@/components/ui/separator'
 
 export interface ChatList {
   messages: Message[]
@@ -12,7 +12,7 @@ export interface ChatList {
 
 export function ChatList({ messages }: ChatList) {
   return (
-    <div className="relative max-w-2xl px-4 mx-auto">
+    <div className="relative mx-auto max-w-2xl px-4">
       {messages.length > 0 ? (
         messages.map((message, index) => (
           <div key={index}>

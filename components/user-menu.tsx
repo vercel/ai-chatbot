@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-
 import { signIn } from '@auth/nextjs/client'
 import { type Session } from '@auth/nextjs/types'
 import { Loader2Icon } from 'lucide-react'
@@ -26,13 +25,13 @@ export function UserMenu({ session }: UserMenuProps) {
         }}
         disabled={isLoading}
       >
-        {isLoading && <Loader2Icon className="animate-spin w-4 h-4 mr-2" />}
+        {isLoading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
         Login
       </Button>
     )
   }
 
   return (
-    <p className="text-sm font-medium px-2">Logged in as {session.user.name}</p>
+    <p className="px-2 text-sm font-medium">Logged in as {session.user.name}</p>
   )
 }
