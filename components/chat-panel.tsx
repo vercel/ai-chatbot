@@ -32,7 +32,7 @@ export function ChatPanel({
               onClick={() => stop()}
               className="bg-background"
             >
-              <StopCircle className="mr-2 h-4 w-4" />
+              <StopCircle className="w-4 h-4 mr-2" />
               Stop generating
             </Button>
           ) : (
@@ -42,13 +42,13 @@ export function ChatPanel({
                 onClick={() => reload()}
                 className="bg-background"
               >
-                <RefreshCcw className="mr-2 h-4 w-4" />
+                <RefreshCcw className="w-4 h-4 mr-2" />
                 Regenerate response
               </Button>
             )
           )}
         </div>
-        <div className="space-y-4 border-t bg-background shadow-lg sm:rounded-t-xl sm:border sm:p-4">
+        <div className="p-4 space-y-4 border-t shadow-lg bg-background sm:rounded-t-xl sm:border">
           <PromptForm
             onSubmit={value => {
               append({
@@ -58,7 +58,7 @@ export function ChatPanel({
             }}
             isLoading={isLoading}
           />
-          <p className="hidden px-2 text-center text-xs leading-normal text-muted-foreground sm:block">
+          <p className="hidden px-2 text-xs leading-normal text-center text-muted-foreground sm:block">
             Open source AI chatbot app built with{' '}
             <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
             <ExternalLink href="https://vercel.com/storage/kv">
