@@ -1,9 +1,11 @@
 'use client'
-import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-cliipboard'
-import { Check, Clipboard, Download } from 'lucide-react'
+
 import { FC, memo } from 'react'
+import { Check, Clipboard, Download } from 'lucide-react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+
+import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-cliipboard'
 
 interface Props {
   language: string
@@ -124,4 +126,4 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
 })
 CodeBlock.displayName = 'CodeBlock'
 
-export default CodeBlock
+export { CodeBlock }

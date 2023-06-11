@@ -1,10 +1,11 @@
 import { auth } from '@/auth'
 import { kv } from '@vercel/kv'
-import { nanoid } from '@/lib/utils'
 import { OpenAIStream, StreamingTextResponse } from 'ai-connector'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
-export const runtime = 'edge'
+import { nanoid } from '@/lib/utils'
+
+// export const runtime = 'edge'
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
