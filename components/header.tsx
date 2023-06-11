@@ -12,7 +12,7 @@ export async function Header() {
   const session = await auth()
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b bg-gradient-to-b from-background/10 via-background/50 to-background/80 px-4 backdrop-blur-xl">
       <div className="flex items-center">
         {/* @ts-ignore */}
         <Sidebar session={session}>
@@ -21,8 +21,8 @@ export async function Header() {
             <SidebarList session={session} />
           </Suspense>
         </Sidebar>
-        <div className="items-center hidden md:flex">
-          <Separator className="w-6 h-6 text-muted-foreground/50" />
+        <div className="hidden items-center md:flex">
+          <Separator className="h-6 w-6 text-muted-foreground/50" />
           <UserMenu session={session} />
         </div>
       </div>
@@ -33,7 +33,7 @@ export async function Header() {
           rel="noopener noreferrer"
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
-          <GitHub className="w-4 h-4 mr-2" />
+          <GitHub className="mr-2 h-4 w-4" />
           <span>GitHub</span>
         </a>
         <a
@@ -41,7 +41,7 @@ export async function Header() {
           target="_blank"
           className={cn(buttonVariants())}
         >
-          <Vercel className="w-4 h-4 mr-2" />
+          <Vercel className="mr-2 h-4 w-4" />
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Vercel</span>
         </a>
