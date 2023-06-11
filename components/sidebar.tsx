@@ -5,7 +5,6 @@ import { signOut } from '@auth/nextjs/client'
 import { type Session } from '@auth/nextjs/types'
 import { Sidebar as SidebarIcon } from 'lucide-react'
 
-import { type Chat } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -14,20 +13,19 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import { SidebarItem } from '@/components/sidebar-item'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export interface SidebarProps {
   session?: Session
-  chats: Chat[]
+  children?: React.ReactNode
 }
 
-export async function Sidebar({ session, chats }: SidebarProps) {
+export function Sidebar({ session, children }: SidebarProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="-ml-2 h-9 w-9 p-0">
-          <SidebarIcon className="h-6 w-6" />
+        <Button variant="ghost" className="p-0 -ml-2 h-9 w-9">
+          <SidebarIcon className="w-6 h-6" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>
@@ -38,27 +36,7 @@ export async function Sidebar({ session, chats }: SidebarProps) {
         <SheetHeader className="p-4">
           <SheetTitle className="text-sm">Chat History</SheetTitle>
         </SheetHeader>
-        <div className="flex-1 overflow-auto">
-          {chats?.length ? (
-            <div className="space-y-2 px-2">
-              {chats.map(chat => (
-                <SidebarItem
-                  key={chat.id}
-                  title={chat.title}
-                  userId={session?.user?.email ?? ''}
-                  href={`/chat/${chat.id}`}
-                  id={chat.id}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                {session?.user ? <>No chat history</> : <>Login for history</>}
-              </p>
-            </div>
-          )}
-        </div>
+        {children}
         <div className="flex items-center p-4">
           <ThemeToggle />
           {session?.user && (

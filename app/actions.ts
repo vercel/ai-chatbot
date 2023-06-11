@@ -5,7 +5,11 @@ import { kv } from '@vercel/kv'
 
 import { type Chat } from '@/lib/types'
 
-export async function getChats(userId: string) {
+export async function getChats(userId?: string | null) {
+  if (!userId) {
+    return []
+  }
+
   try {
     const pipeline = kv.pipeline()
     const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1)
