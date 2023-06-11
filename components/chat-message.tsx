@@ -3,7 +3,6 @@ import { User } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
-import { fontMessage } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
 import { CodeBlock } from '@/components/ui/codeblock'
 import { OpenAI } from '@/components/icons'
@@ -15,13 +14,7 @@ export interface ChatMessageProps {
 
 export function ChatMessage({ message, ...props }: ChatMessageProps) {
   return (
-    <div
-      className={cn(
-        'relative mb-4 flex items-start md:-ml-12',
-        fontMessage.className
-      )}
-      {...props}
-    >
+    <div className={cn('relative mb-4 flex items-start md:-ml-12')} {...props}>
       <div
         className={cn(
           'flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full border',

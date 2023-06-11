@@ -1,6 +1,5 @@
 import { ArrowRight } from 'lucide-react'
 
-import { fontMessage } from '@/lib/fonts'
 import { useChatStore } from '@/lib/hooks/use-chat-store'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -25,13 +24,7 @@ export function EmptyScreen({ className }: React.ComponentProps<'div'>) {
   const { setDefaultMessage } = useChatStore()
 
   return (
-    <div
-      className={cn(
-        'rounded-lg border bg-background p-8',
-        fontMessage.className,
-        className
-      )}
-    >
+    <div className={cn('rounded-lg border bg-background p-8', className)}>
       <h1 className="mb-2 text-lg font-semibold">
         Welcome to Next.js Chatbot!
       </h1>
