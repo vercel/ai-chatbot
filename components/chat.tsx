@@ -18,7 +18,7 @@ export function Chat({ id, initialMessages }: ChatProps) {
   })
 
   return (
-    <div className="h-full w-full overflow-auto bg-muted/50 pb-[200px] pt-4 md:pt-10">
+    <div className="pb-[200px] pt-4 md:pt-10">
       <ChatList messages={messages} />
       <ChatPanel
         id={id}
