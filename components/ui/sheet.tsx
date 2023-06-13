@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import * as SheetPrimitive from '@radix-ui/react-dialog'
-import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 import { IconClose } from '@/components/ui/icons'
@@ -42,33 +41,17 @@ const SheetOverlay = React.forwardRef<
 ))
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
-const sheetVariants = cva(
-  'fixed z-50 h-full scale-100 gap-4 border bg-background p-6 opacity-100 shadow-lg',
-  {
-    variants: {
-      position: {
-        left: 'data-[state=closed]:animate-slide-to-left data-[state=open]:animate-slide-from-left',
-        right: 'h-full animate-in slide-in-from-right duration-300'
-      }
-    },
-    defaultVariants: {
-      position: 'left'
-    }
-  }
-)
-
-export interface DialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
-
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
-  DialogContentProps
->(({ position, className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
   <SheetPortal>
     <SheetPrimitive.Content
       ref={ref}
-      className={cn(sheetVariants({ position }), className)}
+      className={cn(
+        'fixed z-50 h-full border-r bg-background p-6 opacity-100 shadow-lg data-[state=closed]:animate-slide-to-left data-[state=open]:animate-slide-from-left',
+        className
+      )}
       {...props}
     >
       {children}
@@ -85,13 +68,7 @@ const SheetHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      'flex flex-col space-y-2 text-center sm:text-left',
-      className
-    )}
-    {...props}
-  />
+  <div className={cn('flex flex-col space-y-2', className)} {...props} />
 )
 SheetHeader.displayName = 'SheetHeader'
 

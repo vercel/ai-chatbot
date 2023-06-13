@@ -42,7 +42,7 @@ export const POST = auth(async function POST(req: Request) {
       if (req.auth?.user?.email == null) {
         return
       }
-      const title = json.messages[0].content.substring(0, 20)
+      const title = json.messages[0].content.substring(0, 100)
       const userId = (req as any).auth?.user?.email
       const id = json.id ?? nanoid()
       const createdAt = Date.now()
