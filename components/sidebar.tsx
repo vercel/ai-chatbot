@@ -29,10 +29,7 @@ export function Sidebar({ session, children }: SidebarProps) {
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>
-      <SheetContent
-        position="left"
-        className="inset-y-0 flex h-auto w-[300px] flex-col gap-0 rounded-r-lg p-0 lg:inset-y-2"
-      >
+      <SheetContent className="inset-y-0 flex h-auto w-[300px] flex-col p-0">
         <SheetHeader className="p-4">
           <SheetTitle className="text-sm">Chat History</SheetTitle>
         </SheetHeader>
