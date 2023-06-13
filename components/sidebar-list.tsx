@@ -1,17 +1,16 @@
 import { getChats } from '@/app/actions'
-import { Session } from '@auth/core/types'
 
 import { SidebarItem } from '@/components/sidebar-item'
 import { LoginButton } from '@/components/login-button'
 
 export interface SidebarListProps {
-  session?: Session
+  userId?: string
 }
 
-export async function SidebarList({ session }: SidebarListProps) {
-  if (!session?.user?.email) {
+export async function SidebarList({ userId }: SidebarListProps) {
+  if (!userId) {
     return (
-      <div className="flex-1 p-6 flex text-sm items-center flex-col space-y-4">
+      <div className="flex flex-col items-center flex-1 p-6 space-y-4 text-sm">
         <div className="space-y-1 text-center">
           <p className="font-medium">You are not logged in!</p>
           <p className="text-muted-foreground">
@@ -23,7 +22,7 @@ export async function SidebarList({ session }: SidebarListProps) {
     )
   }
 
-  const chats = await getChats(session.user.email)
+  const chats = await getChats(userId)
 
   return (
     <div className="flex-1 overflow-auto">
@@ -33,7 +32,7 @@ export async function SidebarList({ session }: SidebarListProps) {
             <SidebarItem
               key={chat.id}
               title={chat.title}
-              userId={session?.user?.email ?? ''}
+              userId={userId ?? ''}
               href={`/chat/${chat.id}`}
               id={chat.id}
             />
