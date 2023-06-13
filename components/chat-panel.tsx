@@ -1,4 +1,4 @@
-import { UseChatHelpers } from 'ai-connector'
+import { type UseChatHelpers } from 'ai-connector'
 
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
@@ -9,7 +9,13 @@ import { IconRefresh, IconStop } from '@/components/ui/icons'
 export interface ChatPanelProps
   extends Pick<
     UseChatHelpers,
-    'append' | 'isLoading' | 'reload' | 'messages' | 'stop'
+    | 'append'
+    | 'isLoading'
+    | 'reload'
+    | 'messages'
+    | 'stop'
+    | 'input'
+    | 'setInput'
   > {
   id?: string
 }
@@ -19,6 +25,8 @@ export function ChatPanel({
   stop,
   append,
   reload,
+  input,
+  setInput,
   messages
 }: ChatPanelProps) {
   return (
@@ -56,6 +64,8 @@ export function ChatPanel({
                 role: 'user'
               })
             }}
+            input={input}
+            setInput={setInput}
             isLoading={isLoading}
           />
           <p className="hidden px-2 text-center text-xs leading-normal text-muted-foreground sm:block">

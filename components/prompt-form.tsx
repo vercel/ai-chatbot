@@ -2,7 +2,6 @@ import * as React from 'react'
 import Link from 'next/link'
 import Textarea from 'react-textarea-autosize'
 
-import { useChatStore } from '@/lib/hooks/use-chat-store'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -13,15 +12,20 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { UseChatHelpers } from 'ai-connector'
 
-export interface PromptProps {
+export interface PromptProps
+  extends Pick<UseChatHelpers, 'input' | 'setInput'> {
   onSubmit: (value: string) => void
   isLoading: boolean
 }
 
-export function PromptForm({ onSubmit, isLoading }: PromptProps) {
-  const { defaultMessage } = useChatStore()
-  const [input, setInput] = React.useState(defaultMessage)
+export function PromptForm({
+  onSubmit,
+  input,
+  setInput,
+  isLoading
+}: PromptProps) {
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
 
@@ -30,10 +34,6 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
       inputRef.current.focus()
     }
   }, [])
-
-  React.useEffect(() => {
-    setInput(defaultMessage)
-  }, [defaultMessage])
 
   return (
     <form
