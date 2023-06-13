@@ -7,9 +7,10 @@ A Next.js 13 and App Router-ready AI chatbot template featuring:
 - [Vercel AI SDK](https://sdk.vercel.ai/docs) for streaming chat UI
 - Support for OpenAI (default), Anthropic, HuggingFace, or custom AI chat models and/or LangChain
 - Edge runtime-ready
-- [Shadcn UI](https://ui.shadcn.com)
+- [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - [Radix UI](https://radix-ui.com) for headless component primitives
+  - Icons from [Phosphor Icons](https://phosphoricons.com)
 - Chat History, rate limiting, and session storage with [Vercel KV](https://vercel.com/storage/kv)
 - [Next Auth](https://github.com/nextauthjs/next-auth) for authentication
 
@@ -40,6 +41,6 @@ This library is created by [Vercel](https://vercel.com) and [Next.js](https://ne
 
 - Jared Palmer ([@jaredpalmer](https://twitter.com/jaredpalmer)) - [Vercel](https://vercel.com)
 - Shu Ding ([@shuding\_](https://twitter.com/shuding_)) - [Vercel](https://vercel.com)
-- Shadcn ([@shadcn](https://twitter.com/shadcn)) - [Contractor](https://shadcn.com)
+- shadcn ([@shadcn](https://twitter.com/shadcn)) - [Contractor](https://shadcn.com)
 
 [Contributors](https://github.com/vercel-labs/ai-chatbot/graphs/contributors)
