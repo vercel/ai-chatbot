@@ -1,11 +1,11 @@
 'use client'
 
 import { FC, memo } from 'react'
-import { Check, Clipboard, Download } from 'lucide-react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-cliipboard'
+import { IconCheck, IconCopy, IconDownload } from '@/components/ui/icons'
 
 interface Props {
   language: string
@@ -91,7 +91,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
             className="flex items-center gap-1.5 rounded bg-none p-1 text-xs text-white"
             onClick={() => copyToClipboard(value)}
           >
-            {isCopied ? <Check size={18} /> : <Clipboard size={18} />}
+            {isCopied ? <IconCheck /> : <IconCopy />}
             {isCopied ? 'Copied!' : 'Copy code'}
           </button>
           <button
@@ -99,7 +99,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
             className="flex items-center rounded bg-none p-1 text-xs text-white"
             onClick={downloadAsFile}
           >
-            <Download size={18} />
+            <IconDownload />
           </button>
         </div>
       </div>
