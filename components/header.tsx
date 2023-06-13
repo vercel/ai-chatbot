@@ -1,11 +1,12 @@
+import { Suspense } from 'react'
+
 import { auth } from '@/auth'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
-import { GitHub, Separator, Vercel } from '@/components/icons'
 import { Sidebar } from '@/components/sidebar'
 import { UserMenu } from '@/components/user-menu'
-import { SidebarList } from './sidebar-list'
-import { Suspense } from 'react'
+import { SidebarList } from '@/components/sidebar-list'
+import { IconGitHub, IconSeparator, IconVercel } from '@/components/ui/icons'
 
 export async function Header() {
   const session = await auth()
@@ -21,7 +22,7 @@ export async function Header() {
           </Suspense>
         </Sidebar>
         <div className="hidden items-center md:flex">
-          <Separator className="h-6 w-6 text-muted-foreground/50" />
+          <IconSeparator className="h-6 w-6 text-muted-foreground/50" />
           <UserMenu session={session} />
         </div>
       </div>
@@ -32,7 +33,7 @@ export async function Header() {
           rel="noopener noreferrer"
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
-          <GitHub className="mr-2 h-4 w-4" />
+          <IconGitHub className="mr-2 h-4 w-4" />
           <span>GitHub</span>
         </a>
         <a
@@ -40,7 +41,7 @@ export async function Header() {
           target="_blank"
           className={cn(buttonVariants())}
         >
-          <Vercel className="mr-2 h-4 w-4" />
+          <IconVercel className="mr-2 h-4 w-4" />
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Deploy</span>
         </a>

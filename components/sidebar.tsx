@@ -3,7 +3,6 @@
 import * as React from 'react'
 import { signOut } from '@auth/nextjs/client'
 import { type Session } from '@auth/nextjs/types'
-import { Sidebar as SidebarIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +13,7 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { IconSidebar } from '@/components/ui/icons'
 
 export interface SidebarProps {
   session?: Session
@@ -25,7 +25,7 @@ export function Sidebar({ session, children }: SidebarProps) {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" className="-ml-2 h-9 w-9 p-0">
-          <SidebarIcon className="h-6 w-6" />
+          <IconSidebar className="h-6 w-6" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>

@@ -4,7 +4,6 @@ import * as React from 'react'
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Loader2Icon, MessageSquare, Trash2Icon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import {
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { removeChat } from '@/app/actions'
+import { IconMessage, IconSpinner, IconTrash } from '@/components/ui/icons'
 
 export function SidebarItem({
   title,
@@ -49,7 +49,7 @@ export function SidebarItem({
           isActive && 'bg-accent'
         )}
       >
-        <MessageSquare className="mr-2 h-4 w-4" />
+        <IconMessage className="mr-2" />
         <div
           className="relative max-h-5 flex-1 select-none overflow-hidden text-ellipsis break-all"
           title={title}
@@ -64,7 +64,7 @@ export function SidebarItem({
             disabled={isPending}
             onClick={() => setIsOpen(true)}
           >
-            <Trash2Icon className="h-4 w-4" />
+            <IconTrash />
             <span className="sr-only">Delete</span>
           </Button>
         )}
@@ -91,9 +91,7 @@ export function SidebarItem({
                 })
               }}
             >
-              {isPending && (
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isPending && <IconSpinner className="mr-2 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
