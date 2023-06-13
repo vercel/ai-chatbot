@@ -39,8 +39,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.4.1",
     "remark-gfm": "^3.0.1",
-    "remark-math": "^5.1.1",
-    "zustand": "^4.3.8"
+    "remark-math": "^5.1.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",
