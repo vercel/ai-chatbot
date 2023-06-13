@@ -21,7 +21,7 @@ export async function Header() {
             <SidebarList session={session} />
           </Suspense>
         </Sidebar>
-        <div className="hidden items-center md:flex">
+        <div className="flex items-center">
           <IconSeparator className="h-6 w-6 text-muted-foreground/50" />
           <UserMenu session={session} />
         </div>
@@ -33,15 +33,15 @@ export async function Header() {
           rel="noopener noreferrer"
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
-          <IconGitHub className="mr-2 h-4 w-4" />
-          <span>GitHub</span>
+          <IconGitHub />
+          <span className="hidden md:flex ml-2">GitHub</span>
         </a>
         <a
           href="https://github.com/vercel/nextjs-ai-chatbot/"
           target="_blank"
           className={cn(buttonVariants())}
         >
-          <IconVercel className="mr-2 h-4 w-4" />
+          <IconVercel className="mr-2" />
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Deploy</span>
         </a>
