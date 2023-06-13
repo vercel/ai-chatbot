@@ -1,5 +1,3 @@
-'use client'
-
 import { UseChatHelpers } from 'ai-connector'
 
 import { Button } from '@/components/ui/button'
