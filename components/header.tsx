@@ -1,29 +1,28 @@
 import { Suspense } from 'react'
 
-import { auth } from '@/auth'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
-import { UserMenu } from '@/components/user-menu'
 import { SidebarList } from '@/components/sidebar-list'
 import { IconGitHub, IconSeparator, IconVercel } from '@/components/ui/icons'
+import { UserButton, currentUser } from '@clerk/nextjs'
 
 export async function Header() {
-  const session = await auth()
+  const user = await currentUser()
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b bg-gradient-to-b from-background/10 via-background/50 to-background/80 px-4 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
       <div className="flex items-center">
         {/* @ts-ignore */}
-        <Sidebar session={session}>
+        <Sidebar user={user?.id}>
           <Suspense fallback={<div className="flex-1 overflow-auto" />}>
             {/* @ts-ignore */}
-            <SidebarList session={session} />
+            <SidebarList userId={user?.id} />
           </Suspense>
         </Sidebar>
         <div className="flex items-center">
-          <IconSeparator className="h-6 w-6 text-muted-foreground/50" />
-          <UserMenu session={session} />
+          <IconSeparator className="w-6 h-6 text-muted-foreground/50" />
+          <UserButton />
         </div>
       </div>
       <div className="flex items-center justify-end space-x-2">
@@ -34,7 +33,7 @@ export async function Header() {
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
           <IconGitHub />
-          <span className="hidden md:flex ml-2">GitHub</span>
+          <span className="hidden ml-2 md:flex">GitHub</span>
         </a>
         <a
           href="https://github.com/vercel/nextjs-ai-chatbot/"

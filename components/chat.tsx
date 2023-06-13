@@ -1,6 +1,6 @@
 'use client'
 
-import { useChat, type Message } from 'ai-connector'
+import { useChat, type Message } from 'ai-connector/react'
 
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'

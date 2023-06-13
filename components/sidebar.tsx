@@ -1,8 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { signOut } from '@auth/nextjs/client'
-import { type Session } from '@auth/nextjs/types'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -14,18 +12,20 @@ import {
 } from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { IconSidebar } from '@/components/ui/icons'
+import { useClerk } from '@clerk/nextjs'
 
 export interface SidebarProps {
-  session?: Session
+  userId?: string
   children?: React.ReactNode
 }
 
-export function Sidebar({ session, children }: SidebarProps) {
+export function Sidebar({ userId, children }: SidebarProps) {
+  const { signOut } = useClerk()
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="-ml-2 h-9 w-9 p-0">
-          <IconSidebar className="h-6 w-6" />
+        <Button variant="ghost" className="p-0 -ml-2 h-9 w-9">
+          <IconSidebar className="w-6 h-6" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>
@@ -36,7 +36,7 @@ export function Sidebar({ session, children }: SidebarProps) {
         {children}
         <div className="flex items-center p-4">
           <ThemeToggle />
-          {session?.user && (
+          {userId && (
             <Button
               variant="ghost"
               onClick={() => signOut()}

@@ -14,8 +14,7 @@
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
-    "@auth/core": "0.0.0-manual.527fff6c",
-    "@auth/nextjs": "0.0.0-manual.030e8328",
+    "@clerk/nextjs": "^4.21.1",
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-separator": "^1.0.3",
@@ -23,7 +22,7 @@
     "@radix-ui/react-tooltip": "^1.0.6",
     "@vercel/analytics": "^1.0.0",
     "@vercel/kv": "^0.2.1",
-    "ai-connector": "^0.0.5",
+    "ai-connector": "^0.0.12",
     "body-scroll-lock": "4.0.0-beta.0",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
