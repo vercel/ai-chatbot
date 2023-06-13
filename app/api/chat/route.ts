@@ -20,7 +20,6 @@ if (!process.env.OPENAI_API_KEY) {
 export const POST = auth(async function POST(req: Request) {
   const json = await req.json()
   // @ts-ignore
-  console.log(req.auth) // todo fix types
   const messages = json.messages.map((m: any) => ({
     content: m.content,
     role: m.role
