@@ -3,9 +3,9 @@
 import * as React from 'react'
 import { signIn } from '@auth/nextjs/client'
 import { type Session } from '@auth/nextjs/types'
-import { Loader2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { IconSpinner } from '@/components/ui/icons'
 
 export interface UserMenuProps {
   session?: Session
@@ -25,7 +25,7 @@ export function UserMenu({ session }: UserMenuProps) {
         }}
         disabled={isLoading}
       >
-        {isLoading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+        {isLoading && <IconSpinner className="mr-2 animate-spin" />}
         Login
       </Button>
     )

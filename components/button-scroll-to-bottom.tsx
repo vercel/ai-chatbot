@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { ArrowDown } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
+import { IconArrowDown } from '@/components/ui/icons'
 
 export function ButtonScrollToBottom({ className, ...props }: ButtonProps) {
   const [isAtBottom, setIsAtBottom] = React.useState(false)
@@ -41,7 +41,7 @@ export function ButtonScrollToBottom({ className, ...props }: ButtonProps) {
       }
       {...props}
     >
-      <ArrowDown className="h-4 w-4" />
+      <IconArrowDown />
       <span className="sr-only">Scroll to bottom</span>
     </Button>
   )
