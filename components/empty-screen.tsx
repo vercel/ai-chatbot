@@ -1,9 +1,8 @@
-import { ArrowRight } from 'lucide-react'
-
 import { useChatStore } from '@/lib/hooks/use-chat-store'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
+import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
@@ -47,7 +46,7 @@ export function EmptyScreen({ className }: React.ComponentProps<'div'>) {
             className="h-auto p-0 text-base"
             onClick={() => setDefaultMessage(message.message)}
           >
-            <ArrowRight className="mr-2 h-4 w-4 text-muted-foreground" />
+            <IconArrowRight className="mr-2 text-muted-foreground" />
             {message.heading}
           </Button>
         ))}

@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { CornerDownLeft, Plus } from 'lucide-react'
 import Textarea from 'react-textarea-autosize'
 
 import { useChatStore } from '@/lib/hooks/use-chat-store'
@@ -15,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
 
 export interface PromptProps {
   onSubmit: (value: string) => void
@@ -60,7 +60,7 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
                   'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
                 )}
               >
-                <Plus className="h-4 w-4" />
+                <IconPlus />
                 <span className="sr-only">New Chat</span>
               </Link>
             </TooltipTrigger>
@@ -85,7 +85,7 @@ export function PromptForm({ onSubmit, isLoading }: PromptProps) {
                   size="icon"
                   disabled={isLoading || input === ''}
                 >
-                  <CornerDownLeft className="h-4 w-4" />
+                  <IconArrowElbow />
                   <span className="sr-only">Send message</span>
                 </Button>
               </TooltipTrigger>

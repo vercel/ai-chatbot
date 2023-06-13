@@ -1,12 +1,12 @@
 'use client'
 
 import { UseChatHelpers } from 'ai-connector'
-import { RefreshCcw, StopCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
 import { PromptForm } from '@/components/prompt-form'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
+import { IconRefresh, IconStop } from '@/components/ui/icons'
 
 export interface ChatPanelProps
   extends Pick<
@@ -34,7 +34,7 @@ export function ChatPanel({
               onClick={() => stop()}
               className="bg-background"
             >
-              <StopCircle className="mr-2 h-4 w-4" />
+              <IconStop className="mr-2" />
               Stop generating
             </Button>
           ) : (
@@ -44,7 +44,7 @@ export function ChatPanel({
                 onClick={() => reload()}
                 className="bg-background"
               >
-                <RefreshCcw className="mr-2 h-4 w-4" />
+                <IconRefresh className="mr-2" />
                 Regenerate response
               </Button>
             )
