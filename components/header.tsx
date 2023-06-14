@@ -11,7 +11,7 @@ export async function Header() {
   const user = await currentUser()
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b bg-gradient-to-b from-background/10 via-background/50 to-background/80 px-4 backdrop-blur-xl">
       <div className="flex items-center">
         {/* @ts-ignore */}
         <Sidebar user={user?.id}>
@@ -21,8 +21,27 @@ export async function Header() {
           </Suspense>
         </Sidebar>
         <div className="flex items-center">
-          <IconSeparator className="w-6 h-6 text-muted-foreground/50" />
-          <UserButton />
+          <IconSeparator className="h-6 w-6 text-muted-foreground/50" />
+          <UserButton
+            showName
+            appearance={{
+              elements: {
+                avatarBox: 'w-6 h-6 rounded-full overflow-hidden',
+                userButtonBox: 'flex-row-reverse',
+                userButtonOuterIdentifier: 'text-primary',
+                userButtonPopoverCard:
+                  'shadow-lg rounded-lg p-0 border border-border w-[200px] dark:bg-zinc-950 dark:text-zinc-50',
+                userButtonPopoverFooter:
+                  'p-4 border-t border-border [&>*]:dark:text-zinc-600',
+                userPreview: 'p-4 border-b border-border m-0',
+                userButtonPopoverActionButton: 'px-1 gap-1',
+                userButtonPopoverActionButtonText:
+                  'text-sm tracking-normal dark:text-zinc-400',
+                userButtonPopoverActionButtonIcon:
+                  'h-4 w-4 text-muted-foreground'
+              }
+            }}
+          />
         </div>
       </div>
       <div className="flex items-center justify-end space-x-2">
@@ -33,7 +52,7 @@ export async function Header() {
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
           <IconGitHub />
-          <span className="hidden ml-2 md:flex">GitHub</span>
+          <span className="ml-2 hidden md:flex">GitHub</span>
         </a>
         <a
           href="https://github.com/vercel/nextjs-ai-chatbot/"
