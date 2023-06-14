@@ -24,8 +24,8 @@ export function Sidebar({ userId, children }: SidebarProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="p-0 -ml-2 h-9 w-9">
-          <IconSidebar className="w-6 h-6" />
+        <Button variant="ghost" className="-ml-2 h-9 w-9 p-0">
+          <IconSidebar className="h-6 w-6" />
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>

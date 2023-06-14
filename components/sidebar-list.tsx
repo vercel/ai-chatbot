@@ -10,7 +10,7 @@ export interface SidebarListProps {
 export async function SidebarList({ userId }: SidebarListProps) {
   if (!userId) {
     return (
-      <div className="flex flex-col items-center flex-1 p-6 space-y-4 text-sm">
+      <div className="flex flex-1 flex-col items-center space-y-4 p-6 text-sm">
         <div className="space-y-1 text-center">
           <p className="font-medium">You are not logged in!</p>
           <p className="text-muted-foreground">
@@ -27,7 +27,7 @@ export async function SidebarList({ userId }: SidebarListProps) {
   return (
     <div className="flex-1 overflow-auto">
       {chats?.length ? (
-        <div className="px-2 space-y-2">
+        <div className="space-y-2 px-2">
           {chats.map(chat => (
             <SidebarItem
               key={chat.id}

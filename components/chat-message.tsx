@@ -15,7 +15,7 @@ export interface ChatMessageProps {
 export function ChatMessage({ message, ...props }: ChatMessageProps) {
   return (
     <div
-      className={cn('relative mb-4 flex items-start group md:-ml-12')}
+      className={cn('group relative mb-4 flex items-start md:-ml-12')}
       {...props}
     >
       <div
@@ -28,7 +28,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
       >
         {message.role === 'user' ? <IconUser /> : <IconOpenAI />}
       </div>
-      <div className="ml-4 px-1 space-y-2 flex-1">
+      <div className="ml-4 flex-1 space-y-2 px-1">
         <div>
           <MemoizedReactMarkdown
             className="prose leading-6 dark:prose-invert prose-p:leading-[1.8rem] prose-pre:rounded-md prose-pre:bg-[#282c34]"
