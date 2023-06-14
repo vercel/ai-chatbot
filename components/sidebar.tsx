@@ -21,6 +21,7 @@ export interface SidebarProps {
 
 export function Sidebar({ userId, children }: SidebarProps) {
   const { signOut } = useClerk()
+
   return (
     <Sheet>
       <SheetTrigger asChild>
