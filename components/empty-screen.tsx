@@ -1,8 +1,8 @@
-import { cn } from '@/lib/utils'
+import { UseChatHelpers } from 'ai-connector/react'
+
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
 import { IconArrowRight } from '@/components/ui/icons'
-import { UseChatHelpers } from 'ai-connector'
 
 const exampleMessages = [
   {
