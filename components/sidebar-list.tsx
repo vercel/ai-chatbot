@@ -1,27 +1,12 @@
-import { getChats } from '@/app/actions'
+import { getChats, removeChat } from '@/app/actions'
 
 import { SidebarItem } from '@/components/sidebar-item'
-import { LoginButton } from '@/components/login-button'
 
 export interface SidebarListProps {
   userId?: string
 }
 
 export async function SidebarList({ userId }: SidebarListProps) {
-  if (!userId) {
-    return (
-      <div className="flex flex-1 flex-col items-center space-y-4 p-6 text-sm">
-        <div className="space-y-1 text-center">
-          <p className="font-medium">You are not logged in!</p>
-          <p className="text-muted-foreground">
-            Please login for chat history.
-          </p>
-        </div>
-        <LoginButton />
-      </div>
-    )
-  }
-
   const chats = await getChats(userId)
 
   return (
@@ -32,9 +17,9 @@ export async function SidebarList({ userId }: SidebarListProps) {
             <SidebarItem
               key={chat.id}
               title={chat.title}
-              userId={userId ?? ''}
               href={`/chat/${chat.id}`}
               id={chat.id}
+              removeChat={removeChat}
             />
           ))}
         </div>
@@ -46,5 +31,3 @@ export async function SidebarList({ userId }: SidebarListProps) {
     </div>
   )
 }
-
-SidebarList.displayName = 'SidebarList'
