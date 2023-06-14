@@ -6,7 +6,7 @@ export const preferredRegion = 'home'
 
 export default async function IndexPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       {/* @ts-ignore */}
       <Header />
       <main className="flex-1 bg-muted/50">
