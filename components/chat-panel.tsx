@@ -1,4 +1,4 @@
-import { type UseChatHelpers } from 'ai-connector'
+import { type UseChatHelpers } from 'ai-connector/react'
 
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
