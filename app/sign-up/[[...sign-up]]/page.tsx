@@ -20,15 +20,11 @@ export default function Page() {
               elements: {
                 card: 'shadow rounded-lg border border-border',
                 formFieldInput:
-                  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-                formButtonPrimary: cn(buttonVariants(), 'normal-case'),
+                  'flex h-9 w-full rounded-md px-3 py-2 text-sm shadow-sm',
+                formButtonPrimary: 'normal-case',
                 footerAction: 'text-sm',
-                footerActionLink:
-                  'text-primary font-medium hover:underline hover:text-primary',
-                identityPreview: 'rounded-md',
-                identityPreviewEditButton: 'text-primary',
-                otpCodeFieldInput: 'text-primary focus:border-b-primary',
-                formResendCodeLink: 'text-primary font-medium'
+                footerActionLink: 'font-medium hover:underline',
+                identityPreview: 'rounded-md'
               }
             }}
           />
