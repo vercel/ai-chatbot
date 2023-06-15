@@ -1,12 +1,13 @@
 import { Metadata } from 'next'
 
+import { ClerkProvider } from '@clerk/nextjs'
+
 import '@/app/globals.css'
 import { fontMono, fontSans } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
-import { Header } from '@/components/header'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { ThemeProvider } from '@/components/theme-provider'
-import { ClerkProvider } from '@clerk/nextjs'
+import { Header } from '@/components/header'
 
 export const metadata: Metadata = {
   title: {
@@ -42,7 +43,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
+            <div className="flex min-h-screen flex-col">
+              {/* @ts-ignore */}
+              <Header />
+              <main className="flex-1 bg-muted/50">{children}</main>
+            </div>
             <TailwindIndicator />
           </ThemeProvider>
         </body>
