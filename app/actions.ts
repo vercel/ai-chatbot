@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { kv } from '@vercel/kv'
 
 import { type Chat } from '@/lib/types'
+import { currentUser } from '@clerk/nextjs'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -12,7 +13,9 @@ export async function getChats(userId?: string | null) {
 
   try {
     const pipeline = kv.pipeline()
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1)
+    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
+      rev: true
+    })
 
     for (const chat of chats) {
       pipeline.hgetall(chat)
@@ -40,25 +43,20 @@ export async function getChat(id: string, userId: string) {
   return chat
 }
 
-export async function removeChat({
-  id,
-  path,
-  userId
-}: {
-  id: string
-  userId: string
-  path: string
-}) {
-  // @todo next-auth@v5 doesn't work in server actions yet
-  // const session = await auth();
+export async function removeChat({ id, path }: { id: string; path: string }) {
+  const user = await currentUser()
+
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
 
   const uid = await kv.hget<string>(`chat:${id}`, 'userId')
-  if (uid !== userId) {
+  if (uid !== user.id) {
     throw new Error('Unauthorized')
   }
   await kv.del(`chat:${id}`)
-  await kv.zrem(`user:chat:${userId}`, `chat:${id}`)
+  await kv.zrem(`user:chat:${user.id}`, `chat:${id}`)
 
   revalidatePath('/')
-  revalidatePath('/chat/[id]')
+  revalidatePath(path)
 }

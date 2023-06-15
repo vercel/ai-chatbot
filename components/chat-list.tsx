@@ -1,5 +1,3 @@
-'use client'
-
 import { type Message } from 'ai-connector'
 
 import { Separator } from '@/components/ui/separator'

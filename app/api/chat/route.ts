@@ -1,11 +1,11 @@
-import { auth } from '@/auth'
 import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai-connector'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
 import { nanoid } from '@/lib/utils'
+import { currentUser } from '@clerk/nextjs'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -17,13 +17,15 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error('Missing env var from OpenAI')
 }
 
-export const POST = auth(async function POST(req: Request) {
+export async function POST(req: Request) {
+  const user = await currentUser()
+  if (user == null) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
   const json = await req.json()
-  // @ts-ignore
-  const messages = json.messages.map((m: any) => ({
-    content: m.content,
-    role: m.role
-  }))
+  const { messages } = json
+
   const res = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages,
@@ -35,14 +37,10 @@ export const POST = auth(async function POST(req: Request) {
     stream: true
   })
 
-  const stream = await OpenAIStream(res, {
+  const stream = OpenAIStream(res, {
     async onCompletion(completion) {
-      // @ts-ignore
-      if (req.auth?.user?.email == null) {
-        return
-      }
       const title = json.messages[0].content.substring(0, 100)
-      const userId = (req as any).auth?.user?.email
+      const userId = user.id
       const id = json.id ?? nanoid()
       const createdAt = Date.now()
       const payload = {
@@ -67,4 +65,4 @@ export const POST = auth(async function POST(req: Request) {
   })
 
   return new StreamingTextResponse(stream)
-})
+}
