@@ -1,4 +1,4 @@
-import { type UseChatHelpers } from 'ai-connector'
+import { type UseChatHelpers } from 'ai-connector/react'
 
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
@@ -21,6 +21,7 @@ export interface ChatPanelProps
 }
 
 export function ChatPanel({
+  id,
   isLoading,
   stop,
   append,
@@ -58,8 +59,9 @@ export function ChatPanel({
         </div>
         <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
           <PromptForm
-            onSubmit={value => {
-              append({
+            onSubmit={async value => {
+              await append({
+                id,
                 content: value,
                 role: 'user'
               })

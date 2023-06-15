@@ -3,26 +3,12 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { useAtBottom } from '@/lib/hooks/use-at-bottom'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconArrowDown } from '@/components/ui/icons'
 
 export function ButtonScrollToBottom({ className, ...props }: ButtonProps) {
-  const [isAtBottom, setIsAtBottom] = React.useState(false)
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsAtBottom(
-        window.innerHeight + window.scrollY > document.body.offsetHeight - 100
-      )
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
+  const isAtBottom = useAtBottom()
 
   return (
     <Button

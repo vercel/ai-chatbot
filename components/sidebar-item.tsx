@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
@@ -17,25 +16,21 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { removeChat } from '@/app/actions'
 import { IconMessage, IconSpinner, IconTrash } from '@/components/ui/icons'
 
-export function SidebarItem({
-  title,
-  href,
-  id,
-  userId
-}: {
+interface SidebarItemProps {
   title: string
   href: string
   id: string
-  userId: string
-}) {
+  removeChat: (args: { id: string; path: string }) => Promise<void>
+}
+
+export function SidebarItem({ title, href, id, removeChat }: SidebarItemProps) {
   const [open, setIsOpen] = React.useState(false)
   const pathname = usePathname()
   const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
   const isActive = pathname === href
-  const [isPending, startTransition] = useTransition()
 
   if (!id) return null
 
@@ -85,7 +80,7 @@ export function SidebarItem({
               onClick={event => {
                 event.preventDefault()
                 startTransition(async () => {
-                  await removeChat({ id, userId, path: href })
+                  await removeChat({ id, path: href })
                   setIsOpen(false)
                   router.push('/')
                 })
