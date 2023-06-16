@@ -12,7 +12,7 @@ A Next.js 13 and App Router-ready AI chatbot template featuring:
   - [Radix UI](https://radix-ui.com) for headless component primitives
   - Icons from [Phosphor Icons](https://phosphoricons.com)
 - Chat History, rate limiting, and session storage with [Vercel KV](https://vercel.com/storage/kv)
-- [Clerk.dev](https://clerk.dev) for authentication
+- [Next Auth](https://github.com/next-auth) for authentication
 
 ## Model Providers
 
