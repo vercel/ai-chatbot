@@ -18,7 +18,7 @@
 
 # Introduction
 
-- [Next.js](https://nextjs.org) app template Router
+- [Next.js](https://nextjs.org) App Router
 - React Server Components (RSCs), Suspense, and Server Actions
 - [Vercel AI SDK](https://sdk.vercel.ai/docs) for streaming chat UI
 - Support for OpenAI (default), Anthropic, HuggingFace, or custom AI chat models and/or LangChain
