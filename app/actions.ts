@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { kv } from '@vercel/kv'
-import { currentUser } from '@clerk/nextjs'
+import { auth } from '@/auth'
 
 import { type Chat } from '@/lib/types'
 
@@ -44,41 +44,50 @@ export async function getChat(id: string, userId: string) {
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
-  const user = await currentUser()
+  const session = await auth<{ stuff: string }>()
 
-  if (!user) {
+  if (!session) {
     throw new Error('Unauthorized')
   }
 
   const uid = await kv.hget<string>(`chat:${id}`, 'userId')
 
-  if (uid !== user.id) {
+  if (uid !== session?.user?.id) {
     throw new Error('Unauthorized')
   }
 
   await kv.del(`chat:${id}`)
-  await kv.zrem(`user:chat:${user.id}`, `chat:${id}`)
+  await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
 
   revalidatePath('/')
   revalidatePath(path)
 }
 
 export async function clearChats() {
-  const user = await currentUser()
+  const session = await auth()
 
-  if (!user) {
+  if (!session) {
     throw new Error('Unauthorized')
   }
 
-  const chats: string[] = await kv.zrange(`user:chat:${user.id}`, 0, -1, {
-    rev: true
-  })
+  if (!session.user?.id) {
+    throw new Error('Unauthorized')
+  }
+
+  const chats: string[] = await kv.zrange(
+    `user:chat:${session.user.id}`,
+    0,
+    -1,
+    {
+      rev: true
+    }
+  )
 
   const pipeline = kv.pipeline()
 
   for (const chat of chats) {
     pipeline.del(chat)
-    pipeline.zrem(`user:chat:${user.id}`, chat)
+    pipeline.zrem(`user:chat:${session.user.id}`, chat)
   }
 
   await pipeline.exec()
@@ -97,9 +106,17 @@ export async function getSharedChat(id: string) {
 }
 
 export async function shareChat(chat: Chat) {
-  const user = await currentUser()
+  const session = await auth()
 
-  if (!user || chat.userId !== user.id) {
+  if (!session) {
+    throw new Error('Unauthorized')
+  }
+
+  if (!session.user?.id) {
+    throw new Error('Unauthorized')
+  }
+
+  if (chat.userId !== session.user?.id) {
     throw new Error('Unauthorized')
   }
 

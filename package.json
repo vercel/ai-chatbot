@@ -14,9 +14,9 @@
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.21.1",
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.4",
+    "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
@@ -31,6 +31,7 @@
     "focus-trap-react": "^10.1.1",
     "nanoid": "^4.0.2",
     "next": "13.4.6-canary.7",
+    "next-auth": "0.0.0-manual.4cd21ea5",
     "next-themes": "^0.2.1",
     "openai-edge": "^0.5.1",
     "react": "^18.2.0",
@@ -66,7 +67,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@auth/core": "0.0.0-manual.527fff6c"
+      "@auth/nextjs": "0.0.0-manual.223c6467"
     }
   }
 }
