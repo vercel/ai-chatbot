@@ -8,9 +8,11 @@ import { nanoid } from '@/lib/utils'
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (session == null) {
-    return new Response('Unauthorized', { status: 401 })
+  if (process.env.VERCEL_ENV !== 'preview') {
+    const session = await auth()
+    if (session == null) {
+      return new Response('Unauthorized', { status: 401 })
+    }
   }
 
   const json = await req.json()
