@@ -5,6 +5,7 @@ import { ExternalLink } from '@/components/external-link'
 import { PromptForm } from '@/components/prompt-form'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { IconRefresh, IconStop } from '@/components/ui/icons'
+import { FooterText } from '@/components/footer'
 
 export interface ChatPanelProps
   extends Pick<
@@ -70,14 +71,7 @@ export function ChatPanel({
             setInput={setInput}
             isLoading={isLoading}
           />
-          <p className="hidden px-2 text-center text-xs leading-normal text-muted-foreground sm:block">
-            Open source AI chatbot app built with{' '}
-            <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-            <ExternalLink href="https://vercel.com/storage/kv">
-              Vercel KV
-            </ExternalLink>
-            .
-          </p>
+          <FooterText className="hidden sm:block" />
         </div>
       </div>
     </div>

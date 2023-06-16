@@ -27,7 +27,7 @@ export function SidebarItem({ chat, children }: SidebarItemProps) {
   return (
     <>
       <Link
-        href={chat.path || `/chat/${chat.id}`}
+        href={chat.path}
         className={cn(
           buttonVariants({ variant: 'ghost' }),
           'group w-full px-2',
@@ -50,7 +50,7 @@ export function SidebarItem({ chat, children }: SidebarItemProps) {
         >
           <span className="whitespace-nowrap">{chat.title}</span>
         </div>
-        {children}
+        {isActive && children}
       </Link>
     </>
   )
