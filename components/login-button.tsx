@@ -20,7 +20,7 @@ export function LoginButton({
 }: LoginButtonProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const searchParams = useSearchParams()
-  const next = searchParams.get('next')
+  const next = searchParams.get('next') || ''
 
   return (
     <Button
