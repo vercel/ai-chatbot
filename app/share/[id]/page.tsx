@@ -9,7 +9,7 @@ import { FooterText } from '@/components/footer'
 // export const runtime = 'edge'
 export const preferredRegion = 'home'
 
-export interface SharePageProps {
+interface SharePageProps {
   params: {
     id: string
   }
