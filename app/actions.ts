@@ -5,6 +5,7 @@ import { kv } from '@vercel/kv'
 
 import { type Chat } from '@/lib/types'
 import { currentUser } from '@clerk/nextjs'
+import { nanoid } from '@/lib/utils'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -59,4 +60,55 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
   revalidatePath('/')
   revalidatePath(path)
+}
+
+export async function clearChats() {
+  const user = await currentUser()
+
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
+
+  const chats: string[] = await kv.zrange(`user:chat:${user.id}`, 0, -1, {
+    rev: true
+  })
+
+  const pipeline = kv.pipeline()
+
+  for (const chat of chats) {
+    pipeline.del(chat)
+    pipeline.zrem(`user:chat:${user.id}`, chat)
+  }
+
+  await pipeline.exec()
+
+  revalidatePath('/')
+}
+
+export async function shareChat(chat: Chat) {
+  const user = await currentUser()
+
+  if (!user || chat.userId !== user.id) {
+    throw new Error('Unauthorized')
+  }
+
+  const id = nanoid()
+  const createdAt = Date.now()
+
+  const payload = {
+    id,
+    title: chat.title,
+    userId: user.id,
+    createdAt,
+    path: `/share/${id}`,
+    chat
+  }
+
+  await kv.hmset(`share:${id}`, payload)
+  await kv.zadd(`user:share:${user.id}`, {
+    score: createdAt,
+    member: `share:${id}`
+  })
+
+  return payload
 }

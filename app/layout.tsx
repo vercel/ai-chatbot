@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 
 import { ClerkProvider } from '@clerk/nextjs'
+import { Toaster } from 'react-hot-toast'
 
 import '@/app/globals.css'
 import { fontMono, fontSans } from '@/lib/fonts'
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontMono.variable
           )}
         >
+          <Toaster />
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div className="flex min-h-screen flex-col">
               {/* @ts-ignore */}

@@ -6,6 +6,10 @@ import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
 import { IconGitHub, IconSeparator, IconVercel } from '@/components/ui/icons'
 import { UserButton, currentUser } from '@clerk/nextjs'
+import { SidebarFooter } from '@/components/sidebar-footer'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { ClearHistory } from '@/components/clear-history'
+import { clearChats } from '@/app/actions'
 
 export async function Header() {
   const user = await currentUser()
@@ -19,6 +23,10 @@ export async function Header() {
             {/* @ts-ignore */}
             <SidebarList userId={user?.id} />
           </Suspense>
+          <SidebarFooter>
+            <ThemeToggle />
+            <ClearHistory clearChats={clearChats} />
+          </SidebarFooter>
         </Sidebar>
         <div className="flex items-center">
           <IconSeparator className="h-6 w-6 text-muted-foreground/50" />
