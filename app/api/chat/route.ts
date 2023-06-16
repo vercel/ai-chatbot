@@ -4,16 +4,15 @@ import { Configuration, OpenAIApi } from 'openai-edge'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
-import { Session } from 'inspector'
 
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
   const json = await req.json()
   const { messages, previewToken } = json
-  let session: Session
+  const session = await auth()
+
   if (process.env.VERCEL_ENV !== 'preview') {
-    session = await auth()
     if (session == null) {
       return new Response('Unauthorized', { status: 401 })
     }
