@@ -10,18 +10,13 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { IconSidebar } from '@/components/ui/icons'
-import { useClerk } from '@clerk/nextjs'
 
 export interface SidebarProps {
-  userId?: string
   children?: React.ReactNode
 }
 
-export function Sidebar({ userId, children }: SidebarProps) {
-  const { signOut } = useClerk()
-
+export function Sidebar({ children }: SidebarProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -35,18 +30,6 @@ export function Sidebar({ userId, children }: SidebarProps) {
           <SheetTitle className="text-sm">Chat History</SheetTitle>
         </SheetHeader>
         {children}
-        <div className="flex items-center p-4">
-          <ThemeToggle />
-          {userId && (
-            <Button
-              variant="ghost"
-              onClick={() => signOut()}
-              className="ml-auto"
-            >
-              Logout
-            </Button>
-          )}
-        </div>
       </SheetContent>
     </Sheet>
   )
