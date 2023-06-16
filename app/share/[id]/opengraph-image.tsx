@@ -1,11 +1,11 @@
 import { ImageResponse } from 'next/server'
 
 import { getSharedChat } from '@/app/actions'
-import { formatDate } from '@/lib/utils'
 
 export const runtime = 'edge'
 
 export const alt = 'AI Chatbot'
+
 export const size = {
   width: 1200,
   height: 630
@@ -34,137 +34,66 @@ export default async function Image({ params }: ImageProps) {
     return null
   }
 
+  const textAlign = chat?.title?.length > 40 ? 'items-start' : 'items-center'
+
   return new ImageResponse(
     (
-      <div tw="flex w-full items-start h-full flex-col bg-black text-white py-[120px] px-[80px]">
-        <div tw="flex flex-col">
-          <div tw="flex text-white font-bold text-5xl leading-tight truncate line-clamp-3">
-            {chat.title.length > 120
-              ? `${chat.title.slice(0, 120)}...`
-              : chat.title}
+      <div tw="flex w-full items-start h-full flex-col bg-[#09090b] text-white p-[80px]">
+        <div tw="flex flex-col w-full pt-[40px]">
+          <div tw={`flex w-full ${textAlign}`}>
+            <div tw="flex h-18 w-18 items-center justify-center rounded-md border border-[#9b9ba4]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 256 256"
+                fill="currentColor"
+                width={48}
+                height={48}
+              >
+                <path d="M230.92 212c-15.23-26.33-38.7-45.21-66.09-54.16a72 72 0 1 0-73.66 0c-27.39 8.94-50.86 27.82-66.09 54.16a8 8 0 1 0 13.85 8c18.84-32.56 52.14-52 89.07-52s70.23 19.44 89.07 52a8 8 0 1 0 13.85-8ZM72 96a56 56 0 1 1 56 56 56.06 56.06 0 0 1-56-56Z"></path>
+              </svg>
+            </div>
+            <div tw="flex text-white font-bold text-4xl leading-normal ml-10">
+              {chat.title.length > 120
+                ? `${chat.title.slice(0, 120)}...`
+                : chat.title}
+            </div>
           </div>
-          <div tw="flex text-zinc-400 text-2xl mt-4">
-            {formatDate(chat.createdAt)} · {chat.messages.length} messages
+          <div tw="flex w-full mt-14 items-start">
+            <div tw="flex h-18 w-18 items-center justify-center rounded-md border border-[#9b9ba4]">
+              <svg
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                width={48}
+                height={48}
+              >
+                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"></path>
+              </svg>
+            </div>
+            <div tw="flex text-white font-bold text-6xl leading-none ml-10">
+              ...
+            </div>
           </div>
         </div>
         <div tw="flex items-center justify-between w-full mt-auto">
           <div tw="flex items-center">
             <svg
+              viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
-              x="0"
-              y="0"
-              version="1.1"
-              viewBox="0 0 33 33"
+              fill="#9b9ba4"
               width={40}
               height={40}
             >
-              <path
-                d="M5 .5h20c2.5 0 4.5 2 4.5 4.5v20c0 2.5-2 4.5-4.5 4.5H5c-2.5 0-4.5-2-4.5-4.5V5C.5 2.5 2.5.5 5 .5z"
-                fill="black"
-              />
-              <circle
-                cx="17.5"
-                cy="21.5"
-                r="4.5"
-                fill="transparent"
-                strokeWidth="1.15"
-                stroke="white"
-              />
-              <path
-                d="m18.2 4.8 6.4 1.6c.3.1.4.3.4.6l-1.6 6.4c-.1.3-.3.4-.6.4l-6.4-1.6c-.3-.1-.4-.3-.4-.6l1.6-6.4c0-.3.3-.5.6-.4zM7 9c.1-.4.5-.5.8-.3l6.6 5.6c.3.2.2.7-.2.9l-8.1 3c-.4.1-.7-.2-.7-.6L7 9z"
-                fill="transparent"
-                strokeWidth="1.15"
-                stroke="white"
-              />
-              <path
-                d="M17.7 18.3v11.3c0 1.3 3.2 2.4 7.3 2.4s7.3-1.1 7.3-2.4V18.3"
-                fill="black"
-              />
-              <path
-                d="M17.7 18.3c0-1.3 3.3-2.4 7.3-2.4s7.3 1.1 7.3 2.4v11.3c0 1.3-3.2 2.4-7.3 2.4s-7.3-1.1-7.3-2.4V18.3z"
-                fill="black"
-              />
-              <path
-                fill="none"
-                stroke="white"
-                d="M5 .5h20c2.5 0 4.5 2 4.5 4.5v20c0 2.5-2 4.5-4.5 4.5H5c-2.5 0-4.5-2-4.5-4.5V5C.5 2.5 2.5.5 5 .5z"
-              />
-              <path
-                fill="black"
-                stroke="white"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.25"
-                d="M32.3 18.3c0 1.3-3.3 2.4-7.3 2.4s-7.3-1.1-7.3-2.4m14.6 0c0-1.3-3.3-2.4-7.3-2.4s-7.3 1.1-7.3 2.4m14.6 0v11.3c0 1.3-3.2 2.4-7.3 2.4s-7.3-1.1-7.3-2.4V18.3M32.3 24c0 1.3-3.2 2.4-7.3 2.4s-7.3-1.1-7.3-2.4"
-              />
+              <path d="M24 22.525H0l12-21.05 12 21.05z" />
             </svg>
-            <div tw="text-2xl ml-4 text-zinc-300">Built with Vercel KV</div>
+            <div tw="flex text-[1.8rem] ml-4 text-[#9b9ba4]">
+              Built with{' '}
+              <div tw="flex text-[#eaeaf0] ml-2 mr-2">Vercel AI SDK</div> &
+              <div tw="flex text-[#eaeaf0] ml-2">KV</div>
+            </div>
           </div>
-          <svg
-            viewBox="0 0 17 17"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            width={40}
-            height={40}
-          >
-            <defs>
-              <linearGradient
-                id="gradient-1"
-                x1="10.6889"
-                y1="10.3556"
-                x2="13.8445"
-                y2="14.2667"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="black" />
-                <stop offset={1} stopColor="black" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient
-                id="gradient-2"
-                x1="11.7555"
-                y1="4.8"
-                x2="11.7376"
-                y2="9.50002"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="black" />
-                <stop offset={1} stopColor="black" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <path
-              d="M1 16L2.58314 11.2506C1.83084 9.74642 1.63835 8.02363 2.04013 6.39052C2.4419 4.75741 3.41171 3.32057 4.776 2.33712C6.1403 1.35367 7.81003 0.887808 9.4864 1.02289C11.1628 1.15798 12.7364 1.8852 13.9256 3.07442C15.1148 4.26363 15.842 5.83723 15.9771 7.5136C16.1122 9.18997 15.6463 10.8597 14.6629 12.224C13.6794 13.5883 12.2426 14.5581 10.6095 14.9599C8.97637 15.3616 7.25358 15.1692 5.74942 14.4169L1 16Z"
-              fill="white"
-              stroke="white"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <mask
-              id="mask0_91_2047"
-              style={{ maskType: 'alpha' }}
-              maskUnits="userSpaceOnUse"
-              x={1}
-              y={0}
-              width={16}
-              height={16}
-            >
-              <circle cx={9} cy={8} r={8} fill="white" />
-            </mask>
-            <g mask="url(#mask0_91_2047)">
-              <circle cx={9} cy={8} r={8} fill="white" />
-              <path
-                d="M14.2896 14.0018L7.146 4.8H5.80005V11.1973H6.87681V6.16743L13.4444 14.6529C13.7407 14.4545 14.0231 14.2369 14.2896 14.0018Z"
-                fill={`url(#gradient-1)`}
-              />
-              <rect
-                x="11.2222"
-                y="4.8"
-                width="1.06667"
-                height="6.4"
-                fill={`url(#gradient-2)`}
-              />
-            </g>
-          </svg>
+          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">demo.nextjs.chat</div>
         </div>
       </div>
     ),
