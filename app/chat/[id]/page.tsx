@@ -1,5 +1,5 @@
 import { type Metadata } from 'next'
-import { auth } from '@clerk/nextjs'
+import { auth } from '@/auth'
 
 import { Chat } from '@/components/chat'
 import { getChat } from '@/app/actions'

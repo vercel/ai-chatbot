@@ -1,9 +1,8 @@
 import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai-connector'
 import { Configuration, OpenAIApi } from 'openai-edge'
-
 import { nanoid } from '@/lib/utils'
-import { currentUser } from '@clerk/nextjs'
+import { auth } from '@/auth'
 
 export const runtime = 'edge'
 
@@ -18,8 +17,8 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 export async function POST(req: Request) {
-  const user = await currentUser()
-  if (user == null) {
+  const session = await auth()
+  if (session == null) {
     return new Response('Unauthorized', { status: 401 })
   }
 
@@ -40,7 +39,7 @@ export async function POST(req: Request) {
   const stream = OpenAIStream(res, {
     async onCompletion(completion) {
       const title = json.messages[0].content.substring(0, 100)
-      const userId = user.id
+      const userId = session.user.id
       const id = json.id ?? nanoid()
       const createdAt = Date.now()
       const path = `/chat/${id}`

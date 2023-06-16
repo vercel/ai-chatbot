@@ -44,7 +44,7 @@ export async function getChat(id: string, userId: string) {
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
-  const session = await auth<{ stuff: string }>()
+  const session = await auth()
 
   if (!session) {
     throw new Error('Unauthorized')
