@@ -4,7 +4,7 @@
 </a>
 
 <p align="center">
-  Next.js 13 and App Router-ready AI chatbot.
+  An open-source AI chatbot app built with [Next.js](https://nextjs.org), the [Vercel AI SDK](https://sdk.vercel.ai/docs), OpenAI, and [Vercel KV](https://vercel.com/storage/kv).
 </p>
 
 <p align="center">
@@ -17,8 +17,6 @@
 <br/>
 
 # Introduction
-
-A Next.js 13 and App Router-ready AI chatbot template featuring:
 
 - [Next.js](https://nextjs.org) App Router
 - React Server Components (RSCs), Suspense, and Server Actions
