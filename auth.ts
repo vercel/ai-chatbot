@@ -18,9 +18,8 @@ export const {
       }
       return token
     }
-    // // @ts-ignore
+    // @TODO
     // authorized({ request, auth }) {
-    //   if (!request.nextUrl.pathname.startsWith('/share/')) return false
     //   return !!auth?.user
     // }
   },
