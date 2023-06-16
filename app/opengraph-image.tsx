@@ -37,7 +37,7 @@ export default async function Image() {
               </svg>
             </div>
             <div tw="flex text-white font-bold text-4xl mt-2 leading-normal ml-10">
-              What is Next.js Chat?
+              What is Next.js AI Chatbot?
             </div>
           </div>
           <div tw="flex w-full mt-14 items-start">
@@ -76,7 +76,7 @@ export default async function Image() {
               <div tw="flex text-[#eaeaf0] ml-2">KV</div>
             </div>
           </div>
-          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">demo.nextjs.chat</div>
+          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">demo.chat.vercel.ai</div>
         </div>
       </div>
     ),
