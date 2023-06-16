@@ -1,6 +1,6 @@
 'use client'
 
-import { type Message } from 'ai-connector'
+import { type Message } from 'ai'
 
 import { Button } from '@/components/ui/button'
 import { IconCheck, IconCopy } from '@/components/ui/icons'

@@ -47,9 +47,6 @@ dependencies:
   ai:
     specifier: ^2.1.2
     version: 2.1.2(react@18.2.0)(svelte@3.59.1)(vue@3.3.4)
-  ai-connector:
-    specifier: ^0.0.12
-    version: 0.0.12(react@18.2.0)(svelte@3.59.1)
   body-scroll-lock:
     specifier: 4.0.0-beta.0
     version: 4.0.0-beta.0
@@ -1486,26 +1483,6 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
     dev: true
-
-  /ai-connector@0.0.12(react@18.2.0)(svelte@3.59.1):
-    resolution: {integrity: sha512-sUnGgl3w7dd+j1TQSH9SifQv6eoei7f7kqOgnY2OhOVOoUyQ1vJeum7jkO38OAEQ8hU0vA0yYsR3G4TkcsMFEg==}
-    engines: {node: '>=14.6'}
-    peerDependencies:
-      react: ^18.0.0
-      svelte: ^3.29.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      svelte:
-        optional: true
-    dependencies:
-      eventsource-parser: 1.0.0
-      nanoid: 3.3.6
-      react: 18.2.0
-      sswr: 1.10.0(svelte@3.59.1)
-      svelte: 3.59.1
-      swr: 2.1.5(react@18.2.0)
-    dev: false
 
   /ai@2.1.2(react@18.2.0)(svelte@3.59.1)(vue@3.3.4):
     resolution: {integrity: sha512-WhyGH95Pv/gpgVMQT5eCyKXJh7irozr+bmpJ94somfRYBcAN2U270ii/OOHzGLrPM3liTbBilGQL2Ds7/5sz9Q==}
