@@ -41,7 +41,12 @@ export async function Header() {
           {session?.user ? (
             <UserMenu user={session.user} />
           ) : (
-            <LoginButton className="-ml-2" />
+            <LoginButton
+              variant="link"
+              showGithubIcon={false}
+              text="Login"
+              className="-ml-2"
+            />
           )}
         </div>
       </div>
