@@ -1,19 +1,18 @@
-import { Suspense, use } from 'react'
+import * as React from 'react'
+import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
+import { auth } from '@/auth'
+import { clearChats } from '@/app/actions'
 import { buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
 import { IconGitHub, IconSeparator, IconVercel } from '@/components/ui/icons'
-
 import { SidebarFooter } from '@/components/sidebar-footer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ClearHistory } from '@/components/clear-history'
-import { clearChats } from '@/app/actions'
-import Link from 'next/link'
-import { auth } from '@/auth'
-import { UserMenu } from './user-menu'
-import { LoginButton } from './login-button'
+import { UserMenu } from '@/components/user-menu'
+import { LoginButton } from '@/components/login-button'
 
 export async function Header() {
   const session = await auth()
@@ -22,10 +21,10 @@ export async function Header() {
       <div className="flex items-center">
         {session?.user ? (
           <Sidebar>
-            <Suspense fallback={<div className="flex-1 overflow-auto" />}>
+            <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
               {/* @ts-ignore */}
               <SidebarList userId={session?.user?.id} />
-            </Suspense>
+            </React.Suspense>
             <SidebarFooter>
               <ThemeToggle />
               <ClearHistory clearChats={clearChats} />
