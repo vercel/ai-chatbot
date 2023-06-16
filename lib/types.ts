@@ -10,4 +10,9 @@ export interface Chat extends Record<string, any> {
   sharePath?: string
 }
 
-export type ServerActionResult<Result> = Promise<Result | Error>
+export type ServerActionResult<Result> = Promise<
+  | Result
+  | {
+      error: string
+    }
+>

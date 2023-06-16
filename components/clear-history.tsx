@@ -2,7 +2,9 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
 
+import { ServerActionResult } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -18,7 +20,7 @@ import {
 import { IconSpinner } from '@/components/ui/icons'
 
 interface ClearHistoryProps {
-  clearChats: () => Promise<void>
+  clearChats: () => ServerActionResult<void>
 }
 
 export function ClearHistory({ clearChats }: ClearHistoryProps) {
@@ -49,7 +51,13 @@ export function ClearHistory({ clearChats }: ClearHistoryProps) {
             onClick={event => {
               event.preventDefault()
               startTransition(async () => {
-                await clearChats()
+                const result = await clearChats()
+
+                if (result && 'error' in result) {
+                  toast.error(result.error)
+                  return
+                }
+
                 setOpen(false)
                 router.push('/')
               })
