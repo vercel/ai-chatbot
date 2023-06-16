@@ -4,7 +4,7 @@
 </a>
 
 <p align="center">
-  An open-source AI chatbot app template built with [Next.js](https://nextjs.org), the [Vercel AI SDK](https://sdk.vercel.ai/docs), OpenAI, and [Vercel KV](https://vercel.com/storage/kv).
+  An open-source AI chatbot app template built with Next.js, the Vercel AI SDK, OpenAI, and Vercel KV.
 </p>
 
 <p align="center">
