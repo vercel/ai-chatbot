@@ -17,12 +17,12 @@ export const {
         token.image = profile.picture
       }
       return token
-    },
-    // @ts-ignore
-    authorized({ request, auth }) {
-      if (!request.nextUrl.pathname.startsWith('/share/')) return true
-      return !!auth?.user
     }
+    // @ts-ignore
+    // authorized({ request, auth }) {
+    //   if (!request.nextUrl.pathname.startsWith('/share/')) return true
+    //   return !!auth?.user
+    // }
   },
   pages: {
     signIn: '/sign-in'
