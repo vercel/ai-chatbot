@@ -12,13 +12,13 @@ import { ClearHistory } from '@/components/clear-history'
 import { clearChats } from '@/app/actions'
 import Link from 'next/link'
 import { auth } from '@/auth'
-import { UserMenu } from './ui/user-menu'
+import { UserMenu } from './user-menu'
 import { LoginButton } from './login-button'
 
 export async function Header() {
   const session = await auth()
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b bg-gradient-to-b from-background/10 via-background/50 to-background/80 px-4 backdrop-blur-xl">
       <div className="flex items-center">
         {session?.user ? (
           <Sidebar>
@@ -33,12 +33,16 @@ export async function Header() {
           </Sidebar>
         ) : (
           <Link href="https://vercel.com" target="_blank" rel="nofollow">
-            <IconVercel className="w-6 h-6 mr-2" />
+            <IconVercel className="mr-2 h-6 w-6" />
           </Link>
         )}
         <div className="flex items-center">
-          <IconSeparator className="w-6 h-6 text-muted-foreground/50" />
-          {session?.user ? <UserMenu session={session} /> : <LoginButton />}
+          <IconSeparator className="h-6 w-6 text-muted-foreground/50" />
+          {session?.user ? (
+            <UserMenu user={session.user} />
+          ) : (
+            <LoginButton className="-ml-2" />
+          )}
         </div>
       </div>
       <div className="flex items-center justify-end space-x-2">
@@ -49,7 +53,7 @@ export async function Header() {
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
           <IconGitHub />
-          <span className="hidden ml-2 md:flex">GitHub</span>
+          <span className="ml-2 hidden md:flex">GitHub</span>
         </a>
         <a
           href="https://github.com/vercel/nextjs-ai-chatbot/"
