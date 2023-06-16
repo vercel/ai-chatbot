@@ -42,6 +42,7 @@ export async function Header() {
               showName
               appearance={{
                 elements: {
+                  afterSignOutUrl: '/',
                   avatarBox: 'w-6 h-6 rounded-full overflow-hidden',
                   userButtonBox: 'flex-row-reverse',
                   userButtonOuterIdentifier: 'text-primary',
