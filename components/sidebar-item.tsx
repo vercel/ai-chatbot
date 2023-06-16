@@ -6,8 +6,12 @@ import { usePathname } from 'next/navigation'
 import { type Chat } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
-import { IconMessage } from '@/components/ui/icons'
-import { SidebarActions } from '@/components/sidebar-actions'
+import { IconMessage, IconUsers } from '@/components/ui/icons'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
 
 interface SidebarItemProps {
   chat: Chat
@@ -30,7 +34,16 @@ export function SidebarItem({ chat, children }: SidebarItemProps) {
           isActive && 'bg-accent'
         )}
       >
-        <IconMessage className="mr-2" />
+        {chat.sharePath ? (
+          <Tooltip>
+            <TooltipTrigger>
+              <IconUsers className="mr-2" />
+            </TooltipTrigger>
+            <TooltipContent>This is a shared chat.</TooltipContent>
+          </Tooltip>
+        ) : (
+          <IconMessage className="mr-2" />
+        )}
         <div
           className="relative max-h-5 flex-1 select-none overflow-hidden text-ellipsis break-all"
           title={chat.title}
