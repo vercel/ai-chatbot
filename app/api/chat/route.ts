@@ -7,33 +7,27 @@ import { nanoid } from '@/lib/utils'
 
 export const runtime = 'edge'
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
-})
-
-const openai = new OpenAIApi(configuration)
-
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('Missing env var from OpenAI')
-}
-
 export async function POST(req: Request) {
+  const json = await req.json()
+  const { messages, previewToken } = json
   const session = await auth()
-  if (session == null) {
-    return new Response('Unauthorized', { status: 401 })
+
+  if (process.env.VERCEL_ENV !== 'preview') {
+    if (session == null) {
+      return new Response('Unauthorized', { status: 401 })
+    }
   }
 
-  const json = await req.json()
-  const { messages } = json
+  const configuration = new Configuration({
+    apiKey: previewToken || process.env.OPENAI_API_KEY
+  })
+
+  const openai = new OpenAIApi(configuration)
 
   const res = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages,
     temperature: 0.7,
-    top_p: 1,
-    frequency_penalty: 1,
-    max_tokens: 500,
-    n: 1,
     stream: true
   })
 
