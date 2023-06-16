@@ -442,6 +442,40 @@ function IconUsers({ className, ...props }: React.ComponentProps<'svg'>) {
   )
 }
 
+function IconExternalLink({
+  className,
+  ...props
+}: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      className={cn('h-4 w-4', className)}
+      viewBox="0 0 256 256"
+      {...props}
+    >
+      <path d="M224 104a8 8 0 0 1-16 0V59.32l-66.33 66.34a8 8 0 0 1-11.32-11.32L196.68 48H152a8 8 0 0 1 0-16h64a8 8 0 0 1 8 8Zm-40 24a8 8 0 0 0-8 8v72H48V80h72a8 8 0 0 0 0-16H48a16 16 0 0 0-16 16v128a16 16 0 0 0 16 16h128a16 16 0 0 0 16-16v-72a8 8 0 0 0-8-8Z" />
+    </svg>
+  )
+}
+
+function IconChevronUpDown({
+  className,
+  ...props
+}: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      className={cn('h-4 w-4', className)}
+      viewBox="0 0 256 256"
+      {...props}
+    >
+      <path d="M181.66 170.34a8 8 0 0 1 0 11.32l-48 48a8 8 0 0 1-11.32 0l-48-48a8 8 0 0 1 11.32-11.32L128 212.69l42.34-42.35a8 8 0 0 1 11.32 0Zm-96-84.68L128 43.31l42.34 42.35a8 8 0 0 0 11.32-11.32l-48-48a8 8 0 0 0-11.32 0l-48 48a8 8 0 0 0 11.32 11.32Z" />
+    </svg>
+  )
+}
+
 export {
   IconEdit,
   IconNextChat,
@@ -467,5 +501,7 @@ export {
   IconDownload,
   IconClose,
   IconShare,
-  IconUsers
+  IconUsers,
+  IconExternalLink,
+  IconChevronUpDown
 }

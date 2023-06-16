@@ -41,7 +41,7 @@ import {
 
 interface SidebarActionsProps {
   chat: Chat
-  removeChat: (args: { id: string; path: string }) => Promise<void>
+  removeChat: (args: { id: string; path: string }) => ServerActionResult<void>
   shareChat: (chat: Chat) => ServerActionResult<Chat>
 }
 
@@ -150,8 +150,8 @@ export function SidebarActions({
 
                   const result = await shareChat(chat)
 
-                  if (!('id' in result)) {
-                    toast.error(result.message)
+                  if (result && 'error' in result) {
+                    toast.error(result.error)
                     return
                   }
 
@@ -189,10 +189,16 @@ export function SidebarActions({
               onClick={event => {
                 event.preventDefault()
                 startRemoveTransition(async () => {
-                  await removeChat({
+                  const result = await removeChat({
                     id: chat.id,
                     path: chat.path
                   })
+
+                  if (result && 'error' in result) {
+                    toast.error(result.error)
+                    return
+                  }
+
                   setDeleteDialogOpen(false)
                   router.push('/')
                 })
