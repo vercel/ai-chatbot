@@ -18,6 +18,11 @@ export interface UserMenuProps {
   user: Session['user']
 }
 
+function getUserInitials(name: string) {
+  const [firstName, lastName] = name.split(' ')
+  return lastName ? `${firstName[0]}${lastName[0]}` : firstName.slice(0, 2)
+}
+
 export function UserMenu({ user }: UserMenuProps) {
   return (
     <div className="flex items-center justify-between">
@@ -32,7 +37,7 @@ export function UserMenu({ user }: UserMenuProps) {
               />
             ) : (
               <div className="flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full bg-muted/50 text-xs font-medium uppercase text-muted-foreground">
-                {user?.name ? user?.name.slice(0, 2) : null}
+                {user?.name ? getUserInitials(user?.name) : null}
               </div>
             )}
             <span className="ml-2">{user?.name}</span>
