@@ -7,7 +7,12 @@ import { clearChats } from '@/app/actions'
 import { buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
-import { IconGitHub, IconSeparator, IconVercel } from '@/components/ui/icons'
+import {
+  IconGitHub,
+  IconNextChat,
+  IconSeparator,
+  IconVercel
+} from '@/components/ui/icons'
 import { SidebarFooter } from '@/components/sidebar-footer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ClearHistory } from '@/components/clear-history'
@@ -31,8 +36,9 @@ export async function Header() {
             </SidebarFooter>
           </Sidebar>
         ) : (
-          <Link href="https://vercel.com" target="_blank" rel="nofollow">
-            <IconVercel className="mr-2 h-6 w-6" />
+          <Link href="/" target="_blank" rel="nofollow">
+            <IconNextChat className="mr-2 h-6 w-6 dark:hidden" inverted />
+            <IconNextChat className="mr-2 hidden h-6 w-6 dark:block" />
           </Link>
         )}
         <div className="flex items-center">
