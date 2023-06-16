@@ -1,10 +1,10 @@
 <a href="https://chat.vercel.ai/">
-  <img alt="Next.js 13 and App Router-ready AI chatbot." src="https://chat.vercel.ai/opengraph-image?257c2a5cdc6cb3cb">
+  <img alt="Next.js 13 and app template Router-ready AI chatbot." src="https://chat.vercel.ai/opengraph-image?257c2a5cdc6cb3cb">
   <h1 align="center">Next.js AI Chatbot</h1>
 </a>
 
 <p align="center">
-  An open-source AI chatbot app built with [Next.js](https://nextjs.org), the [Vercel AI SDK](https://sdk.vercel.ai/docs), OpenAI, and [Vercel KV](https://vercel.com/storage/kv).
+  An open-source AI chatbot app template built with [Next.js](https://nextjs.org), the [Vercel AI SDK](https://sdk.vercel.ai/docs), OpenAI, and [Vercel KV](https://vercel.com/storage/kv).
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 
 # Introduction
 
-- [Next.js](https://nextjs.org) App Router
+- [Next.js](https://nextjs.org) app template Router
 - React Server Components (RSCs), Suspense, and Server Actions
 - [Vercel AI SDK](https://sdk.vercel.ai/docs) for streaming chat UI
 - Support for OpenAI (default), Anthropic, HuggingFace, or custom AI chat models and/or LangChain
@@ -55,7 +55,7 @@ pnpm install
 pnpm dev
 ```
 
-Your app should now be running on [localhost:3000](http://localhost:3000/).
+Your app template should now be running on [localhost:3000](http://localhost:3000/).
 
 ## Authors
 
