@@ -43,11 +43,13 @@ export async function POST(req: Request) {
       const userId = user.id
       const id = json.id ?? nanoid()
       const createdAt = Date.now()
+      const path = `/chat/${id}`
       const payload = {
         id,
         title,
         userId,
         createdAt,
+        path,
         messages: [
           ...messages,
           {
