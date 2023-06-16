@@ -10,11 +10,10 @@ import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
-  
   id?: string
 }
 
-export function Chat({ id, title, initialMessages, className }: ChatProps) {
+export function Chat({ id, initialMessages, className }: ChatProps) {
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
       initialMessages,
