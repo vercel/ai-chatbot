@@ -18,9 +18,9 @@ export const {
       }
       return token
     }
-    // @ts-ignore
+    // // @ts-ignore
     // authorized({ request, auth }) {
-    //   if (!request.nextUrl.pathname.startsWith('/share/')) return true
+    //   if (!request.nextUrl.pathname.startsWith('/share/')) return false
     //   return !!auth?.user
     // }
   },
