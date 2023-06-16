@@ -1,4 +1,21 @@
-# Next.js AI Chatbot
+<a href="https://nextjs.chat/">
+  <img alt="Next.js 13 and App Router-ready AI chatbot." src="https://nextjs.chat/opengraph-image?257c2a5cdc6cb3cb">
+  <h1 align="center">Next.js Chat</h1>
+</a>
+
+<p align="center">
+  Next.js 13 and App Router-ready AI chatbot.
+</p>
+
+<p align="center">
+  <a href="#introduction"><strong>Introduction</strong></a> ·
+  <a href="#model-providers"><strong>Model Providers</strong></a> ·
+  <a href="#running-locally"><strong>Running locally</strong></a> ·
+  <a href="#authors"><strong>Authors</strong></a>
+</p>
+<br/>
+
+# Introduction
 
 A Next.js 13 and App Router-ready AI chatbot template featuring:
 
@@ -43,4 +60,6 @@ This library is created by [Vercel](https://vercel.com) and [Next.js](https://ne
 - Shu Ding ([@shuding\_](https://twitter.com/shuding_)) - [Vercel](https://vercel.com)
 - shadcn ([@shadcn](https://twitter.com/shadcn)) - [Contractor](https://shadcn.com)
 
-[Contributors](https://github.com/vercel-labs/ai-chatbot/graphs/contributors)
+<a href="https://github.com/vercel-labs/ai-chatbot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=vercel-labs/ai-chatbot" />
+</a>
