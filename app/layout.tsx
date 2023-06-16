@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 
-import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'react-hot-toast'
 
 import '@/app/globals.css'
@@ -33,29 +32,25 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body
-          className={cn(
-            'font-sans antialiased',
-            fontSans.variable,
-            fontMono.variable
-          )}
-        >
-          <Toaster />
-          <Providers attribute="class" defaultTheme="system" enableSystem>
-            <div className="flex min-h-screen flex-col">
-              {/* @ts-ignore */}
-              <Header />
-              <main className="flex flex-1 flex-col bg-muted/50">
-                {children}
-              </main>
-            </div>
-            <TailwindIndicator />
-          </Providers>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body
+        className={cn(
+          'font-sans antialiased',
+          fontSans.variable,
+          fontMono.variable
+        )}
+      >
+        <Toaster />
+        <Providers attribute="class" defaultTheme="system" enableSystem>
+          <div className="flex flex-col min-h-screen">
+            {/* @ts-ignore */}
+            <Header />
+            <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
+          </div>
+          <TailwindIndicator />
+        </Providers>
+      </body>
+    </html>
   )
 }
