@@ -1,4 +1,4 @@
-import { type UseChatHelpers } from 'ai-connector/react'
+import { type UseChatHelpers } from 'ai/react'
 
 import { Button } from '@/components/ui/button'
 import { PromptForm } from '@/components/prompt-form'
