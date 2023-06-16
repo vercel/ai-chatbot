@@ -19,7 +19,6 @@ export function LoginButton({
   ...props
 }: LoginButtonProps) {
   const [isLoading, setIsLoading] = React.useState(false)
-
   return (
     <Button
       variant="outline"
