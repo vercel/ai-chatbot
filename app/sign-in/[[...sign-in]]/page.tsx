@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { ExternalLink } from '@/components/external-link'
 import { buttonVariants } from '@/components/ui/button'
 import { IconSpinner } from '@/components/ui/icons'
+import { FooterText } from '@/components/footer'
 
 export default function SignInPage() {
   return (
@@ -27,14 +28,7 @@ export default function SignInPage() {
               }
             }}
           />
-          <p className="hidden px-2 text-center text-xs leading-normal text-muted-foreground sm:block">
-            Open source AI chatbot app built with{' '}
-            <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-            <ExternalLink href="https://vercel.com/storage/kv">
-              Vercel KV
-            </ExternalLink>
-            .
-          </p>
+          <FooterText />
         </ClerkLoaded>
       </div>
     </div>

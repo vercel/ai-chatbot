@@ -13,7 +13,6 @@ import {
 import { IconSidebar } from '@/components/ui/icons'
 
 export interface SidebarProps {
-  userId?: string
   children?: React.ReactNode
 }
 
