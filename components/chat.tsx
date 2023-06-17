@@ -33,7 +33,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     null
   )
 
-  // const [selectedModel] = useAtom(modelAtom)
   const [model, setModel] = useState<Model>(models[0])
 
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
