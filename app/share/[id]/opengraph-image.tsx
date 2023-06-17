@@ -7,8 +7,8 @@ export const runtime = 'edge'
 export const alt = 'AI Chatbot'
 
 export const size = {
-  width: 1200,
-  height: 630
+  width: 600,
+  height: 315
 }
 
 export const contentType = 'image/png'
@@ -93,7 +93,9 @@ export default async function Image({ params }: ImageProps) {
               <div tw="flex text-[#eaeaf0] ml-2">KV</div>
             </div>
           </div>
-          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">demo.chat.vercel.ai</div>
+          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">
+            demo.chat.vercel.ai
+          </div>
         </div>
       </div>
     ),
