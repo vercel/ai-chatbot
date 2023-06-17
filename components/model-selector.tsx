@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { PopoverProps } from '@radix-ui/react-popover'
-import { Check, ChevronsUpDown } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { useMutationObserver } from '@/lib/hooks/use-mutation-observer'
@@ -28,6 +27,7 @@ import {
 import { Model, ModelType } from '@/constants/models'
 import { useAtom } from 'jotai'
 import { modelAtom } from '@/lib/store'
+import { IconCheck, IconChevronUpDown } from '@/components/ui/icons'
 
 interface ModelSelectorProps extends PopoverProps {
   types: readonly ModelType[]
@@ -65,7 +65,7 @@ export function ModelSelector({ models, types, ...props }: ModelSelectorProps) {
             className="w-15 justify-between overflow-hidden text-ellipsis whitespace-nowrap"
           >
             {selectedModel ? selectedModel.name : 'Select a model...'}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <IconChevronUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-[250px] p-0">
@@ -152,7 +152,7 @@ function ModelItem({ model, isSelected, onSelect, onPeek }: ModelItemProps) {
       className="aria-selected:bg-primary aria-selected:text-primary-foreground"
     >
       {model.name}
-      <Check
+      <IconCheck
         className={cn(
           'ml-auto h-4 w-4',
           isSelected ? 'opacity-100' : 'opacity-0'
