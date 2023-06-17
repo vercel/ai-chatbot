@@ -141,6 +141,7 @@ export function SidebarActions({
             <Button
               disabled={isSharePending}
               onClick={() => {
+                // @ts-expect-error TODO: fix this  Type 'Promise<void>' is not assignable to type 'VoidOrUndefinedOnly'
                 startShareTransition(async () => {
                   if (chat.sharePath) {
                     await new Promise(resolve => setTimeout(resolve, 500))
@@ -188,6 +189,7 @@ export function SidebarActions({
               disabled={isRemovePending}
               onClick={event => {
                 event.preventDefault()
+                // @ts-expect-error TODO: fix this  Type 'Promise<void>' is not assignable to type 'VoidOrUndefinedOnly'
                 startRemoveTransition(async () => {
                   const result = await removeChat({
                     id: chat.id,
