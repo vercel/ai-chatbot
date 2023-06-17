@@ -14,11 +14,11 @@ export const size = {
 export const contentType = 'image/png'
 
 const interRegular = fetch(
-  new URL('../../../assets/fonts/Inter-Regular.ttf', import.meta.url)
+  new URL('../../../assets/fonts/Inter-Regular.woff', import.meta.url)
 ).then(res => res.arrayBuffer())
 
 const interBold = fetch(
-  new URL('../../../assets/fonts/Inter-Bold.ttf', import.meta.url)
+  new URL('../../../assets/fonts/Inter-Bold.woff', import.meta.url)
 ).then(res => res.arrayBuffer())
 
 interface ImageProps {
@@ -93,7 +93,9 @@ export default async function Image({ params }: ImageProps) {
               <div tw="flex text-[#eaeaf0] ml-2">KV</div>
             </div>
           </div>
-          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">demo.chat.vercel.ai</div>
+          <div tw="text-[1.8rem] ml-auto text-[#9b9ba4]">
+            demo.chat.vercel.ai
+          </div>
         </div>
       </div>
     ),
