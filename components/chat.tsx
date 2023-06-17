@@ -42,9 +42,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       body: {
         id,
         previewToken
-      },
-      onFinish: () => {
-        router.refresh()
       }
     })
   return (
