@@ -19,6 +19,8 @@ import {
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { useAtom } from 'jotai'
+import { modelAtom } from '@/lib/store'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -31,6 +33,8 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     'ai-token',
     null
   )
+
+  const [selectedModel] = useAtom(modelAtom)
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
   const { messages, append, reload, stop, isLoading, input, setInput } =
@@ -39,7 +43,8 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       id,
       body: {
         id,
-        previewToken
+        previewToken,
+        model: selectedModel
       }
     })
   return (

@@ -1,3 +1,4 @@
+'use Client'
 import * as React from 'react'
 import Link from 'next/link'
 
@@ -18,6 +19,8 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { ClearHistory } from '@/components/clear-history'
 import { UserMenu } from '@/components/user-menu'
 import { LoginButton } from '@/components/login-button'
+import { ModelSelector } from './model-selector'
+import { models, types } from '@/constants/models'
 
 export async function Header() {
   const session = await auth()
@@ -54,6 +57,9 @@ export async function Header() {
             />
           )}
         </div>
+      </div>
+      <div className="flex items-center justify-end space-x-2">
+        <ModelSelector models={models} types={types} />
       </div>
       <div className="flex items-center justify-end space-x-2">
         <a

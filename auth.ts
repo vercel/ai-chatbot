@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import GitHub from 'next-auth/providers/github'
+import Google from 'next-auth/providers/google'
 
 export const {
   handlers: { GET, POST },
@@ -8,7 +9,7 @@ export const {
   // @ts-ignore
 } = NextAuth({
   // @ts-ignore
-  providers: [GitHub],
+  providers: [GitHub, Google],
   callbacks: {
     // @ts-ignore
     jwt: async ({ token, profile }) => {

@@ -11,14 +11,29 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { IconArrowElbow, IconArrowRight, IconPlus } from '@/components/ui/icons'
+import { Label } from '@/components/ui/label'
+import { PopoverContent, Popover, PopoverTrigger } from './ui/popover'
 
 export interface PromptProps
   extends Pick<UseChatHelpers, 'input' | 'setInput'> {
   onSubmit: (value: string) => void
   isLoading: boolean
 }
-
+const exampleMessages = [
+  {
+    heading: 'Explain technical concepts',
+    message: `What is a "serverless function"?`
+  },
+  {
+    heading: 'Summarize an article',
+    message: 'Summarize the following article for a 2nd grader:'
+  },
+  {
+    heading: 'Draft an email',
+    message: `Draft an email to my boss about the following:`
+  }
+]
 export function PromptForm({
   onSubmit,
   input,
@@ -47,21 +62,46 @@ export function PromptForm({
       ref={formRef}
     >
       <div className="relative flex w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              href="/"
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
               className={cn(
                 buttonVariants({ size: 'sm', variant: 'outline' }),
                 'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
               )}
             >
-              <IconPlus />
-              <span className="sr-only">New Chat</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
+              <IconPlus className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-65">
+            <div className="mt-4 flex flex-col items-start space-y-2">
+              <Link href="/" className="h-auto p-0 text-sm">
+                <Button variant="link" className="h-auto p-0 text-sm">
+                  <IconPlus className="mr-2 text-muted-foreground" />
+                  New Chat
+                </Button>
+              </Link>
+
+              <Label className="mb-2 text-xs text-muted-foreground">
+                Template
+              </Label>
+              {exampleMessages.map((message, index) => (
+                <Button
+                  key={index}
+                  variant="link"
+                  className="h-auto p-0 text-sm"
+                  onClick={() => {
+                    setInput(message.message)
+                  }}
+                >
+                  <IconArrowRight className="mr-2 text-muted-foreground" />
+                  {message.heading}
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <Textarea
           ref={inputRef}
           tabIndex={0}

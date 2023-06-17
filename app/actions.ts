@@ -82,7 +82,9 @@ export async function clearChats() {
     pipeline.zrem(`user:chat:${session.user.id}`, chat)
   }
 
-  await pipeline.exec()
+  if (chats.length > 0) {
+    await pipeline?.exec()
+  }
 
   revalidatePath('/')
   return redirect('/')
