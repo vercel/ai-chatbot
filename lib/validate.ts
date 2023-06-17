@@ -7,7 +7,7 @@ export async function zValidateReq<T extends AnyZodObject>(
   const json = await req.json()
   const input = schema.safeParse(json)
   if (!input.success) {
-    console.error('❌ Invalid environment variables:\n')
+    console.error('❌ Invalid inputs:')
     input.error.issues.forEach(issue => {
       console.error(issue)
     })

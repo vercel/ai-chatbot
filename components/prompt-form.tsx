@@ -6,11 +6,7 @@ import { UseChatHelpers } from 'ai/react'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
+
 import { IconArrowElbow, IconArrowRight, IconPlus } from '@/components/ui/icons'
 import { Label } from '@/components/ui/label'
 import { PopoverContent, Popover, PopoverTrigger } from './ui/popover'
@@ -114,19 +110,14 @@ export function PromptForm({
           className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
         />
         <div className="absolute right-0 top-4 sm:right-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading || input === ''}
-              >
-                <IconArrowElbow />
-                <span className="sr-only">Send message</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Send message</TooltipContent>
-          </Tooltip>
+          <Button
+            type="submit"
+            size="icon"
+            disabled={isLoading || input === ''}
+          >
+            <IconArrowElbow />
+            <span className="sr-only">Send message</span>
+          </Button>
         </div>
       </div>
     </form>
