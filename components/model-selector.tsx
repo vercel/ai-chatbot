@@ -24,28 +24,27 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover'
-import { Model, ModelType } from '@/constants/models'
-import { useAtom } from 'jotai'
-import { modelAtom } from '@/lib/store'
+import { Model, models, types } from '@/constants/models'
 import { IconCheck, IconChevronUpDown } from '@/components/ui/icons'
 
 interface ModelSelectorProps extends PopoverProps {
-  types: readonly ModelType[]
-  models: Model[]
+  setModel: (model: Model) => void
+  model: Model
 }
 
-export function ModelSelector({ models, types, ...props }: ModelSelectorProps) {
+export function ModelSelector({
+  setModel,
+  model,
+  ...props
+}: ModelSelectorProps) {
   const [open, setOpen] = React.useState(false)
 
-  const [selectedModel, setSelectedModel] = useAtom(modelAtom)
   const [peekedModel, setPeekedModel] = React.useState<Model>(models[0])
 
   return (
     <div className="grid gap-2">
       <HoverCard openDelay={200}>
-        <HoverCardTrigger asChild>
-          {/* <Label htmlFor="model">Model</Label> */}
-        </HoverCardTrigger>
+        <HoverCardTrigger asChild></HoverCardTrigger>
         <HoverCardContent
           align="start"
           className="w-[260px] text-sm"
@@ -64,7 +63,7 @@ export function ModelSelector({ models, types, ...props }: ModelSelectorProps) {
             aria-label="Select a model"
             className="w-15 justify-between overflow-hidden text-ellipsis whitespace-nowrap"
           >
-            {selectedModel ? selectedModel.name : 'Select a model...'}
+            {model ? model.name : 'Select a model...'}
             <IconChevronUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -105,10 +104,10 @@ export function ModelSelector({ models, types, ...props }: ModelSelectorProps) {
                         <ModelItem
                           key={model.id}
                           model={model}
-                          isSelected={selectedModel?.id === model.id}
+                          isSelected={model?.id === model.id}
                           onPeek={model => setPeekedModel(model)}
                           onSelect={() => {
-                            setSelectedModel(model)
+                            setModel(model)
                             setOpen(false)
                           }}
                         />

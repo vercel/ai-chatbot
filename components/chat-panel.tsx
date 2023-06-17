@@ -5,6 +5,7 @@ import { PromptForm } from '@/components/prompt-form'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { IconRefresh, IconStop } from '@/components/ui/icons'
 import { FooterText } from '@/components/footer'
+import { Model } from '@/constants/models'
 
 export interface ChatPanelProps
   extends Pick<
@@ -18,6 +19,8 @@ export interface ChatPanelProps
     | 'setInput'
   > {
   id?: string
+  setModel: (model: Model) => void
+  model: Model
 }
 
 export function ChatPanel({
@@ -28,6 +31,8 @@ export function ChatPanel({
   reload,
   input,
   setInput,
+  setModel,
+  model,
   messages
 }: ChatPanelProps) {
   return (
@@ -69,7 +74,10 @@ export function ChatPanel({
             input={input}
             setInput={setInput}
             isLoading={isLoading}
+            setModel={setModel}
+            model={model}
           />
+
           <FooterText className="hidden sm:block" />
         </div>
       </div>

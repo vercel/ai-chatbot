@@ -45,7 +45,6 @@ export async function POST(req: Request) {
   })
 
   const openai = new OpenAIApi(configuration)
-  console.log('using model:', model.id)
 
   const res = await openai.createChatCompletion({
     model: model.id || 'gpt-3.5-turbo',

@@ -57,9 +57,7 @@ export async function Header() {
           )}
         </div>
       </div>
-      <div className="flex items-center justify-end space-x-2">
-        <ModelSelector models={models} types={types} />
-      </div>
+
       <div className="flex items-center justify-end space-x-2">
         <a
           target="_blank"

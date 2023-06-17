@@ -10,11 +10,15 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { IconArrowElbow, IconArrowRight, IconPlus } from '@/components/ui/icons'
 import { Label } from '@/components/ui/label'
 import { PopoverContent, Popover, PopoverTrigger } from './ui/popover'
+import { ModelSelector } from './model-selector'
+import { Model } from '@/constants/models'
 
 export interface PromptProps
   extends Pick<UseChatHelpers, 'input' | 'setInput'> {
   onSubmit: (value: string) => void
   isLoading: boolean
+  setModel: (model: Model) => void
+  model: Model
 }
 const exampleMessages = [
   {
@@ -34,6 +38,8 @@ export function PromptForm({
   onSubmit,
   input,
   setInput,
+  setModel,
+  model,
   isLoading
 }: PromptProps) {
   const { formRef, onKeyDown } = useEnterSubmit()
@@ -79,6 +85,10 @@ export function PromptForm({
                 </Button>
               </Link>
 
+              <Label className="mb-2 text-xs text-muted-foreground">
+                Models
+              </Label>
+              <ModelSelector setModel={setModel} model={model} />
               <Label className="mb-2 text-xs text-muted-foreground">
                 Template
               </Label>
