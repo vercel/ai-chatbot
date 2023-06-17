@@ -19,6 +19,7 @@ import {
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { useRouter } from 'next/navigation'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -27,6 +28,7 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, initialMessages, className }: ChatProps) {
+  const router = useRouter()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
     null
@@ -40,6 +42,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       body: {
         id,
         previewToken
+      },
+      onFinish: () => {
+        router.refresh()
       }
     })
   return (
