@@ -1,4 +1,4 @@
-import NextAuth from 'next-auth'
+import NextAuth, { type DefaultSession } from 'next-auth'
 import GitHub from 'next-auth/providers/github'
 
 declare module 'next-auth' {
@@ -6,7 +6,7 @@ declare module 'next-auth' {
     user: {
       /** The user's id. */
       id: string
-    }
+    } & DefaultSession['user']
   }
 }
 
