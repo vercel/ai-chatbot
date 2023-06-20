@@ -1,18 +1,25 @@
 import NextAuth from 'next-auth'
 import GitHub from 'next-auth/providers/github'
 
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      /** The user's id. */
+      id: string
+    }
+  }
+}
+
 export const {
   handlers: { GET, POST },
   auth,
   CSRF_experimental
-  // @ts-ignore
 } = NextAuth({
-  // @ts-ignore
+  // @ts-expect-error
   providers: [GitHub],
   callbacks: {
-    // @ts-ignore
     jwt: async ({ token, profile }) => {
-      if (profile?.id) {
+      if (profile) {
         token.id = profile.id
         token.image = profile.picture
       }
