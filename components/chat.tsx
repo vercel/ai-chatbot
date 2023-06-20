@@ -20,6 +20,7 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Model, models } from '@/constants/models'
+import { AlertAuth } from './alert-auth'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -37,7 +38,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
 
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
-  const { messages, append, reload, stop, isLoading, input, setInput } =
+  const { messages, append, reload, stop, isLoading, input, setInput, error } =
     useChat({
       initialMessages,
       id,
@@ -47,6 +48,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         model: model
       }
     })
+
+  const isAuthError = error?.message.includes('Unauthorized')
+
   return (
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
@@ -59,6 +63,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           <EmptyScreen setInput={setInput} />
         ) : null}
       </div>
+      {isAuthError && <AlertAuth />}
       <ChatPanel
         id={id}
         isLoading={isLoading}

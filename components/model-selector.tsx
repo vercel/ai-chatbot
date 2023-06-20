@@ -73,7 +73,7 @@ export function ModelSelector({
               side="left"
               align="start"
               forceMount
-              className="hidden min-h-[280px] sm:block"
+              className="hidden min-h-[280px] 2xl:block"
             >
               <div className="grid gap-2">
                 <h4 className="font-medium leading-none">{peekedModel.name}</h4>
