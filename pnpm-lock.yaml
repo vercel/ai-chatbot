@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-overrides:
-  '@auth/nextjs': 0.0.0-manual.de744368
-
 dependencies:
   '@radix-ui/react-alert-dialog':
     specifier: ^1.0.4
@@ -66,8 +63,8 @@ dependencies:
     specifier: 13.4.7-canary.1
     version: 13.4.7-canary.1(react-dom@18.2.0)(react@18.2.0)
   next-auth:
-    specifier: 0.0.0-manual.d211b087
-    version: 0.0.0-manual.d211b087(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0)
+    specifier: 0.0.0-manual.f414f2f5
+    version: 0.0.0-manual.f414f2f5(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0)
   next-themes:
     specifier: ^0.2.1
     version: 0.2.1(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0)
@@ -167,6 +164,22 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
     dev: true
+
+  /@auth/core@0.0.0-manual.527fff6c:
+    resolution: {integrity: sha512-NYWuH+6VAAMV05juyarbMm6rCDUGvS5vPFsE+V13NIfbvbwbEZPj3JfcHVv7vMDrUrPtJ4EhTh00Svejp1Moqg==}
+    peerDependencies:
+      nodemailer: ^6.8.0
+    peerDependenciesMeta:
+      nodemailer:
+        optional: true
+    dependencies:
+      '@panva/hkdf': 1.1.1
+      cookie: 0.5.0
+      jose: 4.14.4
+      oauth4webapi: 2.3.0
+      preact: 10.11.3
+      preact-render-to-string: 5.2.3(preact@10.11.3)
+    dev: false
 
   /@auth/core@0.8.2:
     resolution: {integrity: sha512-swqJ7tKFlqiYIl1znFGrrawUv1F6rwL+/f3DoeWDaZLnr2phiHFaZsvNvLK7WBJhnJbel78Vd3GznuR31AnFUw==}
@@ -4020,8 +4033,8 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /next-auth@0.0.0-manual.d211b087(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-IXBcSAkfvRZeY/778LDmlrKcLYtKp0/IA4K0m0vMczEYRROdP9Tuy1N0CJ3tjLEcv8Af2+YVUfIs4qHKF68g5g==}
+  /next-auth@0.0.0-manual.f414f2f5(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-qJmSX4QUV8V2JOQavl0fQyJymt0fte7eDQsMGTpx8ZRU2Qvx8uh+xrvXlHt3dXf603OB3QkWaj77ipIEt62Hfg==}
     peerDependencies:
       next: ^13.4.5
       nodemailer: ^6.6.5
@@ -4031,7 +4044,7 @@ packages:
       nodemailer:
         optional: true
     dependencies:
-      '@auth/core': 0.8.2
+      '@auth/core': 0.0.0-manual.527fff6c
       '@auth/nextjs': 0.0.0-manual.de744368(next@13.4.7-canary.1)(react@18.2.0)
       next: 13.4.7-canary.1(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
