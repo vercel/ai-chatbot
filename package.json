@@ -33,7 +33,7 @@
     "focus-trap-react": "^10.1.1",
     "nanoid": "^4.0.2",
     "next": "13.4.7-canary.1",
-    "next-auth": "0.0.0-manual.f414f2f5",
+    "next-auth": "0.0.0-manual.e65faa1c",
     "next-themes": "^0.2.1",
     "openai-edge": "^0.5.1",
     "react": "^18.2.0",

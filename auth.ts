@@ -15,7 +15,6 @@ export const {
   auth,
   CSRF_experimental
 } = NextAuth({
-  // @ts-expect-error
   providers: [GitHub],
   callbacks: {
     jwt: async ({ token, profile }) => {
