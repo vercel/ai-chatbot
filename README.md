@@ -16,7 +16,7 @@
 </p>
 <br/>
 
-## Features
+## Features 2
 
 - [Next.js](https://nextjs.org) App Router
 - React Server Components (RSCs), Suspense, and Server Actions
