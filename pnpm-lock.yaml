@@ -63,8 +63,8 @@ dependencies:
     specifier: 13.4.7-canary.1
     version: 13.4.7-canary.1(react-dom@18.2.0)(react@18.2.0)
   next-auth:
-    specifier: 0.0.0-manual.e65faa1c
-    version: 0.0.0-manual.e65faa1c(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0)
+    specifier: 0.0.0-manual.f414f2f5
+    version: 0.0.0-manual.f414f2f5(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0)
   next-themes:
     specifier: ^0.2.1
     version: 0.2.1(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0)
@@ -4142,8 +4142,8 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /next-auth@0.0.0-manual.e65faa1c(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-I51GvhZhZEf/gzhiTKivYPAIyZ74sCF3YXAMMuZ/bjahybeehPEu7opcPEA+H0Uxrvmo2G8/BQ7mT+TiFdM9IQ==}
+  /next-auth@0.0.0-manual.f414f2f5(next@13.4.7-canary.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-qJmSX4QUV8V2JOQavl0fQyJymt0fte7eDQsMGTpx8ZRU2Qvx8uh+xrvXlHt3dXf603OB3QkWaj77ipIEt62Hfg==}
     peerDependencies:
       next: ^13.4.5
       nodemailer: ^6.6.5
@@ -4153,6 +4153,7 @@ packages:
       nodemailer:
         optional: true
     dependencies:
+      '@auth/core': 0.0.0-manual.8fcd46b0
       '@auth/nextjs': 0.0.0-manual.b53ca00b(next@13.4.7-canary.1)(react@18.2.0)
       next: 13.4.7-canary.1(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
