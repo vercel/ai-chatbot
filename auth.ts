@@ -15,6 +15,7 @@ export const {
   auth,
   CSRF_experimental
 } = NextAuth({
+  // @ts-ignore
   providers: [GitHub],
   callbacks: {
     jwt: async ({ token, profile }) => {

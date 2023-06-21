@@ -12,11 +12,11 @@ export function useCopyToClipboard({
   const [isCopied, setIsCopied] = React.useState<Boolean>(false)
 
   const copyToClipboard = (value: string) => {
-    if (
-      typeof window === 'undefined' ||
-      !navigator.clipboard ||
-      !navigator.clipboard.writeText
-    ) {
+    if (typeof window === 'undefined' || !navigator.clipboard?.writeText) {
+      return
+    }
+
+    if (!value) {
       return
     }
 
