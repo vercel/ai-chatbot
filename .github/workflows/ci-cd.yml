@@ -17,12 +17,15 @@ jobs:
         with:
           node-version: '14'
 
+      - name: Install PNPM
+        run: npm install -g pnpm@latest
+
       - name: Install Dependencies
-        run: npm install
+        run: pnpm i
 
       - name: Run Tests
-        run: npm run test
+        run: pnpm test
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
