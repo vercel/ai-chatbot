@@ -42,8 +42,8 @@ dependencies:
     specifier: ^0.5.7
     version: 0.5.7
   ai:
-    specifier: ^2.1.2
-    version: 2.1.2(react@18.2.0)(svelte@3.59.2)(vue@3.3.4)
+    specifier: ^2.1.6
+    version: 2.1.6(react@18.2.0)(svelte@3.59.2)(vue@3.3.4)
   body-scroll-lock:
     specifier: 4.0.0-beta.0
     version: 4.0.0-beta.0
@@ -1481,8 +1481,8 @@ packages:
     hasBin: true
     dev: true
 
-  /ai@2.1.2(react@18.2.0)(svelte@3.59.2)(vue@3.3.4):
-    resolution: {integrity: sha512-WhyGH95Pv/gpgVMQT5eCyKXJh7irozr+bmpJ94somfRYBcAN2U270ii/OOHzGLrPM3liTbBilGQL2Ds7/5sz9Q==}
+  /ai@2.1.6(react@18.2.0)(svelte@3.59.2)(vue@3.3.4):
+    resolution: {integrity: sha512-YFCy7KEUDvuNGNuD8Bz7BynXB/eW2jJRAxAIM8Hb5/gpppZJs6/nTSdpocROxoGESJchtkFgYdygieG/wciEEQ==}
     engines: {node: '>=14.6'}
     peerDependencies:
       react: ^18.0.0
