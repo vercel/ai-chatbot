@@ -15,7 +15,7 @@ import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
 
 export interface PromptProps
   extends Pick<UseChatHelpers, 'input' | 'setInput'> {
-  onSubmit: (value: string) => void
+  onSubmit: (value: string) => Promise<void>
   isLoading: boolean
 }
 
@@ -38,7 +38,7 @@ export function PromptForm({
     <form
       onSubmit={async e => {
         e.preventDefault()
-        if (input === '') {
+        if (!input?.trim()) {
           return
         }
         setInput('')
