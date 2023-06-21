@@ -18,11 +18,11 @@ jobs:
           node-version: '14'
 
       - name: Install Dependencies
-        run: pnpm i
+        run: npm install
 
       - name: Run Tests
-        run: pnpm test
+        run: npm run test
 
       - name: Build
-        run: pnpm build
+        run: npm run build
 
