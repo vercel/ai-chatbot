@@ -34,7 +34,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-         <meta charset="UTF-8"/>
+        <meta charSet={'utf-8'}/>
       </head>
       <body
         className={cn(
