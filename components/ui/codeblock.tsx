@@ -84,6 +84,11 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     URL.revokeObjectURL(url)
   }
 
+  const onCopy = () => {
+    if (isCopied) return
+    copyToClipboard(value)
+  }
+
   return (
     <div className="codeblock relative w-full bg-zinc-950 font-sans">
       <div className="flex w-full items-center justify-between bg-zinc-800 px-6 py-2 pr-4 text-zinc-100">
@@ -102,7 +107,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
             variant="ghost"
             size="icon"
             className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
-            onClick={() => copyToClipboard(value)}
+            onClick={onCopy}
           >
             {isCopied ? <IconCheck /> : <IconCopy />}
             <span className="sr-only">Copy code</span>
