@@ -69,7 +69,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@auth/nextjs": "0.0.0-manual.de744368"
+      "@auth/nextjs": "0.0.0-manual.223c6467"
     }
   },
   "packageManager": "pnpm@8.6.1"

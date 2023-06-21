@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@auth/nextjs': 0.0.0-manual.de744368
+  '@auth/nextjs': 0.0.0-manual.223c6467
 
 dependencies:
   '@radix-ui/react-alert-dialog':
@@ -184,10 +184,10 @@ packages:
       preact-render-to-string: 5.2.3(preact@10.11.3)
     dev: false
 
-  /@auth/nextjs@0.0.0-manual.de744368(next@13.4.7-canary.1)(react@18.2.0):
-    resolution: {integrity: sha512-jLjKasLTKH5YLiK2i0NQWbsQS1pMveidyFT/ibwZ6c5UAcqDsC6ZGvvVxOaiAmiA6iFA1WMqNBVEcy+NhGgXVQ==}
+  /@auth/nextjs@0.0.0-manual.223c6467(next@13.4.7-canary.1)(react@18.2.0):
+    resolution: {integrity: sha512-nO6TMZ67ysq5lwpffQofxVLlTDHBLYX2x6VNXCXqbOoapofAk1qKyJ57lelHQdgV3py6qqWej/bTa4fDL19IDw==}
     peerDependencies:
-      next: ^13.4.6
+      next: ^13.4.2
       react: ^18.2.0
     dependencies:
       '@auth/core': 0.8.2
@@ -4157,7 +4157,7 @@ packages:
         optional: true
     dependencies:
       '@auth/core': 0.8.2
-      '@auth/nextjs': 0.0.0-manual.de744368(next@13.4.7-canary.1)(react@18.2.0)
+      '@auth/nextjs': 0.0.0-manual.223c6467(next@13.4.7-canary.1)(react@18.2.0)
       next: 13.4.7-canary.1(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
