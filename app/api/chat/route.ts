@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const { messages, previewToken } = json
   const session = await auth()
 
-  if (process.env.VERCEL_ENV !== 'preview') {
+  if (process.env.VERCEL_ENV === 'preview') {
     if (session == null) {
       return new Response('Unauthorized', { status: 401 })
     }
