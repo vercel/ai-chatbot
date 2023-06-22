@@ -17,11 +17,11 @@ export const {
         token.image = profile.picture
       }
       return token
+    },
+    // @ts-ignore
+    authorized({ auth }) {
+      return !!auth?.user
     }
-    // @TODO
-    // authorized({ request, auth }) {
-    //   return !!auth?.user
-    // }
   },
   pages: {
     signIn: '/sign-in'
