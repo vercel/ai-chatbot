@@ -18,6 +18,11 @@ export function ChatMessageActions({
 }: ChatMessageActionsProps) {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 })
 
+  const onCopy = () => {
+    if (isCopied) return
+    copyToClipboard(message.content)
+  }
+
   return (
     <div
       className={cn(
@@ -26,11 +31,7 @@ export function ChatMessageActions({
       )}
       {...props}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => copyToClipboard(message.content)}
-      >
+      <Button variant="ghost" size="icon" onClick={onCopy}>
         {isCopied ? <IconCheck /> : <IconCopy />}
         <span className="sr-only">Copy message</span>
       </Button>
