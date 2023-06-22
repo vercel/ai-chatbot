@@ -39,7 +39,6 @@ export const {
         })
       : GitHub
   ],
-  debugger: true,
   callbacks: {
     // @ts-ignore
     jwt: async ({ token, profile }) => {
