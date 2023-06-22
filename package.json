@@ -69,5 +69,5 @@
       "@auth/nextjs": "0.0.0-manual.223c6467"
     }
   },
-  "packageManager": "pnpm@8.6.1"
+  "packageManager": "pnpm@8.6.3"
 }
