@@ -54,12 +54,11 @@ export const {
     },
     trustHost: true
   },
-  ...(process.env.VERCEL_ENV === 'preview' ||
-  process.env.NODE_ENV === 'development'
-    ? {
+  ...(process.env.VERCEL_ENV === 'preview'
+    ? {}
+    : {
         pages: {
           signIn: '/sign-in'
         }
-      }
-    : {})
+      })
 })
