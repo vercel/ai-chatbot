@@ -7,17 +7,26 @@ import { nanoid } from '@/lib/utils'
 
 export const runtime = 'edge'
 
-const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY })
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 const openai = new OpenAIApi(configuration)
 
-export const POST = auth(async function (req) {
+export async function POST(req: Request) {
   const json = await req.json()
   const { messages, previewToken } = json
-  const userId = req.auth.user.id
-  if (!userId) return new Response('Unauthorized', { status: 401 })
+  const userId = (await auth())?.user.id
 
-  if (previewToken) configuration.apiKey = previewToken
+  if (!userId) {
+    return new Response('Unauthorized', {
+      status: 401
+    })
+  }
+
+  if (previewToken) {
+    configuration.apiKey = previewToken
+  }
 
   const res = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
@@ -55,4 +64,4 @@ export const POST = auth(async function (req) {
   })
 
   return new StreamingTextResponse(stream)
-})
+}
