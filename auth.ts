@@ -25,7 +25,9 @@ export const {
       }
       return token
     },
-    authorized: ({ auth }) => !!auth.user
+    authorized({ auth }) {
+      return !!auth?.user
+    }
   },
   pages: {
     signIn: '/sign-in'
