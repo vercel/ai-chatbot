@@ -25,13 +25,7 @@ export const {
       }
       return token
     },
-    authorized({ request, auth }) {
-      const { pathname } = request.nextUrl
-      console.log(auth.user)
-
-      if (!auth.user) return false
-      if (pathname === '/sign-in') return NextResponse.redirect('/')
-    }
+    authorized: ({ auth }) => !!auth.user
   },
   pages: {
     signIn: '/sign-in'
