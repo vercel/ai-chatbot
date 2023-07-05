@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { signIn } from 'next-auth/react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
@@ -19,13 +19,17 @@ export function LoginButton({
   ...props
 }: LoginButtonProps) {
   const [isLoading, setIsLoading] = React.useState(false)
+  // Create a Supabase client configured to use cookies
+  const supabase = createClientComponentClient()
   return (
     <Button
       variant="outline"
-      onClick={() => {
+      onClick={async () => {
         setIsLoading(true)
-        // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
-        signIn('github', { callbackUrl: `/` })
+        await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: { redirectTo: `${location.origin}/api/auth/callback` }
+        })
       }}
       disabled={isLoading}
       className={cn(className)}
