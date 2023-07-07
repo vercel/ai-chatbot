@@ -29,10 +29,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
         <p className="mb-2 leading-normal text-muted-foreground">
           This is an open source AI chatbot app template built with{' '}
           <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-          <ExternalLink href="https://vercel.com/storage/kv">
-            Vercel KV
-          </ExternalLink>
-          .
+          <ExternalLink href="https://supabase.com">Supabase</ExternalLink>.
         </p>
         <p className="leading-normal text-muted-foreground">
           You can start a conversation here or try the following examples:

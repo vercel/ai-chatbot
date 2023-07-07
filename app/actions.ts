@@ -1,11 +1,15 @@
 'use server'
 
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { Database } from '@/lib/db_types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { kv } from '@vercel/kv'
 
-import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { auth } from '@/auth'
+
+const supabase = createServerActionClient<Database>({ cookies })
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -13,108 +17,81 @@ export async function getChats(userId?: string | null) {
   }
 
   try {
-    const pipeline = kv.pipeline()
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
-      rev: true
-    })
+    const { data } = await supabase
+      .from('chats')
+      .select('payload')
+      .order('payload->createdAt', { ascending: false })
+      .throwOnError()
 
-    for (const chat of chats) {
-      pipeline.hgetall(chat)
-    }
-
-    const results = await pipeline.exec()
-
-    return results as Chat[]
+    return (data?.map(entry => entry.payload) as Chat[]) ?? []
   } catch (error) {
     return []
   }
 }
 
-export async function getChat(id: string, userId: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+export async function getChat(id: string) {
+  const { data } = await supabase
+    .from('chats')
+    .select('payload')
+    .eq('id', id)
+    .maybeSingle()
 
-  if (!chat || (userId && chat.userId !== userId)) {
-    return null
-  }
-
-  return chat
+  return (data?.payload as Chat) ?? null
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
-  const session = await auth()
+  try {
+    await supabase.from('chats').delete().eq('id', id).throwOnError()
 
-  if (!session) {
+    revalidatePath('/')
+    return revalidatePath(path)
+  } catch (error) {
     return {
       error: 'Unauthorized'
     }
   }
-
-  const uid = await kv.hget<string>(`chat:${id}`, 'userId')
-
-  if (uid !== session?.user?.id) {
-    return {
-      error: 'Unauthorized'
-    }
-  }
-
-  await kv.del(`chat:${id}`)
-  await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
-
-  revalidatePath('/')
-  return revalidatePath(path)
 }
 
 export async function clearChats() {
-  const session = await auth()
-
-  if (!session?.user?.id) {
+  try {
+    const session = await auth()
+    await supabase
+      .from('chats')
+      .delete()
+      .eq('user_id', session?.user.id)
+      .throwOnError()
+    revalidatePath('/')
+    return redirect('/')
+  } catch (error) {
+    console.log('clear chats error', error)
     return {
       error: 'Unauthorized'
     }
   }
-
-  const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
-  if (!chats.length) {
-  return redirect('/')
-  }
-  const pipeline = kv.pipeline()
-
-  for (const chat of chats) {
-    pipeline.del(chat)
-    pipeline.zrem(`user:chat:${session.user.id}`, chat)
-  }
-
-  await pipeline.exec()
-
-  revalidatePath('/')
-  return redirect('/')
 }
 
 export async function getSharedChat(id: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+  const { data } = await supabase
+    .from('chats')
+    .select('payload')
+    .eq('id', id)
+    .not('payload->sharePath', 'is', null)
+    .maybeSingle()
 
-  if (!chat || !chat.sharePath) {
-    return null
-  }
-
-  return chat
+  return (data?.payload as Chat) ?? null
 }
 
 export async function shareChat(chat: Chat) {
-  const session = await auth()
-
-  if (!session?.user?.id || session.user.id !== chat.userId) {
-    return {
-      error: 'Unauthorized'
-    }
-  }
-
   const payload = {
     ...chat,
     sharePath: `/share/${chat.id}`
   }
 
-  await kv.hmset(`chat:${chat.id}`, payload)
+  await supabase
+    .from('chats')
+    .update({ payload: payload as any })
+    .eq('id', chat.id)
+    .throwOnError()
 
   return payload
 }

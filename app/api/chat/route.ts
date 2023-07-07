@@ -1,6 +1,8 @@
-import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { Database } from '@/lib/db_types'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
@@ -14,6 +16,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration)
 
 export async function POST(req: Request) {
+  const supabase = createRouteHandlerClient<Database>({ cookies })
   const json = await req.json()
   const { messages, previewToken } = json
   const userId = (await auth())?.user.id
@@ -55,11 +58,8 @@ export async function POST(req: Request) {
           }
         ]
       }
-      await kv.hmset(`chat:${id}`, payload)
-      await kv.zadd(`user:chat:${userId}`, {
-        score: createdAt,
-        member: `chat:${id}`
-      })
+      // Insert chat into database.
+      await supabase.from('chats').upsert({ id, payload }).throwOnError()
     }
   })
 
