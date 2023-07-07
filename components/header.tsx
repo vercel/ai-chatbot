@@ -17,7 +17,6 @@ import { SidebarFooter } from '@/components/sidebar-footer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ClearHistory } from '@/components/clear-history'
 import { UserMenu } from '@/components/user-menu'
-import { LoginButton } from '@/components/login-button'
 
 export async function Header() {
   const session = await auth()
@@ -47,7 +46,7 @@ export async function Header() {
             <UserMenu user={session.user} />
           ) : (
             <Button variant="link" asChild className="-ml-2">
-              <Link href="/sign-in?callbackUrl=/">Login</Link>
+              <Link href="/sign-in">Login</Link>
             </Button>
           )}
         </div>
@@ -55,7 +54,7 @@ export async function Header() {
       <div className="flex items-center justify-end space-x-2">
         <a
           target="_blank"
-          href="https://github.com/vercel/nextjs-ai-chatbot/"
+          href="https://github.com/thorwebdev/vercel-ai-chatbot"
           rel="noopener noreferrer"
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
@@ -63,7 +62,7 @@ export async function Header() {
           <span className="hidden ml-2 md:flex">GitHub</span>
         </a>
         <a
-          href="https://github.com/vercel/nextjs-ai-chatbot/"
+          href="https://github.com/thorwebdev/vercel-ai-chatbot"
           target="_blank"
           className={cn(buttonVariants())}
         >

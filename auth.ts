@@ -1,35 +1,10 @@
-import NextAuth, { type DefaultSession } from 'next-auth'
-import GitHub from 'next-auth/providers/github'
-import { NextResponse } from 'next/server'
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      /** The user's id. */
-      id: string
-    } & DefaultSession['user']
-  }
+export const auth = async () => {
+  // Create a Supabase client configured to use cookies
+  const supabase = createServerActionClient({ cookies })
+  const { data, error } = await supabase.auth.getSession()
+  if (error) throw error
+  return data.session
 }
-
-export const {
-  handlers: { GET, POST },
-  auth,
-  CSRF_experimental
-} = NextAuth({
-  providers: [GitHub],
-  callbacks: {
-    jwt({ token, profile }) {
-      if (profile) {
-        token.id = profile.id
-        token.image = profile.picture
-      }
-      return token
-    },
-    authorized({ auth }) {
-      return !!auth?.user
-    }
-  },
-  pages: {
-    signIn: '/sign-in'
-  }
-})
