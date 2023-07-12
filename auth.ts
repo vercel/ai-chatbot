@@ -1,5 +1,7 @@
 import NextAuth, { type DefaultSession } from 'next-auth'
-import GitHub from 'next-auth/providers/github'
+import { NextAuthRequest } from 'next-auth/lib'
+import { Session } from 'next-auth/types'
+// import GitHub from 'next-auth/providers/github'
 
 declare module 'next-auth' {
   interface Session {
@@ -10,12 +12,21 @@ declare module 'next-auth' {
   }
 }
 
+// export const {
+//   handlers: { GET, POST },
+//   auth,
+//   CSRF_experimental // will be removed in future
+// } = 
+
+
+// function LocalNextAuth() : 
+
 export const {
   handlers: { GET, POST },
   auth,
   CSRF_experimental // will be removed in future
 } = NextAuth({
-  providers: [GitHub],
+  providers: [],
   callbacks: {
     jwt({ token, profile }) {
       if (profile) {
@@ -25,10 +36,7 @@ export const {
       return token
     },
     authorized({ auth }) {
-      return !!auth?.user // this ensures there is a logged in user for -every- request
+      return true // this ensures there is a logged in user for -every- request
     }
-  },
-  pages: {
-    signIn: '/sign-in' // overrides the next-auth default signin page https://authjs.dev/guides/basics/pages
   }
 })

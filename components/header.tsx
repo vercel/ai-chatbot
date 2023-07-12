@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
-import { clearChats } from '@/app/actions'
+// import { clearChats } from '@/app/actions'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
@@ -24,24 +24,25 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
       <div className="flex items-center">
-        {session?.user ? (
+        {false ? (
           <Sidebar>
+            Test
             <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
               {/* @ts-ignore */}
               <SidebarList userId={session?.user?.id} />
             </React.Suspense>
             <SidebarFooter>
               <ThemeToggle />
-              <ClearHistory clearChats={clearChats} />
+              {/* <ClearHistory clearChats={clearChats} /> */}
             </SidebarFooter>
           </Sidebar>
         ) : (
           <Link href="/" target="_blank" rel="nofollow">
-            <IconNextChat className="w-6 h-6 mr-2 dark:hidden" inverted />
-            <IconNextChat className="hidden w-6 h-6 mr-2 dark:block" />
+            {/* <IconNextChat className="w-6 h-6 mr-2 dark:hidden" inverted />
+            <IconNextChat className="hidden w-6 h-6 mr-2 dark:block" /> */}
           </Link>
         )}
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <IconSeparator className="w-6 h-6 text-muted-foreground/50" />
           {session?.user ? (
             <UserMenu user={session.user} />
@@ -50,9 +51,9 @@ export async function Header() {
               <Link href="/sign-in?callbackUrl=/">Login</Link>
             </Button>
           )}
-        </div>
+        </div> */}
       </div>
-      <div className="flex items-center justify-end space-x-2">
+      {/* <div className="flex items-center justify-end space-x-2">
         <a
           target="_blank"
           href="https://github.com/vercel/nextjs-ai-chatbot/"
@@ -71,7 +72,7 @@ export async function Header() {
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Deploy</span>
         </a>
-      </div>
+      </div> */}
     </header>
   )
 }

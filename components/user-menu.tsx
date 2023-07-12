@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { type Session } from 'next-auth'
-import { signOut } from 'next-auth/react'
+// import { signOut } from 'next-auth/react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -60,7 +60,7 @@ export function UserMenu({ user }: UserMenuProps) {
               <IconExternalLink className="w-3 h-3 ml-auto" />
             </a>
           </DropdownMenuItem>
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             onClick={() =>
               signOut({
                 callbackUrl: '/'
@@ -69,7 +69,7 @@ export function UserMenu({ user }: UserMenuProps) {
             className="text-xs"
           >
             Log Out
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

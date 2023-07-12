@@ -20,14 +20,16 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
+import { useSearchParams } from 'next/navigation'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
-  id?: string
+  id?: string,
+  userId: string
 }
 
-export function Chat({ id, initialMessages, className }: ChatProps) {
+export function Chat({ id, initialMessages, className, userId }: ChatProps) {
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
     null
@@ -40,7 +42,8 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       id,
       body: {
         id,
-        previewToken
+        previewToken,
+        userId
       },
       onResponse(response) {
         if (response.status === 401) {
