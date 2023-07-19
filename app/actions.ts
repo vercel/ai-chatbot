@@ -1,6 +1,6 @@
 'use server'
-
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import 'server-only'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/db_types'
 import { revalidatePath } from 'next/cache'
@@ -9,7 +9,7 @@ import { redirect } from 'next/navigation'
 import { type Chat } from '@/lib/types'
 import { auth } from '@/auth'
 
-const supabase = createServerActionClient<Database>({ cookies })
+const supabase = createServerComponentClient<Database>({ cookies })
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
