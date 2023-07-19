@@ -1,3 +1,4 @@
+import 'server-only'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
