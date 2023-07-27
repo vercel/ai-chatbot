@@ -6,8 +6,11 @@ import { getSharedChat } from '@/app/actions'
 import { ChatList } from '@/components/chat-list'
 import { FooterText } from '@/components/footer'
 
-export const runtime = 'edge'
-export const preferredRegion = 'home'
+
+// Set this to the default nodejs runtime 
+// on hobby plan edge can only have a 1MB file
+// export const runtime = 'edge'
+// export const preferredRegion = 'home'
 
 interface SharePageProps {
   params: {
