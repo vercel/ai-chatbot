@@ -2,7 +2,10 @@ import { ImageResponse } from 'next/server'
 
 import { getSharedChat } from '@/app/actions'
 
-export const runtime = 'edge'
+// Set this to the default nodejs runtime 
+// on hobby plan edge can only have a 1MB file
+// export const runtime = 'edge'
+
 
 export const alt = 'AI Chatbot'
 
