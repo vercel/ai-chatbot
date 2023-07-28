@@ -21,6 +21,11 @@ export function LoginButton({
   const [isLoading, setIsLoading] = React.useState(false)
   // Create a Supabase client configured to use cookies
   const supabase = createClientComponentClient()
+
+  if (process.env.NEXT_PUBLIC_AUTH_GITHUB !== 'true') {
+    return null
+  }
+
   return (
     <Button
       variant="outline"
