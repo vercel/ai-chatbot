@@ -17,13 +17,13 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration)
 
 export async function POST(req: Request) {
-  const readOnlyRequestCookies = cookies()
+  const cookieStore = cookies()
   const supabase = createRouteHandlerClient<Database>({
-    cookies: () => readOnlyRequestCookies
+    cookies: () => cookieStore
   })
   const json = await req.json()
   const { messages, previewToken } = json
-  const userId = (await auth({ readOnlyRequestCookies }))?.user.id
+  const userId = (await auth({ cookieStore }))?.user.id
 
   if (!userId) {
     return new Response('Unauthorized', {

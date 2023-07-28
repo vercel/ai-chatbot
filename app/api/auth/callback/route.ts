@@ -11,9 +11,9 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code')
 
   if (code) {
-    const readOnlyRequestCookies = cookies()
+    const cookieStore = cookies()
     const supabase = createRouteHandlerClient({
-      cookies: () => readOnlyRequestCookies
+      cookies: () => cookieStore
     })
     await supabase.auth.exchangeCodeForSession(code)
   }

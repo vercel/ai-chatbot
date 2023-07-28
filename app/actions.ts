@@ -13,9 +13,9 @@ export async function getChats(userId?: string | null) {
     return []
   }
   try {
-    const readOnlyRequestCookies = cookies()
+    const cookieStore = cookies()
     const supabase = createServerActionClient<Database>({
-      cookies: () => readOnlyRequestCookies
+      cookies: () => cookieStore
     })
     const { data } = await supabase
       .from('chats')
@@ -31,9 +31,9 @@ export async function getChats(userId?: string | null) {
 }
 
 export async function getChat(id: string) {
-  const readOnlyRequestCookies = cookies()
+  const cookieStore = cookies()
   const supabase = createServerActionClient<Database>({
-    cookies: () => readOnlyRequestCookies
+    cookies: () => cookieStore
   })
   const { data } = await supabase
     .from('chats')
@@ -46,9 +46,9 @@ export async function getChat(id: string) {
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
   try {
-    const readOnlyRequestCookies = cookies()
+    const cookieStore = cookies()
     const supabase = createServerActionClient<Database>({
-      cookies: () => readOnlyRequestCookies
+      cookies: () => cookieStore
     })
     await supabase.from('chats').delete().eq('id', id).throwOnError()
 
@@ -63,9 +63,9 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
 export async function clearChats() {
   try {
-    const readOnlyRequestCookies = cookies()
+    const cookieStore = cookies()
     const supabase = createServerActionClient<Database>({
-      cookies: () => readOnlyRequestCookies
+      cookies: () => cookieStore
     })
     await supabase.from('chats').delete().throwOnError()
     revalidatePath('/')
@@ -79,9 +79,9 @@ export async function clearChats() {
 }
 
 export async function getSharedChat(id: string) {
-  const readOnlyRequestCookies = cookies()
+  const cookieStore = cookies()
   const supabase = createServerActionClient<Database>({
-    cookies: () => readOnlyRequestCookies
+    cookies: () => cookieStore
   })
   const { data } = await supabase
     .from('chats')
@@ -99,9 +99,9 @@ export async function shareChat(chat: Chat) {
     sharePath: `/share/${chat.id}`
   }
 
-  const readOnlyRequestCookies = cookies()
+  const cookieStore = cookies()
   const supabase = createServerActionClient<Database>({
-    cookies: () => readOnlyRequestCookies
+    cookies: () => cookieStore
   })
   await supabase
     .from('chats')
