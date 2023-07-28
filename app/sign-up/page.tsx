@@ -6,8 +6,8 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export default async function SignInPage() {
-  const readOnlyRequestCookies = cookies()
-  const session = await auth({ readOnlyRequestCookies })
+  const cookieStore = cookies()
+  const session = await auth({ cookieStore })
   // redirect to home if user is already logged in
   if (session?.user) {
     redirect('/')
