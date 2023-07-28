@@ -2,10 +2,12 @@ import { auth } from '@/auth'
 import { LoginButton } from '@/components/login-button'
 import { LoginForm } from '@/components/login-form'
 import { Separator } from '@/components/ui/separator'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export default async function SignInPage() {
-  const session = await auth()
+  const readOnlyRequestCookies = cookies()
+  const session = await auth({ readOnlyRequestCookies })
   // redirect to home if user is already logged in
   if (session?.user) {
     redirect('/')

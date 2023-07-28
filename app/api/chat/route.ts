@@ -8,7 +8,7 @@ import { Database } from '@/lib/db_types'
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
 
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -17,10 +17,13 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration)
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient<Database>({ cookies })
+  const readOnlyRequestCookies = cookies()
+  const supabase = createRouteHandlerClient<Database>({
+    cookies: () => readOnlyRequestCookies
+  })
   const json = await req.json()
   const { messages, previewToken } = json
-  const userId = (await auth())?.user.id
+  const userId = (await auth({ readOnlyRequestCookies }))?.user.id
 
   if (!userId) {
     return new Response('Unauthorized', {

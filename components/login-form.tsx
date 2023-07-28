@@ -3,9 +3,8 @@
 import * as React from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-import { cn } from '@/lib/utils'
-import { Button, type ButtonProps } from '@/components/ui/button'
-import { IconGitHub, IconSpinner } from '@/components/ui/icons'
+import { Button } from '@/components/ui/button'
+import { IconSpinner } from '@/components/ui/icons'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import Link from 'next/link'
@@ -45,10 +44,14 @@ export function LoginForm({
 
   const signUp = async () => {
     const { email, password } = formState
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: { emailRedirectTo: `${location.origin}/api/auth/callback` }
     })
+
+    if (!error && !data.session)
+      toast.success('Check your inbox to confirm your email address!')
     return error
   }
 
@@ -105,7 +108,7 @@ export function LoginForm({
         <div className="mt-4 flex items-center">
           <Button disabled={isLoading}>
             {isLoading && <IconSpinner className="mr-2 animate-spin" />}
-            Sign In
+            {action === 'sign-in' ? 'Sign In' : 'Sign Up'}
           </Button>
           <p className="ml-4">
             {action === 'sign-in' ? (

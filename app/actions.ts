@@ -1,22 +1,22 @@
 'use server'
 import 'server-only'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/db_types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { type Chat } from '@/lib/types'
-import { auth } from '@/auth'
-
-const supabase = createServerComponentClient<Database>({ cookies })
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
     return []
   }
-
   try {
+    const readOnlyRequestCookies = cookies()
+    const supabase = createServerActionClient<Database>({
+      cookies: () => readOnlyRequestCookies
+    })
     const { data } = await supabase
       .from('chats')
       .select('payload')
@@ -31,6 +31,10 @@ export async function getChats(userId?: string | null) {
 }
 
 export async function getChat(id: string) {
+  const readOnlyRequestCookies = cookies()
+  const supabase = createServerActionClient<Database>({
+    cookies: () => readOnlyRequestCookies
+  })
   const { data } = await supabase
     .from('chats')
     .select('payload')
@@ -42,6 +46,10 @@ export async function getChat(id: string) {
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
   try {
+    const readOnlyRequestCookies = cookies()
+    const supabase = createServerActionClient<Database>({
+      cookies: () => readOnlyRequestCookies
+    })
     await supabase.from('chats').delete().eq('id', id).throwOnError()
 
     revalidatePath('/')
@@ -55,12 +63,11 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
 export async function clearChats() {
   try {
-    const session = await auth()
-    await supabase
-      .from('chats')
-      .delete()
-      .eq('user_id', session?.user.id)
-      .throwOnError()
+    const readOnlyRequestCookies = cookies()
+    const supabase = createServerActionClient<Database>({
+      cookies: () => readOnlyRequestCookies
+    })
+    await supabase.from('chats').delete().throwOnError()
     revalidatePath('/')
     return redirect('/')
   } catch (error) {
@@ -72,6 +79,10 @@ export async function clearChats() {
 }
 
 export async function getSharedChat(id: string) {
+  const readOnlyRequestCookies = cookies()
+  const supabase = createServerActionClient<Database>({
+    cookies: () => readOnlyRequestCookies
+  })
   const { data } = await supabase
     .from('chats')
     .select('payload')
@@ -88,6 +99,10 @@ export async function shareChat(chat: Chat) {
     sharePath: `/share/${chat.id}`
   }
 
+  const readOnlyRequestCookies = cookies()
+  const supabase = createServerActionClient<Database>({
+    cookies: () => readOnlyRequestCookies
+  })
   await supabase
     .from('chats')
     .update({ payload: payload as any })
