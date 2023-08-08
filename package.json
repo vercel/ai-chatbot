@@ -31,7 +31,7 @@
     "clsx": "^1.2.1",
     "focus-trap-react": "^10.1.1",
     "nanoid": "^4.0.2",
-    "next": "13.4.7-canary.1",
+    "next": "13.4.14-canary.0",
     "next-auth": "0.0.0-manual.83c4ebd1",
     "next-themes": "^0.2.1",
     "openai-edge": "^0.5.1",
