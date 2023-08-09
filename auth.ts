@@ -24,12 +24,20 @@ export const {
     })
   ],
   callbacks: {
-    jwt({ token, profile }) {
+    jwt: async ({ token, profile }) => {
+      console.log(profile)
       if (profile) {
-        token.id = profile.id
-        token.image = profile.picture
+        if (profile.sub) { // Google profiles have a 'sub' field
+          token.id = String(profile.sub);
+        } else if (profile.id) { // GitHub profiles have an 'id' field
+          token.id = profile.id;
+        }
+        if (profile.picture) {
+          token.image = profile.picture;
+        }
       }
-      return token
+      console.log(token);
+      return token;
     },
     authorized({ auth }) {
       return !!auth?.user // this ensures there is a logged in user for -every- request
