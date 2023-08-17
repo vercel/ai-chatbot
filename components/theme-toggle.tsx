@@ -14,11 +14,11 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => {
-        startTransition(() => {
-          setTheme(theme === 'light' ? 'dark' : 'light')
-        })
-      }}
+      // onClick={() => {
+      //   startTransition(() => {
+      //     setTheme(theme === 'light' ? 'dark' : 'light')
+      //   })
+      // }}
     >
       {!theme ? null : theme === 'dark' ? (
         <IconMoon className="transition-all" />
