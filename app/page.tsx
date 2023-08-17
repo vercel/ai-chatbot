@@ -9,7 +9,7 @@ export default function IndexPage() {
   return (
     <div className="flex">
       <div> Hello! </div>
-      <Chat id={id} />
+      {/* <Chat id={id} /> */}
     </div>
   )
 }
