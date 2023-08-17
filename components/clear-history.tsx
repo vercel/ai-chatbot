@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import React, { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 
@@ -25,7 +25,7 @@ interface ClearHistoryProps {
 
 export function ClearHistory({ clearChats }: ClearHistoryProps) {
   const [open, setOpen] = React.useState(false)
-  const [isPending, startTransition] = React.useTransition()
+  const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
   return (
@@ -46,26 +46,26 @@ export function ClearHistory({ clearChats }: ClearHistoryProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          {/* <AlertDialogAction
+          <AlertDialogAction
             disabled={isPending}
-            onClick={event => {
-              event.preventDefault()
-              startTransition(async () => {
-                const result = await clearChats()
+            // onClick={event => {
+            //   event.preventDefault()
+            //   startTransition(async () => {
+            //     const result = await clearChats()
 
-                if (result && 'error' in result) {
-                  toast.error(result.error)
-                  return
-                }
+            //     if (result && 'error' in result) {
+            //       toast.error(result.error)
+            //       return
+            //     }
 
-                setOpen(false)
-                router.push('/')
-              })
-            }}
+            //     setOpen(false)
+            //     router.push('/')
+            //   })
+            // }}
           >
             {isPending && <IconSpinner className="mr-2 animate-spin" />}
             Delete
-          </AlertDialogAction> */}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
