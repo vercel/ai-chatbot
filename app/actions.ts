@@ -75,7 +75,7 @@ export async function clearChats() {
 
   const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
   if (!chats.length) {
-  return redirect('/')
+    return redirect('/')
   }
   const pipeline = kv.pipeline()
 
@@ -100,21 +100,21 @@ export async function getSharedChat(id: string) {
   return chat
 }
 
-export async function shareChat(chat: Chat) {
-  const session = await auth()
+// export async function shareChat(chat: Chat) {
+//   const session = await auth()
 
-  if (!session?.user?.id || session.user.id !== chat.userId) {
-    return {
-      error: 'Unauthorized'
-    }
-  }
+//   if (!session?.user?.id || session.user.id !== chat.userId) {
+//     return {
+//       error: 'Unauthorized'
+//     }
+//   }
 
-  const payload = {
-    ...chat,
-    sharePath: `/share/${chat.id}`
-  }
+//   const payload = {
+//     ...chat,
+//     sharePath: `/share/${chat.id}`
+//   }
 
-  await kv.hmset(`chat:${chat.id}`, payload)
+//   await kv.hmset(`chat:${chat.id}`, payload)
 
-  return payload
-}
+//   return payload
+// }
