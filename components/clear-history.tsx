@@ -46,7 +46,7 @@ export function ClearHistory({ clearChats }: ClearHistoryProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          {/* <AlertDialogAction
             disabled={isPending}
             onClick={event => {
               event.preventDefault()
@@ -65,7 +65,7 @@ export function ClearHistory({ clearChats }: ClearHistoryProps) {
           >
             {isPending && <IconSpinner className="mr-2 animate-spin" />}
             Delete
-          </AlertDialogAction>
+          </AlertDialogAction> */}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
