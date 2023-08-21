@@ -23,6 +23,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.6",
+    "@tanstack/react-query": "^4.33.0",
     "@vercel/analytics": "^1.0.1",
     "@vercel/kv": "^0.2.2",
     "@vercel/og": "^0.5.8",

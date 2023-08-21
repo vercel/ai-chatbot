@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import { useQueryClient } from "@tanstack/react-query"
 
 import { type Chat, ServerActionResult } from '@/lib/types'
 import { cn, formatDate } from '@/lib/utils'
@@ -55,6 +56,7 @@ export function SidebarActions({
   const [isRemovePending, startRemoveTransition] = React.useTransition()
   const [isSharePending, startShareTransition] = React.useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const copyShareLink = React.useCallback(async (chat: Chat) => {
     if (!chat.sharePath) {
@@ -200,6 +202,7 @@ export function SidebarActions({
                   }
 
                   setDeleteDialogOpen(false)
+                  queryClient.invalidateQueries({ queryKey: ['stream-initial-chats'] })
                   router.refresh()
                   router.push('/')
                   toast.success('Chat deleted')

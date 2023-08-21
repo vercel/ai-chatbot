@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import { useQueryClient } from "@tanstack/react-query"
 
 import { ServerActionResult } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,7 @@ export function ClearHistory({ clearChats }: ClearHistoryProps) {
   const [open, setOpen] = React.useState(false)
   const [isPending, startTransition] = React.useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -59,7 +61,10 @@ export function ClearHistory({ clearChats }: ClearHistoryProps) {
                 }
 
                 setOpen(false)
+                queryClient.invalidateQueries({ queryKey: ['stream-initial-chats'] })
+                router.refresh()
                 router.push('/')
+                toast.success('Chat history successfully cleared')
               })
             }}
           >

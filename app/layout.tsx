@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
+import { ClientProvider } from '@/components/client-provider'
 
 export const metadata: Metadata = {
   title: {
@@ -44,9 +45,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Toaster />
         <Providers attribute="class" defaultTheme="system" enableSystem>
           <div className="flex min-h-screen flex-col">
-            {/* @ts-ignore */}
-            <Header />
-            <main className="flex flex-1 flex-col bg-muted/50">{children}</main>
+            <ClientProvider>
+              {/* @ts-ignore */}
+              <Header />
+              <main className="flex flex-1 flex-col bg-muted/50">{children}</main>
+            </ClientProvider>
           </div>
           <TailwindIndicator />
         </Providers>
