@@ -19,7 +19,7 @@ export const {
   callbacks: {
     jwt({ token, profile }) {
       if (profile) {
-        token.id = profile.id
+        token.id = String(profile.id)
         token.image = profile.picture
       }
       return token

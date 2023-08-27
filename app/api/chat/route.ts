@@ -1,4 +1,5 @@
-import { kv } from '@vercel/kv'
+import { saveChatMessage } from '@/app/actions'
+
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
@@ -39,27 +40,8 @@ export async function POST(req: Request) {
     async onCompletion(completion) {
       const title = json.messages[0].content.substring(0, 100)
       const id = json.id ?? nanoid()
-      const createdAt = Date.now()
       const path = `/chat/${id}`
-      const payload = {
-        id,
-        title,
-        userId,
-        createdAt,
-        path,
-        messages: [
-          ...messages,
-          {
-            content: completion,
-            role: 'assistant'
-          }
-        ]
-      }
-      await kv.hmset(`chat:${id}`, payload)
-      await kv.zadd(`user:chat:${userId}`, {
-        score: createdAt,
-        member: `chat:${id}`
-      })
+      await saveChatMessage(id, title, userId, path, messages, completion)
     }
   })
 

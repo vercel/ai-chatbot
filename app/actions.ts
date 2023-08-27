@@ -1,11 +1,69 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { kv } from '@vercel/kv'
+import { ObjectId } from 'mongodb'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import connectDB from '@/lib/connect-db'
+
+function transformChatDocument(chatDoc: any): Chat {
+  return {
+    ...chatDoc,
+    _id: chatDoc._id.toString(),
+  }
+}
+
+export async function saveChatMessage(
+  id: string,
+  title: string,
+  userId: string,
+  path: string,
+  messages: any[],
+  completion: string
+) {
+  const createdAt = new Date()
+  const modifiedAt = new Date()
+
+  try {
+    const db = await connectDB()
+    const chat = await db.collection('chats').findOne({ id })
+
+    if (!chat) {
+      const newChat: Chat = {
+        _id: new ObjectId(),
+        id,
+        title,
+        createdAt,
+        modifiedAt,
+        userId,
+        path,
+        messages: [
+          ...messages,
+          {
+            content: completion,
+            role: 'assistant'
+          }
+        ]
+      }
+
+      await db.collection('chats').insertOne(newChat)
+    } else {
+      chat.messages = [
+        ...messages,
+        {
+          content: completion,
+          role: 'assistant'
+        }
+      ]
+      chat.modifiedAt = modifiedAt
+
+      await db.collection('chats').updateOne({ id }, { $set: chat })
+    }
+  } catch (error) {
+    console.error('An error occurred while saving a chat message:', error)
+  }
+}
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -13,31 +71,30 @@ export async function getChats(userId?: string | null) {
   }
 
   try {
-    const pipeline = kv.pipeline()
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
-      rev: true
-    })
+    const db = await connectDB()
+    const chatDocuments = await db.collection('chats').find({ userId }).toArray()
 
-    for (const chat of chats) {
-      pipeline.hgetall(chat)
-    }
+    const chats: Chat[] = chatDocuments.map((chatDoc) => transformChatDocument(chatDoc))
 
-    const results = await pipeline.exec()
-
-    return results as Chat[]
+    return chats
   } catch (error) {
     return []
   }
 }
 
 export async function getChat(id: string, userId: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+  try {
+    const db = await connectDB()
+    const chatDocument = await db.collection('chats').findOne({ id })
 
-  if (!chat || (userId && chat.userId !== userId)) {
+    if (!chatDocument || (userId && chatDocument.userId !== userId)) {
+      return null
+    }
+
+    return transformChatDocument(chatDocument)
+  } catch (error) {
     return null
   }
-
-  return chat
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
@@ -49,19 +106,31 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     }
   }
 
-  const uid = await kv.hget<string>(`chat:${id}`, 'userId')
+  try {
+    const db = await connectDB()
+    const chat = await db.collection('chats').findOne({ id })
 
-  if (uid !== session?.user?.id) {
+    if (chat?.userId !== session?.user?.id) {
+      return {
+        error: 'Unauthorized'
+      }
+    }
+
+    if (!chat) {
+      return {
+        error: 'Chat not found'
+      }
+    }
+
+    await db.collection('chats').deleteOne({ id })
+
+    revalidatePath('/')
+    return revalidatePath(path)
+  } catch (error) {
     return {
-      error: 'Unauthorized'
+      error: 'An error occurred while removing the chat'
     }
   }
-
-  await kv.del(`chat:${id}`)
-  await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
-
-  revalidatePath('/')
-  return revalidatePath(path)
 }
 
 export async function clearChats() {
@@ -73,31 +142,39 @@ export async function clearChats() {
     }
   }
 
-  const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
-  if (!chats.length) {
-  return redirect('/')
+  try {
+    const db = await connectDB()
+    const chats = await db.collection('chats').find({ userId: session.user.id }).toArray()
+
+    if (!chats.length) {
+      return revalidatePath('/')
+    }
+
+    for (const chat of chats) {
+      await db.collection('chats').deleteOne({ id: chat.id })
+    }
+
+    return revalidatePath('/')
+  } catch (error) {
+    return {
+      error: 'An error occurred while clearing chats'
+    }
   }
-  const pipeline = kv.pipeline()
-
-  for (const chat of chats) {
-    pipeline.del(chat)
-    pipeline.zrem(`user:chat:${session.user.id}`, chat)
-  }
-
-  await pipeline.exec()
-
-  revalidatePath('/')
-  return redirect('/')
 }
 
 export async function getSharedChat(id: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+  try {
+    const db = await connectDB()
+    const chat = await db.collection('chats').findOne({ id })
 
-  if (!chat || !chat.sharePath) {
+    if (!chat || !chat.sharePath) {
+      return null
+    }
+
+    return chat
+  } catch (error) {
     return null
   }
-
-  return chat
 }
 
 export async function shareChat(chat: Chat) {
@@ -109,12 +186,24 @@ export async function shareChat(chat: Chat) {
     }
   }
 
-  const payload = {
-    ...chat,
-    sharePath: `/share/${chat.id}`
+  try {
+    const db = await connectDB()
+    const updatedChatDocument = await db.collection('chats').findOneAndUpdate(
+      { id: chat.id, userId: session.user.id },
+      { $set: { sharePath: `/share/${chat.id}` } },
+      { returnDocument: 'after' }
+    )
+
+    if (!updatedChatDocument?.value) {
+      return {
+        error: 'Chat not found or unauthorized'
+      }
+    }
+
+    return transformChatDocument(updatedChatDocument.value)
+  } catch (error) {
+    return {
+      error: 'An error occurred while sharing the chat'
+    }
   }
-
-  await kv.hmset(`chat:${chat.id}`, payload)
-
-  return payload
 }
