@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T
 ): [T, (value: T) => void] => {
-
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window !== 'undefined') {
       const item = window.localStorage.getItem(key)
@@ -20,6 +19,7 @@ export const useLocalStorage = <T>(
   }, [storedValue, key])
 
   const setValue = (value: T) => {
+    // Save state
     setStoredValue(value)
   }
 
