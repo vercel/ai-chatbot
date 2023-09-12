@@ -1,26 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T
 ): [T, (value: T) => void] => {
 
-  // prevent usage server-side
-  if (typeof window === 'undefined') {
-    return [initialValue, () => undefined]
-  }
-  
-  // Initialize the state using a function to avoid unnecessary re-render
   const [storedValue, setStoredValue] = useState<T>(() => {
-    const item = window.localStorage.getItem(key)
-    return item ? JSON.parse(item) : initialValue
+    if (typeof window !== 'undefined') {
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    }
+    return initialValue
   })
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(key, JSON.stringify(storedValue))
+    }
+  }, [storedValue, key])
+
   const setValue = (value: T) => {
-    // Save state
     setStoredValue(value)
-    // Save to localStorage
-    window.localStorage.setItem(key, JSON.stringify(value))
   }
 
   return [storedValue, setValue]
