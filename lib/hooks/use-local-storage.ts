@@ -5,6 +5,11 @@ export const useLocalStorage = <T>(
   initialValue: T
 ): [T, (value: T) => void] => {
 
+  // prevent usage server-side
+  if (typeof window === 'undefined') {
+    return [initialValue, () => undefined]
+  }
+  
   // Initialize the state using a function to avoid unnecessary re-render
   const [storedValue, setStoredValue] = useState<T>(() => {
     const item = window.localStorage.getItem(key)
