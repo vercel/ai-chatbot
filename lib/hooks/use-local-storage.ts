@@ -22,6 +22,5 @@ export const useLocalStorage = <T>(
     // Save state
     setStoredValue(value)
   }
-
   return [storedValue, setValue]
 }
