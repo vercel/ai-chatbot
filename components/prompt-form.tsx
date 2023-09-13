@@ -28,6 +28,7 @@ export function PromptForm({
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
+  const [disabled, setDisabled] = React.useState(false);
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -35,11 +36,15 @@ export function PromptForm({
     }
   }, [])
 
+  React.useEffect(() => {
+    setDisabled(input.trim() === "" || isLoading);
+  }, [input, isLoading]);
+
   return (
     <form
       onSubmit={async e => {
         e.preventDefault()
-        if (!input?.trim()) {
+        if (disabled) {
           return
         }
         setInput('')
@@ -47,7 +52,7 @@ export function PromptForm({
       }}
       ref={formRef}
     >
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
+      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-background sm:rounded-md sm:border sm:px-12">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -84,7 +89,7 @@ export function PromptForm({
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || input === ''}
+                disabled={disabled}
               >
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
