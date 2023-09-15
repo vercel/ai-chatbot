@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
+import { experimental_StreamData, OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
+import Speech from 'lmnt-node';
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
@@ -28,14 +29,39 @@ export async function POST(req: Request) {
     configuration.apiKey = previewToken
   }
 
-  const res = await openai.createChatCompletion({
+  const response = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages,
     temperature: 0.7,
     stream: true
   })
 
-  const stream = OpenAIStream(res, {
+  const speech = new Speech(process.env.LMNT_API_KEY || '');
+  const speechStream = speech.synthesizeStreaming('mara-wilson')
+  const extraData = new experimental_StreamData()
+
+  const audioReadTask = async () => {
+    for await (const audioData of speechStream) {
+      const audioBytes = Buffer.byteLength(audioData);
+      console.log(`Received audio from LMNT: ${audioBytes} bytes.`)
+      // TODO(shaper): Encode audio into Base64, wrap in JSON object, add to extraData.
+      extraData.append({text: 'TODO: actual audio data here'})
+    }
+
+    console.log('Closing LMNT synthesis stream.')
+    speechStream.close()
+  }
+
+  console.log('Starting LMNT synthesis task.')
+  const audioReadTaskPromise = audioReadTask()
+
+  console.log('Creating OpenAI stream.')
+  const stream = OpenAIStream(response, {
+    onToken(token) {
+      console.log('Passing token to LMNT:', token)
+      speechStream.appendText(token)
+    },
+
     async onCompletion(completion) {
       const title = json.messages[0].content.substring(0, 100)
       const id = json.id ?? nanoid()
@@ -60,8 +86,21 @@ export async function POST(req: Request) {
         score: createdAt,
         member: `chat:${id}`
       })
-    }
+    },
+
+    async onFinal(completion) {
+      console.log('onFinal: Waiting for LMNT synthesis to complete.')
+      speechStream.finish()
+      await audioReadTaskPromise
+
+      // Close the StreamData object or the response will never finish.
+      console.log('onFinal: LMNT synthesis finished -- closing StreamData.')
+      extraData.close()
+    },
+
+    // Until the experimental API is stable, we have to explicitly opt in.
+    experimental_streamData: true,
   })
 
-  return new StreamingTextResponse(stream)
+  return new StreamingTextResponse(stream, {}, extraData)
 }
