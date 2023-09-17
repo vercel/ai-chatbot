@@ -1,6 +1,7 @@
 import { UseChatHelpers } from 'ai/react'
 import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
+import { toast } from 'react-hot-toast'
 
 import { Button, buttonVariants } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
@@ -40,6 +41,10 @@ export function PromptForm({
       onSubmit={async e => {
         e.preventDefault()
         if (!input?.trim()) {
+          return
+        }
+        if (isLoading) {
+          toast('Please wait for the previous message to finish sending.')
           return
         }
         setInput('')
