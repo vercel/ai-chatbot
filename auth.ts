@@ -13,7 +13,7 @@ declare module 'next-auth' {
 
 const getEnabledProviders = () => {
   const enabledProviders = []
-  
+
   if (process.env.AUTH_GITHUB_ENABLED === 'true') {
     enabledProviders.push(GitHub)
   }
@@ -33,17 +33,35 @@ export const {
   providers: getEnabledProviders(),
   callbacks: {
     jwt({ token, profile }) {
-      if (profile) {
+      if (profile?.id) { // GitHub profiles have an 'id' field
         token.id = String(profile.id)
         token.image = profile.avatar_url || profile.picture
+      } else if (profile?.sub) { // Google profiles have a 'sub' field
+        token.id = String(profile.sub)
+        token.image = profile.picture
       }
       return token
     },
     authorized({ auth }) {
       return !!auth?.user // this ensures there is a logged in user for -every- request
+    },
+    signIn({ profile }) {
+      if (process.env.AUTH_SSO_ENABLED === 'false' && profile?.email) {
+        return true
+      }
+      if (!profile?.email) {
+        return false
+      } else {
+        const emailMatchPattern = process.env.AUTH_EMAIL_PATTERN || ''
+        if (!emailMatchPattern || profile?.email?.endsWith(emailMatchPattern)) {
+          return true
+        }
+        return false
+      }
     }
   },
   pages: {
-    signIn: '/sign-in' // overrides the next-auth default signin page https://authjs.dev/guides/basics/pages
+    signIn: '/sign-in', // overrides the next-auth default signin page https://authjs.dev/guides/basics/pages
+    error: '/error'
   }
 })
