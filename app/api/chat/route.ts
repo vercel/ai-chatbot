@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
   const stream = OpenAIStream(res, {
     async onCompletion(completion) {
-      const filteredMessages = messages.filter((msg: Message) => !(msg.role === 'system' || msg.role === 'function'));
+      const filteredMessages = messages.filter((msg: Message) => !(msg.role === 'system' || msg.role === 'function'))
       const title = filteredMessages[0].content.substring(0, 100)
       const id = json.id ?? nanoid()
       const path = `/chat/${id}`

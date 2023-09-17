@@ -1,5 +1,6 @@
 import NextAuth, { type DefaultSession } from 'next-auth'
 import GitHub from 'next-auth/providers/github'
+import Google from 'next-auth/providers/google'
 
 declare module 'next-auth' {
   interface Session {
@@ -10,12 +11,26 @@ declare module 'next-auth' {
   }
 }
 
+const getEnabledProviders = () => {
+  const enabledProviders = []
+  
+  if (process.env.AUTH_GITHUB_ENABLED === 'true') {
+    enabledProviders.push(GitHub)
+  }
+
+  if (process.env.AUTH_GOOGLE_ENABLED === 'true') {
+    enabledProviders.push(Google)
+  }
+
+  return enabledProviders
+}
+
 export const {
   handlers: { GET, POST },
   auth,
   CSRF_experimental // will be removed in future
 } = NextAuth({
-  providers: [GitHub],
+  providers: getEnabledProviders(),
   callbacks: {
     jwt({ token, profile }) {
       if (profile) {
