@@ -10,7 +10,9 @@ export default function ErrorPage() {
 
   // Custom error messages
   const errorMessages: { [key: string]: string } = {
-    AccessDenied: "Email Provider Not Authorised",
+    AccessDenied: "403 - Forbidden: Email Provider Not Authorised",
+    CallbackRouteError: "500 - Internal Server Error: There was an issue with the sign-in process. Please try again later or contact support for assistance.",
+    PageNotFound: "404 - Page Not Found.",
   }
 
   const errorMessage = error ? (errorMessages[error] || "Oops! Something Went Wrong") : "Oops! Something Went Wrong"
