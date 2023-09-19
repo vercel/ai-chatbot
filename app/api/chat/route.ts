@@ -41,11 +41,12 @@ export async function POST(req: Request) {
   const extraData = new experimental_StreamData()
 
   const audioReadTask = async () => {
+    let count = 0
     for await (const audioData of speechStream) {
       const audioBytes = Buffer.byteLength(audioData);
-      console.log(`Received audio from LMNT: ${audioBytes} bytes.`)
-      // TODO(shaper): Encode audio into Base64, wrap in JSON object, add to extraData.
-      extraData.append({text: 'TODO: actual audio data here'})
+      console.log(`Received audio from LMNT: ${count} / ${audioBytes} bytes.`)
+      extraData.append({speechAudio: audioData.toString('base64')})
+      count += 1
     }
 
     console.log('Closing LMNT synthesis stream.')
@@ -63,6 +64,8 @@ export async function POST(req: Request) {
     },
 
     async onCompletion(completion) {
+      console.log('onCompletion: Waiting for LMNT synthesis to complete.')
+
       const title = json.messages[0].content.substring(0, 100)
       const id = json.id ?? nanoid()
       const createdAt = Date.now()
@@ -81,11 +84,21 @@ export async function POST(req: Request) {
           }
         ]
       }
-      await kv.hmset(`chat:${id}`, payload)
-      await kv.zadd(`user:chat:${userId}`, {
-        score: createdAt,
-        member: `chat:${id}`
-      })
+
+      try {
+        await kv.hmset(`chat:${id}`, payload)
+        await kv.zadd(`user:chat:${userId}`, {
+          score: createdAt,
+          member: `chat:${id}`
+        })
+
+      } catch (error) {
+        // The user could hit their request limit (or otherwise experience an error interacting
+        // with the key-value store). Catch and log since if we throw the error directly we'll
+        // never call `onFinal` and won't send trailing audio data to the client (or finish
+        // the response).
+        console.warn('Failed to save chat to KV:', error)
+      }
     },
 
     async onFinal(completion) {

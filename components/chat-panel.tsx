@@ -1,10 +1,14 @@
+import { JSONValue } from 'ai'
 import { type UseChatHelpers } from 'ai/react'
-
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { AudioPlaybar } from '@/components/audio-playbar'
 import { PromptForm } from '@/components/prompt-form'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { IconRefresh, IconStop } from '@/components/ui/icons'
 import { FooterText } from '@/components/footer'
+
+import { base64ToArrayBuffer } from '@/lib/audio-utils'
 
 export interface ChatPanelProps
   extends Pick<
@@ -13,6 +17,7 @@ export interface ChatPanelProps
     | 'isLoading'
     | 'reload'
     | 'messages'
+    | 'data'
     | 'stop'
     | 'input'
     | 'setInput'
@@ -28,8 +33,19 @@ export function ChatPanel({
   reload,
   input,
   setInput,
-  messages
+  messages,
+  data
 }: ChatPanelProps) {
+  const [audioData, setAudioData] = useState<ArrayBuffer[]>([])
+  useEffect(() => {
+    if (data?.length && audioData.length < data.length) {
+      let newAudioData: ArrayBuffer[] = data.slice(audioData.length, data.length)
+          .map((item : {[x: string]: JSONValue}) => base64ToArrayBuffer(item['speechAudio'] as string))
+      setAudioData(prevData => [...prevData, ...newAudioData])
+      console.log(`Added more converted audio data [count=${newAudioData.length}].`)
+    }
+  }, [audioData, data])
+
   return (
     <div className="fixed inset-x-0 bottom-0 bg-gradient-to-b from-muted/10 from-10% to-muted/30 to-50%">
       <ButtonScrollToBottom />
@@ -40,6 +56,7 @@ export function ChatPanel({
               variant="outline"
               onClick={() => stop()}
               className="bg-background"
+              style={{margin: '0 1em 0 0'}}
             >
               <IconStop className="mr-2" />
               Stop generating
@@ -50,12 +67,14 @@ export function ChatPanel({
                 variant="outline"
                 onClick={() => reload()}
                 className="bg-background"
-              >
+                style={{margin: '0 1em 0 0'}}
+                >
                 <IconRefresh className="mr-2" />
                 Regenerate response
               </Button>
             )
           )}
+          <AudioPlaybar audioData={audioData} />
         </div>
         <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
           <PromptForm
