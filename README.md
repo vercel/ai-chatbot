@@ -46,6 +46,7 @@ Please adhere to the instructions provided in the [quick start guide](https://do
 
 Remember to update your environment variables (`MONGODB_URI`) within the `.env` file with the correct credentials furnished during the MongoDB database setup.
 
+Note: It's crucial to ensure the security of your MongoDB instance. If your IP address is not whitelisted, you will be unable to connect to the database, and incoming messages will not be saved. Depending on your specific use case, consider whitelisting the IP address of your cloud hosting provider within the MongoDB security settings. Alternatively, if you have a dynamic IP address, it is advisable to whitelist all IPs using the range 0.0.0.0/0 to ensure uninterrupted access.
 
 ## Running locally
 
