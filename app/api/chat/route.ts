@@ -1,11 +1,16 @@
-import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
+import { Redis } from '@upstash/redis'
+import { auth } from '@clerk/nextjs'
 
-import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
 
 export const runtime = 'edge'
+
+const redis = new Redis({
+  url: process.env.UPSTASH_URL as string,
+  token: process.env.UPSTASH_TOKEN as string
+})
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -16,7 +21,7 @@ const openai = new OpenAIApi(configuration)
 export async function POST(req: Request) {
   const json = await req.json()
   const { messages, previewToken } = json
-  const userId = (await auth())?.user.id
+  const { userId } = auth()
 
   if (!userId) {
     return new Response('Unauthorized', {
@@ -30,7 +35,13 @@ export async function POST(req: Request) {
 
   const res = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
-    messages,
+    messages: [
+      {
+        content: 'You are a super helpful AI assistant!',
+        role: 'system'
+      },
+      ...messages
+    ],
     temperature: 0.7,
     stream: true
   })
@@ -55,8 +66,8 @@ export async function POST(req: Request) {
           }
         ]
       }
-      await kv.hmset(`chat:${id}`, payload)
-      await kv.zadd(`user:chat:${userId}`, {
+      await redis.hmset(`chat:${id}`, payload)
+      await redis.zadd(`user:chat:${userId}`, {
         score: createdAt,
         member: `chat:${id}`
       })

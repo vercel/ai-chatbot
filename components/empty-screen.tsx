@@ -27,12 +27,10 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           Welcome to Next.js AI Chatbot!
         </h1>
         <p className="mb-2 leading-normal text-muted-foreground">
-          This is an open source AI chatbot app template built with{' '}
-          <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-          <ExternalLink href="https://vercel.com/storage/kv">
-            Vercel KV
-          </ExternalLink>
-          .
+          This is an open source AI chatbot app template built with Open source{' '}
+          <ExternalLink href="https://nextjs.org">Next.js</ExternalLink>,{' '}
+          <ExternalLink href="https://upstash.com/">Upstash</ExternalLink> and{' '}
+          <ExternalLink href="https://clerk.com/">Clerk</ExternalLink>.
         </p>
         <p className="leading-normal text-muted-foreground">
           You can start a conversation here or try the following examples:
