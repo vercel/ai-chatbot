@@ -20,6 +20,7 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
+import { usePathname, useRouter } from 'next/navigation'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -28,6 +29,8 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, initialMessages, className }: ChatProps) {
+  const router = useRouter()
+  const path = usePathname()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
     null
@@ -45,6 +48,12 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       onResponse(response) {
         if (response.status === 401) {
           toast.error(response.statusText)
+        }
+      },
+      onFinish() {
+        if (!path.includes('chat')) {
+          router.push(`/chat/${id}`, { shallow: true })
+          router.refresh()
         }
       }
     })
