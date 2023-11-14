@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
+import { OpenAIStream, StreamingTextResponse, Message } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
 import { auth } from '@/auth'
@@ -12,6 +12,17 @@ const configuration = new Configuration({
 })
 
 const openai = new OpenAIApi(configuration)
+
+interface Payload {
+  id: string
+  title: string
+  userId: string
+  createdAt?: number
+  updatedAt: number
+  path: string
+  messages: Message[]
+  [key: string]: unknown
+}
 
 export async function POST(req: Request) {
   const json = await req.json()
@@ -39,13 +50,13 @@ export async function POST(req: Request) {
     async onCompletion(completion) {
       const title = json.messages[0].content.substring(0, 100)
       const id = json.id ?? nanoid()
-      const createdAt = Date.now()
+      const updatedAt = Date.now()
       const path = `/chat/${id}`
-      const payload = {
+      const payload: Payload = {
         id,
         title,
         userId,
-        createdAt,
+        updatedAt,
         path,
         messages: [
           ...messages,
@@ -55,9 +66,13 @@ export async function POST(req: Request) {
           }
         ]
       }
+      const exists = await kv.exists(`chat:${id}`)
+      if (!exists) {
+        payload.createdAt = updatedAt
+      }
       await kv.hmset(`chat:${id}`, payload)
       await kv.zadd(`user:chat:${userId}`, {
-        score: createdAt,
+        score: updatedAt,
         member: `chat:${id}`
       })
     }
