@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       if (!exists) {
         payload.createdAt = updatedAt
       }
-      await kv.hmset(`chat:${id}`, payload)
+      await kv.hset(`chat:${id}`, payload)
       await kv.zadd(`user:chat:${userId}`, {
         score: updatedAt,
         member: `chat:${id}`
