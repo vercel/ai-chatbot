@@ -1,5 +1,3 @@
-import { Metadata } from 'next'
-
 import { Toaster } from 'react-hot-toast'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
@@ -10,22 +8,25 @@ import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
 
-export const metadata: Metadata = {
+export const metadata = {
   metadataBase: new URL('https://chat.vercel.ai/'),
   title: {
     default: 'Next.js AI Chatbot',
     template: `%s - Next.js AI Chatbot`
   },
   description: 'An AI-powered chatbot template built with Next.js and Vercel.',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' }
-  ],
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
     apple: '/apple-touch-icon.png'
   }
+}
+
+export const viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' }
+  ]
 }
 
 interface RootLayoutProps {
