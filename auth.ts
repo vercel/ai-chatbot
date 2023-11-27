@@ -18,7 +18,7 @@ export const {
   callbacks: {
     jwt({ token, profile }) {
       if (profile) {
-        token.id = profile.id
+        token.id = String(profile.id); // Convert profile.id to a string
         token.image = profile.avatar_url || profile.picture
       }
       return token
