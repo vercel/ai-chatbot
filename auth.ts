@@ -25,7 +25,7 @@ export const {
     },
     session: ({ session, token }) => {
       if (session?.user && token?.id) {
-        session.user.id = String(token.id)
+        session.user.id = String(token.id); // Convert token.id to a string
       }
       return session
     },
