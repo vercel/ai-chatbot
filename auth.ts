@@ -18,14 +18,14 @@ export const {
   callbacks: {
     jwt({ token, profile }) {
       if (profile) {
-        token.id = String(profile.id); // Convert profile.id to a string
+        token.id = profile.id
         token.image = profile.avatar_url || profile.picture
       }
       return token
     },
     session: ({ session, token }) => {
       if (session?.user && token?.id) {
-        session.user.id = String(token.id); // Convert token.id to a string
+        session.user.id = String(token.id)
       }
       return session
     },
