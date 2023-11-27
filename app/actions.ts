@@ -51,7 +51,11 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
   const uid = await kv.hget<string>(`chat:${id}`, 'userId')
 
-  if (uid !== session?.user?.id) {
+  // Convert both IDs to strings before comparing
+  // This is necessary because the session user ID is a string, while the chat user ID is a number
+  // The strict inequality check (!==) in JavaScript checks both value and type, so it would fail if the types are different
+  // By converting both IDs to strings, we ensure that the comparison is done between two strings, and it will work correctly even if the IDs are originally of different types
+  if (String(uid) !== String(session?.user?.id)) {
     return {
       error: 'Unauthorized'
     }
