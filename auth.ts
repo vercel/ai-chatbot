@@ -12,8 +12,7 @@ declare module 'next-auth' {
 
 export const {
   handlers: { GET, POST },
-  auth,
-  CSRF_experimental // will be removed in future
+  auth
 } = NextAuth({
   providers: [GitHub],
   callbacks: {
@@ -23,6 +22,12 @@ export const {
         token.image = profile.avatar_url || profile.picture
       }
       return token
+    },
+    session: ({ session, token }) => {
+      if (session?.user && token?.id) {
+        session.user.id = String(token.id)
+      }
+      return session
     },
     authorized({ auth }) {
       return !!auth?.user // this ensures there is a logged in user for -every- request
