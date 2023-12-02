@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery, isError } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 
 import { getChats, removeChat, shareChat } from '@/app/actions'
 import { SidebarActions } from '@/components/sidebar-actions'
@@ -12,7 +12,7 @@ export interface SidebarListProps {
 }
 
 export function SidebarList({ userId }: SidebarListProps) {
-  const { data: chats, error, isFetching } = useQuery({
+  const { data: chats, error, isError, isFetching } = useQuery({
     queryKey: ["stream-initial-chats"],
     queryFn: () => getChats(userId),
   })
@@ -24,7 +24,7 @@ export function SidebarList({ userId }: SidebarListProps) {
           <p className="text-sm text-muted-foreground">Loading chats...</p>
         </div>
       ) : (
-        isError(error) ? (
+        isError ? (
           <div className="p-8 text-center">
             <p className="text-sm text-muted-foreground">Error fetching chats: {error.message || 'An error occurred'}</p>
           </div>
