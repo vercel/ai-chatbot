@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "focus-trap-react": "^10.2.3",
+    "framer-motion": "^10.16.12",
     "geist": "^1.1.0",
     "nanoid": "^5.0.3",
     "next": "14.0.4-canary.17",
