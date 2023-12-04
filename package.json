@@ -24,7 +24,7 @@
     "@vercel/analytics": "^1.1.1",
     "@vercel/kv": "^1.0.0",
     "@vercel/og": "^0.5.20",
-    "ai": "^2.2.25",
+    "ai": "^2.2.27",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "focus-trap-react": "^10.2.3",

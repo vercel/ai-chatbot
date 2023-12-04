@@ -1,19 +1,30 @@
+'use server'
 import { kv } from '@vercel/kv'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
+import {
+  OpenAIStream,
+  experimental_StreamingReactResponse,
+  type Message
+} from 'ai'
 import OpenAI from 'openai'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
-
-export const runtime = 'edge'
+import { ChatCompletionMessageParam } from 'openai/resources'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-export async function POST(req: Request) {
-  const json = await req.json()
-  const { messages, previewToken } = json
+export async function handleChat({
+  id: _id,
+  messages,
+  previewToken
+}: {
+  id: string
+  messages: Message[]
+  previewToken?: string
+}) {
+  console.log('messages', messages)
   const userId = (await auth())?.user.id
 
   if (!userId) {
@@ -28,15 +39,18 @@ export async function POST(req: Request) {
 
   const res = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages,
+    messages: messages.map(m => ({
+      content: m.content,
+      role: m.role
+    })) as ChatCompletionMessageParam[],
     temperature: 0.7,
     stream: true
   })
 
   const stream = OpenAIStream(res, {
     async onCompletion(completion) {
-      const title = json.messages[0].content.substring(0, 100)
-      const id = json.id ?? nanoid()
+      const title = messages[0].content.substring(0, 100)
+      const id = _id ?? nanoid()
       const createdAt = Date.now()
       const path = `/chat/${id}`
       const payload = {
@@ -61,5 +75,9 @@ export async function POST(req: Request) {
     }
   })
 
-  return new StreamingTextResponse(stream)
+  return new experimental_StreamingReactResponse(stream, {
+    ui({ content }) {
+      return <div>{content}</div>
+    }
+  })
 }
