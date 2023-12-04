@@ -17,21 +17,21 @@ import { SidebarFooter } from '@/components/sidebar-footer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ClearHistory } from '@/components/clear-history'
 import { UserMenu } from '@/components/user-menu'
+import { SidebarMobile } from './sidebar-mobile'
+import { SidebarToggle } from './sidebar-toggle'
+import { ChatHistory } from './chat-history'
 
 async function UserOrLogin() {
   const session = await auth()
   return (
     <>
       {session?.user ? (
-        <Sidebar>
-          <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
-            <SidebarList userId={session?.user?.id} />
-          </React.Suspense>
-          <SidebarFooter>
-            <ThemeToggle />
-            <ClearHistory clearChats={clearChats} />
-          </SidebarFooter>
-        </Sidebar>
+        <>
+          <SidebarMobile>
+            <ChatHistory userId={session.user.id} />
+          </SidebarMobile>
+          <SidebarToggle />
+        </>
       ) : (
         <Link href="/" target="_blank" rel="nofollow">
           <IconNextChat className="w-6 h-6 mr-2 dark:hidden" inverted />
