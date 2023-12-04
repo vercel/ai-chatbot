@@ -43,7 +43,7 @@ export function Chat({ id, initialMessages, className, action }: ChatProps) {
     useChat({
       initialMessages,
       id,
-      api: action.bind({ id, previewToken }),
+      api: action.bind(null, { id, previewToken }),
       onResponse(response) {
         if (response.status === 401) {
           toast.error(response.statusText)
