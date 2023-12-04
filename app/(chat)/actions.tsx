@@ -15,16 +15,15 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-export async function handleChat({
-  id: _id,
-  messages,
-  previewToken
-}: {
-  id: string
-  messages: Message[]
-  previewToken?: string
-}) {
-  console.log('messages', messages)
+export async function handleChat(
+  meta: {
+    id: string
+    previewToken?: string
+  },
+  chat: {
+    messages: Message[]
+  }
+) {
   const userId = (await auth())?.user.id
 
   if (!userId) {
@@ -33,13 +32,13 @@ export async function handleChat({
     })
   }
 
-  if (previewToken) {
-    openai.apiKey = previewToken
+  if (meta.previewToken) {
+    openai.apiKey = meta.previewToken
   }
 
   const res = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages: messages.map(m => ({
+    messages: chat.messages.map(m => ({
       content: m.content,
       role: m.role
     })) as ChatCompletionMessageParam[],
@@ -49,8 +48,8 @@ export async function handleChat({
 
   const stream = OpenAIStream(res, {
     async onCompletion(completion) {
-      const title = messages[0].content.substring(0, 100)
-      const id = _id ?? nanoid()
+      const title = chat.messages[0].content.substring(0, 100)
+      const id = meta.id ?? nanoid()
       const createdAt = Date.now()
       const path = `/chat/${id}`
       const payload = {
@@ -60,7 +59,7 @@ export async function handleChat({
         createdAt,
         path,
         messages: [
-          ...messages,
+          ...chat.messages,
           {
             content: completion,
             role: 'assistant'
