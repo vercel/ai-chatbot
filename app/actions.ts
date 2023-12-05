@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { ObjectId } from 'mongodb'
 
 import { auth } from '@/auth'
@@ -148,16 +147,14 @@ export async function clearChats() {
     const chats = await db.collection('chats').find({ userId: session.user.id }).toArray()
 
     if (!chats.length) {
-      revalidatePath('/')
-      return redirect('/')
+      return revalidatePath('/')
     }
 
     for (const chat of chats) {
       await db.collection('chats').deleteOne({ id: chat.id })
     }
 
-    revalidatePath('/')
-    return redirect('/')
+    return revalidatePath('/')
   } catch (error) {
     return {
       error: 'An error occurred while clearing chats'
