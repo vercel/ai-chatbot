@@ -2,17 +2,14 @@ import * as React from 'react'
 import Link from 'next/link'
 
 import { auth } from '@/auth'
-import { clearChats } from '@/app/actions'
 import { Button } from '@/components/ui/button'
-import { Sidebar } from '@/components/sidebar'
-import { SidebarList } from '@/components/sidebar-list'
 import {
   IconNextChat,
 } from '@/components/ui/icons'
-import { SidebarFooter } from '@/components/sidebar-footer'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { ClearHistory } from '@/components/clear-history'
 import { UserMenu } from '@/components/user-menu'
+import { SidebarMobile } from './sidebar-mobile'
+import { SidebarToggle } from './sidebar-toggle'
+import { ChatHistory } from './chat-history'
 
 async function UserOrLogin() {
   const session = await auth()
@@ -36,15 +33,12 @@ export async function Header() {
       <div className="flex items-center">
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           {session?.user && (
-            <Sidebar>
-              <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
-                <SidebarList userId={session?.user?.id} />
-              </React.Suspense>
-              <SidebarFooter>
-                <ThemeToggle />
-                <ClearHistory clearChats={clearChats} />
-              </SidebarFooter>
-            </Sidebar>
+            <>
+              <SidebarMobile>
+                <ChatHistory userId={session.user.id} />
+              </SidebarMobile>
+              <SidebarToggle />
+            </>
           )}
         </React.Suspense>
       </div>

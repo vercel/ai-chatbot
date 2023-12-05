@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { ObjectId } from 'mongodb'
 
 import { auth } from '@/auth'
@@ -147,14 +148,16 @@ export async function clearChats() {
     const chats = await db.collection('chats').find({ userId: session.user.id }).toArray()
 
     if (!chats.length) {
-      return revalidatePath('/')
+      revalidatePath('/')
+      return redirect('/')
     }
 
     for (const chat of chats) {
       await db.collection('chats').deleteOne({ id: chat.id })
     }
 
-    return revalidatePath('/')
+    revalidatePath('/')
+    return redirect('/')
   } catch (error) {
     return {
       error: 'An error occurred while clearing chats'
@@ -177,10 +180,10 @@ export async function getSharedChat(id: string) {
   }
 }
 
-export async function shareChat(chat: Chat) {
+export async function shareChat(id: string) {
   const session = await auth()
 
-  if (!session?.user?.id || session.user.id !== chat.userId) {
+  if (!session?.user?.id) {
     return {
       error: 'Unauthorized'
     }
@@ -188,19 +191,21 @@ export async function shareChat(chat: Chat) {
 
   try {
     const db = await connectDB()
-    const updatedChatDocument = await db.collection('chats').findOneAndUpdate(
-      { id: chat.id, userId: session.user.id },
-      { $set: { sharePath: `/share/${chat.id}` } },
-      { returnDocument: 'after' }
-    )
+    const chatDocument = await db.collection('chats').findOne({ id })
 
-    if (!updatedChatDocument?.value) {
+    if (!chatDocument || chatDocument.userId !== session.user.id) {
       return {
-        error: 'Chat not found or unauthorized'
+        error: 'Something went wrong'
       }
     }
 
-    return transformChatDocument(updatedChatDocument.value)
+    const updatedChatDocument = await db.collection('chats').findOneAndUpdate(
+      { id: id, userId: session.user.id },
+      { $set: { sharePath: `/share/${id}` } },
+      { returnDocument: 'after' }
+    )
+
+    return transformChatDocument(updatedChatDocument)
   } catch (error) {
     return {
       error: 'An error occurred while sharing the chat'
