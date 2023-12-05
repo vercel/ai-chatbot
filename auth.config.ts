@@ -55,10 +55,22 @@ export default {
       if (!profile?.email) {
         return false
       } else {
-        const emailMatchPattern = process.env.AUTH_EMAIL_PATTERN || ''
-        if (!emailMatchPattern || profile?.email?.endsWith(emailMatchPattern)) {
+        const authEmailPattern = process.env.AUTH_EMAIL_PATTERN || ''
+        const authEmailList = process.env.AUTH_AUTHORISED_EMAILS || ''
+
+        // Check if the email matches the authorised email pattern
+        if (!authEmailPattern || profile?.email?.endsWith(authEmailPattern)) {
           return true
         }
+
+        // Check if the email matches any of the authorised email addresses
+        if (authEmailList) {
+          const authorisedList = authEmailList.split(',').map(item => item.trim())
+          if (authorisedList.includes(profile.email)) {
+            return true
+          }
+        }
+
         return false
       }
     }
