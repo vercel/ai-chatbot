@@ -136,7 +136,7 @@ export async function handleChat(
           // generate image
           const response = await openai.images.generate({
             model: 'dall-e-2',
-            prompt: `${description} in the style of an early 20th century expressionism painting`,
+            prompt: `${description}`,
             size: '256x256',
             response_format: 'url'
           })
