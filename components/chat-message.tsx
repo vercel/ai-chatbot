@@ -11,6 +11,8 @@ import { MemoizedReactMarkdown } from '@/components/markdown'
 import { IconOpenAI, IconUser } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
 
+import { DataView } from './data-view'
+
 export interface ChatMessageProps {
   message: Message
 }
@@ -76,8 +78,14 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
           >
             {message.content}
           </MemoizedReactMarkdown>
-        ) : (
+        ) : message.ui != null ? (
           message.ui
+        ) : message?.data != null ? (
+          <div>
+            <DataView data={message.data} content={message.content} />
+          </div>
+        ) : (
+          <></>
         )}
         <ChatMessageActions message={message} />
       </div>
