@@ -6,6 +6,9 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { Message } from 'ai'
+
+import { DataView } from '@/components/data-view'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -37,7 +40,7 @@ export async function getChat(id: string, userId: string) {
     return null
   }
 
-  return chat
+  return restoreUI(chat)
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
@@ -97,7 +100,7 @@ export async function getSharedChat(id: string) {
     return null
   }
 
-  return chat
+  return restoreUI(chat)
 }
 
 export async function shareChat(id: string) {
@@ -125,4 +128,16 @@ export async function shareChat(id: string) {
   await kv.hmset(`chat:${chat.id}`, payload)
 
   return payload
+}
+
+function restoreUI(chat: Chat) {
+  chat.messages = chat.messages.map((message: Message) => {
+    if (message.role === 'assistant') {
+      message.ui = <DataView data={message.data} content={message.content} />
+    }
+
+    return message
+  })
+
+  return chat
 }
