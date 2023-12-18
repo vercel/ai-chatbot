@@ -17,6 +17,7 @@ import {
 } from 'openai/resources'
 
 import { DataView } from '@/components/data-view'
+import { getChat } from '../actions'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -133,6 +134,10 @@ export async function handleChat(
     experimental_streamData: true
   })
 
+  // restore previous chat messages from KV store when ID is provided to load data:
+  const previousMessages =
+    meta.id != null ? (await getChat(meta.id, userId))?.messages : chat.messages
+
   return new experimental_StreamingReactResponse(stream, {
     data,
     async ui({ content, data }) {
@@ -148,7 +153,7 @@ export async function handleChat(
         createdAt,
         path,
         messages: [
-          ...chat.messages,
+          ...(previousMessages ?? chat.messages),
           {
             data, // store data from function call, so UI components can be reconstructed
             content,
