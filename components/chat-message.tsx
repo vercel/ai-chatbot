@@ -85,7 +85,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
             <DataView data={message.data} content={message.content} />
           </div>
         ) : (
-          <></>
+          <>{message.content}</>
         )}
         <ChatMessageActions message={message} />
       </div>
