@@ -1,4 +1,4 @@
-import { Toaster } from 'react-hot-toast'
+import { Toaster position="top-center"  } from 'sonner'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           GeistMono.variable
         )}
       >
-        <Toaster />
+        <Toaster position="top-center"  />
         <Providers
           attribute="class"
           defaultTheme="system"

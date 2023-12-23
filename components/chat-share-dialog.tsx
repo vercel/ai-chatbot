@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { type DialogProps } from '@radix-ui/react-dialog'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 import { ServerActionResult, type Chat } from '@/lib/types'
 import { cn } from '@/lib/utils'
