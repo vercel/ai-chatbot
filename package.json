@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -31,7 +31,7 @@
     "framer-motion": "^10.16.12",
     "geist": "^1.1.0",
     "nanoid": "^5.0.3",
-    "next": "14.0.4-canary.17",
+    "next": "14.0.5-canary.17",
     "next-auth": "5.0.0-beta.3",
     "next-themes": "^0.2.1",
     "openai": "^4.20.1",
@@ -54,7 +54,7 @@
     "@typescript-eslint/parser": "^6.12.0",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.54.0",
-    "eslint-config-next": "14.0.3",
+    "eslint-config-next": "14.0.5-canary.17",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-tailwindcss": "^3.13.0",
     "postcss": "^8.4.31",

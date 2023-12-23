@@ -1,4 +1,5 @@
 import { JSONValue } from 'ai'
+import { Markdown } from './markdown'
 
 export interface DataViewProps extends React.ComponentProps<'div'> {
   data: JSONValue | undefined
@@ -55,5 +56,5 @@ export function DataView(message: DataViewProps) {
     }
   }
 
-  return <div>{content}</div>
+  return <Markdown>{content}</Markdown>
 }
