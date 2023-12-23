@@ -1,4 +1,4 @@
-import { Toaster position="top-center"  } from 'sonner'
+import { Toaster } from 'sonner'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           GeistMono.variable
         )}
       >
-        <Toaster position="top-center"  />
+        <Toaster position="top-center" />
         <Providers
           attribute="class"
           defaultTheme="system"
