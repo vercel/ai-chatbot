@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
+import { AIStream, AIStreamParser, OpenAIStream, StreamingTextResponse } from 'ai'
 import OpenAI from 'openai'
 
 import { auth } from '@/auth'
@@ -10,17 +10,6 @@ export const runtime = 'edge'
 // const openai = new OpenAI({
 //   apiKey: process.env.OPENAI_API_KEY
 // })
-
-export async function POST(req: Request) {
-  const json = await req.json()
-  const { messages } = json
-  const userId = (await auth())?.user.id
-
-  if (!userId) {
-    return new Response('Unauthorized', {
-      status: 401
-    })
-  }
 
   // if (previewToken) {
   //   openai.apiKey = previewToken
@@ -61,5 +50,44 @@ export async function POST(req: Request) {
   //   }
   // })
 
-  return new StreamingTextResponse(stream)
+  // return new StreamingTextResponse(stream)
+
+  const apiUrl = process.env.API_URL;
+
+  export async function POST(req: Request) {
+    const json = await req.json()
+    const { messages } = json
+    const message = (messages[messages.length - 1]).content
+    const userId = (await auth())?.user.id
+  
+    if (!userId) {
+      return new Response('Unauthorized', {
+        status: 401
+      })
+    }
+  
+    const response = await fetch(`${apiUrl}/chat`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        message: message,
+        temperature: '1.2',
+        model: 'gpt-3.5-turbo',
+      })
+    });
+
+
+
+    const callback =  {
+      onCompletion: async (completion: string) => {
+        // store in supabase
+        // console.log(completion)
+      }
+    }
+  
+    const stream = AIStream(response, undefined, callback);
+  
+    return new StreamingTextResponse(stream);
 }

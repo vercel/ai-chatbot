@@ -12,7 +12,7 @@ export function FooterText({ className, ...props }: React.ComponentProps<'p'>) {
       )}
       {...props}
     >
-      GC Guru - Your Gen AI digital assistant!
+      GC Guru - Your Gen AI companion!
     </p>
   )
 }

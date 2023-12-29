@@ -2,7 +2,7 @@ import { UseChatHelpers } from 'ai/react'
 import { Button } from '@/components/ui/button'
 import { IconArrowRight } from '@/components/ui/icons'
 
-//TODO: set proper example messages
+// set proper example messages
 const exampleMessages = [
   {
     heading: 'Generate a blog post',
@@ -18,6 +18,9 @@ const exampleMessages = [
   }
 ]
 
+// Change UI
+// - Choose model
+// - Creative Mode
 export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
   return (
     <div className="mx-auto max-w-2xl px-4">
@@ -26,8 +29,10 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           Welcome to GC Guru!
         </h1>
         <p className="mb-2 leading-normal text-muted-foreground">
-          I am here to help you assist with your queries related to GiveCentral.
+          I am here to help you have fun doing business with your data.
         </p>
+
+
         <p className="leading-normal text-muted-foreground">
           You can start a conversation here or try the following examples:
         </p>
