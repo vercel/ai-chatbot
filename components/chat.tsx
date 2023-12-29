@@ -22,7 +22,8 @@ import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 import { usePathname, useRouter } from 'next/navigation'
 
-const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
+// const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
+
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
@@ -31,21 +32,22 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 export function Chat({ id, initialMessages, className }: ChatProps) {
   const router = useRouter()
   const path = usePathname()
-  const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
-    'ai-token',
-    null
-  )
-  const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
-  const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
+  // const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
+  //   'ai-token',
+  //   null
+  // )
+  // const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
+  // const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
       initialMessages,
       id,
       body: {
         id,
-        previewToken
+        // previewToken
       },
       onResponse(response) {
+        console.log(response)
         if (response.status === 401) {
           toast.error(response.statusText)
         }
@@ -80,7 +82,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         setInput={setInput}
       />
 
-      <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
+      {/* <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Enter your OpenAI Key</DialogTitle>
@@ -114,7 +116,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </>
   )
 }
