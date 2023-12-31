@@ -51,10 +51,6 @@ export function ChatShareDialog({
           background: '#333',
           color: '#fff',
           fontSize: '14px'
-        },
-        iconTheme: {
-          primary: 'white',
-          secondary: 'black'
         }
       })
     },
