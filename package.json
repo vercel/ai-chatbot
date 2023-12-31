@@ -43,7 +43,8 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.5.3",
     "remark-gfm": "^3.0.1",
-    "remark-math": "^5.1.1"
+    "remark-math": "^5.1.1",
+    "supabase": "^1.127.4"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
