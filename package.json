@@ -37,13 +37,13 @@
     "openai": "^4.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hot-toast": "^2.4.1",
     "react-intersection-observer": "^9.5.3",
     "react-markdown": "^8.0.7",
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.5.3",
     "remark-gfm": "^3.0.1",
-    "remark-math": "^5.1.1"
+    "remark-math": "^5.1.1",
+    "sonner": "^1.2.4"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
