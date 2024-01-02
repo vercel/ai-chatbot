@@ -24,7 +24,11 @@ export const {
     })
   ],
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ account, profile }) {
+      // if (account?.provider === "google" && profile?.email && profile?.email_verified) {
+      //   return profile.email_verified && (profile.email.endsWith("@nuclaysolutions.com") || profile.email.endsWith("@givecentral.org"))
+      // }
+
       if (profile) {
         const supabase = getSupabaseClient()
         const { data: user, error } = await supabase
@@ -44,7 +48,7 @@ export const {
           })
 
           if (error) console.log('error creating user', error)
-        }
+        }        
       }
 
       return true
