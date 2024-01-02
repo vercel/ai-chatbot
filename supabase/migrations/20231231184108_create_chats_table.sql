@@ -1,7 +1,7 @@
 create table chats (
-  id bigint primary key generated always as identity,
-  user_id bigint references users(id) not null,
-  chat_id uuid not null,
-  message jsonb not null,
+  id uuid primary key default uuid_generate_v4(),
+  title text not null,
+  messages jsonb not null,
+  user_id uuid references users(id) not null,
   created_at timestamptz default now()
 )

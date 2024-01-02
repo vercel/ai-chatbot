@@ -26,7 +26,7 @@ import {
 
 interface SidebarActionsProps {
   chat: Chat
-  removeChat: (args: { id: string; path: string }) => ServerActionResult<void>
+  removeChat: (args: { id: string }) => ServerActionResult<void>
   shareChat: (id: string) => ServerActionResult<Chat>
 }
 
@@ -98,8 +98,7 @@ export function SidebarActions({
                 // @ts-ignore
                 startRemoveTransition(async () => {
                   const result = await removeChat({
-                    id: chat.id,
-                    path: chat.path
+                    id: chat.id
                   })
 
                   if (result && 'error' in result) {

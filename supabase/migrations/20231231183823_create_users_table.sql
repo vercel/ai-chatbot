@@ -1,9 +1,10 @@
 create table users (
-  id bigint primary key generated always as identity,
+  id uuid primary key default uuid_generate_v4(),
   name text not null,
-  email text not null,
-  profile_pic text,
+  email text not null unique,
+  profile_image text,
   status boolean default true,
+  additional_info jsonb null,
   created_at timestamptz default now(),
   updated_at timestamptz
 );

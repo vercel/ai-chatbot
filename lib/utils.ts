@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
 import { clsx, type ClassValue } from 'clsx'
 import { customAlphabet } from 'nanoid'
 import { twMerge } from 'tailwind-merge'
@@ -40,4 +41,10 @@ export function formatDate(input: string | number | Date): string {
     day: 'numeric',
     year: 'numeric'
   })
+}
+
+export function getSupabaseClient() {
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_KEY
+  return createClient(url as string, key as string)
 }

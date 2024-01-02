@@ -21,6 +21,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.7",
+    "@supabase/supabase-js": "^2.39.1",
     "@vercel/analytics": "^1.1.1",
     "@vercel/kv": "^1.0.0",
     "@vercel/og": "^0.5.20",

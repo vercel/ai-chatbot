@@ -1,56 +1,9 @@
-import { kv } from '@vercel/kv'
-import { AIStream, AIStreamParser, OpenAIStream, StreamingTextResponse } from 'ai'
-import OpenAI from 'openai'
-
+import { AIStream, StreamingTextResponse } from 'ai'
 import { auth } from '@/auth'
-import { nanoid } from '@/lib/utils'
+import { getSupabaseClient, nanoid } from '@/lib/utils'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY
-// })
-
-  // if (previewToken) {
-  //   openai.apiKey = previewToken
-  // }
-
-  // const res = await openai.chat.completions.create({
-  //   model: 'gpt-3.5-turbo',
-  //   messages,
-  //   temperature: 0.7,
-  //   stream: true
-  // })
-
-  // const stream = OpenAIStream(res, {
-  //   async onCompletion(completion) {
-  //     const title = json.messages[0].content.substring(0, 100)
-  //     const id = json.id ?? nanoid()
-  //     const createdAt = Date.now()
-  //     const path = `/chat/${id}`
-  //     const payload = {
-  //       id,
-  //       title,
-  //       userId,
-  //       createdAt,
-  //       path,
-  //       messages: [
-  //         ...messages,
-  //         {
-  //           content: completion,
-  //           role: 'assistant'
-  //         }
-  //       ]
-  //     }
-  //     await kv.hmset(`chat:${id}`, payload)
-  //     await kv.zadd(`user:chat:${userId}`, {
-  //       score: createdAt,
-  //       member: `chat:${id}`
-  //     })
-  //   }
-  // })
-
-  // return new StreamingTextResponse(stream)
 
   const apiUrl = process.env.API_URL;
 
@@ -58,7 +11,7 @@ export const runtime = 'edge'
     const json = await req.json()
     const { messages } = json
     const message = (messages[messages.length - 1]).content
-    const userId = (await auth())?.user.id
+    const userId = (await auth())?. user?.id
   
     if (!userId) {
       return new Response('Unauthorized', {
@@ -79,11 +32,33 @@ export const runtime = 'edge'
     });
 
 
-
     const callback =  {
       onCompletion: async (completion: string) => {
-        // store in supabase
-        // console.log(completion)
+        //save to database
+        const supabase = getSupabaseClient()
+        const id = json.id ?? nanoid()
+        const title = json.messages[0].content.substring(0, 100)
+        const createdAt = Date.now()
+        const payload = {
+          id,
+          title,
+          user_id: userId,
+          messages: [
+            ...messages,
+            {
+              content: completion,
+              role: 'assistant',
+              created_at: createdAt,
+            }
+          ]
+        }
+        const { error } = await supabase
+          .from('chats')
+          .upsert(payload)
+      
+        if(error) {
+          console.log("error storing chat",error) 
+        }
       }
     }
   
