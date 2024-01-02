@@ -79,7 +79,10 @@ export async function getSharedChat(id: string) {
   //   return null
   // }
 
-  // return chat
+  const chat = {} as Chat
+
+  return chat
+
 }
 
 export async function shareChat(id: string) {
@@ -107,4 +110,7 @@ export async function shareChat(id: string) {
   // await kv.hmset(`chat:${chat.id}`, payload)
 
   // return payload
+  const chat = {} as Chat
+
+  return chat
 }

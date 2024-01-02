@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils'
 import { getSharedChat } from '@/app/actions'
 import { ChatList } from '@/components/chat-list'
 import { FooterText } from '@/components/footer'
+import { Chat } from '@/lib/types'
 
 interface SharePageProps {
   params: {
@@ -12,15 +13,15 @@ interface SharePageProps {
   }
 }
 
-export async function generateMetadata({
-  params
-}: SharePageProps): Promise<Metadata> {
-  const chat = await getSharedChat(params.id)
+// export async function generateMetadata({
+//   params
+// }: SharePageProps): Promise<Metadata> {
+//   const chat = await getSharedChat(params.id)
 
-  return {
-    title: chat?.title.slice(0, 50) ?? 'Chat'
-  }
-}
+//   return {
+//     title: chat?.title.slice(0, 50) ?? 'Chat'
+//   }
+// }
 
 export default async function SharePage({ params }: SharePageProps) {
   const chat = await getSharedChat(params.id)

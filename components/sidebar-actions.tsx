@@ -27,7 +27,7 @@ import {
 interface SidebarActionsProps {
   chat: Chat
   removeChat?: (args: { id: string }) => ServerActionResult<void>
-  shareChat?: (id: string) => ServerActionResult<Chat>
+  shareChat: (id: string) => ServerActionResult<Chat>
 }
 
 export function SidebarActions({
@@ -78,7 +78,7 @@ export function SidebarActions({
         onOpenChange={setShareDialogOpen}
         onCopy={() => setShareDialogOpen(false)}
       />
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      {/* <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -118,7 +118,7 @@ export function SidebarActions({
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </>
   )
 }
