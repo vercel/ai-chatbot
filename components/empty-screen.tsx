@@ -6,15 +6,15 @@ import { IconArrowRight } from '@/components/ui/icons'
 const exampleMessages = [
   {
     heading: 'Generate a blog post',
-    message: `Generate a blog post about fundraising for christmas \n`
+    message: `Generate a blog post on how online donations can help parishes and non profits\n`
   },
   {
     heading: 'Write a facebook post',
-    message: 'Write a facebook post about givecentral \n'
+    message: 'Write a facebook post about givecentral text to give features \n'
   },
   {
     heading: 'Draft an email',
-    message: `Draft an email \n`
+    message: `Draft an email to send new year wishes to the donors \n`
   }
 ]
 
