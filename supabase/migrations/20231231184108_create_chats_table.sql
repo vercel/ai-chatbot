@@ -1,5 +1,5 @@
 create table chats (
-  id uuid primary key default uuid_generate_v4(),
+  id text primary key,
   title text not null,
   messages jsonb not null,
   user_id uuid references users(id) not null,

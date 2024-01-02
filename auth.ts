@@ -32,7 +32,8 @@ export const {
           .select(undefined, { head: true })
           .eq('email', profile.email)
           .maybeSingle()
-        console.log('error fetching user', error)
+
+        if(error) console.log('error fetching user', error)
 
         if (!user) {
           console.log('creating user')
@@ -42,7 +43,7 @@ export const {
             profile_image: profile.picture
           })
 
-          console.log('error creating user', error)
+          if (error) console.log('error creating user', error)
         }
       }
 
@@ -59,8 +60,8 @@ export const {
           .limit(1)
           .single()
 
-        console.log('error fetching user', error)
-
+        if(error)  console.log('error fetching user', error)
+        
         token.id = data.id
       }
 
