@@ -6,7 +6,7 @@ export interface Chat extends Record<string, any> {
   created_at: Date
   user_id: string
   messages: Message[]
-  sharePath?: string
+  share_path?: string
 }
 
 export type ServerActionResult<Result> = Promise<

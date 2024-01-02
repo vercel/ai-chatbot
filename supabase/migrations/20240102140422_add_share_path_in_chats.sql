@@ -1,0 +1,1 @@
+alter table if exists public.chats add share_path text null;
