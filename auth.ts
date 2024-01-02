@@ -25,19 +25,15 @@ export const {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider === "google" && profile?.email && profile?.email_verified) {
-        return profile.email_verified && (profile.email.endsWith("@nuclaysolutions.com") || profile.email.endsWith("@givecentral.org") || profile.email.endsWith("@terminal33.io"))
-      }
-
       if (profile) {
         const supabase = getSupabaseClient()
         const { data: user, error } = await supabase
           .from('users')
-          .select(undefined, { head: true })
+          .select()
           .eq('email', profile.email)
           .maybeSingle()
 
-        if(error) console.log('error fetching user', error)
+        if(error) console.log('error fetching user', error);
 
         if (!user) {
           console.log('creating user')
@@ -49,6 +45,10 @@ export const {
 
           if (error) console.log('error creating user', error)
         }        
+      }
+
+      if (account?.provider === "google" && profile?.email && profile?.email_verified) {
+        return profile.email_verified && (profile.email.endsWith("@nuclaysolutions.com") || profile.email.endsWith("@givecentral.org") || profile.email.endsWith("@terminal33.io"))
       }
 
       return true
