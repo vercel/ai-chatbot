@@ -12,13 +12,13 @@ export const metadata = {
   // metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
     default: `${process.env.APP_NAME}`,
-    template: `%s - AI Chatbot`
+    template: `%s - GC Guru`
   },
-  description: 'An AI-powered chatbot powered by QALLA AI',
+  description: 'GC Guru powered by GiveCentral',
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png'
+    icon: '/favicon-gcg.ico',
+    // shortcut: '/favicon-16x16.png',
+    // apple: '/apple-touch-icon.png'
   }
 }
 
