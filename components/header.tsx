@@ -8,6 +8,8 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
 import {
+  IconArrowDown,
+  IconChevronUpDown,
   IconGitHub,
   IconNextChat,
   IconSeparator,
@@ -20,6 +22,13 @@ import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 async function UserOrLogin() {
   const session = await auth()
@@ -55,8 +64,8 @@ async function UserOrLogin() {
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
-      <div className="flex items-center">
+    <header className="sticky top-0 z-50 flex items-center w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+      <div className="flex items-center lg:w-[250px] xl:w-[300px]">
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           <UserOrLogin />
         </React.Suspense>
@@ -80,6 +89,24 @@ export function Header() {
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Deploy</span>
         </a> */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="secondary" className="pl-0">
+            <span className="px-2">GPT 4</span> <IconChevronUpDown className='inline'/>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent sideOffset={8} align="start" className="w-[300px]">
+          <DropdownMenuItem className="flex-col items-start gap-2">
+            <div className="text-xs font-medium">GPT 4</div>
+            <div className="text-xs text-zinc-500">For the best answers.</div>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="flex-col items-start gap-2">
+            <div className="text-xs font-medium">GPT 3.5</div>
+            <div className="text-xs text-zinc-500">Great for system related questions.</div>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       </div>
     </header>
   )
