@@ -56,7 +56,7 @@ export function SidebarActions({
           </TooltipTrigger>
           <TooltipContent>Share chat</TooltipContent>
         </Tooltip>
-        {/* <Tooltip>
+        <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
@@ -69,7 +69,7 @@ export function SidebarActions({
             </Button>
           </TooltipTrigger>
           <TooltipContent>Delete chat</TooltipContent>
-        </Tooltip> */}
+        </Tooltip>
       </div>
       <ChatShareDialog
         chat={chat}
@@ -78,13 +78,12 @@ export function SidebarActions({
         onOpenChange={setShareDialogOpen}
         onCopy={() => setShareDialogOpen(false)}
       />
-      {/* <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete your chat message and remove your
-              data from our servers.
+              This will delete your chat message. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -118,7 +117,7 @@ export function SidebarActions({
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog> */}
+      </AlertDialog>
     </>
   )
 }

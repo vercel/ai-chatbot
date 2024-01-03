@@ -13,17 +13,29 @@ export async function getChats(userId?: string | null) {
     return []
   }
 
-  try {
-    const {data: chats, error} = await supabase.from('chats').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    return chats as Chat[]
-  } catch (error) {
+  const { data: chats, error } = await supabase
+  .from('chats')
+  .select('*')
+  .eq('user_id', userId)
+  .is('deleted_at', null)
+  .order('created_at', { ascending: false })
+  
+  if(error) {
+    console.log("Error getting chats: ", error)
     return []
   }
+
+  return chats as Chat[]
 }
 
 export async function getChat(id: string, userId: string) {
-
-  const {data: chat, error} = await supabase.from('chats').select('*').eq('id', id).eq('user_id', userId).single()
+  const { data: chat, error } = await supabase
+    .from('chats')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .single()
 
   if (!chat || (userId && chat.user_id !== userId)) {
     return null
@@ -33,56 +45,51 @@ export async function getChat(id: string, userId: string) {
 }
 
 export async function removeChat({ id }: { id: string }) {
-  // const session = await auth()
+  const session = await auth()
 
-  // if (!session) {
-  //   return {
-  //     error: 'Unauthorized'
-  //   }
-  // }
-  // // supabase query to remove id
+  if (!session) {
+    return {
+      error: 'Unauthorized'
+    }
+  }
 
-  // revalidatePath('/')
-  // return revalidatePath(id)
+  // soft delete the chat
+  const { data, error } = await supabase
+    .from('chats')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) console.log("Error removing chat: ", error)
+
+  revalidatePath('/')
+  return revalidatePath(`chat/${id}`)
 }
 
 export async function clearChats() {
-  // const session = await auth()
+  const session = await auth()
+  if (!session?.user?.id) {
+    return {
+      error: 'Unauthorized'
+    }
+  }
 
-  // if (!session?.user?.id) {
-  //   return {
-  //     error: 'Unauthorized'
-  //   }
-  // }
-
-  // const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
-  // if (!chats.length) {
-  //   return redirect('/')
-  // }
-  // const pipeline = kv.pipeline()
-
-  // for (const chat of chats) {
-  //   pipeline.del(chat)
-  //   pipeline.zrem(`user:chat:${session.user.id}`, chat)
-  // }
-
-  // await pipeline.exec()
-
-  // revalidatePath('/')
-  // return redirect('/')
+  // supabase query to soft delete all chats
+  revalidatePath('/')
+  return redirect('/')
 }
 
 export async function getSharedChat(id: string) {
-  const {data: chat} = await supabase.from('chats').select().eq('id', id).single()
+  const { data: chat } = await supabase
+    .from('chats')
+    .select()
+    .eq('id', id)
+    .single()
 
   if (!chat || !chat.share_path) {
     return null
   }
 
-  console.log(chat)
-
   return chat as Chat
-
 }
 
 export async function shareChat(id: string) {
@@ -94,7 +101,11 @@ export async function shareChat(id: string) {
     }
   }
 
-  const {data: chat} = await supabase.from('chats').select('*').eq('id', id).single()
+  const { data: chat } = await supabase
+    .from('chats')
+    .select('*')
+    .eq('id', id)
+    .single()
 
   if (!chat || chat.user_id !== session.user.id) {
     return {
@@ -102,15 +113,14 @@ export async function shareChat(id: string) {
     }
   }
 
-  const  sharePath= `/share/${chat.id}`
+  const sharePath = `/share/${chat.id}`
 
-  const {data, error} = await supabase
-          .from('chats')
-          .update({share_path: sharePath})
-          .eq('id', id)
-          .select()
-          .single()
-  
+  const { data, error } = await supabase
+    .from('chats')
+    .update({ share_path: sharePath })
+    .eq('id', id)
+    .select()
+    .single()
 
   return data as Chat
 }
