@@ -16,9 +16,9 @@ export const metadata = {
   },
   description: 'GC Guru powered by GiveCentral',
   icons: {
-    icon: '/favicon-gcg.ico',
-    // shortcut: '/favicon-16x16.png',
-    // apple: '/apple-touch-icon.png'
+    icon: '/favicon-gcg.png',
+    shortcut: '/favicon-gcg.png',
+    apple: '/favicon-gcg.png'
   }
 }
 
