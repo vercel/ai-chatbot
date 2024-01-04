@@ -12,6 +12,10 @@ export const runtime = 'edge'
     const { messages } = json
     const message = (messages[messages.length - 1]).content
     const userId = (await auth())?. user?.id
+    const temperature = '1.2'
+    const model = "gpt-3.5-turbo"
+    const version = "1.0.0"
+    const source = "webapp"
   
     if (!userId) {
       return new Response('Unauthorized', {
@@ -25,9 +29,9 @@ export const runtime = 'edge'
       },
       method: 'POST',
       body: JSON.stringify({
-        message: message,
-        temperature: '1.2',
-        model: 'gpt-3.5-turbo',
+        message,
+        temperature,
+        model
       })
     });
 
@@ -50,7 +54,13 @@ export const runtime = 'edge'
               role: 'assistant',
               created_at: createdAt,
             }
-          ]
+          ],
+          additional_info:{
+            model,
+            temperature,
+            version,
+            source
+          }
         }
         const { error } = await supabase
           .from('chats')
