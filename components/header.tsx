@@ -8,6 +8,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
 import {
+  IconApp,
   IconArrowDown,
   IconChevronUpDown,
   IconGitHub,
@@ -44,8 +45,7 @@ async function UserOrLogin() {
         </>
       ) : (
         <Link href="/" target="_blank" rel="nofollow">
-          <IconNextChat className="w-6 h-6 mr-2 dark:hidden" inverted />
-          <IconNextChat className="hidden w-6 h-6 mr-2 dark:block" />
+          <IconApp className="w-6 h-6 mr-2 dark:fill-white" />
         </Link>
       )}
       <div className="flex items-center">
@@ -64,7 +64,7 @@ async function UserOrLogin() {
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 flex items-center w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex items-center justify-between lg:justify-normal w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
       <div className="flex items-center lg:w-[250px] xl:w-[300px]">
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           <UserOrLogin />
@@ -92,7 +92,7 @@ export function Header() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" className="pl-0">
-            <span className="px-2">GPT 4</span> <IconChevronUpDown className='inline'/>
+            <span className="pl-4">GPT 4</span> <IconChevronUpDown className='inline'/>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent sideOffset={8} align="start" className="w-[300px]">
