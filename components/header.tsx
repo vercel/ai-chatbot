@@ -3,7 +3,6 @@ import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
-import { clearChats } from '@/app/actions'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Sidebar } from '@/components/sidebar'
 import { SidebarList } from '@/components/sidebar-list'
@@ -20,6 +19,7 @@ import { SidebarFooter } from '@/components/sidebar-footer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ClearHistory } from '@/components/clear-history'
 import { UserMenu } from '@/components/user-menu'
+import { DropdownMenuModel } from '@/components/dropdown-menu-selector'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
@@ -89,24 +89,7 @@ export function Header() {
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Deploy</span>
         </a> */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="secondary" className="pl-0">
-            <span className="pl-4">GPT 4</span> <IconChevronUpDown className='inline'/>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent sideOffset={8} align="start" className="w-[300px]">
-          <DropdownMenuItem className="flex-col items-start gap-2">
-            <div className="text-xs font-medium">GPT 4</div>
-            <div className="text-xs text-zinc-500">For the best answers.</div>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex-col items-start gap-2">
-            <div className="text-xs font-medium">GPT 3.5</div>
-            <div className="text-xs text-zinc-500">Great for system related questions.</div>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenuModel />
       </div>
     </header>
   )

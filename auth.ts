@@ -26,6 +26,7 @@ export const {
   callbacks: {
     async signIn({ account, profile }) {
       if (profile) {
+        console.log('profile', profile)
         const supabase = getSupabaseClient()
         const { data: user, error } = await supabase
           .from('users')
@@ -48,7 +49,7 @@ export const {
       }
 
       if (account?.provider === "google" && profile?.email && profile?.email_verified) {
-        return profile.email_verified && (profile.email.endsWith("@nuclaysolutions.com") || profile.email.endsWith("@givecentral.org") || profile.email.endsWith("@terminal33.io"))
+        return profile.email_verified === true
       }
 
       return true
