@@ -34,7 +34,7 @@ export const {
           .eq('email', profile.email)
           .maybeSingle()
 
-        if(error) console.log('error fetching user', error);
+        if (error) console.log('error fetching user', error)
 
         if (!user) {
           console.log('creating user')
@@ -45,10 +45,22 @@ export const {
           })
 
           if (error) console.log('error creating user', error)
-        }        
+        }
       }
 
-      if (account?.provider === "google" && profile?.email && profile?.email_verified) {
+      if (
+        account?.provider === 'google' &&
+        profile?.email &&
+        profile?.email_verified
+      ) {
+        if (process.env.NODE_ENV === 'production') {
+          return (
+            profile.email_verified &&
+            (profile.email.endsWith('@nuclaysolutions.com') ||
+              profile.email.endsWith('@givecentral.org') ||
+              profile.email.endsWith('@terminal33.io'))
+          )
+        }
         return profile.email_verified === true
       }
 
@@ -65,8 +77,8 @@ export const {
           .limit(1)
           .single()
 
-        if(error)  console.log('error fetching user', error)
-        
+        if (error) console.log('error fetching user', error)
+
         token.id = data.id
       }
 
