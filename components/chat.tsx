@@ -31,6 +31,7 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, initialMessages, className, action }: ChatProps) {
+  const router = useRouter()
   const path = usePathname()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
@@ -50,7 +51,8 @@ export function Chat({ id, initialMessages, className, action }: ChatProps) {
       },
       onFinish() {
         if (!path.includes('chat')) {
-          window.history.pushState({}, '', `/chat/${id}`)
+          router.push(`/chat/${id}`, { scroll: false })
+          router.refresh()
         }
       }
     })
