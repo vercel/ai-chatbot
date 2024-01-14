@@ -6,7 +6,7 @@ export default async function SignInPage() {
   const session = await auth()
   const githubEnabled = process.env.AUTH_GITHUB_ENABLED === 'true'
   const googleEnabled = process.env.AUTH_GOOGLE_ENABLED === 'true'
-  
+
   // redirect to home if user is already logged in
   if (session?.user) {
     redirect('/')

@@ -3,9 +3,7 @@ import Link from 'next/link'
 
 import { auth } from '@/auth'
 import { Button } from '@/components/ui/button'
-import {
-  IconNextChat,
-} from '@/components/ui/icons'
+import { IconNextChat } from '@/components/ui/icons'
 import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'

@@ -10,7 +10,7 @@ import connectDB from '@/lib/connect-db'
 function transformChatDocument(chatDoc: any): Chat {
   return {
     ...chatDoc,
-    _id: chatDoc._id.toString(),
+    _id: chatDoc._id.toString()
   }
 }
 
@@ -20,28 +20,30 @@ export async function saveChatMessage(
   userId: string,
   path: string,
   messages: any[],
-  completion: string
+  content: string,
+  data: any[]
 ) {
   const createdAt = new Date()
   const modifiedAt = new Date()
 
   try {
     const db = await connectDB()
-    const chat = await db.collection('chats').findOne({ id })
+    const currentChat = await db.collection('chats').findOne({ id })
 
-    if (!chat) {
+    if (!currentChat) {
       const newChat: Chat = {
         _id: new ObjectId(),
         id,
         title,
+        userId,
         createdAt,
         modifiedAt,
-        userId,
         path,
         messages: [
           ...messages,
           {
-            content: completion,
+            data, // store data from function call, so UI components can be reconstructed
+            content: content,
             role: 'assistant'
           }
         ]
@@ -49,16 +51,17 @@ export async function saveChatMessage(
 
       await db.collection('chats').insertOne(newChat)
     } else {
-      chat.messages = [
+      currentChat.messages = [
         ...messages,
         {
-          content: completion,
+          data, // store data from function call, so UI components can be reconstructed
+          content: content,
           role: 'assistant'
         }
       ]
-      chat.modifiedAt = modifiedAt
+      currentChat.modifiedAt = modifiedAt
 
-      await db.collection('chats').updateOne({ id }, { $set: chat })
+      await db.collection('chats').updateOne({ id }, { $set: currentChat })
     }
   } catch (error) {
     console.error('An error occurred while saving a chat message:', error)
@@ -72,9 +75,14 @@ export async function getChats(userId?: string | null) {
 
   try {
     const db = await connectDB()
-    const chatDocuments = await db.collection('chats').find({ userId }).toArray()
+    const chatDocuments = await db
+      .collection('chats')
+      .find({ userId })
+      .toArray()
 
-    const chats: Chat[] = chatDocuments.map((chatDoc) => transformChatDocument(chatDoc))
+    const chats: Chat[] = chatDocuments.map(chatDoc =>
+      transformChatDocument(chatDoc)
+    )
 
     return chats
   } catch (error) {
@@ -144,7 +152,10 @@ export async function clearChats() {
 
   try {
     const db = await connectDB()
-    const chats = await db.collection('chats').find({ userId: session.user.id }).toArray()
+    const chats = await db
+      .collection('chats')
+      .find({ userId: session.user.id })
+      .toArray()
 
     if (!chats.length) {
       return revalidatePath('/')
@@ -196,11 +207,13 @@ export async function shareChat(id: string) {
       }
     }
 
-    const updatedChatDocument = await db.collection('chats').findOneAndUpdate(
-      { id: id, userId: session.user.id },
-      { $set: { sharePath: `/share/${id}` } },
-      { returnDocument: 'after' }
-    )
+    const updatedChatDocument = await db
+      .collection('chats')
+      .findOneAndUpdate(
+        { id: id, userId: session.user.id },
+        { $set: { sharePath: `/share/${id}` } },
+        { returnDocument: 'after' }
+      )
 
     return transformChatDocument(updatedChatDocument)
   } catch (error) {

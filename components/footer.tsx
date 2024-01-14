@@ -14,10 +14,7 @@ export function FooterText({ className, ...props }: React.ComponentProps<'p'>) {
     >
       Open source AI chatbot built with{' '}
       <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-      <ExternalLink href="https://www.mongodb.com">
-        MongoDB
-      </ExternalLink>
-      .
+      <ExternalLink href="https://www.mongodb.com">MongoDB</ExternalLink>.
     </p>
   )
 }

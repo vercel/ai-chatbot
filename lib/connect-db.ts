@@ -1,4 +1,4 @@
-import { MongoClient, Db } from "mongodb"
+import { MongoClient, Db } from 'mongodb'
 
 let cachedDb: Db | null = null
 

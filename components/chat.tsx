@@ -21,15 +21,16 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 import { usePathname, useRouter } from 'next/navigation'
-
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
+
+type StreamingReactResponseAction = any
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
+  action?: StreamingReactResponseAction
 }
 
-export function Chat({ id, initialMessages, className }: ChatProps) {
-  const router = useRouter()
+export function Chat({ id, initialMessages, className, action }: ChatProps) {
   const path = usePathname()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
@@ -41,10 +42,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     useChat({
       initialMessages,
       id,
-      body: {
-        id,
-        previewToken
-      },
+      api: action.bind(null, { id, previewToken }),
       onResponse(response) {
         if (response.status === 401) {
           toast.error(response.statusText)

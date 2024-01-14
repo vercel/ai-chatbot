@@ -35,18 +35,14 @@ function GitHubLoginButton({
       className={cn(className)}
       {...props}
     >
-      {isLoading ? (
-        <IconSpinner className="animate-spin" />
-      ) : (
-        <IconGitHub />
-      )}
+      {isLoading ? <IconSpinner className="animate-spin" /> : <IconGitHub />}
       <span className="ml-2 hidden md:flex">{text}</span>
     </Button>
   )
 }
 
 function GoogleLoginButton({
-  text = "Login with Google",
+  text = 'Login with Google',
   className,
   ...props
 }: LoginButtonProps) {
@@ -64,17 +60,16 @@ function GoogleLoginButton({
       className={cn(className)}
       {...props}
     >
-      {isLoading ? (
-        <IconSpinner className="animate-spin" />
-      ) : (
-        <IconGoogle />
-      )}
+      {isLoading ? <IconSpinner className="animate-spin" /> : <IconGoogle />}
       <span className="ml-2 hidden md:flex">{text}</span>
     </Button>
   )
 }
 
-export function LoginButton({ githubEnabled, googleEnabled }: LoginButtonConfiguration) {
+export function LoginButton({
+  githubEnabled,
+  googleEnabled
+}: LoginButtonConfiguration) {
   return (
     <div className="flex items-center justify-end space-x-2">
       {githubEnabled ? <GitHubLoginButton /> : null}

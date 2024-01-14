@@ -129,7 +129,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           padding: '1.5rem 1rem'
         }}
         lineNumberStyle={{
-          userSelect: "none",
+          userSelect: 'none'
         }}
         codeTagProps={{
           style: {

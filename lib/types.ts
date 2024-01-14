@@ -5,9 +5,9 @@ export interface Chat {
   _id: ObjectId
   id: string
   title: string
+  userId: string
   createdAt: Date
   modifiedAt: Date
-  userId: string
   path: string
   messages: Message[]
   sharePath?: string

@@ -12,7 +12,9 @@ import { Header } from '@/components/header'
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    `https://${process.env.VERCEL_URL || process.env.NEXTAUTH_URL}`
+    `https://${
+      process.env.VERCEL_URL || process.env.AUTH_URL || process.env.NEXTAUTH_URL
+    }`
   ),
   title: {
     default: 'Next.js AI Chatbot',
