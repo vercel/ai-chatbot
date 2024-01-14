@@ -49,24 +49,32 @@ export default {
       return !!auth?.user // this ensures there is a logged in user for -every- request
     },
     signIn({ profile }) {
-      if (process.env.AUTH_SSO_ENABLED === 'false' && profile?.email) {
-        return true
-      }
       if (!profile?.email) {
         return false
       } else {
-        const authEmailPattern = process.env.AUTH_EMAIL_PATTERN || ''
+        const authEmailPatterns = process.env.AUTH_EMAIL_PATTERNS || ''
         const authEmailList = process.env.AUTH_AUTHORISED_EMAILS || ''
 
-        // Check if the email matches the authorised email pattern
-        if (!authEmailPattern || profile?.email?.endsWith(authEmailPattern)) {
+        // If both authEmailPatterns and authEmailList are empty, return true
+        if (authEmailPatterns === '' && authEmailList === '') {
           return true
+        }
+
+        if (authEmailPatterns) {
+          // Split the patterns into an array and trim each item
+          const patternList = authEmailPatterns.split(',').map(pattern => pattern.trim())
+
+          // Check if the email matches any of the authorised email patterns
+          const emailMatchesPattern = patternList.some(pattern => profile?.email?.endsWith(pattern))
+          if (emailMatchesPattern) {
+            return true
+          }
         }
 
         // Check if the email matches any of the authorised email addresses
         if (authEmailList) {
           const authorisedList = authEmailList.split(',').map(item => item.trim())
-          if (authorisedList.includes(profile.email)) {
+          if (authorisedList.includes(profile?.email)) {
             return true
           }
         }
