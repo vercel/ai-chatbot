@@ -51,7 +51,8 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
   const uid = await kv.hget<string>(`chat:${id}`, 'userId')
 
-  if (uid != session?.user?.id) {
+  if (!uid) return { error: 'No user' }
+  if (String(uid) !== session?.user?.id) {
     return {
       error: 'Unauthorized'
     }
