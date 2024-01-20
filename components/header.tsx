@@ -28,12 +28,12 @@ async function UserOrLogin() {
         </>
       ) : (
         <Link href="/" target="_blank" rel="nofollow">
-          <IconNextChat className="w-6 h-6 mr-2 dark:hidden" inverted />
-          <IconNextChat className="hidden w-6 h-6 mr-2 dark:block" />
+          <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
+          <IconNextChat className="hidden size-6 mr-2 dark:block" />
         </Link>
       )}
       <div className="flex items-center">
-        <IconSeparator className="w-6 h-6 text-muted-foreground/50" />
+        <IconSeparator className="size-6 text-muted-foreground/50" />
         {session?.user ? (
           <UserMenu user={session.user} />
         ) : (
