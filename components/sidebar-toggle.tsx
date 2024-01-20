@@ -12,12 +12,12 @@ export function SidebarToggle() {
   return (
     <Button
       variant="ghost"
-      className="-ml-2 hidden h-9 w-9 p-0 lg:flex"
+      className="-ml-2 hidden size-9 p-0 lg:flex"
       onClick={() => {
         toggleSidebar()
       }}
     >
-      <IconSidebar className="h-6 w-6" />
+      <IconSidebar className="size-6" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
