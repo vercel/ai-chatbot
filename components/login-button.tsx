@@ -8,13 +8,17 @@ import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconGitHub, IconSpinner } from '@/components/ui/icons'
 
 interface LoginButtonProps extends ButtonProps {
-  showGithubIcon?: boolean
+  icon?: React.ComponentProps<'svg'>,
+  // showGithubIcon?: boolean
   text?: string
+  provider?: string
 }
 
 export function LoginButton({
   text = 'Login with GitHub',
-  showGithubIcon = true,
+  icon,
+  // showGithubIcon = true,
+  provider,
   className,
   ...props
 }: LoginButtonProps) {
@@ -25,7 +29,7 @@ export function LoginButton({
       onClick={() => {
         setIsLoading(true)
         // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
-        signIn('github', { callbackUrl: `/` })
+        signIn(provider, { callbackUrl: `/` })
       }}
       disabled={isLoading}
       className={cn(className)}
@@ -33,8 +37,8 @@ export function LoginButton({
     >
       {isLoading ? (
         <IconSpinner className="mr-2 animate-spin" />
-      ) : showGithubIcon ? (
-        <IconGitHub className="mr-2" />
+      ) : icon ? (
+        <>{icon}</>
       ) : null}
       {text}
     </Button>

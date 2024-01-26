@@ -32,7 +32,7 @@ export function UserMenu({ user }: UserMenuProps) {
             {user?.image ? (
               <Image
                 className="size-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80"
-                src={user?.image ? `${user.image}&s=60` : ''}
+                src={user?.image ? `${user.image}` : ''}
                 alt={user.name ?? 'Avatar'}
                 height={48}
                 width={48}
