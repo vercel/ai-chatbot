@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { IconExternalLink } from '@/components/ui/icons'
+import { IconAvatar, IconExternalLink } from '@/components/ui/icons'
 
 export interface UserMenuProps {
   user: Session['user']
@@ -28,7 +28,7 @@ export function UserMenu({ user }: UserMenuProps) {
     <div className="flex items-center justify-between">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="pl-0">
+          <Button variant="ghost" className="p-2">
             {user?.image ? (
               <Image
                 className="size-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80"
@@ -38,9 +38,13 @@ export function UserMenu({ user }: UserMenuProps) {
                 width={48}
               />
             ) : (
-              <div className="flex items-center justify-center text-xs font-medium uppercase rounded-full select-none size-7 shrink-0 bg-muted/50 text-muted-foreground">
-                {user?.name ? getUserInitials(user?.name) : null}
-              </div>
+              user?.name ? (
+                <div className="flex items-center justify-center text-xs font-medium uppercase rounded-full select-none size-7 shrink-0 bg-muted/50 text-muted-foreground">
+                  {getUserInitials(user?.name)}
+                </div>
+              ) : (
+                <IconAvatar className='size-6' />
+              )
             )}
             <span className="ml-2">{user?.name}</span>
           </Button>
