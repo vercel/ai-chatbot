@@ -63,6 +63,7 @@ export function ClearHistory({
 
                   setOpen(false)
                   router.push('/')
+                  router.refresh()
                 })
               })
             }}
