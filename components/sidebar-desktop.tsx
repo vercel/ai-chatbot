@@ -11,7 +11,7 @@ export async function SidebarDesktop() {
   }
 
   return (
-    <Sidebar className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]">
+    <Sidebar className="peer fixed !top-[64px] !h-[calc(100vh-64px)] inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]">
       {/* @ts-ignore */}
       <ChatHistory userId={session.user.id} />
     </Sidebar>
