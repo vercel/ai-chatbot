@@ -49,7 +49,8 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     }
   }
 
-  const uid = await kv.hget<string>(`chat:${id}`, 'userId')
+  //Convert uid to string for consistent comparison with session.user.id
+  const uid = String(await kv.hget(`chat:${id}`, 'userId'))
 
   if (uid !== session?.user?.id) {
     return {
