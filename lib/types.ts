@@ -1,4 +1,4 @@
-import { type Message } from 'ai'
+import { type experimental_StreamingReactResponse, type Message } from 'ai'
 
 export interface Chat extends Record<string, any> {
   id: string
@@ -16,3 +16,18 @@ export type ServerActionResult<Result> = Promise<
       error: string
     }
 >
+
+// TODO: Import from ai/react when it's available.
+export type StreamingReactResponseAction = (
+  meta: {
+    id?: string
+    previewToken: string | null
+  },
+  {
+    messages,
+    data
+  }: {
+    messages: Message[]
+    data?: Record<string, string>
+  }
+) => Promise<experimental_StreamingReactResponse>

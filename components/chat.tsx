@@ -1,13 +1,17 @@
 'use client'
 
+import * as React from 'react'
 import { useChat, type Message } from 'ai/react'
+import { toast } from 'react-hot-toast'
 
+import { useLocalStorage } from '@/lib/hooks/use-local-storage'
+import { StreamingReactResponseAction } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { refreshHistory } from '@/app/actions'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
-import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
-import { useLocalStorage } from '@/lib/hooks/use-local-storage'
+import { EmptyScreen } from '@/components/empty-screen'
 import {
   Dialog,
   DialogContent,
@@ -16,29 +20,35 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { useState } from 'react'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { toast } from 'react-hot-toast'
-import { usePathname, useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
+
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
+  api: StreamingReactResponseAction
 }
 
-export function Chat({ id, initialMessages, className }: ChatProps) {
-  const router = useRouter()
-  const path = usePathname()
+export function Chat({ id, initialMessages, className, api }: ChatProps) {
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
     null
   )
-  const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
-  const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
+  const [previewTokenDialog, setPreviewTokenDialog] = React.useState(IS_PREVIEW)
+  const [previewTokenInput, setPreviewTokenInput] = React.useState(
+    previewToken ?? ''
+  )
+
+  const cachedApi = React.useMemo(
+    () => api?.bind(null, { id, previewToken }),
+    [api, id, previewToken]
+  )
+
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
+      api: cachedApi,
       initialMessages,
       id,
       body: {
@@ -50,12 +60,11 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           toast.error(response.statusText)
         }
       },
-      onFinish() {
-        if (!path.includes('chat')) {
-          window.history.pushState({}, '', `/chat/${id}`)
-        }
+      async onFinish() {
+        await refreshHistory(`/chat/${id}`)
       }
     })
+
   return (
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
@@ -78,7 +87,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         input={input}
         setInput={setInput}
       />
-
       <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
         <DialogContent>
           <DialogHeader>
