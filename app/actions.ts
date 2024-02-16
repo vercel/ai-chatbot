@@ -1,11 +1,46 @@
 'use server'
 
+import { kv } from '@vercel/kv'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { kv } from '@vercel/kv'
+import { type Message } from 'ai'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { nanoid } from '@/lib/utils'
+
+export async function createChat(payload: {
+  id?: string
+  messages: Omit<Message, 'id'>[]
+}) {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    return {
+      error: 'Unauthorized'
+    }
+  }
+
+  const id = payload.id ?? nanoid()
+  const createdAt = Date.now()
+  const path = `/chat/${id}`
+  const chat = {
+    id,
+    title: payload.messages[0].content.substring(0, 100),
+    userId: session.user.id,
+    createdAt,
+    path,
+    messages: payload.messages
+  }
+
+  await kv.hmset(`chat:${id}`, chat)
+  await kv.zadd(`user:chat:${session.user.id}`, {
+    score: createdAt,
+    member: `chat:${id}`
+  })
+
+  return chat
+}
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -49,7 +84,6 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     }
   }
 
-  //Convert uid to string for consistent comparison with session.user.id
   const uid = String(await kv.hget(`chat:${id}`, 'userId'))
 
   if (uid !== session?.user?.id) {
