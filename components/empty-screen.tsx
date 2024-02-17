@@ -37,7 +37,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
             <Button
               key={index}
               variant="link"
-              className="bg-[#1e1e1e] h-full px-5 text-sm font-normal py-4 rounded-xl mt-0 text-left flex-col items-start justify-between hover:no-underline text-type-600"
+              className="bg-[#1e1e1e] h-full px-5 text-base font-normal py-4 rounded-xl mt-0 text-left flex-col items-start justify-between hover:no-underline text-type-600 text-opacity-75"
               onClick={() => setInput(message.message)}
             >
               {message.heading}

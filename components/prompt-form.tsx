@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { IconArrowElbow, IconPlus, IconPlane } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 export interface PromptProps
@@ -82,10 +82,10 @@ export function PromptForm({
               <Button
                 type="submit"
                 size="icon"
-                className="bg-type-500"
+                className="bg-transparent hover:bg-transparent"
                 disabled={isLoading || input === ''}
               >
-                <IconArrowElbow className="font-bold" />
+                <IconPlane className="opacity-75 hover:opacity-100" />
                 <span className="sr-only bg-type-500">Send message</span>
               </Button>
             </TooltipTrigger>
