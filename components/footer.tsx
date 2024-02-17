@@ -7,12 +7,17 @@ export function FooterText({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       className={cn(
-        'px-2 text-center text-xs leading-normal text-muted-foreground',
+        'px-2 text-center text-xs leading-normal text-type-500',
         className
       )}
       {...props}
     >
-      Ocada AI agent
+      Ocada AI agent{' '}
+      {/* <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
+      <ExternalLink href="https://vercel.com/storage/kv">
+        Vercel KV
+      </ExternalLink> */}
+      .
     </p>
   )
 }

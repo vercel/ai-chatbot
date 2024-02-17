@@ -51,13 +51,11 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-2 lg:px-20 shrink-0 bg-transparent">
       <div className="flex items-start ml-10">
-          <Image alt='ocada' src="/OCADA.svg" width={150} height={150}/>
+        <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
       </div>
-      <div className="flex items-center justify-end space-x-2">
-      <ConnectButton accountStatus="address"/>
-
+      <ConnectButton />
       </div>
     </header>
   )
