@@ -51,12 +51,49 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 export function Header() {
   return (
+    // <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-2 lg:px-20 shrink-0 bg-transparent">
+    //   <div className="flex items-start ml-10">
+    //     <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
+    //   </div>
+    //   <ConnectButton />
+    //   </div>
+    // </header>
+
     <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-2 lg:px-20 shrink-0 bg-transparent">
-      <div className="flex items-start ml-10">
-        <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
-      </div>
-      <ConnectButton />
-      </div>
-    </header>
+    <div className="flex items-start ml-10">
+      <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
+    </div>
+    <div className="flex items-center justify-end space-x-2">
+      <a
+        target="_blank"
+        href="/"
+        rel="noopener noreferrer"
+        className={cn(buttonVariants({ variant: 'outline' }))}
+      >
+        {/* <IconGitHub /> */}
+        <span className="hidden ml-2 md:flex text-type-600">Plugins</span>
+      </a>
+      
+      {/* <a
+        href="/"
+        className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
+        )}
+      >
+        <span className="hidden sm:block">Connect Wallet</span>
+
+        <span className="sm:hidden">Connect</span>
+      </a> */}
+
+      <ConnectButton       className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
+        )}>
+          
+        </ConnectButton>
+    </div>
+  </header>
+
   )
 }
