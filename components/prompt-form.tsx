@@ -45,7 +45,7 @@ export function PromptForm({
       }}
       ref={formRef}
     >
-      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-background sm:rounded-md sm:border sm:px-12">
+      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-[#262626] sm:rounded-full sm:border sm:px-12 text-type-600">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -56,7 +56,7 @@ export function PromptForm({
               }}
               className={cn(
                 buttonVariants({ size: 'sm', variant: 'outline' }),
-                'absolute left-0 top-4 size-8 rounded-full bg-background p-0 sm:left-4'
+                'absolute left-0 top-4 size-8 rounded-full bg-[#F79139] p-0 sm:left-4'
               )}
             >
               <IconPlus />
@@ -74,7 +74,7 @@ export function PromptForm({
           onChange={e => setInput(e.target.value)}
           placeholder="Send a message."
           spellCheck={false}
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm placeholder:text-type-600"
         />
         <div className="absolute right-0 top-4 sm:right-4">
           <Tooltip>
@@ -82,13 +82,16 @@ export function PromptForm({
               <Button
                 type="submit"
                 size="icon"
+                className="bg-type-500"
                 disabled={isLoading || input === ''}
               >
-                <IconArrowElbow />
-                <span className="sr-only">Send message</span>
+                <IconArrowElbow className="font-bold" />
+                <span className="sr-only bg-type-500">Send message</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Send message</TooltipContent>
+            <TooltipContent className="text-type-600 bg-type-500">
+              Send message
+            </TooltipContent>
           </Tooltip>
         </div>
       </div>

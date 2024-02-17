@@ -48,6 +48,30 @@ module.exports = {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
+        },
+        type: {
+          50: '#fffffd',
+          100: '#fffffa',
+          200: '#fffff8',
+          300: '#fffff4',
+          400: '#fffff2',
+          500: '#ffffef',
+          600: '#e8e8d9',
+          700: '#b5b5aa',
+          800: '#8c8c83',
+          900: '#6b6b64'
+        },
+        'type-alt': {
+          50: '#fffffb',
+          100: '#fefdf2',
+          200: '#fefdec',
+          300: '#fefce3',
+          400: '#fdfbdd',
+          500: '#fdfad5',
+          600: '#e6e4c2',
+          700: '#b4b297',
+          800: '#8b8a75',
+          900: '#6a6959'
         }
       },
       borderRadius: {
