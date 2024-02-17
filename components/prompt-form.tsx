@@ -56,10 +56,10 @@ export function PromptForm({
               }}
               className={cn(
                 buttonVariants({ size: 'sm', variant: 'outline' }),
-                'absolute left-0 top-4 size-8 rounded-full bg-[#F79139] p-0 sm:left-4'
+                'absolute left-0 top-4 size-8 rounded-full bg-theme-500 hover:bg-theme-700 p-0 sm:left-4'
               )}
             >
-              <IconPlus />
+              <IconPlus className="text-black font-semibold" />
               <span className="sr-only">New Chat</span>
             </button>
           </TooltipTrigger>

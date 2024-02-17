@@ -24,8 +24,8 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
     <div className="mx-auto lg:max-w-3xl px-4">
       <div className="rounded-lg p-8">
         <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-semibold text-type-600">
-            Welcome to <span className=" text-orange-500 font-bold">OCADA</span>{' '}
+          <h1 className="mb-2 text-4xl font-semibold text-type-600">
+            Welcome to <span className=" text-theme-500 font-bold">OCADA</span>{' '}
             AI Agent!
           </h1>
           <p className="font-normal text-base leading-normal text-type-600 text-opacity-70">
