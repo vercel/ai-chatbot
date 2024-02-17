@@ -86,12 +86,9 @@ export function Header() {
         <span className="sm:hidden">Connect</span>
       </a> */}
 
-      <ConnectButton       className={cn(
-          buttonVariants({ variant: 'outline' }),
-          'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
-        )}>
+      <ConnectButton />
           
-        </ConnectButton>
+      
     </div>
   </header>
 
