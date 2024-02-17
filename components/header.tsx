@@ -56,7 +56,7 @@ export function Header() {
           <Image alt='ocada' src="/OCADA.svg" width={150} height={150}/>
       </div>
       <div className="flex items-center justify-end space-x-2">
-      <ConnectButton />
+      <ConnectButton accountStatus="address"/>
 
       </div>
     </header>
