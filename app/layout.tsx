@@ -8,6 +8,9 @@ import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
 
+// import { ThirdwebSDKProvider } from "@thirdweb-dev/react";
+// import { ethers } from "ethers";
+
 export const metadata = {
   metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
@@ -35,7 +38,8 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" suppressHydrationWarning>
+
+      <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           'font-sans antialiased',
@@ -58,5 +62,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </Providers>
       </body>
     </html>
+
+            
+
   )
 }

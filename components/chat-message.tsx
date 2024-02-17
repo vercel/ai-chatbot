@@ -29,7 +29,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
             : 'bg-primary text-primary-foreground'
         )}
       >
-        {message.role === 'user' ? <IconUser /> : <IconOpenAI />}
+        {message.role === 'user' ? <IconUser /> : "/OCADA.svg"}
       </div>
       <div className="flex-1 px-1 ml-4 space-y-2 overflow-hidden">
         <MemoizedReactMarkdown

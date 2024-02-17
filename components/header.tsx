@@ -1,3 +1,4 @@
+"use client"
 import * as React from 'react'
 import Link from 'next/link'
 
@@ -15,6 +16,7 @@ import Image from 'next/image'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 // async function UserOrLogin() {
 //   // const session = await auth()
@@ -53,27 +55,7 @@ export function Header() {
       <div className="flex items-start ml-10">
         <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
       </div>
-      <div className="flex items-center justify-end space-x-2">
-        <a
-          target="_blank"
-          href="/"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: 'outline' }))}
-        >
-          {/* <IconGitHub /> */}
-          <span className="hidden ml-2 md:flex text-type-600">Plugins</span>
-        </a>
-        <a
-          href="/"
-          className={cn(
-            buttonVariants({ variant: 'outline' }),
-            'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
-          )}
-        >
-          {/* <IconVercel className="mr-2" /> */}
-          <span className="hidden sm:block">Connect Wallet</span>
-          <span className="sm:hidden">Connect</span>
-        </a>
+      <ConnectButton />
       </div>
     </header>
   )
