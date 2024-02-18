@@ -119,11 +119,14 @@ export async function POST(req: NextRequest) {
         const { cryptoName, vsCurrency } = options;
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoName}&vs_currencies=${vsCurrency}`;
         const response = await fetch(url);
-        console.log(`this is the reponse ${await response.json()}`)
         const data = await response.json();
-        return data[cryptoName.toLowerCase()][
-          vsCurrency.toLowerCase()
-        ].toString();
+        // Ensure the cryptoName and vsCurrency are correctly accessed.
+        const price = data[cryptoName.toLowerCase()]?.[vsCurrency.toLowerCase()];
+        if (price === undefined) {
+          console.error("Price not found in response:", data);
+          return "Price not available";
+        }
+        return price.toString();
       },
     });
 
@@ -151,7 +154,6 @@ export async function POST(req: NextRequest) {
         return data;
       },
     });
-
 
     //
     const tools = [
@@ -218,8 +220,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
 }
-
-
-
-
-
