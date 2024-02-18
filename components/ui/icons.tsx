@@ -507,7 +507,7 @@ function IconOcada({ className, ...props }: React.ComponentProps<'svg'>) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
-      className={cn('size-5', className)}
+      className={cn('size-8', className)}
       viewBox="0 0 24 24"
       {...props}
     >

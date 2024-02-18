@@ -62,7 +62,7 @@ export function Header() {
     <header
       className={`${styles['c-header']} sticky top-0 z-50 flex items-center justify-between w-full h-16 px-2 lg:px-20 shrink-0 bg-transparent`}
     >
-      <div className="flex items-start ml-10">
+      <div className="flex items-start ml-2">
         <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
       </div>
       <div className="flex items-center justify-end space-x-2">
@@ -70,10 +70,14 @@ export function Header() {
           target="_blank"
           href="/"
           rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: 'outline' }))}
+          className={
+            (cn(buttonVariants({ variant: 'outline' })), 'hidden lg:flex')
+          }
         >
           {/* <IconGitHub /> */}
-          <span className="hidden ml-2 md:flex text-type-600">Plugins</span>
+          <span className="ml-2 text-type-600 text-sm text-opacity-80">
+            Plugins
+          </span>
         </a>
 
         {/* <a
