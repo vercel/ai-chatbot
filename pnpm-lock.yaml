@@ -41,6 +41,9 @@ dependencies:
   '@rainbow-me/rainbowkit':
     specifier: ^2.0.0
     version: 2.0.0(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)(viem@2.7.10)(wagmi@2.5.7)
+  '@rainbow-me/rainbowkit-siwe-next-auth':
+    specifier: ^0.4.0
+    version: 0.4.0(@rainbow-me/rainbowkit@2.0.0)(next-auth@5.0.0-beta.4)(react@18.2.0)(siwe@2.1.4)
   '@tanstack/react-query':
     specifier: ^5.21.2
     version: 5.21.2(react@18.2.0)
@@ -128,6 +131,9 @@ dependencies:
   remark-math:
     specifier: ^5.1.1
     version: 5.1.1
+  siwe:
+    specifier: ^2
+    version: 2.1.4(ethers@5.7.2)
   viem:
     specifier: ~2.7.10
     version: 2.7.10(typescript@5.3.3)(zod@3.22.4)
@@ -4425,6 +4431,21 @@ packages:
       '@babel/runtime': 7.23.8
     dev: false
 
+  /@rainbow-me/rainbowkit-siwe-next-auth@0.4.0(@rainbow-me/rainbowkit@2.0.0)(next-auth@5.0.0-beta.4)(react@18.2.0)(siwe@2.1.4):
+    resolution: {integrity: sha512-G5RQRx42FVgniPEUdV2qaOjYwfphLcJeSt/VaeuPuXIQyX6vSUfOOCgCkVhoWKMbACZc/TG2yGMKma38blhfbw==}
+    engines: {node: '>=12.4'}
+    peerDependencies:
+      '@rainbow-me/rainbowkit': 2.0.x
+      next-auth: '>=4.21.0 <5'
+      react: '>=17'
+      siwe: ^2.1.4
+    dependencies:
+      '@rainbow-me/rainbowkit': 2.0.0(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)(viem@2.7.10)(wagmi@2.5.7)
+      next-auth: 5.0.0-beta.4(next@14.1.0)(react@18.2.0)
+      react: 18.2.0
+      siwe: 2.1.4(ethers@5.7.2)
+    dev: false
+
   /@rainbow-me/rainbowkit@2.0.0(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)(viem@2.7.10)(wagmi@2.5.7):
     resolution: {integrity: sha512-M25y8twG7iL5P5I5Zml/dyl9ISZQYjODpxdstyMxb5pOl7qPg+sl4f/b18ZEPjdcgJ7751HMSirt25WtfPFSMQ==}
     engines: {node: '>=12.4'}
@@ -5042,6 +5063,15 @@ packages:
       - bufferutil
       - encoding
       - utf-8-validate
+    dev: false
+
+  /@spruceid/siwe-parser@2.0.2:
+    resolution: {integrity: sha512-9WuA0ios2537cWYu39MMeH0O2KdrMKgKlOBUTWRTXQjCYu5B+mHCA0JkCbFaJ/0EjxoVIcYCXIW/DoPEpw+PqA==}
+    dependencies:
+      '@noble/hashes': 1.3.3
+      apg-js: 4.3.0
+      uri-js: 4.4.1
+      valid-url: 1.0.9
     dev: false
 
   /@stablelib/aead@1.0.1:
@@ -6839,6 +6869,10 @@ packages:
     dependencies:
       normalize-path: 3.0.0
       picomatch: 2.3.1
+
+  /apg-js@4.3.0:
+    resolution: {integrity: sha512-8U8MULS+JocCnm11bfrVS4zxtAcE3uOiCAI21SnjDrV9LNhMSGwTGGeko3QfyK1JLWwT7KebFqJMB2puzfdFMQ==}
+    dev: false
 
   /appdirsjs@1.2.7:
     resolution: {integrity: sha512-Quji6+8kLBC3NnBeo14nPDq0+2jUs5s3/xEye+udFHumHhRk4M7aAMXp/PBJqkKYGuuyR9M/6Dq7d2AViiGmhw==}
@@ -15072,6 +15106,18 @@ packages:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
     dev: false
 
+  /siwe@2.1.4(ethers@5.7.2):
+    resolution: {integrity: sha512-Dke1Qqa3mgiLm3vjqw/+SQ7dl8WV/Pfk3AlQBF94cBFydTYhztngqYrikzE3X5UTsJ6565dfVbQptszsuYZNYg==}
+    peerDependencies:
+      ethers: ^5.6.8 || ^6.0.8
+    dependencies:
+      '@spruceid/siwe-parser': 2.0.2
+      '@stablelib/random': 1.0.2
+      ethers: 5.7.2
+      uri-js: 4.4.1
+      valid-url: 1.0.9
+    dev: false
+
   /slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
@@ -16321,6 +16367,10 @@ packages:
       diff: 5.1.0
       kleur: 4.1.5
       sade: 1.8.1
+    dev: false
+
+  /valid-url@1.0.9:
+    resolution: {integrity: sha512-QQDsV8OnSf5Uc30CKSwG9lnhMPe6exHtTXLRYX8uMwKENy640pU+2BgBL0LRbDh/eYRahNCS7aewCx0wf3NYVA==}
     dev: false
 
   /valtio@1.11.2(@types/react@18.2.48)(react@18.2.0):
