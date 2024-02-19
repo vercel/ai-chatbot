@@ -40,6 +40,7 @@
     "framer-motion": "^10.18.0",
     "geist": "^1.2.1",
     "langchain": "^0.1.18",
+    "lodash.merge": "^4.6.2",
     "nanoid": "^5.0.4",
     "next": "14.1.0",
     "next-auth": "5.0.0-beta.4",
@@ -54,7 +55,7 @@
     "react-textarea-autosize": "^8.5.3",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
-    "siwe": "^2",
+    "sass": "^1.71.0",
     "viem": "~2.7.10",
     "wagmi": "^2.5.7",
     "zod": "^3.22.4"

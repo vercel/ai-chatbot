@@ -22,13 +22,13 @@ const exampleMessages = [
 export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
   return (
     <div className="mx-auto lg:max-w-3xl px-4">
-      <div className="rounded-lg p-8">
+      <div className="rounded-lg py-8">
         <div className="mb-6">
           <h1 className="mb-2 text-4xl font-semibold text-type-600">
             Welcome to <span className=" text-theme-500 font-bold">OCADA</span>{' '}
             AI Agent!
           </h1>
-          <p className="font-normal text-base leading-normal text-type-600 text-opacity-70">
+          <p className="font-normal text-base leading-normal text-type-600 text-opacity-60">
             You can start a conversation here or try the following examples:
           </p>
         </div>
@@ -37,7 +37,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
             <Button
               key={index}
               variant="link"
-              className="bg-[#1e1e1e] h-full px-5 text-sm font-normal py-4 rounded-xl mt-0 text-left flex-col items-start justify-between hover:no-underline text-type-600"
+              className="bg-[#1e1e1e] h-full px-5 text-base font-normal py-4 rounded-xl mt-0 text-left flex-col items-start justify-between hover:no-underline text-type-600 text-opacity-75"
               onClick={() => setInput(message.message)}
             >
               {message.heading}
