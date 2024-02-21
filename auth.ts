@@ -1,5 +1,5 @@
 import NextAuth, { type DefaultSession } from 'next-auth'
-import GitHub from 'next-auth/providers/github'
+import { headers } from 'next/headers';
 import CredentialsProvider from "next-auth/providers/credentials"
 import { SiweMessage } from "siwe"
 
@@ -35,7 +35,7 @@ const providers = [
       try {
         const msg = credentials?.message;
         const siwe = new SiweMessage(JSON.parse(msg ? (msg as string) : '{}'))
-        const nextAuthUrl = new URL(process.env.NEXTAUTH_URL as string)
+        const nextAuthUrl = new URL(headers().get('host') as string)
         const signature = credentials?.signature;
         const nonce = credentials?.nonce;
         const result = await siwe.verify({
