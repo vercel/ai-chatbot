@@ -7,22 +7,18 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
-import { Session } from 'next-auth'
-
-// import { ThirdwebSDKProvider } from "@thirdweb-dev/react";
-// import { ethers } from "ethers";
 
 export const metadata = {
   metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
-    default: 'OCADA AI',
-    template: `OCADA AI`
+    default: 'Next.js AI Chatbot',
+    template: `%s - Next.js AI Chatbot`
   },
-  description: 'OCADA AI Agent.',
+  description: 'An AI-powered chatbot template built with Next.js and Vercel.',
   icons: {
-    icon: '/OCADA.svg',
-    shortcut: '/OCADA.svg',
-    apple: '/OCADA.svg'
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png'
   }
 }
 
@@ -39,8 +35,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-
-      <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           'font-sans antialiased',
@@ -51,21 +46,17 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Toaster />
         <Providers
           attribute="class"
-          defaultTheme="white"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-         
         >
-          <div className="flex flex-col min-h-screen bg-[#101010]">
+          <div className="flex flex-col min-h-screen">
             <Header />
-            <main className="flex flex-col flex-1">{children}</main>
+            <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
           </div>
           <TailwindIndicator />
         </Providers>
       </body>
     </html>
-
-            
-
   )
 }

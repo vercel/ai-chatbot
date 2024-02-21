@@ -8,7 +8,7 @@ import remarkMath from 'remark-math'
 import { cn } from '@/lib/utils'
 import { CodeBlock } from '@/components/ui/codeblock'
 import { MemoizedReactMarkdown } from '@/components/markdown'
-import { IconOcada, IconUser } from '@/components/ui/icons'
+import { IconOpenAI, IconUser } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
 
 export interface ChatMessageProps {
@@ -18,16 +18,18 @@ export interface ChatMessageProps {
 export function ChatMessage({ message, ...props }: ChatMessageProps) {
   return (
     <div
-      className={cn('group relative mb-2 flex items-start md:-ml-12')}
+      className={cn('group relative mb-4 flex items-start md:-ml-12')}
       {...props}
     >
       <div
         className={cn(
-          'flex size-10 shrink-0 select-none items-center justify-center rounded-full',
-          message.role === 'user' ? 'bg-[#262626]' : 'bg-transparent'
+          'flex size-8 shrink-0 select-none items-center justify-center rounded-md border shadow',
+          message.role === 'user'
+            ? 'bg-background'
+            : 'bg-primary text-primary-foreground'
         )}
       >
-        {message.role === 'user' ? <IconUser /> : <IconOcada />}
+        {message.role === 'user' ? <IconUser /> : <IconOpenAI />}
       </div>
       <div className="flex-1 px-1 ml-4 space-y-2 overflow-hidden">
         <MemoizedReactMarkdown
