@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconGitHub, IconSpinner } from '@/components/ui/icons'
+// import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 interface LoginButtonProps extends ButtonProps {
   showGithubIcon?: boolean
