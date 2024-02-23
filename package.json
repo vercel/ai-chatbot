@@ -46,6 +46,7 @@
     "focus-trap-react": "^10.2.3",
     "framer-motion": "^10.18.0",
     "geist": "^1.2.1",
+    "jose": "^5.2.2",
     "langchain": "^0.1.21",
     "nanoid": "^5.0.4",
     "next": "14.1.0",

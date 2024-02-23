@@ -107,6 +107,9 @@ dependencies:
   geist:
     specifier: ^1.2.1
     version: 1.2.1(next@14.1.0)
+  jose:
+    specifier: ^5.2.2
+    version: 5.2.2
   langchain:
     specifier: ^0.1.21
     version: 0.1.21(@vercel/kv@1.0.1)(ws@8.13.0)
@@ -279,7 +282,7 @@ packages:
     dependencies:
       '@panva/hkdf': 1.1.1
       cookie: 0.6.0
-      jose: 5.2.0
+      jose: 5.2.2
       oauth4webapi: 2.7.0
       preact: 10.11.3
       preact-render-to-string: 5.2.3(preact@10.11.3)
@@ -11088,7 +11091,6 @@ packages:
       is-hex-prefixed: 1.0.0
       strip-hex-prefix: 1.0.0
     dev: false
-    bundledDependencies: false
 
   /ev-emitter@2.1.2:
     resolution: {integrity: sha512-jQ5Ql18hdCQ4qS+RCrbLfz1n+Pags27q5TwMKvZyhp5hh2UULUYZUy1keqj6k6SYsdqIYjnmz7xyyEY0V67B8Q==}
@@ -12871,8 +12873,8 @@ packages:
       '@sideway/pinpoint': 2.0.0
     dev: false
 
-  /jose@5.2.0:
-    resolution: {integrity: sha512-oW3PCnvyrcm1HMvGTzqjxxfnEs9EoFOFWi2HsEGhlFVOXxTE3K9GKWVMFoFw06yPUqwpvEWic1BmtUZBI/tIjw==}
+  /jose@5.2.2:
+    resolution: {integrity: sha512-/WByRr4jDcsKlvMd1dRJnPfS1GVO3WuKyaurJ/vvXcOaUQO8rnNObCQMlv/5uCceVQIq5Q4WLF44ohsdiTohdg==}
     dev: false
 
   /js-base64@3.7.7:
