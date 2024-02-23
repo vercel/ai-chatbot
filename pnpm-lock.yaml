@@ -146,6 +146,9 @@ dependencies:
   sass:
     specifier: ^1.71.0
     version: 1.71.0
+  styles.css:
+    specifier: link:@solana/wallet-adapter-react-ui/styles.css
+    version: link:@solana/wallet-adapter-react-ui/styles.css
   zod:
     specifier: ^3.22.4
     version: 3.22.4

@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { clusterApiUrl } from '@solana/web3.js';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
-
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 
 export function Providers({ children,  ...props }: ThemeProviderProps)  {

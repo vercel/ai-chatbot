@@ -59,6 +59,7 @@
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "sass": "^1.71.0",
+    "styles.css": "link:@solana/wallet-adapter-react-ui/styles.css",
     "zod": "^3.22.4"
   },
   "devDependencies": {

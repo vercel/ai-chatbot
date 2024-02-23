@@ -106,13 +106,11 @@ export function Header() {
       </a> */}
 
         {/* <ConnectButton /> */}
-        <WalletMultiButtonDynamic />
+        <WalletMultiButtonDynamic   className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
+        )}/>
 
-        {wallet.publicKey && (
-          <>
-          </>
-         
-        )}
       </div>
     </header>
   )
