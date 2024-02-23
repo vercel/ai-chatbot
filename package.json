@@ -12,6 +12,9 @@
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
+    "@langchain/community": "^0.0.32",
+    "@langchain/core": "^0.1.32",
+    "@langchain/openai": "^0.0.14",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
@@ -33,6 +36,7 @@
     "focus-trap-react": "^10.2.3",
     "framer-motion": "^10.18.0",
     "geist": "^1.2.1",
+    "langchain": "^0.1.21",
     "nanoid": "^5.0.4",
     "next": "14.1.0",
     "next-auth": "5.0.0-beta.4",
@@ -48,7 +52,8 @@
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "siwe": "^2.1.4",
-    "wagmi": "^2.5.7"
+    "wagmi": "^2.5.7",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
