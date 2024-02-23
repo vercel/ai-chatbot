@@ -43,9 +43,11 @@ export function Header() {
             Plugins
           </span>
         </a>
-
-        <WalletMultiButtonDynamic />
-        { wallet.publicKey && ( <></> ) }
+          <WalletMultiButtonDynamic   className={cn(
+            buttonVariants({ variant: 'outline' }),
+            'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
+          )}/>
+          { wallet.publicKey && ( <></> ) }
       </div>
     </header>
   )

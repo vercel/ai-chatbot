@@ -65,6 +65,7 @@
     "siwe": "^2.1.4",
     "tweetnacl": "^1.0.3",
     "wagmi": "^2.5.7",
+    "styles.css": "link:@solana/wallet-adapter-react-ui/styles.css",
     "zod": "^3.22.4"
   },
   "devDependencies": {
