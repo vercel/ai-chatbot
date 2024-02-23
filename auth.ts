@@ -1,7 +1,8 @@
 import NextAuth, { type DefaultSession } from 'next-auth'
 import { headers } from 'next/headers';
 import CredentialsProvider from "next-auth/providers/credentials"
-import { SiweMessage } from "siwe"
+// import { SiweMessage } from "siwe"
+import { SigninMessage } from './utils/signMessage';
 
 declare module 'next-auth' {
   interface Session {
@@ -14,7 +15,7 @@ declare module 'next-auth' {
 
 const providers = [
   CredentialsProvider({
-    name: "Ethereum",
+    name: "Solana",
     credentials: {
       message: {
         label: "Message",
@@ -34,18 +35,14 @@ const providers = [
     async authorize(credentials) {
       try {
         const msg = credentials?.message;
-        const siwe = new SiweMessage(JSON.parse(msg ? (msg as string) : '{}'))
+        const siws = new SigninMessage(JSON.parse(msg ? (msg as string) : '{}'))
         const nextAuthUrl = new URL(headers().get('host') as string)
         const signature = credentials?.signature;
         const nonce = credentials?.nonce;
-        const result = await siwe.verify({
-          signature: signature ? (signature as string) : '',
-          domain: nextAuthUrl.host,
-          nonce: nonce as string,
-        })
-        if (result.success) {
+        const result = await siws.validate(signature ? (signature as string) : '',)
+        if (result) {
           return {
-            id: siwe.address,
+            id: siws.publicKey,
           }
         }
         return null
