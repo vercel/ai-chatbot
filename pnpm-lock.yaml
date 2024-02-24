@@ -161,6 +161,9 @@ dependencies:
   siwe:
     specifier: ^2.1.4
     version: 2.1.4(ethers@5.7.2)
+  tools:
+    specifier: link:@langchain/core/tools
+    version: link:@langchain/core/tools
   tweetnacl:
     specifier: ^1.0.3
     version: 1.0.3

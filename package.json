@@ -64,6 +64,7 @@
     "remark-math": "^5.1.1",
     "sass": "^1.71.0",
     "siwe": "^2.1.4",
+    "tools": "link:@langchain/core/tools",
     "tweetnacl": "^1.0.3",
     "wagmi": "^2.5.7",
     "zod": "^3.22.4"
