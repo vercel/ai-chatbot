@@ -89,9 +89,7 @@ export function PromptForm({
                 <span className="sr-only bg-type-500">Send message</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent className="text-type-600 bg-type-500">
-              Send message
-            </TooltipContent>
+            <TooltipContent className="text-type-600 bg-type-500">Send message</TooltipContent>
           </Tooltip>
         </div>
       </div>

@@ -1,17 +1,22 @@
+import { kv } from '@vercel/kv'
 import { NextRequest, NextResponse } from "next/server";
-import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
+import { Message as VercelChatMessage, OpenAIStream, StreamingTextResponse } from "ai";
 import type { ToolInterface } from "@langchain/core/tools";
-import {
-  DynamicStructuredTool,
-  RequestsGetTool,
-  RequestsPostTool,
-} from "langchain/tools";
+import { DynamicStructuredTool, RequestsGetTool, RequestsPostTool } from "langchain/tools";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { ChatOpenAI } from "@langchain/openai";
 import { AIMessage, ChatMessage, HumanMessage } from "@langchain/core/messages";
+import OpenAI from 'openai'
 import { z } from "zod";
 
-export const runtime = "edge";
+import { auth } from '@/auth'
+import { nanoid } from '@/lib/utils'
+
+export const runtime = 'edge'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 const convertVercelMessageToLangChainMessage = (message: VercelChatMessage) => {
   if (message.role === "user") {
@@ -26,6 +31,20 @@ const convertVercelMessageToLangChainMessage = (message: VercelChatMessage) => {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const userId = (await auth())?.user.id
+    const { previewToken } = body
+
+    if (!userId) {
+      return new Response('Unauthorized', {
+        status: 401
+      })
+    }
+
+    if (previewToken) {
+      openai.apiKey = previewToken
+    }
+
+
     const messages = (body.messages ?? []).filter(
       (message: VercelChatMessage) =>
         message.role === "user" || message.role === "assistant",
@@ -112,6 +131,35 @@ export async function POST(req: NextRequest) {
     );
 
     if (!returnIntermediateSteps) {
+      const result = await agentExecutor.invoke({
+        input: currentMessageContent,
+        chat_history: previousMessages,
+      });
+
+      const title = body.messages[0].content.substring(0, 100)
+      const id = body.id ?? nanoid()
+      const createdAt = Date.now()
+      const path = `/chat/${id}`
+      const payload = {
+        id,
+        title,
+        userId,
+        createdAt,
+        path,
+        messages: [
+          ...messages,
+          {
+            content: result.output,
+            role: 'assistant'
+          }
+        ]
+      }
+      await kv.hmset(`chat:${id}`, payload)
+      await kv.zadd(`user:chat:${userId}`, {
+        score: createdAt,
+        member: `chat:${id}`
+      })
+
       const logStream = await agentExecutor.streamLog({
         input: currentMessageContent,
         chat_history: previousMessages,
@@ -137,7 +185,8 @@ export async function POST(req: NextRequest) {
       });
 
       return new StreamingTextResponse(transformStream);
-    } else {
+    } 
+    else {
       const result = await agentExecutor.invoke({
         input: currentMessageContent,
         chat_history: previousMessages,
@@ -148,6 +197,7 @@ export async function POST(req: NextRequest) {
         { status: 200 },
       );
     }
+
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
