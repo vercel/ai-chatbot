@@ -131,40 +131,58 @@ export async function POST(req: NextRequest) {
     );
 
     if (!returnIntermediateSteps) {
-      const res = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages,
-        temperature: 0.7,
-        stream: true
+      const result = await agentExecutor.invoke({
+        input: currentMessageContent,
+        chat_history: previousMessages,
+      });
+
+      const title = body.messages[0].content.substring(0, 100)
+      const id = body.id ?? nanoid()
+      const createdAt = Date.now()
+      const path = `/chat/${id}`
+      const payload = {
+        id,
+        title,
+        userId,
+        createdAt,
+        path,
+        messages: [
+          ...messages,
+          {
+            content: result.output,
+            role: 'assistant'
+          }
+        ]
+      }
+      await kv.hmset(`chat:${id}`, payload)
+      await kv.zadd(`user:chat:${userId}`, {
+        score: createdAt,
+        member: `chat:${id}`
       })
 
-      const transformStream = OpenAIStream(res, {
-        async onCompletion(completion) {
-          const title = body.messages[0].content.substring(0, 100)
-          const id = body.id ?? nanoid()
-          const createdAt = Date.now()
-          const path = `/chat/${id}`
-          const payload = {
-            id,
-            title,
-            userId,
-            createdAt,
-            path,
-            messages: [
-              ...messages,
-              {
-                content: completion,
-                role: 'assistant'
+      const logStream = await agentExecutor.streamLog({
+        input: currentMessageContent,
+        chat_history: previousMessages,
+      });
+
+      const textEncoder = new TextEncoder();
+      const transformStream = new ReadableStream({
+        async start(controller) {
+          for await (const chunk of logStream) {
+            if (chunk.ops?.length > 0 && chunk.ops[0].op === "add") {
+              const addOp = chunk.ops[0];
+              if (
+                addOp.path.startsWith("/logs/ChatOpenAI") &&
+                typeof addOp.value === "string" &&
+                addOp.value.length
+              ) {
+                controller.enqueue(textEncoder.encode(addOp.value));
               }
-            ]
+            }
           }
-          await kv.hmset(`chat:${id}`, payload)
-          await kv.zadd(`user:chat:${userId}`, {
-            score: createdAt,
-            member: `chat:${id}`
-          })
-        }
-      })
+          controller.close();
+        },
+      });
 
       return new StreamingTextResponse(transformStream);
     } 
