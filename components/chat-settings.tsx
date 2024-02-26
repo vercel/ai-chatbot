@@ -1,16 +1,16 @@
-import { useAppContext } from "@/lib/hooks/use-app-context"
-import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
-import useHotkey from "@/lib/hooks/use-hotkey"
-import { IconAdjustmentsHorizontal } from "@tabler/icons-react"
-import { FC, useEffect, useRef } from "react"
-import { Button } from "./ui/button"
-import { ChatSettingsForm } from "./chat-settings-form"
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { useAppContext } from '@/lib/hooks/use-app-context'
+import { CHAT_SETTING_LIMITS } from '@/lib/chat-setting-limits'
+import useHotkey from '@/lib/hooks/use-hotkey'
+import { IconAdjustmentsHorizontal } from '@tabler/icons-react'
+import { FC, useEffect, useRef } from 'react'
+import { Button } from './ui/button'
+import { ChatSettingsForm } from './chat-settings-form'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 
 interface ChatSettingsProps {}
 
 export const ChatSettings: FC<ChatSettingsProps> = ({}) => {
-  useHotkey("i", () => handleClick())
+  useHotkey('i', () => handleClick())
 
   const {
     chatSettings,
@@ -45,10 +45,7 @@ export const ChatSettings: FC<ChatSettingsProps> = ({}) => {
 
   if (!chatSettings) return null
 
-  const allModels = [
-    ...availableHostedModels,
-    ...availableOpenRouterModels
-  ]
+  const allModels = [...availableHostedModels, ...availableOpenRouterModels]
 
   const fullModel = allModels.find(llm => llm.modelId === chatSettings.model)
 

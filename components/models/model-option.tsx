@@ -1,9 +1,9 @@
 // Inspired by Chatbot-UI and modified to fit the needs of this project
 // @see https://github.com/mckaywrigley/chatbot-ui/blob/main/components/models/model-option.tsx
 
-import { LLM } from "@/types"
-import { FC } from "react"
-import { ModelIcon } from "./model-icon"
+import { LLM } from '@/types'
+import { FC } from 'react'
+import { ModelIcon } from './model-icon'
 
 interface ModelOptionProps {
   model: LLM

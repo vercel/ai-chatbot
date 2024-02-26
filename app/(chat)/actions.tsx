@@ -9,7 +9,6 @@ import {
 } from 'ai'
 import OpenAI from 'openai'
 
-
 import { auth } from '@/auth'
 import { saveChatMessage } from '@/app/actions'
 import { nanoid } from '@/lib/utils'
@@ -18,8 +17,8 @@ import {
   ChatCompletionMessageParam
 } from 'openai/resources'
 
-import { MarkdownDataView } from '@/components/data-view'
-import { ChatSettings } from "@/types"
+import { DataView } from '@/components/data-view'
+import { ChatSettings } from '@/types'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -125,13 +124,16 @@ export async function handleChat(
   const streamData = new experimental_StreamData()
   const data: JSONValue[] = []
   const response = await openai.chat.completions.create({
-    model: meta?.chatSettings?.model || (process.env.OPENAI_MODEL ?? 'gpt-3.5-turbo'),
+    model:
+      meta?.chatSettings?.model ||
+      (process.env.OPENAI_MODEL ?? 'gpt-3.5-turbo'),
     temperature: meta?.chatSettings?.temperature,
     messages: chat.messages.map(m => ({
       content: m.content,
       role: m.role
     })) as ChatCompletionMessageParam[],
-    max_tokens:  meta?.chatSettings?.model === "gpt-4-vision-preview" ? 4096 : null,
+    max_tokens:
+      meta?.chatSettings?.model === 'gpt-4-vision-preview' ? 4096 : null,
     stream: true,
     tools,
     tool_choice: 'auto'
@@ -260,7 +262,7 @@ export async function handleChat(
   return new experimental_StreamingReactResponse(stream, {
     data: streamData,
     async ui({ content, data }) {
-      return <MarkdownDataView data={data} content={content} />
+      return <DataView data={data} content={content} />
     }
   })
 }

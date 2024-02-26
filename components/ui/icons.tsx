@@ -517,10 +517,7 @@ function IconChevronUpDown({
   )
 }
 
-function IconSparkles({
-  className,
-  ...props
-}: React.ComponentProps<'svg'>) {
+function IconSparkles({ className, ...props }: React.ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

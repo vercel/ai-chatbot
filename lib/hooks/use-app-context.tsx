@@ -1,11 +1,20 @@
 'use client'
 
-import React, { useContext, createContext, useEffect, useState, FC } from "react"
-import { LLM, ChatSettings, AppContext, OpenRouterLLM } from "@/types"
-import { fetchHostedModels, fetchOpenRouterModels } from "../models/fetch-models"
+import React, {
+  useContext,
+  createContext,
+  useEffect,
+  useState,
+  FC
+} from 'react'
+import { LLM, ChatSettings, AppContext, OpenRouterLLM } from '@/types'
+import {
+  fetchHostedModels,
+  fetchOpenRouterModels
+} from '../models/fetch-models'
 
 const LOCAL_STORAGE_KEYS = {
-  chatSettings: 'app_chatSettings',
+  chatSettings: 'app_chatSettings'
 }
 
 const AppContext = createContext<AppContext | undefined>(undefined)
@@ -23,16 +32,17 @@ interface AppProviderProps {
 }
 
 const defaultChatSettings: ChatSettings = {
-  model: "gpt-4-turbo-preview",
-  prompt: "You are a helpful AI assistant.",
+  model: 'gpt-4-turbo-preview',
+  prompt: 'You are a helpful AI assistant.',
   temperature: 0.5,
   contextLength: 4000,
-  embeddingsProvider: "openai",
+  embeddingsProvider: 'openai'
 }
 
 export const AppProvider: FC<AppProviderProps> = ({ children }) => {
   // CHAT STORE
-  const [chatSettings, setChatSettings] = useState<ChatSettings>(defaultChatSettings)
+  const [chatSettings, setChatSettings] =
+    useState<ChatSettings>(defaultChatSettings)
 
   // MODELS STORE
   const [availableHostedModels, setAvailableHostedModels] = useState<LLM[]>([])
@@ -42,11 +52,15 @@ export const AppProvider: FC<AppProviderProps> = ({ children }) => {
 
   // ENV KEYS STORE
   const [envKeyMap, setEnvKeyMap] = useState({})
-  
-  const [isLoadedFromLocalStorage, setIsLoadedFromLocalStorage] = useState(false)
+
+  const [isLoadedFromLocalStorage, setIsLoadedFromLocalStorage] =
+    useState(false)
 
   useEffect(() => {
-    const loadFromLocalStorage = <T,>(key: keyof typeof LOCAL_STORAGE_KEYS, defaultValue: T): T => {
+    const loadFromLocalStorage = <T,>(
+      key: keyof typeof LOCAL_STORAGE_KEYS,
+      defaultValue: T
+    ): T => {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEYS[key])
       return stored ? JSON.parse(stored) : defaultValue
     }
@@ -60,7 +74,7 @@ export const AppProvider: FC<AppProviderProps> = ({ children }) => {
         setEnvKeyMap(data.envKeyMap)
         setAvailableHostedModels(data.hostedModels)
 
-        if (data.envKeyMap["openrouter"]) {
+        if (data.envKeyMap['openrouter']) {
           const openRouterModels = await fetchOpenRouterModels()
           if (openRouterModels) {
             setAvailableOpenRouterModels(openRouterModels)
@@ -79,7 +93,10 @@ export const AppProvider: FC<AppProviderProps> = ({ children }) => {
       return
     }
 
-    const saveToLocalStorage = <T,>(key: keyof typeof LOCAL_STORAGE_KEYS, value: T) => {
+    const saveToLocalStorage = <T,>(
+      key: keyof typeof LOCAL_STORAGE_KEYS,
+      value: T
+    ) => {
       localStorage.setItem(LOCAL_STORAGE_KEYS[key], JSON.stringify(value))
     }
 
@@ -87,12 +104,18 @@ export const AppProvider: FC<AppProviderProps> = ({ children }) => {
   }, [chatSettings, isLoadedFromLocalStorage])
 
   return (
-    <AppContext.Provider value={{
-      envKeyMap, setEnvKeyMap,
-      availableHostedModels, setAvailableHostedModels,
-      availableOpenRouterModels, setAvailableOpenRouterModels,
-      chatSettings, setChatSettings,
-    }}>
+    <AppContext.Provider
+      value={{
+        envKeyMap,
+        setEnvKeyMap,
+        availableHostedModels,
+        setAvailableHostedModels,
+        availableOpenRouterModels,
+        setAvailableOpenRouterModels,
+        chatSettings,
+        setChatSettings
+      }}
+    >
       {children}
     </AppContext.Provider>
   )

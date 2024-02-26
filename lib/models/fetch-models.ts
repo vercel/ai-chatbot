@@ -1,10 +1,10 @@
 import { toast } from 'react-hot-toast'
-import { LLM, LLMID, OpenRouterLLM } from "@/types"
-import { LLM_LIST_MAP } from "./llm/llm-list"
+import { LLM, LLMID, OpenRouterLLM } from '@/types'
+import { LLM_LIST_MAP } from './llm/llm-list'
 
 export const fetchHostedModels = async () => {
   try {
-    const response = await fetch("/api/keys")
+    const response = await fetch('/api/keys')
 
     if (!response.ok) {
       throw new Error(`Server is not responding.`)
@@ -24,20 +24,20 @@ export const fetchHostedModels = async () => {
 
     return {
       envKeyMap: data.isUsingEnvKeyMap,
-      hostedModels: modelsToAdd,
+      hostedModels: modelsToAdd
     }
   } catch (error) {
-    console.warn("Error fetching hosted models: " + error)
+    console.warn('Error fetching hosted models: ' + error)
     return {
       envKeyMap: {},
-      hostedModels: [],
+      hostedModels: []
     }
   }
 }
 
 export const fetchOpenRouterModels = async () => {
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/models")
+    const response = await fetch('https://openrouter.ai/api/v1/models')
 
     if (!response.ok) {
       throw new Error(`OpenRouter server is not responding.`)
@@ -53,9 +53,9 @@ export const fetchOpenRouterModels = async () => {
       }): OpenRouterLLM => ({
         modelId: model.id as LLMID,
         modelName: model.id,
-        provider: "openrouter",
+        provider: 'openrouter',
         hostedId: model.name,
-        platformLink: "https://openrouter.dev",
+        platformLink: 'https://openrouter.dev',
         imageInput: false,
         maxContext: model.context_length
       })
@@ -63,6 +63,6 @@ export const fetchOpenRouterModels = async () => {
 
     return openRouterModels
   } catch (error) {
-    toast.error("Error fetching Open Router models: " + error)
+    toast.error('Error fetching Open Router models: ' + error)
   }
 }

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { Markdown } from '@/components/markdown'
 import { IconOpenAI, IconUser } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
-import { MarkdownDataView } from './data-view'
+import { DataView } from './data-view'
 
 export interface ChatMessageProps {
   message: Message
@@ -18,7 +18,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
     >
       <div
         className={cn(
-          'flex size-8 shrink-0 select-none items-center justify-center rounded-md border shadow',
+          'flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow',
           message.role === 'user'
             ? 'bg-background'
             : 'bg-primary text-primary-foreground'
@@ -33,7 +33,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
           message.ui
         ) : message?.data != null ? (
           <div>
-            <MarkdownDataView data={message.data} content={message.content} />
+            <DataView data={message.data} content={message.content} />
           </div>
         ) : (
           <>{message.content}</>

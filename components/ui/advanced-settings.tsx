@@ -2,18 +2,16 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger
-} from "./collapsible"
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-react"
-import { FC, useState } from "react"
+} from './collapsible'
+import { IconChevronDown, IconChevronRight } from '@tabler/icons-react'
+import { FC, useState } from 'react'
 
 interface AdvancedSettingsProps {
   children: React.ReactNode
 }
 
 export const AdvancedSettings: FC<AdvancedSettingsProps> = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(
-    false
-  )
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleOpenChange = (isOpen: boolean) => {
     setIsOpen(isOpen)

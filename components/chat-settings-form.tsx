@@ -1,14 +1,14 @@
-"use client"
+'use client'
 
-import { useAppContext } from "@/lib/hooks/use-app-context"
-import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
-import { ChatSettings } from "@/types"
-import { FC } from "react"
-import { ModelSelect } from "./models/model-select"
-import { AdvancedSettings } from "./ui/advanced-settings"
-import { Label } from "./ui/label"
-import { Slider } from "./ui/slider"
-import { TextareaAutosize } from "./ui/textarea-autosize"
+import { useAppContext } from '@/lib/hooks/use-app-context'
+import { CHAT_SETTING_LIMITS } from '@/lib/chat-setting-limits'
+import { ChatSettings } from '@/types'
+import { FC } from 'react'
+import { ModelSelect } from './models/model-select'
+import { AdvancedSettings } from './ui/advanced-settings'
+import { Label } from './ui/label'
+import { Slider } from './ui/slider'
+import { TextareaAutosize } from './ui/textarea-autosize'
 
 interface ChatSettingsFormProps {
   chatSettings: ChatSettings
@@ -20,7 +20,7 @@ interface ChatSettingsFormProps {
 export const ChatSettingsForm: FC<ChatSettingsFormProps> = ({
   chatSettings,
   onChangeChatSettings,
-  useAdvancedDropdown = true,
+  useAdvancedDropdown = true
 }) => {
   return (
     <div className="space-y-3">
@@ -76,11 +76,9 @@ interface AdvancedContentProps {
 
 const AdvancedContent: FC<AdvancedContentProps> = ({
   chatSettings,
-  onChangeChatSettings,
+  onChangeChatSettings
 }) => {
-  const {
-    availableOpenRouterModels,
-  } = useAppContext()
+  const { availableOpenRouterModels } = useAppContext()
 
   function findOpenRouterModel(modelId: string) {
     return availableOpenRouterModels.find(model => model.modelId === modelId)

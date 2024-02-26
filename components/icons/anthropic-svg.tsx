@@ -1,7 +1,7 @@
 // Inspired by Chatbot-UI and modified to fit the needs of this project
 // @see https://github.com/mckaywrigley/chatbot-ui/blob/main/components/models/model-icon.tsx
 
-import { FC } from "react"
+import { FC } from 'react'
 
 interface AnthropicSVGProps {
   height?: number
@@ -24,8 +24,8 @@ export const AnthropicSVG: FC<AnthropicSVGProps> = ({
     >
       <g
         style={{
-          transform: "translateX(13px) rotateZ(0deg)",
-          transformOrigin: "4.775px 7.73501px"
+          transform: 'translateX(13px) rotateZ(0deg)',
+          transformOrigin: '4.775px 7.73501px'
         }}
       >
         <path
@@ -34,7 +34,7 @@ export const AnthropicSVG: FC<AnthropicSVGProps> = ({
         ></path>
       </g>
       <g
-        style={{ transform: "none", transformOrigin: "7.935px 7.73501px" }}
+        style={{ transform: 'none', transformOrigin: '7.935px 7.73501px' }}
         opacity="1"
       >
         <path

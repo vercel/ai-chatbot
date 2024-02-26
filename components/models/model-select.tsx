@@ -1,19 +1,19 @@
 // Inspired by Chatbot-UI and modified to fit the needs of this project
 // @see https://github.com/mckaywrigley/chatbot-ui/blob/main/components/models/model-select.tsx
 
-import { useAppContext } from "@/lib/hooks/use-app-context"
-import { LLM, LLMID } from "@/types"
-import { IconCheck, IconChevronDown } from "@tabler/icons-react"
-import { FC, useEffect, useRef, useState } from "react"
-import { Button } from "../ui/button"
+import { useAppContext } from '@/lib/hooks/use-app-context'
+import { LLM, LLMID } from '@/types'
+import { IconCheck, IconChevronDown } from '@tabler/icons-react'
+import { FC, useEffect, useRef, useState } from 'react'
+import { Button } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger
-} from "../ui/dropdown-menu"
-import { Input } from "../ui/input"
-import { ModelIcon } from "./model-icon"
-import { ModelOption } from "./model-option"
+} from '../ui/dropdown-menu'
+import { Input } from '../ui/input'
+import { ModelIcon } from './model-icon'
+import { ModelOption } from './model-option'
 
 interface ModelSelectProps {
   selectedModelId: string
@@ -24,16 +24,13 @@ export const ModelSelect: FC<ModelSelectProps> = ({
   selectedModelId,
   onSelectModel
 }) => {
-  const {
-    availableHostedModels,
-    availableOpenRouterModels
-  } = useAppContext()
+  const { availableHostedModels, availableOpenRouterModels } = useAppContext()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     if (isOpen) {
@@ -48,10 +45,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
     setIsOpen(false)
   }
 
-  const allModels = [
-    ...availableHostedModels,
-    ...availableOpenRouterModels
-  ]
+  const allModels = [...availableHostedModels, ...availableOpenRouterModels]
 
   const groupedModels = allModels.reduce<Record<string, LLM[]>>(
     (groups, model) => {
@@ -74,7 +68,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
       open={isOpen}
       onOpenChange={isOpen => {
         setIsOpen(isOpen)
-        setSearch("")
+        setSearch('')
       }}
     >
       <DropdownMenuTrigger

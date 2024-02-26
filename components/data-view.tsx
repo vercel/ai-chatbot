@@ -6,7 +6,7 @@ export interface MarkdownDataViewProps extends React.ComponentProps<'div'> {
   content: string
 }
 
-export function MarkdownDataView(message: MarkdownDataViewProps) {
+export function DataView(message: MarkdownDataViewProps) {
   const { data, content } = message
 
   if ((data as any)?.[0] != null) {
