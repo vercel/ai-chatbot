@@ -164,6 +164,9 @@ dependencies:
   styles.css:
     specifier: link:@solana/wallet-adapter-react-ui/styles.css
     version: link:@solana/wallet-adapter-react-ui/styles.css
+  tools:
+    specifier: link:@langchain/core/tools
+    version: link:@langchain/core/tools
   tweetnacl:
     specifier: ^1.0.3
     version: 1.0.3
@@ -11094,6 +11097,7 @@ packages:
       is-hex-prefixed: 1.0.0
       strip-hex-prefix: 1.0.0
     dev: false
+    bundledDependencies: false
 
   /ev-emitter@2.1.2:
     resolution: {integrity: sha512-jQ5Ql18hdCQ4qS+RCrbLfz1n+Pags27q5TwMKvZyhp5hh2UULUYZUy1keqj6k6SYsdqIYjnmz7xyyEY0V67B8Q==}
