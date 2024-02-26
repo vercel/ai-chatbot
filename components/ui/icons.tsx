@@ -491,6 +491,32 @@ function IconChevronUpDown({
   )
 }
 
+function IconPlane({ className, ...props }: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      className={cn('size-5', className)}
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <g clip-path="url(#a)">
+        <path
+          className="fill-type-500"
+          fill-rule="evenodd"
+          d="M1.925 1.669A.8.8 0 0 0 .909 2.803L6.274 12 .909 21.197a.8.8 0 0 0 1.016 1.134l21.6-9.6a.8.8 0 0 0 0-1.462l-21.6-9.6Zm5.829 9.691L3.539 4.138 21.232 12 3.54 19.862l4.215-7.222H14.4a.64.64 0 0 0 0-1.28H7.754Z"
+          clip-rule="evenodd"
+        />
+      </g>
+      <defs>
+        <clipPath id="a">
+          <path fill="" d="M0 0h24v24H0z" />
+        </clipPath>
+      </defs>
+    </svg>
+  )
+}
+
 export {
   IconEdit,
   IconNextChat,
@@ -520,5 +546,6 @@ export {
   IconShare,
   IconUsers,
   IconExternalLink,
-  IconChevronUpDown
+  IconChevronUpDown,
+  IconPlane
 }
