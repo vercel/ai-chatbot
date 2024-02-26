@@ -13,7 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "baseUrl": "beta.ocada.ai",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
