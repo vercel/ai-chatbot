@@ -23,7 +23,7 @@ export async function ChatHistory({ userId }: ChatHistoryProps) {
           )}
         >
           <IconPlus className="-translate-x-2 stroke-2" />
-          New Chat
+          New Ocada Chat
         </Link>
       </div>
       <React.Suspense
