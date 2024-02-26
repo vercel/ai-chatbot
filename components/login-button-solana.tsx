@@ -39,7 +39,7 @@ export function LoginButtonSolana({
       const message = new SigninMessage({
         domain: window.location.host,
         publicKey: wallet.publicKey?.toBase58(),
-        statement: `Sign this message to sign in to the app.`,
+        statement: `By connecting a wallet, you agree to ocada’s Terms and Conditions and acknowledge that you’ve read and understand the protocol documentation and associated risks.`,
         nonce: nonce.toString(),
       });
 
