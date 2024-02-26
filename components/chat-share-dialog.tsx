@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { type DialogProps } from '@radix-ui/react-dialog'
 import { toast } from 'react-hot-toast'
 
-import { ServerActionResult, type Chat } from '@/lib/types'
+import { ServerActionResult, type Chat } from '@/types'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

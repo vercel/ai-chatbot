@@ -1,12 +1,12 @@
 import { JSONValue } from 'ai'
 import { Markdown } from './markdown'
 
-export interface DataViewProps extends React.ComponentProps<'div'> {
+export interface MarkdownDataViewProps extends React.ComponentProps<'div'> {
   data: JSONValue | undefined
   content: string
 }
 
-export function DataView(message: DataViewProps) {
+export function MarkdownDataView(message: MarkdownDataViewProps) {
   const { data, content } = message
 
   if ((data as any)?.[0] != null) {

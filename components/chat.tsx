@@ -21,6 +21,9 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 import { usePathname, useRouter } from 'next/navigation'
+import { useAppContext } from "@/lib/hooks/use-app-context"
+import { LLM_LIST } from "@/lib/models/llm/llm-list"
+
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 
 type StreamingReactResponseAction = any
@@ -39,11 +42,33 @@ export function Chat({ id, initialMessages, className, action }: ChatProps) {
   )
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
+
+  const {
+    chatSettings,
+    availableOpenRouterModels
+  } = useAppContext()
+
+  const modelData = [
+    ...LLM_LIST,
+    ...availableOpenRouterModels
+  ].find(llm => llm.modelId === chatSettings?.model)
+  
+  const provider = modelData?.provider ?? 'openai'
+  
+  const apiEndpoint = `/api/chat/${provider}`
+
+  const requestBody = {
+    id,
+    previewToken,
+    chatSettings
+  }
+
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
       initialMessages,
       id,
-      api: action.bind(null, { id, previewToken }),
+      body: requestBody,
+      api: provider === "openai" ? action.bind(null, requestBody) : apiEndpoint,
       onResponse(response) {
         if (response.status === 401) {
           toast.error(response.statusText)

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { ObjectId } from 'mongodb'
 
 import { auth } from '@/auth'
-import { type Chat } from '@/lib/types'
+import { type Chat } from '@/types'
 import connectDB from '@/lib/connect-db'
 
 function transformChatDocument(chatDoc: any): Chat {
@@ -21,7 +21,7 @@ export async function saveChatMessage(
   path: string,
   messages: any[],
   content: string,
-  data: any[]
+  data?: any[]
 ) {
   const createdAt = new Date()
   const modifiedAt = new Date()
