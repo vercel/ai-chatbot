@@ -36,9 +36,7 @@ const providers = [
       try {
         const msg = credentials?.message;
         const siws = new SigninMessage(JSON.parse(msg ? (msg as string) : '{}'))
-        const nextAuthUrl = new URL(headers().get('host') as string)
         const signature = credentials?.signature;
-        const nonce = credentials?.nonce;
         const result = await siws.validate(signature ? (signature as string) : '',)
         if (result) {
           return {

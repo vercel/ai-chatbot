@@ -72,7 +72,7 @@ export function LoginButtonSolana({
       {...props}
     >
       {isLoading ? (
-        <IconSpinner className="mr-2 animate-spin" />
+        <IconSpinner className="m-4 animate-spin size-14" />
       ) : showIcon ? (
         <IconSolana className="mr-2" />
       ) : null}
