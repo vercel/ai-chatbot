@@ -74,7 +74,9 @@ export function LoginButtonSolana({
       {isLoading ? (
         <IconSpinner className="m-4 animate-spin size-14" />
       ) : showIcon ? (
-        <IconSolana className="mr-2" />
+        // <IconSolana className="mr-2" />
+
+        <h2>Click Here To Authenticate.</h2>
       ) : null}
       {/* <span className="pl-4 text-[20px]">{text}</span> */}
     </Button>
