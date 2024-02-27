@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { signOut } from 'next-auth/react'
 
+
 export function Header() {
   const wallet = useWallet();
   const WalletMultiButtonDynamic = dynamic(
@@ -18,6 +19,9 @@ export function Header() {
   );
   
   useEffect(()=>{
+
+
+    console.log(`wallet details is ${wallet.wallet}`)
     if(wallet.disconnecting){
       signOut({ callbackUrl: '/' })
     }
