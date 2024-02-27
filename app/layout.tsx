@@ -11,10 +11,11 @@ import { Header } from '@/components/header'
 export const metadata = {
   metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
-    default: 'OCADA AI',
-    template: `%s - OCADA AI`
+    default: 'Ocada',
+    template: `%s - AI Agent`
   },
-  description: 'The first AI Agent in web3',
+  description:
+    'Optimized Computational Algorithms for Distributed Artificial Intelligence',
   icons: {
     icon: '/OCADA.svg',
     shortcut: '/OCADA.svg',
