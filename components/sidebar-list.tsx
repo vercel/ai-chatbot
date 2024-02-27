@@ -24,8 +24,10 @@ export async function SidebarList({ userId }: SidebarListProps) {
             <SidebarItems chats={chats} />
           </div>
         ) : (
-          <div className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">No chat history</p>
+          <div className="pt-2">
+            <p className="text-sm text-muted-foreground ml-7">
+              No chat history
+            </p>
           </div>
         )}
       </div>
