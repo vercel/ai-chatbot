@@ -22,6 +22,7 @@ export function Header() {
   )
 
   useEffect(() => {
+   console.log(`This is the solana wallet address ${wallet.publicKey}`) 
     if (wallet.disconnecting) {
       signOut({ callbackUrl: '/' })
     }

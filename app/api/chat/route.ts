@@ -9,6 +9,11 @@ import { AIMessage, ChatMessage, HumanMessage } from "@langchain/core/messages";
 import OpenAI from 'openai'
 import { z } from "zod";
 
+
+import * as web3 from '@solana/web3.js';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+
+
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
 
@@ -29,6 +34,11 @@ const convertVercelMessageToLangChainMessage = (message: VercelChatMessage) => {
 };
 
 export async function POST(req: NextRequest) {
+  
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+
+
   try {
     const body = await req.json();
     const userId = (await auth())?.user.id
@@ -43,6 +53,8 @@ export async function POST(req: NextRequest) {
     if (previewToken) {
       openai.apiKey = previewToken
     }
+
+    
 
 
     const messages = (body.messages ?? []).filter(
