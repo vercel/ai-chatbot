@@ -89,7 +89,7 @@ export function LoginButtonSolana({
               />
             </svg>
           </span>{' '}
-          and connect then click on the button below to lauch app.
+          and connect then click on the lauch app button below.
         </p>
       </article>
       <Button
