@@ -14,12 +14,12 @@ interface ChatHistoryProps {
 export async function ChatHistory({ userId }: ChatHistoryProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="px-2 my-4">
+      <div className="mt-5 mb-3">
         <Link
           href="/"
           className={cn(
             buttonVariants({ variant: 'outline' }),
-            'h-10 w-auto justify-start bg-[#171717] px-4 shadow-none transition-colors hover:bg-zinc-200/40 border-none ml-4 mb-2'
+            'h-10 w-full justify-start bg-[#171717] px-4 shadow-none transition-colors hover:bg-zinc-200/40 border-none mb-2 rounded-full ring-2 ring-[#1a1a1a]'
           )}
         >
           <IconPlus className="-translate-x-2" />
