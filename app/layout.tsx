@@ -1,6 +1,9 @@
 import { Toaster } from 'react-hot-toast'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
+import localFont from 'next/font/local'
+// import { GeistSans } from 'geist/font/sans'
+// import { GeistMono } from 'geist/font/mono'
+// import { Gabarito } from "next/font/google";
+// import { Rethink_Sans } from 'next/font/google'
 
 import '@/app/globals.css'
 import { cn } from '@/lib/utils'
@@ -11,10 +14,11 @@ import { Header } from '@/components/header'
 export const metadata = {
   metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
-    default: 'Next.js AI Chatbot',
-    template: `%s - Next.js AI Chatbot`
+    default: 'Ocada',
+    template: `%s - AI Agent`
   },
-  description: 'An AI-powered chatbot template built with Next.js and Vercel.',
+  description:
+    'Optimized Computational Algorithms for Distributed Artificial Intelligence',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
@@ -29,6 +33,43 @@ export const viewport = {
   ]
 }
 
+const Gabarito = localFont({
+  src: [
+    {
+      path: '../public/fonts/Gabarito-Regular.woff2',
+      weight: '400',
+      style: 'normal'
+    },
+    {
+      path: '../public/fonts/Gabarito-Medium.woff2',
+      weight: '500',
+      style: 'normal'
+    },
+    {
+      path: '../public/fonts/Gabarito-SemiBold.woff2',
+      weight: '600',
+      style: 'normal'
+    }
+  ],
+  variable: '--font-gabarito'
+})
+
+const Rethink_Sans = localFont({
+  src: [
+    {
+      path: '../public/fonts/RethinkSans-Regular.woff2',
+      weight: '400',
+      style: 'normal'
+    },
+    {
+      path: '../public/fonts/RethinkSans-Medium.woff2',
+      weight: '500',
+      style: 'normal'
+    }
+  ],
+  variable: '--font-rethink_sans'
+})
+
 interface RootLayoutProps {
   children: React.ReactNode
 }
@@ -39,8 +80,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={cn(
           'font-sans antialiased',
-          GeistSans.variable,
-          GeistMono.variable
+          Rethink_Sans.variable,
+          Gabarito.variable
         )}
       >
         <Toaster />
@@ -50,10 +91,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col min-h-screen bg-[#101010]">
-            <Header />
-            <main className="flex flex-col flex-1">{children}</main>
-          </div>
+          <main className="flex flex-col flex-1 h-screen bg-[#121212]">
+            {children}
+          </main>
           <TailwindIndicator />
         </Providers>
       </body>
