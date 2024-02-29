@@ -1,0 +1,51 @@
+.c-header {
+  button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    font-weight: 400 !important;
+    font-family: 'geist';
+    padding: 0px 12px !important;
+    font-size: 14px !important;
+    height: 36px !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #e8e8d9cc !important;
+    border: .4px solid #1a1a1a;
+
+
+    &[data-testid="rk-chain-button"] {
+      background: #101010 !important;
+      padding: 8px 16px !important;
+      font-size: 14px !important;
+      height: auto !important;
+    }
+
+    &[data-testid="rk-account-button"] {
+      background: #101010 !important;
+      padding: 0 !important;
+      border: none !important;
+
+      &>div {
+        background: transparent !important;
+      }
+    }
+
+    &>div {
+      border: none !important;
+      color: #e8e8d9 !important;
+      font-weight: 400 !important;
+      ;
+      opacity: 0.8 !important;
+      ;
+    }
+  }
+
+  :global {
+    .iekbcc0.ju367va.ju367v1s {
+      align-items: center;
+      gap: 2px !important;
+    }
+  }
+}

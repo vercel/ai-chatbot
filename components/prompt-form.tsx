@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { IconArrowElbow, IconPlus, IconPlane } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 export interface PromptProps
@@ -45,8 +45,8 @@ export function PromptForm({
       }}
       ref={formRef}
     >
-      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-background sm:rounded-md sm:border sm:px-12">
-        <Tooltip>
+      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-[#141414] ring-[1px] ring-[#1a1a1a] rounded-full sm:border sm:px-4 text-type-600 border-none">
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={e => {
@@ -56,15 +56,15 @@ export function PromptForm({
               }}
               className={cn(
                 buttonVariants({ size: 'sm', variant: 'outline' }),
-                'absolute left-0 top-4 size-8 rounded-full bg-background p-0 sm:left-4'
+                'absolute left-2 top-4 size-8 rounded-full bg-theme-500 hover:bg-theme-700 p-0 sm:left-4 border-none'
               )}
             >
-              <IconPlus />
+              <IconPlus className="text-black font-semibold" />
               <span className="sr-only">New Chat</span>
             </button>
           </TooltipTrigger>
           <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
         <Textarea
           ref={inputRef}
           tabIndex={0}
@@ -74,21 +74,24 @@ export function PromptForm({
           onChange={e => setInput(e.target.value)}
           placeholder="Send a message."
           spellCheck={false}
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm placeholder:text-type-600"
         />
-        <div className="absolute right-0 top-4 sm:right-4">
+        <div className="absolute right-3 top-4 sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="submit"
                 size="icon"
+                className="bg-transparent hover:bg-transparent right-10"
                 disabled={isLoading || input === ''}
               >
-                <IconArrowElbow />
-                <span className="sr-only">Send message</span>
+                <IconPlane className="opacity-75 hover:opacity-100" />
+                <span className="sr-only bg-type-500">Send message</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Send message</TooltipContent>
+            <TooltipContent className="text-type-600 bg-type-500">
+              Send message
+            </TooltipContent>
           </Tooltip>
         </div>
       </div>

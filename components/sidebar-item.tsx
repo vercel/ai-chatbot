@@ -53,7 +53,7 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
         ease: 'easeIn'
       }}
     >
-      <div className="absolute left-2 top-1 flex size-6 items-center justify-center">
+      <div className="absolute left-2 top-0 flex size-6 items-center justify-center">
         {chat.sharePath ? (
           <Tooltip delayDuration={1000}>
             <TooltipTrigger
@@ -65,19 +65,19 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
             <TooltipContent>This is a shared chat.</TooltipContent>
           </Tooltip>
         ) : (
-          <IconMessage className="mr-2" />
+          <IconMessage className="mr-2 text-type-600 text-opacity-50" />
         )}
       </div>
       <Link
         href={chat.path}
         className={cn(
           buttonVariants({ variant: 'ghost' }),
-          'group w-full px-8 transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10',
-          isActive && 'bg-zinc-200 pr-16 font-semibold dark:bg-zinc-800'
+          'group w-full px-8 transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10 py-2 h-6',
+          isActive && 'bg-transparent pr-16 dark:bg-transparent'
         )}
       >
         <div
-          className="relative max-h-5 flex-1 select-none overflow-hidden text-ellipsis break-all"
+          className="font-medium text-xs leading-normal text-type-600 text-opacity-50 relative max-h-5 flex-1 select-none overflow-hidden text-ellipsis break-all"
           title={chat.title}
         >
           <span className="whitespace-nowrap">
