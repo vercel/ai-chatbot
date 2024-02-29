@@ -13,6 +13,7 @@ import { clusterApiUrl } from '@solana/web3.js';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
 import "@solana/wallet-adapter-react-ui/styles.css"
+import { SessionProvider } from 'next-auth/react'
 
 export function Providers({ children,  ...props }: ThemeProviderProps)  {
   const wallets = useMemo(() => [new PhantomWalletAdapter(),], []);
@@ -21,19 +22,21 @@ export function Providers({ children,  ...props }: ThemeProviderProps)  {
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
   return (
-    <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <NextThemesProvider {...props}>
-            <SidebarProvider>
-              <TooltipProvider>
-                {children}
-              </TooltipProvider>
-            </SidebarProvider>
-          </NextThemesProvider>
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>   
+    <SessionProvider>
+      <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <NextThemesProvider {...props}>
+              <SidebarProvider>
+                <TooltipProvider>
+                  {children}
+                </TooltipProvider>
+              </SidebarProvider>
+            </NextThemesProvider>
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>   
+    </SessionProvider>
   )
 }
 
