@@ -13,6 +13,7 @@ import { IconOcada } from '@/components/ui/icons'
 
 export function Header() {
   const pathname = usePathname()
+  console.log(pathname)
   const wallet = useWallet()
   const WalletMultiButtonDynamic = dynamic(
     async () =>
@@ -29,9 +30,13 @@ export function Header() {
 
   return (
     <header
-      className={`${styles['c-header']} flex sticky top-4 sm:top-0 z-50 justify-end w-full h-16 shrink-0 bg-transparent`}
+      className={`${
+        pathname === '/sign-in'
+          ? 'top-4 border-b border-[#1a1a1a] pt-2 pb-4 px-4'
+          : 'top-0'
+      } ${styles['c-header']} flex sticky sm:top-0 z-50 justify-end w-full h-auto shrink-0 bg-transparent`}
     >
-      <div className="flex items-center justify-end space-x-2 px-4 w-full">
+      <div className="flex items-center justify-end space-x-2 w-full">
         <div className="flex items-center gap-4">
           <a
             target="_blank"

@@ -1,6 +1,5 @@
 import Component from '@/components/right-sidebar'
 import { SidebarDesktop } from '@/components/sidebar-desktop'
-import { Header } from '@/components/header'
 
 interface ChatLayoutProps {
   children: React.ReactNode
@@ -8,13 +7,16 @@ interface ChatLayoutProps {
 
 export default async function ChatLayout({ children }: ChatLayoutProps) {
   return (
-    <div className="relative flex h-screen overflow-hidden">
+    <section className="relative flex h-screen overflow-hidden">
       <SidebarDesktop />
-      <div className="group w-full overflow-auto pl-0 animate-in duration-300 ease-in-out peer-[[data-state=open]]:lg:ml-[240px] peer-[[data-state=open]]:xl:ml-[240px] bg-[#101010] m-3 rounded-2xl border border-[#1a1a1a]">
-        <Header />
-        {children}
+      <div className="group w-full overflow-auto pl-0 animate-in duration-300 ease-in-out peer-[[data-state=open]]:lg:ml-[220px] peer-[[data-state=open]]:xl:ml-[220px]">
+        <article className="md:grid grid-cols-16 gap-4 mx-auto">
+          <main className="col-start-1 col-end-12 relative">{children}</main>
+          <aside className="col-span-5 col-start-12 overflow-y-scroll">
+            <Component />
+          </aside>
+        </article>
       </div>
-      <Component />
-    </div>
+    </section>
   )
 }

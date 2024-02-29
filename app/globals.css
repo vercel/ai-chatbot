@@ -75,4 +75,22 @@
   body {
     @apply bg-background text-foreground;
   }
+  h1 {
+    @apply font-gabarito;
+  }
+  h2 {
+    @apply font-gabarito;
+  }
+  h3 {
+    @apply font-gabarito;
+  }
+  h4 {
+    @apply font-gabarito;
+  }
+  h5 {
+    @apply font-gabarito;
+  }
+  h6 {
+    @apply font-gabarito;
+  }
 }

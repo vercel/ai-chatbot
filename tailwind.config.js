@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const { fontFamily } = require('tailwindcss/defaultTheme');
+
 module.exports = {
   darkMode: ['class'],
   content: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
@@ -12,8 +14,10 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-geist-sans)'],
-        mono: ['var(--font-geist-mono)']
+        gabarito: ['var(--font-gabarito)', ...fontFamily.sans],
+        rethink_sans: ['var(--font-rethink_sans)', ...fontFamily.sans],
+        sans: ['var(--font-rethink_sans)', 'ui-sans-serif', 'system-ui'],
+        display: ['var(--font-gabarito)', 'ui-sans-serif', 'system-ui']
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -124,6 +128,10 @@ module.exports = {
           'slide-to-left 0.25s cubic-bezier(0.82, 0.085, 0.395, 0.895)',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out'
+      },
+      gridTemplateColumns: {
+        // Simple 16 column grid
+        16: 'repeat(16, minmax(0, 1fr))'
       }
     }
   },

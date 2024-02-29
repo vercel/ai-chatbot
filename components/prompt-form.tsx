@@ -45,7 +45,7 @@ export function PromptForm({
       }}
       ref={formRef}
     >
-      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-[#262626] rounded-full sm:border sm:px-4 text-type-600 border-none">
+      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-[#141414] ring-[1px] ring-[#1a1a1a] rounded-full sm:border sm:px-4 text-type-600 border-none">
         {/* <Tooltip>
           <TooltipTrigger asChild>
             <button

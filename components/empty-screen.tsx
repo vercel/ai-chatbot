@@ -52,7 +52,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
     //     </div>
     //   </div>
     // </div>
-    <div className="mx-auto lg:max-w-3xl px-4">
+    <div className="w-full lg:max-w-3xl mx-auto px-4">
       <div className="rounded-lg py-8">
         <div className="mb-6">
           <h1 className="mb-2 text-3xl font-semibold text-type-600">
@@ -68,7 +68,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
             <Button
               key={index}
               variant="link"
-              className="bg-[#1e1e1e] h-full px-5 text-sm font-normal py-4 rounded-xl mt-0 text-left flex-col items-start justify-between hover:no-underline text-type-600 text-opacity-60"
+              className="bg-[#141414] h-full px-5 text-sm font-normal py-4 rounded-xl mt-0 text-left flex-col items-start justify-between hover:no-underline text-type-600 text-opacity-60"
               onClick={() => setInput(message.message)}
             >
               {message.heading}
