@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
@@ -15,6 +14,7 @@ import bs58 from 'bs58'
 import styles from '../styles/header.module.scss'
 
 export function Header() {
+  const pathname = usePathname
   const { data: session, status } = useSession()
   const wallet = useWallet()
   const walletModal = useWalletModal()
