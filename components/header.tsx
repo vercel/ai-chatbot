@@ -14,7 +14,7 @@ import bs58 from 'bs58'
 import styles from '../styles/header.module.scss'
 
 export function Header() {
-  const pathname = usePathname
+  const pathname = usePathname()
   const { data: session, status } = useSession()
   const wallet = useWallet()
   const walletModal = useWalletModal()
@@ -79,29 +79,31 @@ export function Header() {
           : 'top-0'
       } ${styles['c-header']} flex sticky sm:top-0 z-50 justify-end w-full h-auto shrink-0 bg-transparent`}
     >
-      <div className="flex items-start ml-2">
+      {/* <div className="flex items-start ml-2">
         <Image alt="ocada" src="/OCADA.svg" width={100} height={100} />
-      </div>
-      <div className="flex items-center justify-end space-x-2">
-        <a
-          target="_blank"
-          href="/"
-          rel="noopener noreferrer"
-          className={
-            (cn(buttonVariants({ variant: 'outline' })), 'hidden lg:flex')
-          }
-        >
-          <span className="ml-2 text-type-600 text-sm text-opacity-80">
-            Plugins
-          </span>
-        </a>
-        <WalletMultiButtonDynamic
-          className={cn(
-            buttonVariants({ variant: 'outline' }),
-            'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
-          )}
-        />
-        {wallet.publicKey && <></>}
+      </div> */}
+      <div className="flex items-center justify-end space-x-2 w-full">
+        <div className="flex items-center gap-4">
+          <a
+            target="_blank"
+            href="/"
+            rel="noopener noreferrer"
+            className={
+              (cn(buttonVariants({ variant: 'outline' })), 'hidden lg:flex')
+            }
+          >
+            <span className="ml-2 text-type-600 text-sm text-opacity-80">
+              Plugins
+            </span>
+          </a>
+          <WalletMultiButtonDynamic
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'bg-type-alt-500 text-black hover:bg-type-alt-700 hover:text-black'
+            )}
+          />
+          {wallet.publicKey && <></>}
+        </div>
       </div>
     </header>
   )
