@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { type UseChatHelpers } from 'ai/react'
 
+import { addMessageAtom, inputAtom } from '@/atoms/chat'
 import { shareChat } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { PromptForm } from '@/components/prompt-form'
@@ -8,6 +9,12 @@ import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { IconRefresh, IconShare, IconStop } from '@/components/ui/icons'
 import { FooterText } from '@/components/footer'
 import { ChatShareDialog } from '@/components/chat-share-dialog'
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { string } from 'zod'
+import { useWallet } from '@solana/wallet-adapter-react'
+
+
+// import { Textarea } from "../ui/textarea";
 
 export interface ChatPanelProps
   extends Pick<
@@ -37,6 +44,24 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
+  const [inputValue, setInputValue] = useAtom(inputAtom);
+  const [isHandling, addMessageHandler] = useAtom(addMessageAtom);
+  const wallet = useWallet()
+  
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   console.log("----------------------", inputValue, isHandling)
+  //   setInputValue(inputValue)
+  //   await addMessageHandler("generate");
+
+  // }
+
+ React.useEffect(() => {
+ 
+   const ownerAddress = wallet.publicKey?.toBase58()
+ 
+   console.log("address", ownerAddress)
+   
+ }, [])
   return (
     <div className="fixed inset-x-0 bottom-0 w-full animate-in duration-300 ease-in-out peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]">
       <ButtonScrollToBottom />
@@ -85,6 +110,22 @@ export function ChatPanel({
           )}
         </div>
         <div className="px-4 py-2 space-y-4 bg-transparent sm:rounded-t-xl md:py-4">
+          {/* <PromptForm
+            onSubmit={handleSubmit}
+            input={inputValue}
+            setInput={setInputValue}
+            isLoading={isLoading}
+          /> */}
+          {/* <form onSubmit={handleSubmit}>
+            <Textarea
+              className="h-auto peer"
+              placeholder="Type your message..."
+              value={inputValue}
+              onChange={(e:React.FormEvent<HTMLFormElement>) => {
+                setInputValue(e.target.value);
+              }}
+            />
+          </form> */}
           <PromptForm
             onSubmit={async value => {
               await append({

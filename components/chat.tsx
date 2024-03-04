@@ -21,7 +21,9 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 import { usePathname, useRouter } from 'next/navigation'
-
+import { useWallet, WalletProvider } from '@solana/wallet-adapter-react';
+// import { getPhantomWallet } from '@solana/wallet-adapter-wallets';
+import { PhantomWalletAdapter  } from '@solana/wallet-adapter-phantom';
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -52,10 +54,14 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       },
       onFinish() {
         if (!path.includes('chat')) {
+          console.log("here")
           window.history.pushState({}, '', `/chat/${id}`)
         }
       }
     })
+
+    const wallets = [new PhantomWalletAdapter()];
+
   return (
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
@@ -68,16 +74,19 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           <EmptyScreen setInput={setInput} />
         )}
       </div>
-      <ChatPanel
-        id={id}
-        isLoading={isLoading}
-        stop={stop}
-        append={append}
-        reload={reload}
-        messages={messages}
-        input={input}
-        setInput={setInput}
-      />
+      <WalletProvider wallets={wallets}>
+
+        <ChatPanel
+          id={id}
+          isLoading={isLoading}
+          stop={stop}
+          append={append}
+          reload={reload}
+          messages={messages}
+          input={input}
+          setInput={setInput}
+        />
+      </WalletProvider>
 
       <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
         <DialogContent>
