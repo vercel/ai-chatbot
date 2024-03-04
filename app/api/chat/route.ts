@@ -1,21 +1,35 @@
+import { kv } from '@vercel/kv'
 import { NextRequest, NextResponse } from "next/server";
-import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
+import { Message as VercelChatMessage, OpenAIStream, StreamingTextResponse } from "ai";
 import type { ToolInterface } from "@langchain/core/tools";
-import {
-  DynamicStructuredTool,
-  RequestsGetTool,
-  RequestsPostTool,
-} from "langchain/tools";
+import { DynamicStructuredTool, RequestsGetTool, RequestsPostTool } from "langchain/tools";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { ChatOpenAI } from "@langchain/openai";
 import { AIMessage, ChatMessage, HumanMessage } from "@langchain/core/messages";
+<<<<<<< HEAD
 import { arrayOutputType, z } from "zod";
 
 //******** Training & Finetuing *********//
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { OpenAIEmbeddings } from "@langchain/openai";
+=======
+import OpenAI from 'openai'
+import { z } from "zod";
+>>>>>>> 61655d88394756afd6471f98834caea351a4fb0f
 
-export const runtime = "edge";
+
+import * as web3 from '@solana/web3.js';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+
+
+import { auth } from '@/auth'
+import { nanoid } from '@/lib/utils'
+
+export const runtime = 'edge'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 const address = [
   "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
@@ -152,9 +166,30 @@ const convertVercelMessageToLangChainMessage = (message: VercelChatMessage) => {
 };
 
 export async function POST(req: NextRequest) {
+  
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+
+
   try {
     console.log("here")
     const body = await req.json();
+    const userId = (await auth())?.user.id
+    const { previewToken } = body
+
+    if (!userId) {
+      return new Response('Unauthorized', {
+        status: 401
+      })
+    }
+
+    if (previewToken) {
+      openai.apiKey = previewToken
+    }
+
+    
+
+
     const messages = (body.messages ?? []).filter(
       (message: VercelChatMessage) =>
         message.role === "user" || message.role === "assistant",

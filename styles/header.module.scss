@@ -6,12 +6,13 @@
     border-radius: 8px !important;
     font-weight: 400 !important;
     font-family: 'geist';
-    padding: 8px 16px !important;
+    padding: 0px 12px !important;
     font-size: 14px !important;
-    height: auto !important;
+    height: 36px !important;
     box-shadow: none !important;
-    background: #fdfad5 !important;
-    color: #101010 !important;
+    background: transparent !important;
+    color: #e8e8d9cc !important;
+    border: .4px solid #e8e8d95f;
 
 
     &[data-testid="rk-chain-button"] {

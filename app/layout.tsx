@@ -7,18 +7,15 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
-import { Session } from 'next-auth'
-
-// import { ThirdwebSDKProvider } from "@thirdweb-dev/react";
-// import { ethers } from "ethers";
 
 export const metadata = {
   metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
-    default: 'OCADA AI',
-    template: `OCADA AI`
+    default: 'Ocada',
+    template: `%s - AI Agent`
   },
-  description: 'OCADA AI Agent.',
+  description:
+    'Optimized Computational Algorithms for Distributed Artificial Intelligence',
   icons: {
     icon: '/OCADA.svg',
     shortcut: '/OCADA.svg',
@@ -39,8 +36,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-
-      <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           'font-sans antialiased',
@@ -51,10 +47,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Toaster />
         <Providers
           attribute="class"
-          defaultTheme="white"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-         
         >
           <div className="flex flex-col min-h-screen bg-[#101010]">
             <Header />
@@ -64,8 +59,5 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </Providers>
       </body>
     </html>
-
-            
-
   )
 }

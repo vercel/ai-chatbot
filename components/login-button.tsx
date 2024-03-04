@@ -6,7 +6,7 @@ import { signIn } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconGitHub, IconSpinner } from '@/components/ui/icons'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+// import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 interface LoginButtonProps extends ButtonProps {
   showGithubIcon?: boolean
@@ -14,7 +14,7 @@ interface LoginButtonProps extends ButtonProps {
 }
 
 export function LoginButton({
-  text = 'sign-in to github',
+  text = 'Login with GitHub',
   showGithubIcon = true,
   className,
   ...props
@@ -39,20 +39,5 @@ export function LoginButton({
       ) : null}
       {text}
     </Button>
-
-    // <>
-    //       {/* <ConnectButton 
-    //              onClick={() => {
-    //     setIsLoading(true)
-    //     // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
-    //     signIn('github', { callbackUrl: `/` })
-    //   }}
-    //   disabled={isLoading}
-    //   {...props}
-          
-          
-    //       /> */}
-    
-    // </>
   )
 }

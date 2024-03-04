@@ -36,7 +36,6 @@
     "@vercel/analytics": "^1.1.2",
     "@vercel/kv": "^1.0.1",
     "@vercel/og": "^0.6.2",
-    "@wagmi/core": "^2.6.5",
     "ai": "^2.2.31",
     "chromadb": "^1.8.1",
     "class-variance-authority": "^0.7.0",
@@ -68,8 +67,11 @@
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "sass": "^1.71.0",
-    "viem": "~2.7.10",
+    "siwe": "^2.1.4",
+    "tools": "link:@langchain/core/tools",
+    "tweetnacl": "^1.0.3",
     "wagmi": "^2.5.7",
+    "styles.css": "link:@solana/wallet-adapter-react-ui/styles.css",
     "zod": "^3.22.4"
   },
   "devDependencies": {

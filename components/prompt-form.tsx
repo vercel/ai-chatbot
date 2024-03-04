@@ -45,8 +45,8 @@ export function PromptForm({
       }}
       ref={formRef}
     >
-      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-[#262626] rounded-full sm:border sm:px-12 text-type-600">
-        <Tooltip>
+      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-[#262626] rounded-full sm:border sm:px-4 text-type-600 border-none">
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={e => {
@@ -56,7 +56,7 @@ export function PromptForm({
               }}
               className={cn(
                 buttonVariants({ size: 'sm', variant: 'outline' }),
-                'absolute left-2 top-4 size-8 rounded-full bg-theme-500 hover:bg-theme-700 p-0 sm:left-4'
+                'absolute left-2 top-4 size-8 rounded-full bg-theme-500 hover:bg-theme-700 p-0 sm:left-4 border-none'
               )}
             >
               <IconPlus className="text-black font-semibold" />
@@ -64,7 +64,7 @@ export function PromptForm({
             </button>
           </TooltipTrigger>
           <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
         <Textarea
           ref={inputRef}
           tabIndex={0}
