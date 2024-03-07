@@ -14,9 +14,10 @@ import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
+import { Session } from '@/lib/types'
 
 async function UserOrLogin() {
-  const session = await auth()
+  const session = (await auth()) as Session
   return (
     <>
       {session?.user ? (
@@ -38,7 +39,7 @@ async function UserOrLogin() {
           <UserMenu user={session.user} />
         ) : (
           <Button variant="link" asChild className="-ml-2">
-            <Link href="/sign-in?callbackUrl=/">Login</Link>
+            <Link href="/login">Login</Link>
           </Button>
         )}
       </div>

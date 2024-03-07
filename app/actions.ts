@@ -127,3 +127,21 @@ export async function shareChat(id: string) {
 
   return payload
 }
+
+export async function saveChat(chat: Chat) {
+  const session = await auth()
+
+  if (session && session.user) {
+    await kv.hmset(`chat:${chat.id}`, chat)
+    await kv.zadd(`user:chat:${session.user.id}`, {
+      score: Date.now(),
+      member: `chat:${chat.id}`
+    })
+  } else {
+    return
+  }
+}
+
+export async function refreshHistory(path: string) {
+  redirect(path)
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useChat, type Message } from 'ai/react'
+import { type Message } from 'ai/react'
 
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
@@ -16,20 +16,22 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { toast } from 'react-hot-toast'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+import { useUIState, useAIState } from 'ai/rsc'
+import { Session } from '@/lib/types'
+import { refreshHistory } from '@/app/actions'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
+  session?: Session
 }
 
-export function Chat({ id, initialMessages, className }: ChatProps) {
-  const router = useRouter()
+export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const path = usePathname()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
@@ -37,25 +39,26 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   )
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
-  const { messages, append, reload, stop, isLoading, input, setInput } =
-    useChat({
-      initialMessages,
-      id,
-      body: {
-        id,
-        previewToken
-      },
-      onResponse(response) {
-        if (response.status === 401) {
-          toast.error(response.statusText)
-        }
-      },
-      onFinish() {
-        if (!path.includes('chat')) {
-          window.history.pushState({}, '', `/chat/${id}`)
-        }
+
+  const [input, setInput] = useState('')
+  const [messages] = useUIState()
+  const [aiState] = useAIState()
+  const isLoading = true
+
+  const [_, setNewChatId] = useLocalStorage('newChatId', id)
+
+  useEffect(() => {
+    if (session?.user && messages.length === 2) {
+      if (!path.includes('chat')) {
+        refreshHistory(`/chat/${id}`)
       }
-    })
+    }
+
+    if (session?.user && messages?.length === 0) {
+      setNewChatId(id)
+    }
+  }, [aiState.messages, id, messages.length, path, session?.user, setNewChatId])
+
   return (
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
@@ -68,16 +71,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           <EmptyScreen setInput={setInput} />
         )}
       </div>
-      <ChatPanel
-        id={id}
-        isLoading={isLoading}
-        stop={stop}
-        append={append}
-        reload={reload}
-        messages={messages}
-        input={input}
-        setInput={setInput}
-      />
+      <ChatPanel id={id} input={input} setInput={setInput} />
 
       <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
         <DialogContent>

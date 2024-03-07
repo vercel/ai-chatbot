@@ -4,6 +4,8 @@ import { notFound, redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getChat } from '@/app/actions'
 import { Chat } from '@/components/chat'
+import { AI } from '@/lib/stock/action'
+import { Session } from '@/lib/types'
 
 export interface ChatPageProps {
   params: {
@@ -27,10 +29,10 @@ export async function generateMetadata({
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const session = await auth()
+  const session = (await auth()) as Session
 
   if (!session?.user) {
-    redirect(`/sign-in?next=/chat/${params.id}`)
+    redirect(`/login`)
   }
 
   const chat = await getChat(params.id, session.user.id)
@@ -43,5 +45,9 @@ export default async function ChatPage({ params }: ChatPageProps) {
     notFound()
   }
 
-  return <Chat id={chat.id} initialMessages={chat.messages} />
+  return (
+    <AI initialAIState={{ chatId: chat.id, messages: chat.messages }}>
+      <Chat id={chat.id} session={session} initialMessages={chat.messages} />
+    </AI>
+  )
 }

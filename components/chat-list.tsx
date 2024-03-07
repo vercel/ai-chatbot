@@ -1,10 +1,8 @@
-import { type Message } from 'ai'
-
 import { Separator } from '@/components/ui/separator'
-import { ChatMessage } from '@/components/chat-message'
+import { UIState } from '@/lib/stock/action'
 
 export interface ChatList {
-  messages: Message[]
+  messages: UIState
 }
 
 export function ChatList({ messages }: ChatList) {
@@ -15,8 +13,8 @@ export function ChatList({ messages }: ChatList) {
   return (
     <div className="relative mx-auto max-w-2xl px-4">
       {messages.map((message, index) => (
-        <div key={index}>
-          <ChatMessage message={message} />
+        <div key={message.id}>
+          {message.display}
           {index < messages.length - 1 && (
             <Separator className="my-4 md:my-8" />
           )}
