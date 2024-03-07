@@ -26,7 +26,7 @@
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - [Radix UI](https://radix-ui.com) for headless component primitives
   - Icons from [Phosphor Icons](https://phosphoricons.com)
-- Chat History, rate limiting, and session storage with [Vercel KV](https://vercel.com/storage/kv)
+- Chat History, rate limiting, and session storage with [Vercel KV](https://vercel.com/storage/kv) and [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
 - [NextAuth.js](https://github.com/nextauthjs/next-auth) for authentication
 
 ## Model Providers
@@ -45,6 +45,12 @@ Follow the steps outlined in the [quick start guide](https://vercel.com/docs/sto
 
 Remember to update your environment variables (`KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN`) in the `.env` file with the appropriate credentials provided during the KV database setup.
 
+## Create a Postgres Database Instance
+
+Similarly, follow the steps outline in the [quick start guide](https://vercel.com/docs/storage/vercel-postgres/quickstart) provided by Vercel. This guide will assist you in creating and configuring your Postgres database instance on Vercel, enabling your application to interact with it.
+
+Remember to update your environment variables (`POSTGRES_URL`, `POSTGRES_PRISMA_URL`, `POSTGRES_URL_NO_SSL`, `POSTGRES_URL_NON_POOLING`, `POSTGRES_USER`, `POSTGRES_HOST`, `POSTGRES_PASSWORD`, `POSTGRES_DATABASE`) in the `.env` file with the appropriate credentials provided during the Postgres database setup.
+
 ## Running locally
 
 You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
@@ -57,6 +63,7 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 ```bash
 pnpm install
+pnpm seed
 pnpm dev
 ```
 
