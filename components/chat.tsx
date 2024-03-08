@@ -19,10 +19,10 @@ import {
 import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { usePathname } from 'next/navigation'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Session } from '@/lib/types'
 import { refreshHistory } from '@/app/actions'
+import { usePathname } from 'next/navigation'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -32,7 +32,6 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, initialMessages, className, session }: ChatProps) {
-  const path = usePathname()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
     'ai-token',
     null
@@ -40,6 +39,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
 
+  const path = usePathname()
   const [input, setInput] = useState('')
   const [messages] = useUIState()
   const [aiState] = useAIState()
@@ -48,16 +48,15 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
   useEffect(() => {
-    if (session?.user && messages.length === 2) {
-      if (!path.includes('chat')) {
+    const messagesLength = aiState.messages?.length
+
+    if (session?.user) {
+      if (messagesLength === 2 && !path.includes('chat')) {
         refreshHistory(`/chat/${id}`)
+        setNewChatId(id)
       }
     }
-
-    if (session?.user && messages?.length === 0) {
-      setNewChatId(id)
-    }
-  }, [aiState.messages, id, messages.length, path, session?.user, setNewChatId])
+  }, [aiState.messages, id, session?.user, setNewChatId, path])
 
   return (
     <>
