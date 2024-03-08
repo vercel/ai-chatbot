@@ -14,6 +14,7 @@ import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
+import { AiModelSelection } from './ai-model-selection'
 
 async function UserOrLogin() {
   const session = await auth()
@@ -53,6 +54,9 @@ export function Header() {
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           <UserOrLogin />
         </React.Suspense>
+      </div>
+      <div>
+        <AiModelSelection />
       </div>
       <div className="flex items-center justify-end space-x-2">
         <a
