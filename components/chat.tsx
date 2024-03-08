@@ -21,8 +21,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Session } from '@/lib/types'
-import { refreshHistory } from '@/app/actions'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -39,6 +38,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
 
+  const router = useRouter()
   const path = usePathname()
   const [input, setInput] = useState('')
   const [messages] = useUIState()
@@ -48,15 +48,23 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
   useEffect(() => {
-    const messagesLength = aiState.messages?.length
-
     if (session?.user) {
-      if (messagesLength === 2 && !path.includes('chat')) {
-        refreshHistory(`/chat/${id}`)
-        setNewChatId(id)
+      if (!path.includes('chat')) {
+        window.history.replaceState({}, '', `/chat/${id}`)
       }
     }
-  }, [aiState.messages, id, session?.user, setNewChatId, path])
+  }, [id, path, session?.user])
+
+  useEffect(() => {
+    const messagesLength = aiState.messages?.length
+    if (messagesLength === 2) {
+      router.refresh()
+    }
+  }, [aiState.messages, router])
+
+  useEffect(() => {
+    setNewChatId(id)
+  })
 
   return (
     <>

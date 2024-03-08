@@ -12,7 +12,7 @@ export default function LoginForm() {
       action={dispatch}
       className="space-y-3 flex flex-col gap-4 items-center"
     >
-      <div className="flex-1 rounded-lg bg-zinc-950 border px-6 pb-4 pt-8">
+      <div className="flex-1 rounded-lg dark:bg-zinc-950 border px-6 pb-4 pt-8">
         <h1 className={`mb-3 text-2xl font-bold`}>
           Please log in to continue.
         </h1>
@@ -26,7 +26,7 @@ export default function LoginForm() {
             </label>
             <div className="relative">
               <input
-                className="peer block w-full rounded-md border border-zinc-800 py-[9px] px-2 text-sm outline-none bg-zinc-950 placeholder:text-zinc-500"
+                className="peer block w-full rounded-md border dark:border-zinc-800 py-[9px] px-2 text-sm outline-none dark:bg-zinc-950 placeholder:text-zinc-500 bg-zinc-50"
                 id="email"
                 type="email"
                 name="email"
@@ -44,7 +44,7 @@ export default function LoginForm() {
             </label>
             <div className="relative">
               <input
-                className="peer block w-full rounded-md border border-zinc-800 py-[9px] px-2 text-sm outline-none bg-zinc-950 placeholder:text-zinc-500"
+                className="peer block w-full rounded-md border dark:border-zinc-800 py-[9px] px-2 text-sm outline-none dark:bg-zinc-950 placeholder:text-zinc-500 bg-zinc-50"
                 id="password"
                 type="password"
                 name="password"
@@ -81,7 +81,7 @@ function LoginButton() {
 
   return (
     <button
-      className="mt-4 w-full bg-zinc-100 p-2 rounded-md text-zinc-900 font-semibold hover:bg-zinc-200 active:bg-zinc-300"
+      className="my-4 w-full dark:bg-zinc-100 bg-zinc-200 p-2 rounded-md text-zinc-900 font-semibold hover:bg-zinc-200 active:bg-zinc-300 text-sm"
       aria-disabled={pending}
     >
       Log in
