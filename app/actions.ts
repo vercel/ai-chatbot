@@ -132,8 +132,9 @@ export async function saveChat(chat: Chat) {
   const session = await auth()
 
   if (session && session.user) {
-    await kv.hmset(`chat:${chat.id}`, chat)
-    await kv.zadd(`user:chat:${session.user.id}`, {
+    const pipeline = kv.pipeline()
+    pipeline.hmset(`chat:${chat.id}`, chat)
+    pipeline.zadd(`user:chat:${chat.userId}`, {
       score: Date.now(),
       member: `chat:${chat.id}`
     })
