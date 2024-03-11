@@ -138,6 +138,7 @@ export async function saveChat(chat: Chat) {
       score: Date.now(),
       member: `chat:${chat.id}`
     })
+    await pipeline.exec()
   } else {
     return
   }
