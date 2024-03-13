@@ -11,14 +11,16 @@ import { useUIState, useAIState } from 'ai/rsc'
 import { Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { Message } from '@/lib/chat/actions'
+import toast from 'react-hot-toast'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
   session?: Session
+  missingKeys: string[]
 }
 
-export function Chat({ id, className, session }: ChatProps) {
+export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const router = useRouter()
   const path = usePathname()
   const [input, setInput] = useState('')
@@ -46,6 +48,12 @@ export function Chat({ id, className, session }: ChatProps) {
   useEffect(() => {
     setNewChatId(id)
   })
+
+  useEffect(() => {
+    missingKeys.map(key => {
+      toast.error(`Missing ${key} environment variable!`)
+    })
+  }, [missingKeys])
 
   return (
     <>
