@@ -4,7 +4,7 @@ import { useId, useState } from 'react'
 import { useActions, useAIState, useUIState } from 'ai/rsc'
 import { formatNumber } from '@/lib/utils'
 
-import type { AI } from '@/lib/stock/action'
+import type { AI } from '@/lib/chat/actions'
 
 interface Purchase {
   defaultAmount?: number

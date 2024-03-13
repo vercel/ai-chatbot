@@ -6,7 +6,7 @@ import Textarea from 'react-textarea-autosize'
 import { useActions, useUIState } from 'ai/rsc'
 
 import { UserMessage } from './stocks/message'
-import { type AI } from '@/lib/stock/action'
+import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
 import {
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
+import { useRouter } from 'next/navigation'
 
 export function PromptForm({
   input,
@@ -24,6 +25,7 @@ export function PromptForm({
   input: string
   setInput: (value: string) => void
 }) {
+  const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
@@ -71,9 +73,8 @@ export function PromptForm({
               variant="outline"
               size="icon"
               className="absolute left-0 top-4 size-8 rounded-full bg-background p-0 sm:left-4"
-              onClick={e => {
-                e.preventDefault()
-                window.location.reload()
+              onClick={() => {
+                router.push('/')
               }}
             >
               <IconPlus />

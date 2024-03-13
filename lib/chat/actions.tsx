@@ -27,7 +27,7 @@ import { StockSkeleton } from '@/components/stocks/stock-skeleton'
 import { formatNumber, runAsyncFnWithoutBlocking, sleep } from '@/lib/utils'
 import { nanoid } from 'nanoid'
 import { saveChat } from '@/app/actions'
-import { UserMessage } from '@/components/stocks/message'
+import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
 
@@ -136,6 +136,7 @@ async function submitUserMessage(content: string) {
   const ui = render({
     model: 'gpt-3.5-turbo',
     provider: openai,
+    initial: <SpinnerMessage />,
     messages: [
       {
         role: 'system',
@@ -176,7 +177,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
         })
       }
 
-      return <BotMessage>{content}</BotMessage>
+      return <BotMessage content={content} />
     },
     functions: {
       listStocks: {
@@ -290,7 +291,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
               ]
             })
 
-            return <BotMessage>Invalid amount</BotMessage>
+            return <BotMessage content={'Invalid amount'} />
           }
 
           aiState.done({
@@ -312,12 +313,14 @@ Besides that, you can also chat with users and do some calculations if needed.`
 
           return (
             <>
-              <BotMessage>
-                Sure!{' '}
-                {typeof numberOfShares === 'number'
-                  ? `Click the button below to purchase ${numberOfShares} shares of $${symbol}:`
-                  : `How many $${symbol} would you like to purchase?`}
-              </BotMessage>
+              <BotMessage
+                content={`Sure!
+                ${
+                  typeof numberOfShares === 'number'
+                    ? `Click the button below to purchase ${numberOfShares} shares of $${symbol}:`
+                    : `How many $${symbol} would you like to purchase?`
+                }`}
+              />
               <BotCard>
                 <Purchase
                   props={{
@@ -384,6 +387,13 @@ Besides that, you can also chat with users and do some calculations if needed.`
   }
 }
 
+export type Message = {
+  role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
+  content: string
+  id?: string
+  name?: string
+}
+
 export type AIState = {
   chatId: string
   messages: {
@@ -444,9 +454,7 @@ export const AI = createAI<AIState, UIState>({
         path
       }
 
-      if (done) {
-        await saveChat(chat)
-      }
+      await saveChat(chat)
     } else {
       return
     }
@@ -461,18 +469,26 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       display:
         message.role === 'function' ? (
           message.name === 'listStocks' ? (
-            <Stocks props={JSON.parse(message.content)} />
+            <BotCard>
+              <Stocks props={JSON.parse(message.content)} />
+            </BotCard>
           ) : message.name === 'showStockPrice' ? (
-            <Stock props={JSON.parse(message.content)} />
+            <BotCard>
+              <Stock props={JSON.parse(message.content)} />
+            </BotCard>
           ) : message.name === 'showStockPurchase' ? (
-            <Purchase props={JSON.parse(message.content)} />
+            <BotCard>
+              <Purchase props={JSON.parse(message.content)} />
+            </BotCard>
           ) : message.name === 'getEvents' ? (
-            <Events props={JSON.parse(message.content)} />
+            <BotCard>
+              <Events props={JSON.parse(message.content)} />
+            </BotCard>
           ) : null
         ) : message.role === 'user' ? (
           <UserMessage>{message.content}</UserMessage>
         ) : (
-          <BotMessage>{message.content}</BotMessage>
+          <BotMessage content={message.content} />
         )
     }))
 }

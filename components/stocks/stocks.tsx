@@ -2,7 +2,7 @@
 
 import { useActions, useUIState } from 'ai/rsc'
 
-import type { AI } from '@/lib/stock/action'
+import type { AI } from '@/lib/chat/actions'
 
 interface Stock {
   symbol: string

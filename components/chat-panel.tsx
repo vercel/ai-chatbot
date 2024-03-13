@@ -9,7 +9,7 @@ import { IconShare } from '@/components/ui/icons'
 import { FooterText } from '@/components/footer'
 import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useUIState } from 'ai/rsc'
-import type { AI } from '@/lib/stock/action'
+import type { AI } from '@/lib/chat/actions'
 
 export interface ChatPanelProps {
   id?: string
