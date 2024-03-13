@@ -35,21 +35,14 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           .
         </p>
         <p className="leading-normal text-muted-foreground">
-          You can start a conversation here or try the following examples:
+          It uses{' '}
+          <ExternalLink href="https://vercel.com/blog/ai-sdk-3-generative-ui">
+            React Server Components
+          </ExternalLink>{' '}
+          to combine text with UI generated as output of the LLM. The UI state
+          is synced through the SDK so the model is aware of your interactions
+          as they happen.
         </p>
-        <div className="mt-4 flex flex-col items-start space-y-2">
-          {exampleMessages.map((message, index) => (
-            <Button
-              key={index}
-              variant="link"
-              className="h-auto p-0 text-base"
-              onClick={() => setInput(message.message)}
-            >
-              <IconArrowRight className="mr-2 text-muted-foreground" />
-              {message.heading}
-            </Button>
-          ))}
-        </div>
       </div>
     </div>
   )

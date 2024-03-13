@@ -26,7 +26,7 @@
     "@vercel/kv": "^1.0.1",
     "@vercel/og": "^0.6.2",
     "@vercel/postgres": "^0.7.2",
-    "ai": "^3.0.7",
+    "ai": "^3.0.9",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "d3-scale": "^4.0.2",
