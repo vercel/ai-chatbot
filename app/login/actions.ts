@@ -3,31 +3,34 @@
 import { signIn } from '@/auth'
 import { AuthError } from 'next-auth'
 import { db } from '@vercel/postgres'
-import bcrypt from 'bcryptjs'
+import { getStringFromBuffer } from '@/lib/utils'
+import { z } from 'zod'
+
+interface Result {
+  type: string
+  message: string
+}
 
 export async function authenticate(
-  _prevState: string | undefined,
+  _prevState: Result | undefined,
   formData: FormData
 ) {
   try {
     const email = formData.get('email')
     const password = formData.get('password')
 
-    const saltPrefix = process.env.AUTH_SALT_PREFIX || ''
-    const passwordWithPrefix = saltPrefix + password
-
     await signIn('credentials', {
       email,
-      password: passwordWithPrefix,
+      password,
       redirectTo: '/'
     })
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Invalid credentials.'
+          return { type: 'error', message: 'Invalid credentials.' }
         default:
-          return 'Something went wrong.'
+          return { type: 'error', message: 'Something went wrong.' }
       }
     }
 
@@ -36,43 +39,69 @@ export async function authenticate(
 }
 
 export async function signup(
-  _prevState: string | undefined,
+  _prevState: Result | undefined,
   formData: FormData
 ) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  if (email.length >= 6 && password.length >= 6) {
-    const saltPrefix = process.env.AUTH_SALT_PREFIX || ''
-    const saltRounds = 10
-    const salt = await bcrypt.genSalt(saltRounds)
-    const passwordWithPrefix = saltPrefix + password
-    const hashedPassword = await bcrypt.hash(passwordWithPrefix, salt)
+  const parsedCredentials = z
+    .object({
+      email: z.string().email(),
+      password: z.string().min(6)
+    })
+    .safeParse({
+      email,
+      password
+    })
+
+  if (parsedCredentials.success) {
+    const salt = crypto.randomUUID()
+
+    const encoder = new TextEncoder()
+    const saltedPassword = encoder.encode(password + salt)
+    const hashedPasswordBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      saltedPassword
+    )
+    const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
 
     const client = await db.connect()
 
     try {
       await client.sql`
-          INSERT INTO users (email, password)
-          VALUES (${email}, ${hashedPassword})
-          ON CONFLICT (id) DO NOTHING;
-        `
+              INSERT INTO users (email, password, salt)
+              VALUES (${email}, ${hashedPassword}, ${salt})
+              ON CONFLICT (id) DO NOTHING;
+            `
 
-      return 'User created! Please log in.'
+      await signIn('credentials', {
+        email,
+        password,
+        redirect: false
+      })
+
+      return { type: 'success', message: 'Account created!' }
     } catch (error) {
       const { message } = error as Error
 
       if (
         message.startsWith('duplicate key value violates unique constraint')
       ) {
-        return 'User already exists! Please log in.'
+        return { type: 'error', message: 'User already exists! Please log in.' }
       } else {
-        return 'Something went wrong! Please try again.'
+        return {
+          type: 'error',
+          message: 'Something went wrong! Please try again.'
+        }
       }
     } finally {
       client.release()
     }
   } else {
-    return 'Email and password must be at least 6 characters long.'
+    return {
+      type: 'error',
+      message: 'Email and password must be at least 6 characters long.'
+    }
   }
 }

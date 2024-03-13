@@ -1,11 +1,18 @@
+import { auth } from '@/auth'
 import SignupForm from '@/components/ui/signup-form'
+import { Session } from '@/lib/types'
+import { redirect } from 'next/navigation'
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const session = (await auth()) as Session
+
+  if (session) {
+    redirect('/')
+  }
+
   return (
-    <main className="flex items-center justify-center">
-      <div className="relative mx-auto flex w-full max-w-[400px] flex-col p-4">
-        <SignupForm />
-      </div>
+    <main className="flex flex-col p-4">
+      <SignupForm />
     </main>
   )
 }

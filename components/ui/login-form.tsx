@@ -3,19 +3,30 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import { authenticate } from '@/app/login/actions'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import { IconSpinner } from './icons'
 
 export default function LoginForm() {
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined)
+  const [result, dispatch] = useFormState(authenticate, undefined)
+
+  useEffect(() => {
+    if (result) {
+      if (result.type === 'error') {
+        toast.error(result.message)
+      } else {
+        toast.success(result.message)
+      }
+    }
+  }, [result])
 
   return (
     <form
       action={dispatch}
-      className="space-y-3 flex flex-col gap-4 items-center"
+      className="flex flex-col items-center gap-4 space-y-3"
     >
-      <div className="flex-1 rounded-lg dark:bg-zinc-950 border px-6 pb-4 pt-8">
-        <h1 className={`mb-3 text-2xl font-bold`}>
-          Please log in to continue.
-        </h1>
+      <div className="w-full flex-1 rounded-lg border bg-white px-6 pb-4 pt-8 shadow-md  dark:bg-zinc-950 md:w-96">
+        <h1 className="mb-3 text-2xl font-bold">Please log in to continue.</h1>
         <div className="w-full">
           <div>
             <label
@@ -26,7 +37,7 @@ export default function LoginForm() {
             </label>
             <div className="relative">
               <input
-                className="peer block w-full rounded-md border dark:border-zinc-800 py-[9px] px-2 text-sm outline-none dark:bg-zinc-950 placeholder:text-zinc-500 bg-zinc-50"
+                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
                 id="email"
                 type="email"
                 name="email"
@@ -44,7 +55,7 @@ export default function LoginForm() {
             </label>
             <div className="relative">
               <input
-                className="peer block w-full rounded-md border dark:border-zinc-800 py-[9px] px-2 text-sm outline-none dark:bg-zinc-950 placeholder:text-zinc-500 bg-zinc-50"
+                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
                 id="password"
                 type="password"
                 name="password"
@@ -56,21 +67,13 @@ export default function LoginForm() {
           </div>
         </div>
         <LoginButton />
-        <div
-          className="flex h-8 items-end space-x-1"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {errorMessage && (
-            <>
-              <p className="text-sm text-red-500">{errorMessage}</p>
-            </>
-          )}
-        </div>
       </div>
 
-      <Link href="/signup" className="text-sm text-zinc-400">
-        Create a new account
+      <Link
+        href="/signup"
+        className="flex flex-row gap-1 text-sm text-zinc-400"
+      >
+        No account yet? <div className="font-semibold underline">Sign up</div>
       </Link>
     </form>
   )
@@ -81,10 +84,10 @@ function LoginButton() {
 
   return (
     <button
-      className="my-4 w-full dark:bg-zinc-100 bg-zinc-200 p-2 rounded-md text-zinc-900 font-semibold hover:bg-zinc-200 active:bg-zinc-300 text-sm"
+      className="flex flex-row justify-center items-center my-4 h-10 w-full rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
       aria-disabled={pending}
     >
-      Log in
+      {pending ? <IconSpinner /> : 'Log in'}
     </button>
   )
 }

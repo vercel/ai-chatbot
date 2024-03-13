@@ -27,7 +27,6 @@
     "@vercel/og": "^0.6.2",
     "@vercel/postgres": "^0.7.2",
     "ai": "^3.0.7",
-    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "d3-scale": "^4.0.2",
@@ -54,7 +53,6 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
-    "@types/bcryptjs": "^2.4.6",
     "@types/d3-scale": "^4.0.8",
     "@types/node": "^20.11.5",
     "@types/react": "^18.2.48",
