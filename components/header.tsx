@@ -14,9 +14,10 @@ import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
+import { Session } from '@/lib/types'
 
 async function UserOrLogin() {
-  const session = await auth()
+  const session = (await auth()) as Session
   return (
     <>
       {session?.user ? (
@@ -27,7 +28,7 @@ async function UserOrLogin() {
           <SidebarToggle />
         </>
       ) : (
-        <Link href="/" target="_blank" rel="nofollow">
+        <Link href="/" rel="nofollow">
           <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
           <IconNextChat className="hidden size-6 mr-2 dark:block" />
         </Link>
@@ -38,7 +39,7 @@ async function UserOrLogin() {
           <UserMenu user={session.user} />
         ) : (
           <Button variant="link" asChild className="-ml-2">
-            <Link href="/sign-in?callbackUrl=/">Login</Link>
+            <Link href="/login">Login</Link>
           </Button>
         )}
       </div>
@@ -65,7 +66,7 @@ export function Header() {
           <span className="hidden ml-2 md:flex">GitHub</span>
         </a>
         <a
-          href="https://github.com/vercel/nextjs-ai-chatbot/"
+          href="https://vercel.com/templates/Next.js/nextjs-ai-chatbot"
           target="_blank"
           className={cn(buttonVariants())}
         >

@@ -1,32 +1,36 @@
+'use client'
+
 import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
-import { UseChatHelpers } from 'ai/react'
-import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
-import { cn } from '@/lib/utils'
-import { Button, buttonVariants } from '@/components/ui/button'
+
+import { useActions, useUIState } from 'ai/rsc'
+
+import { UserMessage } from './stocks/message'
+import { type AI } from '@/lib/chat/actions'
+import { Button } from '@/components/ui/button'
+import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
+import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
 
-export interface PromptProps
-  extends Pick<UseChatHelpers, 'input' | 'setInput'> {
-  onSubmit: (value: string) => void
-  isLoading: boolean
-}
-
 export function PromptForm({
-  onSubmit,
   input,
-  setInput,
-  isLoading
-}: PromptProps) {
+  setInput
+}: {
+  input: string
+  setInput: (value: string) => void
+}) {
+  const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const router = useRouter()
+  const { submitUserMessage } = useActions()
+  const [_, setMessages] = useUIState<typeof AI>()
+
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
@@ -35,33 +39,47 @@ export function PromptForm({
 
   return (
     <form
-      onSubmit={async e => {
-        e.preventDefault()
-        if (!input?.trim()) {
-          return
-        }
-        setInput('')
-        await onSubmit(input)
-      }}
       ref={formRef}
+      onSubmit={async (e: any) => {
+        e.preventDefault()
+
+        // Blur focus on mobile
+        if (window.innerWidth < 600) {
+          e.target['message']?.blur()
+        }
+
+        const value = input.trim()
+        setInput('')
+        if (!value) return
+
+        // Optimistically add user message UI
+        setMessages(currentMessages => [
+          ...currentMessages,
+          {
+            id: nanoid(),
+            display: <UserMessage>{value}</UserMessage>
+          }
+        ])
+
+        // Submit and get response message
+        const responseMessage = await submitUserMessage(value)
+        setMessages(currentMessages => [...currentMessages, responseMessage])
+      }}
     >
-      <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-background sm:rounded-md sm:border sm:px-12">
+      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              onClick={e => {
-                e.preventDefault()
-                router.refresh()
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute left-0 top-4 size-8 rounded-full bg-background p-0 sm:left-4"
+              onClick={() => {
                 router.push('/')
               }}
-              className={cn(
-                buttonVariants({ size: 'sm', variant: 'outline' }),
-                'absolute left-0 top-4 size-8 rounded-full bg-background p-0 sm:left-4'
-              )}
             >
               <IconPlus />
               <span className="sr-only">New Chat</span>
-            </button>
+            </Button>
           </TooltipTrigger>
           <TooltipContent>New Chat</TooltipContent>
         </Tooltip>
@@ -69,21 +87,21 @@ export function PromptForm({
           ref={inputRef}
           tabIndex={0}
           onKeyDown={onKeyDown}
+          placeholder="Send a message."
+          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+          autoFocus
+          spellCheck={false}
+          autoComplete="off"
+          autoCorrect="off"
+          name="message"
           rows={1}
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder="Send a message."
-          spellCheck={false}
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
         />
         <div className="absolute right-0 top-4 sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading || input === ''}
-              >
+              <Button type="submit" size="icon" disabled={input === ''}>
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
               </Button>
