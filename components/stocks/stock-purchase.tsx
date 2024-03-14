@@ -139,7 +139,7 @@ export function Purchase({
           {formatNumber(value * price)}
         </p>
       ) : status === 'expired' ? (
-        <p className="mb-2 text-white">Your session has expired!</p>
+        <p className="mb-2 text-white">Your checkout session has expired!</p>
       ) : null}
     </div>
   )

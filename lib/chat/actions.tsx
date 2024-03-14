@@ -337,16 +337,15 @@ Besides that, you can also chat with users and do some calculations if needed.`
                     : `How many $${symbol} would you like to purchase?`
                 }`}
               />
-              <BotCard>
-                <Purchase
-                  props={{
-                    defaultAmount: numberOfShares,
-                    name: symbol,
-                    price: +price,
-                    status: 'requires_action'
-                  }}
-                />
-              </BotCard>
+
+              <Purchase
+                props={{
+                  defaultAmount: numberOfShares,
+                  name: symbol,
+                  price: +price,
+                  status: 'requires_action'
+                }}
+              />
             </>
           )
         }
