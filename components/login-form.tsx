@@ -5,7 +5,7 @@ import { authenticate } from '@/app/login/actions'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { IconSpinner } from './icons'
+import { IconSpinner } from './ui/icons'
 
 export default function LoginForm() {
   const [result, dispatch] = useFormState(authenticate, undefined)
