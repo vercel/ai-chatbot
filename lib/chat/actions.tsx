@@ -5,7 +5,8 @@ import {
   createStreamableUI,
   getMutableAIState,
   getAIState,
-  render
+  render,
+  createStreamableValue
 } from 'ai/rsc'
 import OpenAI from 'openai'
 
@@ -24,8 +25,12 @@ import { Events } from '@/components/stocks/event'
 import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
 import { Stocks } from '@/components/stocks/stocks'
 import { StockSkeleton } from '@/components/stocks/stock-skeleton'
-import { formatNumber, runAsyncFnWithoutBlocking, sleep } from '@/lib/utils'
-import { nanoid } from 'nanoid'
+import {
+  formatNumber,
+  runAsyncFnWithoutBlocking,
+  sleep,
+  nanoid
+} from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
@@ -133,6 +138,9 @@ async function submitUserMessage(content: string) {
     ]
   })
 
+  let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
+  let textNode: undefined | React.ReactNode
+
   const ui = render({
     model: 'gpt-3.5-turbo',
     provider: openai,
@@ -162,8 +170,14 @@ Besides that, you can also chat with users and do some calculations if needed.`
         name: message.name
       }))
     ],
-    text: ({ content, done }) => {
+    text: ({ content, done, delta }) => {
+      if (!textStream) {
+        textStream = createStreamableValue('')
+        textNode = <BotMessage content={textStream.value} />
+      }
+
       if (done) {
+        textStream.done()
         aiState.done({
           ...aiState.get(),
           messages: [
@@ -175,9 +189,11 @@ Besides that, you can also chat with users and do some calculations if needed.`
             }
           ]
         })
+      } else {
+        textStream.update(delta)
       }
 
-      return <BotMessage content={content} />
+      return textNode
     },
     functions: {
       listStocks: {
@@ -432,7 +448,7 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state, done }) => {
+  unstable_onSetAIState: async ({ state }) => {
     'use server'
 
     const session = await auth()
