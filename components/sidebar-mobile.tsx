@@ -20,7 +20,10 @@ export function SidebarMobile({ children }: SidebarMobileProps) {
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="inset-y-0 flex h-auto w-[300px] flex-col p-0">
+      <SheetContent
+        side="left"
+        className="inset-y-0 flex h-auto w-[300px] flex-col p-0"
+      >
         <Sidebar className="flex">{children}</Sidebar>
       </SheetContent>
     </Sheet>

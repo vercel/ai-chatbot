@@ -3,8 +3,8 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import { authenticate } from '@/app/login/actions'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { IconSpinner } from './ui/icons'
 
 export default function LoginForm() {

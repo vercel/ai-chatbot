@@ -11,7 +11,6 @@ import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from './stocks/message'
-import toast from 'react-hot-toast'
 
 export interface ChatPanelProps {
   id?: string
@@ -71,32 +70,14 @@ export function ChatPanel({ id, title, input, setInput }: ChatPanelProps) {
                     }
                   ])
 
-                  try {
-                    const responseMessage = await submitUserMessage(
-                      example.message
-                    )
+                  const responseMessage = await submitUserMessage(
+                    example.message
+                  )
 
-                    setMessages(currentMessages => [
-                      ...currentMessages,
-                      responseMessage
-                    ])
-                  } catch {
-                    toast(() => (
-                      <div className="text-red-600">
-                        You have reached your message limit! Please try again
-                        later, or{' '}
-                        <a
-                          className="underline"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          href="https://vercel.com/templates/Next.js/nextjs-ai-chatbot"
-                        >
-                          deploy your own version
-                        </a>
-                        .
-                      </div>
-                    ))
-                  }
+                  setMessages(currentMessages => [
+                    ...currentMessages,
+                    responseMessage
+                  ])
                 }}
               >
                 <div className="text-sm font-semibold">{example.heading}</div>

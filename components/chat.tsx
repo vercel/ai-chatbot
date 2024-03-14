@@ -11,7 +11,7 @@ import { useUIState, useAIState } from 'ai/rsc'
 import { Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { Message } from '@/lib/chat/actions'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]

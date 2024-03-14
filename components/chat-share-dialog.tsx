@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { type DialogProps } from '@radix-ui/react-dialog'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 import { ServerActionResult, type Chat } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -42,18 +42,7 @@ export function ChatShareDialog({
       url.pathname = chat.sharePath
       copyToClipboard(url.toString())
       onCopy()
-      toast.success('Share link copied to clipboard', {
-        style: {
-          borderRadius: '10px',
-          background: '#333',
-          color: '#fff',
-          fontSize: '14px'
-        },
-        iconTheme: {
-          primary: 'white',
-          secondary: 'black'
-        }
-      })
+      toast.success('Share link copied to clipboard')
     },
     [copyToClipboard, onCopy]
   )

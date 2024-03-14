@@ -4,7 +4,7 @@ import { useFormState, useFormStatus } from 'react-dom'
 import { signup } from '@/app/signup/actions'
 import Link from 'next/link'
 import { useEffect } from 'react'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 import { IconSpinner } from './ui/icons'
 import { useRouter } from 'next/navigation'
 

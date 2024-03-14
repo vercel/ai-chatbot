@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 import { ServerActionResult } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -54,16 +54,14 @@ export function ClearHistory({
             disabled={isPending}
             onClick={event => {
               event.preventDefault()
-              startTransition(() => {
-                clearChats().then(result => {
-                  if (result && 'error' in result) {
-                    toast.error(result.error)
-                    return
-                  }
+              startTransition(async () => {
+                const result = await clearChats()
+                if (result && 'error' in result) {
+                  toast.error(result.error)
+                  return
+                }
 
-                  setOpen(false)
-                  router.push('/')
-                })
+                setOpen(false)
               })
             }}
           >
