@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 import { ServerActionResult, type Chat } from '@/lib/types'
 import {
@@ -42,12 +42,12 @@ export function SidebarActions({
 
   return (
     <>
-      <div className="space-x-1">
+      <div className="">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className="size-6 p-0 hover:bg-background"
+              className="size-7 p-0 hover:bg-background"
               onClick={() => setShareDialogOpen(true)}
             >
               <IconShare />
@@ -60,7 +60,7 @@ export function SidebarActions({
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className="size-6 p-0 hover:bg-background"
+              className="size-7 p-0 hover:bg-background"
               disabled={isRemovePending}
               onClick={() => setDeleteDialogOpen(true)}
             >
