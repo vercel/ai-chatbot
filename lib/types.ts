@@ -23,3 +23,8 @@ export interface Session {
     email: string
   }
 }
+
+export interface AuthResult {
+  type: string
+  message: string
+}

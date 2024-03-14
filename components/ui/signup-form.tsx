@@ -1,7 +1,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
-import { signup } from '@/app/login/actions'
+import { signup } from '@/app/signup/actions'
 import Link from 'next/link'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
@@ -85,7 +85,7 @@ function LoginButton() {
 
   return (
     <button
-      className="flex flex-row justify-center items-center my-4 w-full rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+      className="flex flex-row justify-center items-center my-4 h-10 w-full rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
       aria-disabled={pending}
     >
       {pending ? <IconSpinner /> : 'Create account'}
