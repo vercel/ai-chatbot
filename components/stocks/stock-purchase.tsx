@@ -60,7 +60,7 @@ export function Purchase({
   }
 
   return (
-    <div className="rounded-xl border bg-zinc-950 p-4 text-green-400">
+    <div className="rounded-xl border bg-zinc-950 p-4 text-green-400 mt-2">
       <div className="float-right inline-block rounded-full bg-white/10 px-2 py-1 text-xs">
         +1.23% ↑
       </div>
