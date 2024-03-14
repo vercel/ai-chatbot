@@ -8,6 +8,7 @@ async function seedUsers(client) {
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL
+        salt TEXT NOT NULL
       );
     `
 
