@@ -61,6 +61,7 @@
     "@types/react-syntax-highlighter": "^15.5.11",
     "@typescript-eslint/parser": "^6.19.0",
     "autoprefixer": "^10.4.17",
+    "dotenv": "^16.4.5",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "eslint-config-prettier": "^9.1.0",
