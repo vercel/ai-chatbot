@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { kv } from '@vercel/kv'
 
 export async function getUser(email: string) {
-  const user = await kv.hgetall(`user:${email}`)
+  const user = await kv.hgetall<User>(`user:${email}`)
   return user
 }
 
