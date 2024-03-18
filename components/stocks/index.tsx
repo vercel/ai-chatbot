@@ -18,9 +18,7 @@ const Purchase = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="rounded-lg bg-zinc-900 px-4 py-5 text-center text-xs">
-        Loading stock info...
-      </div>
+      <div className="h-[375px] rounded-xl border bg-zinc-950 p-4 text-green-400 sm:h-[314px]" />
     )
   }
 )
@@ -30,7 +28,7 @@ const Stocks = dynamic(() => import('./stocks').then(mod => mod.Stocks), {
   loading: () => <StocksSkeleton />
 })
 
-const Events = dynamic(() => import('./event').then(mod => mod.Events), {
+const Events = dynamic(() => import('./events').then(mod => mod.Events), {
   ssr: false,
   loading: () => <EventsSkeleton />
 })

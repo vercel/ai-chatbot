@@ -60,7 +60,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
         {messages.length ? (
           <>
-            <ChatList messages={messages} />
+            <ChatList messages={messages} isShared={false} session={session} />
             <ChatScrollAnchor trackVisibility={isLoading} />
           </>
         ) : (

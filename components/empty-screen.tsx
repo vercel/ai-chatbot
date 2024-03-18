@@ -43,7 +43,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           <ExternalLink href="https://vercel.com/blog/ai-sdk-3-generative-ui">
             React Server Components
           </ExternalLink>{' '}
-          to combine text with UI generated as output of the LLM. The UI state
+          to combine text with generative UI as output of the LLM. The UI state
           is synced through the SDK so the model is aware of your interactions
           as they happen.
         </p>

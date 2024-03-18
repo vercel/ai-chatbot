@@ -7,18 +7,18 @@ import { formatNumber } from '@/lib/utils'
 import type { AI } from '@/lib/chat/actions'
 
 interface Purchase {
-  defaultAmount?: number
-  name: string
+  numberOfShares?: number
+  symbol: string
   price: number
   status: 'requires_action' | 'completed' | 'expired'
 }
 
 export function Purchase({
-  props: { defaultAmount, name, price, status = 'expired' }
+  props: { numberOfShares, symbol, price, status = 'requires_action' }
 }: {
   props: Purchase
 }) {
-  const [value, setValue] = useState(defaultAmount || 100)
+  const [value, setValue] = useState(numberOfShares || 100)
   const [purchasingUI, setPurchasingUI] = useState<null | React.ReactNode>(null)
   const [aiState, setAIState] = useAIState<typeof AI>()
   const [, setMessages] = useUIState<typeof AI>()
@@ -60,11 +60,11 @@ export function Purchase({
   }
 
   return (
-    <div className="rounded-xl border bg-zinc-950 p-4 text-green-400 mt-2">
+    <div className="rounded-xl border bg-zinc-950 p-4 text-green-400">
       <div className="float-right inline-block rounded-full bg-white/10 px-2 py-1 text-xs">
         +1.23% ↑
       </div>
-      <div className="text-lg text-zinc-300">{name}</div>
+      <div className="text-lg text-zinc-300">{symbol}</div>
       <div className="text-3xl font-bold">${price}</div>
       {purchasingUI ? (
         <div className="mt-4 text-zinc-200">{purchasingUI}</div>
@@ -100,14 +100,14 @@ export function Purchase({
             <div className="flex flex-wrap items-center text-xl font-bold sm:items-end sm:gap-2 sm:text-3xl">
               <div className="flex basis-1/3 flex-col tabular-nums sm:basis-auto sm:flex-row sm:items-center sm:gap-2">
                 {value}
-                <span className="mb-1 text-sm font-normal text-zinc-600 dark:text-zinc-400 sm:mb-0">
+                <span className="mb-1 text-sm font-normal text-zinc-600 sm:mb-0 dark:text-zinc-400">
                   shares
                 </span>
               </div>
               <div className="basis-1/3 text-center sm:basis-auto">×</div>
               <span className="flex basis-1/3 flex-col tabular-nums sm:basis-auto sm:flex-row sm:items-center sm:gap-2">
                 ${price}
-                <span className="mb-1 ml-1 text-sm font-normal text-zinc-600 dark:text-zinc-400 sm:mb-0">
+                <span className="mb-1 ml-1 text-sm font-normal text-zinc-600 sm:mb-0 dark:text-zinc-400">
                   per share
                 </span>
               </span>
@@ -118,9 +118,9 @@ export function Purchase({
           </div>
 
           <button
-            className="mt-6 w-full rounded-lg bg-green-500 px-4 py-2 text-zinc-900 dark:bg-green-500"
+            className="mt-6 w-full rounded-lg bg-green-500 px-4 py-2 font-bold text-zinc-900 hover:bg-green-600"
             onClick={async () => {
-              const response = await confirmPurchase(name, price, value)
+              const response = await confirmPurchase(symbol, price, value)
               setPurchasingUI(response.purchasingUI)
 
               // Insert a new system message to the UI.
@@ -135,7 +135,7 @@ export function Purchase({
         </>
       ) : status === 'completed' ? (
         <p className="mb-2 text-white">
-          You have successfully purchased {value} ${name}. Total cost:{' '}
+          You have successfully purchased {value} ${symbol}. Total cost:{' '}
           {formatNumber(value * price)}
         </p>
       ) : status === 'expired' ? (
