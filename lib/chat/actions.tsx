@@ -21,7 +21,7 @@ import {
 
 import { z } from 'zod'
 import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/event'
+import { Events } from '@/components/stocks/events'
 import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
 import { Stocks } from '@/components/stocks/stocks'
 import { StockSkeleton } from '@/components/stocks/stock-skeleton'
@@ -95,7 +95,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
           role: 'function',
           name: 'showStockPurchase',
           content: JSON.stringify({
-            name: symbol,
+            symbol,
             price,
             defaultAmount: amount,
             status: 'completed'
@@ -328,25 +328,16 @@ Besides that, you can also chat with users and do some calculations if needed.`
           })
 
           return (
-            <>
-              <BotMessage
-                content={`Sure!
-                ${
-                  typeof numberOfShares === 'number'
-                    ? `Click the button below to purchase ${numberOfShares} shares of $${symbol}:`
-                    : `How many $${symbol} would you like to purchase?`
-                }`}
-              />
-
+            <BotCard>
               <Purchase
                 props={{
-                  defaultAmount: numberOfShares,
-                  name: symbol,
+                  numberOfShares,
+                  symbol,
                   price: +price,
                   status: 'requires_action'
                 }}
               />
-            </>
+            </BotCard>
           )
         }
       },
@@ -405,18 +396,13 @@ Besides that, you can also chat with users and do some calculations if needed.`
 export type Message = {
   role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
   content: string
-  id?: string
+  id: string
   name?: string
 }
 
 export type AIState = {
   chatId: string
-  messages: {
-    role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
-    content: string
-    id: string
-    name?: string
-  }[]
+  messages: Message[]
 }
 
 export type UIState = {
@@ -447,7 +433,7 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state }) => {
+  unstable_onSetAIState: async ({ state, done }) => {
     'use server'
 
     const session = await auth()

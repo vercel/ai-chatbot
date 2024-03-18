@@ -27,24 +27,24 @@ export function ChatPanel({ id, title, input, setInput }: ChatPanelProps) {
 
   const exampleMessages = [
     {
-      heading: 'Explain the concept',
-      subheading: 'of a serverless function',
-      message: `Explain the concept of a serverless function`
+      heading: 'What are the',
+      subheading: 'trending memecoins today?',
+      message: `What are the trending memecoins today?`
     },
     {
-      heading: 'What are the benefits',
-      subheading: 'of using turborepo in my codebase?',
-      message: 'What are the benefits of using turborepo in my codebase?'
+      heading: 'What is the price of',
+      subheading: 'DOGE in the stock market?',
+      message: 'What is the price of DOGE in the stock market?'
     },
     {
-      heading: 'List differences between',
-      subheading: 'pages and app router in Next.js',
-      message: `List differences between pages and app router in Next.js`
+      heading: 'I would like to buy',
+      subheading: '42 DOGE coins',
+      message: `I would like to buy 42 DOGE coins`
     },
     {
-      heading: 'What is the price',
-      subheading: `of VRCL in the stock market?`,
-      message: `What is the price of VRCL in the stock market?`
+      heading: 'What are some',
+      subheading: `recent events about DOGE?`,
+      message: `What are some recent events about DOGE?`
     }
   ]
 
