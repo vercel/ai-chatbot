@@ -1,10 +1,34 @@
 'use server'
 
 import { signIn } from '@/auth'
-import { db } from '@vercel/postgres'
 import { getStringFromBuffer } from '@/lib/utils'
 import { z } from 'zod'
 import { AuthResult } from '@/lib/types'
+import { kv } from '@vercel/kv'
+
+export async function createUser(
+  email: string,
+  hashedPassword: string,
+  salt: string
+) {
+  const existingUser = await kv.hgetall(`user:${email}`)
+
+  if (existingUser) {
+    throw new Error('User already exists!')
+  }
+
+  const pipeline = kv.pipeline()
+
+  const user = {
+    id: crypto.randomUUID(),
+    email,
+    password: hashedPassword,
+    salt
+  }
+
+  pipeline.hmset(`user:${email}`, user)
+  await pipeline.exec()
+}
 
 export async function signup(
   _prevState: AuthResult | undefined,
@@ -34,14 +58,8 @@ export async function signup(
     )
     const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
 
-    const client = await db.connect()
-
     try {
-      await client.sql`
-              INSERT INTO users (email, password, salt)
-              VALUES (${email}, ${hashedPassword}, ${salt})
-              ON CONFLICT (id) DO NOTHING;
-            `
+      await createUser(email, hashedPassword, salt)
 
       await signIn('credentials', {
         email,
@@ -53,9 +71,7 @@ export async function signup(
     } catch (error) {
       const { message } = error as Error
 
-      if (
-        message.startsWith('duplicate key value violates unique constraint')
-      ) {
+      if (message.startsWith('User already exists!')) {
         return { type: 'error', message: 'User already exists! Please log in.' }
       } else {
         return {
@@ -63,8 +79,6 @@ export async function signup(
           message: 'Something went wrong! Please try again.'
         }
       }
-    } finally {
-      client.release()
     }
   } else {
     return {

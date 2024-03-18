@@ -28,3 +28,10 @@ export interface AuthResult {
   type: string
   message: string
 }
+
+export interface User {
+  id: string
+  email: string
+  password: string
+  salt: string
+}

@@ -1,9 +1,15 @@
 'use server'
 
 import { signIn } from '@/auth'
-import { AuthResult } from '@/lib/types'
+import { AuthResult, User } from '@/lib/types'
 import { AuthError } from 'next-auth'
 import { z } from 'zod'
+import { kv } from '@vercel/kv'
+
+export async function getUser(email: string) {
+  const user = await kv.hgetall(`user:${email}`)
+  return user
+}
 
 export async function authenticate(
   _prevState: AuthResult | undefined,
