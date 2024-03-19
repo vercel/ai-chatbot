@@ -1,14 +1,26 @@
 'use server'
 
 import { signIn } from '@/auth'
-import { AuthResult } from '@/lib/types'
+import { User } from '@/lib/types'
 import { AuthError } from 'next-auth'
 import { z } from 'zod'
+import { kv } from '@vercel/kv'
+import { ResultCode } from '@/lib/utils'
+
+export async function getUser(email: string) {
+  const user = await kv.hgetall<User>(`user:${email}`)
+  return user
+}
+
+interface Result {
+  type: string
+  resultCode: ResultCode
+}
 
 export async function authenticate(
-  _prevState: AuthResult | undefined,
+  _prevState: Result | undefined,
   formData: FormData
-) {
+): Promise<Result | undefined> {
   try {
     const email = formData.get('email')
     const password = formData.get('password')
@@ -27,24 +39,33 @@ export async function authenticate(
       await signIn('credentials', {
         email,
         password,
-        redirectTo: '/'
+        redirect: false
       })
+
+      return {
+        type: 'success',
+        resultCode: ResultCode.UserLoggedIn
+      }
     } else {
-      return { type: 'error', message: 'Invalid credentials!' }
+      return {
+        type: 'error',
+        resultCode: ResultCode.InvalidCredentials
+      }
     }
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return { type: 'error', message: 'Invalid credentials!' }
+          return {
+            type: 'error',
+            resultCode: ResultCode.InvalidCredentials
+          }
         default:
           return {
             type: 'error',
-            message: 'Something went wrong, please try again!'
+            resultCode: ResultCode.UnknownError
           }
       }
     }
-
-    throw error
   }
 }
