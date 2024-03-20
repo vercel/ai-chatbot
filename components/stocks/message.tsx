@@ -18,7 +18,7 @@ export function UserMessage({ children }: { children: React.ReactNode }) {
       <div className="flex size-[25px] shrink-0 select-none items-center justify-center rounded-md border bg-background shadow-sm">
         <IconUser />
       </div>
-      <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
+      <div className="ml-4 flex-1 space-y-2 overflow-hidden pl-2">
         {children}
       </div>
     </div>
@@ -103,7 +103,7 @@ export function BotCard({
       >
         <IconOpenAI />
       </div>
-      <div className="ml-4 flex-1 px-1">{children}</div>
+      <div className="ml-4 flex-1 pl-2">{children}</div>
     </div>
   )
 }

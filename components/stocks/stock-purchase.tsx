@@ -118,7 +118,7 @@ export function Purchase({
           </div>
 
           <button
-            className="mt-6 w-full rounded-lg bg-green-500 px-4 py-2 font-bold text-zinc-900 hover:bg-green-600"
+            className="mt-6 w-full rounded-lg bg-green-400 px-4 py-2 font-bold text-zinc-900 hover:bg-green-500"
             onClick={async () => {
               const response = await confirmPurchase(symbol, price, value)
               setPurchasingUI(response.purchasingUI)
