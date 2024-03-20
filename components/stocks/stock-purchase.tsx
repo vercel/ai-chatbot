@@ -5,11 +5,11 @@ import { useActions, useAIState, useUIState } from 'ai/rsc'
 import { formatNumber } from '@/lib/utils'
 
 import type { AI } from '@/lib/chat/actions'
+import { ActionInputs } from '@/lib/ai-actions/types'
 
-interface Purchase {
-  numberOfShares?: number
-  symbol: string
-  price: number
+type TStockPurchaseInput = ActionInputs['showStockPurchase']
+
+interface Purchase extends TStockPurchaseInput {
   status: 'requires_action' | 'completed' | 'expired'
 }
 
