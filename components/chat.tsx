@@ -4,13 +4,13 @@ import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
-import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { Message } from '@/lib/chat/actions'
+import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -26,7 +26,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages] = useUIState()
   const [aiState] = useAIState()
-  const isLoading = true
 
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
@@ -55,19 +54,32 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     })
   }, [missingKeys])
 
+  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
+    useScrollAnchor()
+
   return (
-    <>
-      <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
+    <div
+      className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
+      ref={scrollRef}
+    >
+      <div
+        className={cn('pb-[200px] pt-4 md:pt-10', className)}
+        ref={messagesRef}
+      >
         {messages.length ? (
-          <>
-            <ChatList messages={messages} isShared={false} session={session} />
-            <ChatScrollAnchor trackVisibility={isLoading} />
-          </>
+          <ChatList messages={messages} isShared={false} session={session} />
         ) : (
-          <EmptyScreen setInput={setInput} />
+          <EmptyScreen />
         )}
+        <div className="h-px w-full" ref={visibilityRef} />
       </div>
-      <ChatPanel id={id} input={input} setInput={setInput} />
-    </>
+      <ChatPanel
+        id={id}
+        input={input}
+        setInput={setInput}
+        isAtBottom={isAtBottom}
+        scrollToBottom={scrollToBottom}
+      />
+    </div>
   )
 }
