@@ -5,14 +5,13 @@ import { scaleLinear } from 'd3-scale'
 import { subMonths, format } from 'date-fns'
 import { useResizeObserver } from 'usehooks-ts'
 import { useAIState } from 'ai/rsc'
+import { ActionInputs } from '@/lib/ai-actions/types'
 
-interface Stock {
-  symbol: string
-  price: number
-  delta: number
-}
-
-export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
+export function Stock({
+  props: { symbol, price, delta }
+}: {
+  props: ActionInputs['showStockPrice']
+}) {
   const [aiState, setAIState] = useAIState()
   const id = useId()
 

@@ -1,12 +1,11 @@
+import { ActionInputs } from '@/lib/ai-actions/types'
 import { format, parseISO } from 'date-fns'
 
-interface Event {
-  date: string
-  headline: string
-  description: string
-}
-
-export function Events({ props: events }: { props: Event[] }) {
+export function Events({
+  props: events
+}: {
+  props: ActionInputs['getEvents']['events']
+}) {
   return (
     <div className="-mt-2 flex w-full flex-col gap-2 py-4">
       {events.map(event => (
