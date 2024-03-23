@@ -273,7 +273,7 @@ Besides that, you can also chat with users in friendly manner and do some clarif
               {
                 id: nanoid(),
                 role: 'function',
-                name: 'provide_video_captions_to_ai',
+                name: 'videos_best_matches',
                 content: JSON.stringify(videoSlice)
               }
             ]
