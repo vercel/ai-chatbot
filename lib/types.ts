@@ -28,3 +28,8 @@ export interface AuthResult {
   type: string
   message: string
 }
+
+export interface Video {
+  id: string
+  captions: XMLDocument
+}

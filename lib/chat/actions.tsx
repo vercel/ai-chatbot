@@ -25,6 +25,8 @@ import { Events } from '@/components/stocks/event'
 import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
 import { Stocks } from '@/components/stocks/stocks'
 import { StockSkeleton } from '@/components/stocks/stock-skeleton'
+import { loadVideosWithCaptions } from '../api/loadVideosWithCaptions';
+import { Videos } from '@/components/videos/videos'
 import {
   formatNumber,
   runAsyncFnWithoutBlocking,
@@ -35,6 +37,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || ''
@@ -155,6 +158,7 @@ You and the user can discuss about hobbies and you can suggest user to search fo
 Messages inside [] means that it's a UI element or a user event. For example:
 - "[Video ID moment play from start to the end]" means that an interface of video moment shown to the user.
 
+You have to have a small talk with the user and provide a best search term key. to be as spacific as possible. 
 
 If the user requests video moments based on a term, call \`provide_video_captions_to_ai\` to get video_id and timed captions.
 Analyze a video captions and return most context important moments based on video captions in format videoid, momentstarttime, momentendtime  
@@ -196,6 +200,96 @@ Besides that, you can also chat with users in friendly manner and do some clarif
       return textNode
     },
     functions: {
+      provide_video_captions_to_ai: {
+        description: 'API to get 5 videos with captions for futher analysis based on captions',
+        parameters: z.object({
+          searchKey: z
+            .string()
+            .describe(
+              'The search term to search a video on youtube'
+            )
+        }),
+        render: async function* ({ searchKey }) {
+          yield (
+            <BotCard>
+              <div>`I am presenting videos`{ searchKey }</div>
+            </BotCard>
+          )
+          
+          
+          await sleep(1000)
+          
+          const videos = await loadVideosWithCaptions(searchKey)   ;
+          
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'function',
+                name: 'provide_video_captions_to_ai',
+                content: JSON.stringify(videos)
+              }
+            ]
+          })
+
+          return (
+            <BotCard>
+              <div>{
+              /* 
+              <Videos props={videos} /> */}
+               Video moments comming soon..... 
+              </div>
+            </BotCard>
+          )
+        }
+      },
+      videos_best_matches: {
+        description: 'Get the video moments. Limit to 5 best results. Call after analyzing the best match moments. Use this to show the best moments to the user. Format response as link (<a href://videoid?from=-here comes slice start time- & to=-here comes slice end time->)',
+        parameters: z.object({
+          videoSlice: z
+            .array(z.string())
+            .describe(
+              'Array of the best video moment links'
+            )
+        }),
+        render: async function* ({ videoSlice }) {
+          yield (
+            <BotCard>
+              <div>
+                {videoSlice.map((slice, index) => (
+                  <p>Video Moment {index + 1} {slice}</p>
+                ))}
+              </div>
+            </BotCard>
+          )
+          
+          await sleep(1000)
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'function',
+                name: 'provide_video_captions_to_ai',
+                content: JSON.stringify(videoSlice)
+              }
+            ]
+          })
+
+          return (
+            <BotCard>
+              <div>
+                {videoSlice.map((slice, index) => (
+                  <p>Video Moment {index + 1} {slice}</p>
+                ))}
+              </div>
+            </BotCard>
+          )
+        }
+      },
       listStocks: {
         description: 'List three imaginary stocks that are trending.',
         parameters: z.object({
@@ -205,7 +299,7 @@ Besides that, you can also chat with users in friendly manner and do some clarif
               price: z.number().describe('The price of the stock'),
               delta: z.number().describe('The change in price of the stock')
             })
-          )
+          ), 
         }),
         render: async function* ({ stocks }) {
           yield (
