@@ -14,17 +14,13 @@ import {
   spinner,
   BotCard,
   BotMessage,
-  SystemMessage,
-  Stock,
-  Purchase
+  SystemMessage
 } from '@/components/stocks'
 
 import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
+
 import { Events } from '@/components/stocks/event'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
 import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
 import { loadVideosWithCaptions } from '../api/loadVideosWithCaptions';
 import { Videos } from '@/components/videos/videos'
 import {
@@ -43,86 +39,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || ''
 })
 
-async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
-
-  const aiState = getMutableAIState<typeof AI>()
-
-  const purchasing = createStreamableUI(
-    <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
-      <p className="mb-2">
-        Purchasing {amount} ${symbol}...
-      </p>
-    </div>
-  )
-
-  const systemMessage = createStreamableUI(null)
-
-  runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
-
-    purchasing.update(
-      <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
-        <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
-        </p>
-      </div>
-    )
-
-    await sleep(1000)
-
-    purchasing.done(
-      <div>
-        <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
-          {formatNumber(amount * price)}
-        </p>
-      </div>
-    )
-
-    systemMessage.done(
-      <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
-        {formatNumber(amount * price)}.
-      </SystemMessage>
-    )
-
-    aiState.done({
-      ...aiState.get(),
-      messages: [
-        ...aiState.get().messages.slice(0, -1),
-        {
-          id: nanoid(),
-          role: 'function',
-          name: 'showStockPurchase',
-          content: JSON.stringify({
-            name: symbol,
-            price,
-            defaultAmount: amount,
-            status: 'completed'
-          })
-        },
-        {
-          id: nanoid(),
-          role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
-        }
-      ]
-    })
-  })
-
-  return {
-    purchasingUI: purchasing.value,
-    newMessage: {
-      id: nanoid(),
-      display: systemMessage.value
-    }
-  }
-}
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -160,11 +76,9 @@ Messages inside [] means that it's a UI element or a user event. For example:
 
 You have to have a small talk with the user and provide a best search term key. to be as spacific as possible. 
 
-If the user requests video moments based on a term, call \`provide_video_captions_to_ai\` to get video_id and timed captions.
-Analyze a video captions and return most context important moments based on video captions in format videoid, momentstarttime, momentendtime  
-If there are best moments suggestion, call \`show_video_moments\` to show a list of video moments based on  .
+Suggest user video moments based on a term, call \`provide_video_captions_to_ai\` to get video_id and timed captions in xml format.
 
-If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
+Suggest the best moments and call function \`show_video_moments\` to show a list of video moments.
 
 Besides that, you can also chat with users in friendly manner and do some clarifications if needed.`
       },
@@ -219,7 +133,7 @@ Besides that, you can also chat with users in friendly manner and do some clarif
           
           await sleep(1000)
           
-          const videos = await loadVideosWithCaptions(searchKey)   ;
+          const videos = await loadVideosWithCaptions(searchKey);
           
           aiState.done({
             ...aiState.get(),
@@ -236,17 +150,18 @@ Besides that, you can also chat with users in friendly manner and do some clarif
 
           return (
             <BotCard>
-              <div>{
-              /* 
-              <Videos props={videos} /> */}
-               Video moments comming soon..... 
+              <div>
+                Video moments comming soon..... 
               </div>
             </BotCard>
           )
         }
       },
-      videos_best_matches: {
-        description: 'Get the video moments. Limit to 5 best results. Call after analyzing the best match moments. Use this to show the best moments to the user. Format response as link (<a href://videoid?from=-here comes slice start time- & to=-here comes slice end time->)',
+      show_video_moments: {
+        description: `Get the video slices. 
+                      Limit to 5 best. 
+                      Use this to show the best moments to the user. 
+                      Format response as link (<a href://videoid?from=-here comes slice start time- & to=-here comes slice end time->)`,
         parameters: z.object({
           videoSlice: z
             .array(z.string())
@@ -258,9 +173,7 @@ Besides that, you can also chat with users in friendly manner and do some clarif
           yield (
             <BotCard>
               <div>
-                {videoSlice.map((slice, index) => (
-                  <p>Video Moment {index + 1} {slice}</p>
-                ))}
+                just before presenting results
               </div>
             </BotCard>
           )
@@ -286,203 +199,6 @@ Besides that, you can also chat with users in friendly manner and do some clarif
                   <p>Video Moment {index + 1} {slice}</p>
                 ))}
               </div>
-            </BotCard>
-          )
-        }
-      },
-      listStocks: {
-        description: 'List three imaginary stocks that are trending.',
-        parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          ), 
-        }),
-        render: async function* ({ stocks }) {
-          yield (
-            <BotCard>
-              <StocksSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'listStocks',
-                content: JSON.stringify(stocks)
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stocks props={stocks} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPrice: {
-        description:
-          'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        }),
-        render: async function* ({ symbol, price, delta }) {
-          yield (
-            <BotCard>
-              <StockSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'showStockPrice',
-                content: JSON.stringify({ symbol, price, delta })
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stock props={{ symbol, price, delta }} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPurchase: {
-        description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
-        render: async function* ({ symbol, price, numberOfShares = 100 }) {
-          if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
-
-            return <BotMessage content={'Invalid amount'} />
-          }
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'showStockPurchase',
-                content: JSON.stringify({
-                  symbol,
-                  price,
-                  numberOfShares
-                })
-              }
-            ]
-          })
-
-          return (
-            <>
-              <BotMessage
-                content={`Sure!
-                ${
-                  typeof numberOfShares === 'number'
-                    ? `Click the button below to purchase ${numberOfShares} shares of $${symbol}:`
-                    : `How many $${symbol} would you like to purchase?`
-                }`}
-              />
-
-              <Purchase
-                props={{
-                  defaultAmount: numberOfShares,
-                  name: symbol,
-                  price: +price,
-                  status: 'requires_action'
-                }}
-              />
-            </>
-          )
-        }
-      },
-      getEvents: {
-        description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
-        render: async function* ({ events }) {
-          yield (
-            <BotCard>
-              <EventsSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'function',
-                name: 'getEvents',
-                content: JSON.stringify(events)
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Events props={events} />
             </BotCard>
           )
         }
@@ -520,8 +236,7 @@ export type UIState = {
 
 export const AI = createAI<AIState, UIState>({
   actions: {
-    submitUserMessage,
-    confirmPurchase
+    submitUserMessage
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
@@ -583,11 +298,11 @@ export const getUIStateFromAIState = (aiState: Chat) => {
             </BotCard>
           ) : message.name === 'showStockPrice' ? (
             <BotCard>
-              <Stock props={JSON.parse(message.content)} />
+              <div>log1</div>
             </BotCard>
           ) : message.name === 'showStockPurchase' ? (
             <BotCard>
-              <Purchase props={JSON.parse(message.content)} />
+              <div>log1</div>
             </BotCard>
           ) : message.name === 'getEvents' ? (
             <BotCard>
