@@ -33,6 +33,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
+import VideoPlayer from "@/components/ui/youtube/video-player";
 
 
 const openai = new OpenAI({
@@ -158,18 +159,31 @@ Besides that, you can also chat with users in friendly manner and do some clarif
         }
       },
       show_video_moments: {
-        description: `Get the video slices. 
+        description: `Get list of video information including thumbnails url value and the start and end seconds of the best moments according to the user question at least 10 seconds length . 
                       Limit to 5 best. 
-                      Use this to show the best moments to the user. 
-                      Format response as link (<a href://videoid?from=-here comes slice start time- & to=-here comes slice end time->)`,
+                      Use this to show the  start and the end of the best moments to the user.`,
         parameters: z.object({
-          videoSlice: z
-            .array(z.string())
-            .describe(
-              'Array of the best video moment links'
-            )
+          videoInformation: z.array(z.object({
+            videoId: z.string(),
+            videoTitle: z.string(),
+            bestMomentStart:z.number(),
+            bestMomentEnd:z.number(),
+            thumbnails: z.object({
+                default: z.object({
+                    url: z.string()
+                })
+                })
+          }))
         }),
-        render: async function* ({ videoSlice }) {
+        render: async function* ({ videoInformation }) {
+          const videoData = videoInformation.map(video => ({
+            start: video.bestMomentStart,
+            end: video.bestMomentEnd,
+            title: video.videoTitle,
+            thumbnailUrl: video.thumbnails.default.url,
+            videoId: video.videoId
+          }));
+
           yield (
             <BotCard>
               <div>
@@ -187,7 +201,7 @@ Besides that, you can also chat with users in friendly manner and do some clarif
                 id: nanoid(),
                 role: 'function',
                 name: 'videos_best_matches',
-                content: JSON.stringify(videoSlice)
+                content: JSON.stringify(videoData)
               }
             ]
           })
@@ -195,9 +209,7 @@ Besides that, you can also chat with users in friendly manner and do some clarif
           return (
             <BotCard>
               <div>
-                {videoSlice.map((slice, index) => (
-                  <p>Video Moment {index + 1} {slice}</p>
-                ))}
+                <VideoPlayer videoData={videoData} />
               </div>
             </BotCard>
           )
