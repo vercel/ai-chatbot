@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useId } from 'react'
+import { useState, useRef, useEffect, useId, useCallback } from 'react'
 import { scaleLinear } from 'd3-scale'
 import { subMonths, format } from 'date-fns'
 import { useResizeObserver } from 'usehooks-ts'
@@ -211,8 +211,5 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
       </div>
     </div>
   )
-}
-function useCallback(arg0: () => void, arg1: any[]) {
-  throw new Error('Function not implemented.')
 }
 
