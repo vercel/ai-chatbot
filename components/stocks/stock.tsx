@@ -212,4 +212,3 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
     </div>
   )
 }
-
