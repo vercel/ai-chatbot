@@ -40,30 +40,34 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
     [price - price / 2, price + price / 2]
   )
 
+  const updateAIState = useCallback(() => {
+    const message = {
+      id,
+      role: 'system',
+      content: `[User has highlighted dates between ${format(
+        xToDate(startHighlight),
+        'd LLL'
+      )} and ${format(xToDate(endHighlight), 'd LLL, yyyy')}]`
+    }
+
+    if (aiState.messages[aiState.messages.length - 1]?.id === id) {
+      setAIState((prevState: { messages: (typeof message)[] }) => ({
+        ...prevState,
+        messages: [...prevState.messages.slice(0, -1), message]
+      }))
+    } else {
+      setAIState((prevState: { messages: (typeof message)[] }) => ({
+        ...prevState,
+        messages: [...prevState.messages, message]
+      }))
+    }
+  }, [aiState, id, setAIState, startHighlight, endHighlight, xToDate])
+
   useEffect(() => {
     if (startHighlight && endHighlight) {
-      const message = {
-        id,
-        role: 'system' as const,
-        content: `[User has highlighted dates between between ${format(
-          xToDate(startHighlight),
-          'd LLL'
-        )} and ${format(xToDate(endHighlight), 'd LLL, yyyy')}`
-      }
-
-      if (aiState.messages[aiState.messages.length - 1]?.id === id) {
-        setAIState({
-          ...aiState,
-          messages: [...aiState.messages.slice(0, -1), message]
-        })
-      } else {
-        setAIState({
-          ...aiState,
-          messages: [...aiState.messages, message]
-        })
-      }
+      updateAIState()
     }
-  }, [startHighlight, endHighlight])
+  }, [startHighlight, endHighlight, updateAIState])
 
   return (
     <div className="rounded-xl border bg-zinc-950 p-4 text-green-400">
@@ -208,3 +212,7 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
     </div>
   )
 }
+function useCallback(arg0: () => void, arg1: any[]) {
+  throw new Error('Function not implemented.')
+}
+
