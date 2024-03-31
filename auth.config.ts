@@ -8,17 +8,24 @@ export const authConfig = {
   },
   callbacks: {
     async authorized({ auth, request: { nextUrl } }) {
+      const isNotSecure = false; // set true for testing and false for production
       const isLoggedIn = !!auth?.user
       const isOnLoginPage = nextUrl.pathname.startsWith('/login')
       const isOnSignupPage = nextUrl.pathname.startsWith('/signup')
+      const isOnSharePage = nextUrl.pathname.startsWith('/share')
 
       if (isLoggedIn) {
         if (isOnLoginPage || isOnSignupPage) {
           return Response.redirect(new URL('/', nextUrl))
         }
+        else { return true }
       }
-
-      return true
+      else {
+        if (isOnLoginPage || isOnSignupPage || isOnSharePage || isNotSecure) {
+          return true
+        }
+        else { return false }
+      }
     },
     async jwt({ token, user }) {
       if (user) {
