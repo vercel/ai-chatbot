@@ -19,9 +19,9 @@ export const suggestions = ['Proceed to checkout']
 
 export const SelectSeats = ({
   summary = {
-    departingCity: 'San Francisco',
-    arrivalCity: 'New York City',
-    flightCode: 'BA123',
+    departingCity: 'New York City',
+    arrivalCity: 'San Francisco',
+    flightCode: 'CA123',
     date: '23 March 2024'
   }
 }: SelectSeatsProps) => {

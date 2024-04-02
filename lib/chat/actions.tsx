@@ -82,28 +82,26 @@ async function submitUserMessage(content: string) {
   ;(async () => {
     const aiState = getMutableAIState()
 
-    console.log(
-      [
-        {
-          role: 'user',
-          parts: [
-            {
-              text: `You are a friendly assistant that helps the user with booking flights. The date today is ${format(new Date(), 'd LLLL, yyyy')}. Here's the flow: 1. List flights 2. Choose a flight 3. Choose a seat 4. Purchase a flight.`
-            }
-          ]
-        },
-        {
-          role: 'model',
-          parts: [{ text: 'Great! How can I help you?' }]
-        },
-        ...getHistory(aiState.get().messages)
-      ].map(message => `${message.role}: ${message.parts[0].text}`)
-    )
+    const history = [
+      {
+        role: 'user',
+        parts: [
+          {
+            text: `You are a friendly assistant that helps the user with booking flights. The date today is ${format(new Date(), 'd LLLL, yyyy')}. Here's the flow: 1. List flights 2. Choose a flight 3. Choose a seat 4. Purchase a flight.`
+          }
+        ]
+      },
+      {
+        role: 'model',
+        parts: [{ text: 'Great! How can I help you?' }]
+      },
+      ...getHistory(aiState.get().messages)
+    ]
 
     const completion = await gemini
       .getGenerativeModel(
         {
-          model: attachments.length > 0 ? 'gemini-pro-vision' : 'gemini-pro',
+          model: 'gemini-pro',
           generationConfig: {
             temperature: 0
           },
@@ -117,7 +115,35 @@ async function submitUserMessage(content: string) {
                 {
                   name: 'showSeatPicker',
                   description:
-                    'Show the UI to choose or change seat for the selected flight. This is shown after choosing a flight from the list to book.'
+                    'Show the UI to choose or change seat for the selected flight. This is shown after choosing a flight from the list to book.',
+                  parameters: {
+                    type: FunctionDeclarationSchemaType.OBJECT,
+                    properties: {
+                      departingCity: {
+                        type: FunctionDeclarationSchemaType.STRING,
+                        description: 'The departure city'
+                      },
+                      arrivalCity: {
+                        type: FunctionDeclarationSchemaType.STRING,
+                        description: 'The arrival city'
+                      },
+                      flightCode: {
+                        type: FunctionDeclarationSchemaType.STRING,
+                        description: 'The flight code'
+                      },
+                      date: {
+                        type: FunctionDeclarationSchemaType.STRING,
+                        description:
+                          "The date of the flight, in format '23 March 2024'"
+                      }
+                    },
+                    required: [
+                      'departingCity',
+                      'arrivalCity',
+                      'flightCode',
+                      'date'
+                    ]
+                  }
                 },
                 {
                   name: 'showPurchaseFlight',
@@ -171,7 +197,7 @@ async function submitUserMessage(content: string) {
                   }
                 },
                 {
-                  name: 'getFlightStatus',
+                  name: 'showFlightStatus',
                   description:
                     'Get the current status of flight by flight number and date.',
                   parameters: {
@@ -239,17 +265,7 @@ async function submitUserMessage(content: string) {
         { apiVersion: 'v1beta' }
       )
       .startChat({
-        history: [
-          {
-            role: 'user',
-            parts: [{ text: 'Hello! ' }]
-          },
-          {
-            role: 'model',
-            parts: [{ text: 'Great to meet you. How can I help you?' }]
-          },
-          ...getHistory(aiState.get().messages)
-        ]
+        history
       })
       .sendMessage(`${aiState.get().interactions.join('. ')} ${content}`)
 
@@ -305,9 +321,7 @@ async function submitUserMessage(content: string) {
         } else if (functionCall) {
           const { name, args } = functionCall
 
-          console.log(name, args)
-
-          if (name === 'getFlightStatus') {
+          if (name === 'showFlightStatus') {
             const { args } = functionCall as {
               args: StatusProps
             }
@@ -331,6 +345,8 @@ async function submitUserMessage(content: string) {
           } else if (name === 'showPurchaseFlight') {
             uiStream.done(<PurchaseTickets props={args} />)
           } else if (name === 'showSeatPicker') {
+            const { args } = functionCall
+
             aiState.done({
               ...aiState.get(),
               messages: [
@@ -344,7 +360,7 @@ async function submitUserMessage(content: string) {
               ]
             })
 
-            uiStream.done(<SelectSeats />)
+            uiStream.done(<SelectSeats summary={args} />)
           } else if (name === 'showBoardingPass') {
             aiState.done({
               ...aiState.get(),
