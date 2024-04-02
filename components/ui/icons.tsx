@@ -572,6 +572,103 @@ export const SparklesIcon = () => {
   )
 }
 
+export const LockIcon = () => {
+  return (
+    <svg
+      data-testid="geist-icon"
+      height="16"
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width="16"
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M9.5 6V7H6.5V6C6.5 5.17157 7.17157 4.5 8 4.5C8.82843 4.5 9.5 5.17157 9.5 6ZM5 7V6C5 4.34315 6.34315 3 8 3C9.65685 3 11 4.34315 11 6V7H12V11.5C12 12.3284 11.3284 13 10.5 13H5.5C4.67157 13 4 12.3284 4 11.5V7H5Z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  )
+}
+
+export const CheckIcon = () => {
+  return (
+    <svg
+      data-testid="geist-icon"
+      height="28"
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width="28"
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM11.5303 6.53033L12.0607 6L11 4.93934L10.4697 5.46967L6.5 9.43934L5.53033 8.46967L5 7.93934L3.93934 9L4.46967 9.53033L5.96967 11.0303C6.26256 11.3232 6.73744 11.3232 7.03033 11.0303L11.5303 6.53033Z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  )
+}
+
+export const CardIcon = () => {
+  return (
+    <svg
+      data-testid="geist-icon"
+      height="16"
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width="16"
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M14 3H2C1.72386 3 1.5 3.22386 1.5 3.5V5L14.5 5V3.5C14.5 3.22386 14.2761 3 14 3ZM1.5 12.5V6.5L14.5 6.5V12.5C14.5 12.7761 14.2761 13 14 13H2C1.72386 13 1.5 12.7761 1.5 12.5ZM2 1.5C0.895431 1.5 0 2.39543 0 3.5V12.5C0 13.6046 0.895431 14.5 2 14.5H14C15.1046 14.5 16 13.6046 16 12.5V3.5C16 2.39543 15.1046 1.5 14 1.5H2ZM4 10.75C4.41421 10.75 4.75 10.4142 4.75 10C4.75 9.58579 4.41421 9.25 4 9.25C3.58579 9.25 3.25 9.58579 3.25 10C3.25 10.4142 3.58579 10.75 4 10.75Z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  )
+}
+
+export const SpinnerIcon = () => {
+  return (
+    <svg
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+      className="size-5 animate-spin stroke-zinc-400"
+    >
+      <path d="M12 3v3m6.366-.366-2.12 2.12M21 12h-3m.366 6.366-2.12-2.12M12 21v-3m-6.366.366 2.12-2.12M3 12h3m-.366-6.366 2.12 2.12"></path>
+    </svg>
+  )
+}
+
+export const DeviceIcon = () => {
+  return (
+    <svg
+      data-testid="geist-icon"
+      height="14"
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width="14"
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1 3.25C1 1.45507 2.45507 0 4.25 0H11.75C13.5449 0 15 1.45507 15 3.25V15.25V16H14.25H1.75H1V15.25V3.25ZM4.25 1.5C3.2835 1.5 2.5 2.2835 2.5 3.25V14.5H13.5V3.25C13.5 2.2835 12.7165 1.5 11.75 1.5H4.25ZM4 4C4 3.44772 4.44772 3 5 3H11C11.5523 3 12 3.44772 12 4V10H4V4ZM9 13H12V11.5H9V13Z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  )
+}
+
 export {
   IconEdit,
   IconNextChat,

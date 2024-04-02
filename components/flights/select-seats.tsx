@@ -15,9 +15,7 @@ interface SelectSeatsProps {
   }
 }
 
-export const suggestions = [
-  'Confirm seat selection (and then proceed to checkout)'
-]
+export const suggestions = ['Proceed to checkout']
 
 export const SelectSeats = ({
   summary = {
@@ -79,12 +77,8 @@ export const SelectSeats = ({
 
                         setAIState({
                           ...aiState,
-                          messages: [
-                            ...aiState.messages,
-                            {
-                              role: 'system',
-                              content: `The user has selected seat ${row}${seat}`
-                            }
+                          interactions: [
+                            `great, I have selected seat ${row}${seat}`
                           ]
                         })
                       }}

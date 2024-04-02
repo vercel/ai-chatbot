@@ -36,24 +36,14 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'List flights flying from',
+      subheading: 'New York City to San Francisco today',
+      message: `List flights flying from New York City to San Francisco today`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
-    },
-    {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
-    },
-    {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'What is the status',
+      subheading: 'of flight BA142?',
+      message: 'What is the status of flight BA142?'
     }
   ]
 

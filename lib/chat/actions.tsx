@@ -16,7 +16,7 @@ import { BotCard, BotMessage, Stock, Purchase } from '@/components/stocks'
 
 import { Events } from '@/components/stocks/events'
 import { Stocks } from '@/components/stocks/stocks'
-import { nanoid } from '@/lib/utils'
+import { nanoid, sleep } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '../types'
@@ -29,55 +29,11 @@ import { Status, StatusProps } from '@/components/flights/status'
 import { SelectSeats } from '@/components/flights/select-seats'
 import { ListFlights } from '@/components/flights/list-flights'
 import { BoardingPass } from '@/components/flights/boarding-pass'
+import { PurchaseTickets } from '@/components/flights/purchase-ticket'
+import { CheckIcon, SpinnerIcon } from '@/components/ui/icons'
+import { format } from 'date-fns'
 
 const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '')
-
-const buildGoogleGenAIPrompt = (messages: Message[], isVision: boolean) => {
-  return [
-    isVision
-      ? {
-          role: 'user',
-          content: 'Give detailed descriptions when images are provided.'
-        }
-      : {
-          role: 'user',
-          content:
-            "You are a friendly assistant that helps with booking flights. You can list flights, allow user to choose seats, purchase a flight, show flight status, and finally show the boarding pass using the functions provided. You can also show stock information, purchase stocks, show stock news with the functions provided. Extract information about the current flight based on the conversation history and the user's input. NEVER show/describe a boarding pass in markdown or text. ALWAYS use the function provided to show the boarding pass in the UI instead. List ATLEAST few flights at any cost. When the user chooses/selects a flight, let them choose the seat."
-        },
-    ...messages
-  ]
-    .filter(message =>
-      isVision ? true : message.role === 'user' || message.role === 'assistant'
-    )
-    .map(message =>
-      message.role === 'user'
-        ? {
-            role: 'user',
-            parts: [
-              {
-                text: message.content
-              }
-            ]
-          }
-        : message.role === 'assistant'
-          ? `model: ${message.content}`
-          : message.role === 'function'
-            ? `function response for ${message.name}: ${JSON.stringify(
-                message.content
-              )}`
-            : message.role === 'data'
-              ? {
-                  inlineData: {
-                    mime_type: 'image/png',
-                    data: message.content.replace(
-                      /^data:image\/png;base64,/,
-                      ''
-                    )
-                  }
-                }
-              : ''
-    )
-}
 
 const getHistory = (messages: Message[]) => {
   return messages.map(message =>
@@ -126,22 +82,23 @@ async function submitUserMessage(content: string) {
   ;(async () => {
     const aiState = getMutableAIState()
 
-    console.log([
-      {
-        role: 'user',
-        parts: [
-          {
-            text: "You are a friendly assistant that helps with booking flights. The user can book only 1 seat. Here's the flow: 1. List flights 2. Choose a flight 3. Choose a seat 4. Purchase a flight 5. Show boarding pass."
-          }
-        ]
-      },
-      {
-        role: 'model',
-        parts: [{ text: 'Sure!' }]
-      },
-      ...getHistory(aiState.get().messages),
-      content
-    ])
+    console.log(
+      [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: `You are a friendly assistant that helps the user with booking flights. The date today is ${format(new Date(), 'd LLLL, yyyy')}. Here's the flow: 1. List flights 2. Choose a flight 3. Choose a seat 4. Purchase a flight.`
+            }
+          ]
+        },
+        {
+          role: 'model',
+          parts: [{ text: 'Great! How can I help you?' }]
+        },
+        ...getHistory(aiState.get().messages)
+      ].map(message => `${message.role}: ${message.parts[0].text}`)
+    )
 
     const completion = await gemini
       .getGenerativeModel(
@@ -155,120 +112,17 @@ async function submitUserMessage(content: string) {
               functionDeclarations: [
                 {
                   name: 'listFlights',
-                  description:
-                    "List available flights (fictional) in the UI. List 3 that match user's query, minimum is 2.",
-                  parameters: {
-                    type: FunctionDeclarationSchemaType.OBJECT,
-                    properties: {
-                      departure: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description:
-                          'The departure location, in the format New York (JFK)'
-                      },
-                      arrival: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description:
-                          'The departure location, in the format New York (JFK)'
-                      },
-                      flights: {
-                        type: FunctionDeclarationSchemaType.ARRAY,
-                        description: 'List of flights, min 2, max 3.',
-                        items: {
-                          type: FunctionDeclarationSchemaType.OBJECT,
-                          properties: {
-                            id: {
-                              type: FunctionDeclarationSchemaType.NUMBER
-                            },
-                            duration: {
-                              type: FunctionDeclarationSchemaType.STRING
-                            },
-                            price: {
-                              type: FunctionDeclarationSchemaType.NUMBER
-                            },
-                            departureTime: {
-                              type: FunctionDeclarationSchemaType.STRING
-                            },
-                            arrivalTime: {
-                              type: FunctionDeclarationSchemaType.STRING
-                            },
-                            airlines: {
-                              type: FunctionDeclarationSchemaType.STRING
-                            }
-                          }
-                        }
-                      }
-                    },
-                    required: ['departure', 'arrival', 'flights']
-                  }
+                  description: 'List available flights.'
                 },
                 {
                   name: 'showSeatPicker',
                   description:
-                    'Show the UI to choose or change seat for the selected flight. This is shown after choosing a flight from the list to book.',
-                  parameters: {
-                    type: FunctionDeclarationSchemaType.OBJECT,
-                    properties: {
-                      departingCity: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure city'
-                      },
-                      arrivalCity: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival city'
-                      },
-                      flightCode: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The flight code'
-                      },
-                      date: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description:
-                          "The date of the flight, e.g. '23 March 2024'"
-                      }
-                    },
-                    required: [
-                      'departingCity',
-                      'arrivalCity',
-                      'flightCode',
-                      'date'
-                    ]
-                  }
+                    'Show the UI to choose or change seat for the selected flight. This is shown after choosing a flight from the list to book.'
                 },
                 {
                   name: 'showPurchaseFlight',
-                  description: 'Show the UI to purchase a flight.',
-                  parameters: {
-                    type: FunctionDeclarationSchemaType.OBJECT,
-                    properties: {
-                      airline: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The airline of the flight'
-                      },
-                      departureTime: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure time of the flight'
-                      },
-                      arrivalTime: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival time of the flight'
-                      },
-                      price: {
-                        type: FunctionDeclarationSchemaType.NUMBER,
-                        description: 'The price of the flight'
-                      },
-                      seat: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The seat of the flight'
-                      }
-                    },
-                    required: [
-                      'airline',
-                      'departureTime',
-                      'arrivalTime',
-                      'price',
-                      'seat'
-                    ]
-                  }
+                  description:
+                    'Show the UI to purchase/checkout a flight booking. This happens after choosing a seat.'
                 },
                 {
                   name: 'showBoardingPass',
@@ -394,14 +248,14 @@ async function submitUserMessage(content: string) {
             role: 'model',
             parts: [{ text: 'Great to meet you. How can I help you?' }]
           },
-
           ...getHistory(aiState.get().messages)
         ]
       })
-      .sendMessage(content)
+      .sendMessage(`${aiState.get().interactions.join('. ')} ${content}`)
 
     aiState.update({
       ...aiState.get(),
+      interactions: [],
       messages: [
         ...aiState.get().messages,
         {
@@ -451,6 +305,8 @@ async function submitUserMessage(content: string) {
         } else if (functionCall) {
           const { name, args } = functionCall
 
+          console.log(name, args)
+
           if (name === 'getFlightStatus') {
             const { args } = functionCall as {
               args: StatusProps
@@ -458,28 +314,53 @@ async function submitUserMessage(content: string) {
 
             uiStream.done(<Status summary={args} />)
           } else if (name === 'listFlights') {
-            const { arrival, departure, flights } = args
+            aiState.done({
+              ...aiState.get(),
+              messages: [
+                ...aiState.get().messages,
+                {
+                  id: nanoid(),
+                  role: 'assistant',
+                  content:
+                    "Here's a list of flights for you. Choose one and we can proceed to picking a seat."
+                }
+              ]
+            })
 
-            uiStream.done(
-              <ListFlights props={{ arrival, departure, flights }} />
-            )
+            uiStream.done(<ListFlights />)
+          } else if (name === 'showPurchaseFlight') {
+            uiStream.done(<PurchaseTickets props={args} />)
           } else if (name === 'showSeatPicker') {
-            uiStream.done(<SelectSeats summary={args} />)
+            aiState.done({
+              ...aiState.get(),
+              messages: [
+                ...aiState.get().messages,
+                {
+                  id: nanoid(),
+                  role: 'assistant',
+                  content:
+                    "Here's a list of available seats for you to choose from. Select one to proceed to payment."
+                }
+              ]
+            })
+
+            uiStream.done(<SelectSeats />)
           } else if (name === 'showBoardingPass') {
+            aiState.done({
+              ...aiState.get(),
+              messages: [
+                ...aiState.get().messages,
+                {
+                  id: nanoid(),
+                  role: 'assistant',
+                  content:
+                    "Here's your boarding pass. Please have it ready for your flight."
+                }
+              ]
+            })
+
             uiStream.done(<BoardingPass summary={args} />)
           }
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: JSON.stringify(args)
-              }
-            ]
-          })
 
           textStream.done()
           messageStream.done()
@@ -497,6 +378,91 @@ async function submitUserMessage(content: string) {
   }
 }
 
+export async function requestCode() {
+  'use server'
+
+  const aiState = getMutableAIState()
+
+  aiState.done({
+    ...aiState.get(),
+    messages: [
+      ...aiState.get().messages.slice(0, -1),
+      {
+        role: 'assistant',
+        content:
+          "A code has been sent to user's phone. They should enter it in the user interface to continue."
+      }
+    ]
+  })
+
+  const ui = createStreamableUI(
+    <div className="animate-spin">
+      <SpinnerIcon />
+    </div>
+  )
+
+  ;(async () => {
+    await sleep(2000)
+    ui.done()
+  })()
+
+  return {
+    status: 'requires_code',
+    display: ui.value
+  }
+}
+
+export async function validateCode() {
+  'use server'
+
+  const aiState = getMutableAIState()
+
+  const status = createStreamableValue('in_progress')
+  const ui = createStreamableUI(
+    <div className="flex flex-col items-center justify-center gap-3 p-6 text-zinc-500">
+      <div className="animate-spin">
+        <SpinnerIcon />
+      </div>
+      <div className="text-sm text-zinc-500">
+        Please wait while we fulfill your order.
+      </div>
+    </div>
+  )
+
+  ;(async () => {
+    await sleep(2000)
+
+    ui.update(
+      <div className="flex flex-col items-center justify-center gap-3 p-4 text-emerald-700">
+        <CheckIcon />
+        <div>Payment Succeeded</div>
+        <div className="text-sm text-zinc-500">
+          Thanks for your purchase! You will receive an email confirmation
+          shortly.
+        </div>
+      </div>
+    )
+
+    aiState.done({
+      ...aiState.get(),
+      messages: [
+        ...aiState.get().messages.slice(0, -1),
+        {
+          role: 'assistant',
+          content: 'The purchase has completed successfully.'
+        }
+      ]
+    })
+
+    status.update('completed')
+  })()
+
+  return {
+    status: status.value,
+    display: ui.value
+  }
+}
+
 export type Message = {
   role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
   content: string
@@ -506,6 +472,7 @@ export type Message = {
 
 export type AIState = {
   chatId: string
+  interactions?: string[]
   messages: Message[]
 }
 
@@ -518,10 +485,12 @@ export type UIState = {
 
 export const AI = createAI<AIState, UIState>({
   actions: {
-    submitUserMessage
+    submitUserMessage,
+    requestCode,
+    validateCode
   },
   initialUIState: [],
-  initialAIState: { chatId: nanoid(), messages: [] },
+  initialAIState: { chatId: nanoid(), interactions: [], messages: [] },
   unstable_onGetUIState: async () => {
     'use server'
 

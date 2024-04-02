@@ -4,6 +4,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useActions, useUIState } from 'ai/rsc'
+import { format } from 'date-fns'
 import { useEffect } from 'react'
 
 interface Flight {
@@ -73,7 +74,7 @@ export const ListFlights = ({
         <div className="flex flex-row gap-4">
           <div>
             <div className="text-right text-xs text-zinc-500">DATE</div>
-            <div className="text">24th Mar</div>
+            <div className="text">{format(new Date(), 'd LLLL')}</div>
           </div>
         </div>
       </div>
@@ -86,7 +87,7 @@ export const ListFlights = ({
               className="flex cursor-pointer flex-row justify-between rounded-lg p-2 hover:bg-zinc-100"
               onClick={async () => {
                 const response = await submitUserMessage(
-                  `The user has selected flight ${flight.airlines}`,
+                  `The user has selected flight ${flight.airlines}, departing at ${flight.departureTime} and arriving at ${flight.arrivalTime} for $${flight.price}. `,
                   []
                 )
                 setMessages((currentMessages: any[]) => [
@@ -102,8 +103,8 @@ export const ListFlights = ({
                       index === 0
                         ? 'https://www.gstatic.com/flights/airline_logos/70px/LA.png'
                         : index === 1
-                        ? 'https://www.gstatic.com/flights/airline_logos/70px/LF.png'
-                        : 'https://www.gstatic.com/flights/airline_logos/70px/KA.png'
+                          ? 'https://www.gstatic.com/flights/airline_logos/70px/LF.png'
+                          : 'https://www.gstatic.com/flights/airline_logos/70px/KA.png'
                     }
                   />
                 </div>
