@@ -37,6 +37,8 @@ export function PromptForm({
     }
   }, [])
 
+  const fileRef = React.useRef<HTMLInputElement>(null)
+
   return (
     <form
       ref={formRef}
@@ -66,6 +68,16 @@ export function PromptForm({
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        id="file"
+        ref={fileRef}
+        onChange={event => {
+          console.log(event)
+        }}
+      />
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -74,14 +86,14 @@ export function PromptForm({
               size="icon"
               className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
               onClick={() => {
-                router.push('/new')
+                fileRef.current?.click()
               }}
             >
               <IconPlus />
               <span className="sr-only">New Chat</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
+          <TooltipContent>Add Attachments</TooltipContent>
         </Tooltip>
         <Textarea
           ref={inputRef}

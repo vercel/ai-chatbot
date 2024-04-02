@@ -21,58 +21,40 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '../types'
 import { auth } from '@/auth'
-import {
-  FunctionDeclarationSchemaType,
-  GoogleGenerativeAI
-} from '@google/generative-ai'
-import { Status, StatusProps } from '@/components/flights/status'
+import { FlightStatus } from '@/components/flights/flight-status'
 import { SelectSeats } from '@/components/flights/select-seats'
 import { ListFlights } from '@/components/flights/list-flights'
 import { BoardingPass } from '@/components/flights/boarding-pass'
 import { PurchaseTickets } from '@/components/flights/purchase-ticket'
 import { CheckIcon, SpinnerIcon } from '@/components/ui/icons'
 import { format } from 'date-fns'
-
-const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '')
-
-const getHistory = (messages: Message[]) => {
-  return messages.map(message =>
-    message.role === 'user'
-      ? {
-          role: 'user',
-          parts: [{ text: message.content }]
-        }
-      : message.role === 'assistant'
-        ? message.functionCall
-          ? {
-              role: 'model',
-              parts: [
-                {
-                  functionCall: {
-                    name: message.functionCall.name,
-
-                    args: message.functionCall.content
-                  }
-                }
-              ]
-            }
-          : {
-              role: 'model',
-              parts: [{ text: message.content }]
-            }
-        : ''
-  )
-}
+import { experimental_streamText } from 'ai'
+import { google } from 'ai/google'
+import { z } from 'zod'
 
 async function submitUserMessage(content: string) {
   'use server'
 
-  const attachments = []
+  const aiState = getMutableAIState()
 
-  const images = attachments.map(attachment => ({
-    role: 'data',
-    content: attachment.replace(/^data:image\/png;base64,/, '')
+  aiState.update({
+    ...aiState.get(),
+    messages: [
+      ...aiState.get().messages,
+      {
+        id: nanoid(),
+        role: 'user',
+        content: `${aiState.get().interactions.join('.')} ${content}`
+      }
+    ]
+  })
+
+  const history = aiState.get().messages.map(message => ({
+    role: message.role,
+    content: message.content
   }))
+
+  console.log(history)
 
   const textStream = createStreamableValue('')
   const spinnerStream = createStreamableUI(<SpinnerMessage />)
@@ -80,228 +62,86 @@ async function submitUserMessage(content: string) {
   const uiStream = createStreamableUI()
 
   ;(async () => {
-    const aiState = getMutableAIState()
-
-    const history = [
-      {
-        role: 'user',
-        parts: [
-          {
-            text: `You are a friendly assistant that helps the user with booking flights. The date today is ${format(new Date(), 'd LLLL, yyyy')}. Here's the flow: 1. List flights 2. Choose a flight 3. Choose a seat 4. Purchase a flight.`
-          }
-        ]
-      },
-      {
-        role: 'model',
-        parts: [{ text: 'Great! How can I help you?' }]
-      },
-      ...getHistory(aiState.get().messages)
-    ]
-
-    const completion = await gemini
-      .getGenerativeModel(
-        {
-          model: 'gemini-pro',
-          generationConfig: {
-            temperature: 0
-          },
-          tools: [
-            {
-              functionDeclarations: [
-                {
-                  name: 'listFlights',
-                  description: 'List available flights.'
-                },
-                {
-                  name: 'showSeatPicker',
-                  description:
-                    'Show the UI to choose or change seat for the selected flight. This is shown after choosing a flight from the list to book.',
-                  parameters: {
-                    type: FunctionDeclarationSchemaType.OBJECT,
-                    properties: {
-                      departingCity: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure city'
-                      },
-                      arrivalCity: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival city'
-                      },
-                      flightCode: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The flight code'
-                      },
-                      date: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description:
-                          "The date of the flight, in format '23 March 2024'"
-                      }
-                    },
-                    required: [
-                      'departingCity',
-                      'arrivalCity',
-                      'flightCode',
-                      'date'
-                    ]
-                  }
-                },
-                {
-                  name: 'showPurchaseFlight',
-                  description:
-                    'Show the UI to purchase/checkout a flight booking. This happens after choosing a seat.'
-                },
-                {
-                  name: 'showBoardingPass',
-                  description: "Show user's imaginary boarding pass.",
-                  parameters: {
-                    type: FunctionDeclarationSchemaType.OBJECT,
-                    properties: {
-                      airline: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The airline of the flight'
-                      },
-                      arrival: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival city of the flight'
-                      },
-                      departure: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure city of the flight'
-                      },
-                      departureTime: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure time of the flight'
-                      },
-                      arrivalTime: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival time of the flight'
-                      },
-                      price: {
-                        type: FunctionDeclarationSchemaType.NUMBER,
-                        description: 'The price of the flight'
-                      },
-                      seat: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The seat of the flight'
-                      }
-                    },
-                    required: [
-                      'airline',
-                      'arrival',
-                      'departure',
-                      'departureTime',
-                      'arrivalTime',
-                      'price',
-                      'seat'
-                    ]
-                  }
-                },
-                {
-                  name: 'showFlightStatus',
-                  description:
-                    'Get the current status of flight by flight number and date.',
-                  parameters: {
-                    type: FunctionDeclarationSchemaType.OBJECT,
-                    properties: {
-                      flightCode: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The flight number'
-                      },
-                      date: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The date of the flight in YYYY-MM-DD'
-                      },
-                      departingCity: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure city'
-                      },
-                      departingAirport: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure airport'
-                      },
-                      departingAirportCode: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure airport code'
-                      },
-                      departingTime: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The departure time'
-                      },
-                      arrivalCity: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival city'
-                      },
-                      arrivalAirport: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival airport'
-                      },
-                      arrivalAirportCode: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival airport code'
-                      },
-                      arrivalTime: {
-                        type: FunctionDeclarationSchemaType.STRING,
-                        description: 'The arrival time'
-                      }
-                    },
-                    required: [
-                      'flightCode',
-                      'date',
-                      'departingCity',
-                      'departingAirport',
-                      'departingAirportCode',
-                      'departingTime',
-                      'arrivalCity',
-                      'arrivalAirport',
-                      'arrivalAirportCode',
-                      'arrivalTime'
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
+    const result = await experimental_streamText({
+      model: google.generativeAI('models/gemini-pro'),
+      tools: {
+        listFlights: {
+          description:
+            "List available flights in the UI. List 3 that match user's query.",
+          parameters: z.object({})
         },
-        { apiVersion: 'v1beta' }
-      )
-      .startChat({
-        history
-      })
-      .sendMessage(`${aiState.get().interactions.join('. ')} ${content}`)
-
-    aiState.update({
-      ...aiState.get(),
-      interactions: [],
-      messages: [
-        ...aiState.get().messages,
-        {
-          id: nanoid(),
-          role: 'user',
-          content
+        showSeatPicker: {
+          description:
+            'Show the UI to choose or change seat for the selected flight.',
+          parameters: z.object({
+            departingCity: z.string(),
+            arrivalCity: z.string(),
+            flightCode: z.string(),
+            date: z.string()
+          })
         },
-        ...images
-      ]
+        showPurchaseFlight: {
+          description: 'Show the UI to purchase/checkout a flight booking.',
+          parameters: z.object({})
+        },
+        showBoardingPass: {
+          description: "Show user's imaginary boarding pass.",
+          parameters: z.object({
+            airline: z.string(),
+            arrival: z.string(),
+            departure: z.string(),
+            departureTime: z.string(),
+            arrivalTime: z.string(),
+            price: z.number(),
+            seat: z.string()
+          })
+        },
+        showFlightStatus: {
+          description:
+            'Get the current status of flight by flight number and date.',
+          parameters: z.object({
+            flightCode: z.string(),
+            date: z.string(),
+            departingCity: z.string(),
+            departingAirport: z.string(),
+            departingAirportCode: z.string(),
+            departingTime: z.string(),
+            arrivalCity: z.string(),
+            arrivalAirport: z.string(),
+            arrivalAirportCode: z.string(),
+            arrivalTime: z.string()
+          })
+        }
+      },
+      system: `\
+      You are a friendly assistant that helps the user with booking flights. 
+  
+      The date today is ${format(new Date(), 'd LLLL, yyyy')}. 
+      
+      Here's the flow: 
+        1. List flights 
+        2. Choose a flight 
+        3. Choose a seat 
+        4. Purchase a flight.
+        5. Show boarding pass.
+      `,
+      messages: [...history]
     })
 
-    const { candidates } = completion.response
+    let textContent = ''
 
-    // is text completion
-    if (candidates) {
-      const candidate = candidates[0]
-      const { content } = candidate
-      const { parts } = content
+    for await (const delta of result.fullStream) {
+      const { type } = delta
+      // console.log(delta)
 
-      if (parts) {
-        const part = parts[0]
-        const { text, functionCall } = part
+      if (type === 'text-delta') {
+        const { textDelta } = delta
+        textContent += textDelta
+        messageStream.update(<BotMessage content={textContent} />)
+      } else if (type === 'tool-call') {
+        const { toolName, args } = delta
 
-        // is text completion
-        if (text) {
-          const assistantResponse =
-            completion.response.candidates && completion.response.candidates[0]
-              ? completion.response.candidates[0].content.parts[0].text
-              : ''
-
+        if (toolName === 'listFlights') {
           aiState.done({
             ...aiState.get(),
             messages: [
@@ -309,81 +149,79 @@ async function submitUserMessage(content: string) {
               {
                 id: nanoid(),
                 role: 'assistant',
-                content: assistantResponse
+                content:
+                  "Here's a list of flights for you. Choose one and we can proceed to pick a seat."
               }
             ]
           })
 
-          messageStream.done(<BotMessage content={assistantResponse || ''} />)
-          uiStream.done()
-          textStream.done()
-          spinnerStream.done(null)
-        } else if (functionCall) {
-          const { name, args } = functionCall
+          uiStream.done(
+            <BotCard>
+              <ListFlights />
+            </BotCard>
+          )
+        } else if (toolName === 'showSeatPicker') {
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content:
+                  "Here's a list of available seats for you to choose from. Select one to proceed to payment."
+              }
+            ]
+          })
 
-          if (name === 'showFlightStatus') {
-            const { args } = functionCall as {
-              args: StatusProps
-            }
+          uiStream.done(
+            <BotCard>
+              <SelectSeats summary={args} />
+            </BotCard>
+          )
+        } else if (toolName === 'showPurchaseFlight') {
+          uiStream.done(
+            <BotCard>
+              <PurchaseTickets />
+            </BotCard>
+          )
+        } else if (toolName === 'showBoardingPass') {
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content:
+                  "Here's your boarding pass. Please have it ready for your flight."
+              }
+            ]
+          })
 
-            uiStream.done(<Status summary={args} />)
-          } else if (name === 'listFlights') {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content:
-                    "Here's a list of flights for you. Choose one and we can proceed to picking a seat."
-                }
-              ]
-            })
-
-            uiStream.done(<ListFlights />)
-          } else if (name === 'showPurchaseFlight') {
-            uiStream.done(<PurchaseTickets props={args} />)
-          } else if (name === 'showSeatPicker') {
-            const { args } = functionCall
-
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content:
-                    "Here's a list of available seats for you to choose from. Select one to proceed to payment."
-                }
-              ]
-            })
-
-            uiStream.done(<SelectSeats summary={args} />)
-          } else if (name === 'showBoardingPass') {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content:
-                    "Here's your boarding pass. Please have it ready for your flight."
-                }
-              ]
-            })
-
-            uiStream.done(<BoardingPass summary={args} />)
-          }
-
-          textStream.done()
-          messageStream.done()
-          spinnerStream.done(null)
+          uiStream.done(
+            <BotCard>
+              <BoardingPass summary={args} />
+            </BotCard>
+          )
+        } else if (toolName === 'showFlightStatus') {
+          uiStream.done(
+            <BotCard>
+              <FlightStatus summary={args} />
+            </BotCard>
+          )
         }
       }
     }
+
+    aiState.done({
+      ...aiState.get(),
+      interactions: []
+    })
+
+    textStream.done()
+    messageStream.done()
+    spinnerStream.done(null)
   })()
 
   return {
@@ -402,7 +240,7 @@ export async function requestCode() {
   aiState.done({
     ...aiState.get(),
     messages: [
-      ...aiState.get().messages.slice(0, -1),
+      ...aiState.get().messages,
       {
         role: 'assistant',
         content:
@@ -523,7 +361,7 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state, done }) => {
+  unstable_onSetAIState: async ({ state }) => {
     'use server'
 
     const session = await auth()

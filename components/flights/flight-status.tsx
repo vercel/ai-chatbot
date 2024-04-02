@@ -26,7 +26,7 @@ export const suggestions = [
   'Show boarding pass'
 ]
 
-export const Status = ({
+export const FlightStatus = ({
   summary = {
     departingCity: 'Miami',
     departingAirport: 'Miami Intl',
