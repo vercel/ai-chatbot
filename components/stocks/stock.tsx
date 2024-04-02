@@ -5,6 +5,7 @@ import { scaleLinear } from 'd3-scale'
 import { subMonths, format } from 'date-fns'
 import { useResizeObserver } from 'usehooks-ts'
 import { useAIState } from 'ai/rsc'
+import { AIState } from '@/lib/chat/actions'
 
 interface Stock {
   symbol: string
@@ -50,18 +51,26 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
       )} and ${format(xToDate(endHighlight), 'd LLL, yyyy')}]`
     }
 
-    if (aiState.messages[aiState.messages.length - 1]?.id === id) {
-      setAIState((prevState: { messages: (typeof message)[] }) => ({
-        ...prevState,
-        messages: [...prevState.messages.slice(0, -1), message]
-      }))
-    } else {
-      setAIState((prevState: { messages: (typeof message)[] }) => ({
-        ...prevState,
-        messages: [...prevState.messages, message]
-      }))
-    }
-  }, [aiState, id, setAIState, startHighlight, endHighlight, xToDate])
+    setAIState((prevState: AIState) => {
+      const lastMessage = prevState.messages[prevState.messages.length - 1]
+      if (lastMessage?.content === message.content) {
+        // No update necessary since the message is identical to the last one
+        return prevState
+      }
+
+      if (lastMessage?.id === id) {
+        return {
+          ...prevState,
+          messages: [...prevState.messages.slice(0, -1), message]
+        }
+      } else {
+        return {
+          ...prevState,
+          messages: [...prevState.messages, message]
+        }
+      }
+    })
+  }, [id, setAIState, startHighlight, endHighlight, xToDate])
 
   useEffect(() => {
     if (startHighlight && endHighlight) {
