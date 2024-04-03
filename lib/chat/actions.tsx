@@ -32,6 +32,7 @@ import { experimental_streamText } from 'ai'
 import { google } from 'ai/google'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { z } from 'zod'
+import { ListHotels } from '@/components/hotels/list-hotels'
 
 const genAI = new GoogleGenerativeAI(
   process.env.GOOGLE_GENERATIVE_AI_API_KEY || ''
@@ -105,7 +106,7 @@ async function submitUserMessage(content: string) {
       {
         id: nanoid(),
         role: 'user',
-        content: `${content}\n\n${aiState.get().interactions.join('\n\n')}`
+        content: `${aiState.get().interactions.join('\n\n')}\n\n${content}`
       }
     ]
   })
@@ -160,6 +161,19 @@ async function submitUserMessage(content: string) {
             date: z.string()
           })
         },
+        showHotels: {
+          description: 'Show the UI to choose a hotel for the trip.',
+          parameters: z.object({
+            hotels: z.array(
+              z.object({
+                id: z.number(),
+                name: z.string(),
+                description: z.string(),
+                price: z.number()
+              })
+            )
+          })
+        },
         showPurchaseFlight: {
           description: 'Show the UI to purchase/checkout a flight booking.',
           parameters: z.object({})
@@ -204,8 +218,9 @@ async function submitUserMessage(content: string) {
         2. List flights to destination.
         3. Choose a flight.
         4. Choose a seat.
-        5. Purchase a flight.
-        6. Show boarding pass.
+        5. Choose hotel
+        6. Purchase booking.
+        7. Show boarding pass.
       `,
       messages: [...history]
     })
@@ -301,7 +316,32 @@ async function submitUserMessage(content: string) {
               <SelectSeats summary={args} />
             </BotCard>
           )
+        } else if (toolName === 'showHotels') {
+          aiState.done({
+            ...aiState.get(),
+            interactions: [],
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content:
+                  "Here's a list of hotels for you to choose from. Select one to proceed to payment."
+              }
+            ]
+          })
+
+          uiStream.done(
+            <BotCard>
+              <ListHotels summary={args} />
+            </BotCard>
+          )
         } else if (toolName === 'showPurchaseFlight') {
+          aiState.done({
+            ...aiState.get(),
+            interactions: []
+          })
+
           uiStream.done(
             <BotCard>
               <PurchaseTickets />
@@ -349,11 +389,6 @@ async function submitUserMessage(content: string) {
         }
       }
     }
-
-    aiState.done({
-      ...aiState.get(),
-      interactions: []
-    })
 
     textStream.done()
     messageStream.done()

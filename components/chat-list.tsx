@@ -3,6 +3,10 @@ import { UIState } from '@/lib/chat/actions'
 import { Session } from '@/lib/types'
 import Link from 'next/link'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { PurchaseTickets } from './flights/purchase-ticket'
+import { BotCard } from './stocks'
+import { ListHotels } from './hotels/list-hotels'
+import { ListFlights } from './flights/list-flights'
 
 export interface ChatList {
   messages: UIState
@@ -11,11 +15,7 @@ export interface ChatList {
 }
 
 export function ChatList({ messages, session, isShared }: ChatList) {
-  if (!messages.length) {
-    return null
-  }
-
-  return (
+  return messages.length ? (
     <div className="relative mx-auto max-w-2xl px-4">
       {!isShared && !session ? (
         <>
@@ -50,5 +50,12 @@ export function ChatList({ messages, session, isShared }: ChatList) {
         </div>
       ))}
     </div>
-  )
+  ) : null
+  // ) : (
+  // <div className="relative mx-auto max-w-2xl px-4">
+  //   <BotCard>
+  //     <PurchaseTickets />
+  //     <ListHotels />
+  //   </BotCard>
+  // </div>
 }

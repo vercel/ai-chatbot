@@ -1,6 +1,11 @@
 'use client'
 
-import { CardIcon, LockIcon, SparklesIcon } from '@/components/ui/icons'
+import {
+  CardIcon,
+  GoogleIcon,
+  LockIcon,
+  SparklesIcon
+} from '@/components/ui/icons'
 import { readStreamableValue, useActions, useUIState } from 'ai/rsc'
 import { useState } from 'react'
 
@@ -49,14 +54,16 @@ export const PurchaseTickets = ({
         className={`flex w-full flex-col gap-4 rounded-lg border bg-white p-4 font-medium`}
       >
         <div className="flex flex-row justify-between">
-          <div className="flex flex-row items-center gap-2 text-violet-950">
-            <CardIcon />
-            <div className="text-sm">0512</div>
+          <div className="flex flex-row items-center gap-2 text-blue-950">
+            <div className="p-1 bg-blue-100 rounded text-blue-500">
+              <CardIcon />
+            </div>
+            <div className="text-sm text-zinc-500">Visa · · · · 0512</div>
           </div>
 
-          <div className="flex flex-row items-center gap-1 text-purple-950">
-            <LockIcon />
-            <div className="text-sm">Checkout powered by Stripe</div>
+          <div className="text-sm flex flex-row items-center gap-1 border px-2 py-1 rounded-full">
+            <GoogleIcon />
+            Pay
           </div>
         </div>
 
@@ -67,7 +74,7 @@ export const PurchaseTickets = ({
               your booking.
             </p>
             <div
-              className="p-2 text-center rounded-md cursor-pointer bg-purple-950 text-purple-50 hover:bg-purple-900"
+              className="p-2 text-center rounded-md cursor-pointer bg-zinc-800 text-blue-50 hover:bg-zinc-950"
               onClick={async () => {
                 const { status, display } = await requestCode()
                 setCurrentStatus(status)
@@ -83,7 +90,7 @@ export const PurchaseTickets = ({
               Enter the code sent to your phone (***) *** 6137 to complete your
               purchase.
             </div>
-            <div className="flex flex-row justify-center p-2 text-center border rounded-md text-purple-950">
+            <div className="flex flex-row justify-center p-2 text-center border rounded-md text-blue-950">
               <input
                 className="w-16 text-center bg-transparent outline-none tabular-nums"
                 type="text"
@@ -93,7 +100,7 @@ export const PurchaseTickets = ({
               />
             </div>
             <div
-              className="p-2 text-center rounded-md cursor-pointer bg-purple-950 text-purple-50 hover:bg-purple-900"
+              className="p-2 text-center rounded-md cursor-pointer bg-zinc-800 text-blue-50 hover:bg-zinc-950"
               onClick={async () => {
                 const { status, display } = await validateCode()
 

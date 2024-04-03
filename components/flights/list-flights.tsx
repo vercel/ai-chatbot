@@ -92,8 +92,7 @@ export const ListFlights = ({
               className="flex cursor-pointer flex-row justify-between rounded-lg p-2 hover:bg-zinc-100"
               onClick={async () => {
                 const response = await submitUserMessage(
-                  `The user has selected flight ${flight.airlines}, departing at ${flight.departureTime} and arriving at ${flight.arrivalTime} for $${flight.price}. `,
-                  []
+                  `The user has selected flight ${flight.airlines}, departing at ${flight.departureTime} and arriving at ${flight.arrivalTime} for $${flight.price}. Now proceeding to select seats.`
                 )
                 setMessages((currentMessages: any[]) => [
                   ...currentMessages,
