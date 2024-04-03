@@ -479,9 +479,8 @@ function IconChevronUpDown({
 export const GoogleIcon = () => {
   return (
     <svg
-      data-testid="geist-icon"
       height="14"
-      stroke-linejoin="round"
+      strokeLinejoin="round"
       viewBox="0 0 16 16"
       width="14"
       style={{ color: 'currentcolor' }}

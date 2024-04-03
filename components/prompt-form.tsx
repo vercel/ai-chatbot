@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
-import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function PromptForm({
   input,
@@ -25,10 +25,9 @@ export function PromptForm({
   input: string
   setInput: (value: string) => void
 }) {
-  const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const { submitUserMessage } = useActions()
+  const { submitUserMessage, describeImage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
   React.useEffect(() => {
@@ -75,7 +74,24 @@ export function PromptForm({
         id="file"
         ref={fileRef}
         onChange={event => {
-          console.log(event)
+          if (!event.target.files) {
+            toast.error('No file selected')
+            return
+          }
+
+          const file = event.target.files[0]
+
+          const reader = new FileReader()
+          reader.readAsDataURL(file)
+
+          reader.onloadend = async () => {
+            const base64String = reader.result
+            const responseMessage = await describeImage(base64String)
+            setMessages(currentMessages => [
+              ...currentMessages,
+              responseMessage
+            ])
+          }
         }}
       />
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">

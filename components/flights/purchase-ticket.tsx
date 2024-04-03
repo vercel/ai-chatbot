@@ -46,7 +46,7 @@ export const PurchaseTickets = ({
   return (
     <div className="flex flex-col gap-4">
       <div
-        className={`flex min-h-56 w-full flex-col gap-4 rounded-lg border bg-white p-4 font-medium md:min-h-52`}
+        className={`flex w-full flex-col gap-4 rounded-lg border bg-white p-4 font-medium`}
       >
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center gap-2 text-violet-950">
@@ -61,7 +61,7 @@ export const PurchaseTickets = ({
         </div>
 
         {currentStatus === 'requires_confirmation' ? (
-          <div className="flex flex-col gap-16 md:gap-12">
+          <div className="flex flex-col gap-4">
             <p className="">
               Thanks for choosing your seats! Confirm your purchase to complete
               your booking.

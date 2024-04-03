@@ -30,7 +30,68 @@ import { CheckIcon, SpinnerIcon } from '@/components/ui/icons'
 import { format } from 'date-fns'
 import { experimental_streamText } from 'ai'
 import { google } from 'ai/google'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { z } from 'zod'
+
+const genAI = new GoogleGenerativeAI(
+  process.env.GOOGLE_GENERATIVE_AI_API_KEY || ''
+)
+
+async function describeImage(imageBase64: string) {
+  'use server'
+
+  const aiState = getMutableAIState()
+  const spinnerStream = createStreamableUI(null)
+  const messageStream = createStreamableUI(null)
+  const uiStream = createStreamableUI()
+
+  uiStream.update(
+    <BotCard>
+      <div className="flex flex-col gap-2">
+        <img className="rounded-lg" src={imageBase64} />
+        <div className="flex flex-row gap-2 items-center">
+          <SpinnerIcon />
+          <div className="text-zinc-500 text-sm">Analyzing image...</div>
+        </div>
+      </div>
+    </BotCard>
+  )
+  ;(async () => {
+    const imageData = imageBase64.split(',')[1]
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' })
+    const prompt = 'List the books in this image.'
+    const image = {
+      inlineData: {
+        data: imageData,
+        mimeType: 'image/png'
+      }
+    }
+
+    const result = await model.generateContent([prompt, image])
+    const text = result.response.text()
+
+    spinnerStream.done(null)
+    messageStream.done(null)
+
+    uiStream.done(
+      <BotCard>
+        <img src={imageBase64} />
+      </BotCard>
+    )
+
+    aiState.done({
+      ...aiState.get(),
+      interactions: [text]
+    })
+  })()
+
+  return {
+    id: nanoid(),
+    attachments: uiStream.value,
+    spinner: spinnerStream.value,
+    display: messageStream.value
+  }
+}
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -44,7 +105,7 @@ async function submitUserMessage(content: string) {
       {
         id: nanoid(),
         role: 'user',
-        content: `${aiState.get().interactions.join('.')} ${content}`
+        content: `${content}\n\n${aiState.get().interactions.join('\n\n')}`
       }
     ]
   })
@@ -63,12 +124,31 @@ async function submitUserMessage(content: string) {
 
   ;(async () => {
     const result = await experimental_streamText({
-      model: google.generativeAI('models/gemini-pro'),
+      model: google.generativeAI('models/gemini-1.0-pro-001'),
+      temperature: 0,
       tools: {
-        listFlights: {
+        listDestinations: {
+          description: 'List destination cities, max 5.',
+          parameters: z.object({
+            destinations: z.array(
+              z.string().describe('List of destination cities.')
+            )
+          })
+        },
+        showFlights: {
           description:
             "List available flights in the UI. List 3 that match user's query.",
-          parameters: z.object({})
+          parameters: z.object({
+            departingCity: z.string(),
+            arrivalCity: z.string(),
+            departingAirport: z.string(),
+            arrivalAirport: z.string(),
+            date: z
+              .string()
+              .describe(
+                "Date of the user's flight, example format: 6 April, 1998"
+              )
+          })
         },
         showSeatPicker: {
           description:
@@ -114,16 +194,18 @@ async function submitUserMessage(content: string) {
         }
       },
       system: `\
-      You are a friendly assistant that helps the user with booking flights. 
+      You are a friendly assistant that helps the user with booking flights to destinations that are based on a collection of books. You can you give travel recommendations based on the books, and will continue to help the user book a flight to their destination.
   
       The date today is ${format(new Date(), 'd LLLL, yyyy')}. 
+      The user's current location is San Francisco, CA, so the departure city will be San Francisco and airport will be San Francisco International Airport (SFO).
       
       Here's the flow: 
-        1. List flights 
-        2. Choose a flight 
-        3. Choose a seat 
-        4. Purchase a flight.
-        5. Show boarding pass.
+        1. List holiday destinations based on a collection of books.
+        2. List flights to destination.
+        3. Choose a flight.
+        4. Choose a seat.
+        5. Purchase a flight.
+        6. Show boarding pass.
       `,
       messages: [...history]
     })
@@ -132,16 +214,56 @@ async function submitUserMessage(content: string) {
 
     for await (const delta of result.fullStream) {
       const { type } = delta
-      // console.log(delta)
 
       if (type === 'text-delta') {
         const { textDelta } = delta
         textContent += textDelta
         messageStream.update(<BotMessage content={textContent} />)
+
+        aiState.update({
+          ...aiState.get(),
+          messages: [
+            ...aiState.get().messages,
+            {
+              id: nanoid(),
+              role: 'assistant',
+              content: textContent
+            }
+          ]
+        })
       } else if (type === 'tool-call') {
         const { toolName, args } = delta
 
-        if (toolName === 'listFlights') {
+        if (toolName === 'listDestinations') {
+          uiStream.done(
+            <BotCard>
+              <div className="flex flex-col gap-3 text-zinc-950">
+                <div className="">
+                  Here is a list of holiday destinations based on the books you
+                  have read. Choose one to proceed to booking a flight.
+                </div>
+                <div className="">
+                  {args.destinations.map(destination => (
+                    <div key={destination}>{destination}</div>
+                  ))}
+                </div>
+              </div>
+            </BotCard>
+          )
+
+          aiState.done({
+            ...aiState.get(),
+            interactions: [],
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: `Here's a list of holiday destinations based on the books you've read. Choose one to proceed to booking a flight. \n\n ${args.destinations.join(', ')}.`
+              }
+            ]
+          })
+        } else if (toolName === 'showFlights') {
           aiState.done({
             ...aiState.get(),
             messages: [
@@ -157,7 +279,7 @@ async function submitUserMessage(content: string) {
 
           uiStream.done(
             <BotCard>
-              <ListFlights />
+              <ListFlights summary={args} />
             </BotCard>
           )
         } else if (toolName === 'showSeatPicker') {
@@ -205,6 +327,20 @@ async function submitUserMessage(content: string) {
             </BotCard>
           )
         } else if (toolName === 'showFlightStatus') {
+          aiState.update({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: `The flight status of ${args.flightCode} is as follows:
+                Departing: ${args.departingCity} at ${args.departingTime} from ${args.departingAirport} (${args.departingAirportCode})
+                `
+              }
+            ]
+          })
+
           uiStream.done(
             <BotCard>
               <FlightStatus summary={args} />
@@ -341,7 +477,8 @@ export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
     requestCode,
-    validateCode
+    validateCode,
+    describeImage
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), interactions: [], messages: [] },

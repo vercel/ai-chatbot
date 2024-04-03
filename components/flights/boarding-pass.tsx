@@ -40,7 +40,7 @@ export const BoardingPass = ({
         </div>
 
         <div className="flex flex-col p-2 rounded-lg bg-zinc-100">
-          <div className="">Palmer / Jared</div>
+          <div className="">Rauch / Guillermo</div>
           <div className="flex flex-col justify-between md:flex-row">
             <div className="">{summary.departure}</div>
             <div className="flex flex-col gap-2 md:flex-row">

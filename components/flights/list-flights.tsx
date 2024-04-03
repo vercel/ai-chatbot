@@ -4,8 +4,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useActions, useUIState } from 'ai/rsc'
-import { format } from 'date-fns'
-import { useEffect } from 'react'
 
 interface Flight {
   id: number
@@ -16,45 +14,52 @@ interface Flight {
 }
 
 interface ListFlightsProps {
-  props?: {
-    arrival: string
-    departure: string
-    flights: Flight[]
+  summary: {
+    arrivalCity: string
+    departingCity: string
+    arrivalAirport: string
+    departingAirport: string
+    date: string
   }
 }
 
 export const ListFlights = ({
-  props = {
-    arrival: 'SFO',
-    departure: 'JFK',
-    flights: [
-      {
-        id: 1,
-        airlines: 'Cathay Pacific',
-        departureTime: '11:00',
-        arrivalTime: '14:00',
-        price: 200
-      },
-      {
-        id: 2,
-        airlines: 'Lufthansa',
-        departureTime: '15:00',
-        arrivalTime: '18:00',
-        price: 250
-      },
-      {
-        id: 3,
-        airlines: 'Cathay Pacific',
-        departureTime: '19:00',
-        arrivalTime: '22:00',
-        price: 300
-      }
-    ]
+  summary = {
+    arrivalCity: 'San Francisco',
+    departingCity: 'New York City',
+    arrivalAirport: 'SFO',
+    departingAirport: 'JFK',
+    date: '2021-12-25'
   }
 }: ListFlightsProps) => {
-  const { arrival, departure, flights } = props
+  const { arrivalCity, departingCity, arrivalAirport, departingAirport, date } =
+    summary
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState()
+
+  const flights = [
+    {
+      id: 1,
+      airlines: 'Cathay Pacific',
+      departureTime: '11:00',
+      arrivalTime: '14:00',
+      price: 200
+    },
+    {
+      id: 2,
+      airlines: 'Lufthansa',
+      departureTime: '15:00',
+      arrivalTime: '18:00',
+      price: 250
+    },
+    {
+      id: 3,
+      airlines: 'Cathay Pacific',
+      departureTime: '19:00',
+      arrivalTime: '22:00',
+      price: 300
+    }
+  ]
 
   return (
     <div
@@ -64,17 +69,17 @@ export const ListFlights = ({
         <div className="flex flex-row gap-4">
           <div>
             <div className="text-xs text-zinc-500">DEPARTURE</div>
-            <div className="text-lg">{departure}</div>
+            <div className="text-lg">{departingCity}</div>
           </div>
           <div>
             <div className="text-xs text-zinc-500">ARRIVAL</div>
-            <div className="text-lg">{arrival}</div>
+            <div className="text-lg">{arrivalCity}</div>
           </div>
         </div>
         <div className="flex flex-row gap-4">
           <div>
             <div className="text-right text-xs text-zinc-500">DATE</div>
-            <div className="text">{format(new Date(), 'd LLLL')}</div>
+            <div className="text">{date}</div>
           </div>
         </div>
       </div>
@@ -120,7 +125,7 @@ export const ListFlights = ({
               <div className="hidden flex-col md:flex">
                 <div>5hr 46min</div>
                 <div className="text-sm text-zinc-500 md:text-base">
-                  JFK-SFO
+                  {departingAirport}-{arrivalAirport}
                 </div>
               </div>
 
