@@ -15,7 +15,10 @@ interface SelectSeatsProps {
   }
 }
 
-export const suggestions = ['Proceed to checkout', 'Make hotel reservation']
+export const suggestions = [
+  'Proceed to checkout',
+  'List hotels and make a reservation'
+]
 
 export const SelectSeats = ({
   summary = {

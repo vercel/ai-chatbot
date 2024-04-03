@@ -76,7 +76,7 @@ async function describeImage(imageBase64: string) {
 
     uiStream.done(
       <BotCard>
-        <img src={imageBase64} />
+        <img className="rounded-lg" src={imageBase64} />
       </BotCard>
     )
 
@@ -116,7 +116,7 @@ async function submitUserMessage(content: string) {
     content: message.content
   }))
 
-  console.log(history)
+  // console.log(history)
 
   const textStream = createStreamableValue('')
   const spinnerStream = createStreamableUI(<SpinnerMessage />)
@@ -163,19 +163,11 @@ async function submitUserMessage(content: string) {
         },
         showHotels: {
           description: 'Show the UI to choose a hotel for the trip.',
-          parameters: z.object({
-            hotels: z.array(
-              z.object({
-                id: z.number(),
-                name: z.string(),
-                description: z.string(),
-                price: z.number()
-              })
-            )
-          })
+          parameters: z.object({})
         },
-        showPurchaseFlight: {
-          description: 'Show the UI to purchase/checkout a flight booking.',
+        checkoutBooking: {
+          description:
+            'Show the UI to purchase/checkout a flight and hotel booking.',
           parameters: z.object({})
         },
         showBoardingPass: {
@@ -187,7 +179,11 @@ async function submitUserMessage(content: string) {
             departureTime: z.string(),
             arrivalTime: z.string(),
             price: z.number(),
-            seat: z.string()
+            seat: z.string(),
+            date: z
+              .string()
+              .describe('Date of the flight, example format: 6 April, 1998'),
+            gate: z.string()
           })
         },
         showFlightStatus: {
@@ -208,10 +204,12 @@ async function submitUserMessage(content: string) {
         }
       },
       system: `\
-      You are a friendly assistant that helps the user with booking flights to destinations that are based on a collection of books. You can you give travel recommendations based on the books, and will continue to help the user book a flight to their destination.
+      You are a friendly assistant that helps the user with booking flights to destinations that are based on a list of books. You can you give travel recommendations based on the books, and will continue to help the user book a flight to their destination.
   
       The date today is ${format(new Date(), 'd LLLL, yyyy')}. 
-      The user's current location is San Francisco, CA, so the departure city will be San Francisco and airport will be San Francisco International Airport (SFO).
+      The user's current location is San Francisco, CA, so the departure city will be San Francisco and airport will be San Francisco International Airport (SFO). The user would like to book the flight out on May 12, 2024.
+
+      List KLM Royal Dutch Airlines flights only.
       
       Here's the flow: 
         1. List holiday destinations based on a collection of books.
@@ -257,11 +255,13 @@ async function submitUserMessage(content: string) {
                   Here is a list of holiday destinations based on the books you
                   have read. Choose one to proceed to booking a flight.
                 </div>
-                <div className="">
+                <ul>
                   {args.destinations.map(destination => (
-                    <div key={destination}>{destination}</div>
+                    <li className="list-disc" key={destination}>
+                      - {destination}
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             </BotCard>
           )
@@ -281,6 +281,7 @@ async function submitUserMessage(content: string) {
         } else if (toolName === 'showFlights') {
           aiState.done({
             ...aiState.get(),
+            interactions: [],
             messages: [
               ...aiState.get().messages,
               {
@@ -300,6 +301,7 @@ async function submitUserMessage(content: string) {
         } else if (toolName === 'showSeatPicker') {
           aiState.done({
             ...aiState.get(),
+            interactions: [],
             messages: [
               ...aiState.get().messages,
               {
@@ -333,10 +335,10 @@ async function submitUserMessage(content: string) {
 
           uiStream.done(
             <BotCard>
-              <ListHotels summary={args} />
+              <ListHotels />
             </BotCard>
           )
-        } else if (toolName === 'showPurchaseFlight') {
+        } else if (toolName === 'checkoutBooking') {
           aiState.done({
             ...aiState.get(),
             interactions: []
@@ -350,6 +352,7 @@ async function submitUserMessage(content: string) {
         } else if (toolName === 'showBoardingPass') {
           aiState.done({
             ...aiState.get(),
+            interactions: [],
             messages: [
               ...aiState.get().messages,
               {
@@ -369,6 +372,7 @@ async function submitUserMessage(content: string) {
         } else if (toolName === 'showFlightStatus') {
           aiState.update({
             ...aiState.get(),
+            interactions: [],
             messages: [
               ...aiState.get().messages,
               {

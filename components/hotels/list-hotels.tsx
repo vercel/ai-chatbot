@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useActions, useUIState } from 'ai/rsc'
@@ -17,21 +19,21 @@ export const ListHotels = ({
   hotels = [
     {
       id: 1,
-      name: 'Beach House',
-      description: 'A beautiful beach house',
-      price: 42
+      name: 'Hôtel Cluny Sorbonne',
+      description: 'Traditional quarters in a casual lodging',
+      price: 101
     },
     {
       id: 2,
-      name: 'Mountain House',
-      description: 'A cozy mountain house',
-      price: 32
+      name: 'Tonic Hotel Du Louvre',
+      description: 'Cozy downtown hotel with free Wi-Fi',
+      price: 145
     },
     {
       id: 3,
-      name: 'City House',
-      description: 'A modern city house',
-      price: 22
+      name: 'Hôtel de France Quartier-Latin',
+      description: 'Laid-back lodging with free Wi-Fi',
+      price: 112
     }
   ]
 }: ListHotelsProps) => {
@@ -46,7 +48,7 @@ export const ListHotels = ({
           className="p-2 flex flex-row justify-between hover:bg-zinc-100 rounded-lg cursor-pointer"
           onClick={async () => {
             const response = await submitUserMessage(
-              `I want to book the ${hotel.name}, proceed to checkout.`
+              `I want to book the ${hotel.name}, proceed to checkout by calling checkoutBooking function.`
             )
             setMessages((currentMessages: any[]) => [
               ...currentMessages,
@@ -55,7 +57,12 @@ export const ListHotels = ({
           }}
         >
           <div className="flex flex-row gap-4">
-            <div className="size-12 bg-zinc-100 border rounded-md"></div>
+            <div className="h-12 w-20 bg-zinc-100 border rounded-md">
+              <img
+                className="object-cover h-full rounded-md"
+                src={`/images/${hotel.id}.jpg`}
+              />
+            </div>
             <div>
               <div>{hotel.name}</div>
               <div className="text-zinc-500">{hotel.description}</div>
@@ -63,7 +70,7 @@ export const ListHotels = ({
           </div>
 
           <div>
-            <div className="text-emerald-700">${hotel.price}</div>
+            <div className="text-emerald-700 text-right">${hotel.price}</div>
             <div className="text-zinc-500">per night</div>
           </div>
         </div>

@@ -51,10 +51,9 @@ export function ChatList({ messages, session, isShared }: ChatList) {
       ))}
     </div>
   ) : null
-  // ) : (
+  // ) : null
   // <div className="relative mx-auto max-w-2xl px-4">
   //   <BotCard>
-  //     <PurchaseTickets />
   //     <ListHotels />
   //   </BotCard>
   // </div>

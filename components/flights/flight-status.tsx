@@ -3,7 +3,11 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import { useActions, useUIState } from 'ai/rsc'
-import { ArrowDownRight, ArrowUpRight } from '@/components/ui/icons'
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  SparklesIcon
+} from '@/components/ui/icons'
 
 export interface StatusProps {
   summary: {
@@ -52,6 +56,7 @@ export const FlightStatus = ({
     flightCode,
     date
   } = summary
+
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState()
 
@@ -92,7 +97,7 @@ export const FlightStatus = ({
           </div>
 
           <div className="p-2 text-sm text-zinc-500">
-            Total 6h 2m · 2,582mi · Overnight
+            Total 11h 30m · 5,563mi · Overnight
           </div>
 
           <div className="flex w-full flex-row justify-between">
@@ -110,13 +115,12 @@ export const FlightStatus = ({
             <div className="flex flex-col">
               <div className="text-2xl text-red-600">{arrivalTime}</div>
               <div className="text-red-600">2h 15m late</div>
-              <div className="text-sm text-zinc-500">in 12h 52m</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* <div className="flex flex-row flex-wrap gap-2">
+      <div className="flex flex-row flex-wrap gap-2">
         {suggestions.map(suggestion => (
           <div
             key={suggestion}
@@ -133,7 +137,7 @@ export const FlightStatus = ({
             {suggestion}
           </div>
         ))}
-      </div> */}
+      </div>
     </div>
   )
 }

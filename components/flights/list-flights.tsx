@@ -40,24 +40,24 @@ export const ListFlights = ({
   const flights = [
     {
       id: 1,
-      airlines: 'Cathay Pacific',
-      departureTime: '11:00',
-      arrivalTime: '14:00',
-      price: 200
+      airlines: 'KLM Airlines',
+      departureTime: '8:30 PM',
+      arrivalTime: '4:20 PM+1',
+      price: 531
     },
     {
       id: 2,
-      airlines: 'Lufthansa',
-      departureTime: '15:00',
-      arrivalTime: '18:00',
-      price: 250
+      airlines: 'KLM Airlines',
+      departureTime: '2:40 PM',
+      arrivalTime: '10:25 AM+1',
+      price: 564
     },
     {
       id: 3,
-      airlines: 'Cathay Pacific',
-      departureTime: '19:00',
-      arrivalTime: '22:00',
-      price: 300
+      airlines: 'KLM Airlines',
+      departureTime: '3:00 PM',
+      arrivalTime: '10:50 AM+1',
+      price: 611
     }
   ]
 
@@ -86,7 +86,7 @@ export const ListFlights = ({
 
       <div>
         {flights &&
-          flights.map((flight, index) => (
+          flights.map(flight => (
             <div
               key={flight.id}
               className="flex cursor-pointer flex-row justify-between rounded-lg p-2 hover:bg-zinc-100"
@@ -104,11 +104,7 @@ export const ListFlights = ({
                 <div className="size-8 rounded-md border bg-zinc-100 p-1 md:size-12 md:p-2">
                   <img
                     src={
-                      index === 0
-                        ? 'https://www.gstatic.com/flights/airline_logos/70px/LA.png'
-                        : index === 1
-                          ? 'https://www.gstatic.com/flights/airline_logos/70px/LF.png'
-                          : 'https://www.gstatic.com/flights/airline_logos/70px/KA.png'
+                      'https://www.gstatic.com/flights/airline_logos/70px/multi.png'
                     }
                   />
                 </div>
@@ -122,7 +118,7 @@ export const ListFlights = ({
                 </div>
               </div>
               <div className="hidden flex-col md:flex">
-                <div>5hr 46min</div>
+                <div>{flight.id === 2 ? '10hr 50min' : '10hr 45min'}</div>
                 <div className="text-sm text-zinc-500 md:text-base">
                   {departingAirport}-{arrivalAirport}
                 </div>

@@ -11,6 +11,8 @@ interface BoardingPassProps {
     arrivalTime: string
     price: number
     seat: string
+    date: string
+    gate: string
   }
 }
 
@@ -22,7 +24,9 @@ export const BoardingPass = ({
     departureTime: '10:00 AM',
     arrivalTime: '12:00 PM',
     price: 100,
-    seat: '1A'
+    seat: '1A',
+    date: '2021-12-25',
+    gate: '31'
   }
 }: BoardingPassProps) => {
   return (
@@ -36,7 +40,7 @@ export const BoardingPass = ({
               {summary.airline}
             </div>
           </div>
-          <div className="text-lg leading-5">Gate 31</div>
+          <div className="text-lg leading-5">Gate {summary.gate}</div>
         </div>
 
         <div className="flex flex-col p-2 rounded-lg bg-zinc-100">
@@ -44,7 +48,7 @@ export const BoardingPass = ({
           <div className="flex flex-col justify-between md:flex-row">
             <div className="">{summary.departure}</div>
             <div className="flex flex-col gap-2 md:flex-row">
-              <div className="">Mar 27</div>
+              <div className="">{summary.date}</div>
             </div>
             <div className="">{summary.arrival}</div>
           </div>
@@ -72,7 +76,7 @@ export const BoardingPass = ({
 
       <div className="hidden md:block">
         <Barcode
-          value="12345JAREDPALMER"
+          value="12345RAUCHG"
           options={{ format: 'code128', height: 20, displayValue: false }}
         />
       </div>
