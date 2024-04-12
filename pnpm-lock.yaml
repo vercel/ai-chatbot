@@ -110,6 +110,9 @@ dependencies:
   sonner:
     specifier: ^1.4.3
     version: 1.4.3(react-dom@18.2.0)(react@18.2.0)
+  use-local-storage-state:
+    specifier: ^19.2.0
+    version: 19.2.0(react-dom@18.2.0)(react@18.2.0)
   usehooks-ts:
     specifier: ^2.16.0
     version: 2.16.0(react@18.2.0)
@@ -5410,6 +5413,17 @@ packages:
       '@types/react': 18.2.48
       react: 18.2.0
       use-isomorphic-layout-effect: 1.1.2(@types/react@18.2.48)(react@18.2.0)
+    dev: false
+
+  /use-local-storage-state@19.2.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-z5+n406vi3FzPJW6+lzuL/LJr4VLhXsUq1TWWeHQABL37bnJ159dSUmO7XuwqvACX93ZA9P2vkB8GMDgq1rr7A==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /use-sidecar@1.1.2(@types/react@18.2.48)(react@18.2.0):

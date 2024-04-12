@@ -17,6 +17,7 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import { useInputHistory } from '@/lib/hooks/useInputHistory'
 
 export function PromptForm({
   input,
@@ -31,6 +32,12 @@ export function PromptForm({
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
+  const { onKeyUp, onSubmit, button: historyButton } = useInputHistory({
+    value: input,
+    setValue: setInput,
+    inputRef
+  })
+
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
@@ -42,6 +49,8 @@ export function PromptForm({
       ref={formRef}
       onSubmit={async (e: any) => {
         e.preventDefault()
+
+        onSubmit()
 
         // Blur focus on mobile
         if (window.innerWidth < 600) {
@@ -66,29 +75,33 @@ export function PromptForm({
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
-              onClick={() => {
-                router.push('/new')
-              }}
-            >
-              <IconPlus />
-              <span className="sr-only">New Chat</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
+      <div className="flex max-h-60 w-full grow flex-row overflow-hidden bg-background sm:rounded-md sm:border">
+        <div className="flex items-center justify-center p-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="flex size-8 rounded-full bg-background p-0"
+                onClick={() => {
+                  router.push('/new')
+                }}
+              >
+                <IconPlus />
+                <span className="sr-only">New Chat</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>New Chat</TooltipContent>
+          </Tooltip>
+        </div>
+        {historyButton}
         <Textarea
           ref={inputRef}
           tabIndex={0}
           onKeyDown={onKeyDown}
+          onKeyUp={onKeyUp}
           placeholder="Send a message."
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+          className="flex-1 marker:min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
           autoFocus
           spellCheck={false}
           autoComplete="off"
@@ -98,7 +111,7 @@ export function PromptForm({
           value={input}
           onChange={e => setInput(e.target.value)}
         />
-        <div className="absolute right-0 top-[13px] sm:right-4">
+        <div className="flex items-center justify-center p-4">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button type="submit" size="icon" disabled={input === ''}>

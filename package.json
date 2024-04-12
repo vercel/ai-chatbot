@@ -48,6 +48,7 @@
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "sonner": "^1.4.3",
+    "use-local-storage-state": "^19.2.0",
     "usehooks-ts": "^2.16.0",
     "zod": "^3.22.4"
   },
