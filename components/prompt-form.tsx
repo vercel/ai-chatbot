@@ -17,14 +17,17 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import { useInputHistory } from '@/lib/hooks/useInputHistory'
+import { useInputHistory } from '@/lib/history/use-input-history'
+import { Session } from '@/lib/types'
 
 export function PromptForm({
   input,
-  setInput
+  setInput,
+  session
 }: {
   input: string
   setInput: (value: string) => void
+  session?: Session
 }) {
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
@@ -32,10 +35,15 @@ export function PromptForm({
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
-  const { onKeyUp, onSubmit, button: historyButton } = useInputHistory({
+  const {
+    onKeyUp,
+    onSubmit,
+    button: historyButton
+  } = useInputHistory({
     value: input,
     setValue: setInput,
-    inputRef
+    inputRef,
+    useRemoteStorage: !!session?.user.id
   })
 
   React.useEffect(() => {

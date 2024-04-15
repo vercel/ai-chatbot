@@ -12,23 +12,28 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { IconTrash } from '@/components/ui/icons'
 import { CounterClockwiseClockIcon } from '@radix-ui/react-icons'
-import { KeyboardEvent, useCallback, useState } from 'react'
+import { KeyboardEvent, useCallback, useEffect, useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
+import { listHistory, setHistory as setHistoryRemote } from './history-storage'
 
 const MAX_HISTORY_LENGTH = 5
 
 export const useInputHistory = ({
   value,
   setValue,
-  inputRef
+  inputRef,
+  useRemoteStorage
 }: {
   value: string
   setValue: (value: string) => void
   inputRef: React.RefObject<HTMLTextAreaElement>
+  useRemoteStorage?: boolean
 }) => {
-  const [history, setHistory] = useLocalStorageState<string[]>('history', {
+  const remoteHistory = useRemoteHistoryState()
+  const localHistory = useLocalStorageState<string[]>('history', {
     defaultValue: []
   })
+  const [history, setHistory] = useRemoteStorage ? remoteHistory : localHistory
   const [historyIndex, setHistoryIndex] = useState<undefined | number>(
     undefined
   )
@@ -105,22 +110,22 @@ export const useInputHistory = ({
               <DropdownMenuLabel>My history</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-              {history.map((historyValue, i) => (
-                <DropdownMenuItem
-                  key={i}
-                  onSelect={() => {
-                    setValue(historyValue)
+                {history.map((historyValue, i) => (
+                  <DropdownMenuItem
+                    key={i}
+                    onSelect={() => {
+                      setValue(historyValue)
 
-                    // Focus on input after selecting history
-                    // This is a workaround for the dropdown menu
-                    setTimeout(() => {
-                      inputRef.current?.focus()
-                    }, 500)
-                  }}
-                >
-                  <span>{historyValue}</span>
-                </DropdownMenuItem>
-              ))}
+                      // Focus on input after selecting history
+                      // This is a workaround for the dropdown menu
+                      setTimeout(() => {
+                        inputRef.current?.focus()
+                      }, 500)
+                    }}
+                  >
+                    <span>{historyValue}</span>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
@@ -137,4 +142,19 @@ export const useInputHistory = ({
         </div>
       ) : null
   }
+}
+
+const useRemoteHistoryState = () => {
+  const [history, setHistory] = useState<string[]>([])
+  useEffect(() => {
+    const run = async () => {
+      setHistory(await listHistory())
+    }
+    run()
+  }, [])
+  const setBothHistory = useCallback((values: string[]) => {
+    setHistoryRemote(values)
+    setHistory(values)
+  }, [])
+  return [history, setBothHistory] as const
 }
