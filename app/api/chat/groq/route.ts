@@ -5,6 +5,7 @@ import OpenAI from 'openai'
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
 import { ChatSettings } from '@/types'
+import { CHAT_SETTING_LIMITS } from '@/lib/chat-setting-limits'
 
 export async function POST(req: Request) {
   const json = await req.json()
@@ -23,10 +24,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Instantiate OpenRouter with either the previewToken or the default API key, OpenRouter is compatible the OpenAI SDK
-    const openrouter = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY || '',
-      baseURL: 'https://openrouter.ai/api/v1'
+    // Instantiate Groq with either the previewToken or the default API key, Groq is compatible with the OpenAI SDK
+    const groq = new OpenAI({
+      apiKey: previewToken || process.env.GROQ_API_KEY || '',
+      baseURL: 'https://api.groq.com/openai/v1'
     })
 
     if (messages.length === 0 || messages[0].role !== 'system') {
@@ -40,12 +41,12 @@ export async function POST(req: Request) {
       messages.unshift(systemMessage)
     }
 
-    const res = await openrouter.chat.completions.create({
+    const res = await groq.chat.completions.create({
       model:
         chatSettings?.model || (process.env.OPENAI_MODEL ?? 'gpt-3.5-turbo'),
       messages,
-      temperature: chatSettings?.temperature || 0.7,
-      max_tokens: undefined,
+      max_tokens:
+        CHAT_SETTING_LIMITS[chatSettings.model].MAX_TOKEN_OUTPUT_LENGTH,
       stream: true
     })
 
@@ -75,7 +76,9 @@ export async function POST(req: Request) {
     const errorCode = error.status || 500
 
     if (errorMessage.toLowerCase().includes('api key not found')) {
-      errorMessage = 'OpenRouter API Key not found.'
+      errorMessage = 'Groq API Key not found.'
+    } else if (errorCode === 401) {
+      errorMessage = 'Groq API Key is incorrect.'
     }
 
     return new Response(JSON.stringify({ message: errorMessage }), {

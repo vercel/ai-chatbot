@@ -1,6 +1,10 @@
 import { saveChatMessage } from '@/app/actions'
-import { OpenAIStream, StreamingTextResponse, type Message } from 'ai'
-import OpenAI from 'openai'
+import {
+  GoogleGenerativeAIStream,
+  StreamingTextResponse,
+  type Message
+} from 'ai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
@@ -23,11 +27,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Instantiate OpenRouter with either the previewToken or the default API key, OpenRouter is compatible the OpenAI SDK
-    const openrouter = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY || '',
-      baseURL: 'https://openrouter.ai/api/v1'
-    })
+    // Instantiate Google with either the previewToken or the default API key, Google is compatible with the OpenAI SDK
+    const google = {
+      apiKey: previewToken || process.env.GOOGLE_GEMINI_API_KEY || ''
+    }
+
+    const genAI = new GoogleGenerativeAI(google.apiKey)
+    const googleModel = genAI.getGenerativeModel({ model: chatSettings.model })
 
     if (messages.length === 0 || messages[0].role !== 'system') {
       const currentDate = new Date().toISOString().slice(0, 10)
@@ -40,16 +46,22 @@ export async function POST(req: Request) {
       messages.unshift(systemMessage)
     }
 
-    const res = await openrouter.chat.completions.create({
-      model:
-        chatSettings?.model || (process.env.OPENAI_MODEL ?? 'gpt-3.5-turbo'),
-      messages,
-      temperature: chatSettings?.temperature || 0.7,
-      max_tokens: undefined,
-      stream: true
+    const buildGoogleGenAIPrompt = (messages: Message[]) => ({
+      contents: messages
+        .filter(
+          message => message.role === 'user' || message.role === 'assistant'
+        )
+        .map(message => ({
+          role: message.role === 'user' ? 'user' : 'model',
+          parts: [{ text: message.content }]
+        }))
     })
 
-    const stream = OpenAIStream(res, {
+    const res = await googleModel.generateContentStream(
+      buildGoogleGenAIPrompt(messages)
+    )
+
+    const stream = GoogleGenerativeAIStream(res, {
       async onCompletion(completion) {
         const filteredMessages = messages.filter(
           (msg: Message) => !(msg.role === 'system' || msg.role === 'function')
@@ -75,7 +87,9 @@ export async function POST(req: Request) {
     const errorCode = error.status || 500
 
     if (errorMessage.toLowerCase().includes('api key not found')) {
-      errorMessage = 'OpenRouter API Key not found.'
+      errorMessage = 'Google Gemini API Key not found.'
+    } else if (errorMessage.toLowerCase().includes('api key not valid')) {
+      errorMessage = 'Google Gemini API Key is incorrect.'
     }
 
     return new Response(JSON.stringify({ message: errorMessage }), {
