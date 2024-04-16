@@ -22,7 +22,7 @@ export interface ChatSettings {
   embeddingsProvider: "openai" | "local"
 }
 
-export interface ChatAPIPayload {
+export interface ChatPayload {
   chatSettings: ChatSettings
   messages: Message[]
 }

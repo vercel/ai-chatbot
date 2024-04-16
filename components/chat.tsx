@@ -26,14 +26,12 @@ import { LLM_LIST } from '@/lib/models/llm/llm-list'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 
-type StreamingReactResponseAction = any
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
-  action?: StreamingReactResponseAction
 }
 
-export function Chat({ id, initialMessages, className, action }: ChatProps) {
+export function Chat({ id, initialMessages, className }: ChatProps) {
   const router = useRouter()
   const path = usePathname()
   const [previewToken, setPreviewToken] = useLocalStorage<string | null>(
@@ -59,22 +57,25 @@ export function Chat({ id, initialMessages, className, action }: ChatProps) {
     chatSettings
   }
 
-  const { messages, append, reload, stop, isLoading, input, setInput } =
+  const { messages, append, reload, stop, isLoading, input, setInput, error } =
     useChat({
       initialMessages,
       id,
       body: requestBody,
-      api: provider === 'openai' ? action.bind(null, requestBody) : apiEndpoint,
+      api: apiEndpoint,
       onResponse(response) {
         if (response.status === 401) {
           toast.error(response.statusText)
         }
       },
       onFinish() {
-        if (!path.includes('chat')) {
+        if (!path.includes('chat') && !error) {
           router.push(`/chat/${id}`, { scroll: false })
           router.refresh()
         }
+      },
+      onError(error) {
+        toast.error(error.message)
       }
     })
   return (
