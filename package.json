@@ -27,6 +27,7 @@
     "@vercel/kv": "^1.0.1",
     "@vercel/og": "^0.6.2",
     "ai": "^3.0.12",
+    "@supabase/supabase-js": "^2.42.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "d3-scale": "^4.0.2",
