@@ -5,10 +5,10 @@ import {
   createStreamableUI,
   getMutableAIState,
   getAIState,
-  render,
+  streamUI,
   createStreamableValue
 } from 'ai/rsc'
-import OpenAI from 'openai'
+import { openai } from '@ai-sdk/openai'
 
 import {
   spinner,
@@ -35,10 +35,6 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
-})
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -141,29 +137,25 @@ async function submitUserMessage(content: string) {
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
 
-  const ui = render({
-    model: 'gpt-3.5-turbo',
-    provider: openai,
+  const result = await streamUI({
+    model: openai('gpt-3.5-turbo'),
     initial: <SpinnerMessage />,
+    system: `\
+    You are a stock trading conversation bot and you can help users buy stocks, step by step.
+    You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
+    
+    Messages inside [] means that it's a UI element or a user event. For example:
+    - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
+    - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
+    
+    If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
+    If the user just wants the price, call \`show_stock_price\` to show the price.
+    If you want to show trending stocks, call \`list_stocks\`.
+    If you want to show events, call \`get_events\`.
+    If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
+    
+    Besides that, you can also chat with users and do some calculations if needed.`,
     messages: [
-      {
-        role: 'system',
-        content: `\
-You are a stock trading conversation bot and you can help users buy stocks, step by step.
-You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
-
-Messages inside [] means that it's a UI element or a user event. For example:
-- "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-- "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-
-If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-If the user just wants the price, call \`show_stock_price\` to show the price.
-If you want to show trending stocks, call \`list_stocks\`.
-If you want to show events, call \`get_events\`.
-If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-
-Besides that, you can also chat with users and do some calculations if needed.`
-      },
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
         content: message.content,
@@ -195,7 +187,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
 
       return textNode
     },
-    functions: {
+    tools: {
       listStocks: {
         description: 'List three imaginary stocks that are trending.',
         parameters: z.object({
@@ -207,7 +199,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
             })
           )
         }),
-        render: async function* ({ stocks }) {
+        generate: async function* ({ stocks }) {
           yield (
             <BotCard>
               <StocksSkeleton />
@@ -248,7 +240,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
           price: z.number().describe('The price of the stock.'),
           delta: z.number().describe('The change in price of the stock')
         }),
-        render: async function* ({ symbol, price, delta }) {
+        generate: async function* ({ symbol, price, delta }) {
           yield (
             <BotCard>
               <StockSkeleton />
@@ -293,7 +285,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
               'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
             )
         }),
-        render: async function* ({ symbol, price, numberOfShares = 100 }) {
+        generate: async function* ({ symbol, price, numberOfShares = 100 }) {
           if (numberOfShares <= 0 || numberOfShares > 1000) {
             aiState.done({
               ...aiState.get(),
@@ -355,7 +347,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
             })
           )
         }),
-        render: async function* ({ events }) {
+        generate: async function* ({ events }) {
           yield (
             <BotCard>
               <EventsSkeleton />
@@ -389,7 +381,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
 
   return {
     id: nanoid(),
-    display: ui
+    display: result.value
   }
 }
 
@@ -417,7 +409,7 @@ export const AI = createAI<AIState, UIState>({
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
-  unstable_onGetUIState: async () => {
+  onGetUIState: async () => {
     'use server'
 
     const session = await auth()
@@ -433,7 +425,7 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state, done }) => {
+  onSetAIState: async ({ state, done }) => {
     'use server'
 
     const session = await auth()
