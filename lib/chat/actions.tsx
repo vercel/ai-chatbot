@@ -35,6 +35,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
+import { Session } from 'next-auth'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -170,17 +171,22 @@ async function submitUserMessage(content: string) {
 
       if (done) {
         textStream.done()
-        aiState.done({
-          ...aiState.get(),
-          messages: [
-            ...aiState.get().messages,
-            {
-              id: nanoid(),
-              role: 'assistant',
-              content
-            }
-          ]
-        })
+        let state = aiState.get()
+        state.messages = [
+          ...state.messages,
+          {
+            id: nanoid(),
+            role: 'assistant',
+            content
+          }
+        ]
+
+        if (!state.saved) {
+          // Check if not already saved
+          addOrUpdateChat(state) // Save if this is the final response
+          state.saved = true
+        }
+        aiState.done({ ...state, saved: true })
       } else {
         textStream.update(delta)
       }
@@ -395,12 +401,40 @@ export type Message = {
 export type AIState = {
   chatId: string
   messages: Message[]
+  saved?: boolean
 }
 
 export type UIState = {
   id: string
   display: React.ReactNode
 }[]
+
+async function addOrUpdateChat(state: AIState, session: Session | null = null) {
+  if (!session) {
+    session = await auth()
+    if (!session?.user?.id) {
+      throw new Error('User not Authorized to save')
+    }
+  }
+
+  const { chatId, messages } = state
+
+  const createdAt = new Date()
+  const userId = session.user?.id as string
+  const path = `/chat/${chatId}`
+  const title = messages[0].content.substring(0, 100)
+
+  const chat: Chat = {
+    id: chatId,
+    title,
+    userId,
+    createdAt,
+    path,
+    messages
+  }
+
+  await saveChat(chat)
+}
 
 export const AI = createAI<AIState, UIState>({
   actions: {
@@ -431,23 +465,11 @@ export const AI = createAI<AIState, UIState>({
     const session = await auth()
 
     if (session && session.user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
-      const title = messages[0].content.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
+      // only save it once it's done. No need to save it after each streamed result
+      if (done && !state.saved) {
+        await addOrUpdateChat(state, session)
+        state.saved = true
       }
-
-      await saveChat(chat)
     } else {
       return
     }
