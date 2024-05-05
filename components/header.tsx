@@ -1,47 +1,46 @@
-import * as React from 'react'
 import Link from 'next/link'
+import * as React from 'react'
 
-import { cn } from '@/lib/utils'
-import { auth } from '@/auth'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
-  IconGitHub,
+  IconEdit,
+  IconMessage,
   IconNextChat,
-  IconSeparator,
-  IconVercel
+  IconSeparator
 } from '@/components/ui/icons'
-import { UserMenu } from '@/components/user-menu'
+import { cn } from '@/lib/utils'
+import { SignedIn, SignedOut, UserButton, currentUser } from '@clerk/nextjs'
+import { ChatHistory } from './chat-history'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
-import { ChatHistory } from './chat-history'
-import { Session } from '@/lib/types'
 
 async function UserOrLogin() {
-  const session = (await auth()) as Session
+  const user = await currentUser()
   return (
     <>
-      {session?.user ? (
-        <>
-          <SidebarMobile>
-            <ChatHistory userId={session.user.id} />
-          </SidebarMobile>
-          <SidebarToggle />
-        </>
-      ) : (
+      <SignedIn>
+        <SidebarMobile>
+          <ChatHistory userId={user?.id as string} />
+        </SidebarMobile>
+        <SidebarToggle />
+      </SignedIn>
+      <SignedOut>
         <Link href="/new" rel="nofollow">
           <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
           <IconNextChat className="hidden size-6 mr-2 dark:block" />
         </Link>
-      )}
+      </SignedOut>
       <div className="flex items-center">
         <IconSeparator className="size-6 text-muted-foreground/50" />
-        {session?.user ? (
-          <UserMenu user={session.user} />
-        ) : (
+        <SignedIn>
+          {/* <UserMenu /> */}
+          <UserButton afterSignOutUrl="/sign-in" />
+        </SignedIn>
+        <SignedOut>
           <Button variant="link" asChild className="-ml-2">
             <Link href="/login">Login</Link>
           </Button>
-        )}
+        </SignedOut>
       </div>
     </>
   )
@@ -56,24 +55,16 @@ export function Header() {
         </React.Suspense>
       </div>
       <div className="flex items-center justify-end space-x-2">
-        <a
-          target="_blank"
-          href="https://github.com/vercel/nextjs-ai-chatbot/"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: 'outline' }))}
-        >
-          <IconGitHub />
-          <span className="hidden ml-2 md:flex">GitHub</span>
-        </a>
-        <a
-          href="https://vercel.com/templates/Next.js/nextjs-ai-chatbot"
-          target="_blank"
-          className={cn(buttonVariants())}
-        >
-          <IconVercel className="mr-2" />
-          <span className="hidden sm:block">Deploy to Vercel</span>
-          <span className="sm:hidden">Deploy</span>
-        </a>
+        <Link href="/" className={cn(buttonVariants({ size: 'sm' }))}>
+          <IconMessage className="mr-1" />
+          <span className="hidden sm:block">AI Chat</span>
+          <span className="sm:hidden">Chat</span>
+        </Link>
+        <Link href="/retrieval" className={cn(buttonVariants({ size: 'sm' }))}>
+          <IconEdit className="mr-1" />
+          <span className="hidden sm:block">Enhance Content</span>
+          <span className="sm:hidden">Enhance</span>
+        </Link>
       </div>
     </header>
   )
