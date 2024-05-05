@@ -35,3 +35,12 @@ export interface User extends Record<string, any> {
   password: string
   salt: string
 }
+
+export interface IUser {
+  id: string
+  email?: string
+  firstName: string
+  lastName?: string
+  companyName?: string
+  onboarded?: boolean
+}
