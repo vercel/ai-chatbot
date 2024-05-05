@@ -4,7 +4,7 @@ import { signIn } from '@/auth'
 import { ResultCode, getStringFromBuffer } from '@/lib/utils'
 import { z } from 'zod'
 import { kv } from '@vercel/kv'
-import { getUser } from '../login/actions'
+import { getUser } from '@/app/login/actions'
 import { AuthError } from 'next-auth'
 
 export async function createUser(
