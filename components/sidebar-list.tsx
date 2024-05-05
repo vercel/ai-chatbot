@@ -1,4 +1,4 @@
-import { clearChats, getChats } from '@/app/actions'
+import { clearChats, getChats } from '@/app/(root)/actions'
 import { ClearHistory } from '@/components/clear-history'
 import { SidebarItems } from '@/components/sidebar-items'
 import { ThemeToggle } from '@/components/theme-toggle'
