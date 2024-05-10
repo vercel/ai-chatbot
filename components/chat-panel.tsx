@@ -34,7 +34,7 @@ export function ChatPanel({
   const { submitUserMessage } = useActions()
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
-  const exampleMessages = [
+  const popularQueries = [
     {
       heading: 'Potty training',
       subheading: 'How can I potty train my dog?',
@@ -67,7 +67,7 @@ export function ChatPanel({
       <div className="mx-auto sm:max-w-2xl sm:px-4">
         <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
           {messages.length === 0 &&
-            exampleMessages.map((example, index) => (
+            popularQueries.map((example, index) => (
               <div
                 key={example.heading}
                 className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
