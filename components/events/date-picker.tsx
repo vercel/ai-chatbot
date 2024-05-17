@@ -17,7 +17,7 @@ export function DatePicker({
   setDate
 }: {
   date?: Date
-  setDate: (date: Date) => void
+  setDate: (date: Date | undefined) => void
 }) {
   return (
     <Popover>
