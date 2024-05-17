@@ -15,16 +15,12 @@ import {
   BotCard,
   BotMessage,
   SystemMessage,
-  Stock,
   Purchase
 } from '@/components/stocks'
 
 import { z } from 'zod'
 import { EventsSkeleton } from '@/components/stocks/events-skeleton'
 import { Events } from '@/components/stocks/events'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
-import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
 import {
   formatNumber,
   runAsyncFnWithoutBlocking,
@@ -35,9 +31,21 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
-import { CreateEvent, NewEvent } from '@/components/events'
+import { CreateEvent } from '@/components/events'
 
-async function confirmPurchase(symbol: string, price: number, amount: number) {
+async function confirmEvent({
+  name,
+  location,
+  start,
+  end,
+  invitees
+}: {
+  name: string
+  location?: string
+  start: string
+  end: string
+  invitees?: string[]
+}) {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
@@ -383,7 +391,14 @@ async function submitUserMessage(content: string) {
                     type: 'tool-call',
                     toolName: 'showEventCreation',
                     toolCallId,
-                    args: { name, location, start, end, invitees }
+                    args: {
+                      name,
+                      location,
+                      start,
+                      end,
+                      invitees,
+                      status: 'requires_action'
+                    }
                   }
                 ]
               },
@@ -395,7 +410,7 @@ async function submitUserMessage(content: string) {
                     type: 'tool-result',
                     toolName: 'showEventCreation',
                     toolCallId,
-                    result: {}
+                    result: { status: 'completed' }
                   }
                 ]
               }
@@ -437,7 +452,7 @@ export type UIState = {
 export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
-    confirmPurchase
+    confirmEvent
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
