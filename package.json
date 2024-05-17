@@ -36,6 +36,7 @@
     "focus-trap-react": "^10.2.3",
     "framer-motion": "^10.18.0",
     "geist": "^1.2.1",
+    "lucide-react": "^0.378.0",
     "nanoid": "^5.0.4",
     "next": "14.2.3",
     "next-auth": "5.0.0-beta.4",
