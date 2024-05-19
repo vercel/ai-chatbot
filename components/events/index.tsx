@@ -6,6 +6,8 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { TimePicker } from './time-picker'
 import { DatePicker } from './date-picker'
+import { useActions, useUIState } from 'ai/rsc/dist'
+import { AI } from '@/lib/chat/actions'
 
 interface NewEvent {
   name: string
@@ -30,7 +32,10 @@ export function CreateEvent({
   const [endDate, setEndDate] = useState<Date | undefined>(
     end ? new Date(end) : new Date()
   )
+  const [, setMessages] = useUIState<typeof AI>()
   const [confirmingUI, setConfirmingUI] = useState<null | React.ReactNode>(null)
+
+  const { confirmEvent } = useActions()
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEventName(e.currentTarget.value)
@@ -38,6 +43,15 @@ export function CreateEvent({
 
   const onLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEventLocation(e.currentTarget.value)
+  }
+
+  const onConfirm = async () => {
+    const response = await confirmEvent()
+    setConfirmingUI(response.schedulingUI)
+    setMessages((currentMessages: any) => [
+      ...currentMessages,
+      response.newMessage
+    ])
   }
 
   return (
@@ -79,7 +93,7 @@ export function CreateEvent({
             <DatePicker date={endDate} setDate={setEndDate} />
             <TimePicker date={endDate} setDate={setEndDate} />
           </div>
-          <Button>Confirm</Button>
+          <Button onClick={onConfirm}>Confirm</Button>
         </>
       )}
     </div>

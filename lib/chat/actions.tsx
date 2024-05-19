@@ -21,12 +21,7 @@ import {
 import { z } from 'zod'
 import { EventsSkeleton } from '@/components/stocks/events-skeleton'
 import { Events } from '@/components/stocks/events'
-import {
-  formatNumber,
-  runAsyncFnWithoutBlocking,
-  sleep,
-  nanoid
-} from '@/lib/utils'
+import { runAsyncFnWithoutBlocking, sleep, nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
@@ -50,12 +45,10 @@ async function confirmEvent({
 
   const aiState = getMutableAIState<typeof AI>()
 
-  const purchasing = createStreamableUI(
+  const creatingEvent = createStreamableUI(
     <div className="inline-flex items-start gap-1 md:items-center">
       {spinner}
-      <p className="mb-2">
-        Purchasing {amount} ${symbol}...
-      </p>
+      <p className="mb-2">Scheduling...</p>
     </div>
   )
 
@@ -64,30 +57,26 @@ async function confirmEvent({
   runAsyncFnWithoutBlocking(async () => {
     await sleep(1000)
 
-    purchasing.update(
+    creatingEvent.update(
       <div className="inline-flex items-start gap-1 md:items-center">
         {spinner}
-        <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
-        </p>
+        <p className="mb-2">Scheduling... working on it...</p>
       </div>
     )
 
     await sleep(1000)
 
-    purchasing.done(
+    creatingEvent.done(
       <div>
         <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
-          {formatNumber(amount * price)}
+          {name} scheduled for {start} to {end} at {location}.
         </p>
       </div>
     )
 
     systemMessage.done(
       <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
-        {formatNumber(amount * price)}.
+        You have scheduled {name} for {start} to {end} at {location}.
       </SystemMessage>
     )
 
@@ -98,16 +87,14 @@ async function confirmEvent({
         {
           id: nanoid(),
           role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
+          content: `[User has scheduled an event: ${name} from ${start} to ${end} at ${location} with {invites.length} invitees]`
         }
       ]
     })
   })
 
   return {
-    purchasingUI: purchasing.value,
+    schedulingUI: creatingEvent.value,
     newMessage: {
       id: nanoid(),
       display: systemMessage.value
@@ -115,7 +102,10 @@ async function confirmEvent({
   }
 }
 
-async function submitUserMessage(content: string) {
+async function submitUserMessage(content: string): Promise<{
+  id: string
+  display: React.ReactNode
+}> {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
@@ -423,6 +413,7 @@ async function submitUserMessage(content: string) {
                 name={name}
                 location={location}
                 start={start}
+                status="requires_action"
                 end={end}
                 invitees={invitees}
               />
@@ -449,7 +440,14 @@ export type UIState = {
   display: React.ReactNode
 }[]
 
-export const AI = createAI<AIState, UIState>({
+type Actions = {
+  submitUserMessage: (
+    content: string
+  ) => Promise<{ id: string; display: React.ReactNode }>
+  confirmEvent: typeof confirmEvent
+}
+
+export const AI = createAI<AIState, UIState, Actions>({
   actions: {
     submitUserMessage,
     confirmEvent
