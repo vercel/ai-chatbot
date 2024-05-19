@@ -8,12 +8,12 @@ export async function GET(req: Request, res: Response) {
 
   const roomExists = await redis.exists(`chat:${roomId}`)
   if (!roomExists) {
-    return NextResponse.json({ error: 'Room not found' })
+    return NextResponse.json({ success: false, error: 'Room not found' })
   }
 
   const messages = await redis.lrange(`chat:${roomId}`, 0, -1)
   const parsedMessages = messages.map(msg => JSON.parse(msg))
-  return NextResponse.json({ messages: parsedMessages })
+  return NextResponse.json({ success: true, messages: parsedMessages })
 }
 
 export async function POST(req: Request, res: Response) {
