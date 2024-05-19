@@ -53,6 +53,9 @@ export function Header() {
       <div className="flex items-center">
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           <UserOrLogin />
+          <Link href="/user-chat">
+            User Chat 
+          </Link>
         </React.Suspense>
       </div>
       <div className="flex items-center justify-end space-x-2">
