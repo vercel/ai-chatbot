@@ -26,7 +26,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
-import { CreateEvent } from '@/components/events'
+import { InteractiveCalendar } from '@/components/events/calendar'
 
 async function confirmEvent({
   name,
@@ -350,7 +350,7 @@ async function submitUserMessage(content: string): Promise<{
           )
         }
       },
-      showEventCreation: {
+      showCalendar: {
         description:
           'Show UI to create an event. Use this if the user wants to create or schedule an event or meeting.',
         parameters: z.object({
@@ -379,7 +379,7 @@ async function submitUserMessage(content: string): Promise<{
                 content: [
                   {
                     type: 'tool-call',
-                    toolName: 'showEventCreation',
+                    toolName: 'showCalendar',
                     toolCallId,
                     args: {
                       name,
@@ -398,7 +398,7 @@ async function submitUserMessage(content: string): Promise<{
                 content: [
                   {
                     type: 'tool-result',
-                    toolName: 'showEventCreation',
+                    toolName: 'showCalendar',
                     toolCallId,
                     result: { status: 'completed' }
                   }
@@ -409,13 +409,15 @@ async function submitUserMessage(content: string): Promise<{
 
           return (
             <BotCard>
-              <CreateEvent
-                name={name}
-                location={location}
-                start={start}
-                status="requires_action"
-                end={end}
-                invitees={invitees}
+              <InteractiveCalendar
+                props={{
+                  name,
+                  location,
+                  start,
+                  end,
+                  invitees,
+                  status: 'requires_action'
+                }}
               />
             </BotCard>
           )
@@ -509,10 +511,10 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       display:
         message.role === 'tool' ? (
           message.content.map(tool => {
-            return tool.toolName === 'showEventCreation' ? (
+            return tool.toolName === 'showCalendar' ? (
               <BotCard>
-                {/* <CreateEvent /> */}
-                <p>boop</p>
+                {/* @ts-expect-error */}
+                <InteractiveCalendar props={tool.result} />
               </BotCard>
             ) : null
           })

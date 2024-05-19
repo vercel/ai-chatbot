@@ -41,6 +41,15 @@ dependencies:
   '@radix-ui/react-tooltip':
     specifier: ^1.0.7
     version: 1.0.7(@types/react-dom@18.2.18)(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
+  '@schedule-x/calendar':
+    specifier: ^1.41.2
+    version: 1.41.2(@preact/signals@1.2.3)(preact@10.22.0)
+  '@schedule-x/react':
+    specifier: ^1.39.3
+    version: 1.39.3(@schedule-x/calendar@1.41.2)(react-dom@18.2.0)(react@18.2.0)
+  '@schedule-x/theme-default':
+    specifier: ^1.41.2
+    version: 1.41.2
   '@vercel/analytics':
     specifier: ^1.1.2
     version: 1.1.2
@@ -95,9 +104,6 @@ dependencies:
   react:
     specifier: ^18.2.0
     version: 18.2.0
-  react-day-picker:
-    specifier: ^8.10.1
-    version: 8.10.1(date-fns@3.3.1)(react@18.2.0)
   react-dom:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
@@ -568,6 +574,19 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@preact/signals-core@1.6.0:
+    resolution: {integrity: sha512-O/XGxwP85h1F7+ouqTMOIZ3+V1whfaV9ToIVcuyGriD4JkSD00cQo54BKdqjvBJxbenvp7ynfqRHEwI6e+NIhw==}
+    dev: false
+
+  /@preact/signals@1.2.3(preact@10.22.0):
+    resolution: {integrity: sha512-M2DXse3Wi8HwjI1d2vQWOLJ3lHogvqTsJYvl4ofXRXgMFQzJ7kmlZvlt5i8x5S5VwgZu0ghru4HkLqOoFfU2JQ==}
+    peerDependencies:
+      preact: 10.x
+    dependencies:
+      '@preact/signals-core': 1.6.0
+      preact: 10.22.0
+    dev: false
 
   /@radix-ui/number@1.0.1:
     resolution: {integrity: sha512-T5gIdVO2mmPW3NNhjNgEP3cqMXjXL9UbO0BzWcXfvdBs+BohbQxvd/K5hSVKmn9/lbTdsQVKbUcP5WLCwvUbBg==}
@@ -1330,6 +1349,32 @@ packages:
   /@rushstack/eslint-patch@1.7.0:
     resolution: {integrity: sha512-Jh4t/593gxs0lJZ/z3NnasKlplXT2f+4y/LZYuaKZW5KAaiVFL/fThhs+17EbUd53jUVJ0QudYCBGbN/psvaqg==}
     dev: true
+
+  /@schedule-x/calendar@1.41.2(@preact/signals@1.2.3)(preact@10.22.0):
+    resolution: {integrity: sha512-DzBZKkJQh5cdyNVVscZCK42aGtAqC01lCQCK+RnG3lPXBlcTkoOrjc21OlGzxkBum7OXA0P7w7C0yuLTPMxLRQ==}
+    peerDependencies:
+      '@preact/signals': ^1.1.5
+      preact: ^10.19.2
+    dependencies:
+      '@preact/signals': 1.2.3(preact@10.22.0)
+      preact: 10.22.0
+    dev: false
+
+  /@schedule-x/react@1.39.3(@schedule-x/calendar@1.41.2)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-f6duhOubulNSbedKYdLT0NNpn70RaHT0jHfm/vkAR7DvL06CczzeD/6UhbVuLOJ1Dj+HUAZWs0I2gJ0VN0v+8g==}
+    peerDependencies:
+      '@schedule-x/calendar': 1.41.2
+      react: ^16.7.0 || ^17 || ^18
+      react-dom: ^16.7.0 || ^17 || ^18
+    dependencies:
+      '@schedule-x/calendar': 1.41.2(@preact/signals@1.2.3)(preact@10.22.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@schedule-x/theme-default@1.41.2:
+    resolution: {integrity: sha512-y3GalhUSEuE6fclgVfTCc7Y3u4dZVU7ogwvEH2I4S3Jo8Rxdz/MXIeHlDiaJ2yDniCKb0k7zWij0wDamnK8daw==}
+    dev: false
 
   /@shuding/opentype.js@1.4.0-beta.0:
     resolution: {integrity: sha512-3NgmNyH3l/Hv6EvsWJbsvpcpUba6R8IREQ83nH83cyakCw7uM1arZKNfHwv1Wz6jgqrF/j4x5ELvR6PnK9nTcA==}
@@ -4541,6 +4586,10 @@ packages:
     resolution: {integrity: sha512-eY93IVpod/zG3uMF22Unl8h9KkrcKIRs2EGar8hwLZZDU1lkjph303V9HZBwufh2s736U6VXuhD109LYqPoffg==}
     dev: false
 
+  /preact@10.22.0:
+    resolution: {integrity: sha512-RRurnSjJPj4rp5K6XoP45Ui33ncb7e4H7WiOHVpjbkvqvA3U+N8Z6Qbo0AE6leGYBV66n8EhEaFixvIu3SkxFw==}
+    dev: false
+
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -4591,16 +4640,6 @@ packages:
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
     dev: true
-
-  /react-day-picker@8.10.1(date-fns@3.3.1)(react@18.2.0):
-    resolution: {integrity: sha512-TMx7fNbhLk15eqcMt+7Z7S2KF7mfTId/XJDjKE8f+IUcFn0l08/kI4FiYTL/0yuOLmEcbR4Fwe3GJf/NiiMnPA==}
-    peerDependencies:
-      date-fns: ^2.28.0 || ^3.0.0
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      date-fns: 3.3.1
-      react: 18.2.0
-    dev: false
 
   /react-dom@18.2.0(react@18.2.0):
     resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}

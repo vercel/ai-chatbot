@@ -9,7 +9,7 @@ import { DatePicker } from './date-picker'
 import { useActions, useUIState } from 'ai/rsc/dist'
 import { AI } from '@/lib/chat/actions'
 
-interface NewEvent {
+export interface NewEvent {
   name: string
   location?: string
   start?: string
