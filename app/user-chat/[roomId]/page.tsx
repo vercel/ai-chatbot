@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
@@ -48,28 +50,40 @@ const Room = () => {
     router.push('/user-chat')
   }
   return (
-    <div>
-      <h1>Chat Room: {roomId}</h1>
-      <div>
-        {messages?.map((msg, index) => (
-          <div key={index} className={msg.from === username ? 'me' : msg.from}>
-            {msg.from === username ? 'Me' : msg.from}: {msg.text}
+    <main className="h-[90vh] py-10">
+      <section className="h-full relative w-[50%] flex flex-col gap-5 mx-auto py-5 px-8 shadow-sm shadow-white rounded-md">
+        <div>
+          <span className="text-xl">Room Id: {roomId}</span>
+          <div className="py-4 h-[60vh] overflow-y-auto">
+            {[...messages]?.reverse().map((msg, index) => (
+              <div
+                key={index}
+                className={msg.from === username ? 'text-right' : msg.from}
+              >
+                {msg.from === username ? 'Me' : msg.from}: {msg.text}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <input
-        type="text"
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        onKeyPress={e => {
-          if (e.key === 'Enter') sendMessage()
-        }}
-      />
-      <button onClick={sendMessage}>Send</button>
-      <button onClick={leaveRoom} style={{ marginTop: '10px' }}>
-        Leave Room
-      </button>
-    </div>
+          <div className="flex gap-3 absolute bottom-3 w-full left-0 px-8">
+            <Input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyPress={e => {
+                if (e.key === 'Enter') sendMessage()
+              }}
+            />
+            <Button onClick={sendMessage}>Send</Button>
+            <Button
+              variant={'destructive'}
+              onClick={leaveRoom}
+            >
+              Leave Room
+            </Button>
+          </div>
+        </div>
+      </section>
+    </main>
   )
 }
 

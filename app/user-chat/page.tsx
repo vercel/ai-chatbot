@@ -1,4 +1,6 @@
 'use client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
@@ -27,6 +29,11 @@ const UserChat = () => {
           setError(null)
         }, 3000)
       }
+    } else {
+      setError('Room id required')
+      setTimeout(() => {
+        setError(null)
+      }, 3000)
     }
   }
 
@@ -37,11 +44,11 @@ const UserChat = () => {
     router.push(`/user-chat/${newRoomId}`)
   }
   return (
-    <main className="h-[90vh]">
-      <section className="h-full w-[70%] mx-auto">
-        <div>
-          <h1>Join a Chat Room</h1>
-          <input
+    <main className="h-[90vh] py-10">
+      <section className="h-full w-[50%] flex flex-col gap-5 mx-auto py-5 px-8 shadow-sm shadow-white rounded-md">
+        <div className="flex flex-col gap-3">
+          <span className="text-4xl">Join a Chat Room</span>
+          <Input
             type="text"
             placeholder="Enter Room ID"
             value={roomId}
@@ -51,11 +58,16 @@ const UserChat = () => {
             }}
           />
 
-          <button onClick={joinRoom}>Join Room</button>
+          <Button className="" onClick={joinRoom}>
+            Join
+          </Button>
           {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
-        <h2>Or</h2>
-        <button onClick={createRoom}>Create New Room</button>
+        <span className='text-center'>Or</span>
+        <div className="flex flex-col gap-3">
+          <span className="text-4xl">Create New Room</span>
+          <Button onClick={createRoom}>Create</Button>
+        </div>
       </section>
     </main>
   )
