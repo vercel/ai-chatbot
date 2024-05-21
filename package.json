@@ -39,7 +39,7 @@
     "next": "14.2.3",
     "next-auth": "5.0.0-beta.4",
     "next-themes": "^0.2.1",
-    "openai": "^4.24.7",
+    "openai": "^4.42.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intersection-observer": "^9.5.3",
