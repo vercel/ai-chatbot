@@ -21,7 +21,7 @@ import {
 } from '@/components/chat/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
-import { InteractiveCalendar } from '@/components/events/calendar'
+import { InteractiveCalendar } from '@/components/calendar/calendar'
 
 async function confirmEvent({
   name,
