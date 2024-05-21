@@ -13,7 +13,7 @@ import { NewEvent } from '.'
 export function InteractiveCalendar({
   props
 }: {
-  props: NewEvent & { status: 'requires_action' | 'completed' }
+  props: NewEvent & { status: 'draft' | 'completed' }
 }) {
   const calendar = useCalendarApp({
     defaultView: viewWeek.name,

@@ -9,21 +9,16 @@ import {
   createStreamableValue
 } from 'ai/rsc'
 import { openai } from '@ai-sdk/openai'
-
-import {
-  spinner,
-  BotCard,
-  BotMessage,
-  SystemMessage,
-  Purchase
-} from '@/components/stocks'
-
 import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/events'
 import { runAsyncFnWithoutBlocking, sleep, nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
+import {
+  SpinnerMessage,
+  UserMessage,
+  SystemMessage,
+  BotCard,
+  BotMessage
+} from '@/components/chat/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import { InteractiveCalendar } from '@/components/events/calendar'
@@ -47,7 +42,6 @@ async function confirmEvent({
 
   const creatingEvent = createStreamableUI(
     <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
       <p className="mb-2">Scheduling...</p>
     </div>
   )
@@ -59,7 +53,6 @@ async function confirmEvent({
 
     creatingEvent.update(
       <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
         <p className="mb-2">Scheduling... working on it...</p>
       </div>
     )
@@ -174,185 +167,9 @@ async function submitUserMessage(content: string): Promise<{
       return textNode
     },
     tools: {
-      showStockPurchase: {
-        description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
-        generate: async function* ({ symbol, price, numberOfShares = 100 }) {
-          const toolCallId = nanoid()
-
-          if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares,
-                        status: 'expired'
-                      }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
-
-            return <BotMessage content={'Invalid amount'} />
-          } else {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares
-                      }
-                    }
-                  ]
-                }
-              ]
-            })
-
-            return (
-              <BotCard>
-                <Purchase
-                  props={{
-                    numberOfShares,
-                    symbol,
-                    price: +price,
-                    status: 'requires_action'
-                  }}
-                />
-              </BotCard>
-            )
-          }
-        }
-      },
-      getEvents: {
-        description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
-        generate: async function* ({ events }) {
-          yield (
-            <BotCard>
-              <EventsSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    args: { events }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    result: events
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Events props={events} />
-            </BotCard>
-          )
-        }
-      },
       showCalendar: {
         description:
-          'Show UI to create an event. Use this if the user wants to create or schedule an event or meeting.',
+          'Show UI to view calendar and create an event. Use this if the user wants to create or schedule an event or meeting.',
         parameters: z.object({
           name: z.string().describe('The name of the event'),
           location: z.string().optional().describe('The location of the event'),
@@ -360,13 +177,9 @@ async function submitUserMessage(content: string): Promise<{
             .string()
             .optional()
             .describe('The start DateTime of the event'),
-          end: z.string().optional().describe('The end DateTime of the event'),
-          invitees: z
-            .array(z.string())
-            .optional()
-            .describe('The participants of the event')
+          end: z.string().optional().describe('The end DateTime of the event')
         }),
-        generate: async function ({ name, location, start, end, invitees }) {
+        generate: async function ({ name, location, start, end }) {
           const toolCallId = nanoid()
 
           aiState.done({
@@ -386,8 +199,7 @@ async function submitUserMessage(content: string): Promise<{
                       location,
                       start,
                       end,
-                      invitees,
-                      status: 'requires_action'
+                      status: 'draft'
                     }
                   }
                 ]
@@ -415,8 +227,7 @@ async function submitUserMessage(content: string): Promise<{
                   location,
                   start,
                   end,
-                  invitees,
-                  status: 'requires_action'
+                  status: 'draft'
                 }}
               />
             </BotCard>
