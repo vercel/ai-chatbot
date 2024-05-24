@@ -1,4 +1,5 @@
-import 'server-only'
+
+import 'server-only';
 
 import {
   createAI,
@@ -7,8 +8,8 @@ import {
   getAIState,
   streamUI,
   createStreamableValue
-} from 'ai/rsc'
-import { openai } from '@ai-sdk/openai'
+} from 'ai/rsc';
+import { Configuration, OpenAI } from 'openai';
 
 import {
   spinner,
@@ -17,29 +18,36 @@ import {
   SystemMessage,
   Stock,
   Purchase
-} from '@/components/stocks'
+} from '@/components/stocks';
 
-import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/events'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
-import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
+import { z } from 'zod';
+import { EventsSkeleton } from '@/components/stocks/events-skeleton';
+import { Events } from '@/components/stocks/events';
+import { StocksSkeleton } from '@/components/stocks/stocks-skeleton';
+import { Stocks } from '@/components/stocks/stocks';
+import { StockSkeleton } from '@/components/stocks/stock-skeleton';
 import {
   formatNumber,
   runAsyncFnWithoutBlocking,
   sleep,
   nanoid
-} from '@/lib/utils'
-import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
-import { Chat, Message } from '@/lib/types'
-import { auth } from '@/auth'
+} from '@/lib/utils';
+import { saveChat } from '@/app/actions';
+import { SpinnerMessage, UserMessage } from '@/components/stocks/message';
+import { Chat, Message } from '@/lib/types';
+import { auth } from '@/auth';
+
+// Configure the OpenAI API client
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const openai = new OpenAI(configuration);
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
+  'use server';
 
-  const aiState = getMutableAIState<typeof AI>()
+  const aiState = getMutableAIState<typeof AI>();
 
   const purchasing = createStreamableUI(
     <div className="inline-flex items-start gap-1 md:items-center">
@@ -48,12 +56,12 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
         Purchasing {amount} ${symbol}...
       </p>
     </div>
-  )
+  );
 
-  const systemMessage = createStreamableUI(null)
+  const systemMessage = createStreamableUI(null);
 
   runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
+    await sleep(1000);
 
     purchasing.update(
       <div className="inline-flex items-start gap-1 md:items-center">
@@ -62,9 +70,9 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
           Purchasing {amount} ${symbol}... working on it...
         </p>
       </div>
-    )
+    );
 
-    await sleep(1000)
+    await sleep(1000);
 
     purchasing.done(
       <div>
@@ -73,14 +81,14 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
           {formatNumber(amount * price)}
         </p>
       </div>
-    )
+    );
 
     systemMessage.done(
       <SystemMessage>
         You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
         {formatNumber(amount * price)}.
       </SystemMessage>
-    )
+    );
 
     aiState.done({
       ...aiState.get(),
@@ -94,8 +102,8 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
           }]`
         }
       ]
-    })
-  })
+    });
+  });
 
   return {
     purchasingUI: purchasing.value,
@@ -103,13 +111,13 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
       id: nanoid(),
       display: systemMessage.value
     }
-  }
+  };
 }
 
 async function submitUserMessage(content: string) {
-  'use server'
+  'use server';
 
-  const aiState = getMutableAIState<typeof AI>()
+  const aiState = getMutableAIState<typeof AI>();
 
   aiState.update({
     ...aiState.get(),
@@ -121,13 +129,13 @@ async function submitUserMessage(content: string) {
         content
       }
     ]
-  })
+  });
 
-  let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
-  let textNode: undefined | React.ReactNode
+  let textStream: undefined | ReturnType<typeof createStreamableValue<string>>;
+  let textNode: undefined | React.ReactNode;
 
   const result = await streamUI({
-    model: openai('gpt-3.5-turbo'),
+    model: openai('gpt-4'),
     initial: <SpinnerMessage />,
     system: `\
     You are a stock trading conversation bot and you can help users buy stocks, step by step.
@@ -153,12 +161,12 @@ async function submitUserMessage(content: string) {
     ],
     text: ({ content, done, delta }) => {
       if (!textStream) {
-        textStream = createStreamableValue('')
-        textNode = <BotMessage content={textStream.value} />
+        textStream = createStreamableValue('');
+        textNode = <BotMessage content={textStream.value} />;
       }
 
       if (done) {
-        textStream.done()
+        textStream.done();
         aiState.done({
           ...aiState.get(),
           messages: [
@@ -169,12 +177,12 @@ async function submitUserMessage(content: string) {
               content
             }
           ]
-        })
+        });
       } else {
-        textStream.update(delta)
+        textStream.update(delta);
       }
 
-      return textNode
+      return textNode;
     },
     tools: {
       listStocks: {
@@ -193,11 +201,11 @@ async function submitUserMessage(content: string) {
             <BotCard>
               <StocksSkeleton />
             </BotCard>
-          )
+          );
 
-          await sleep(1000)
+          await sleep(1000);
 
-          const toolCallId = nanoid()
+          const toolCallId = nanoid();
 
           aiState.done({
             ...aiState.get(),
@@ -228,13 +236,13 @@ async function submitUserMessage(content: string) {
                 ]
               }
             ]
-          })
+          });
 
           return (
             <BotCard>
               <Stocks props={stocks} />
             </BotCard>
-          )
+          );
         }
       },
       showStockPrice: {
@@ -254,11 +262,11 @@ async function submitUserMessage(content: string) {
             <BotCard>
               <StockSkeleton />
             </BotCard>
-          )
+          );
 
-          await sleep(1000)
+          await sleep(1000);
 
-          const toolCallId = nanoid()
+          const toolCallId = nanoid();
 
           aiState.done({
             ...aiState.get(),
@@ -289,13 +297,13 @@ async function submitUserMessage(content: string) {
                 ]
               }
             ]
-          })
+          });
 
           return (
             <BotCard>
               <Stock props={{ symbol, price, delta }} />
             </BotCard>
-          )
+          );
         }
       },
       showStockPurchase: {
@@ -315,7 +323,7 @@ async function submitUserMessage(content: string) {
             )
         }),
         generate: async function* ({ symbol, price, numberOfShares = 100 }) {
-          const toolCallId = nanoid()
+          const toolCallId = nanoid();
 
           if (numberOfShares <= 0 || numberOfShares > 1000) {
             aiState.done({
@@ -357,9 +365,9 @@ async function submitUserMessage(content: string) {
                   content: `[User has selected an invalid amount]`
                 }
               ]
-            })
+            });
 
-            return <BotMessage content={'Invalid amount'} />
+            return <BotMessage content={'Invalid amount'} />;
           } else {
             aiState.done({
               ...aiState.get(),
@@ -394,7 +402,7 @@ async function submitUserMessage(content: string) {
                   ]
                 }
               ]
-            })
+            });
 
             return (
               <BotCard>
@@ -407,7 +415,7 @@ async function submitUserMessage(content: string) {
                   }}
                 />
               </BotCard>
-            )
+            );
           }
         }
       },
@@ -430,11 +438,11 @@ async function submitUserMessage(content: string) {
             <BotCard>
               <EventsSkeleton />
             </BotCard>
-          )
+          );
 
-          await sleep(1000)
+          await sleep(1000);
 
-          const toolCallId = nanoid()
+          const toolCallId = nanoid();
 
           aiState.done({
             ...aiState.get(),
@@ -465,33 +473,33 @@ async function submitUserMessage(content: string) {
                 ]
               }
             ]
-          })
+          });
 
           return (
             <BotCard>
               <Events props={events} />
             </BotCard>
-          )
+          );
         }
       }
     }
-  })
+  });
 
   return {
     id: nanoid(),
     display: result.value
-  }
+  };
 }
 
 export type AIState = {
-  chatId: string
-  messages: Message[]
-}
+  chatId: string;
+  messages: Message[];
+};
 
 export type UIState = {
-  id: string
-  display: React.ReactNode
-}[]
+  id: string;
+  display: React.ReactNode;
+}[];
 
 export const AI = createAI<AIState, UIState>({
   actions: {
@@ -501,35 +509,35 @@ export const AI = createAI<AIState, UIState>({
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
   onGetUIState: async () => {
-    'use server'
+    'use server';
 
-    const session = await auth()
+    const session = await auth();
 
     if (session && session.user) {
-      const aiState = getAIState()
+      const aiState = getAIState();
 
       if (aiState) {
-        const uiState = getUIStateFromAIState(aiState)
-        return uiState
+        const uiState = getUIStateFromAIState(aiState);
+        return uiState;
       }
     } else {
-      return
+      return;
     }
   },
   onSetAIState: async ({ state }) => {
-    'use server'
+    'use server';
 
-    const session = await auth()
+    const session = await auth();
 
     if (session && session.user) {
-      const { chatId, messages } = state
+      const { chatId, messages } = state;
 
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
+      const createdAt = new Date();
+      const userId = session.user.id as string;
+      const path = `/chat/${chatId}`;
 
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
+      const firstMessageContent = messages[0].content as string;
+      const title = firstMessageContent.substring(0, 100);
 
       const chat: Chat = {
         id: chatId,
@@ -538,14 +546,14 @@ export const AI = createAI<AIState, UIState>({
         createdAt,
         messages,
         path
-      }
+      };
 
-      await saveChat(chat)
+      await saveChat(chat);
     } else {
-      return
+      return;
     }
   }
-})
+});
 
 export const getUIStateFromAIState = (aiState: Chat) => {
   return aiState.messages
@@ -576,13 +584,13 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 {/* @ts-expect-error */}
                 <Events props={tool.result} />
               </BotCard>
-            ) : null
+            ) : null;
           })
         ) : message.role === 'user' ? (
           <UserMessage>{message.content as string}</UserMessage>
         ) : message.role === 'assistant' &&
           typeof message.content === 'string' ? (
           <BotMessage content={message.content} />
-        ) : null
-    }))
+        ) : null,
+    }));
 }
