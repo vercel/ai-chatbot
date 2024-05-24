@@ -4,7 +4,7 @@ import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
 import { useActions, useUIState } from 'ai/rsc'
-
+import { useState } from 'react'
 import { UserMessage } from './stocks/message'
 import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,8 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
-
+  const [file, setFile] = useState(null);
+  
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
@@ -67,7 +68,7 @@ export function PromptForm({
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
-        <Tooltip>
+      <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
@@ -108,6 +109,7 @@ export function PromptForm({
             </TooltipTrigger>
             <TooltipContent>Send message</TooltipContent>
           </Tooltip>
+          
         </div>
       </div>
     </form>
