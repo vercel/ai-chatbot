@@ -8,16 +8,18 @@ import pandas as pd
 import clickhouse_connect
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
-client = Client(api_key='sk-proj-wNPwz8sPdXQJCzT4mCwoT3BlbkFJV1428pMCt5CxnAUfu8tY')
+client = Client(api_key=os.getenv('OPENAI_API_KEY'))
 TORCHSERVER_URL = 'http://localhost:8080/predictions/bert_classifier'
 HUGGING_FACE_TOKEN = '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'
 NER_ENDPOINT = 'https://api-inference.huggingface.co/models/dslim/bert-base-NER'
-CLICKHOUSE_PASSWORD="XT~cIFsqm5m4Z"
-CLICKHOUSE_HOSTNAME="blb6a95icn.us-east1.gcp.clickhouse.cloud"
-CLICKHOUSE_USERNAME="default"
-CLICKHOUSE_PORT=8443
+CLICKHOUSE_PASSWORD=os.getenv('CLICKHOUSE_PASSWORD')
+CLICKHOUSE_HOSTNAME=os.getenv('CLICKHOUSE_HOSTNAME')
+CLICKHOUSE_USERNAME=os.getenv('CLICKHOUSE_USERNAME')
+CLICKHOUSE_PORT=os.getenv('CLICKHOUSE_PORT')
 
 clickhouse_client = clickhouse_connect.get_client(
     host=CLICKHOUSE_HOSTNAME,
@@ -94,6 +96,9 @@ def rule_base_adjustment(prompt: str, columns: set):
 
     columns.add('season')
     added_columns.add('season')
+
+    columns.add('season_type')
+    added_columns.add('season_type')
 
     columns.add('posteam')
     added_columns.add('posteam')
@@ -212,7 +217,10 @@ def query_database():
         Identified Teams: {[(team['name']) for team in data['ner_results']['identified_teams']]}        
 
         The database this SQL query will be executed against will represent NFL play by play data.
-        Data will need to aggregated (summed, averaged, etc.) across plays, weeks or seasons as each row record represents a single play."""},
+        Data will need to aggregated (summed, averaged, etc.) across plays, weeks or seasons as each row record represents a single play.
+        Where a season is not specified, the query should default to the most recent season available in the database.
+        When a season type is not specified (post or regular), the query should default to regular season data.
+        """},
         {"role": "user", "content": query},
         ],
         stream=False
