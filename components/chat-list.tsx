@@ -16,10 +16,10 @@ export function ChatList({ messages, session, isShared }: ChatList) {
   }
 
   return (
-    <div className="relative mx-auto max-w-2xl px-4">
+    <div className="w-11/12 mr-auto">
       {!isShared && !session ? (
         <>
-          <div className="group relative mb-4 flex items-start md:-ml-12">
+          <div className="group relative mb-4 flex items-start">
             <div className="bg-background flex size-[25px] shrink-0 select-none items-center justify-center rounded-md border shadow-sm">
               <ExclamationTriangleIcon />
             </div>
@@ -33,18 +33,18 @@ export function ChatList({ messages, session, isShared }: ChatList) {
                 <Link href="/signup" className="underline">
                   sign up
                 </Link>{' '}
-                to save and revisit your chat history!
+                to save and revisit your search history!
               </p>
             </div>
           </div>
-          <Separator className="my-4" />
         </>
       ) : null}
 
       {messages.map((message, index) => (
+        console.log('Message: ', message.display.type.name),
         <div key={message.id}>
           {message.display}
-          {index < messages.length - 1 && <Separator className="my-4" />}
+          {index < messages.length - 1 && <div className="my-4" />}
         </div>
       ))}
     </div>
