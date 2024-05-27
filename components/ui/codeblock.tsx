@@ -93,13 +93,13 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   }
 
   return (
-    <div className="relative w-full font-sans codeblock bg-zinc-950">
-      <div className="flex items-center justify-between w-full px-6 py-2 pr-4 bg-zinc-800 text-zinc-100">
+    <div className="w-full font-sans codeblock text-zinc-950">
+      {/* <div className="flex items-center justify-between w-full px-6 py-2 pr-4 text-zinc-100">
         <span className="text-xs lowercase">{language}</span>
         <div className="flex items-center space-x-1">
           <Button
             variant="ghost"
-            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
+            className="focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
             onClick={downloadAsFile}
             size="icon"
           >
@@ -109,14 +109,14 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
+            className="text-xs focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
             onClick={onCopy}
           >
             {isCopied ? <IconCheck /> : <IconCopy />}
             <span className="sr-only">Copy code</span>
           </Button>
         </div>
-      </div>
+      </div> */}
       <SyntaxHighlighter
         language={language}
         style={coldarkDark}
@@ -126,15 +126,16 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           margin: 0,
           width: '100%',
           background: 'transparent',
-          padding: '1.5rem 1rem'
+          padding: '0'
         }}
         lineNumberStyle={{
           userSelect: 'none'
         }}
         codeTagProps={{
           style: {
-            fontSize: '0.9rem',
-            fontFamily: 'var(--font-mono)'
+            fontSize: '0.8rem',
+            fontFamily: 'var(--font-mono)',
+            color: 'rgb(60, 163, 184)'
           }
         }}
       >

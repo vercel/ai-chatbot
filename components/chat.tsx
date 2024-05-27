@@ -57,7 +57,10 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   return (
       <>
       {messages.length ? (
-        <MainInterface session={session} input={input} setInput={setInput} />
+        <MainInterface 
+        session={session} 
+        input={input} 
+        setInput={setInput} />
         ) : (
           <div style={{borderTop: 'none', borderBottom: 'none'}} className="group border border-sky-300/[0.55] w-8/12 h-full m-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
           <div className={cn('pb-[100px] pt-4 md:pt-10', className)}>

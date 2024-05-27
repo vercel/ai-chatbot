@@ -19,6 +19,8 @@ import {
   Purchase
 } from '@/components/stocks'
 
+import { CheckMyWork } from '@/components/sports/check-my-work'
+
 import { z } from 'zod'
 import { EventsSkeleton } from '@/components/stocks/events-skeleton'
 import { Events } from '@/components/stocks/events'
@@ -127,12 +129,14 @@ async function submitUserMessage(content: string) {
   let textNode: undefined | React.ReactNode
 
   const result = await streamUI({
-    model: openai('gpt-3.5-turbo'),
+    model: openai('gpt-4o'),
     initial: <SpinnerMessage />,
     system: `\
-    You are an NFL stats bot. 
-    When the user asks a stats question, you should respond with the answer. 
-    You are a test bot, so just make up data for now like as if you had access to a database.`,
+    You are an NFL stats bot. You have access to a database of NFL player stats. You can answer general questions
+    about NFL players, but when asked for specific stat questions, you have a function :queryDatabase: at your disposal that can
+    query the database for a specific stat. Your job is to manage the context of the conversation and provide
+    the function with correct query. The function takes in a natural language prompt, and returns the results of 
+    the query, which you then relay back to the user.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -164,6 +168,95 @@ async function submitUserMessage(content: string) {
       }
 
       return textNode
+    },
+    tools: {
+      queryDatabase: {
+        description: "Query the nflfastR database for a specific stat with a natural language prompt",
+        parameters: z.object({
+          prompt: z.string()
+        }),
+        generate: async function* ({prompt}) {
+          yield (
+            <BotCard>
+              <div className="flex items-center">
+              { spinner }
+              <p className="text-zinc-500 font-md ml-3">
+                Querying the database for: {prompt}
+              </p>
+              </div>
+            </BotCard>
+          )
+
+          await sleep(100);
+          const toolCallId = nanoid()
+          const result = await fetch('http://localhost:4000/query-database', {
+            method: 'POST',
+            body: JSON.stringify({prompt}),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+
+          const data = await result.json()
+          
+          const queryResult = data.query_results;
+          const querySummary = data.query_summary;
+          const sqlQuery = data.sql_query;
+          const columnsReferenced = data.columns;
+          const nerResults = data.ner_results;
+
+          console.log(nerResults)
+
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'queryDatabase',
+                    toolCallId,
+                    args: { prompt }
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'queryDatabase',
+                    toolCallId,
+                    result: {
+                      userPrompt: prompt,
+                      queryResult
+                    }
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: querySummary
+              }
+            ]
+          })
+
+          return <>
+            <BotMessage content={querySummary} />
+            <CheckMyWork 
+              sqlQuery={sqlQuery}
+              columnsReferenced={columnsReferenced}
+              queryResult={queryResult}
+              nerResults={nerResults}/>
+          </>
+
+        }
+      }
     }
   })
 
@@ -245,26 +338,11 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       display:
         message.role === 'tool' ? (
           message.content.map(tool => {
-            return tool.toolName === 'listStocks' ? (
+            return tool.toolName === 'queryDatabase' ? (
               <BotCard>
                 {/* TODO: Infer types based on the tool result*/}
                 {/* @ts-expect-error */}
-                <Stocks props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPrice' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Stock props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPurchase' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Purchase props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'getEvents' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Events props={tool.result} />
+                <p>{tool.result}</p>
               </BotCard>
             ) : null
           })

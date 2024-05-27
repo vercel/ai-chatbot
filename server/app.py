@@ -11,6 +11,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 app = Flask(__name__)
 client = Client(api_key=os.getenv('OPENAI_API_KEY'))
 TORCHSERVER_URL = 'http://localhost:8080/predictions/bert_classifier'
@@ -89,10 +91,21 @@ def query_ner(payload):
     return identified_players_teams
 	
 def rule_base_adjustment(prompt: str, columns: set):
-
     added_columns = set()
     #prompt adjustments
     prompt = prompt.lower()
+
+    if 'passer_player_id' in columns:
+        columns.add('passer_player_name')
+        added_columns.add('passer_player_name')
+
+    if 'receiver_player_id' in columns:
+        columns.add('receiver_player_name')
+        added_columns.add('receiver_player_name')
+
+    if 'rusher_player_id' in columns:
+        columns.add('rusher_player_name')
+        added_columns.add('rusher_player_name')
 
     columns.add('season')
     added_columns.add('season')
@@ -134,6 +147,14 @@ def rule_base_adjustment(prompt: str, columns: set):
         columns.add('epa')
         added_columns.add('epa')
 
+    if 'quarter' in prompt:
+        columns.add('qtr')
+        added_columns.add('qtr')
+
+    if 'down' in prompt:
+        columns.add('down')
+        added_columns.add('down')
+
     return columns, added_columns
 
 def find_player_in_lookup_table(player_name):
@@ -153,6 +174,9 @@ def query_database():
     # Get the prompt from the request
     query = content['prompt']
     ner_results = query_ner({'inputs': query})
+
+    # filter out EPA and CPOE as a team name
+    ner_results['identified_teams'] = [team for team in ner_results['identified_teams'] if team['name'].lower() not in ['epa', 'cpoe']]
 
     # find the player in the look up table
     for i, player in enumerate(ner_results['identified_players']):
@@ -199,7 +223,7 @@ def query_database():
         'ner_results': ner_results
     }
 
-    query = client.chat.completions.create(
+    sql_openai_query = client.chat.completions.create(
     model="gpt-4o",
     messages=[
         {"role": "system", "content": f"""
@@ -218,7 +242,7 @@ def query_database():
 
         The database this SQL query will be executed against will represent NFL play by play data.
         Data will need to aggregated (summed, averaged, etc.) across plays, weeks or seasons as each row record represents a single play.
-        Where a season is not specified, the query should default to the most recent season available in the database.
+        Where a season is not specified, the season should default to the 2023 season.
         When a season type is not specified (post or regular), the query should default to regular season data.
         """},
         {"role": "user", "content": query},
@@ -226,17 +250,39 @@ def query_database():
         stream=False
     )
 
-    proposed_query = query.choices[0].message.content
+    sql_query = sql_openai_query.choices[0].message.content
 
-    if '```sql' in proposed_query:
-        proposed_query = proposed_query.split('```sql')[1].split('```')[0].strip()
+    if '```sql' in sql_query:
+        sql_query = sql_query.split('```sql')[1].split('```')[0].strip()
 
-    data['sql_query'] = proposed_query
+    data['sql_query'] = sql_query
 
     # run the query against the database
-    res = clickhouse_client.query(proposed_query)
+    res = clickhouse_client.query_df(sql_query).to_json()
+    query_result = json.loads(res)
+    data['query_results'] = query_result
 
-    data['result'] = res.result_rows
+    print(query)
+    query = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": f"""
+        You are a helpful assistant processing the results of an SQL query from the nflfastR database. 
+        The user asked a previous question and you need to provide a response based on the results of the query.
+        Please provide the answer in a very helpful format for the user. Please, as much as possible, obfuscate 
+        that you are a machine querying an SQL database and provide the answer in a human-like manner. Do not
+        mention player IDs or any other database-specific information.
+        """},
+        {"role": "user", "content": f"""
+        Please tell me the answer to {query}.
+        SQL query: {sql_query}
+        Result: {query_result}
+        """},
+        ],
+        stream=False
+    )
+
+    data['query_summary'] = query.choices[0].message.content
 
     return jsonify(data)
 

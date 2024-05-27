@@ -66,13 +66,13 @@ export function PromptForm({
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background sm:rounded-md sm:border border-sky-300/[.55]">
+      <div className="relative flex mt-6 max-h-60 w-full grow flex-col overflow-hidden bg-background sm:rounded-md sm:border border-sky-500 dark:border-sky-300/[.55]">
         <Textarea
           ref={inputRef}
           tabIndex={0}
           onKeyDown={onKeyDown}
           placeholder="Ask me anything about NFL stats."
-          className="min-h-[60px] w-full text-sky-100 resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-md"
+          className="min-h-[60px] w-full text-sky-900 dark:text-sky-100 resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-md"
           autoFocus
           spellCheck={false}
           autoComplete="off"

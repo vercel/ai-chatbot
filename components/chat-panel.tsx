@@ -109,8 +109,8 @@ export function ChatPanel({
   ];
 
   return (
-    <div className="inset-x-0 w-full m-auto">
-      <div className={`mb-6 w-11/12 m-auto ${position}`}>
+    <div className="inset-x-0 w-full pb-24 m-auto h-full relative">
+      <div className={`w-11/12 m-auto ${position}`}>
         <PromptForm input={input} setInput={setInput} />
       </div>
       {messages.length === 0 ? (
@@ -119,9 +119,9 @@ export function ChatPanel({
             {exampleMessages.map((example, index) => (
               <div
                 key={index}
-                className={`carousel-card cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}
+                className={`carousel-card mt-10 cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}
                 onClick={async () => {
-                  setInput(example.message)
+                  // setInput(example.message)
                   setMessages(currentMessages => [
                     ...currentMessages,
                     {
@@ -141,7 +141,7 @@ export function ChatPanel({
                 }}
               >
                 <h3 className="text-sm font-semibold">{example.heading}</h3>
-                <p className="text-sm text-sky-300">
+                <p className="text-sm text-sky-500 dark:text-sky-300">
                   {example.subheading}
                 </p>
               </div>

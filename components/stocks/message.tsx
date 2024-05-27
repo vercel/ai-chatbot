@@ -45,7 +45,7 @@ export function BotMessage({
           remarkPlugins={[remarkGfm, remarkMath]}
           components={{
             p({ children }) {
-              return <p className="mb-2 last:mb-0 text-sky-200">{children}</p>
+              return <p className="mb-2 last:mb-0 text-zinc-500 dark:text-sky-200">{children}</p>
             },
             code({ node, inline, className, children, ...props }) {
               if (children.length) {
@@ -94,14 +94,14 @@ export function BotCard({
   showAvatar?: boolean
 }) {
   return (
-    <div className="group relative flex items-start md:-ml-12">
+    <div className="group relative flex items-start">
       <div
         className={cn(
           'flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border bg-primary text-primary-foreground shadow-sm',
           !showAvatar && 'invisible'
         )}
       >
-        <IconOpenAI />
+        {showAvatar && <IconOpenAI />}
       </div>
       <div className="ml-4 flex-1 pl-2">{children}</div>
     </div>
