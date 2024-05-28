@@ -1,7 +1,7 @@
 export const FooterLogo = () => {
   return (
     <svg
-      width="170"
+      width="160"
       height="18"
       viewBox="0 0 271 18"
       fill="none"

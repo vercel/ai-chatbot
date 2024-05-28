@@ -37,24 +37,24 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'What are my access?',
+      subheading: 'Understand your access.',
+      message: `What are my access?`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'How’s this month sale?',
+      subheading: 'Access information like sales.',
+      message: 'How’s this month sale?'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'Show me the sales by month',
+      subheading: 'Understand our charting capabilities.',
+      message: `Show me the sales by month`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'Cross compared sales and leads',
+      subheading: `New feature, cross compare data.`,
+      message: `Cross compared sales and leads`
     }
   ]
 
