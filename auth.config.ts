@@ -17,7 +17,13 @@ export const authConfig = {
           return Response.redirect(new URL('/', nextUrl))
         }
       }
-
+      // Uncomment this lines to force login on the chat page
+    /*else {
+        const isOnChatPage = nextUrl.pathname.startsWith('/chat')
+        if (isOnChatPage) {
+          return Response.redirect(new URL('/login', nextUrl))
+        }
+      } */
       return true
     },
     async jwt({ token, user }) {
