@@ -11,6 +11,7 @@ import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from './stocks/message'
+import { FooterLogo } from './assets/logo/FooterLogo'
 
 export interface ChatPanelProps {
   id?: string
@@ -131,7 +132,9 @@ export function ChatPanel({
 
         <div className="space-y-4 bg-background px-4 py-2 sm:rounded-t-xl md:py-4">
           <PromptForm input={input} setInput={setInput} />
-          <FooterText className="hidden sm:block" />
+          <div className="flex justify-center">
+            <FooterLogo />
+          </div>
         </div>
       </div>
     </div>
