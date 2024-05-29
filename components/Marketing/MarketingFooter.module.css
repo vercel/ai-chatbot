@@ -1,0 +1,16 @@
+.footer {
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .container {
+    display: flex;
+    height: var(--header-height);
+    justify-content: space-between;
+    place-items: center;
+  }
+  
+  .copyright {
+    color: var(--color-text-light);
+    font-size: var(--size-sm);
+  }
+  

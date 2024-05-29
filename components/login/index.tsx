@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-
-
 import {
     EyeOpenIcon,
     EyeNoneIcon
@@ -24,12 +21,12 @@ export default function Login() {
   const [isShowPassword, setIsShowPassword] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const getLocalAuth = localStorage?.getItem('auth');
-    if (getLocalAuth === 'true') {
-      router.push('/');
-    }
-  }, [router]);
+//   useEffect(() => {
+//     const getLocalAuth = localStorage?.getItem('auth');
+//     if (getLocalAuth === 'true') {
+//       router.push('/');
+//     }
+//   }, [router]);
 
 //   const handleLogin = async () => {
 //     setError(false);

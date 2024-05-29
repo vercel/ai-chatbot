@@ -54,15 +54,13 @@ export function Header() {
         <SuperBrainLogo />
       </div>
       <div className="flex items-center justify-end space-x-2">
-        <a
-          target="_blank"
-          href="https://github.com/vercel/nextjs-ai-chatbot/"
-          rel="noopener noreferrer"
+        <Link
+          href={'/dashboard'}
           className={cn(buttonVariants({ variant: 'outline' }))}
         >
           <IconDashboard />
           <span className="hidden ml-2 md:flex">Dashboard</span>
-        </a>
+        </Link>
       </div>
     </header>
   )

@@ -1,0 +1,9 @@
+.header {
+  border-bottom: 1px solid var(--color-border);
+}
+.container {
+  display: flex;
+  height: var(--header-height);
+  justify-content: space-between;
+  place-items: center;
+}

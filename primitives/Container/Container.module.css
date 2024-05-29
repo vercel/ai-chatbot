@@ -1,0 +1,19 @@
+.container {
+    padding-right: var(--space-8);
+    padding-left: var(--space-8);
+    margin-right: auto;
+    margin-left: auto;
+  }
+  
+  .containerSmall {
+    max-width: 760px;
+  }
+  
+  .containerMedium {
+    max-width: 960px;
+  }
+  
+  .containerLarge {
+    max-width: 1160px;
+  }
+  
