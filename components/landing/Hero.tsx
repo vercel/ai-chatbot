@@ -3,6 +3,7 @@
 import { PinRightIcon } from '@radix-ui/react-icons'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
+import { CalBooking } from '../calBooking'
 
 export const Hero = () => {
   const router = useRouter()
@@ -18,11 +19,12 @@ export const Hero = () => {
             use SuperBrain to power their data-drive business intelligence.
           </p>
         </div>
-        <div className="cta-btn-actions">
-          <Button variant="default" onClick={() => router.push('/login')}>
+        <div className="cta-btn-actions flex gap-2">
+          <Button variant="secondary" onClick={() => router.push('/login')}>
             <PinRightIcon />
             <span className="hidden ml-2 md:flex font-bold">Sign in</span>
           </Button>
+          <CalBooking />
         </div>
       </div>
     </div>
