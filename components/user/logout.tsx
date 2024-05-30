@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 // import { auth, signIn, signOut } from '@/lib/auth';
 
-export async function User() {
+export async function Logout() {
 //   const session = await auth();
 //   const user = session?.user;
 

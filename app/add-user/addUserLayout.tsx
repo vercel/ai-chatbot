@@ -2,18 +2,13 @@ import Link from 'next/link'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 // import { Analytics } from '@vercel/analytics/react';
-import {
-  Logo,
-  SettingsIcon,
-  UsersIcon,
-  VercelLogo
-} from '@/components/assets/icons'
-import { NavItem } from './nav-item'
+import { Logo, SettingsIcon, UsersIcon } from '@/components/assets/icons'
 
 import '../globals.css'
 import { SuperBrainLogo } from '@/components/assets/logo/SuperBrain'
 import { cn } from '@/lib/utils'
 import { Logout } from '@/components/user/logout'
+import { NavItem } from '../dashboard/nav-item'
 import { SidebarMenu } from '@/components/sidebarMenu/index'
 
 export const metadata = {
@@ -22,7 +17,7 @@ export const metadata = {
     'A user admin dashboard configured with Next.js, Postgres, NextAuth, Tailwind CSS, TypeScript, and Prettier.'
 }
 
-export default function DashboardLayout({
+export default function AddUserLayout({
   children
 }: {
   children: React.ReactNode
@@ -47,13 +42,6 @@ export default function DashboardLayout({
       </div>
       <div className="flex flex-col">
         <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40 justify-between lg:justify-end">
-          <Link
-            className="flex items-center gap-2 font-semibold lg:hidden"
-            href="/"
-          >
-            <Logo />
-            <span className="">ACME</span>
-          </Link>
           <Logout />
         </header>
         {children}

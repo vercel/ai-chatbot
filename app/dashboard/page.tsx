@@ -1,8 +1,11 @@
 // import { getUsers } from '@/lib/db';
-import { UsersTable } from './user-table';
-import { Search } from './search';
+import { UsersTable } from './user-table'
+import { Search } from './search'
 
 import DashboardLayout from './dashboardLayout'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { PlusIcon } from '@radix-ui/react-icons'
 
 export default async function Dashboard({
   searchParams
@@ -44,8 +47,11 @@ export default async function Dashboard({
   return (
     <DashboardLayout>
       <main className="flex flex-1 flex-col p-4 md:p-6">
-        <div className="flex items-center mb-8">
+        <div className="flex items-center mb-8 justify-between">
           <h1 className="font-semibold text-lg md:text-2xl">Users</h1>
+          <Button variant="default" className="font-bold flex gap-1">
+            <PlusIcon /> Add User
+          </Button>
         </div>
         <div className="w-full mb-4">
           <Search value={searchParams.q} />

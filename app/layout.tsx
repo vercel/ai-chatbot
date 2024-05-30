@@ -1,11 +1,12 @@
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 
-import '@/app/globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
 import { Toaster } from '@/components/ui/sonner'
+
+import '@/app/globals.css'
 
 export const metadata = {
   metadataBase: process.env.VERCEL_URL
@@ -53,7 +54,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         >
           <div className="flex flex-col min-h-screen">
             {/* <Header /> */}
-            <main>{children}</main>
+            {children}
           </div>
         </Providers>
       </body>

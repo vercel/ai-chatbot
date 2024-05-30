@@ -130,7 +130,7 @@ export function ChatPanel({
           </div>
         ) : null}
 
-        <div className="space-y-4 bg-background px-4 py-2 sm:rounded-t-xl md:py-4">
+        <div className="space-y-4 bg-background py-2 sm:rounded-t-xl md:py-4">
           <PromptForm input={input} setInput={setInput} />
           <div className="flex justify-center">
             <FooterLogo />
