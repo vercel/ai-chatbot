@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { Logout } from '@/components/user/logout'
 import { NavItem } from '../dashboard/nav-item'
 import { SidebarMenu } from '@/components/sidebarMenu/index'
+import { RiStackLine } from '@remixicon/react'
+import { PanelSidebar } from '@/components/panelSidebar'
 
 export const metadata = {
   title: 'Next.js App Router + NextAuth + Tailwind CSS',
@@ -18,8 +20,10 @@ export const metadata = {
 }
 
 export default function AddUserLayout({
+  isAdmin,
   children
 }: {
+  isAdmin?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -33,11 +37,15 @@ export default function AddUserLayout({
       <div className="hidden border-r bg-gray-100/40 lg:block dark:bg-gray-800/40">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-[60px] items-center border-b px-5">
-            <Link className="flex items-center gap-2 font-semibold" href="/">
+            <div className="flex items-center gap-2 font-semibold">
               <SuperBrainLogo />
-            </Link>
+            </div>
           </div>
-          <SidebarMenu />
+          {isAdmin ? <PanelSidebar /> : <SidebarMenu />}
+          {/* <NavItem href="/">
+            <RiStackLine size={16} />
+            Control Panel
+          </NavItem> */}
         </div>
       </div>
       <div className="flex flex-col">

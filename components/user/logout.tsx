@@ -1,17 +1,17 @@
 import { Button } from '@/components/ui/button';
 // import { auth, signIn, signOut } from '@/lib/auth';
 
-export async function Logout() {
+export function Logout() {
 //   const session = await auth();
 //   const user = session?.user;
 
 //   if (!user) {
     return (
       <form
-        action={async () => {
-          'use server';
-        //   await signIn('github');
-        }}
+        // action={async () => {
+        //   // 'use server';
+        // //   await signIn('github');
+        // }}
       >
         <Button variant="outline">Log out</Button>
       </form>

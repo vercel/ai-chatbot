@@ -6,6 +6,7 @@ import DashboardLayout from './dashboardLayout'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { PlusIcon } from '@radix-ui/react-icons'
+import { users } from '@/lib/user'
 
 export default async function Dashboard({
   searchParams
@@ -15,32 +16,7 @@ export default async function Dashboard({
   const search = searchParams.q ?? ''
   const offset = searchParams.offset ?? 0
 
-  const users = [
-    {
-      id: 1,
-      name: 'John Doe',
-      username: 'johndoe',
-      email: 'johndoe@example.com'
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      username: 'janesmith',
-      email: 'janesmith@example.com'
-    },
-    {
-      id: 3,
-      name: 'Alice Johnson',
-      username: 'alicej',
-      email: 'alicej@example.com'
-    },
-    {
-      id: 4,
-      name: 'Bob Brown',
-      username: 'bobbrown',
-      email: 'bobbrown@example.com'
-    }
-  ]
+
 
   //   const { users, newOffset } = await getUsers(search, Number(offset));
 

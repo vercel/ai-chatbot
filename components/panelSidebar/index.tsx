@@ -1,47 +1,37 @@
 import { NavItem } from '@/app/dashboard/nav-item'
 import {
-  RiBankCardLine,
+  RiBuilding2Line,
+  RiChat1Line,
   RiExchange2Line,
-  RiInbox2Line,
-  RiPieChartLine,
-  RiSettingsLine,
-  RiShieldStarLine,
   RiStackLine,
-  RiUser4Line
+  RiTimer2Line,
+  RiWallet3Line
 } from '@remixicon/react'
 
-export const SidebarMenu = () => {
+export const PanelSidebar = () => {
   return (
     <div className="flex-1 overflow-auto py-2">
       <nav className="items-start px-4 h-full text-sm font-medium flex flex-col justify-between">
         <div className="w-full">
           <NavItem href="/dashboard">
-            <RiUser4Line size={16} />
-            Access
+            <RiBuilding2Line size={16} />
+            Companies
+          </NavItem>
+          <NavItem href="/">
+            <RiWallet3Line size={16} />
+            Finance
+          </NavItem>
+          <NavItem href="/">
+            <RiTimer2Line size={16} />
+            Monitors
           </NavItem>
           <NavItem href="/">
             <RiExchange2Line size={16} />
-            Connections
+            Requests
           </NavItem>
           <NavItem href="/">
-            <RiPieChartLine size={16} />
-            Analytics
-          </NavItem>
-          <NavItem href="/">
-            <RiInbox2Line size={16} />
-            Log Reports
-          </NavItem>
-          <NavItem href="/">
-            <RiShieldStarLine size={16} />
-            Organization
-          </NavItem>
-          <NavItem href="/">
-            <RiSettingsLine size={16} />
-            Configuration
-          </NavItem>
-          <NavItem href="/">
-            <RiBankCardLine size={16} />
-            Manage Billing
+            <RiChat1Line size={16} />
+            Tickets
           </NavItem>
         </div>
         <div className="w-full mb-2">

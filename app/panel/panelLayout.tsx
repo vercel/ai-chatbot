@@ -8,15 +8,15 @@ import {
 import { SuperBrainLogo } from '@/components/assets/logo/SuperBrain'
 import { cn } from '@/lib/utils'
 import { Logout } from '@/components/user/logout'
-import { SidebarMenu } from '@/components/sidebarMenu/index'
+import { PanelSidebar } from '@/components/panelSidebar'
 
 export const metadata = {
-  title: 'Next.js App Router + NextAuth + Tailwind CSS',
+  title: 'Control Panel | SuperBrain',
   description:
-    'A user admin dashboard configured with Next.js, Postgres, NextAuth, Tailwind CSS, TypeScript, and Prettier.'
+    'Organizations control panel'
 }
 
-export default function DashboardLayout({
+export default function PanelLayout({
   children
 }: {
   children: React.ReactNode
@@ -36,7 +36,7 @@ export default function DashboardLayout({
               <SuperBrainLogo />
             </Link>
           </div>
-          <SidebarMenu />
+          <PanelSidebar />
         </div>
       </div>
       <div className="flex flex-col">
