@@ -1,8 +1,13 @@
-export const FooterLogo = () => {
+interface FooterProps {
+  width?: number | string
+  height?: number | string
+}
+
+export const FooterLogo = ({ width="160", height="18"}: FooterProps) => {
   return (
     <svg
-      width="160"
-      height="18"
+      width={width}
+      height={height}
       viewBox="0 0 271 18"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
