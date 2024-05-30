@@ -71,28 +71,28 @@ export default function Login() {
 
   return (
     <div className="grid place-items-center h-[100vh] bg-white">
-      <div className="login w-full max-w-md overflow-hidden rounded-2xl text-xl border border-gray-100 p-12">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl text-xl border border-gray-100 p-12">
         <div className="text-center">
           <div className="logo flex justify-center mb-8">
             <SuperBrainLogo  width="190px"/>
           </div>
         </div>
-        <div className="username w-full mb-4 ">
+        <div className="w-full mb-4 ">
           <input
             type="email"
-            className="mt-1 block h-[45px] selection:bg-white w-full appearance-none bg-white rounded-md border text-black border-gray-200 px-3 py-2 placeholder-gray-400  focus:border-black focus:outline-none focus:ring-black sm:text-sm"
+            className="mt-1 block h-[45px] bg-[#fafafa] w-full appearance-none rounded-md border text-black border-gray-200 px-3 py-2 placeholder-gray-400  focus:outline-none sm:text-sm"
             placeholder="latte@trianglehq.co"
             name="email"
             value={loginData.email}
             onChange={handleInputChange}
           ></input>
         </div>
-        <div className="password w-full mb-4 relative">
+        <div className="w-full mb-4 relative">
 
           <input
             type={isShowPassword ? 'text' : 'password'}
             maxLength={30}
-            className="mt-1 block w-full h-[45px] appearance-none rounded-md bg-white border text-black border-gray-200 px-3 py-2 placeholder-gray-400  focus:border-black focus:outline-none focus:ring-black sm:text-sm"
+            className="mt-1 block w-full h-[45px] bg-[#fafafa] appearance-none rounded-md border text-black border-gray-200 px-3 py-2 placeholder-gray-400 focus:outline-none sm:text-sm"
             name="password"
             placeholder="Passoword"
             value={loginData.password}
@@ -115,7 +115,7 @@ export default function Login() {
           </div>
         )}
         <button
-          className="p-2 font-bold flex gap-2 h-[45px] mt-8 items-center justify-center w-full text-white bg-black dark:bg-white dark:text-black rounded-md border text-sm transition-all focus:outline-none"
+          className="p-2 font-bold flex gap-2 h-[45px] mt-8 items-center justify-center w-full text-white bg-black rounded-md border text-sm transition-all focus:outline-none"
         //   onClick={handleLogin}
         onClick={() => router.push('/chat')}
         >

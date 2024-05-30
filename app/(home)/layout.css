@@ -109,7 +109,7 @@
   }
   
   /* Dark theme */
-  @media (prefers-color-scheme: dark) {
+  /* @media (prefers-color-scheme: dark) {
     :root {
       --color-red: 248 113 113;
       --color-green: 162 230 53;
@@ -136,7 +136,7 @@
   
       color-scheme: dark;
     }
-  }
+  } */
   
   html,
   body {
