@@ -12,6 +12,13 @@ export interface CheckMyWorkProps {
     nerResults: any;
 }
 
+export interface Player {
+    player_name: string;
+    player_id: string;
+    cosine_similarity: number;
+    player_position: string;
+}
+
 export function CheckMyWork({ sqlQuery, queryAnswer, nerResults }: CheckMyWorkProps) {
     const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -50,7 +57,7 @@ export function CheckMyWork({ sqlQuery, queryAnswer, nerResults }: CheckMyWorkPr
                                 </tr>
                             </thead>
                             <tbody>
-                                {nerResults.identified_players.map((player, index) => (
+                                {nerResults.identified_players.map((player: Player, index: number) => (
                                     <tr key={index}>
                                         <td className="text-center text-sm border p-1">{player.player_name}</td>
                                         <td className="text-center text-sm border p-1">{player.player_id}</td>                                        {
