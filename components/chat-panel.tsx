@@ -67,29 +67,14 @@ export function ChatPanel({
       message: "What is the Kansas City Chiefs' 3rd down conversion rate in 2023?"
     },
     {
-      heading: "What is Derrick Henry's",
-      subheading: "yards after contact per rush?",
-      message: "What is Derrick Henry's yards after contact per rush?"
-    },
-    {
       heading: "What is the most effective defense",
       subheading: "on 3rd down by EPA per play?",
       message: "What is the most effective defense on 3rd down by EPA per play?"
     },
     {
-      heading: "What is the Buffalo Bills'",
-      subheading: "turnover differential in 2023?",
-      message: "What is the Buffalo Bills' turnover differential in 2023?"
-    },
-    {
-      heading: "What is",
-      subheading: "Patrick Mahomes' completion percentage under pressure?",
-      message: "What is Patrick Mahomes' completion percentage under pressure?"
-    },
-    {
-      heading: "What is Travis Kelce's",
-      subheading: "EPA per target in the red zone?",
-      message: "What is Travis Kelce's EPA per target in the red zone?"
+      heading: "What is Patrick Mahomes' EPA",
+      subheading: "when throwing for 10+ air yards against the Raiders?",
+      message: "What is Patrick Mahomes' average EPA per play when throwing for 10+ air yards against the Raiders (over the course of his whole career)?"
     },
     {
       heading: "What is the average",
@@ -97,14 +82,14 @@ export function ChatPanel({
       message: "What is the average yards per play for the San Francisco 49ers in 2023?"
     },
     {
-      heading: "What is the most successful",
-      subheading: "play type for the Dallas Cowboys by EPA per play?",
-      message: "What is the most successful play type for the Dallas Cowboys by EPA per play?"
-    },
-    {
       heading: "What is the New England Patriots'",
       subheading: "defensive success rate against the run in 2023?",
       message: "What is the New England Patriots' defensive success rate against the run in 2023?"
+    },
+    {
+      heading: "What is Lamar's",
+      subheading: "CPOE when targeting OBJ?",
+      message: "What is Lamar's CPOE when targeting OBJ?"
     }
   ];
 
@@ -114,12 +99,12 @@ export function ChatPanel({
         <PromptForm input={input} setInput={setInput} />
       </div>
       {messages.length === 0 ? (
-        <div className="mx-auto sm:px-4 carousel-container">
-          <div className="mb-4 gap-2 px-4 sm:px-0 carousel-track">
+        <div className="mx-auto sm:px-4">
+          <div className="mb-4 gap-2 px-4 sm:px-0 grid grid-cols-4 w-11/12 m-auto">
             {exampleMessages.map((example, index) => (
               <div
                 key={index}
-                className={`carousel-card mt-10 cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}
+                className={`mt-4 cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50`}
                 onClick={async () => {
                   // setInput(example.message)
                   setMessages(currentMessages => [
@@ -141,7 +126,7 @@ export function ChatPanel({
                 }}
               >
                 <h3 className="text-sm font-semibold">{example.heading}</h3>
-                <p className="text-sm text-sky-500 dark:text-sky-300">
+                <p className="text-sm text-sky-500">
                   {example.subheading}
                 </p>
               </div>

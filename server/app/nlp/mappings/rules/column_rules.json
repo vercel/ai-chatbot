@@ -1,0 +1,17 @@
+{
+    "column_rules": [
+        {
+            "match": ["rusher_player_id"],
+            "add": ["rusher_player_name"]
+        },
+        {
+            "match": ["passer_player_id"],
+            "add": ["passer_player_name"]   
+        },
+        {
+            "match": ["receiver_player_id"],
+            "add": ["receiver_player_name"]
+        }
+    ],
+    "always_add": ["season", "season_type"]
+}

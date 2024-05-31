@@ -135,7 +135,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           style: {
             fontSize: '0.8rem',
             fontFamily: 'var(--font-mono)',
-            color: 'rgb(60, 163, 184)'
+            color: 'black'
           }
         }}
       >

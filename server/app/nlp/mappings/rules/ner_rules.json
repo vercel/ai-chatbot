@@ -1,0 +1,5 @@
+{
+    "negative_rules": {
+        "team_rules": ["CPOE", "EPA", "OBJ", "ETN", "YPR", "YPC", "YPT", "YPA"]
+    }
+}

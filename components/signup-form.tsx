@@ -29,7 +29,7 @@ export default function SignupForm() {
       action={dispatch}
       className="flex flex-col items-center gap-4 space-y-3"
     >
-      <div className="w-full flex-1 rounded-lg border bg-white px-6 pb-4 pt-8 shadow-md md:w-96 dark:bg-zinc-950">
+      <div className="w-full flex-1 rounded-lg border bg-white px-6 pb-4 pt-8 shadow-md md:w-96">
         <h1 className="mb-3 text-2xl font-bold">Sign up for an account!</h1>
         <div className="w-full">
           <div>
@@ -41,7 +41,7 @@ export default function SignupForm() {
             </label>
             <div className="relative">
               <input
-                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
+                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500"
                 id="email"
                 type="email"
                 name="email"
@@ -59,7 +59,7 @@ export default function SignupForm() {
             </label>
             <div className="relative">
               <input
-                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
+                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500"
                 id="password"
                 type="password"
                 name="password"
@@ -86,7 +86,7 @@ function LoginButton() {
 
   return (
     <button
-      className="my-4 flex h-10 w-full flex-row items-center justify-center rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+      className="my-4 flex h-10 w-full flex-row items-center justify-center rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800"
       aria-disabled={pending}
     >
       {pending ? <IconSpinner /> : 'Create account'}

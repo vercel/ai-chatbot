@@ -35,7 +35,7 @@
     --radius: 0.5rem;
   }
  
-  .dark {
+  /* .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
  
@@ -63,7 +63,7 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
-  }
+  } */
 }
  
 @layer base {
@@ -72,54 +72,11 @@
   }
   body {
     @apply bg-background text-foreground;
+
+    -webkit-scrollbar-track{
+      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+      border-radius: 10px;
+      background-color: #F5F5F5;
+    }
   }
-}
-
-.carousel-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  overflow: hidden;
-}
-
-.carousel {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.carousel-track {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  animation: scroll 240s linear infinite;
-}
-
-.carousel-track:nth-child(2) {
-  animation-delay: 2s;
-}
-
-.carousel-track:nth-child(3) {
-  animation-delay: 1s;
-}
-
-@keyframes scroll {
-  0% {
-      transform: translateX(0);
-  }
-  100% {
-      transform: translateX(calc(-400px * 10)); /* Adjust based on card width and number of cards */
-  }
-}
-
-.carousel-track:hover {
-  animation-play-state: paused;
-}
-
-.carousel-card p {
-  min-width: 300px;
-}
-
-.carousel-card {
-  flex: 1 1 20% /* Flex property for flexible width */
 }

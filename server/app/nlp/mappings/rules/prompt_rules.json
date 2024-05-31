@@ -1,0 +1,161 @@
+{
+    "prompt_rules": [
+        {
+            "match": ["epa", "estimated points added", "ep added"],
+            "add": ["epa"]
+        },
+        {
+            "match": ["cpoe", "CPOE", "completion percentage above expectation"],
+            "add": ["cpoe"]
+        },
+        {
+            "match": ["air yards"],
+            "add": ["air_yards"]
+        },
+        {
+            "match": ["yards after catch", "yac", "YAC"],
+            "add": ["yards_after_catch"]
+        },
+        {
+            "match": ["cover 2", "cover 1", "cover 3", "cover 4", "cover 5", "cover 6"],
+            "add": ["defense_coverage_type"]
+        },
+        {
+            "match": ["yards per reception", "ypr"],
+            "add": ["yards_gained", "receiver_player_id"]
+        },
+        {
+            "match": ["under pressure", "hit", "pressured", "pressure"],
+            "add": ["qb_hit", "was_pressure"]
+        },
+        {
+            "match": ["scramble"],
+            "add": ["qb_scramble", "rusher_player_id"]
+        },
+        {
+            "match": ["target", "targeting", "targeted"],
+            "add": ["receiver_player_id", "passer_player_id", "receiver_player_name", "passer_player_name"]
+        },
+        {
+            "match": ["and short", "and long", "short yardage", "long yardage", "yards to go", "to go", 
+                "4th and 1",
+                "4th and 2",
+                "4th and 3",
+                "4th and 4",
+                "4th and 5",
+                "4th and 6",
+                "4th and 7",
+                "4th and 8",
+                "4th and 9",
+                "4th and 10",
+                "3rd and 1",
+                "3rd and 2",
+                "3rd and 3",
+                "3rd and 4",
+                "3rd and 5",
+                "3rd and 6",
+                "3rd and 7",
+                "3rd and 8",
+                "3rd and 9",
+                "3rd and 10",
+                "2nd and 1",
+                "2nd and 2",
+                "2nd and 3",
+                "2nd and 4",
+                "2nd and 5",
+                "2nd and 6",
+                "2nd and 7",
+                "2nd and 8",
+                "2nd and 9",
+                "2nd and 10",
+                "1st and 1",
+                "1st and 2",
+                "1st and 3",
+                "1st and 4",
+                "1st and 5",
+                "1st and 6",
+                "1st and 7",
+                "1st and 8",
+                "1st and 9",
+                "1st and 10"
+            ],
+            "add": ["down", "ydstogo"]
+        },
+        {
+            "match": ["redzone"],
+            "add": ["yardline_100"]
+        },
+        {
+            "match": ["down conversion rate", "down success rate", "convert 3rd downs", "covert 1st downs", "covert 4th downs", "convert 2nd downs"],
+            "add": ["first_down", "down"]
+        },
+        {
+            "match": ["defense"],
+            "add": ["defteam"]
+        },
+        {
+            "match": ["offense"],
+            "add": ["posteam"]
+        },
+        {
+            "match": ["success"],
+            "add": ["success"]
+        },
+        {
+            "match": ["rushing yards"],
+            "add": ["rusher_player_id", "rusher_player_name", "yards_gained"]
+        },
+        {
+            "match": ["fumble"],
+            "add": ["fumble", "fumble_lost"]
+        },
+        {
+            "match": ["forced"],
+            "add": ["forced_fumble_player_1_team", "forced_fumble_player_1_player_id", "forced_fumble_player_1_player_name", "forced_fumble_player_2_team", "forced_fumble_player_2_player_id", "forced_fumble_player_2_player_name"]
+        },
+        {
+            "match": ["tackles"],
+            "add": ["solo_tackle"]
+        },
+        {
+            "match": ["penalty"],
+            "add": ["penalty_team", "penalty_player_id", "penalty_player_name", "penalty_yards"]
+        },
+        {
+            "match": ["outdoors"],
+            "add": ["roof"]
+        },
+        {
+            "match": ["degrees"],
+            "add": ["temp"]
+        },
+        {
+            "match": ["sack"],
+            "add": ["sack"]
+        },
+        {
+            "match": ["blocked", "punt blocked"],
+            "add": ["punt_blocked"]
+        },
+        {
+            "match": ["completion percentage"],
+            "add": ["incomplete_pass", "complete_pass"]
+        },
+        {
+            "match": ["hits"],
+            "add": ["qb_hit_1_player_id", "qb_hit_1_player_name", "qb_hit_2_player_id", "qb_hit_2_player_name"]
+        },
+        {
+            "match": ["interception"],
+            "add": ["passer_player_id", "passer_player_name", "interception", "interception_player_id", "interception_player_name"]
+        },
+        {
+            "match": ["4th"],
+            "add": ["down", "ydstogo", "first_down"]
+        },
+        {
+            "match": ["fantasy"],
+            "add": ["receiver_player_id", "rusher_player_id", "passer_player_id", "touchdown", "interception", "yards_gained"]
+        }
+    ]
+}

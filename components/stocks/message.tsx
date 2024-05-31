@@ -41,11 +41,11 @@ export function BotMessage({
       </div>
       <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
         <MemoizedReactMarkdown
-          className="prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0"
+          className="prose break-words prose-p:leading-relaxed prose-pre:p-0"
           remarkPlugins={[remarkGfm, remarkMath]}
           components={{
             p({ children }) {
-              return <p className="mb-2 last:mb-0 text-zinc-500 dark:text-sky-200">{children}</p>
+              return <p className="mb-2 last:mb-0 text-zinc-500">{children}</p>
             },
             code({ node, inline, className, children, ...props }) {
               if (children.length) {

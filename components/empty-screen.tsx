@@ -16,7 +16,7 @@ export function EmptyScreen() {
         </p>
         <p className="leading-normal text-muted-foreground">
           I use{' '}
-          <ExternalLink href="https://vercel.com/blog/ai-sdk-3-generative-ui">
+          <ExternalLink href="https://www.nflfastr.com/">
             nflfastR
           </ExternalLink>{' '}
           as a database to provide you with the latest NFL data.

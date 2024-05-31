@@ -1,0 +1,4 @@
+clickhouse_connect==0.7.10
+Flask==3.0.3
+pandas==2.2.2
+protobuf==3.12.4

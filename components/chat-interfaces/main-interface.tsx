@@ -29,28 +29,13 @@ export interface ToolResult {
     result: string;
 }
 
-const extractFloatNumbers = (obj: any): number[] => {
-    let results: number[] = [];
-
-    const extractNumbers = (value: any) => {
-      if (typeof value === 'number' && !isNaN(value)) {
-        results.push(value);
-      } else if (typeof value === 'object' && value !== null) {
-        Object.values(value).forEach(extractNumbers);
-      }
-    };
-
-    extractNumbers(obj);
-    return results;
-  };
-
 export function SideChat({input, setInput, session}: MainInterfaceProps) {
 
     const [messages] = useUIState()
     const { messagesRef, isAtBottom, scrollToBottom } = useScrollAnchor()
     
     return (
-        <div ref={messagesRef} className="h-full overflow-scroll flex flex-col justify-between border rounded-md dark:bg-neutral-950 p-6">
+        <div ref={messagesRef} className="h-full overflow-scroll flex flex-col justify-between border rounded-md p-6">
             <ButtonScrollToBottom
                 isAtBottom={isAtBottom}
                 scrollToBottom={scrollToBottom}
@@ -80,11 +65,9 @@ export function QueryResults () {
             for (const content of message.content) {
                 if (content.type === 'tool-result') {
                     
-                    let floatNumbers = extractFloatNumbers(content.result.queryResult);
-                    floatNumbers = floatNumbers.map((num) => parseFloat(num.toFixed(4)))
                     queryResults.push({
                         prompt: content.result.userPrompt,
-                        result: floatNumbers.join(', ')
+                        result: content.result.queryAnswer
                     })
                 }
             }
@@ -97,8 +80,8 @@ export function QueryResults () {
     }, [aiState])
 
     return (
-        <div className="h-full border rounded-md rounded-md p-3 dark:bg-neutral-950 mb-3">
-        <h3 className="text-sky-800 dark:text-sky-100 text-lg mb-4">Query Results</h3>
+        <div className="h-full border rounded-md rounded-md p-3 mb-3 overflow-y-scroll">
+        <h3 className="text-sky-800 text-lg mb-4">Query Results</h3>
         <table className="w-full slate-500 rounded-md">
             <thead>
                 <tr>
@@ -119,9 +102,6 @@ export function QueryResults () {
                                 <p className="text-zinc-600">{data?.result}</p>
                             </div>
                         </td>
-                        <td className="text-left w-1/3 text-md p-1">
-                            <IconCopy />
-                        </td>
                     </tr>
                 ))}
             </tbody>
@@ -132,8 +112,8 @@ export function QueryResults () {
 
 export function PlotResults () {
     return (
-        <div className="h-1/2 border rounded-md p-3 dark:bg-neutral-950 mb-3">
-        <h3 className=" text-sky-800 dark:text-sky-100 text-lg ">Plot Results</h3>
+        <div className="h-1/2 border rounded-md p-3 mb-3">
+        <h3 className=" text-sky-800 text-lg ">Plot Results</h3>
         </div>
     )
 }

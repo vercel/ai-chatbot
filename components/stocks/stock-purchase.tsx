@@ -79,7 +79,7 @@ export function Purchase({
               onChange={onSliderChange}
               min="10"
               max="1000"
-              className="w-full h-1 rounded-lg appearance-none cursor-pointer bg-zinc-600 accent-green-500 dark:bg-zinc-700"
+              className="w-full h-1 rounded-lg appearance-none cursor-pointer bg-zinc-600 accent-green-500"
             />
             <span className="absolute text-xs bottom-1 start-0 text-zinc-400">
               10
@@ -100,14 +100,14 @@ export function Purchase({
             <div className="flex flex-wrap items-center text-xl font-bold sm:items-end sm:gap-2 sm:text-3xl">
               <div className="flex flex-col basis-1/3 tabular-nums sm:basis-auto sm:flex-row sm:items-center sm:gap-2">
                 {value}
-                <span className="mb-1 text-sm font-normal text-zinc-600 sm:mb-0 dark:text-zinc-400">
+                <span className="mb-1 text-sm font-normal text-zinc-600 sm:mb-0">
                   shares
                 </span>
               </div>
               <div className="text-center basis-1/3 sm:basis-auto">×</div>
               <span className="flex flex-col basis-1/3 tabular-nums sm:basis-auto sm:flex-row sm:items-center sm:gap-2">
                 ${price}
-                <span className="mb-1 ml-1 text-sm font-normal text-zinc-600 sm:mb-0 dark:text-zinc-400">
+                <span className="mb-1 ml-1 text-sm font-normal text-zinc-600 sm:mb-0">
                   per share
                 </span>
               </span>

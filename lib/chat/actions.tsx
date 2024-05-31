@@ -22,11 +22,6 @@ import {
 import { CheckMyWork } from '@/components/sports/check-my-work'
 
 import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/events'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
-import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
 import {
   formatNumber,
   runAsyncFnWithoutBlocking,
@@ -132,10 +127,39 @@ async function submitUserMessage(content: string) {
     model: openai('gpt-4o'),
     initial: <SpinnerMessage />,
     system: `\
-    You are an NFL stats bot. You have access to a database of NFL player stats. You can answer general questions
-    about NFL players, but when asked for specific stat questions, you have a function :queryDatabase: at your disposal that can
-    query the database for a specific stat. Your job is to manage the context of the conversation and provide
-    the function with correct query. The function takes in a natural language prompt, and returns the results of 
+    You are an NFL stats bot. You have access to a database of NFL player stats. 
+    
+    You can answer general questions about NFL players, but when asked for specific stat questions, you have a function :queryDatabase: at your disposal that can
+    query the database for a specific stat. You can also outsource complex queries and computations to the function, for example, year over year changes in EPA.
+    
+    This function takes in the following arguments:
+    
+    1. "prompt" parameter, which is the natural language prompt given by the user, rephrased to be more specific and incorporate the context of the conversation.
+    2. "players" array, containing objects with keys player_name mentioned by the user, and also player_position if you know it from your knowledge base. 
+      
+    Only if no player is mentioned, leave the array empty. You must pass player names and positions even on follow up prompts.
+
+    * Valid player positions are QB, RB, WR, TE, K, P, and DEF.
+    
+    You should take care of handling common player pseudonyms and nicknames. For example, if a user asks "What was Lamar's CPOE when targeting OBJ in 2023?", 
+    you should pass the full player name in the prompt and the players parameter as [
+      {
+        player_name: "Lamar Jackson",
+        player_position: "QB"
+      },
+      {
+        player_name: "Odell Beckham Jr.",
+        player_position: "WR"
+      }
+    ]
+
+    3. "teams" array, containing the team names mentioned by the user, if any. If no teams are mentioned, pass an empty array.
+        
+    Your job is to manage the context of the conversation and provide the function with contextualized prompt. 
+    
+    If the context of the conversation was about quarterbacks, when prompted about Josh Allen, you should pass Josh Allen and QB in the players parameter.
+
+    The function takes in a natural language prompt, and returns the results of 
     the query, which you then relay back to the user.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
@@ -171,15 +195,22 @@ async function submitUserMessage(content: string) {
     },
     tools: {
       queryDatabase: {
-        description: "Query the nflfastR database for a specific stat with a natural language prompt",
+        description: "Query the nflfastR database for a specific stat with a natural language prompt.",
         parameters: z.object({
-          prompt: z.string()
+          prompt: z.string(),
+          players: z.array(z.object({
+            player_name: z.string(),
+            player_position: z.string()
+          })).optional(),
+          teams: z.array(z.string()).optional()
         }),
-        generate: async function* ({prompt}) {
+        generate: async function* ({prompt, players=[], teams=[]}) {
           yield (
             <BotCard>
               <div className="flex items-center">
+              <div className="w-1/4">
               { spinner }
+              </div>
               <p className="text-zinc-500 font-md ml-3">
                 Querying the database for: {prompt}
               </p>
@@ -189,18 +220,28 @@ async function submitUserMessage(content: string) {
 
           await sleep(100);
           const toolCallId = nanoid()
-          const result = await fetch('http://localhost:4000/query-database', {
+          const result = await fetch('https://huddlechat-server-wkztg3dj2q-uc.a.run.app/api/query-database', {
             method: 'POST',
-            body: JSON.stringify({prompt}),
+            body: JSON.stringify({
+              prompt,
+              players,
+              teams
+            }),
             headers: {
               'Content-Type': 'application/json'
             }
           })
 
+          // error handling
+          if (!result.ok) {
+            return <BotMessage content="There was an error querying the database." />
+          }
+
           const data = await result.json()
           
           const queryResult = data.query_results;
           const querySummary = data.query_summary;
+          const queryAnswer = data.query_answer;
           const sqlQuery = data.sql_query;
           const columnsReferenced = data.columns;
           const nerResults = data.ner_results;
@@ -233,7 +274,8 @@ async function submitUserMessage(content: string) {
                     toolCallId,
                     result: {
                       userPrompt: prompt,
-                      queryResult
+                      queryResult,
+                      queryAnswer
                     }
                   }
                 ]
@@ -252,6 +294,7 @@ async function submitUserMessage(content: string) {
               sqlQuery={sqlQuery}
               columnsReferenced={columnsReferenced}
               queryResult={queryResult}
+              queryAnswer={queryAnswer}
               nerResults={nerResults}/>
           </>
 
