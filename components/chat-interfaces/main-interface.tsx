@@ -15,7 +15,7 @@ import { IconCopy } from '@/components/ui/icons'
 export interface MainInterfaceProps {
     input: string;
     setInput: (value: string) => void;
-    session: Session;
+    session: Session|undefined;
 }
 
 export interface SideChatProps {
@@ -27,6 +27,17 @@ export interface SideChatProps {
 export interface ToolResult {
     prompt: string;
     result: string;
+}
+
+export interface AIMessage {
+    role: string;
+    content: Array<{
+        type: string;
+        result: {
+            userPrompt: string;
+            queryAnswer: string;
+        }
+    }>;
 }
 
 export function SideChat({input, setInput, session}: MainInterfaceProps) {
@@ -58,7 +69,7 @@ export function QueryResults () {
 
     useEffect(() => {
         const queryResults = []
-        const toolMessages = aiState[0].messages.filter((message) => message.role === 'tool')
+        const toolMessages = aiState[0].messages.filter((message: AIMessage) => message.role === 'tool')
         if (!toolMessages) return
         
         for (const message of toolMessages) {

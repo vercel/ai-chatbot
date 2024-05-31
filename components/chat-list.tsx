@@ -11,7 +11,7 @@ export interface ChatList {
 }
 
 export function ChatList({ messages, session, isShared }: ChatList) {
-  if (!messages.length) {
+  if (!messages || messages.length === 0) {
     return null
   }
 
@@ -41,7 +41,6 @@ export function ChatList({ messages, session, isShared }: ChatList) {
       ) : null}
 
       {messages.map((message, index) => (
-        console.log('Message: ', message.display.type.name),
         <div key={message.id}>
           {message.display}
           {index < messages.length - 1 && <div className="my-4" />}
