@@ -63,7 +63,7 @@ export function EmptyScreen() {
                   type: "spring",
                 }}
               >
-                Huddlechat is our first consumer product, built on top of the <ExternalLink href="google.com">nflfastR</ExternalLink> database. It's a natural language interface to sports stats, powered by AI.
+                Huddlechat is our first consumer product, built on top of the <ExternalLink href="/new">nflfastR</ExternalLink> database. It's a natural language interface to sports stats, powered by AI.
               </motion.p>
 
               {/* <motion.div
@@ -105,13 +105,6 @@ export function EmptyScreen() {
 
               )}
             />
-            {/* <video
-              autoPlay
-              loop
-              muted
-              src="demo.mp4"
-              className="h-auto w-full"
-            /> */}
 
             <BorderBeam size={150} />
             <BorderBeam size={150} delay={7} />
