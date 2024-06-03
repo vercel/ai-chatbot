@@ -136,7 +136,7 @@ export function MainInterface({input, setInput}: MainInterfaceProps) {
     const { scrollRef } = useScrollAnchor()
 
     return (
-        <div className="p-4 w-full flex flex-row x-divide">
+        <div className="p-4 w-full flex flex-row x-divide h-full">
             <div ref={scrollRef} className="flex flex-col w-5/12">
                 <SideChat 
                     session={aiState.session}

@@ -66,22 +66,22 @@ export function PromptForm({
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
-      <div className="relative flex mt-6 max-h-60 w-full grow flex-col overflow-hidden bg-background sm:rounded-md sm:border border-sky-500">
-        <Textarea
-          ref={inputRef}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          placeholder="Ask me anything about NFL stats."
-          className="min-h-[60px] w-full text-sky-900 resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-md"
-          autoFocus
-          spellCheck={false}
-          autoComplete="off"
-          autoCorrect="off"
-          name="message"
-          rows={1}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-        />
+      <div className="relative flex my-6 max-h-60 w-full grow flex-col overflow-hidden rounded-md">
+      <Textarea
+        ref={inputRef}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        placeholder="Ask me anything about NFL stats."
+        className="min-h-[60px] w-full text-sky-900 border border-sky-300 rounded-md resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-md"
+        autoFocus
+        spellCheck={false}
+        autoComplete="off"
+        autoCorrect="off"
+        name="message"
+        rows={1}
+        value={input}
+        onChange={e => setInput(e.target.value)}
+      />
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>

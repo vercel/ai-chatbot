@@ -156,6 +156,10 @@
         {
             "match": ["fantasy"],
             "add": ["receiver_player_id", "rusher_player_id", "passer_player_id", "touchdown", "interception", "yards_gained"]
+        },
+        {
+            "match": ["pass rate over expected", "rate over expected", "pass over expected"],
+            "add": ["pass_oe", "xpass", "pass_attempt"]
         }
     ]
 }

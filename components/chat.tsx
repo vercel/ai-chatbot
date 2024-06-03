@@ -11,7 +11,8 @@ import { useUIState, useAIState } from 'ai/rsc'
 import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { FooterText } from '@/components/footer'
+import { Footer } from '@/components/footer'
+import { Pricing } from '@/components/pricing'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -55,25 +56,27 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [missingKeys])
 
   return (
-      <>
+      <div className="flex flex-col w-full h-full">
       {messages.length ? (
         <MainInterface 
         session={session} 
         input={input} 
         setInput={setInput} />
         ) : (
-          <div style={{borderTop: 'none', borderBottom: 'none'}} className="group border border-sky-300/[0.55] w-8/12 h-full m-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
-          <div className={cn('pb-[100px] pt-4 md:pt-10', className)}>
+          <div style={{borderTop: 'none', borderBottom: 'none'}} className="group border w-8/12 m-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
+          <div className={cn('pt-4 md:pt-10', className)}>
               <EmptyScreen />
               <ChatPanel
               id={id}
               input={input}
               setInput={setInput}
             />
+            <Footer />
           </div>
+          
           </div>
         )}
-        <FooterText />
-      </>
+        
+      </div>
   )
 }

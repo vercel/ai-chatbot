@@ -94,13 +94,13 @@ export function ChatPanel({
   ];
 
   return (
-    <div className="inset-x-0 w-full pb-24 m-auto h-full relative">
+    <div className="inset-x-0 w-full pb-12 m-auto h-full relative">
       <div className={`w-11/12 m-auto ${position}`}>
         <PromptForm input={input} setInput={setInput} />
       </div>
       {messages.length === 0 ? (
         <div className="mx-auto sm:px-4">
-          <div className="mb-4 gap-2 px-4 sm:px-0 grid grid-cols-4 w-11/12 m-auto">
+          <div className="mb-4 gap-2 px-4 sm:px-0 grid grid-cols-4 sm:grid-cols-3 xs:grid-cols-1 w-11/12 m-auto">
             {exampleMessages.map((example, index) => (
               <div
                 key={index}

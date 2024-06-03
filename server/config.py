@@ -50,6 +50,6 @@ class Config:
 
     GCP_PROJECT = os.getenv('GCP_PROJECT')
     GCP_DATASTORE_DATABASE = os.getenv('GCP_DATASTORE_DATABASE')
-    VERTEX_ENDPOINT = os.getenv('VERTEX_ENDPOINT')
+    VERTEX_ENDPOINT = "projects/239130517355/locations/us-central1/endpoints/5599581822821335040"
     VERTEX_AI_REGION = os.getenv('VERTEX_AI_REGION')
 
