@@ -17,6 +17,39 @@ import { ChatHistory } from './chat-history'
 import { Session } from '@/lib/types'
 import img from "@/public/logo.svg";
 
+import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
+
+function Example() {
+  return (
+    <Popover>
+      <PopoverButton className="border-none font-md text-zinc-900/[0.8]">Products</PopoverButton>
+      <Transition
+        enter="duration-200 ease-out"
+        enterFrom="scale-95 opacity-0"
+        enterTo="scale-100 opacity-100"
+        leave="duration-200 ease-out"
+        leaveFrom="scale-100 opacity-100"
+        leaveTo="scale-95 opacity-0"
+      >
+        <PopoverPanel anchor="bottom" className="flex origin-top flex-col transition bg-white pt-10 pb-3 border rounded-md px-2 ml-3 divide-y divide-white/5">
+          <a className="mb-3 block rounded-md px-3 py-4 transition hover:bg-zinc-100/[0.55]" href="/">
+            <p className="text-md text-sky-600">Huddlechat</p>
+            <p className="text-sm text-muted-foreground">A natural language interface to sports stats.</p>
+          </a>
+          <a className="mb-3 block rounded-md px-3 py-4 transition hover:bg-zinc-100/[0.55]" href="https://huddlevision.ai">
+            <p className="text-md text-sky-600">Huddlevision</p>
+            <p className="text-sm text-muted-foreground">Enterprise computer-vision solutions to high school football scouting.</p>
+          </a>
+          <a className="mb-3 block rounded-md px-3 py-4 transition hover:bg-zinc-100/[0.55]" href="/rag">
+            <p className="text-md text-sky-600">RAG Implementations</p>
+            <p className="text-sm text-muted-foreground">Custom RAG-based solutions for your sports business.</p>
+          </a>
+        </PopoverPanel>
+      </Transition>
+    </Popover>
+  )
+}
+
 async function UserOrLogin() {
   const session = (await auth()) as Session
   return (
@@ -38,13 +71,7 @@ async function UserOrLogin() {
             <Link href="/new">Huddlechat</Link>
         </Button>
         <IconSeparator className="size-8 text-muted-foreground/[0.30]" />
-        <Button variant="link" asChild className="-ml-2 text-md text-zinc-900/[0.8]">
-            <Link href="/login">Huddlevision</Link>
-        </Button>
-        <IconSeparator className="size-8 text-muted-foreground/[0.30]" />
-        <Button variant="link" asChild className="-ml-2 text-md text-zinc-900/[0.8]">
-            <Link href="/login">Enterprise LLM Solutions</Link>
-        </Button>
+        <Example/>
       </>
       )}
       <div className="flex items-center">
