@@ -26,6 +26,8 @@ const Circle = forwardRef<
   );
 });
 
+Circle.displayName = "Circle";
+
 export function AnimatedBeamMultipleInputDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const div1Ref = useRef<HTMLDivElement>(null);
