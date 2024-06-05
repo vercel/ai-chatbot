@@ -98,7 +98,7 @@ def find_all_player_ids(
     for i, player in enumerate(identified_players):
         best_match = find_player_id_in_lookup_table(
             player_name=player['player_name'], 
-            player_position=player['player_position']
+            player_position=player.get('player_position', None)
         )
         identified_players[i]['player_position'] = best_match['player_row']['position']
         identified_players[i]['player_id'] = best_match['player_row']['player_id']
