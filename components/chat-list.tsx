@@ -8,10 +8,9 @@ export interface ChatList {
   messages: UIState
   session?: Session
   isShared: boolean
-  toolResults: any
 }
 
-export function ChatList({ toolResults, messages, session, isShared }: ChatList) {
+export function ChatList({ messages, session, isShared }: ChatList) {
   if (!messages || messages.length === 0) {
     return null
   }

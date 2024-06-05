@@ -80,7 +80,7 @@ export function SideChat({input, setInput, session}: MainInterfaceProps) {
                 isAtBottom={isAtBottom}
                 scrollToBottom={scrollToBottom}
             />
-            <ChatList toolResults={toolResults} messages={messages} session={session} isShared={false}/>
+            <ChatList messages={messages} session={session} isShared={false}/>
         </div>
         <div className="fixed inset-x-0 bottom-5 flex justify-center">
             <div className="w-11/12">

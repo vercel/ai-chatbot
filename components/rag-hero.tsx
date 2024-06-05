@@ -462,7 +462,7 @@ export function Hero() {
                   type: "spring",
                 }}
               >
-                Streamline your <br/> betting, fantasy and sports content
+                Streamline your <br/> sports content
               </motion.h1>
 
               <motion.p
