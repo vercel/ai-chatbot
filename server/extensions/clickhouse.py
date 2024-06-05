@@ -44,10 +44,6 @@ class ClickHouse:
 
     def _perform_initial_queries(self, app):
         client = self._get_clickhouse_client()
-        
-        rosters_query = "SELECT player_name, position, player_id FROM core.roster"
-        res = client.query(rosters_query)
-        app.config['ROSTER'] = pd.DataFrame(res.result_rows, columns=['player_name', 'position', 'player_id']).drop_duplicates(subset='player_id', keep='first')
 
         column_descriptions_query = "SELECT * FROM core.play_by_play_column_descriptions"
         res = client.query(column_descriptions_query)
@@ -58,12 +54,19 @@ class ClickHouse:
         return self._get_clickhouse_client()
 
 def query_clickhouse(
-        sql_query: str
+        sql_query: str,
+        as_df: bool = False
     ):
 
     if not hasattr(current_app, 'clickhouse_client'):
         raise RuntimeError('ClickHouse client not initialized')
 
     client = current_app.clickhouse_client
-    res = client.query_df(sql_query).to_json()
-    return json.loads(res)
+    res = client.query_df(sql_query)
+
+    if as_df:
+        return res
+
+    return json.loads(res.to_json())
+
+

@@ -5,6 +5,7 @@ class PlayerModel(BaseModel):
     player_name: str
     player_position: Optional[str] = ''
     player_id: Optional[str] = ''
+    player_info: Optional[dict] = {}
     cosine_similarity: Optional[float] = 0.0
 
 class RequestModel(BaseModel):

@@ -5,6 +5,7 @@ import numpy as np
 from flask import current_app
 from extensions.openai import generate_ai_text
 from extensions.google_cloud import run_prediction_bert_model
+from extensions.clickhouse import query_clickhouse
 import json
     
 def rule_base_adjust_column_names(
@@ -53,26 +54,42 @@ def rule_base_adjust_column_names(
 
 def find_player_id_in_lookup_table(
     player_name: str, 
-    player_position:str = None,
+    player_position: str = None,
 ):
     vectorizer = TfidfVectorizer()
-    roster_copy = current_app.config.get('ROSTER').copy()
+    roster = query_clickhouse('SELECT * FROM core.roster', as_df=True)
 
     if player_position:
-        roster = roster_copy[roster_copy['position'] == player_position]
+        roster = roster[roster['position'] == player_position]
 
-    tfidf_matrix = vectorizer.fit_transform(roster_copy['player_name'].tolist() + [player_name])
+    tfidf_matrix = vectorizer.fit_transform(roster['player_name'].tolist() + [player_name])
     cosine_similarities = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1]).flatten()
     # Find the best match
-    # get the cosine similarity score of the best match
     best_match_index = cosine_similarities.argmax()
     best_match_cosine_similarity = cosine_similarities[best_match_index]
     best_match_score = cosine_similarities[best_match_index]
-    
-    best_match_row = roster_copy.iloc[best_match_index]
 
-    # this returns a tuple of (player name, player_id, position, cosine_similarity) 
-    return tuple(best_match_row.values.tolist() + [best_match_cosine_similarity]) 
+    best_match_row = roster.iloc[best_match_index]
+    best_match_player_id = best_match_row['player_id']
+    roster['season'] = roster['season'].astype(int)
+    max_season = roster.loc[roster['player_id'] == best_match_player_id]['season'].max()
+
+    # Check if the 2023 season exists, otherwise use the max season available
+    player_row = roster.loc[
+        (roster['player_id'] == best_match_player_id) & 
+        (roster['season'] == max_season)
+    ]
+
+    # Ensure player_row is a single row, if it's not, take the first one
+    if not player_row.empty:
+        player_row = player_row.iloc[0]
+
+    # this returns a dictionary with the player row, and cosine similarity score
+    return {
+        'player_row': player_row,
+        'cosine_similarity': best_match_score
+    }
+
 
 def find_all_player_ids(
     identified_players: list, 
@@ -83,9 +100,10 @@ def find_all_player_ids(
             player_name=player['player_name'], 
             player_position=player['player_position']
         )
-        identified_players[i]['player_position'] = best_match[1]
-        identified_players[i]['player_id'] = best_match[2]
-        identified_players[i]['cosine_similarity'] = best_match[3]
+        identified_players[i]['player_position'] = best_match['player_row']['position']
+        identified_players[i]['player_id'] = best_match['player_row']['player_id']
+        identified_players[i]['cosine_similarity'] = best_match['cosine_similarity']
+        identified_players[i]['player_info'] = best_match['player_row'].to_dict()
         # add the player position to the query based on the end location of the player name
         end = prompt.find(player['player_name']) + len(player['player_name'])
 
@@ -95,7 +113,8 @@ def find_all_player_ids(
                 insertion_index += 1
 
             # Add the player position at the found index
-            prompt = prompt[:insertion_index] + f' ({best_match[1]})' + prompt[insertion_index:]
+            player_position = best_match['player_row']['position']
+            prompt = prompt[:insertion_index] + f' ({player_position})' + prompt[insertion_index:]
 
     return identified_players, prompt
 

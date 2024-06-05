@@ -8,9 +8,10 @@ export interface ChatList {
   messages: UIState
   session?: Session
   isShared: boolean
+  toolResults: any
 }
 
-export function ChatList({ messages, session, isShared }: ChatList) {
+export function ChatList({ toolResults, messages, session, isShared }: ChatList) {
   if (!messages || messages.length === 0) {
     return null
   }
@@ -40,12 +41,13 @@ export function ChatList({ messages, session, isShared }: ChatList) {
         </>
       ) : null}
 
-      {messages.map((message, index) => (
+      {messages.map((message, index) => {
+        return (
         <div key={message.id}>
           {message.display}
           {index < messages.length - 1 && <div className="my-4" />}
         </div>
-      ))}
+      )})}
     </div>
   )
 }

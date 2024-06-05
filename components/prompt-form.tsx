@@ -20,10 +20,12 @@ import { useRouter } from 'next/navigation'
 
 export function PromptForm({
   input,
-  setInput
+  setInput,
+  placeholder
 }: {
   input: string
   setInput: (value: string) => void
+  placeholder?: string
 }) {
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
@@ -71,8 +73,8 @@ export function PromptForm({
         ref={inputRef}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        placeholder="Ask me anything about NFL stats."
-        className="min-h-[60px] w-full text-sky-900 border border-sky-300 rounded-md resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-md"
+        placeholder={placeholder ? placeholder : 'Ask me anything about NFL stats.'}
+        className="min-h-[60px] w-full text-sky-900 border border-sky-300 rounded-md resize-none bg-white px-4 py-[1.3rem] focus-within:outline-none sm:text-md"
         autoFocus
         spellCheck={false}
         autoComplete="off"
@@ -82,7 +84,7 @@ export function PromptForm({
         value={input}
         onChange={e => setInput(e.target.value)}
       />
-        <div className="absolute right-0 top-[13px] sm:right-4">
+        <div className="absolute right-0 top-[15px] sm:right-8">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button type="submit" size="icon" disabled={input === ''}>

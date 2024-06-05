@@ -5,7 +5,7 @@ from app.blueprints.api import bp as app
 from clickhouse_connect.driver.exceptions import DatabaseError
 from extensions.clickhouse import query_clickhouse
 from extensions.google_cloud import add_entity_to_datastore
-
+from pydantic import ValidationError
 from app.blueprints.api.models import (
     PlayerModel, RequestModel, NERResultsModel, ResponseModel
 )

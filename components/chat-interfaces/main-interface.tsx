@@ -43,21 +43,53 @@ export interface AIMessage {
 export function SideChat({input, setInput, session}: MainInterfaceProps) {
 
     const [messages] = useUIState()
+    const aiState = useAIState()
+    const [toolResults, setToolResults] = useState<ToolResult[]>([]);
+
     const { messagesRef, isAtBottom, scrollToBottom } = useScrollAnchor()
+
+    useEffect(() => {
+        const queryResults = []
+        const toolMessages = aiState[0].messages.filter((message: AIMessage) => message.role === 'tool')
+        if (!toolMessages) return
+        
+        for (const message of toolMessages) {
+            for (const content of message.content) {
+                if (content.type === 'tool-result') {
+                    console.log('content', content.result)
+                    queryResults.push({
+                        prompt: content.result.userPrompt,
+                        result: content.result.queryAnswer
+                    })
+                }
+            }
+        }
+
+        if (queryResults.length > 0) {
+            setToolResults([...queryResults])
+        }
+
+        console.log('toolResults', toolResults)
+
+    }, [aiState]);
     
     return (
-        <div ref={messagesRef} className="h-full overflow-scroll flex flex-col justify-between border rounded-md p-6">
+        <div className="w-full relative overflow-none">
+        <div ref={messagesRef} className="flex flex-col justify-between pb-[200px] pt-4 pl-2">
             <ButtonScrollToBottom
                 isAtBottom={isAtBottom}
                 scrollToBottom={scrollToBottom}
             />
-            <ChatList messages={messages} session={session} isShared={false}/>
-            <ChatPanel
-              position="absolute bottom-0"
-              id={nanoid()}
-              input={input}
-              setInput={setInput}
-            />
+            <ChatList toolResults={toolResults} messages={messages} session={session} isShared={false}/>
+        </div>
+        <div className="fixed inset-x-0 bottom-5 flex justify-center">
+            <div className="w-11/12">
+                <PromptForm 
+                placeholder='Ask a follow up question...'
+                input={input} 
+                setInput={setInput} />
+            </div>
+        </div>
         </div>
     )
 }
@@ -121,14 +153,6 @@ export function QueryResults () {
     )
 }
 
-export function PlotResults () {
-    return (
-        <div className="h-1/2 border rounded-md p-3 mb-3">
-        <h3 className=" text-sky-800 text-lg ">Plot Results</h3>
-        </div>
-    )
-}
-
 export function MainInterface({input, setInput}: MainInterfaceProps) {
 
     const [messages] = useUIState()
@@ -136,18 +160,12 @@ export function MainInterface({input, setInput}: MainInterfaceProps) {
     const { scrollRef } = useScrollAnchor()
 
     return (
-        <div className="p-4 w-full flex flex-row x-divide h-full">
-            <div ref={scrollRef} className="flex flex-col w-5/12">
-                <SideChat 
+        <div className="p-1 w-11/12 mx-auto flex flex-row x-divide">
+            <SideChat 
                     session={aiState.session}
                     input={input}
                     setInput={setInput}
                 />
-            </div>
-            <div className="flex flex-col ml-3 w-7/12">
-                <QueryResults />
-                {/* <PlotResults /> */}
-            </div>
         </div>
     )
 }

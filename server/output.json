@@ -1,0 +1,2712 @@
+{"ner_results":{"identified_players":[{"cosine_similarity":1.0,"player_id":"00-0036261","player_info":{"age":22,"birth_date":"1998-03-17","college":"Arizona State","depth_chart_position":"WR","draft_club":"SF","draft_number":25,"entry_year":2020,"esb_id":"AIY189231","espn_id":"4360438","fantasy_data_id":"21747","first_name":"Brandon","football_name":"Brandon","game_type":"REG","gsis_it_id":"52433","headshot_url":null,"height":72.0,"jersey_number":11,"last_name":"Aiyuk","ngs_position":null,"pff_id":"84109","pfr_id":"AiyuBr00","player_id":"00-0036261","player_name":"Brandon Aiyuk","position":"WR","rookie_year":2020,"rotowire_id":"14386","season":"2020","sleeper_id":"6803","smart_id":"32004149-5918-9231-4476-63b611051b08","sportradar_id":"c90471cc-fa60-4416-9388-5aebb5d877eb","status":"INA","status_description_abbr":"A01","team":"SF","week":17,"weight":206.0,"yahoo_id":"32695","years_exp":0},"player_name":"Brandon Aiyuk","player_position":"WR"}],"identified_teams":[]},"original_prompt":"What is Brandon Aiyuks EPA per play","predicted_columns":["receiver_player_id","epa"],"query_answer":"0.78","query_results":{"epa_per_play":{"0":0.778931422}},"query_summary":"Sure! Based on the data for the 2023 regular season, Brandon Aiyuk, the wide receiver, has an Expected Points Added (EPA) per play of approximately 0.78. This metric indicates his overall efficiency and impact on the game with each play. It's a solid performance, showing that he contributes positively to his team's scoring potential whenever he is involved in a play.","rule_based_adjustment":["receiver_player_name","season","season_type"],"sql_query":"SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE season = 2023\n  AND season_type = 'REG'\n  AND receiver_player_id = '00-0036261';","success":true,"updated_prompt":"What is Brandon Aiyuks (WR) EPA per play","utctime":"2024-06-05T01:18:47.199390"}
+{"ner_results":{"identified_players":[{"cosine_similarity":1.0,"player_id":"00-0036261","player_info":{"age":22,"birth_date":"1998-03-17","college":"Arizona State","depth_chart_position":"WR","draft_club":"SF","draft_number":25,"entry_year":2020,"esb_id":"AIY189231","espn_id":"4360438","fantasy_data_id":"21747","first_name":"Brandon","football_name":"Brandon","game_type":"REG","gsis_it_id":"52433","headshot_url":null,"height":72.0,"jersey_number":11,"last_name":"Aiyuk","ngs_position":null,"pff_id":"84109","pfr_id":"AiyuBr00","player_id":"00-0036261","player_name":"Brandon Aiyuk","position":"WR","rookie_year":2020,"rotowire_id":"14386","season":"2020","sleeper_id":"6803","smart_id":"32004149-5918-9231-4476-63b611051b08","sportradar_id":"c90471cc-fa60-4416-9388-5aebb5d877eb","status":"INA","status_description_abbr":"A01","team":"SF","week":17,"weight":206.0,"yahoo_id":"32695","years_exp":0},"player_name":"Brandon Aiyuk","player_position":"WR"}],"identified_teams":[]},"original_prompt":"What is Brandon Aiyuks EPA per play","predicted_columns":["receiver_player_id","epa"],"query_answer":"0.779","query_results":{"epa_per_play":{"0":0.778931422}},"query_summary":"Brandon Aiyuk, the wide receiver, has an Expected Points Added (EPA) per play of approximately 0.779 for the 2023 regular season. This statistic reflects his average contribution to his team's scoring potential on each play he is involved in as a receiver. It's a solid performance metric, indicating that he has been quite effective in his role.","rule_based_adjustment":["receiver_player_name","season","season_type"],"sql_query":"SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';","success":true,"updated_prompt":"What is Brandon Aiyuks (WR) EPA per play","utctime":"2024-06-05T01:19:22.831933"}
+{"ner_results":{"identified_players":[{"cosine_similarity":1.0,"player_id":"00-0036261","player_info":{"age":22,"birth_date":"1998-03-17","college":"Arizona State","depth_chart_position":"WR","draft_club":"SF","draft_number":25,"entry_year":2020,"esb_id":"AIY189231","espn_id":"4360438","fantasy_data_id":"21747","first_name":"Brandon","football_name":"Brandon","game_type":"REG","gsis_it_id":"52433","headshot_url":null,"height":72.0,"jersey_number":11,"last_name":"Aiyuk","ngs_position":null,"pff_id":"84109","pfr_id":"AiyuBr00","player_id":"00-0036261","player_name":"Brandon Aiyuk","position":"WR","rookie_year":2020,"rotowire_id":"14386","season":"2020","sleeper_id":"6803","smart_id":"32004149-5918-9231-4476-63b611051b08","sportradar_id":"c90471cc-fa60-4416-9388-5aebb5d877eb","status":"INA","status_description_abbr":"A01","team":"SF","week":17,"weight":206.0,"yahoo_id":"32695","years_exp":0},"player_name":"Brandon Aiyuk","player_position":"WR"}],"identified_teams":[]},"original_prompt":"What is Brandon Aiyuks EPA per play","predicted_columns":["receiver_player_id","epa"],"query_answer":"0.779","query_results":{"epa_per_play":{"0":0.778931422}},"query_summary":"Brandon Aiyuk, the wide receiver, has an impressive average EPA (Expected Points Added) per play of approximately 0.779 for the regular season of 2023. This metric indicates that on average, each play involving Aiyuk contributes significantly to his team's expected points, showcasing his effectiveness on the field.","rule_based_adjustment":["season_type","receiver_player_name","season"],"sql_query":"SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';","success":true,"updated_prompt":"What is Brandon Aiyuks (WR) EPA per play","utctime":"2024-06-05T01:19:59.389840"}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "receiver_player_id",
+    "epa"
+  ],
+  "query_answer": "0.779",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver for the San Francisco 49ers, has an average Expected Points Added (EPA) per play of approximately 0.779 during the 2023 regular season. This metric indicates his effectiveness in contributing to his team's scoring potential on each play he is involved in.",
+  "rule_based_adjustment": [
+    "season_type",
+    "receiver_player_name",
+    "season"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:20:34.023770"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.778931422",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver, has an impressive EPA (Expected Points Added) per play of approximately 0.779 for the 2023 regular season. This metric suggests that, on average, each play involving Aiyuk contributes significantly to his team's scoring potential.",
+  "rule_based_adjustment": [
+    "season_type",
+    "season",
+    "receiver_player_name"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:20:59.604089"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "receiver_player_id",
+    "epa"
+  ],
+  "query_answer": "0.778931422",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver, has an average Expected Points Added (EPA) per play of approximately 0.78 for the 2023 regular season. This metric indicates his effectiveness in contributing to the team's scoring potential each time he is involved in a play.",
+  "rule_based_adjustment": [
+    "season_type",
+    "receiver_player_name",
+    "season"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:22:35.251703"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.78",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver, has been performing quite well in the 2023 regular season. His average EPA (Expected Points Added) per play is approximately 0.78. This metric indicates that on average, each play involving Aiyuk contributes positively to the team's expected points, reflecting his effectiveness and impact on the field.",
+  "rule_based_adjustment": [
+    "season_type",
+    "receiver_player_name",
+    "season"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:23:05.348334"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.779",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Sure! Brandon Aiyuk, the wide receiver, has an impressive Expected Points Added (EPA) per play of approximately 0.779 for the 2023 regular season. This metric indicates that on average, each play involving Aiyuk contributes about 0.779 points to his team's score, showcasing his effectiveness on the field.",
+  "rule_based_adjustment": [
+    "receiver_player_name",
+    "season",
+    "season_type"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:24:08.739385"
+}
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>ValueError: Operands are not aligned. Do `left, right = left.align(right, axis=1, copy=False)` before operating.
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "dX6guvB8JitYtb1fKc6F";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>ValueError</h1>
+<div class="detail">
+  <p class="errormsg">ValueError: Operands are not aligned. Do `left, right = left.align(right, axis=1, copy=False)` before operating.
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-128251275418128">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1498</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>) -&gt; cabc.Iterable[bytes]:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251264562256">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1476</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251264562368">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265056944">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1473</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265057056">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">882</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265057168">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265057280">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">880</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265057392">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">865</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265057504">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py"</cite>,
+      line <em class="line">34</em>,
+      in <code class="function">query_database</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if not prompt:</pre>
+<pre class="line before"><span class="ws">        </span>return jsonify({&#39;error&#39;: &#39;Prompt is required&#39;}), 400</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">    </span>updated_players, updated_prompt = find_all_player_ids(</pre>
+<pre class="line after"><span class="ws">        </span>prompt=prompt,</pre>
+<pre class="line after"><span class="ws">        </span>identified_players=players</pre>
+<pre class="line after"><span class="ws">    </span>)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>all_columns, added_columns, column_descriptions = predict_columns(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265060192">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">92</em>,
+      in <code class="function">find_all_player_ids</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>def find_all_player_ids(</pre>
+<pre class="line before"><span class="ws">    </span>identified_players: list,</pre>
+<pre class="line before"><span class="ws">    </span>prompt: str = None</pre>
+<pre class="line before"><span class="ws"></span>) -&gt; tuple:</pre>
+<pre class="line before"><span class="ws">    </span>for i, player in enumerate(identified_players):</pre>
+<pre class="line current"><span class="ws">        </span>best_match = find_player_id_in_lookup_table(</pre>
+<pre class="line after"><span class="ws">            </span>player_name=player[&#39;player_name&#39;],</pre>
+<pre class="line after"><span class="ws">            </span>player_position=player[&#39;player_position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>)</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_position&#39;] = best_match[&#39;player_row&#39;][&#39;position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_id&#39;] = best_match[&#39;player_row&#39;][&#39;player_id&#39;]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265063664">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">79</em>,
+      in <code class="function">find_player_id_in_lookup_table</code></h4>
+  <div class="source "><pre class="line before"><span class="ws">    </span>roster_copy[&#39;season&#39;] = roster_copy[&#39;season&#39;].astype(int)</pre>
+<pre class="line before"><span class="ws">    </span>print(roster_copy[&#39;season&#39;].unique())</pre>
+<pre class="line before"><span class="ws">    </span>max_season = roster_copy.loc[roster_copy[&#39;player_id&#39;] == best_match_player_id]</pre>
+<pre class="line before"><span class="ws">    </span>print(max_season)</pre>
+<pre class="line before"><span class="ws">    </span>print(max_season)</pre>
+<pre class="line current"><span class="ws">    </span>player_row = roster_copy.loc[(roster_copy[&#39;player_id&#39;] == best_match_player_id) &amp; (roster_copy[&#39;season&#39;] == 2023), :]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span># this returns a tuple of (player name, player_id, position, cosine_similarity)</pre>
+<pre class="line after"><span class="ws">    </span>return {</pre>
+<pre class="line after"><span class="ws">        </span>&#39;player_row&#39;: best_match_row,</pre>
+<pre class="line after"><span class="ws">        </span>&#39;cosine_similarity&#39;: best_match_score</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265063776">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/ops/common.py"</cite>,
+      line <em class="line">76</em>,
+      in <code class="function">new_method</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">                    </span># e.g. other is DataFrame while self is Index/Series/EA</pre>
+<pre class="line before"><span class="ws">                    </span>return NotImplemented</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>other = item_from_zerodim(other)</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">        </span>return method(self, other)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>return new_method</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>def get_op_result_name(left, right):</pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251265065232">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/arraylike.py"</cite>,
+      line <em class="line">40</em>,
+      in <code class="function">__eq__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>def _cmp_method(self, other, op):</pre>
+<pre class="line before"><span class="ws">        </span>return NotImplemented</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>@unpack_zerodim_and_defer(&#34;__eq__&#34;)</pre>
+<pre class="line before"><span class="ws">    </span>def __eq__(self, other):</pre>
+<pre class="line current"><span class="ws">        </span>return self._cmp_method(other, operator.eq)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>@unpack_zerodim_and_defer(&#34;__ne__&#34;)</pre>
+<pre class="line after"><span class="ws">    </span>def __ne__(self, other):</pre>
+<pre class="line after"><span class="ws">        </span>return self._cmp_method(other, operator.ne)</pre>
+<pre class="line after"><span class="ws"></span> </pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251264958752">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/frame.py"</cite>,
+      line <em class="line">7897</em>,
+      in <code class="function">_cmp_method</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span># Arithmetic Methods</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>def _cmp_method(self, other, op):</pre>
+<pre class="line before"><span class="ws">        </span>axis: Literal[1] = 1  # only relevant for Series other case</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">        </span>self, other = self._align_for_op(other, axis, flex=False, level=None)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">        </span># See GH#4537 for discussion of scalar op behavior</pre>
+<pre class="line after"><span class="ws">        </span>new_data = self._dispatch_frame_op(other, op, axis=axis)</pre>
+<pre class="line after"><span class="ws">        </span>return self._construct_result(new_data)</pre>
+<pre class="line after"><span class="ws"></span> </pre></div>
+</div>
+
+<li><div class="frame" id="frame-128251262572960">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/frame.py"</cite>,
+      line <em class="line">8205</em>,
+      in <code class="function">_align_for_op</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>elif isinstance(right, Series):</pre>
+<pre class="line before"><span class="ws">            </span># axis=1 is default for DataFrame-with-Series op</pre>
+<pre class="line before"><span class="ws">            </span>axis = axis if axis is not None else 1</pre>
+<pre class="line before"><span class="ws">            </span>if not flex:</pre>
+<pre class="line before"><span class="ws">                </span>if not left.axes[axis].equals(right.index):</pre>
+<pre class="line current"><span class="ws">                    </span>raise ValueError(</pre>
+<pre class="line after"><span class="ws">                        </span>&#34;Operands are not aligned. Do &#34;</pre>
+<pre class="line after"><span class="ws">                        </span>&#34;`left, right = left.align(right, axis=1, copy=False)` &#34;</pre>
+<pre class="line after"><span class="ws">                        </span>&#34;before operating.&#34;</pre>
+<pre class="line after"><span class="ws">                    </span>)</pre>
+<pre class="line after"><span class="ws"></span> </pre></div>
+</div>
+</ul>
+  <blockquote>ValueError: Operands are not aligned. Do `left, right = left.align(right, axis=1, copy=False)` before operating.
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py&#34;, line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 92, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 79, in find_player_id_in_lookup_table
+    player_row = roster_copy.loc[(roster_copy[&#39;player_id&#39;] == best_match_player_id) &amp; (roster_copy[&#39;season&#39;] == 2023), :]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/ops/common.py&#34;, line 76, in new_method
+    return method(self, other)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/arraylike.py&#34;, line 40, in __eq__
+    return self._cmp_method(other, operator.eq)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/frame.py&#34;, line 7897, in _cmp_method
+    self, other = self._align_for_op(other, axis, flex=False, level=None)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/frame.py&#34;, line 8205, in _align_for_op
+    raise ValueError(
+ValueError: Operands are not aligned. Do `left, right = left.align(right, axis=1, copy=False)` before operating.
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py", line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 92, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 79, in find_player_id_in_lookup_table
+    player_row = roster_copy.loc[(roster_copy['player_id'] == best_match_player_id) & (roster_copy['season'] == 2023), :]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/ops/common.py", line 76, in new_method
+    return method(self, other)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/arraylike.py", line 40, in __eq__
+    return self._cmp_method(other, operator.eq)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/frame.py", line 7897, in _cmp_method
+    self, other = self._align_for_op(other, axis, flex=False, level=None)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pandas/core/frame.py", line 8205, in _align_for_op
+    raise ValueError(
+ValueError: Operands are not aligned. Do `left, right = left.align(right, axis=1, copy=False)` before operating.
+
+
+-->
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "receiver_player_id",
+    "epa"
+  ],
+  "query_answer": "0.779",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, who plays as a wide receiver (WR), has been performing quite well in the 2023 regular season. His Expected Points Added (EPA) per play is approximately 0.779. This metric provides a good insight into his effectiveness on the field, indicating that on average, each play involving Aiyuk contributes positively to his team's chances of scoring.",
+  "rule_based_adjustment": [
+    "season",
+    "receiver_player_name",
+    "season_type"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:24:47.967312"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0000000000000002,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.778931422",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver for the 49ers, has an impressive Expected Points Added (EPA) per play of approximately 0.78 for the 2023 regular season. This metric indicates his significant contribution to the team's offensive performance on a per-play basis.",
+  "rule_based_adjustment": [
+    "season",
+    "receiver_player_name",
+    "season_type"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:25:49.176918"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0000000000000002,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": "2020",
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.779",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver, has an Expected Points Added (EPA) per play of approximately 0.779 for the 2023 regular season. This metric indicates his significant contribution to the offensive efficiency of his team every time he is involved in a play.",
+  "rule_based_adjustment": [
+    "season",
+    "receiver_player_name",
+    "season_type"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE season = 2023\n  AND season_type = 'REG'\n  AND receiver_player_id = '00-0036261';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:26:18.356270"
+}
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>TypeError: Object of type Series is not JSON serializable
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "ZwBh8M4X1PZfY2utj94Z";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>TypeError</h1>
+<div class="detail">
+  <p class="errormsg">TypeError: Object of type Series is not JSON serializable
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-132281409917488">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py"</cite>,
+      line <em class="line">113</em>,
+      in <code class="function">query_database</code></h4>
+  <div class="source "><pre class="line before"><span class="ws">        </span>data = ResponseModel(</pre>
+<pre class="line before"><span class="ws">            </span>original_prompt=prompt,</pre>
+<pre class="line before"><span class="ws">            </span>updated_prompt=updated_prompt,</pre>
+<pre class="line before"><span class="ws">            </span>predicted_columns=predicted_columns,</pre>
+<pre class="line before"><span class="ws">            </span>rule_based_adjustment=added_columns,</pre>
+<pre class="line current"><span class="ws">            </span>ner_results=NERResultsModel(</pre>
+<pre class="line after"><span class="ws">                </span>identified_players=updated_players,</pre>
+<pre class="line after"><span class="ws">                </span>identified_teams=teams</pre>
+<pre class="line after"><span class="ws">            </span>),</pre>
+<pre class="line after"><span class="ws">            </span>sql_query=sql_query,</pre>
+<pre class="line after"><span class="ws">            </span>query_results=sql_result,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409917600">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pydantic/main.py"</cite>,
+      line <em class="line">176</em>,
+      in <code class="function">__init__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>`self` is explicitly positional-only to allow `self` as a field name.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">        </span># `__tracebackhide__` tells pytest and some other tools to omit this function from tracebacks</pre>
+<pre class="line before"><span class="ws">        </span>__tracebackhide__ = True</pre>
+<pre class="line current"><span class="ws">        </span>self.__pydantic_validator__.validate_python(data, self_instance=self)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span># The following line sets a flag that we use to determine when `__init__` gets overridden by the user</pre>
+<pre class="line after"><span class="ws">    </span>__init__.__pydantic_base_init__ = True  # pyright: ignore[reportFunctionMemberAccess]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>@property</pre></div>
+</div>
+
+<li><div class="exc-divider">During handling of the above exception, another exception occurred:</div>
+<li><div class="frame" id="frame-132281385559072">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1498</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>) -&gt; cabc.Iterable[bytes]:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281455032272">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1476</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281455032384">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454937136">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1473</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454937248">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">882</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454937360">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454937472">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">880</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454937584">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">865</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454937696">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py"</cite>,
+      line <em class="line">125</em>,
+      in <code class="function">query_database</code></h4>
+  <div class="source "><pre class="line before"><span class="ws">            </span>query_answer=query_answer,</pre>
+<pre class="line before"><span class="ws">            </span>utctime=datetime.utcnow().isoformat(),</pre>
+<pre class="line before"><span class="ws">            </span>success=True</pre>
+<pre class="line before"><span class="ws">        </span>)</pre>
+<pre class="line before"><span class="ws">    </span>except ValidationError as e:</pre>
+<pre class="line current"><span class="ws">        </span>return jsonify({&#34;error&#34;: e.errors()}), 400</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>try:</pre>
+<pre class="line after"><span class="ws">        </span>add_entity_to_datastore(data.dict(), kind=&#39;prediction&#39;)</pre>
+<pre class="line after"><span class="ws">    </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">        </span>pass</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454940384">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/__init__.py"</cite>,
+      line <em class="line">170</em>,
+      in <code class="function">jsonify</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>Added support for serializing top-level arrays. This was a</pre>
+<pre class="line before"><span class="ws">        </span>security risk in ancient browsers. See :ref:`security-json`.</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>.. versionadded:: 0.2</pre>
+<pre class="line before"><span class="ws">    </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">    </span>return current_app.json.response(*args, **kwargs)  # type: ignore[return-value]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454942848">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py"</cite>,
+      line <em class="line">214</em>,
+      in <code class="function">response</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>dump_args.setdefault(&#34;indent&#34;, 2)</pre>
+<pre class="line before"><span class="ws">        </span>else:</pre>
+<pre class="line before"><span class="ws">            </span>dump_args.setdefault(&#34;separators&#34;, (&#34;,&#34;, &#34;:&#34;))</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>return self._app.response_class(</pre>
+<pre class="line current"><span class="ws">            </span>f&#34;{self.dumps(obj, **dump_args)}\n&#34;, mimetype=self.mimetype</pre>
+<pre class="line after"><span class="ws">        </span>)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454946656">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py"</cite>,
+      line <em class="line">179</em>,
+      in <code class="function">dumps</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>:param kwargs: Passed to :func:`json.dumps`.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">        </span>kwargs.setdefault(&#34;default&#34;, self.default)</pre>
+<pre class="line before"><span class="ws">        </span>kwargs.setdefault(&#34;ensure_ascii&#34;, self.ensure_ascii)</pre>
+<pre class="line before"><span class="ws">        </span>kwargs.setdefault(&#34;sort_keys&#34;, self.sort_keys)</pre>
+<pre class="line current"><span class="ws">        </span>return json.dumps(obj, **kwargs)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def loads(self, s: str | bytes, **kwargs: t.Any) -&gt; t.Any:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Deserialize data as JSON from a string or bytes.</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">        </span>:param s: Text or UTF-8 bytes.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454946768">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/__init__.py"</cite>,
+      line <em class="line">238</em>,
+      in <code class="function">dumps</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>cls = JSONEncoder</pre>
+<pre class="line before"><span class="ws">    </span>return cls(</pre>
+<pre class="line before"><span class="ws">        </span>skipkeys=skipkeys, ensure_ascii=ensure_ascii,</pre>
+<pre class="line before"><span class="ws">        </span>check_circular=check_circular, allow_nan=allow_nan, indent=indent,</pre>
+<pre class="line before"><span class="ws">        </span>separators=separators, default=default, sort_keys=sort_keys,</pre>
+<pre class="line current"><span class="ws">        </span>**kw).encode(obj)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>_default_decoder = JSONDecoder(object_hook=None, object_pairs_hook=None)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281454951136">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/encoder.py"</cite>,
+      line <em class="line">201</em>,
+      in <code class="function">encode</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># This doesn&#39;t pass the iterator directly to &#39;&#39;.join() because the</pre>
+<pre class="line before"><span class="ws">        </span># exceptions aren&#39;t as detailed.  The list call should be roughly</pre>
+<pre class="line before"><span class="ws">        </span># equivalent to the PySequence_Fast that &#39;&#39;.join() would do.</pre>
+<pre class="line before"><span class="ws">        </span>chunks = self.iterencode(o, _one_shot=True)</pre>
+<pre class="line before"><span class="ws">        </span>if not isinstance(chunks, (list, tuple)):</pre>
+<pre class="line current"><span class="ws">            </span>chunks = list(chunks)</pre>
+<pre class="line after"><span class="ws">        </span>return &#39;&#39;.join(chunks)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def iterencode(self, o, _one_shot=False):</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Encode the given object and yield each string</pre>
+<pre class="line after"><span class="ws">        </span>representation as available.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409916816">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/encoder.py"</cite>,
+      line <em class="line">431</em>,
+      in <code class="function">_iterencode</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span># see comment for int/float in _make_iterencode</pre>
+<pre class="line before"><span class="ws">            </span>yield _floatstr(o)</pre>
+<pre class="line before"><span class="ws">        </span>elif isinstance(o, (list, tuple)):</pre>
+<pre class="line before"><span class="ws">            </span>yield from _iterencode_list(o, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">        </span>elif isinstance(o, dict):</pre>
+<pre class="line current"><span class="ws">            </span>yield from _iterencode_dict(o, _current_indent_level)</pre>
+<pre class="line after"><span class="ws">        </span>else:</pre>
+<pre class="line after"><span class="ws">            </span>if markers is not None:</pre>
+<pre class="line after"><span class="ws">                </span>markerid = id(o)</pre>
+<pre class="line after"><span class="ws">                </span>if markerid in markers:</pre>
+<pre class="line after"><span class="ws">                    </span>raise ValueError(&#34;Circular reference detected&#34;)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409916928">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/encoder.py"</cite>,
+      line <em class="line">405</em>,
+      in <code class="function">_iterencode_dict</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">                    </span>chunks = _iterencode_list(value, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">                </span>elif isinstance(value, dict):</pre>
+<pre class="line before"><span class="ws">                    </span>chunks = _iterencode_dict(value, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">                </span>else:</pre>
+<pre class="line before"><span class="ws">                    </span>chunks = _iterencode(value, _current_indent_level)</pre>
+<pre class="line current"><span class="ws">                </span>yield from chunks</pre>
+<pre class="line after"><span class="ws">        </span>if newline_indent is not None:</pre>
+<pre class="line after"><span class="ws">            </span>_current_indent_level -= 1</pre>
+<pre class="line after"><span class="ws">            </span>yield &#39;\n&#39; + _indent * _current_indent_level</pre>
+<pre class="line after"><span class="ws">        </span>yield &#39;}&#39;</pre>
+<pre class="line after"><span class="ws">        </span>if markers is not None:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409917040">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/encoder.py"</cite>,
+      line <em class="line">325</em>,
+      in <code class="function">_iterencode_list</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">                    </span>chunks = _iterencode_list(value, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">                </span>elif isinstance(value, dict):</pre>
+<pre class="line before"><span class="ws">                    </span>chunks = _iterencode_dict(value, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">                </span>else:</pre>
+<pre class="line before"><span class="ws">                    </span>chunks = _iterencode(value, _current_indent_level)</pre>
+<pre class="line current"><span class="ws">                </span>yield from chunks</pre>
+<pre class="line after"><span class="ws">        </span>if newline_indent is not None:</pre>
+<pre class="line after"><span class="ws">            </span>_current_indent_level -= 1</pre>
+<pre class="line after"><span class="ws">            </span>yield &#39;\n&#39; + _indent * _current_indent_level</pre>
+<pre class="line after"><span class="ws">        </span>yield &#39;]&#39;</pre>
+<pre class="line after"><span class="ws">        </span>if markers is not None:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409917152">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/encoder.py"</cite>,
+      line <em class="line">405</em>,
+      in <code class="function">_iterencode_dict</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">                    </span>chunks = _iterencode_list(value, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">                </span>elif isinstance(value, dict):</pre>
+<pre class="line before"><span class="ws">                    </span>chunks = _iterencode_dict(value, _current_indent_level)</pre>
+<pre class="line before"><span class="ws">                </span>else:</pre>
+<pre class="line before"><span class="ws">                    </span>chunks = _iterencode(value, _current_indent_level)</pre>
+<pre class="line current"><span class="ws">                </span>yield from chunks</pre>
+<pre class="line after"><span class="ws">        </span>if newline_indent is not None:</pre>
+<pre class="line after"><span class="ws">            </span>_current_indent_level -= 1</pre>
+<pre class="line after"><span class="ws">            </span>yield &#39;\n&#39; + _indent * _current_indent_level</pre>
+<pre class="line after"><span class="ws">        </span>yield &#39;}&#39;</pre>
+<pre class="line after"><span class="ws">        </span>if markers is not None:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409917264">
+  <h4>File <cite class="filename">"/usr/lib/python3.10/json/encoder.py"</cite>,
+      line <em class="line">438</em>,
+      in <code class="function">_iterencode</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>if markers is not None:</pre>
+<pre class="line before"><span class="ws">                </span>markerid = id(o)</pre>
+<pre class="line before"><span class="ws">                </span>if markerid in markers:</pre>
+<pre class="line before"><span class="ws">                    </span>raise ValueError(&#34;Circular reference detected&#34;)</pre>
+<pre class="line before"><span class="ws">                </span>markers[markerid] = o</pre>
+<pre class="line current"><span class="ws">            </span>o = _default(o)</pre>
+<pre class="line after"><span class="ws">            </span>yield from _iterencode(o, _current_indent_level)</pre>
+<pre class="line after"><span class="ws">            </span>if markers is not None:</pre>
+<pre class="line after"><span class="ws">                </span>del markers[markerid]</pre>
+<pre class="line after"><span class="ws">    </span>return _iterencode</pre></div>
+</div>
+
+<li><div class="frame" id="frame-132281409917376">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py"</cite>,
+      line <em class="line">121</em>,
+      in <code class="function">_default</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>return dataclasses.asdict(o)</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if hasattr(o, &#34;__html__&#34;):</pre>
+<pre class="line before"><span class="ws">        </span>return str(o.__html__())</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">    </span>raise TypeError(f&#34;Object of type {type(o).__name__} is not JSON serializable&#34;)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>class DefaultJSONProvider(JSONProvider):</pre>
+<pre class="line after"><span class="ws">    </span>&#34;&#34;&#34;Provide JSON operations using Python&#39;s built-in :mod:`json`</pre>
+<pre class="line after"><span class="ws">    </span>library. Serializes the following additional data types:</pre></div>
+</div>
+</ul>
+  <blockquote>TypeError: Object of type Series is not JSON serializable
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py&#34;, line 113, in query_database
+    ner_results=NERResultsModel(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pydantic/main.py&#34;, line 176, in __init__
+    self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for NERResultsModel
+identified_players.0.player_position
+  Input should be a valid string [type=string_type, input_value=Series([], Name: position, dtype: string), input_type=Series]
+    For further information visit https://errors.pydantic.dev/2.7/v/string_type
+identified_players.0.player_id
+  Input should be a valid string [type=string_type, input_value=Series([], Name: player_id, dtype: string), input_type=Series]
+    For further information visit https://errors.pydantic.dev/2.7/v/string_type
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py&#34;, line 125, in query_database
+    return jsonify({&#34;error&#34;: e.errors()}), 400
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/__init__.py&#34;, line 170, in jsonify
+    return current_app.json.response(*args, **kwargs)  # type: ignore[return-value]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py&#34;, line 214, in response
+    f&#34;{self.dumps(obj, **dump_args)}\n&#34;, mimetype=self.mimetype
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py&#34;, line 179, in dumps
+    return json.dumps(obj, **kwargs)
+  File &#34;/usr/lib/python3.10/json/__init__.py&#34;, line 238, in dumps
+    **kw).encode(obj)
+  File &#34;/usr/lib/python3.10/json/encoder.py&#34;, line 201, in encode
+    chunks = list(chunks)
+  File &#34;/usr/lib/python3.10/json/encoder.py&#34;, line 431, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File &#34;/usr/lib/python3.10/json/encoder.py&#34;, line 405, in _iterencode_dict
+    yield from chunks
+  File &#34;/usr/lib/python3.10/json/encoder.py&#34;, line 325, in _iterencode_list
+    yield from chunks
+  File &#34;/usr/lib/python3.10/json/encoder.py&#34;, line 405, in _iterencode_dict
+    yield from chunks
+  File &#34;/usr/lib/python3.10/json/encoder.py&#34;, line 438, in _iterencode
+    o = _default(o)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py&#34;, line 121, in _default
+    raise TypeError(f&#34;Object of type {type(o).__name__} is not JSON serializable&#34;)
+TypeError: Object of type Series is not JSON serializable
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py", line 113, in query_database
+    ner_results=NERResultsModel(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/pydantic/main.py", line 176, in __init__
+    self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for NERResultsModel
+identified_players.0.player_position
+  Input should be a valid string [type=string_type, input_value=Series([], Name: position, dtype: string), input_type=Series]
+    For further information visit https://errors.pydantic.dev/2.7/v/string_type
+identified_players.0.player_id
+  Input should be a valid string [type=string_type, input_value=Series([], Name: player_id, dtype: string), input_type=Series]
+    For further information visit https://errors.pydantic.dev/2.7/v/string_type
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py", line 125, in query_database
+    return jsonify({"error": e.errors()}), 400
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/__init__.py", line 170, in jsonify
+    return current_app.json.response(*args, **kwargs)  # type: ignore[return-value]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py", line 214, in response
+    f"{self.dumps(obj, **dump_args)}\n", mimetype=self.mimetype
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py", line 179, in dumps
+    return json.dumps(obj, **kwargs)
+  File "/usr/lib/python3.10/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+  File "/usr/lib/python3.10/json/encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "/usr/lib/python3.10/json/encoder.py", line 431, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/usr/lib/python3.10/json/encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.10/json/encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "/usr/lib/python3.10/json/encoder.py", line 405, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.10/json/encoder.py", line 438, in _iterencode
+    o = _default(o)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/json/provider.py", line 121, in _default
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+TypeError: Object of type Series is not JSON serializable
+
+
+-->
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0000000000000002,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": 2020,
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.779",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver, has an Expected Points Added (EPA) per play of approximately 0.779 for the 2023 regular season. This metric indicates his positive impact on the team's offensive performance whenever he is involved in a play.",
+  "rule_based_adjustment": [
+    "season_type",
+    "receiver_player_name",
+    "season"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:29:14.595816"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0000000000000002,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 22,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "REG",
+          "gsis_it_id": "52433",
+          "headshot_url": null,
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": null,
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": 2020,
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "INA",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 17,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 0
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "epa",
+    "receiver_player_id"
+  ],
+  "query_answer": "0.778931422",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver for the San Francisco 49ers, has been performing quite well in the 2023 regular season. His average Expected Points Added (EPA) per play is approximately 0.779. This metric indicates the value he brings to each play, showing his significant contribution to the team's offensive performance.",
+  "rule_based_adjustment": [
+    "season_type",
+    "receiver_player_name",
+    "season"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:29:31.679158"
+}
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>NameError: name &#39;query_clickhouse&#39; is not defined
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "qCfclXMeEPENZNfsn1B1";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>NameError</h1>
+<div class="detail">
+  <p class="errormsg">NameError: name &#39;query_clickhouse&#39; is not defined
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-133874707927040">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1498</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>) -&gt; cabc.Iterable[bytes]:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707525056">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1476</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707525168">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707528080">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1473</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707528192">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">882</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707528304">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707528416">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">880</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707528528">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">865</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707528640">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py"</cite>,
+      line <em class="line">34</em>,
+      in <code class="function">query_database</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if not prompt:</pre>
+<pre class="line before"><span class="ws">        </span>return jsonify({&#39;error&#39;: &#39;Prompt is required&#39;}), 400</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">    </span>updated_players, updated_prompt = find_all_player_ids(</pre>
+<pre class="line after"><span class="ws">        </span>prompt=prompt,</pre>
+<pre class="line after"><span class="ws">        </span>identified_players=players</pre>
+<pre class="line after"><span class="ws">    </span>)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>all_columns, added_columns, column_descriptions = predict_columns(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707400400">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">98</em>,
+      in <code class="function">find_all_player_ids</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>def find_all_player_ids(</pre>
+<pre class="line before"><span class="ws">    </span>identified_players: list,</pre>
+<pre class="line before"><span class="ws">    </span>prompt: str = None</pre>
+<pre class="line before"><span class="ws"></span>) -&gt; tuple:</pre>
+<pre class="line before"><span class="ws">    </span>for i, player in enumerate(identified_players):</pre>
+<pre class="line current"><span class="ws">        </span>best_match = find_player_id_in_lookup_table(</pre>
+<pre class="line after"><span class="ws">            </span>player_name=player[&#39;player_name&#39;],</pre>
+<pre class="line after"><span class="ws">            </span>player_position=player[&#39;player_position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>)</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_position&#39;] = best_match[&#39;player_row&#39;][&#39;position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_id&#39;] = best_match[&#39;player_row&#39;][&#39;player_id&#39;]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-133874707403760">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">59</em>,
+      in <code class="function">find_player_id_in_lookup_table</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>def find_player_id_in_lookup_table(</pre>
+<pre class="line before"><span class="ws">    </span>player_name: str,</pre>
+<pre class="line before"><span class="ws">    </span>player_position: str = None,</pre>
+<pre class="line before"><span class="ws"></span>):</pre>
+<pre class="line before"><span class="ws">    </span>vectorizer = TfidfVectorizer()</pre>
+<pre class="line current"><span class="ws">    </span>roster_copy = query_clickhouse(&#39;SELECT * FROM core.roster&#39;)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>if player_position:</pre>
+<pre class="line after"><span class="ws">        </span>roster_copy = roster_copy[roster_copy[&#39;position&#39;] == player_position]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>tfidf_matrix = vectorizer.fit_transform(roster_copy[&#39;player_name&#39;].tolist() + [player_name])</pre></div>
+</div>
+</ul>
+  <blockquote>NameError: name &#39;query_clickhouse&#39; is not defined
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py&#34;, line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 98, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 59, in find_player_id_in_lookup_table
+    roster_copy = query_clickhouse(&#39;SELECT * FROM core.roster&#39;)
+NameError: name &#39;query_clickhouse&#39; is not defined
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py", line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 98, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 59, in find_player_id_in_lookup_table
+    roster_copy = query_clickhouse('SELECT * FROM core.roster')
+NameError: name 'query_clickhouse' is not defined
+
+
+-->
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>KeyError: False
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "2uPNAG3Sin6nYrkWHnTg";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>KeyError</h1>
+<div class="detail">
+  <p class="errormsg">KeyError: False
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-125671217255744">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1498</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>) -&gt; cabc.Iterable[bytes]:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553661312">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1476</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553661424">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553664336">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1473</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553664448">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">882</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553664560">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553664672">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">880</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553664784">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">865</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553664896">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py"</cite>,
+      line <em class="line">34</em>,
+      in <code class="function">query_database</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if not prompt:</pre>
+<pre class="line before"><span class="ws">        </span>return jsonify({&#39;error&#39;: &#39;Prompt is required&#39;}), 400</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">    </span>updated_players, updated_prompt = find_all_player_ids(</pre>
+<pre class="line after"><span class="ws">        </span>prompt=prompt,</pre>
+<pre class="line after"><span class="ws">        </span>identified_players=players</pre>
+<pre class="line after"><span class="ws">    </span>)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>all_columns, added_columns, column_descriptions = predict_columns(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553733488">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">99</em>,
+      in <code class="function">find_all_player_ids</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>def find_all_player_ids(</pre>
+<pre class="line before"><span class="ws">    </span>identified_players: list,</pre>
+<pre class="line before"><span class="ws">    </span>prompt: str = None</pre>
+<pre class="line before"><span class="ws"></span>) -&gt; tuple:</pre>
+<pre class="line before"><span class="ws">    </span>for i, player in enumerate(identified_players):</pre>
+<pre class="line current"><span class="ws">        </span>best_match = find_player_id_in_lookup_table(</pre>
+<pre class="line after"><span class="ws">            </span>player_name=player[&#39;player_name&#39;],</pre>
+<pre class="line after"><span class="ws">            </span>player_position=player[&#39;player_position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>)</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_position&#39;] = best_match[&#39;player_row&#39;][&#39;position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_id&#39;] = best_match[&#39;player_row&#39;][&#39;player_id&#39;]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-125670553736960">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">63</em>,
+      in <code class="function">find_player_id_in_lookup_table</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>):</pre>
+<pre class="line before"><span class="ws">    </span>vectorizer = TfidfVectorizer()</pre>
+<pre class="line before"><span class="ws">    </span>roster_copy = query_clickhouse(&#39;SELECT * FROM core.roster&#39;)</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if player_position:</pre>
+<pre class="line current"><span class="ws">        </span>roster_copy = roster_copy[roster_copy[&#39;position&#39;] == player_position]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>tfidf_matrix = vectorizer.fit_transform(roster_copy[&#39;player_name&#39;].tolist() + [player_name])</pre>
+<pre class="line after"><span class="ws">    </span>cosine_similarities = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1]).flatten()</pre>
+<pre class="line after"><span class="ws">    </span># Find the best match</pre>
+<pre class="line after"><span class="ws">    </span>best_match_index = cosine_similarities.argmax()</pre></div>
+</div>
+</ul>
+  <blockquote>KeyError: False
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py&#34;, line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 99, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 63, in find_player_id_in_lookup_table
+    roster_copy = roster_copy[roster_copy[&#39;position&#39;] == player_position]
+KeyError: False
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py", line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 99, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 63, in find_player_id_in_lookup_table
+    roster_copy = roster_copy[roster_copy['position'] == player_position]
+KeyError: False
+
+
+-->
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>KeyError: False
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "HpWWdqXXQqhS2cZtFtvJ";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>KeyError</h1>
+<div class="detail">
+  <p class="errormsg">KeyError: False
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-131082978300912">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1498</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>) -&gt; cabc.Iterable[bytes]:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343460400">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1476</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343460512">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343463424">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">1473</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343463536">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">882</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343463648">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py"</cite>,
+      line <em class="line">178</em>,
+      in <code class="function">wrapped_function</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span># Wrap exception handlers with cross_origin</pre>
+<pre class="line before"><span class="ws">        </span># These error handlers will still respect the behavior of the route</pre>
+<pre class="line before"><span class="ws">        </span>if options.get(&#39;intercept_exceptions&#39;, True):</pre>
+<pre class="line before"><span class="ws">            </span>def _after_request_decorator(f):</pre>
+<pre class="line before"><span class="ws">                </span>def wrapped_function(*args, **kwargs):</pre>
+<pre class="line current"><span class="ws">                    </span>return cors_after_request(app.make_response(f(*args, **kwargs)))</pre>
+<pre class="line after"><span class="ws">                </span>return wrapped_function</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">            </span>if hasattr(app, &#39;handle_exception&#39;):</pre>
+<pre class="line after"><span class="ws">                </span>app.handle_exception = _after_request_decorator(</pre>
+<pre class="line after"><span class="ws">                    </span>app.handle_exception)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343463760">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">880</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343463872">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py"</cite>,
+      line <em class="line">865</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343463984">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py"</cite>,
+      line <em class="line">34</em>,
+      in <code class="function">query_database</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if not prompt:</pre>
+<pre class="line before"><span class="ws">        </span>return jsonify({&#39;error&#39;: &#39;Prompt is required&#39;}), 400</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">    </span>updated_players, updated_prompt = find_all_player_ids(</pre>
+<pre class="line after"><span class="ws">        </span>prompt=prompt,</pre>
+<pre class="line after"><span class="ws">        </span>identified_players=players</pre>
+<pre class="line after"><span class="ws">    </span>)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>all_columns, added_columns, column_descriptions = predict_columns(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343532352">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">99</em>,
+      in <code class="function">find_all_player_ids</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>def find_all_player_ids(</pre>
+<pre class="line before"><span class="ws">    </span>identified_players: list,</pre>
+<pre class="line before"><span class="ws">    </span>prompt: str = None</pre>
+<pre class="line before"><span class="ws"></span>) -&gt; tuple:</pre>
+<pre class="line before"><span class="ws">    </span>for i, player in enumerate(identified_players):</pre>
+<pre class="line current"><span class="ws">        </span>best_match = find_player_id_in_lookup_table(</pre>
+<pre class="line after"><span class="ws">            </span>player_name=player[&#39;player_name&#39;],</pre>
+<pre class="line after"><span class="ws">            </span>player_position=player[&#39;player_position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>)</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_position&#39;] = best_match[&#39;player_row&#39;][&#39;position&#39;]</pre>
+<pre class="line after"><span class="ws">        </span>identified_players[i][&#39;player_id&#39;] = best_match[&#39;player_row&#39;][&#39;player_id&#39;]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-131082343536048">
+  <h4>File <cite class="filename">"/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py"</cite>,
+      line <em class="line">63</em>,
+      in <code class="function">find_player_id_in_lookup_table</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>):</pre>
+<pre class="line before"><span class="ws">    </span>vectorizer = TfidfVectorizer()</pre>
+<pre class="line before"><span class="ws">    </span>roster = query_clickhouse(&#39;SELECT * FROM core.roster&#39;)</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>if player_position:</pre>
+<pre class="line current"><span class="ws">        </span>roster = roster[roster[&#39;position&#39;] == player_position]</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>tfidf_matrix = vectorizer.fit_transform(roster[&#39;player_name&#39;].tolist() + [player_name])</pre>
+<pre class="line after"><span class="ws">    </span>cosine_similarities = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1]).flatten()</pre>
+<pre class="line after"><span class="ws">    </span># Find the best match</pre>
+<pre class="line after"><span class="ws">    </span>best_match_index = cosine_similarities.argmax()</pre></div>
+</div>
+</ul>
+  <blockquote>KeyError: False
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py&#34;, line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py&#34;, line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py&#34;, line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 99, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File &#34;/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py&#34;, line 63, in find_player_id_in_lookup_table
+    roster = roster[roster[&#39;position&#39;] == player_position]
+KeyError: False
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask_cors/extension.py", line 178, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/blueprints/api/routes.py", line 34, in query_database
+    updated_players, updated_prompt = find_all_player_ids(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 99, in find_all_player_ids
+    best_match = find_player_id_in_lookup_table(
+  File "/home/ben/Documents/Code/huddlevision/chat_huddlevision/chatbot_huddlevision/server/app/nlp/functions.py", line 63, in find_player_id_in_lookup_table
+    roster = roster[roster['position'] == player_position]
+KeyError: False
+
+
+-->
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 25,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "SB",
+          "gsis_it_id": "52433",
+          "headshot_url": "https://static.www.nfl.com/image/private/f_auto,q_auto/league/mprcyhqhfgzi57ebelbz",
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": "WR",
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": 2023,
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "ACT",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 22,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 3
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "receiver_player_id",
+    "epa"
+  ],
+  "query_answer": "0.779",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver for the 49ers, has been performing quite well this season. Based on the data from the 2023 regular season, his Expected Points Added (EPA) per play is approximately 0.779. This means that on average, each play involving Aiyuk contributes about 0.779 points to his team's expected score. This is a solid performance metric for a wide receiver, indicating his positive impact on the game.",
+  "rule_based_adjustment": [
+    "season_type",
+    "receiver_player_name",
+    "season"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261'\n  AND season = 2023\n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:32:11.209912"
+}
+{
+  "ner_results": {
+    "identified_players": [
+      {
+        "cosine_similarity": 1.0,
+        "player_id": "00-0036261",
+        "player_info": {
+          "age": 25,
+          "birth_date": "1998-03-17",
+          "college": "Arizona State",
+          "depth_chart_position": "WR",
+          "draft_club": "SF",
+          "draft_number": 25,
+          "entry_year": 2020,
+          "esb_id": "AIY189231",
+          "espn_id": "4360438",
+          "fantasy_data_id": "21747",
+          "first_name": "Brandon",
+          "football_name": "Brandon",
+          "game_type": "SB",
+          "gsis_it_id": "52433",
+          "headshot_url": "https://static.www.nfl.com/image/private/f_auto,q_auto/league/mprcyhqhfgzi57ebelbz",
+          "height": 72.0,
+          "jersey_number": 11,
+          "last_name": "Aiyuk",
+          "ngs_position": "WR",
+          "pff_id": "84109",
+          "pfr_id": "AiyuBr00",
+          "player_id": "00-0036261",
+          "player_name": "Brandon Aiyuk",
+          "position": "WR",
+          "rookie_year": 2020,
+          "rotowire_id": "14386",
+          "season": 2023,
+          "sleeper_id": "6803",
+          "smart_id": "32004149-5918-9231-4476-63b611051b08",
+          "sportradar_id": "c90471cc-fa60-4416-9388-5aebb5d877eb",
+          "status": "ACT",
+          "status_description_abbr": "A01",
+          "team": "SF",
+          "week": 22,
+          "weight": 206.0,
+          "yahoo_id": "32695",
+          "years_exp": 3
+        },
+        "player_name": "Brandon Aiyuk",
+        "player_position": "WR"
+      }
+    ],
+    "identified_teams": []
+  },
+  "original_prompt": "What is Brandon Aiyuks EPA per play",
+  "predicted_columns": [
+    "receiver_player_id",
+    "epa"
+  ],
+  "query_answer": "0.78",
+  "query_results": {
+    "epa_per_play": {
+      "0": 0.778931422
+    }
+  },
+  "query_summary": "Brandon Aiyuk, the wide receiver, has an average Expected Points Added (EPA) of approximately 0.78 per play for the 2023 regular season. This metric indicates his positive impact on the game whenever he is involved in a play.",
+  "rule_based_adjustment": [
+    "season_type",
+    "season",
+    "receiver_player_name"
+  ],
+  "sql_query": "SELECT AVG(epa) AS epa_per_play\nFROM core.play_by_play\nWHERE receiver_player_id = '00-0036261' \n  AND season = 2023 \n  AND season_type = 'REG';",
+  "success": true,
+  "updated_prompt": "What is Brandon Aiyuks (WR) EPA per play",
+  "utctime": "2024-06-05T01:32:26.465486"
+}
