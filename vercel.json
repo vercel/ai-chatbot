@@ -1,6 +1,6 @@
 {
     "functions": {
-      "/index.action": {
+      "app/(chat)/*": {
         "maxDuration": 60
       }
     }
