@@ -304,7 +304,7 @@ async function submitUserMessage(content: string) {
                 <div className="flex mb-3">
                 { nerResults.identified_players.map((player: any) => {
                   return (
-                    <PlayerCard playerInfo={player.player_info} />
+                    <PlayerCard key={nanoid()} playerInfo={player.player_info} />
                   )
                   })
                 }
