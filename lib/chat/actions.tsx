@@ -158,7 +158,7 @@ async function submitUserMessage(content: string) {
       
     Only if no player is mentioned, leave the array empty. You must pass player names and positions even on follow up prompts.
 
-    * Valid player positions are QB, RB, WR, TE, K, P. If a defensive player is mentioned, don't pass in a position.
+    * Valid player positions are QB, RB, WR, TE, K, P. If a defensive player is mentioned, pass 'DEF' as the position name, even if you know the actual position.
     
     You should take care of handling common player pseudonyms and nicknames. For example, if a user asks "What was Lamar's CPOE when targeting OBJ in 2023?", 
     you should pass the full player name in the prompt and the players parameter as [
@@ -219,7 +219,7 @@ async function submitUserMessage(content: string) {
           prompt: z.string(),
           players: z.array(z.object({
             player_name: z.string(),
-            player_position: z.string().optional()
+            player_position: z.string()
           })).optional(),
           teams: z.array(z.string()).optional()
         }),

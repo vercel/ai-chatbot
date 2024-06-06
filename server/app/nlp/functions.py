@@ -59,7 +59,11 @@ def find_player_id_in_lookup_table(
     vectorizer = TfidfVectorizer()
     roster = query_clickhouse('SELECT * FROM core.roster', as_df=True)
 
-    if player_position:
+    if player_position == 'DEF':
+        roster = roster[roster['position'].isin(
+            ['LB', 'DB', 'DL', 'CB', 'DT', 'DEF', 'SS', 'FS', 'OLB', 'MLB', 'ILB', 'S']
+        )]
+    elif player_position in ['QB', 'RB', 'WR', 'TE', 'FB', 'HB']:
         roster = roster[roster['position'] == player_position]
 
     tfidf_matrix = vectorizer.fit_transform(roster['player_name'].tolist() + [player_name])
