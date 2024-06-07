@@ -18,6 +18,14 @@ export interface ChatPanelProps {
   position?: string;
 }
 
+export interface CachedMessage {
+  heading: string;
+  subheading: string;
+  message: string;
+  // cached should be an object
+  cached?: any;
+}
+
 export function ChatPanel({
   id,
   title,
@@ -30,11 +38,15 @@ export function ChatPanel({
   const { submitUserMessage } = useActions();
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false);
 
-  let exampleMessages = [
+  let cachedMessages = [
     {
       heading: 'What is',
       subheading: "Dak Prescott's EPA per play in 2023?",
-      message: "What is Dak Prescott's EPA per play in 2023?"
+      message: "What is Dak Prescott's EPA per play in 2023?",
+      cached: {
+        queryResponse: "Dak Prescott's EPA per play in 2023 is 0.2.",
+        querySummary: "Dak Prescott's EPA per play in 2023 is 0.2."
+      }
     },
     {
       heading: "What is Brock Purdy's",
@@ -101,22 +113,22 @@ export function ChatPanel({
       {messages.length === 0 ? (
         <div className="mx-auto sm:px-4">
           <div className="mb-4 gap-2 px-4 sm:px-0 grid grid-cols-4 sm:grid-cols-3 xs:grid-cols-1 w-11/12 m-auto">
-            {exampleMessages.map((example, index) => (
+            {cachedMessages.map((cached, index) => (
               <div
                 key={index}
                 className={`mt-4 cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50`}
                 onClick={async () => {
-                  // setInput(example.message)
+                  // setInput(cached.message)
                   setMessages(currentMessages => [
                     ...currentMessages,
                     {
                       id: nanoid(),
-                      display: <UserMessage>{example.message}</UserMessage>
+                      display: <UserMessage>{cached.message}</UserMessage>
                     }
                   ]);
 
                   const responseMessage = await submitUserMessage(
-                    example.message
+                    cached.message
                   );
 
                   setMessages(currentMessages => [
@@ -125,9 +137,9 @@ export function ChatPanel({
                   ]);
                 }}
               >
-                <h3 className="text-sm font-semibold">{example.heading}</h3>
+                <h3 className="text-sm font-semibold">{cached.heading}</h3>
                 <p className="text-sm text-sky-500">
-                  {example.subheading}
+                  {cached.subheading}
                 </p>
               </div>
             ))}

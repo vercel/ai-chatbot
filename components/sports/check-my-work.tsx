@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import { NERResults, Player } from '@/lib/types';
 import { IconCheck } from "@/components/ui/icons";
 import { CodeBlock } from "@/components/ui/codeblock";
 
@@ -8,15 +9,7 @@ export interface CheckMyWorkProps {
     sqlQuery: string;
     queryResult: string;
     queryAnswer: string;
-    columnsReferenced: string;
-    nerResults: any;
-}
-
-export interface Player {
-    player_name: string;
-    player_id: string;
-    cosine_similarity: number;
-    player_position: string;
+    nerResults: NERResults;
 }
 
 export function CheckMyWork({ sqlQuery, queryAnswer, nerResults }: CheckMyWorkProps) {
@@ -45,7 +38,7 @@ export function CheckMyWork({ sqlQuery, queryAnswer, nerResults }: CheckMyWorkPr
                     <div className="border rounded-md p-3 mb-3">
                         {/* Table showing the NER results; column for player/team, name, match score, player_position. */}
                         {/* nerResults is an object, with keys of identified_players and identified_teams */}
-                        { nerResults.identified_players.length > 0 ? (
+                        { nerResults.players.length > 0 ? (
                         <><h3 className="text-sky-800 text-sm mb-2">Identified Players in Prompt:</h3>
                         <table className="border-collapse border border-slate-500 rounded-md mb-2">
                             <thead>
@@ -57,15 +50,15 @@ export function CheckMyWork({ sqlQuery, queryAnswer, nerResults }: CheckMyWorkPr
                                 </tr>
                             </thead>
                             <tbody>
-                                {nerResults.identified_players.map((player: Player, index: number) => (
+                                {nerResults.players.map((player: Player, index: number) => (
                                     <tr key={index}>
-                                        <td className="text-center text-sm border p-1">{player.player_name}</td>
-                                        <td className="text-center text-sm border p-1">{player.player_id}</td>                                        {
-                                            player.cosine_similarity > 0.5 ? 
-                                            <td className="text-green-500 text-sm border p-1 text-center">{(player.cosine_similarity * 100).toFixed(2)}%</td> : 
-                                            <td className="text-red-500 border text-sm p-1 text-center">{(player.cosine_similarity * 100).toFixed(2)}%</td>
+                                        <td className="text-center text-sm border p-1">{player.playerName}</td>
+                                        <td className="text-center text-sm border p-1">{player.playerId}</td>                                        {
+                                            player.idScore > 0.5 ? 
+                                            <td className="text-green-500 text-sm border p-1 text-center">{(player.idScore * 100).toFixed(2)}%</td> : 
+                                            <td className="text-red-500 border text-sm p-1 text-center">{(player.idScore * 100).toFixed(2)}%</td>
                                         }
-                                        <td className="text-center text-sm border p-1">{player.player_position}</td>
+                                        <td className="text-center text-sm border p-1">{player.position}</td>
                                     </tr>
                                 ))}
                             </tbody>
