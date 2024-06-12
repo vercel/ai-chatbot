@@ -16,26 +16,6 @@ export function ChatList({ messages, session, isShared }: ChatList) {
   const [displayMessages, setDisplayMessages] = useState<UIState>([]);
   const [showFullThread, setShowFullThread] = useState<boolean>(false);
 
-  if (!messages || messages.length === 0) {
-    return null;
-  }
-
-  const filterMessages = (messages: UIState): UIState => {
-    // Filter to get only user messages
-    const userMessages = messages.filter((message: any) => message.display.type.name === 'UserMessage');
-
-    // Get the index of the last user message
-    const lastUserMessageIndex = userMessages.length > 0 ? messages.indexOf(userMessages[userMessages.length - 1]) : -1;
-
-    // If there are no user messages or the last user message isn't found, return null or handle as needed
-    if (lastUserMessageIndex === -1) {
-      return messages; // or display some default message if there are no user messages
-    }
-
-    return messages.slice(lastUserMessageIndex);
-  }
-
-
   useEffect(() => {
     if (showFullThread) {
       setDisplayMessages(messages);
@@ -59,6 +39,25 @@ export function ChatList({ messages, session, isShared }: ChatList) {
       setDisplayMessages([]);
     };
   }, [messages]);
+
+  if (!messages || messages.length === 0) {
+    return null;
+  }
+
+  const filterMessages = (messages: UIState): UIState => {
+    // Filter to get only user messages
+    const userMessages = messages.filter((message: any) => message.display.type.name === 'UserMessage');
+
+    // Get the index of the last user message
+    const lastUserMessageIndex = userMessages.length > 0 ? messages.indexOf(userMessages[userMessages.length - 1]) : -1;
+
+    // If there are no user messages or the last user message isn't found, return null or handle as needed
+    if (lastUserMessageIndex === -1) {
+      return messages; // or display some default message if there are no user messages
+    }
+
+    return messages.slice(lastUserMessageIndex);
+  }
 
   return (
     <div className="w-11/12 mr-auto">
