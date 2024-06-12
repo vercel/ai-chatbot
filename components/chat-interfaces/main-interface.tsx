@@ -11,6 +11,8 @@ import { ChatPanel } from '@/components/chat-panel'
 import { nanoid } from 'nanoid'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { IconCopy } from '@/components/ui/icons'
+import { UserMessage } from '@/components/stocks/message'
+import { User } from 'lucide-react';
 
 export interface MainInterfaceProps {
     input: string;
@@ -42,37 +44,9 @@ export interface AIMessage {
 
 export function SideChat({input, setInput, session}: MainInterfaceProps) {
 
-    const [messages] = useUIState()
-    const aiState = useAIState()
-    const [toolResults, setToolResults] = useState<ToolResult[]>([]);
-
+    const [messages, _] = useUIState()
     const { messagesRef, isAtBottom, scrollToBottom } = useScrollAnchor()
 
-    useEffect(() => {
-        const queryResults = []
-        const toolMessages = aiState[0].messages.filter((message: AIMessage) => message.role === 'tool')
-        if (!toolMessages) return
-        
-        for (const message of toolMessages) {
-            for (const content of message.content) {
-                if (content.type === 'tool-result') {
-                    console.log('content', content.result)
-                    queryResults.push({
-                        prompt: content.result.userPrompt,
-                        result: content.result.queryAnswer
-                    })
-                }
-            }
-        }
-
-        if (queryResults.length > 0) {
-            setToolResults([...queryResults])
-        }
-
-        console.log('toolResults', toolResults)
-
-    }, [aiState]);
-    
     return (
         <div className="w-full relative overflow-none">
         <div ref={messagesRef} className="flex flex-col justify-between pb-[200px] pt-4 pl-2">

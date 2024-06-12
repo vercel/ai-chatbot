@@ -46,9 +46,7 @@ export function SpinnerMessage({ prompt }: { prompt: string}) {
     { spinner }
     </div>
     <p className="text-zinc-500 font-md ml-3">
-      {
-        prompt === "" ? "Querying the database..." : `Querying the database for "${prompt}"...`
-      }
+      { "Querying the database..."}
     </p>
     </div>
   </>
@@ -157,9 +155,33 @@ async function submitUserMessage(content: string) {
         }),
         generate: async function* ({prompt, players=[], teams=[]}) {
           yield (
+            <div>
+            <p className="text-3xl">{prompt as string}</p>
+            <div className="mt-3">
             <SpinnerMessage prompt={prompt} />
+            </div>
+            </div>
           )
 
+          const currentAIState = aiState.get()
+          const currentMessages = currentAIState.messages
+
+          // last user message
+          const lastUserMessage = currentMessages.filter((message: any) => message.role === 'user').slice(-1)[0]
+          // last user message index
+          const lastUserMessageIndex = currentMessages.indexOf(lastUserMessage)
+          currentMessages.splice(lastUserMessageIndex, 1)
+
+          lastUserMessage.content = prompt;
+
+          aiState.update({
+            ...currentAIState,
+            messages: [
+              ...currentMessages,
+              lastUserMessage
+            ]
+          })
+          
           const toolCallId = nanoid()
           const result = await fetch('https://huddlechat-server-wkztg3dj2q-uc.a.run.app/api/query-database', {
             method: 'POST',
@@ -254,6 +276,7 @@ async function submitUserMessage(content: string) {
           })
 
           return (<ResultsPage
+            prompt={prompt}
             nerResults={nerResults}
             queryResult={queryResult}
             queryAnswer={queryAnswer}
@@ -355,8 +378,6 @@ export const getUIStateFromAIState = (aiState: Chat) => {
               </BotCard>
             ) : null
           })
-        ) : message.role === 'user' ? (
-          <UserMessage>{message.content as string}</UserMessage>
         ) : message.role === 'assistant' &&
           typeof message.content === 'string' ? (
           <BotMessage content={message.content} />

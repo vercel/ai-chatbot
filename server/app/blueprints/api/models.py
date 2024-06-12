@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Union
 
 class PlayerModel(BaseModel):
     player_name: str
@@ -25,7 +25,7 @@ class ResponseModel(BaseModel):
     ner_results: NERResultsModel
     sql_query: str
     query_results: Optional[Any] = None
-    query_summary: str = None
-    query_answer: str = None
-    utctime: str
+    query_summary: Union[str, None] = None
+    query_answer: Union[str, None] = None
+    utctime: Union[str, None] = None
     success: bool = True
