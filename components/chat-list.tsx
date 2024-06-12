@@ -1,9 +1,8 @@
-import { Separator } from '@/components/ui/separator'
+'use client'
+
 import { UIState } from '@/lib/chat/actions'
 import { Session } from '@/lib/types'
-import Link from 'next/link'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { IconPlus, IconClose } from './ui/icons'
 
 export interface ChatList {
@@ -13,7 +12,6 @@ export interface ChatList {
 }
 
 export function ChatList({ messages, session, isShared }: ChatList) {
-  'use client'
 
   const [displayMessages, setDisplayMessages] = useState<UIState>([]);
   const [showFullThread, setShowFullThread] = useState<boolean>(false);
