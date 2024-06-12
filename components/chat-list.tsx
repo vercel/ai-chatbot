@@ -13,6 +13,7 @@ export interface ChatList {
 }
 
 export function ChatList({ messages, session, isShared }: ChatList) {
+  'use client'
 
   const [displayMessages, setDisplayMessages] = useState<UIState>([]);
   const [showFullThread, setShowFullThread] = useState<boolean>(false);
