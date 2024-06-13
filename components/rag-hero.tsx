@@ -43,7 +43,7 @@ export function AnimatedBeamMultipleInputDemo() {
       ref={containerRef}
     >
       <div className="flex h-full w-full flex-row items-stretch justify-between gap-10">
-        <div className="flex flex-col justify-center gap-2">
+        <div className="flex flex-col justify-center gap-5">
           <Circle ref={div1Ref}>
             <Icons.googleDrive className="h-6 w-6" />
           </Circle>
@@ -447,11 +447,11 @@ export function Hero() {
     <section id="hero">
       <div className="relative h-full overflow-hidden py-14">
         <div className="container z-10 flex flex-col">
-          <div className="mt-20 grid grid-cols-1">
+          <div className="mt-4 sm:mt-10 md:mt-20 grid grid-cols-1">
             <div className="flex flex-col items-center gap-6 pb-8 text-center">
               <motion.h1
                 ref={fadeInRef}
-                className="text-balance bg-gradient-to-br from-black from-30% to-black/60 bg-clip-text py-6 text-5xl font-medium leading-none tracking-tighter text-transparent dark:from-white dark:to-white/40 sm:text-6xl md:text-7xl lg:text-8xl"
+                className="text-balance bg-gradient-to-br from-black from-30% to-black/60 bg-clip-text py-3 sm:py-6 text-5xl md:text-6xl font-medium leading-none tracking-tighter text-transparent dark:from-white dark:to-white/40"
                 animate={fadeInInView ? "animate" : "initial"}
                 variants={fadeUpVariants}
                 initial={false}
@@ -462,7 +462,7 @@ export function Hero() {
                   type: "spring",
                 }}
               >
-                Streamline your <br/> sports content
+                Streamline your sports content
               </motion.h1>
 
               <motion.p
@@ -493,7 +493,7 @@ export function Hero() {
                 }}
               >
                 <a
-                  href="#"
+                  href="mailto:ben@huddlevision.ai?subject=Huddlechat Enterprise Inquiry"
                   className={cn(
                     // colors
                     "bg-black  text-white shadow hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90",
@@ -544,13 +544,13 @@ export function Hero() {
             <BorderBeam size={150} delay={7} />
           </motion.div>
         </div>
-        <div className="flex flex-row mt-24 mx-auto px-10 align-items-center w-3/4 pt-4 mb-24">
-        <div className="w-1/2 mr-24 border-right pt-10">
+        <div className="flex flex-col flex-col-reverse md:flex-row mt-24 mx-auto px-10 align-items-center w-full md:w-3/4 pt-4 mb-24">
+        <div className="w-full md:w-1/2 mr-24 border-right pt-10">
             <p className="text-lg text-zinc-500 text-left">Integration with all of your content</p>
             <p className="text-xl text-zinc-950 font-semibold text-left">Your articles, podcasts, tweets, and more.</p>
             <p className="text-lg text-zinc-500 text-left mt-5">We integrate your content into our custom chatbots using a new technology called RAG, allowing your subscribers to access your content with ease. Privately hosted on your domain so only your subscribers can access. <br/><br/> We also ensure data privacy so only you and your subscribers can access paywalled content.</p>
         </div>
-        <div className="w-1/2">
+        <div className="w-full md:w-1/2">
         <AnimatedBeamMultipleInputDemo/>
         </div>
         </div>

@@ -107,18 +107,17 @@ export function ChatPanel({
 
   return (
     <div className="inset-x-0 w-full pb-12 m-auto h-full relative">
-      <div className={`w-11/12 m-auto ${position}`}>
+      <div className={`w-11/12 m-auto ${position} px-4 sm:px-6 lg:px-8`}>
         <PromptForm input={input} setInput={setInput} />
       </div>
       {messages.length === 0 ? (
         <div className="mx-auto sm:px-4">
-          <div className="mb-4 gap-2 px-4 sm:px-0 grid grid-cols-4 sm:grid-cols-3 xs:grid-cols-1 w-11/12 m-auto">
+          <div className="mb-4 gap-2 px-4 sm:px-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-11/12 m-auto">
             {cachedMessages.map((cached, index) => (
               <div
                 key={index}
-                className={`mt-4 cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50`}
+                className="mt-4 cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50"
                 onClick={async () => {
-                  // setInput(cached.message)
                   setMessages(currentMessages => [
                     ...currentMessages,
                     {
@@ -138,41 +137,36 @@ export function ChatPanel({
                 }}
               >
                 <h3 className="text-sm font-semibold">{cached.heading}</h3>
-                <p className="text-sm text-sky-500">
-                  {cached.subheading}
-                </p>
+                <p className="text-sm text-sky-500">{cached.subheading}</p>
               </div>
             ))}
           </div>
-          
         </div>
       ) : null}
       {messages?.length >= 2 ? (
-        <div className="flex w-6/12 m-auto">
-          <div className="flex space-x-2">
-            {id && title ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setShareDialogOpen(true)}
-                >
-                  <IconShare className="mr-2" />
-                  Share
-                </Button>
-                <ChatShareDialog
-                  open={shareDialogOpen}
-                  onOpenChange={setShareDialogOpen}
-                  onCopy={() => setShareDialogOpen(false)}
-                  shareChat={shareChat}
-                  chat={{
-                    id,
-                    title,
-                    messages: aiState.messages
-                  }}
-                />
-              </>
-            ) : null}
-          </div>
+        <div className="flex justify-center space-x-2 p-4">
+          {id && title ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setShareDialogOpen(true)}
+              >
+                <IconShare className="mr-2" />
+                Share
+              </Button>
+              <ChatShareDialog
+                open={shareDialogOpen}
+                onOpenChange={setShareDialogOpen}
+                onCopy={() => setShareDialogOpen(false)}
+                shareChat={shareChat}
+                chat={{
+                  id,
+                  title,
+                  messages: aiState.messages
+                }}
+              />
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>
