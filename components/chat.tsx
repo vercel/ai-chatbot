@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { MainInterface } from '@/components/chat-interfaces/main-interface'
-import { EmptyScreen } from '@/components/empty-screen'
+import { LandingPage } from '@/components/landing-page'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
@@ -65,7 +65,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         ) : (
           <div style={{borderTop: 'none', borderBottom: 'none'}} className="group border lg:w-8/12 md:w-8/12 sm:w-11/12 m-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
           <div className={cn('pt-4 md:pt-10', className)}>
-              <EmptyScreen />
+              <LandingPage />
               <ChatPanel
               id={id}
               input={input}

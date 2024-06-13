@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button'
 import { ExternalLink } from '@/components/external-link'
 import { IconArrowRight } from '@/components/ui/icons'
 
-
+import AnimatedGradientText from '@/components/magicui/animated-gradient-text'
 import { cn } from "@/lib/utils";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { motion, useInView } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useRef } from "react";
 
-export function EmptyScreen() {
+export function LandingPage() {
   const fadeInRef = useRef(null);
   const fadeInInView = useInView(fadeInRef, {
     once: true,
@@ -35,12 +35,19 @@ export function EmptyScreen() {
         <div className="container z-10 flex flex-col">
           <div className="mt-5 grid grid-cols-1">
             <div className="flex flex-col items-center gap-1 pb-8 text-center">
-            <p className="text-3xl mb-4 w-1/3 flex justify-around">
-                <span>⚽</span>
-                <span>🏈</span> 
-                <span>🏀</span>
-                <span>⚾</span>
-              </p>
+            <div className="flex min-h-[2rem] mb-4 items-center justify-center">
+                <AnimatedGradientText>
+                🏈 <hr className="mx-2 h-4 w-[1px] shrink-0 bg-gray-300" />{" "}
+                  <span
+                    className={cn(
+                      `inline animate-gradient bg-gradient-to-r from-[#5783fc] via-[#9c40ff] to-[#008cff] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+                    )}
+                  >
+                    Sign up for the beta
+                  </span>
+                  <ChevronRight className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+                </AnimatedGradientText>
+              </div>
               <motion.h1
                 ref={fadeInRef}
                 className="text-balance bg-gradient-to-br from-black from-30% to-black/60 bg-clip-text py-3 text-3xl font-medium leading-none tracking-tighter text-transparent dark:from-white dark:to-white/40 sm:text-3xl md:text-3xl lg:text-3xl"

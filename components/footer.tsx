@@ -102,11 +102,6 @@ export function Footer() {
         <div className="gap-4 p-4 py-16 sm:pb-16 md:flex md:justify-between">
           <div className="mb-12 flex flex-col gap-4">
             <a href="/" className="flex items-center gap-2">
-              <img
-                className="h-full w-8"
-                src={img.src}
-                alt="MagicUI Logo"
-              />
               <span className="text-xl ml-3 font-bold text-neutral-900 dark:text-white">
                 Huddlechat
               </span>
