@@ -544,7 +544,7 @@ export function Hero() {
             <BorderBeam size={150} delay={7} />
           </motion.div>
         </div>
-        <div className="flex flex-col flex-col-reverse md:flex-row mt-24 mx-auto px-10 align-items-center w-full md:w-3/4 pt-4 mb-24">
+        <div className="flex flex-col-reverse md:flex-row mt-24 mx-auto px-10 align-items-center w-full md:w-3/4 pt-4 mb-24">
         <div className="w-full md:w-1/2 mr-24 border-right pt-10">
             <p className="text-lg text-zinc-500 text-left">Integration with all of your content</p>
             <p className="text-xl text-zinc-950 font-semibold text-left">Your articles, podcasts, tweets, and more.</p>
