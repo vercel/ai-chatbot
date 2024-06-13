@@ -22,7 +22,9 @@ import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/re
 function Example() {
   return (
     <Popover>
-      <PopoverButton className="border-none font-md text-zinc-900/[0.8]">Products</PopoverButton>
+      <PopoverButton className="border-none">
+        <span className="text-zinc-900/[0.8] font-medium hover:underline">Products</span>
+      </PopoverButton>
       <Transition
         enter="duration-200 ease-out"
         enterFrom="scale-95 opacity-0"
@@ -66,7 +68,6 @@ async function UserOrLogin() {
         <Button variant="link" asChild className="-ml-2 text-md text-zinc-900/[0.8]">
             
         </Button>
-        <img src={img.src} alt="Huddlechat Logo" className="w-10 h-8" />
         <Button variant="link" asChild className="-mr-1 text-lg text-zinc-900/[0.8]">
             <Link href="/new">Huddlechat</Link>
         </Button>
@@ -80,7 +81,7 @@ async function UserOrLogin() {
           <UserMenu user={session.user} />
         ) : (
           <Button variant="link" asChild className="-ml-2 text-md text-zinc-900/[0.8]">
-            <Link href="/login">Login</Link>
+            <Link href="/login">Beta Login</Link>
           </Button>
         )}
       </div>

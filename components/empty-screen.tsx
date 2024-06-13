@@ -35,6 +35,12 @@ export function EmptyScreen() {
         <div className="container z-10 flex flex-col">
           <div className="mt-5 grid grid-cols-1">
             <div className="flex flex-col items-center gap-1 pb-8 text-center">
+            <p className="text-3xl mb-4 w-1/3 flex justify-around">
+                <span>⚽</span>
+                <span>🏈</span> 
+                <span>🏀</span>
+                <span>⚾</span>
+              </p>
               <motion.h1
                 ref={fadeInRef}
                 className="text-balance bg-gradient-to-br from-black from-30% to-black/60 bg-clip-text py-3 text-3xl font-medium leading-none tracking-tighter text-transparent dark:from-white dark:to-white/40 sm:text-3xl md:text-3xl lg:text-3xl"
@@ -49,8 +55,9 @@ export function EmptyScreen() {
                 }}
               >
                 AI-powered natural language interface to sports stats.
+                
               </motion.h1>
-
+              
               <motion.p
                 className="text-balance text-lg tracking-tight text-gray-400 md:text-lg"
                 animate={fadeInInView ? "animate" : "initial"}

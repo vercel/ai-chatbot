@@ -84,7 +84,7 @@ export function PromptForm({
         value={input}
         onChange={e => setInput(e.target.value)}
       />
-        <div className="absolute right-0 top-[15px] sm:right-8">
+        <div className="absolute right-[8px] top-[15px] lg:right-[8px] md:right-[8px] sm:right-[40px]">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button type="submit" size="icon" disabled={input === ''}>

@@ -63,7 +63,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         input={input} 
         setInput={setInput} />
         ) : (
-          <div style={{borderTop: 'none', borderBottom: 'none'}} className="group border w-8/12 m-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
+          <div style={{borderTop: 'none', borderBottom: 'none'}} className="group border lg:w-8/12 md:w-8/12 sm:w-11/12 m-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
           <div className={cn('pt-4 md:pt-10', className)}>
               <EmptyScreen />
               <ChatPanel

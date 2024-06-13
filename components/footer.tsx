@@ -120,7 +120,7 @@ export function Footer() {
                   Sign up for our beta program and get early access to our chatbot.
                 </p>
                 <a
-                  href="/signup"
+                  href="/beta"
                   className={cn(
                     buttonVariants({
                       size: "lg",
