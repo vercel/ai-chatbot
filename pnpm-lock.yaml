@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@ai-sdk/azure':
+    specifier: ^0.0.7
+    version: 0.0.7(zod@3.22.4)
   '@ai-sdk/openai':
     specifier: ^0.0.9
     version: 0.0.9(zod@3.22.4)
@@ -186,6 +189,29 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /@ai-sdk/azure@0.0.7(zod@3.22.4):
+    resolution: {integrity: sha512-3xWmniBWCo7PbFQeY2yKVkuV2sqU2rWxfNq8NIQsh1ZLUfbUYU1yV2ZIDegpxstFJLUoRrqp98EXggPOpYSJaw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    dependencies:
+      '@ai-sdk/openai': 0.0.31(zod@3.22.4)
+      '@ai-sdk/provider': 0.0.10
+      '@ai-sdk/provider-utils': 0.0.15(zod@3.22.4)
+      zod: 3.22.4
+    dev: false
+
+  /@ai-sdk/openai@0.0.31(zod@3.22.4):
+    resolution: {integrity: sha512-7ehX2N0NzCdxUOYXutwYgu6gdWO+zS/v8pWEd7VW8QpNq3equ0VZ0j+pDUNv4f3GJ449QwySb6+V+DHM9W/pLg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    dependencies:
+      '@ai-sdk/provider': 0.0.10
+      '@ai-sdk/provider-utils': 0.0.15(zod@3.22.4)
+      zod: 3.22.4
+    dev: false
+
   /@ai-sdk/openai@0.0.9(zod@3.22.4):
     resolution: {integrity: sha512-SSZGtX4KFDXWYmQ9JuhVumo1XOx1JAdHybYy08iwVXuCud9xdjZjjxgZkNPytQK9gRxFsYDOw1h0V/WXO7XgfQ==}
     engines: {node: '>=18'}
@@ -197,6 +223,22 @@ packages:
     dependencies:
       '@ai-sdk/provider': 0.0.3
       '@ai-sdk/provider-utils': 0.0.5(zod@3.22.4)
+      zod: 3.22.4
+    dev: false
+
+  /@ai-sdk/provider-utils@0.0.15(zod@3.22.4):
+    resolution: {integrity: sha512-eTkIaZc/Ud96DYG40lLuKWJvZ2GoW/wT4KH9r1f3wGUhj5wgQN+bzgdI57z60VOEDuMmDVuILVnTLFe0HNT5Iw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      '@ai-sdk/provider': 0.0.10
+      eventsource-parser: 1.1.2
+      nanoid: 3.3.6
+      secure-json-parse: 2.7.0
       zod: 3.22.4
     dev: false
 
@@ -230,6 +272,13 @@ packages:
       nanoid: 3.3.6
       secure-json-parse: 2.7.0
       zod: 3.22.4
+    dev: false
+
+  /@ai-sdk/provider@0.0.10:
+    resolution: {integrity: sha512-NzkrtREQpHID1cTqY/C4CI30PVOaXWKYytDR2EcytmFgnP7Z6+CrGIA/YCnNhYAuUm6Nx+nGpRL/Hmyrv7NYzg==}
+    engines: {node: '>=18'}
+    dependencies:
+      json-schema: 0.4.0
     dev: false
 
   /@ai-sdk/provider@0.0.3:
