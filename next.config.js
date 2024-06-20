@@ -7,6 +7,12 @@ module.exports = {
         hostname: 'avatars.githubusercontent.com',
         port: '',
         pathname: '**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        port: '',
+        pathname: '/vi/**'
       }
     ]
   }

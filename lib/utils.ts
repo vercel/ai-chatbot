@@ -87,3 +87,5 @@ export const getMessageFromCode = (resultCode: string) => {
       return 'Logged in!'
   }
 }
+
+export const isObjectEmpty = (value: Object) => JSON.stringify(value) === '{}'

@@ -30,13 +30,25 @@ import {
   formatNumber,
   runAsyncFnWithoutBlocking,
   sleep,
-  nanoid
+  nanoid,
+  isObjectEmpty
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { AZURE_DEPLOYMENT_NAME, AZURE_RESOURCE_NAME } from '@/lib/constant'
 import { auth } from '@/auth'
+
+import {
+  fetchYoutubeDuration,
+  extractYouTubeVideoIdFromUrl,
+  getYoutubeEmbedLink
+} from '@/lib/youtube'
+
+import ConversionPage from '@/components/ConversionPage'
+import { fetchEvent } from '@/lib/apis/event'
+import { PartialEventResponse } from '@/lib/models/Event'
+import { downloadFile } from '../apis/download'
 
 const azureApiKey = process.env['AZURE_OPENAI_API_KEY']
 
@@ -45,75 +57,83 @@ const azure = createAzure({
   apiKey: azureApiKey
 })
 
-async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
-
-  const aiState = getMutableAIState<typeof AI>()
-
-  const purchasing = createStreamableUI(
-    <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
-      <p className="mb-2">
-        Purchasing {amount} ${symbol}...
-      </p>
-    </div>
+const renderErrorUI = (id: string) => {
+  return (
+    <BotCard>
+      <div>Failed to fetch conversion event with id: {id}</div>
+    </BotCard>
   )
-
-  const systemMessage = createStreamableUI(null)
-
-  runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
-
-    purchasing.update(
-      <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
-        <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
-        </p>
-      </div>
-    )
-
-    await sleep(1000)
-
-    purchasing.done(
-      <div>
-        <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
-          {formatNumber(amount * price)}
-        </p>
-      </div>
-    )
-
-    systemMessage.done(
-      <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
-        {formatNumber(amount * price)}.
-      </SystemMessage>
-    )
-
-    aiState.done({
-      ...aiState.get(),
-      messages: [
-        ...aiState.get().messages,
-        {
-          id: nanoid(),
-          role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
-        }
-      ]
-    })
-  })
-
-  return {
-    purchasingUI: purchasing.value,
-    newMessage: {
-      id: nanoid(),
-      display: systemMessage.value
-    }
-  }
 }
+
+// async function confirmPurchase(symbol: string, price: number, amount: number) {
+//   'use server'
+
+//   const aiState = getMutableAIState<typeof AI>()
+
+//   const purchasing = createStreamableUI(
+//     <div className="inline-flex items-start gap-1 md:items-center">
+//       {spinner}
+//       <p className="mb-2">
+//         Purchasing {amount} ${symbol}...
+//       </p>
+//     </div>
+//   )
+
+//   const systemMessage = createStreamableUI(null)
+
+//   runAsyncFnWithoutBlocking(async () => {
+//     await sleep(1000)
+
+//     purchasing.update(
+//       <div className="inline-flex items-start gap-1 md:items-center">
+//         {spinner}
+//         <p className="mb-2">
+//           Purchasing {amount} ${symbol}... working on it...
+//         </p>
+//       </div>
+//     )
+
+//     await sleep(1000)
+
+//     purchasing.done(
+//       <div>
+//         <p className="mb-2">
+//           You have successfully purchased {amount} ${symbol}. Total cost:{' '}
+//           {formatNumber(amount * price)}
+//         </p>
+//       </div>
+//     )
+
+//     systemMessage.done(
+//       <SystemMessage>
+//         You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
+//         {formatNumber(amount * price)}.
+//       </SystemMessage>
+//     )
+
+//     aiState.done({
+//       ...aiState.get(),
+//       messages: [
+//         ...aiState.get().messages,
+//         {
+//           id: nanoid(),
+//           role: 'system',
+//           content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
+//             amount * price
+//           }]`
+//         }
+//       ]
+//     })
+//   })
+
+//   return {
+//     purchasingUI: purchasing.value,
+//     newMessage: {
+//       id: nanoid(),
+//       display: systemMessage.value
+//     }
+//   }
+// }
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -139,18 +159,9 @@ async function submitUserMessage(content: string) {
     model: azure(AZURE_DEPLOYMENT_NAME) as LanguageModel,
     initial: <SpinnerMessage />,
     system: `\
-    You are a stock trading conversation bot and you can help users buy stocks, step by step.
-    You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
+    You are an AI music conversation bot and your main mission is to help users get youtube video length.
     
-    Messages inside [] means that it's a UI element or a user event. For example:
-    - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-    - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-    
-    If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-    If the user just wants the price, call \`show_stock_price\` to show the price.
-    If you want to show trending stocks, call \`list_stocks\`.
-    If you want to show events, call \`get_events\`.
-    If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
+    If the user requests getting youtube video length, call \`get_youtube_length\` to get youtube video length in seconds.
     
     Besides that, you can also chat with users and do some calculations if needed.`,
     messages: [
@@ -186,18 +197,15 @@ async function submitUserMessage(content: string) {
       return textNode
     },
     tools: {
-      listStocks: {
-        description: 'List three imaginary stocks that are trending.',
+      getYoutubeLength: {
+        description: 'Fetch youtube video length in seconds.',
         parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          )
+          youtubeUrl: z.string().describe('The youtube video url'),
+          durationInSeconds: z
+            .number()
+            .describe('The youtube video duration in seconds')
         }),
-        generate: async function* ({ stocks }) {
+        generate: async function* ({ youtubeUrl }) {
           yield (
             <BotCard>
               <StocksSkeleton />
@@ -206,242 +214,20 @@ async function submitUserMessage(content: string) {
 
           await sleep(1000)
 
-          const toolCallId = nanoid()
+          const videoId = extractYouTubeVideoIdFromUrl(youtubeUrl)
+          console.log('🚀 ~ submitUserMessage ~ videoId:', videoId)
 
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    args: { stocks }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    result: stocks
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stocks props={stocks} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPrice: {
-        description:
-          'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        }),
-        generate: async function* ({ symbol, price, delta }) {
-          yield (
-            <BotCard>
-              <StockSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    args: { symbol, price, delta }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    result: { symbol, price, delta }
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stock props={{ symbol, price, delta }} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPurchase: {
-        description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
-        generate: async function* ({ symbol, price, numberOfShares = 100 }) {
-          const toolCallId = nanoid()
-
-          if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares,
-                        status: 'expired'
-                      }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
-
-            return <BotMessage content={'Invalid amount'} />
-          } else {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares
-                      }
-                    }
-                  ]
-                }
-              ]
-            })
-
+          if (!youtubeUrl || !videoId) {
             return (
               <BotCard>
-                <Purchase
-                  props={{
-                    numberOfShares,
-                    symbol,
-                    price: +price,
-                    status: 'requires_action'
-                  }}
-                />
+                <div>Invalid youtube url</div>
               </BotCard>
             )
           }
-        }
-      },
-      getEvents: {
-        description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
-        generate: async function* ({ events }) {
-          yield (
-            <BotCard>
-              <EventsSkeleton />
-            </BotCard>
-          )
 
-          await sleep(1000)
+          const { durationInSeconds: duration } =
+            await fetchYoutubeDuration(videoId)
+          console.log('🚀 ~ submitUserMessage ~ duration:', duration)
 
           const toolCallId = nanoid()
 
@@ -455,9 +241,9 @@ async function submitUserMessage(content: string) {
                 content: [
                   {
                     type: 'tool-call',
-                    toolName: 'getEvents',
+                    toolName: 'getYoutubeLength',
                     toolCallId,
-                    args: { events }
+                    args: { duration }
                   }
                 ]
               },
@@ -467,18 +253,163 @@ async function submitUserMessage(content: string) {
                 content: [
                   {
                     type: 'tool-result',
-                    toolName: 'getEvents',
+                    toolName: 'getYoutubeLength',
                     toolCallId,
-                    result: events
+                    result: {
+                      durationInSeconds: duration
+                    }
                   }
                 ]
               }
             ]
           })
 
+          const youtubeEmbedUrl = getYoutubeEmbedLink(youtubeUrl)
+
           return (
             <BotCard>
-              <Events props={events} />
+              <div className="mb-4 aspect-[1920/1080] w-full max-w-[850px] border-2">
+                <iframe
+                  src={youtubeEmbedUrl}
+                  // eslint-disable-next-line tailwindcss/enforces-shorthand
+                  className="h-full w-full border-0"
+                  allowFullScreen
+                />
+              </div>
+              <div className="border-2 p-4 rounded-lg">
+                youtube duration: {duration}
+              </div>
+            </BotCard>
+          )
+        }
+      },
+      getConversionEvent: {
+        description:
+          'Fetch voice conversion result by conversionId and show ConversionPage UI component',
+        parameters: z.object({
+          conversionId: z.string().describe('The voice conversion id')
+        }),
+        generate: async function* ({ conversionId }) {
+          yield (
+            <BotCard>
+              <StocksSkeleton />
+            </BotCard>
+          )
+
+          console.log('🚀 ~ submitUserMessage ~ conversionId:', conversionId)
+
+          await sleep(1000)
+
+          let eventResponse: PartialEventResponse
+          let isEmptyResponse: boolean
+
+          try {
+            eventResponse = await fetchEvent({ eventId: conversionId })
+            console.log('🚀 ~ timer=setTimeout ~ eventResponse:', eventResponse)
+
+            isEmptyResponse = isObjectEmpty(eventResponse)
+
+            if (isEmptyResponse) return renderErrorUI(conversionId)
+          } catch (e) {
+            return renderErrorUI(conversionId)
+          }
+
+          const toolCallId = nanoid()
+
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'getConversionEvent',
+                    toolCallId,
+                    args: { conversionId }
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'getConversionEvent',
+                    toolCallId,
+                    result: {
+                      conversionId
+                    }
+                  }
+                ]
+              }
+            ]
+          })
+
+          const totalJobCounts = eventResponse?.jobs?.length || 0
+          const finishedStepCounts = Object.keys(
+            eventResponse?.results || {}
+          ).length
+
+          const hasFinishedProcessing =
+            !isEmptyResponse && finishedStepCounts === totalJobCounts
+
+          const hasSucceed =
+            hasFinishedProcessing &&
+            eventResponse?.states?.every(state =>
+              isObjectEmpty(state?.exception || {})
+            )
+
+          if (hasSucceed) {
+            const sourceAudioLink =
+              eventResponse?.results?.step_5?.files?.[1]?.path ||
+              eventResponse?.results?.step_1?.files?.[0]?.path
+            // TODO: will break if there is more steps
+            const convertedAudioLink =
+              eventResponse?.results?.step_5?.files?.[0]?.path ||
+              eventResponse?.results?.step_4?.files?.[0]?.path
+
+            const modelLabel =
+              eventResponse?.results?.step_3?.files?.[0]?.label?.split(
+                '_'
+              )[0] || ''
+
+            const originUrl = eventResponse?.jobs?.[0]?.files?.[0]?.path || ''
+
+            try {
+              const [sourceAudioUrl, convertedAudioUrl] = await Promise.all([
+                downloadFile({ file_path: sourceAudioLink || '' }),
+                downloadFile({ file_path: convertedAudioLink || '' })
+              ])
+
+              return (
+                <BotCard>
+                  <ConversionPage
+                    conversionId={conversionId}
+                    originUrl={originUrl}
+                    modelLabel={modelLabel}
+                    sourceAudioLink={sourceAudioUrl.download_url}
+                    convertedAudioLink={convertedAudioUrl.download_url}
+                  />
+                </BotCard>
+              )
+            } catch (error) {
+              console.error('Error downloading audio files:', error)
+            }
+          } else {
+            return (
+              <BotCard>
+                <div>conversion is processing, please try later</div>
+              </BotCard>
+            )
+          }
+
+          return (
+            <BotCard>
+              <div>conversion id: {conversionId}</div>
             </BotCard>
           )
         }
@@ -504,56 +435,10 @@ export type UIState = {
 
 export const AI = createAI<AIState, UIState>({
   actions: {
-    submitUserMessage,
-    confirmPurchase
+    submitUserMessage
   },
   initialUIState: [],
-  initialAIState: { chatId: nanoid(), messages: [] },
-  onGetUIState: async () => {
-    'use server'
-
-    const session = await auth()
-
-    if (session && session.user) {
-      const aiState = getAIState()
-
-      if (aiState) {
-        const uiState = getUIStateFromAIState(aiState)
-        return uiState
-      }
-    } else {
-      return
-    }
-  },
-  onSetAIState: async ({ state }) => {
-    'use server'
-
-    const session = await auth()
-
-    if (session && session.user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
-
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
-      }
-
-      await saveChat(chat)
-    } else {
-      return
-    }
-  }
+  initialAIState: { chatId: nanoid(), messages: [] }
 })
 
 export const getUIStateFromAIState = (aiState: Chat) => {
