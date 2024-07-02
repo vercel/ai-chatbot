@@ -310,6 +310,7 @@ async function submitUserMessage(content: string) {
           price: z.number().describe('The price of the stock.'),
           numberOfShares: z
             .number()
+            .optional()
             .describe(
               'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
             )
