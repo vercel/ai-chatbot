@@ -74,16 +74,16 @@ export enum ResultCode {
 export const getMessageFromCode = (resultCode: string) => {
   switch (resultCode) {
     case ResultCode.InvalidCredentials:
-      return 'Invalid credentials!'
+      return 'Credenciais inválidas!'
     case ResultCode.InvalidSubmission:
-      return 'Invalid submission, please try again!'
+      return 'Submissão inválida! Por favor, tente novamente.'
     case ResultCode.UserAlreadyExists:
-      return 'User already exists, please log in!'
+      return 'Usuário já existe!'
     case ResultCode.UserCreated:
-      return 'User created, welcome!'
+      return 'Usuário criado! Por favor, faça login.'
     case ResultCode.UnknownError:
-      return 'Something went wrong, please try again!'
+      return 'Erro desconhecido! Por favor, tente novamente.'
     case ResultCode.UserLoggedIn:
-      return 'Logged in!'
+      return 'Usuário logado! Redirecionando...'
   }
 }

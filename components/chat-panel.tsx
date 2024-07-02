@@ -36,24 +36,24 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'Qual a indenização ',
+      subheading: 'por erro médico?',
+      message: `Qual a indenização por erro médico?`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'O que acontece com o',
+      subheading: 'usuário que trafica?',
+      message: 'O que acontece com o usuário que trafica?'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'A vítima pode desobedecer',
+      subheading: 'medida protetiva?',
+      message: `A vítima pode desobedecer medida protetiva?`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'Quando a parte faz um acordo o advogado ',
+      subheading: `contina tendo honorários de sucumbência?`,
+      message: `Quando a parte faz um acordo o advogado contina tendo honorários de sucumbência?`
     }
   ]
 

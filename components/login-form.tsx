@@ -45,7 +45,7 @@ export default function LoginForm() {
                 id="email"
                 type="email"
                 name="email"
-                placeholder="Enter your email address"
+                placeholder="Insira o email"
                 required
               />
             </div>
@@ -63,7 +63,7 @@ export default function LoginForm() {
                 id="password"
                 type="password"
                 name="password"
-                placeholder="Enter password"
+                placeholder="Insira a senha"
                 required
                 minLength={6}
               />
@@ -77,7 +77,7 @@ export default function LoginForm() {
         href="/signup"
         className="flex flex-row gap-1 text-sm text-zinc-400"
       >
-        No account yet? <div className="font-semibold underline">Sign up</div>
+        Não possui uma conta? <div className="font-semibold underline">Sign up</div>
       </Link>
     </form>
   )
