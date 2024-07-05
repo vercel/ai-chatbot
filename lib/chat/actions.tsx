@@ -10,6 +10,8 @@ import {
 } from 'ai/rsc'
 import { openai } from '@ai-sdk/openai'
 
+import { Pinecone } from "@pinecone-database/pinecone"
+
 import {
   spinner,
   BotMessage,
@@ -112,22 +114,34 @@ async function submitUserMessage(content: string) {
         content
       }
     ]
-  })
+  })  
+
+  // Create input embedding
+  const embeddings = await createEmbeddings(content) as number[]
+
+  // Get context from Pinecone
+  const context = await getEmbeddingsFromPinecone(embeddings)
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
 
   const result = await streamUI({
-    model: openai('gpt-3.5-turbo'),
+    model: openai('gpt-4o'),
     initial: <SpinnerMessage />,
     system: `\
     You are a jurisprudency analist and you can help users understand legal terms, step by step.
     You and the user can discuss legal terms and the user can ask you to explain the terms.
+    Answer always in Brazilian Portuguese.
+    Always include references and sources in a table format, if possible.
     
+    [CONTEXT: ${context}]
+
+    [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]
     `,
     // If the user asks you to explain a term, call \`explain_term\` to explain the term.
     // If the user asks you to explain a legal concept, call \`explain_concept\` to explain the concept.
     // If the user asks you to explain a legal case, call \`explain_case\` to explain the case.
+    
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -273,7 +287,51 @@ export const getUIStateFromAIState = (aiState: Chat) => {
     }))
 }
 
+const createEmbeddings = async (text: string) => {    
+  try {
+      const response = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'text-embedding-ada-002',
+          input: text.replace(/\n/g, ' ')
+        })
+      });
+    
+      const result = await response.json();
+      if (!result.data) {
+        console.error('Error creating embedding:', text);
+        return
+      }
+      return result.data[0].embedding as number[]
+  } catch (error) {
+      console.log("Error getting embedding ",error)
+      throw error
+  }
+}
 
+const getEmbeddingsFromPinecone = async (vectors: number[]) => {
+  try {
+    const pinecone = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY || '',
+    })
+
+    const index = await pinecone.index('lexgpt')
+    const namespace = index.namespace('stj')
+    const response = await namespace.query({
+      vector: vectors,
+      topK: 3,
+      includeMetadata: true
+    })
+    return response.matches || []
+  } catch (error) {
+    console.log("Error getting embeddings from Pinecone ",error)
+    throw error
+  }
+}
 
 //     You are a stock trading conversation bot and you can help users buy stocks, step by step.
 //     You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
