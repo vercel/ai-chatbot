@@ -117,9 +117,11 @@ async function submitUserMessage(content: string) {
   })  
 
   // Create input embedding
+  // const embeddings = content.split(' ').length > 2 ? await createEmbeddings(content) as number[] : []
   const embeddings = await createEmbeddings(content) as number[]
 
   // Get context from Pinecone
+  // const context = content.split(' ').length > 2 ? await getEmbeddingsFromPinecone(embeddings) : []
   const context = await getEmbeddingsFromPinecone(embeddings)
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
@@ -131,10 +133,14 @@ async function submitUserMessage(content: string) {
     system: `\
     You are a jurisprudency analist and you can help users understand legal terms, step by step.
     You and the user can discuss legal terms and the user can ask you to explain the terms.
+    Use only information from the provided context. Always list the used references and sources from the context including the fiuelds Processo, Relator, Ementa, Acórdão and Link.
+    Based on the context you obtain, craft a well-thought-out response and indicate your sources. NEVER invented numbers or hallucinated. Only use information from the file provided. 
+    If you can't find the answer, say: 'I still don't know the answer, unfortunately.' Use the data format provided to prepare your answer and include at least the following keys in your answer: 
+    "process", "rapporteur", "menu" and "agreement" and "link". Remember that the 'link' of the process is exactly the one that appears in the file, considering a string from the "link" key, 
+    which always starts with the following structure: "https://processo.stj.jus.br/processo /search/?num_registro=...".
     Answer always in Brazilian Portuguese.
-    Always include references and sources in a table format, if possible.
     
-    [CONTEXT: ${context}]
+    [CONTEXT: ${context.map((match: any) => match.metadata.document).join()}]
 
     [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]
     `,
@@ -323,7 +329,7 @@ const getEmbeddingsFromPinecone = async (vectors: number[]) => {
     const namespace = index.namespace('stj')
     const response = await namespace.query({
       vector: vectors,
-      topK: 3,
+      topK: 4,
       includeMetadata: true
     })
     return response.matches || []
