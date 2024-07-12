@@ -36,24 +36,24 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'How old is',
+      subheading: 'Maliyadeva College?',
+      message: `How old is Maliyadeva College?`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'Who is the current',
+      subheading: 'principal of maliyadeva college?',
+      message: 'Who is the current principal of maliyadeva college?'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'What is the',
+      subheading: 'meaning of Devans?',
+      message: `What is the meaning of Devans?`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'In 1992',
+      subheading: `what happened in maliaydeva college?`,
+      message: `In 1992 what happened?`
     }
   ]
 
