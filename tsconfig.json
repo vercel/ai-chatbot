@@ -30,6 +30,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "context/chatContext.js"  ],
   "exclude": ["node_modules"]
 }

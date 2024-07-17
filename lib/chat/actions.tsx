@@ -10,7 +10,10 @@ import {
 } from 'ai/rsc'
 import { openai } from '@ai-sdk/openai'
 
-import { Pinecone } from "@pinecone-database/pinecone"
+import { createEmbeddings,
+  getEmbeddingsFromPinecone, 
+  getEmbeddingsFromQdrant,
+  getEmbeddingsFromWeviate } from './embeddingsProviders'
 
 import {
   spinner,
@@ -28,6 +31,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
+import { vectorsIDs } from './utils'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -99,9 +103,18 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
   }
 }
 
-async function submitUserMessage(content: string) {
+async function submitUserMessage(content: string, chat?: any) {
   'use server'
 
+  if (!chat) {
+    chat = {
+      "Name": "standard",
+      "Model": "gpt-3.5-turbo",
+      "Vector": ["reciPa2dwv431SRrU"],
+      "System prompt": null,
+    }
+  }
+  
   const aiState = getMutableAIState<typeof AI>()
 
   aiState.update({
@@ -116,37 +129,43 @@ async function submitUserMessage(content: string) {
     ]
   })  
 
+  // Gambiarra, remover
+  const vectorName = vectorsIDs.find(vector => vector.id === chat["Vector"][0])?.name || 'other'
+
   // Create input embedding
   // const embeddings = content.split(' ').length > 2 ? await createEmbeddings(content) as number[] : []
-  const embeddings = await createEmbeddings(content) as number[]
+  const embeddings = await createEmbeddings(content, vectorName) as number[]
 
-  // Get context from Pinecone
-  // const context = content.split(' ').length > 2 ? await getEmbeddingsFromPinecone(embeddings) : []
-  const context = await getEmbeddingsFromPinecone(embeddings)
+  // Mapping vectors to the correct service
+  let CONTEXT
+  if (vectorName == 'pinecone') 
+    CONTEXT = await getEmbeddingsFromPinecone(embeddings)
+  else if (vectorName == 'qdrant')
+    CONTEXT = await getEmbeddingsFromQdrant(embeddings, chat["Name"])
+  else if (vectorName == 'weviate') 
+    CONTEXT = await getEmbeddingsFromWeviate(embeddings)
+  else 
+    CONTEXT = []
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
 
-  const result = await streamUI({
-    model: openai('gpt-4o'),
-    initial: <SpinnerMessage />,
-    system: `\
-    You are a jurisprudency analist and you can help users understand legal terms, step by step.
-    You and the user can discuss legal terms and the user can ask you to explain the terms.
-    Use only information from the provided context. Always list the used references and sources from the context including the fiuelds Processo, Relator, Ementa, Acórdão and Link.
-    Based on the context you obtain, craft a well-thought-out response and indicate your sources. NEVER invented numbers or hallucinated. Only use information from the file provided. 
-    If you can't find the answer, say: 'I still don't know the answer, unfortunately.' Use the data format provided to prepare your answer and include at least the following keys in your answer: 
-    "process", "rapporteur", "menu" and "agreement" and "link". Remember that the 'link' of the process is exactly the one that appears in the file, considering a string from the "link" key, 
-    which always starts with the following structure: "https://processo.stj.jus.br/processo /search/?num_registro=...".
-    Answer always in Brazilian Portuguese.
-    
-    [CONTEXT: ${context.map((match: any) => match.metadata.document).join()}]
+  console.log("Prompt: ", chat["System prompt"] + ` 
+  [CONTEXT: ${CONTEXT}]
+  
+  [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]
+  `)
 
+  const result = await streamUI({
+    model: openai(chat['Model'] || 'gpt-4o'),
+    initial: <SpinnerMessage />,
+    temperature: 0,
+    system: chat["System prompt"] + ` 
+
+    [CONTEXT: ${CONTEXT}]
+    
     [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]
     `,
-    // If the user asks you to explain a term, call \`explain_term\` to explain the term.
-    // If the user asks you to explain a legal concept, call \`explain_concept\` to explain the concept.
-    // If the user asks you to explain a legal case, call \`explain_case\` to explain the case.
     
     messages: [
       ...aiState.get().messages.map((message: any) => ({
@@ -293,63 +312,31 @@ export const getUIStateFromAIState = (aiState: Chat) => {
     }))
 }
 
-const createEmbeddings = async (text: string) => {    
-  try {
-      const response = await fetch('https://api.openai.com/v1/embeddings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'text-embedding-ada-002',
-          input: text.replace(/\n/g, ' ')
-        })
-      });
-    
-      const result = await response.json();
-      if (!result.data) {
-        console.error('Error creating embedding:', text);
-        return
-      }
-      return result.data[0].embedding as number[]
-  } catch (error) {
-      console.log("Error getting embedding ",error)
-      throw error
-  }
-}
 
-const getEmbeddingsFromPinecone = async (vectors: number[]) => {
-  try {
-    const pinecone = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY || '',
-    })
+// const standardConfig = {
+//   model: 'gpt-4o',
+//   system: `You are a jurisprudency analist and you can help users understand legal terms, step by step.
+//   You and the user can discuss legal terms and the user can ask you to explain the terms.
+//   Use only information from the provided context. Always list the used references and sources from the context including the fiuelds Processo, Relator, Ementa, Acórdão and Link.
+//   Based on the context you obtain, craft a well-thought-out response and indicate your sources. NEVER invented numbers or hallucinated. Only use information from the file provided. 
+//   If you can't find the answer, say: 'I still don't know the answer, unfortunately.' Use the data format provided to prepare your answer and include at least the following keys in your answer: 
+//   "process", "rapporteur", "menu" and "agreement" and "link". Remember that the 'link' of the process is exactly the one that appears in the file, considering a string from the "link" key, 
+//   which always starts with the following structure: "https://processo.stj.jus.br/processo /search/?num_registro=...".
+//   Answer always in Brazilian Portuguese.`,
+  
+//   // [CONTEXT: ${context.map((match: any) => match.metadata.document).join()}]
 
-    const index = await pinecone.index('lexgpt')
-    const namespace = index.namespace('stj')
-    const response = await namespace.query({
-      vector: vectors,
-      topK: 4,
-      includeMetadata: true
-    })
-    return response.matches || []
-  } catch (error) {
-    console.log("Error getting embeddings from Pinecone ",error)
-    throw error
-  }
-}
+//   // [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]`,
+//   maxTokens: 1024,
+//   temperature: 0,
+//   topP: 1,
+//   frequencyPenalty: 0,
+//   presencePenalty: 0,
+//   stop: '\n'
+// }
 
-//     You are a stock trading conversation bot and you can help users buy stocks, step by step.
-//     You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
-    
-//     Messages inside [] means that it's a UI element or a user event. For example:
-//     - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-//     - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-    
-//     If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-//     If the user just wants the price, call \`show_stock_price\` to show the price.
-//     If you want to show trending stocks, call \`list_stocks\`.
-//     If you want to show events, call \`get_events\`.
-//     If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-    
-//     Besides that, you can also chat with users and do some calculations if needed.
+
+
+    // If the user asks you to explain a term, call \`explain_term\` to explain the term.
+    // If the user asks you to explain a legal concept, call \`explain_concept\` to explain the concept.
+    // If the user asks you to explain a legal case, call \`explain_case\` to explain the case.

@@ -17,6 +17,8 @@ import { ChatHistory } from './chat-history'
 import { Session } from '@/lib/types'
 import Image from 'next/image'
 
+import AirtableSelector from './ui/airtableSelector'
+
 async function UserOrLogin() {
   const session = (await auth()) as Session
   return (
@@ -55,7 +57,10 @@ export function Header() {
           <UserOrLogin />
         </React.Suspense>
       </div>
-      
+      <div className="flex items-center">
+        {/* Selector */}
+        <AirtableSelector />
+      </div>
     </header>
   )
 }

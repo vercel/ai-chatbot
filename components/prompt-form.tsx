@@ -18,6 +18,8 @@ import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
 
+import { useChat, useChatDispatch } from '@/context/chatContext'
+
 export function PromptForm({
   input,
   setInput
@@ -30,11 +32,13 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+  const chats = useChat()
 
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
+    
   }, [])
 
   return (
@@ -62,11 +66,12 @@ export function PromptForm({
         ])
 
         // Submit and get response message
-        const responseMessage = await submitUserMessage(value)
+        const responseMessage = await submitUserMessage(value, chats)
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
+        {/* TODO: Implementar file upload */}
         {/* <Tooltip>
           <TooltipTrigger asChild>
             <Button
