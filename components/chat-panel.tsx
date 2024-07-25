@@ -36,24 +36,24 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'Generate a blink',
+      subheading: 'for the Fimbul Lowbie.',
+      message: `Generate a blink for the Fimbul Lowbie.`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'How many fleets',
+      subheading: 'are there in this sector?',
+      message: 'How many fleets are there in this sector?'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'Tell me about',
+      subheading: 'this planet.',
+      message: `Tell me about this planet.`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'Tell me about',
+      subheading: `this fleet.`,
+      message: `Tell me about this fleet.`
     }
   ]
 
