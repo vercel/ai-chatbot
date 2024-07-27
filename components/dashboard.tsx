@@ -1,9 +1,7 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
 
-export function Chat() {
+export function DashBoard() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <header className="px-4 lg:px-6 h-14 flex items-center bg-[#f0f4ff] text-[#4b5563]">
@@ -22,11 +20,14 @@ export function Chat() {
             FAQs
           </Link>
           <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
+            Chat Now
+          </Link>
+          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
             Contact
           </Link>
         </nav>
       </header>
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-[#f0f4ff] text-[#4b5563]">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_550px]">
@@ -59,60 +60,114 @@ export function Chat() {
             </div>
           </div>
         </section>
-        <section className="flex-1 flex flex-col">
-          <div className="container px-4 md:px-6 flex-1 flex flex-col">
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">Chat with Mindful AI</h2>
-                <Button variant="outline">End Chat</Button>
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-[#f0f4ff] text-[#4b5563]">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-[#e5e7eb] px-3 py-1 text-sm">Key Features</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Personalized Support Anytime, Anywhere
+                </h2>
+                <p className="max-w-[600px] text-[#6b7280] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Our AI-powered chatbot is designed to provide you with personalized support and evidence-based
+                  techniques to improve your mental well-being, 24/7.
+                </p>
               </div>
-              <div className="flex-1 overflow-auto p-4 bg-[#f0f4ff] rounded-lg">
-                <div className="grid gap-4">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="shrink-0">
+            </div>
+            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
+              <div className="flex flex-col justify-center space-y-4">
+                <ul className="grid gap-6">
+                  <li>
+                    <div className="grid gap-1">
+                      <h3 className="text-xl font-bold">Personalized Support</h3>
+                      <p className="text-[#6b7280]">
+                        Our AI chatbot adapts to your unique needs and preferences, providing personalized support and
+                        guidance.
+                      </p>
+                    </div>
+                  </li>
+                  <li>
+                    <div className="grid gap-1">
+                      <h3 className="text-xl font-bold">24/7 Availability</h3>
+                      <p className="text-[#6b7280]">
+                        Get support whenever you need it, day or night, with our always-on chatbot.
+                      </p>
+                    </div>
+                  </li>
+                  <li>
+                    <div className="grid gap-1">
+                      <h3 className="text-xl font-bold">Evidence-Based Techniques</h3>
+                      <p className="text-[#6b7280]">
+                        Our chatbot uses proven, evidence-based techniques to help you manage stress, anxiety, and other
+                        mental health concerns.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <img
+                src="/placeholder.svg"
+                width="550"
+                height="310"
+                alt="Features"
+                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
+              />
+            </div>
+          </div>
+        </section>
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-[#f0f4ff] text-[#4b5563]">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-[#e5e7eb] px-3 py-1 text-sm">Testimonials</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Users Say</h2>
+                <p className="max-w-[600px] text-[#6b7280] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Hear from real people who have found relief and support through our AI chatbot.
+                </p>
+              </div>
+            </div>
+            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
+              <div className="flex flex-col justify-center space-y-4">
+                <div className="grid gap-4 rounded-lg border bg-white p-6">
+                  <div className="flex items-center space-x-4">
+                    <Avatar>
                       <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback>AI</AvatarFallback>
+                      <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
-                    <div className="bg-white rounded-lg p-4 max-w-[80%]">
-                      <p>Hello! How can I assist you today?</p>
+                    <div>
+                      <p className="text-sm font-medium">John Doe</p>
+                      <p className="text-sm text-[#6b7280]">Software Engineer</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 justify-end">
-                    <div className="bg-[#6366f1] text-white rounded-lg p-4 max-w-[80%]">
-                      <p>I'm feeling a bit anxious today. Can you help me with some techniques to manage my anxiety?</p>
-                    </div>
-                    <Avatar className="shrink-0">
+                  <blockquote className="text-[#6b7280]">
+                    "The Mindful AI chatbot has been a game-changer for my\n mental health. It's like having a personal
+                    therapist\n available 24/7."
+                  </blockquote>
+                </div>
+                <div className="grid gap-4 rounded-lg border bg-white p-6">
+                  <div className="flex items-center space-x-4">
+                    <Avatar>
                       <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback>YO</AvatarFallback>
+                      <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <Avatar className="shrink-0">
-                      <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback>AI</AvatarFallback>
-                    </Avatar>
-                    <div className="bg-white rounded-lg p-4 max-w-[80%]">
-                      <p>Certainly! Here are some evidence-based techniques that can help manage anxiety:</p>
-                      <ul className="list-disc pl-4 mt-2">
-                        <li>Deep breathing exercises</li>
-                        <li>Mindfulness meditation</li>
-                        <li>Cognitive-behavioral therapy (CBT) techniques</li>
-                        <li>Relaxation exercises like progressive muscle relaxation</li>
-                      </ul>
-                      <p className="mt-2">Let me know if you'd like me to walk you through any of these techniques.</p>
+                    <div>
+                      <p className="text-sm font-medium">Jane Smith</p>
+                      <p className="text-sm text-[#6b7280]">Marketing Manager</p>
                     </div>
                   </div>
+                  <blockquote className="text-[#6b7280]">
+                    "I was skeptical at first, but the Mindful AI chatbot has\n truly helped me manage my anxiety and
+                    improve my overall\n well-being."
+                  </blockquote>
                 </div>
               </div>
-              <div className="mt-4">
-                <Textarea
-                  placeholder="Type your message..."
-                  className="w-full rounded-lg p-2 border border-[#e5e7eb]"
-                />
-                <div className="flex justify-end mt-2">
-                  <Button>Send</Button>
-                </div>
-              </div>
+              <img
+                src="/placeholder.svg"
+                width="550"
+                height="310"
+                alt="Testimonials"
+                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
+              />
             </div>
           </div>
         </section>
