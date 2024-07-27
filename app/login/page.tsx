@@ -6,9 +6,9 @@ import { redirect } from 'next/navigation'
 export default async function LoginPage() {
   const session = (await auth()) as Session
 
-  // if (session) {
-  //   redirect('/')
-  // }
+  if (session) {
+    redirect('/')
+  }
 
   return (
     <div className='flex xs:justify-between xl:justify-start xl:gap-[100px] flex-1 items-center justify-center'>
