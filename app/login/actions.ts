@@ -8,6 +8,7 @@ import { kv } from '@vercel/kv'
 import { ResultCode } from '@/lib/utils'
 
 export async function getUser(email: string) {
+  console.log('IN GETUSER')
   const user = await kv.hgetall<User>(`user:${email}`)
   return user
 }
@@ -36,11 +37,13 @@ export async function authenticate(
       })
 
     if (parsedCredentials.success) {
+      console.log('CALLIING SIGNIN NOW')
       await signIn('credentials', {
         email,
         password,
         redirect: false
-      })
+      });
+      console.log('BACK FROM SIGNIN')
 
       return {
         type: 'success',

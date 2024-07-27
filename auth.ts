@@ -10,6 +10,7 @@ export const { auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
+        console.log('IN AUTHORIZE')
         const parsedCredentials = z
           .object({
             email: z.string().email(),
@@ -17,9 +18,13 @@ export const { auth, signIn, signOut } = NextAuth({
           })
           .safeParse(credentials)
 
+        
+
         if (parsedCredentials.success) {
+          console.log('PARSEDCREDENTIAILS.SUCCESS IS TRUE')
           const { email, password } = parsedCredentials.data
           const user = await getUser(email)
+          console.log('BACK FROM GETUSER. USER IS ', user);
 
           if (!user) return null
 
