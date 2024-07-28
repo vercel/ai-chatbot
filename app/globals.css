@@ -36,7 +36,7 @@
   }
  
   .dark {
-    --background: 240 10% 3.9%;
+    --background: rgb(255 255 255 / var(--tw-bg-opacity));
     --foreground: 0 0% 98%;
  
     --card: 240 10% 3.9%;
