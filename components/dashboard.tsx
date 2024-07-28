@@ -19,7 +19,7 @@ export function DashBoard() {
           <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
             FAQs
           </Link>
-          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
+          <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
             Chat Now
           </Link>
           <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
@@ -42,7 +42,7 @@ export function DashBoard() {
                 </div>
                 <div className="flex gap-4">
                   <Link
-                    href="#"
+                    href="/chat"
                     className="inline-flex h-10 items-center justify-center rounded-md bg-[#6366f1] px-8 text-sm font-medium text-white shadow transition-colors hover:bg-[#4f46e5] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                     prefetch={false}
                   >
@@ -140,8 +140,8 @@ export function DashBoard() {
                     </div>
                   </div>
                   <blockquote className="text-[#6b7280]">
-                    "The Mindful AI chatbot has been a game-changer for my\n mental health. It's like having a personal
-                    therapist\n available 24/7."
+                  &quot;The Mindful AI chatbot has been a game-changer for my mental health. It&apos;s like having a personal
+                    therapist available 24/7.&quot;
                   </blockquote>
                 </div>
                 <div className="grid gap-4 rounded-lg border bg-white p-6">
@@ -156,8 +156,8 @@ export function DashBoard() {
                     </div>
                   </div>
                   <blockquote className="text-[#6b7280]">
-                    "I was skeptical at first, but the Mindful AI chatbot has\n truly helped me manage my anxiety and
-                    improve my overall\n well-being."
+                  &quot;I was skeptical at first, but the Mindful AI chatbot has\n truly helped me manage my anxiety and
+                    improve my overall\n well-being.&quot;
                   </blockquote>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export function DashBoard() {
   )
 }
 
-function BrainIcon(props) {
+function BrainIcon(props : any) {
   return (
     <svg
       {...props}
@@ -280,7 +280,7 @@ function BrainIcon(props) {
 }
 
 
-function XIcon(props) {
+function XIcon(props : any) {
   return (
     <svg
       {...props}
