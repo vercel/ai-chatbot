@@ -21,6 +21,7 @@ export async function authenticate(
   _prevState: Result | undefined,
   formData: FormData
 ): Promise<Result | undefined> {
+  console.log('IN AUTHENTICATE')
   try {
     const email = formData.get('email')
     const password = formData.get('password')
@@ -36,23 +37,27 @@ export async function authenticate(
       })
 
     if (parsedCredentials.success) {
+      console.log('PARSED CREDS WAS SUCCCESS. CALLING SIGNIN NOW')
       await signIn('credentials', {
         email,
         password,
         redirect: false
       });
+      console.log('BACK FROM SIGNIN, SUCCESS')
 
       return {
         type: 'success',
         resultCode: ResultCode.UserLoggedIn
       }
     } else {
+      console.log('PARSED CREDS WAS NOT SUCCESS')
       return {
         type: 'error',
         resultCode: ResultCode.InvalidCredentials
       }
     }
   } catch (error) {
+    console.log('AN ERROR : ', error);
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':

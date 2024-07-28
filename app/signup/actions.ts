@@ -12,14 +12,17 @@ export async function createUser(
   hashedPassword: string,
   salt: string
 ) {
+  console.log("IN CREATEUSER. CALLING GETUSER")
   const existingUser = await getUser(email)
 
   if (existingUser) {
+    console.log('USER ALREDU EXISTS, EROR')
     return {
       type: 'error',
       resultCode: ResultCode.UserAlreadyExists
     }
   } else {
+    console.log('USER HAS BEEN CREAED AT DB')
     const user = {
       id: crypto.randomUUID(),
       email,
@@ -68,11 +71,12 @@ export async function signup(
       saltedPassword
     )
     const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
-
+      console.log('PARSED CRED WAS SUCCESS, CALLING CREATEUSER NOW')
     try {
       const result = await createUser(email, hashedPassword, salt)
 
       if (result.resultCode === ResultCode.UserCreated) {
+        console.log('CREATEUSER WAS SUCCESSFUL, CALLING SIGNIN WITH NEW USER')
         await signIn('credentials', {
           email,
           password,
@@ -82,6 +86,7 @@ export async function signup(
 
       return result
     } catch (error) {
+      console.log('ERROR : ', error);
       if (error instanceof AuthError) {
         switch (error.type) {
           case 'CredentialsSignin':
