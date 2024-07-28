@@ -30,7 +30,7 @@ export default function LoginForm() {
       className="flex flex-col items-center gap-4 space-y-3"
     >
       <div className="w-full flex-1 rounded-lg px-6 pb-4 pt-8  md:w-96 dark:bg-zinc-950">
-        <h1 className="mb-3 text-2xl font-bold">Sign in to Serenity</h1>
+        <h1 className="mb-3 text-2xl font-bold">Sign in to CalmCompanion</h1>
         <div className="w-full">
           <div>
             <label
