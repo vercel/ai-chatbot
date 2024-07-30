@@ -35,6 +35,7 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
+import WeatherCard from '@/components/weather/weather'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -474,7 +475,53 @@ async function submitUserMessage(content: string) {
             </BotCard>
           )
         }
-      }
+      },
+      getWeather: {
+        description: 'Get the weather information for a given city.',
+        parameters: z.object({
+          city: z.string().describe('The name of the city.'),
+        }),
+        generate: async function* ({ city }) {
+          const toolCallId = nanoid();
+      
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'getWeather',
+                    toolCallId,
+                    args: { city },
+                  },
+                ],
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'getWeather',
+                    toolCallId,
+                    result: { city },
+                  },
+                ],
+              },
+            ],
+          });
+      
+          return (
+            <BotCard>
+              <WeatherCard city={city} />
+            </BotCard>
+          );
+        },
+      },
     }
   })
 
@@ -576,6 +623,11 @@ export const getUIStateFromAIState = (aiState: Chat) => {
               <BotCard>
                 {/* @ts-expect-error */}
                 <Events props={tool.result} />
+              </BotCard>
+            ) : tool.toolName === 'getWeather' ? (
+              <BotCard>
+                {/* @ts-expect-error */}
+                <WeatherCard props={tool.result} />
               </BotCard>
             ) : null
           })
