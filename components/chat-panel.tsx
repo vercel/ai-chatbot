@@ -21,6 +21,11 @@ export interface ChatPanelProps {
   scrollToBottom: () => void
 }
 
+interface CurrentMessagesProps {
+  id?: string
+  display: React.ReactNode
+}
+
 export function ChatPanel({
   id,
   title,
@@ -74,7 +79,7 @@ export function ChatPanel({
                   index > 1 && 'hidden md:block'
                 }`}
                 onClick={async () => {
-                  setMessages(currentMessages => [
+                  setMessages((currentMessages: CurrentMessagesProps[]) => [
                     ...currentMessages,
                     {
                       id: nanoid(),
@@ -86,7 +91,7 @@ export function ChatPanel({
                     example.message
                   )
 
-                  setMessages(currentMessages => [
+                  setMessages((currentMessages: CurrentMessagesProps[]) => [
                     ...currentMessages,
                     responseMessage
                   ])
