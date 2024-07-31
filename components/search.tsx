@@ -46,13 +46,13 @@ import {
 //     sharepointIds: SharepointIds;
 //     siteId: string;
 //   }
+interface props {
+    searchQuery: string;
+};
 
-interface SearchProps {
-    queryString: string;
-}
 
-export default async function Search({ queryString = 'Pittampalli' }: SearchProps) {
-    console.log(queryString)
+export default async function Search(props: props) {
+    console.log(props.searchQuery);
     const session = (await auth()) as EnrichedSession;
     // console.log('Session inside the route ', session);
 
@@ -79,7 +79,7 @@ export default async function Search({ queryString = 'Pittampalli' }: SearchProp
                     ),
     });
 
-    const searchResponse = {requests: [{entityTypes: ['driveItem'],query: {queryString: queryString}}]};
+    const searchResponse = {requests: [{entityTypes: ['driveItem'], query: {queryString: props.searchQuery}}]};
 
     let response: SearchResponse = await client.api('/search/query')
             .post(searchResponse);
@@ -104,8 +104,8 @@ export default async function Search({ queryString = 'Pittampalli' }: SearchProp
                         <Input
                             type="search"
                             placeholder="Search files..."
-                            value={queryString}
-        //          onChange={(e) => setqueryString(e.target.value)}
+                            value={props.searchQuery}
+        //          onChange={(e) => setsearchQuery(e.target.value)}
                             className="flex-1"
                         />
                         <DropdownMenu>
@@ -166,13 +166,13 @@ export default async function Search({ queryString = 'Pittampalli' }: SearchProp
                                             <PaginationContent>
                                                     <PaginationItem>
                                                             <PaginationPrevious
-                                                                    href={`?page=${page > 1 ? page - 1 : 1}&search=${queryString}&sort=${sortBy}&filter=${filterBy}`}
+                                                                    href={`?page=${page > 1 ? page - 1 : 1}&search=${props.searchQuery}&sort=${sortBy}&filter=${filterBy}`}
                                                             />
                                                     </PaginationItem>
                                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                                                             <PaginationItem key={p}>
                                                                     <PaginationLink
-                                                                            href={`?page=${p}&search=${queryString}&sort=${sortBy}&filter=${filterBy}`}
+                                                                            href={`?page=${p}&search=${props.searchQuery}&sort=${sortBy}&filter=${filterBy}`}
                                                                             isActive={p === page}
                                                                     >
                                                                             {p}
@@ -181,7 +181,7 @@ export default async function Search({ queryString = 'Pittampalli' }: SearchProp
                                                     ))}
                                                     <PaginationItem>
                                                             <PaginationNext
-                                                                    href={`?page=${page < totalPages ? page + 1 : totalPages}&search=${queryString}&sort=${sortBy}&filter=${filterBy}`}
+                                                                    href={`?page=${page < totalPages ? page + 1 : totalPages}&search=${props.searchQuery}&sort=${sortBy}&filter=${filterBy}`}
                                                             />
                                                     </PaginationItem>
                                             </PaginationContent>

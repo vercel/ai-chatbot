@@ -11,7 +11,7 @@ import { JSX, SVGProps } from "react";
 export default async function Tasks() {
 
   const session = (await auth()) as EnrichedSession;
-  console.log('Session inside the route ', session);
+  // console.log('Session inside the route ', session);
 
   if (!session) {
     return new Response('Unauthorized', {
@@ -24,7 +24,6 @@ export default async function Tasks() {
   // const clientSecret = AUTH_GOOGLE_SECRET;
   const accessToken = session?.accessToken;
   const refreshToken = session?.refreshToken;
-  console.log('Access token: ', accessToken);
 
 
 

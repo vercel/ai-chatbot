@@ -37,6 +37,8 @@ import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import WeatherCard from '@/components/weather/weather'
 import Tasks from '@/components/tasks/tasks'
+import Files from '@/components/files'
+import Search from '@/components/search'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -91,9 +93,8 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
         {
           id: nanoid(),
           role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
+          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${amount * price
+            }]`
         }
       ]
     })
@@ -132,20 +133,57 @@ async function submitUserMessage(content: string) {
     model: openai('gpt-3.5-turbo'),
     initial: <SpinnerMessage />,
     system: `\
-    You are a stock trading conversation bot and you can help users buy stocks, step by step.
-    You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
-    
-    Messages inside [] means that it's a UI element or a user event. For example:
-    - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-    - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-    
-    If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-    If the user just wants the price, call \`show_stock_price\` to show the price.
-    If you want to show trending stocks, call \`list_stocks\`.
-    If you want to show events, call \`get_events\`.
-    If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-    
-    Besides that, you can also chat with users and do some calculations if needed.`,
+You are an AI assistant capable of searching files and file content within Microsoft Graph. When a user specifies a search query for files or file content, you will construct the request body for the search_files function and provide the applicable parameters based on the user's intent.  All function calls MUST be in JSON.
+
+Use the following instructions to determine the parameters:
+
+1. **Query String**: You will use your world knowledge and knowledge of Microsoft graph search syntax (including KQL, XRANK, etc.) to create a query string that reflects the semantics of what the user is looking for.
+2. **Entity Types**: Always set this to ["driveItem"] to search for files and file content.
+3. **Starting Index (from)**: If specified by the user, include it; otherwise, default to 0.
+4. **Number of Results (size)**: If specified by the user, include it; otherwise, default to a reasonable number like 10.
+5. **Stored Fields**: If the user requests specific fields to be included in the response, add them.
+6. **Sort Order**: If the user specifies a sort order, include it with the appropriate field and order.
+
+#### Examples:
+
+- **User Intent**: "Search for documents containing the word 'budget' sorted by date."
+  - **Request Body**:
+  
+    {
+      "requests": [
+        {
+          "entityTypes": ["driveItem"],
+          "query": {
+            "queryString": "budget"
+          },
+          "sort": [
+            {
+              "field": "createdDateTime",
+              "sortOrder": "desc"
+            }
+          ]
+        }
+      ]
+    }
+
+
+ **User Intent**: "Find all files related to 'project plan' and show the first 5 results."
+   **Request Body**:
+    {
+      "requests": [
+        {
+          "entityTypes": ["driveItem"],
+          "query": {
+            "queryString": "project plan"
+          },
+          "size": 5
+        }
+      ]
+    }
+
+Construct the request body based on these guidelines and call the search_files function with the appropriate parameters." &
+$"  For any relative dates/times, assume the current date/time is ${new Date().toISOString().slice(0, 10)}
+    `,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -179,304 +217,6 @@ async function submitUserMessage(content: string) {
       return textNode
     },
     tools: {
-      listStocks: {
-        description: 'List three imaginary stocks that are trending.',
-        parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          )
-        }),
-        generate: async function* ({ stocks }) {
-          yield (
-            <BotCard>
-              <StocksSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    args: { stocks }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    result: stocks
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stocks props={stocks} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPrice: {
-        description:
-          'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        }),
-        generate: async function* ({ symbol, price, delta }) {
-          yield (
-            <BotCard>
-              <StockSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    args: { symbol, price, delta }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    result: { symbol, price, delta }
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Stock props={{ symbol, price, delta }} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPurchase: {
-        description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .optional()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
-        generate: async function* ({ symbol, price, numberOfShares = 100 }) {
-          const toolCallId = nanoid()
-
-          if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares,
-                        status: 'expired'
-                      }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
-
-            return <BotMessage content={'Invalid amount'} />
-          } else {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares
-                      }
-                    }
-                  ]
-                }
-              ]
-            })
-
-            return (
-              <BotCard>
-                <Purchase
-                  props={{
-                    numberOfShares,
-                    symbol,
-                    price: +price,
-                    status: 'requires_action'
-                  }}
-                />
-              </BotCard>
-            )
-          }
-        }
-      },
-      getEvents: {
-        description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
-        generate: async function* ({ events }) {
-          yield (
-            <BotCard>
-              <EventsSkeleton />
-            </BotCard>
-          )
-
-          await sleep(1000)
-
-          const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    args: { events }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    result: events
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Events props={events} />
-            </BotCard>
-          )
-        }
-      },
       getWeather: {
         description: 'Get the weather information for a given city.',
         parameters: z.object({
@@ -484,7 +224,7 @@ async function submitUserMessage(content: string) {
         }),
         generate: async function* ({ city }) {
           const toolCallId = nanoid();
-      
+
           aiState.done({
             ...aiState.get(),
             messages: [
@@ -515,60 +255,106 @@ async function submitUserMessage(content: string) {
               },
             ],
           });
-      
+
           return (
             <BotCard>
               <WeatherCard city={city} />
             </BotCard>
-              )
-            }
-            },
-            showTasks: {
-            description: 'Display the user tasks.',
-            parameters: z.object({
-              count: z.number().default(5).describe('The number of tasks to display.')
-            }),
-            generate: async function* ({ count }) {
-              const toolCallId = nanoid();
+          )
+        }
+      },
+      showTasks: {
+        description: 'Display the user tasks.',
+        parameters: z.object({
+          count: z.number().default(5).describe('The number of tasks to display.')
+        }),
+        generate: async function* ({ count }) {
+          const toolCallId = nanoid();
 
-              aiState.done({
-                ...aiState.get(),
-                messages: [
-                  ...aiState.get().messages,
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
                   {
-                    id: nanoid(),
-                    role: 'assistant',
-                    content: [
-                      {
-                        type: 'tool-call',
-                        toolName: 'showTasks',
-                        toolCallId,
-                        args: {},
-                      },
-                    ],
-                  },
-                  {
-                    id: nanoid(),
-                    role: 'tool',
-                    content: [
-                      {
-                        type: 'tool-result',
-                        toolName: 'showTasks',
-                        toolCallId,
-                        result: {},
-                      },
-                    ],
+                    type: 'tool-call',
+                    toolName: 'showTasks',
+                    toolCallId,
+                    args: {},
                   },
                 ],
-              });
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'showTasks',
+                    toolCallId,
+                    result: {},
+                  },
+                ],
+              },
+            ],
+          });
 
-              return (
-                <BotCard>
-                  <Tasks/>
-                </BotCard>
+          return (
+            <BotCard>
+            Tasks
+            </BotCard>
           );
         },
       },
+      search_query: {
+        description: 'Execute a search query on the Microsoft Graph API to find files based on user-defined criteria.',
+        parameters: z.object({
+          query: z.string().describe('the query string to search for.'),
+        }),
+        generate: async function* ({ query }) {
+          const toolCallId = nanoid();
+      
+          aiState.done({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'search_query',
+                    toolCallId,
+                    args: { query },
+                  },
+                ],
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'search_query',
+                    toolCallId,
+                    result: { query },
+                  },
+                ],
+              },
+            ],
+          });
+          console.log(query);
+          return (
+            <BotCard>
+              <Search searchQuery={query} />
+            </BotCard>
+          )
+        }
+      },  
     }
   })
 
@@ -675,6 +461,16 @@ export const getUIStateFromAIState = (aiState: Chat) => {
               <BotCard>
                 {/* @ts-expect-error */}
                 <WeatherCard props={tool.result} />
+              </BotCard>
+            ) : tool.toolName === 'showTasks' ? (
+              <BotCard>
+                {/* @ts-expect-error */}
+                <Tasks props={tool.result} />
+              </BotCard>
+            ) : tool.toolName === 'search_query' ? (
+              <BotCard>
+                {/* @ts-expect-error */}
+                <Search props={tool.result} />
               </BotCard>
             ) : null
           })

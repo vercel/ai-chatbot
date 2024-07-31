@@ -10,7 +10,6 @@ import { Event } from '@microsoft/microsoft-graph-types'
 export default async function Calendar() {
 
   const session = (await auth()) as EnrichedSession;
-  console.log('Session inside the route ', session);
 
   if (!session) {
     return new Response('Unauthorized', {
