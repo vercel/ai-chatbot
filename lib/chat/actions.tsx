@@ -36,6 +36,7 @@ import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import WeatherCard from '@/components/weather/weather'
+import Tasks from '@/components/tasks/tasks'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -519,6 +520,52 @@ async function submitUserMessage(content: string) {
             <BotCard>
               <WeatherCard city={city} />
             </BotCard>
+              )
+            }
+            },
+            showTasks: {
+            description: 'Display the user tasks.',
+            parameters: z.object({
+              count: z.number().default(5).describe('The number of tasks to display.')
+            }),
+            generate: async function* ({ count }) {
+              const toolCallId = nanoid();
+
+              aiState.done({
+                ...aiState.get(),
+                messages: [
+                  ...aiState.get().messages,
+                  {
+                    id: nanoid(),
+                    role: 'assistant',
+                    content: [
+                      {
+                        type: 'tool-call',
+                        toolName: 'showTasks',
+                        toolCallId,
+                        args: {},
+                      },
+                    ],
+                  },
+                  {
+                    id: nanoid(),
+                    role: 'tool',
+                    content: [
+                      {
+                        type: 'tool-result',
+                        toolName: 'showTasks',
+                        toolCallId,
+                        result: {},
+                      },
+                    ],
+                  },
+                ],
+              });
+
+              return (
+                <BotCard>
+                  <Tasks/>
+                </BotCard>
           );
         },
       },

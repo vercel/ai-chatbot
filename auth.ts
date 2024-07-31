@@ -29,6 +29,11 @@ export const config = {
       clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_ID,
       clientSecret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET,
       tenantId: process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID,
+      authorization: {
+        params: {
+          scope: "openid profile email offline_access",
+        },
+      },
     })
   ],
   // basePath: '/api/auth',
