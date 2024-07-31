@@ -79,10 +79,10 @@ export default async function Search(props: props) {
                     ),
     });
 
-    const searchResponse = {requests: [{entityTypes: ['driveItem'], query: {queryString: props.searchQuery}}]};
+    const searchRequest = {requests: [{entityTypes: ['driveItem'], query: {queryString: props.searchQuery}}]};
 
     let response: SearchResponse = await client.api('/search/query')
-            .post(searchResponse);
+            .post(searchRequest);
 
     // extract hits from the response
     const hits: Hit[] = response.value[0].hitsContainers[0].hits;

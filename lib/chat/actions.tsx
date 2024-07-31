@@ -130,12 +130,17 @@ async function submitUserMessage(content: string) {
   let textNode: undefined | React.ReactNode
 
   const result = await streamUI({
-    model: openai('gpt-3.5-turbo'),
+    model: openai('gpt-4o'),
     initial: <SpinnerMessage />,
     system: `\
-You are an AI assistant capable of searching files and file content within Microsoft Graph. When a user specifies a search query for files or file content, you will construct the request body for the search_files function and provide the applicable parameters based on the user's intent.  All function calls MUST be in JSON.
+You are an AI assistant capable of helping with three activities:
 
-Use the following instructions to determine the parameters:
+1. Search - searching files and file content within Microsoft Graph. When a user specifies a search query for files or file content, you will construct the request body for the search_files function and provide the applicable parameters based on the user's intent.  All function calls MUST be in JSON.
+2. Tasks - displaying user's tasks
+3. Weather Providing the weather
+
+
+Search -- Use the following instructions to determine the parameters:
 
 1. **Query String**: You will use your world knowledge and knowledge of Microsoft graph search syntax (including KQL, XRANK, etc.) to create a query string that reflects the semantics of what the user is looking for.
 2. **Entity Types**: Always set this to ["driveItem"] to search for files and file content.
@@ -181,8 +186,7 @@ Use the following instructions to determine the parameters:
       ]
     }
 
-Construct the request body based on these guidelines and call the search_files function with the appropriate parameters." &
-$"  For any relative dates/times, assume the current date/time is ${new Date().toISOString().slice(0, 10)}
+Construct the request body based on these guidelines and call the search_files function with the appropriate parameters.  For any relative dates/times, assume the current date/time is ${new Date().toISOString().slice(0, 10)}
     `,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
@@ -304,7 +308,7 @@ $"  For any relative dates/times, assume the current date/time is ${new Date().t
 
           return (
             <BotCard>
-            Tasks
+            <Tasks/>
             </BotCard>
           );
         },
