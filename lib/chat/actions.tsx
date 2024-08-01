@@ -550,40 +550,56 @@ export const AI = createAI<AIState, UIState>({
 
 export const getUIStateFromAIState = (aiState: Chat) => {
   return aiState.messages
-    .filter(message => message.role !== 'system')
+    .filter((message) =>
+      message.role !== 'system' &&
+      !(message.role === 'assistant' &&
+        Array.isArray(message.content) &&
+        message.content.length === 1 &&
+        message.content[0].type === 'tool-call')
+    )
     .map((message, index) => ({
       id: `${aiState.chatId}-${index}`,
       display:
-        message.role === 'tool' ? (
-          message.content.map(tool => {
-            return tool.toolName === 'listStocks' ? (
-              <BotCard>
-                {/* TODO: Infer types based on the tool result*/}
-                {/* @ts-expect-error */}
-                <Stocks props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPrice' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Stock props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPurchase' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Purchase props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'getEvents' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Events props={tool.result} />
-              </BotCard>
-            ) : null
-          })
-        ) : message.role === 'user' ? (
-          <UserMessage>{message.content as string}</UserMessage>
-        ) : message.role === 'assistant' &&
-          typeof message.content === 'string' ? (
-          <BotMessage content={message.content} />
-        ) : null
-    }))
-}
+        message.role === 'tool'
+          ? message.content.map((tool) => {
+              switch (tool.toolName) {
+                case 'listStocks':
+                  return (
+                    <BotCard>
+                      {/* TODO: Infer types based on the tool result*/}
+                      {/* @ts-expect-error */}
+                      <Stocks props={tool.result} />
+                    </BotCard>
+                  );
+                case 'showStockPrice':
+                  return (
+                    <BotCard>
+                      {/* @ts-expect-error */}
+                      <Stock props={tool.result} />
+                    </BotCard>
+                  );
+                case 'showStockPurchase':
+                  return (
+                    <BotCard>
+                      {/* @ts-expect-error */}
+                      <Purchase props={tool.result} />
+                    </BotCard>
+                  );
+                case 'getEvents':
+                  return (
+                    <BotCard>
+                      {/* @ts-expect-error */}
+                      <Events props={tool.result} />
+                    </BotCard>
+                  );
+                default:
+                  return null;
+              }
+            })
+          : message.role === 'user'
+          ? <UserMessage>{message.content as string}</UserMessage>
+          : message.role === 'assistant' && typeof message.content === 'string'
+          ? <BotMessage content={message.content} />
+          : null,
+    }));
+};
