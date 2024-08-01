@@ -1,22 +1,13 @@
-
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { auth, EnrichedSession } from 'auth';
+import { columns } from "./columns"
+import { DataTable } from "./data-table"
 import { Client } from '@microsoft/microsoft-graph-client';
+import { auth, EnrichedSession } from 'auth';
 import { TodoTask } from '@microsoft/microsoft-graph-types'
-import { JSX, SVGProps } from "react";
 
-
-export default async function Tasks() {
-
+async function getData(): Promise<TodoTask[]> {
+  // Fetch data from your API here.
   const session = (await auth()) as EnrichedSession;
-
-  if (!session) {
-    return new Response('Unauthorized', {
-      status: 401,
-    });
-  }
+  // console.log('Session inside the route ', session);
 
   const accessToken = session?.accessToken;
   const refreshToken = session?.refreshToken;
@@ -38,9 +29,15 @@ export default async function Tasks() {
   
     const tasks: TodoTask[] = await response.value;
 
-      return (
-        <div>{JSON.stringify(tasks)}</div>
-      );
-    }
+    return tasks; // Add this line to return the tasks array
+}
 
-    
+export default async function Page() {
+  const data: TodoTask[] = await getData()
+
+  return (
+    <div className="container mx-auto py-10">
+      <DataTable columns={columns} data={data} />
+    </div>
+  )
+}
