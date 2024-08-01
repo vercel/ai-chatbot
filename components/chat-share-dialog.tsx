@@ -18,6 +18,8 @@ import { IconSpinner } from '@/components/ui/icons'
 import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard'
 
 interface ChatShareDialogProps extends DialogProps {
+  open: boolean
+  onOpenChange: (shareDialogOpen: boolean) => void
   chat: Pick<Chat, 'id' | 'title' | 'messages'>
   shareChat: (id: string) => ServerActionResult<Chat>
   onCopy: () => void
