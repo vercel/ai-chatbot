@@ -1,87 +1,67 @@
+"use client";
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { auth, EnrichedSession } from 'auth';
-import { Client } from '@microsoft/microsoft-graph-client';
-import { TodoTask } from '@microsoft/microsoft-graph-types'
 import { JSX, SVGProps } from "react";
+import { useOptimistic } from 'react';
+import { saveAction } from '../../app/actions';
+import { TodoTask } from '@microsoft/microsoft-graph-types';
 
 
-export default async function Tasks() {
+interface OptimisticTask extends TodoTask {
+  sending: boolean;
+}
 
-  const session = (await auth()) as EnrichedSession;
-  // console.log('Session inside the route ', session);
+export function TodoList({ tasks }: { tasks: OptimisticTask[] }) {
+  async function formAction(formData: FormData) {
+    addOptimisticItem(formData.get('item') as string);
+    await saveAction(formData);
+  };
+  const [optimisticItems, addOptimisticItem] = useOptimistic<OptimisticTask[], string>(tasks, (state, newTask) => [...state, { title: newTask, sending: true }]);
 
-  if (!session) {
-    return new Response('Unauthorized', {
-      status: 401,
-    });
-  }
-
-  // const { AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET } = process.env;
-  // const clientId = AUTH_GOOGLE_ID;
-  // const clientSecret = AUTH_GOOGLE_SECRET;
-  const accessToken = session?.accessToken;
-  const refreshToken = session?.refreshToken;
-
-
-
-  const client = Client.init({
-    authProvider: (done) =>
-      done(
-        null,
-        accessToken // WHERE DO WE GET THIS FROM?
-      ),
-  });
-  
-    const response = await client
-        .api('/me/todo/lists/AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA=/tasks')
-        .top(5)
-        .get();
-  
-    const tasks: TodoTask[] = await response.value;
-
-      return (
-        <div className="bg-background text-foreground rounded-lg shadow-md p-6 w-full max-w-md mx-auto">
-          <header className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold">Tasks</h1>
-          </header>
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Input type="text" placeholder="Add a new task" className="flex-1" />
-              <Button>Add</Button>
-            </div>
-            <div className="space-y-2">
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="flex items-center justify-between bg-muted rounded-md p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <Checkbox id={task.id} defaultChecked={task.status === "completed"} />
-                    <label
-                      htmlFor={task.id}
-                      className={`text-sm font-medium ${
-                        task.status === "completed" ? 'line-through' : ''
-                      }`}
-                    >
-                      {task.title}
-                    </label>
-                  </div>
-                  <Button variant="ghost" size="icon">
-                    <TrashIcon className="w-5 h-5" />
-                    <span className="sr-only">Delete task</span>
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
+  return (
+    <div className="bg-background text-foreground rounded-lg shadow-md p-6 w-full max-w-md mx-auto">
+      <header className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Tasks</h1>
+      </header>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <form action={formAction}>
+            <Input type="text" name="item" placeholder="Make a video ... " className="flex-1" />
+            <Button type="submit">Add</Button>
+          </form>
         </div>
-      );
-    }
+        <div className="space-y-2">
+          {optimisticItems.map((item, i) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between bg-muted rounded-md p-3"
+            >
+              <div className="flex items-center gap-3">
+                <Checkbox id={item.id} defaultChecked={item.status === "completed"} />
+                <label
+                  htmlFor={item.id}
+                  className={`text-sm font-medium ${item.status === "completed" ? 'line-through' : ''
+                    }`}
+                >
+                  {item.title}
+                  {!!item.sending && <small> (Sending ... )</small>}
+                </label>
+              </div>
+              <Button variant="ghost" size="icon">
+                <TrashIcon className="w-5 h-5" />
+                <span className="sr-only">Delete task</span>
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-    
+
 function TrashIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg

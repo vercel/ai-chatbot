@@ -6,6 +6,8 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { TodoTask } from '@microsoft/microsoft-graph-types'
+import getGraphClient from './db'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -153,4 +155,41 @@ export async function getMissingKeys() {
   return keysRequired
     .map(key => (process.env[key] ? '' : key))
     .filter(key => key !== '')
+}
+
+export async function getTasks() {
+  const client = await getGraphClient();
+  const todoList = "AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA="
+  const response = await client
+    .api(`/me/todo/lists/${todoList}/tasks`)
+    .get();
+
+  const tasks: TodoTask[] = await response.value;
+
+  return tasks;
+}
+
+export async function saveAction(formData: FormData) {
+  const todoList = "AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA="
+  
+  const client = await getGraphClient();
+  let text = formData.get('item') ?? '';
+
+
+  const todoTask = {title: text};
+
+  await client
+    .api(`/me/todo/lists/${todoList}/tasks`)
+    .post(todoTask);
+
+  revalidatePath('/');
+}
+
+export async function deleteAction(listId: string, taskId: string) {
+  const client = await getGraphClient();
+
+  await client.api(`/me/todo/lists/${listId}/tasks/${taskId}`)
+    .delete();
+
+    revalidatePath('/');
 }
