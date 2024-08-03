@@ -31,14 +31,15 @@ import {
   sleep,
   nanoid
 } from '@/lib/utils'
-import { saveChat } from '@/app/actions'
+import { getTasks, saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import WeatherCard from '@/components/weather/weather'
-import Tasks from '@/components/tasks/tasks'
+import { TodoList } from '@/components/tasks/tasks'
 import Files from '@/components/files'
 import Search from '@/components/search'
+import { OptimisticTask } from '@/types'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -132,62 +133,65 @@ async function submitUserMessage(content: string) {
   const result = await streamUI({
     model: openai('gpt-4o'),
     initial: <SpinnerMessage />,
-    system: `\
-You are an AI assistant capable of helping with three activities:
+    system: "You are an AI assistant capable of helping with the user's personal tasks.  You are able to call three functions"
+    
+//     `\
+// You are an AI assistant capable of helping with three activities:
 
-1. Search - searching files and file content within Microsoft Graph. When a user specifies a search query for files or file content, you will construct the request body for the search_files function and provide the applicable parameters based on the user's intent.  All function calls MUST be in JSON.
-2. Tasks - displaying user's tasks
-3. Weather Providing the weather
+// 1. Search - searching files and file content within Microsoft Graph. When a user specifies a search query for files or file content, you will construct the request body for the search_files function and provide the applicable parameters based on the user's intent.  All function calls MUST be in JSON.
+// 2. Tasks - displaying user's tasks
+// 3. Weather Providing the weather
 
 
-Search -- Use the following instructions to determine the parameters:
+// Search -- Use the following instructions to determine the parameters:
 
-1. **Query String**: You will use your world knowledge and knowledge of Microsoft graph search syntax (including KQL, XRANK, etc.) to create a query string that reflects the semantics of what the user is looking for.
-2. **Entity Types**: Always set this to ["driveItem"] to search for files and file content.
-3. **Starting Index (from)**: If specified by the user, include it; otherwise, default to 0.
-4. **Number of Results (size)**: If specified by the user, include it; otherwise, default to a reasonable number like 10.
-5. **Stored Fields**: If the user requests specific fields to be included in the response, add them.
-6. **Sort Order**: If the user specifies a sort order, include it with the appropriate field and order.
+// 1. **Query String**: You will use your world knowledge and knowledge of Microsoft graph search syntax (including KQL, XRANK, etc.) to create a query string that reflects the semantics of what the user is looking for.
+// 2. **Entity Types**: Always set this to ["driveItem"] to search for files and file content.
+// 3. **Starting Index (from)**: If specified by the user, include it; otherwise, default to 0.
+// 4. **Number of Results (size)**: If specified by the user, include it; otherwise, default to a reasonable number like 10.
+// 5. **Stored Fields**: If the user requests specific fields to be included in the response, add them.
+// 6. **Sort Order**: If the user specifies a sort order, include it with the appropriate field and order.
 
-#### Examples:
+// #### Examples:
 
-- **User Intent**: "Search for documents containing the word 'budget' sorted by date."
-  - **Request Body**:
+// - **User Intent**: "Search for documents containing the word 'budget' sorted by date."
+//   - **Request Body**:
   
-    {
-      "requests": [
-        {
-          "entityTypes": ["driveItem"],
-          "query": {
-            "queryString": "budget"
-          },
-          "sort": [
-            {
-              "field": "createdDateTime",
-              "sortOrder": "desc"
-            }
-          ]
-        }
-      ]
-    }
+//     {
+//       "requests": [
+//         {
+//           "entityTypes": ["driveItem"],
+//           "query": {
+//             "queryString": "budget"
+//           },
+//           "sort": [
+//             {
+//               "field": "createdDateTime",
+//               "sortOrder": "desc"
+//             }
+//           ]
+//         }
+//       ]
+//     }
 
 
- **User Intent**: "Find all files related to 'project plan' and show the first 5 results."
-   **Request Body**:
-    {
-      "requests": [
-        {
-          "entityTypes": ["driveItem"],
-          "query": {
-            "queryString": "project plan"
-          },
-          "size": 5
-        }
-      ]
-    }
+//  **User Intent**: "Find all files related to 'project plan' and show the first 5 results."
+//    **Request Body**:
+//     {
+//       "requests": [
+//         {
+//           "entityTypes": ["driveItem"],
+//           "query": {
+//             "queryString": "project plan"
+//           },
+//           "size": 5
+//         }
+//       ]
+//     }
 
-Construct the request body based on these guidelines and call the search_files function with the appropriate parameters.  For any relative dates/times, assume the current date/time is ${new Date().toISOString().slice(0, 10)}
-    `,
+// Construct the request body based on these guidelines and call the search_files function with the appropriate parameters.  For any relative dates/times, assume the current date/time is ${new Date().toISOString().slice(0, 10)}
+//     `
+    ,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -306,11 +310,13 @@ Construct the request body based on these guidelines and call the search_files f
             ],
           });
 
+          const items: OptimisticTask[] = await getTasks();
+
           return (
             <BotCard>
-            <Tasks/>
+              <TodoList tasks={items} />
             </BotCard>
-          );
+          );;
         },
       },
       search_query: {
@@ -440,28 +446,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       display:
         message.role === 'tool' ? (
           message.content.map(tool => {
-            return tool.toolName === 'listStocks' ? (
-              <BotCard>
-                {/* TODO: Infer types based on the tool result*/}
-                {/* @ts-expect-error */}
-                <Stocks props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPrice' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Stock props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPurchase' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Purchase props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'getEvents' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Events props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'getWeather' ? (
+            return tool.toolName === 'getWeather' ? (
               <BotCard>
                 {/* @ts-expect-error */}
                 <WeatherCard props={tool.result} />
@@ -469,7 +454,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
             ) : tool.toolName === 'showTasks' ? (
               <BotCard>
                 {/* @ts-expect-error */}
-                <Tasks props={tool.result} />
+                <TodoList props={tool.result} />
               </BotCard>
             ) : tool.toolName === 'search_query' ? (
               <BotCard>

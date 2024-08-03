@@ -8,11 +8,8 @@ import { useOptimistic } from 'react';
 import { saveAction } from '../../app/actions';
 import { TodoTask } from '@microsoft/microsoft-graph-types';
 import { deleteAction } from "../../app/actions";
+import { OptimisticTask } from "../../types";
 
-
-interface OptimisticTask extends TodoTask {
-  sending: boolean;
-}
 
 export function TodoList({ tasks }: { tasks: OptimisticTask[] }) {
   async function formAction(formData: FormData) {
@@ -52,7 +49,7 @@ export function TodoList({ tasks }: { tasks: OptimisticTask[] }) {
                   {!!item.sending && <small> (Sending ... )</small>}
                 </label>
               </div>
-              <Button variant="ghost" size="icon" onClick={async () => {
+              <Button type="submit" variant="ghost" size="icon" onClick={async () => {
                 await deleteAction("AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA=", 
                   item.id as string);
         }}>

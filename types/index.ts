@@ -1,4 +1,5 @@
 
+import { TodoTask } from '@microsoft/microsoft-graph-types'
 
 export interface SearchParams {
   [key: string]: string | string[] | undefined
@@ -27,3 +28,8 @@ export interface DataTableFilterOption<TData> {
   filterOperator?: string
   isMulti?: boolean
 }
+
+export interface OptimisticTask extends TodoTask {
+  sending?: boolean;
+}
+

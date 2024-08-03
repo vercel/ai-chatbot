@@ -38,8 +38,7 @@ export function Combobox({
     items,
     placeholder,
     emptyMessage,
-    searchPlaceholder,
-    onSelect,
+    searchPlaceholder
 }: ComboboxProps) {
     const [open, setOpen] = React.useState(false)
     const [value, setValue] = React.useState("")
