@@ -7,6 +7,7 @@ import { JSX, SVGProps } from "react";
 import { useOptimistic } from 'react';
 import { saveAction } from '../../app/actions';
 import { TodoTask } from '@microsoft/microsoft-graph-types';
+import { deleteAction } from "../../app/actions";
 
 
 interface OptimisticTask extends TodoTask {
@@ -18,6 +19,8 @@ export function TodoList({ tasks }: { tasks: OptimisticTask[] }) {
     addOptimisticItem(formData.get('item') as string);
     await saveAction(formData);
   };
+;
+
   const [optimisticItems, addOptimisticItem] = useOptimistic<OptimisticTask[], string>(tasks, (state, newTask) => [...state, { title: newTask, sending: true }]);
 
   return (
@@ -49,7 +52,10 @@ export function TodoList({ tasks }: { tasks: OptimisticTask[] }) {
                   {!!item.sending && <small> (Sending ... )</small>}
                 </label>
               </div>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={async () => {
+                await deleteAction("AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA=", 
+                  item.id as string);
+        }}>
                 <TrashIcon className="w-5 h-5" />
                 <span className="sr-only">Delete task</span>
               </Button>
