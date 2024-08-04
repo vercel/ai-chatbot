@@ -6,7 +6,7 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
-import { TodoTask } from '@microsoft/microsoft-graph-types'
+import { TodoTask, TodoTaskList } from '@microsoft/microsoft-graph-types'
 import getGraphClient from './db'
 
 export async function getChats(userId?: string | null) {
@@ -168,6 +168,18 @@ export async function getTasks() {
 
   return tasks;
 }
+
+export async function getLists() {
+  const client = await getGraphClient();
+  const response = await client
+    .api(`/me/todo/lists`)
+    .get();
+
+  const lists: TodoTaskList[] = await response.value;
+
+  return lists;
+}
+
 
 export async function saveAction(formData: FormData) {
   const todoList = "AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA="

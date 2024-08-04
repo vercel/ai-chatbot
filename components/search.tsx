@@ -12,6 +12,7 @@ import {
     User,
     SharepointIds
   } from "@microsoft/microsoft-graph-types";
+import { JSX, SVGProps } from "react";
   
   interface SearchResponse {
     value: SearchResult[];
@@ -192,7 +193,7 @@ export default async function Search(props: props) {
     }
 }
 
-function ArrowUpDownIcon(props) {
+function ArrowUpDownIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
     return (
       <svg
         {...props}
@@ -215,7 +216,7 @@ function ArrowUpDownIcon(props) {
   }
   
   
-  function FileIcon(props) {
+  function FileIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
     return (
       <svg
         {...props}
@@ -236,7 +237,7 @@ function ArrowUpDownIcon(props) {
   }
   
   
-  function FileSpreadsheetIcon(props) {
+  function FileSpreadsheetIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
     return (
       <svg
         {...props}
@@ -261,7 +262,7 @@ function ArrowUpDownIcon(props) {
   }
   
   
-  function FilterIcon(props) {
+  function FilterIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
     return (
       <svg
         {...props}
@@ -281,7 +282,7 @@ function ArrowUpDownIcon(props) {
   }
   
   
-  function XIcon(props) {
+  function XIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
     return (
       <svg
         {...props}
