@@ -4,6 +4,7 @@ import { TodoTask, TodoTaskList } from '@microsoft/microsoft-graph-types'
 import { Combobox } from "@/components/combobox";
 import { Client } from '@microsoft/microsoft-graph-client';
 import { getTasks, getLists } from "../actions";
+import { TodoList } from "@/components/tasks/tasks";
 
 interface Item {
   value: string;
@@ -12,7 +13,7 @@ interface Item {
 
 export default async function Page() {
   const lists: TodoTaskList[] = await getLists();
-  const tasks: TodoTask[] = await getTasks();
+  const tasks: TodoTask[] = await getTasks(lists[0].id as string);
 
   const items: Item[] = lists
     .filter((list): list is TodoTaskList & { id: string, displayName: string } =>
@@ -30,8 +31,11 @@ export default async function Page() {
         placeholder="Select a list"
       />
       <div className="container mx-auto py-10">
-        <DataTable columns={columns} data={tasks} />
+
+  <TodoList tasks={tasks} />
       </div>
     </>
   );
 }
+
+//      <DataTable columns={columns} data={tasks} />

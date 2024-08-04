@@ -157,11 +157,11 @@ export async function getMissingKeys() {
     .filter(key => key !== '')
 }
 
-export async function getTasks() {
+export async function getTasks(listId: string) {
   const client = await getGraphClient();
   const todoList = "AAMkADhmYjY3M2VlLTc3YmYtNDJhMy04MjljLTg4NDI0NzQzNjJkMAAuAAAAAAAqiN_iXOf5QJoancmiEuQzAQAVAdL-uyq-SKcP7nACBA3lAAAAO9QQAAA="
   const response = await client
-    .api(`/me/todo/lists/${todoList}/tasks`)
+    .api(`/me/todo/lists/${listId}/tasks`)
     .get();
 
   const tasks: TodoTask[] = await response.value;
