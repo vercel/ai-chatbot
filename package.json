@@ -61,6 +61,7 @@
     "remark-math": "^5.1.1",
     "sonner": "^1.5.0",
     "usehooks-ts": "^3.1.0",
+    "vercel": "^35.2.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
