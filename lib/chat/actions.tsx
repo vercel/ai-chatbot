@@ -1,110 +1,19 @@
 import 'server-only'
 
-import {
-  createAI,
-  createStreamableUI,
-  getMutableAIState,
-  getAIState,
-  streamUI,
-  createStreamableValue
-} from 'ai/rsc'
-import { openai } from '@ai-sdk/openai'
+import { createAI, createStreamableUI, getMutableAIState } from 'ai/rsc'
+import { createOpenAI } from '@ai-sdk/openai'
 
-import {
-  spinner,
-  BotCard,
-  BotMessage,
-  SystemMessage,
-  Stock,
-  Purchase
-} from '@/components/stocks'
-
+import { nanoid } from '@/lib/utils'
+import { FollowUpQuestionsSchema, IsProspectObj, LinksObj, NeedsHelpObj } from '../inkeep-qa-schema'
+import { ChatMessage } from '@/components/chat-message'
+import { Message, streamObject } from 'ai'
 import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/events'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
-import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
-import {
-  formatNumber,
-  runAsyncFnWithoutBlocking,
-  sleep,
-  nanoid
-} from '@/lib/utils'
-import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
-import { Chat, Message } from '@/lib/types'
-import { auth } from '@/auth'
+import { IconExternalLink } from '@/components/ui/icons'
 
-async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
-
-  const aiState = getMutableAIState<typeof AI>()
-
-  const purchasing = createStreamableUI(
-    <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
-      <p className="mb-2">
-        Purchasing {amount} ${symbol}...
-      </p>
-    </div>
-  )
-
-  const systemMessage = createStreamableUI(null)
-
-  runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
-
-    purchasing.update(
-      <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
-        <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
-        </p>
-      </div>
-    )
-
-    await sleep(1000)
-
-    purchasing.done(
-      <div>
-        <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
-          {formatNumber(amount * price)}
-        </p>
-      </div>
-    )
-
-    systemMessage.done(
-      <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
-        {formatNumber(amount * price)}.
-      </SystemMessage>
-    )
-
-    aiState.done({
-      ...aiState.get(),
-      messages: [
-        ...aiState.get().messages,
-        {
-          id: nanoid(),
-          role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
-        }
-      ]
-    })
-  })
-
-  return {
-    purchasingUI: purchasing.value,
-    newMessage: {
-      id: nanoid(),
-      display: systemMessage.value
-    }
-  }
-}
+const openai = createOpenAI({
+  apiKey: process.env.INKEEP_API_KEY,
+  baseURL: 'https://api.inkeep.com/v1'
+})
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -123,364 +32,228 @@ async function submitUserMessage(content: string) {
     ]
   })
 
-  let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
-  let textNode: undefined | React.ReactNode
+  const chatMessage = createStreamableUI()
 
-  const result = await streamUI({
-    model: openai('gpt-3.5-turbo'),
-    initial: <SpinnerMessage />,
-    system: `\
-    You are a stock trading conversation bot and you can help users buy stocks, step by step.
-    You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
-    
-    Messages inside [] means that it's a UI element or a user event. For example:
-    - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-    - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-    
-    If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-    If the user just wants the price, call \`show_stock_price\` to show the price.
-    If you want to show trending stocks, call \`list_stocks\`.
-    If you want to show events, call \`get_events\`.
-    If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-    
-    Besides that, you can also chat with users and do some calculations if needed.`,
+  const result = await streamObject({
+    model: openai('inkeep-context-gpt-4o'),
+    system: `
+      You are a helpful AI assistant for Inkeep. Your primary goal is to provide accurate and relevant information to users based on the information sources you have.
+
+      Follow these guidelines:
+      1. Always return a response message with the "content" property.
+      2. If you have a good response along with links to relevant information, return the "LinksObj" object to provide the links to the user.
+      3. If the user asks about access to the platform, pricing, plans, or costs, return the "IsProspectObj" object.
+      4. If the user is not satisfied with the experience and needs help, support, or further assistance, return the "NeedsHelpObj" object.
+      5. Anticipate the user's next questions and provide them in the "followUpQuestions" property. These should be questions the user would ask next or that would be related to their previous questions. These need to be worded from the user's perspective.
+      5. Always maintain a friendly and professional tone.
+      6. Prioritize user satisfaction and clarity in your responses.
+    `,
+      // 2. If the user's question is vague or lacks specificity, use the "gatherMoreContext" tool to gather more context. 
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
         content: message.content,
-        name: message.name
+        name: 'inkeep-context-user-message',
+        id: message.id
       }))
     ],
-    text: ({ content, done, delta }) => {
-      if (!textStream) {
-        textStream = createStreamableValue('')
-        textNode = <BotMessage content={textStream.value} />
-      }
+    schema: z.object({
+      // toolCall: z.union([LinksObj, IsProspectObj, NeedsHelpObj]),
+      LinksObj: LinksObj.nullish(),
+      IsProspectObj: IsProspectObj.nullish(),
+      NeedsHelpObj: NeedsHelpObj.nullish(),
+      content: z.string().describe('response message content'),
+      followUpQuestions: FollowUpQuestionsSchema.nullish()
+    }).partial(),
+    // text: ({ content }) => {
+    //   console.log('text', { content })
+    //   const assistantAnswerMessage = {
+    //     id: answerMessageId,
+    //     role: 'assistant',
+    //     content,
+    //     name: 'inkeep-context-assistant-message'
+    //   } as Message
 
-      if (done) {
-        textStream.done()
-        aiState.done({
-          ...aiState.get(),
-          messages: [
-            ...aiState.get().messages,
-            {
-              id: nanoid(),
-              role: 'assistant',
-              content
-            }
-          ]
-        })
-      } else {
-        textStream.update(delta)
-      }
+    //   const currentMessages = aiState.get().messages
+    //   const lastMessage = currentMessages[currentMessages.length - 1]
 
-      return textNode
-    },
-    tools: {
-      listStocks: {
-        description: 'List three imaginary stocks that are trending.',
-        parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          )
-        }),
-        generate: async function* ({ stocks }) {
-          yield (
-            <BotCard>
-              <StocksSkeleton />
-            </BotCard>
-          )
+    //   aiState.update({
+    //     ...aiState.get(),
+    //     messages:
+    //       lastMessage.role === 'assistant' && lastMessage?.id === answerMessageId
+    //         ? [...currentMessages.slice(0, -1), assistantAnswerMessage]
+    //         : [...currentMessages, assistantAnswerMessage]
+    //   })
 
-          await sleep(1000)
+    //   return <ChatMessage message={assistantAnswerMessage} />
+    // },
+    // tools: {
+    //   provideLinks: {
+    //     ...LinksObj,
+    //     generate: async ({ links }) => {
+    //       console.log('provideLinks', { links })
+    //       const currentMessages = aiState.get().messages
+    //       const lastMessage = currentMessages[currentMessages.length - 1]
+    //       const lastMessageWithToolResults = {
+    //         ...lastMessage,
+    //         toolInvocations: [
+    //           {
+    //             toolName: 'provideLinks',
+    //             result: links
+    //           }
+    //         ]
+    //       } as Message
 
-          const toolCallId = nanoid()
+    //       aiState.done({
+    //         ...aiState.get(),
+    //         messages: [
+    //           ...currentMessages.slice(0, -1),
+    //           lastMessageWithToolResults
+    //         ]
+    //       })
 
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    args: { stocks }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    result: stocks
-                  }
-                ]
-              }
-            ]
-          })
+    //       return <ChatMessage message={lastMessage} links={links} />
+    //     }
+    //   },
+    //   isProspect: {
+    //     ...IsProspectObj,
+    //     generate: async ({ subjectMatter }) => {
+    //       console.log('isProspect', { subjectMatter })
 
-          return (
-            <BotCard>
-              <Stocks props={stocks} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPrice: {
-        description:
-          'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        }),
-        generate: async function* ({ symbol, price, delta }) {
-          yield (
-            <BotCard>
-              <StockSkeleton />
-            </BotCard>
-          )
+    //       const currentMessages = aiState.get().messages
+    //       const lastMessage = currentMessages[currentMessages.length - 1]
+    //       const lastMessageWithToolResults = {
+    //         ...lastMessage,
+    //         toolInvocations: [
+    //           {
+    //             toolName: 'isProspect',
+    //             result: subjectMatter
+    //           }
+    //         ]
+    //       } as Message
 
-          await sleep(1000)
+    //       aiState.done({
+    //         ...aiState.get(),
+    //         messages: [
+    //           ...currentMessages.slice(0, -1),
+    //           lastMessageWithToolResults
+    //         ]
+    //       })
 
-          const toolCallId = nanoid()
 
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    args: { symbol, price, delta }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    result: { symbol, price, delta }
-                  }
-                ]
-              }
-            ]
-          })
+    //       return (
+    //         <div>
+    //           An Inkeep team member is happy to help you on {subjectMatter}. 
+    //           Click here to find Inkeep's contact information.
+    //         </div>
+    //       )
+    //     }
+    //   },
+    //   needsHelp: {
+    //     ...NeedsHelpObj,
+    //     generate: async ({ subjectMatter }) => {
+    //       console.log('needsHelp', { subjectMatter })
 
-          return (
-            <BotCard>
-              <Stock props={{ symbol, price, delta }} />
-            </BotCard>
-          )
-        }
-      },
-      showStockPurchase: {
-        description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .optional()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
-        generate: async function* ({ symbol, price, numberOfShares = 100 }) {
-          const toolCallId = nanoid()
+    //       const currentMessages = aiState.get().messages
+    //       const lastMessage = currentMessages[currentMessages.length - 1]
+    //       const lastMessageWithToolResults = {
+    //         ...lastMessage,
+    //         toolInvocations: [
+    //           {
+    //             toolName: 'needsHelp',
+    //             result: subjectMatter
+    //           }
+    //         ]
+    //       } as Message
 
-          if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares,
-                        status: 'expired'
-                      }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
+    //       aiState.done({
+    //         ...aiState.get(),
+    //         messages: [
+    //           ...currentMessages.slice(0, -1),
+    //           lastMessageWithToolResults
+    //         ]
+    //       })
 
-            return <BotMessage content={'Invalid amount'} />
-          } else {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares
-                      }
-                    }
-                  ]
-                }
-              ]
-            })
+    //       return (
+    //         <div>
+    //           An Inkeep team member is better suited to help you with your question related to {subjectMatter}. 
+    //           Click here to find Inkeep's contact information.
+    //         </div>
+    //       )
+    //     }
+    //   }
+    // },
+    // toolChoice: 'auto'
+  })
 
-            return (
-              <BotCard>
-                <Purchase
-                  props={{
-                    numberOfShares,
-                    symbol,
-                    price: +price,
-                    status: 'requires_action'
-                  }}
-                />
-              </BotCard>
-            )
-          }
-        }
-      },
-      getEvents: {
-        description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
-        generate: async function* ({ events }) {
-          yield (
-            <BotCard>
-              <EventsSkeleton />
-            </BotCard>
-          )
+  const { partialObjectStream } = result
 
-          await sleep(1000)
-
-          const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    args: { events }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    result: events
-                  }
-                ]
-              }
-            ]
-          })
-
-          return (
-            <BotCard>
-              <Events props={events} />
-            </BotCard>
-          )
-        }
-      }
+  runAsyncFnWithoutBlocking(async () => {
+    let fullToolCall = {
+      IsProspectObj: {},
+      NeedsHelpObj: {},
+      LinksObj: {},
     }
+    
+    const fullResponseMessageId = nanoid()
+    let fullResponseMessage = {
+      id: fullResponseMessageId,
+      content: '',
+      role: 'assistant'
+    } as Message
+
+    let followUpQuestions: string[] = []
+
+    for await (const partialStream of partialObjectStream) {
+      const responseMessage = {
+        ...fullResponseMessage,
+      }
+      if (partialStream.content) {
+        responseMessage.content = partialStream.content
+      }
+
+      const messageToShow = <ChatMessage message={responseMessage} />
+      chatMessage.update(messageToShow)
+
+      if (partialStream.IsProspectObj) {
+        fullToolCall.IsProspectObj = partialStream.IsProspectObj
+      } else if (partialStream.NeedsHelpObj) {
+        fullToolCall.NeedsHelpObj = partialStream.NeedsHelpObj
+      } else if (partialStream.LinksObj) {
+        fullToolCall.LinksObj = partialStream.LinksObj
+      }
+
+      if (partialStream.followUpQuestions && partialStream.followUpQuestions.length > 0) {
+        followUpQuestions = partialStream.followUpQuestions.filter(question => question !== undefined)
+      }
+      
+      fullResponseMessage = responseMessage
+    }
+
+    const finalUIChatMessage = getFinalUI(fullResponseMessage, fullToolCall, followUpQuestions)
+
+    chatMessage.done(
+      finalUIChatMessage
+    )
+
+    aiState.done(
+      {
+        ...aiState.get(),
+        messages: [
+          ...aiState.get().messages,
+          {
+            id: fullResponseMessageId,
+            role: 'assistant',
+            content: fullResponseMessage.content
+          }
+        ]
+      }
+    )
   })
 
   return {
     id: nanoid(),
-    display: result.value
+    display: chatMessage.value
   }
 }
 
@@ -496,94 +269,77 @@ export type UIState = {
 
 export const AI = createAI<AIState, UIState>({
   actions: {
-    submitUserMessage,
-    confirmPurchase
+    submitUserMessage
   },
   initialUIState: [],
-  initialAIState: { chatId: nanoid(), messages: [] },
-  onGetUIState: async () => {
-    'use server'
-
-    const session = await auth()
-
-    if (session && session.user) {
-      const aiState = getAIState() as Chat
-
-      if (aiState) {
-        const uiState = getUIStateFromAIState(aiState)
-        return uiState
-      }
-    } else {
-      return
-    }
-  },
-  onSetAIState: async ({ state }) => {
-    'use server'
-
-    const session = await auth()
-
-    if (session && session.user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
-
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
-      }
-
-      await saveChat(chat)
-    } else {
-      return
-    }
-  }
+  initialAIState: { chatId: nanoid(), messages: [] }
 })
 
-export const getUIStateFromAIState = (aiState: Chat) => {
-  return aiState.messages
-    .filter(message => message.role !== 'system')
-    .map((message, index) => ({
-      id: `${aiState.chatId}-${index}`,
-      display:
-        message.role === 'tool' ? (
-          message.content.map(tool => {
-            return tool.toolName === 'listStocks' ? (
-              <BotCard>
-                {/* TODO: Infer types based on the tool result*/}
-                {/* @ts-expect-error */}
-                <Stocks props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPrice' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Stock props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'showStockPurchase' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Purchase props={tool.result} />
-              </BotCard>
-            ) : tool.toolName === 'getEvents' ? (
-              <BotCard>
-                {/* @ts-expect-error */}
-                <Events props={tool.result} />
-              </BotCard>
-            ) : null
-          })
-        ) : message.role === 'user' ? (
-          <UserMessage>{message.content as string}</UserMessage>
-        ) : message.role === 'assistant' &&
-          typeof message.content === 'string' ? (
-          <BotMessage content={message.content} />
-        ) : null
-    }))
+const runAsyncFnWithoutBlocking = (
+  fn: (...args: any) => Promise<any>
+) => {
+  fn()
+}
+
+const getFinalUI = (fullResponseMessage: any, toolCall: any, followUpQuestions: string[]) => {
+  if (Object.keys(toolCall.NeedsHelpObj).length > 0) {
+    return <ChatMessage message={fullResponseMessage} customCardInfo={<HelpCard />} followUpQuestions={followUpQuestions} />
+  }
+
+  if (Object.keys(toolCall.IsProspectObj).length > 0) {
+    return <ChatMessage message={fullResponseMessage} customCardInfo={<IsProspectCard />} followUpQuestions={followUpQuestions} />
+  }
+
+  if (Object.keys(toolCall.LinksObj).length > 0) {
+    const toolParsed = LinksObj.safeParse(toolCall.LinksObj)
+
+    return <ChatMessage message={fullResponseMessage} links={toolParsed.data?.parameters.links} followUpQuestions={followUpQuestions} />
+  }
+}
+
+
+function HelpCard() {
+  return (
+    <div className="pt-8">
+      <h3 className="text-sm text-muted-foreground">Sources</h3>
+      <div className="mt-3 flex flex-col gap-3">
+        <a
+          href="https://inkeep.com"
+          target="_blank"
+          rel="noreferrer"
+          className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50"
+        >
+          <div className="flex shrink-0 items-center justify-center pr-3">
+            <IconExternalLink className="size-4 text-muted-foreground" />
+          </div>
+          <div className="flex min-w-0 max-w-full flex-col">
+            <h3 className="truncate text-sm">Contact Inkeep</h3>
+          </div>
+        </a>
+      </div>
+    </div>
+  )
+}
+
+function IsProspectCard() {
+  return (
+    <div className="pt-8">
+      <h3 className="text-sm text-muted-foreground">Sources</h3>
+      <div className="mt-3 flex flex-col gap-3">
+        <a
+          href="https://inkeep.com"
+          target="_blank"
+          rel="noreferrer"
+          className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50"
+        >
+          <div className="flex shrink-0 items-center justify-center pr-3">
+            <IconExternalLink className="size-4 text-muted-foreground" />
+          </div>
+          <div className="flex min-w-0 max-w-full flex-col">
+            <h3 className="truncate text-sm">Thanks for your interest in Inkeep! Contact us here.</h3>
+          </div>
+        </a>
+      </div>
+    </div>
+  )
 }

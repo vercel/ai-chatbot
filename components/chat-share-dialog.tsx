@@ -19,7 +19,8 @@ import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard'
 
 interface ChatShareDialogProps extends DialogProps {
   chat: Pick<Chat, 'id' | 'title' | 'messages'>
-  shareChat: (id: string) => ServerActionResult<Chat>
+  // shareChat: (id: string) => ServerActionResult<Chat>
+  shareChat: (id: string) => Promise<{ error: string } | undefined>
   onCopy: () => void
 }
 
@@ -67,16 +68,14 @@ export function ChatShareDialog({
             disabled={isSharePending}
             onClick={() => {
               // @ts-ignore
-              startShareTransition(async () => {
-                const result = await shareChat(chat.id)
-
-                if (result && 'error' in result) {
-                  toast.error(result.error)
-                  return
-                }
-
-                copyShareLink(result)
-              })
+              // startShareTransition(async () => {
+              //   const result = await shareChat(chat.id)
+              //   if (result && 'error' in result) {
+              //     toast.error(result.error)
+              //     return
+              //   }
+              //   copyShareLink(result)
+              // })
             }}
           >
             {isSharePending ? (

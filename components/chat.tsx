@@ -7,10 +7,11 @@ import { EmptyScreen } from '@/components/empty-screen'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
-import { Message, Session } from '@/lib/types'
+import { Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+import { Message } from 'ai'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -56,6 +57,13 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
     useScrollAnchor()
 
+  // const isAwaitingReply =
+  // messages?.length > 0 &&
+  // messages[messages.length - 1].role === 'user' &&
+
+  console.log('UIState messages: ', { messages })
+  console.log('AIState messages: ', { aiState })
+
   return (
     <div
       className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
@@ -65,11 +73,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         className={cn('pb-[200px] pt-4 md:pt-10', className)}
         ref={messagesRef}
       >
-        {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
-        ) : (
-          <EmptyScreen />
-        )}
+        {messages.length ? <ChatList messages={messages} /> : <EmptyScreen />}
         <div className="w-full h-px" ref={visibilityRef} />
       </div>
       <ChatPanel
