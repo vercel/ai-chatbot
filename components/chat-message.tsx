@@ -1,21 +1,28 @@
 // Inspired by Chatbot-UI and modified to fit the needs of this project
 // @see https://github.com/mckaywrigley/chatbot-ui/blob/main/components/Chat/ChatMessage.tsx
 
-import { Message } from 'ai'
+import React from 'react'
+import type { Message } from 'ai'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-
 import { cn } from '@/lib/utils'
 import { CodeBlock } from '@/components/ui/codeblock'
 import { MemoizedReactMarkdown } from '@/components/markdown'
-import { IconOpenAI, IconUser } from '@/components/ui/icons'
+import { IconVercel, IconUser, IconExternalLink } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
+import { Citations } from './citations/citations'
+import type { z } from 'zod'
+import { LinksSchema } from '@/lib/inkeep-qa-schema'
+import { FollowUpQuestionsCards } from './followup-questions'
 
 export interface ChatMessageProps {
   message: Message
+  links?: z.infer<typeof LinksSchema> | null
+  customCardInfo?: React.ReactNode
+  followUpQuestions?: string[]
 }
 
-export function ChatMessage({ message, ...props }: ChatMessageProps) {
+export function ChatMessage({ message, links, customCardInfo, followUpQuestions, ...props }: ChatMessageProps) {
   return (
     <div
       className={cn('group relative mb-4 flex items-start md:-ml-12')}
@@ -29,7 +36,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
             : 'bg-primary text-primary-foreground'
         )}
       >
-        {message.role === 'user' ? <IconUser /> : <IconOpenAI />}
+        {message.role === 'user' ? <IconUser /> : <IconVercel />}
       </div>
       <div className="flex-1 px-1 ml-4 space-y-2 overflow-hidden">
         <MemoizedReactMarkdown
@@ -68,11 +75,45 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
                   {...props}
                 />
               )
+            },
+            a({ href, children, ...props }) {
+              const childArray = React.Children.toArray(children)
+              const child = childArray[0]
+
+              // Check if the child is in format of (integer) e.g. `(1)` and is the only child
+              const isCitation =
+                typeof child === 'string' &&
+                /^\(\d+\)$/.test(child) &&
+                childArray.length === 1
+
+              if (isCitation) {
+                const citationNumber = child.match(/\d+/) // extract the number
+                return (
+                  <sup className="ml-1 cursor-pointer">
+                    <a
+                      target="_blank"
+                      className="cursor-pointer font-bold text-[0.625rem] leading-[0.75rem] px-[3px] py-[2px] rounded-sm bg-zinc-200 no-underline dark:text-primary-foreground"
+                      href={href}
+                    >
+                      {citationNumber}
+                    </a>
+                  </sup>
+                )
+              } else {
+                return (
+                  <a href={href} {...props}>
+                    {children}
+                  </a>
+                )
+              }
             }
           }}
         >
           {message.content}
         </MemoizedReactMarkdown>
+        {links && links.length > 0 && <Citations links={links} />}
+        {customCardInfo}
+        <FollowUpQuestionsCards followUpQuestions={followUpQuestions ?? []} />
         <ChatMessageActions message={message} />
       </div>
     </div>

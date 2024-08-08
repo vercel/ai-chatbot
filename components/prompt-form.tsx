@@ -5,7 +5,6 @@ import Textarea from 'react-textarea-autosize'
 
 import { useActions, useUIState } from 'ai/rsc'
 
-import { UserMessage } from './stocks/message'
 import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
@@ -17,6 +16,8 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import { ChatMessage } from './chat-message'
+import { Message } from 'ai'
 
 export function PromptForm({
   input,
@@ -52,12 +53,18 @@ export function PromptForm({
         setInput('')
         if (!value) return
 
+        const userMessage = {
+          id: nanoid(),
+          content: value,
+          role: 'user'
+        } as Message
+
         // Optimistically add user message UI
         setMessages(currentMessages => [
           ...currentMessages,
           {
             id: nanoid(),
-            display: <UserMessage>{value}</UserMessage>
+            display: <ChatMessage message={userMessage} />
           }
         ])
 
