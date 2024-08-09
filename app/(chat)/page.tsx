@@ -11,7 +11,8 @@ export const metadata = {
 
 export default async function IndexPage() {
   const id = nanoid()
-  const session = (await auth()) as Session
+  // ts-expect-error - this is a fake session
+  const session = (await auth()) as unknown as Session
   const missingKeys = await getMissingKeys()
 
   return (

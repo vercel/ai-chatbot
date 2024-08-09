@@ -1,45 +1,16 @@
-import NextAuth from 'next-auth'
-import Credentials from 'next-auth/providers/credentials'
-import { authConfig } from './auth.config'
-import { z } from 'zod'
-import { getStringFromBuffer } from './lib/utils'
-import { getUser } from './app/login/actions'
+// auth.ts
 
-export const { auth, signIn, signOut } = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({
-            email: z.string().email(),
-            password: z.string().min(6)
-          })
-          .safeParse(credentials)
-
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data
-          const user = await getUser(email)
-
-          if (!user) return null
-
-          const encoder = new TextEncoder()
-          const saltedPassword = encoder.encode(password + user.salt)
-          const hashedPasswordBuffer = await crypto.subtle.digest(
-            'SHA-256',
-            saltedPassword
-          )
-          const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
-
-          if (hashedPassword === user.password) {
-            return user
-          } else {
-            return null
-          }
-        }
-
-        return null
-      }
-    })
-  ]
-})
+export const { auth, signIn, signOut } = {
+  auth: async () => {
+    return {
+      user: { name: 'John Doe', email: 'john@example.com' },
+      expires: '2024-08-09T00:00:00.000Z'
+    }
+  },
+  signIn: async () => {
+    console.log('Sign in logic')
+  },
+  signOut: async () => {
+    console.log('Sign out logic')
+  }
+}
