@@ -2,7 +2,6 @@
 
 import { signIn } from '@/auth'
 import { User } from '@/lib/types'
-import { AuthError } from 'next-auth'
 import { z } from 'zod'
 import { kv } from '@vercel/kv'
 import { ResultCode } from '@/lib/utils'
@@ -36,12 +35,6 @@ export async function authenticate(
       })
 
     if (parsedCredentials.success) {
-      await signIn('credentials', {
-        email,
-        password,
-        redirect: false
-      })
-
       return {
         type: 'success',
         resultCode: ResultCode.UserLoggedIn
@@ -53,19 +46,8 @@ export async function authenticate(
       }
     }
   } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return {
-            type: 'error',
-            resultCode: ResultCode.InvalidCredentials
-          }
-        default:
-          return {
-            type: 'error',
-            resultCode: ResultCode.UnknownError
-          }
-      }
+    if (error) {
+      console.error(error)
     }
   }
 }
