@@ -1,15 +1,19 @@
 'use client'
 
 import { useActions, useUIState } from 'ai/rsc'
-import { IconArrowRight } from "./ui/icons";
-import { nanoid } from "@/lib/utils";
-import { ChatMessage } from "./chat-message";
-import { Message } from "ai";
+import { IconArrowRight } from './ui/icons'
+import { nanoid } from '@/lib/utils'
+import { ChatMessage } from './chat-message'
+import { Message } from 'ai'
+import { AI } from '@/lib/chat/actions'
 
-export function FollowUpQuestionsCards({followUpQuestions}: {followUpQuestions: string[]}) {
-  const [messages, setMessages] = useUIState()
+export function FollowUpQuestionsCards({
+  followUpQuestions
+}: {
+  followUpQuestions: string[]
+}) {
+  const [messages, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions()
-
 
   const onClickQuestion = async (question: string) => {
     const userMessage = {
@@ -32,7 +36,6 @@ export function FollowUpQuestionsCards({followUpQuestions}: {followUpQuestions: 
     setMessages(currentMessages => [...currentMessages, responseMessage])
   }
 
-
   if (followUpQuestions.length === 0) return null
 
   return (
@@ -40,7 +43,11 @@ export function FollowUpQuestionsCards({followUpQuestions}: {followUpQuestions: 
       <h3 className="text-sm text-muted-foreground">Ask another question</h3>
       <div className="mt-3 flex flex-col gap-3">
         {followUpQuestions.map((question, ind) => (
-          <div className="mt-3 flex flex-col gap-3" key={ind} onClick={() => onClickQuestion(question)}>
+          <div
+            className="mt-3 flex flex-col gap-3"
+            key={ind}
+            onClick={() => onClickQuestion(question)}
+          >
             <div className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50">
               <div className="flex shrink-0 items-center justify-center pr-3">
                 <IconArrowRight className="size-4 text-muted-foreground" />
@@ -55,5 +62,3 @@ export function FollowUpQuestionsCards({followUpQuestions}: {followUpQuestions: 
     </div>
   )
 }
-
-
