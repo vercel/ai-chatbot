@@ -1,5 +1,5 @@
-'use client'
 // @ts-nocheck
+'use client'
 import React, { useEffect, useRef, useState, createContext } from 'react'
 // Ensure you have these dependencies correctly imported or available in your project
 import { TalkingHead } from '@/components/TalkingHead/modules/talkinghead.mjs' // This path might need to be adjusted based on your project setup
@@ -19,7 +19,8 @@ import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
 
-const TalkingHeadComponent = ({ interal = false }) => {
+const TalkingHeadComponent = () => {
+  const interal = false
   const avatarRef = useRef(null)
   const [loadingMessage, setLoadingMessage] = useState('Loading...')
   const [text, setText] = useState("Hi there. How are you? I'm fine.")
@@ -72,7 +73,7 @@ const TalkingHeadComponent = ({ interal = false }) => {
     initTalkingHead(nodeAvatar)
   }, []) // Empty dependency array ensures this effect runs only once
   let subtitleBuffer = ''
-  let timeoutHandle = null
+  let timeoutHandle: string | number | NodeJS.Timeout | null | undefined = null
   const processBuffer = (lastIndex, setSubtitles) => {
     const partToTranslate = subtitleBuffer.substring(0, lastIndex)
     // Protect text inside quotes
