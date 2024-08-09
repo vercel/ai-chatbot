@@ -18,11 +18,17 @@ import { FollowUpQuestionsCards } from './followup-questions'
 export interface ChatMessageProps {
   message: Message
   links?: z.infer<typeof LinksSchema> | null
-  customCardInfo?: React.ReactNode
+  customInfoCard?: React.ReactNode
   followUpQuestions?: string[]
 }
 
-export function ChatMessage({ message, links, customCardInfo, followUpQuestions, ...props }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  links,
+  customInfoCard,
+  followUpQuestions,
+  ...props
+}: ChatMessageProps) {
   return (
     <div
       className={cn('group relative mb-4 flex items-start md:-ml-12')}
@@ -112,7 +118,7 @@ export function ChatMessage({ message, links, customCardInfo, followUpQuestions,
           {message.content}
         </MemoizedReactMarkdown>
         {links && links.length > 0 && <Citations links={links} />}
-        {customCardInfo}
+        {customInfoCard}
         <FollowUpQuestionsCards followUpQuestions={followUpQuestions ?? []} />
         <ChatMessageActions message={message} />
       </div>

@@ -39,23 +39,25 @@ export const FollowUpQuestionsSchema = z
       )
   )
   .nullish()
-  
-export const LinksToolSchema = z.object({
-  links: LinksSchema,
-})
 
-export const LinksObj = z.object({
-  parameters: LinksToolSchema
-}).describe("Retrieve links related to the assistant's response")
-
-export const IsProspectObj = z.object({
-  parameters: z.object({
-    subjectMatter: z.string().describe('The subject matter of the user\'s question.')
+export const LinksObj = z
+  .object({
+    links: LinksSchema
   })
-}).describe('Tool call when the user is a prospect.')
+  .describe("Retrieve links related to the assistant's response")
 
-export const NeedsHelpObj = z.object({
-  parameters: z.object({
-    subjectMatter: z.string().describe('The subject matter of the user\'s question.')
+export const IsProspectObj = z
+  .object({
+    subjectMatter: z
+      .string()
+      .describe("The subject matter of the user's question.")
   })
-}).describe('Tool call when the user needs help.')
+  .describe('Tool call when the user is a prospect.')
+
+export const NeedsHelpObj = z
+  .object({
+    subjectMatter: z
+      .string()
+      .describe("The subject matter of the user's question.")
+  })
+  .describe('Tool call when the user needs help.')
