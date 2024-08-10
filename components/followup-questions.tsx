@@ -44,11 +44,11 @@ export function FollowUpQuestionsCards({
       <div className="mt-3 flex flex-col gap-3">
         {followUpQuestions.map((question, ind) => (
           <div
-            className="mt-3 flex flex-col gap-3"
+            className="flex flex-col gap-3 cursor-pointer"
             key={ind}
             onClick={() => onClickQuestion(question)}
           >
-            <div className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50">
+            <div className="border-1 flex rounded-lg border p-4 transition-colors duration-200 ease-in-out  bg-white hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900">
               <div className="flex shrink-0 items-center justify-center pr-3">
                 <IconArrowRight className="size-4 text-muted-foreground" />
               </div>

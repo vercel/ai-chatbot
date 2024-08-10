@@ -21,7 +21,7 @@ export function CitationCard({
       href={url || undefined}
       target={url && openInNewTab ? '_blank' : ''}
       rel="noreferrer"
-      className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50"
+      className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-zinc-50"
     >
       <div className="flex shrink-0 items-center justify-center pr-3">
         <Icon className="size-4 text-muted-foreground" />

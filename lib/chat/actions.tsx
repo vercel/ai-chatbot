@@ -12,9 +12,10 @@ import {
 } from '../inkeep-qa-schema'
 import { ChatMessage } from '@/components/chat-message'
 import { LoadingGrid } from '@/components/loading'
+import { Button } from '@/components/ui/button'
 import { Message, streamObject } from 'ai'
 import { z } from 'zod'
-import { IconExternalLink } from '@/components/ui/icons'
+import { IconCaretRight, IconUsers } from '@/components/ui/icons'
 
 const openai = createOpenAI({
   apiKey: process.env.INKEEP_API_KEY,
@@ -197,7 +198,7 @@ const getFinalUI = (
     return (
       <ChatMessage
         message={fullResponseMessage}
-        customInfoCard={<HelpCard />}
+        customInfoCard={<SupportButton />}
         followUpQuestions={followUpQuestions}
       />
     )
@@ -233,25 +234,19 @@ const getFinalUI = (
   )
 }
 
-function HelpCard() {
+function SupportButton() {
   return (
     <div className="pt-8">
-      <h3 className="text-sm text-muted-foreground">Sources</h3>
-      <div className="mt-3 flex flex-col gap-3">
-        <a
+      <Button asChild variant="outline">
+      <a
           href="https://inkeep.com"
           target="_blank"
           rel="noreferrer"
-          className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50"
         >
-          <div className="flex shrink-0 items-center justify-center pr-3">
-            <IconExternalLink className="size-4 text-muted-foreground" />
-          </div>
-          <div className="flex min-w-0 max-w-full flex-col">
-            <h3 className="truncate text-sm">Contact Inkeep for assistance</h3>
-          </div>
+            <IconUsers className="size-4 text-muted-foreground mr-2" />
+            <div>Get support</div>
         </a>
-      </div>
+      </Button>
     </div>
   )
 }
@@ -259,24 +254,16 @@ function HelpCard() {
 function IsProspectCard() {
   return (
     <div className="pt-8">
-      <h3 className="text-sm text-muted-foreground">Sources</h3>
-      <div className="mt-3 flex flex-col gap-3">
-        <a
-          href="https://inkeep.com"
-          target="_blank"
-          rel="noreferrer"
-          className="border-1 flex rounded-md border p-4 transition-colors duration-200 ease-in-out hover:bg-gray-50"
-        >
-          <div className="flex shrink-0 items-center justify-center pr-3">
-            <IconExternalLink className="size-4 text-muted-foreground" />
-          </div>
-          <div className="flex min-w-0 max-w-full flex-col">
-            <h3 className="truncate text-sm">
-              Thanks for your interest in Inkeep! Contact us here.
-            </h3>
-          </div>
-        </a>
-      </div>
-    </div>
+    <Button asChild variant="outline">
+    <a
+        href="https://inkeep.com"
+        target="_blank"
+        rel="noreferrer"
+      >
+          <div>Schedule a demo</div>
+          <IconCaretRight className="size-4 text-muted-foreground ml-2" />
+      </a>
+    </Button>
+  </div>
   )
 }
