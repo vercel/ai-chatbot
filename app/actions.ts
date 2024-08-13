@@ -46,14 +46,12 @@ export async function getChat(id: string, userId: string) {
       error: 'Unauthorized'
     }
   }
-
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
-
-  if (!chat || (userId && chat.userId !== userId)) {
-    return null
+  return {
+    id,
+    userId,
+    title: 'Chat',
+    messages: []
   }
-
-  return chat
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {

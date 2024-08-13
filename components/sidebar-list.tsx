@@ -11,7 +11,7 @@ interface SidebarListProps {
 }
 
 const loadChats = cache(async (userId?: string) => {
-  return await getChats(userId)
+  return []
 })
 
 export async function SidebarList({ userId }: SidebarListProps) {
