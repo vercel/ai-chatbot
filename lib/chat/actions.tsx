@@ -150,7 +150,6 @@ async function submitUserMessage(content: string) {
         textStream = createStreamableValue('')
         textNode = <BotMessage content={textStream.value} />
       }
-      console.log('content', content)
       if (done) {
         textStream.done()
         aiState.done({
@@ -202,12 +201,7 @@ export const AI = createAI<AIState, UIState>({
     const session = await auth()
 
     if (session && session.user) {
-      const aiState = getAIState() as Chat
-
-      if (aiState) {
-        const uiState = getUIStateFromAIState(aiState)
-        return uiState
-      }
+      return undefined
     } else {
       return
     }
@@ -218,25 +212,7 @@ export const AI = createAI<AIState, UIState>({
     const session = await auth()
 
     if (session && session.user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
-
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
-      }
-
-      await saveChat(chat)
+      console.log('state', state)
     } else {
       return
     }
