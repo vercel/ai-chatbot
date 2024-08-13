@@ -2,6 +2,7 @@ import { CoreMessage } from 'ai'
 
 export type Message = CoreMessage & {
   id: string
+  createdAt?: number;
 }
 
 export interface Chat extends Record<string, any> {
@@ -39,3 +40,9 @@ export interface User extends Record<string, any> {
   password: string
   salt: string
 }
+
+export type MutableAIState<AIState> = {
+  get: () => AIState;
+  update: (newState: AIState | ((current: AIState) => AIState)) => void;
+  done: ((newState: AIState) => void) | (() => void);
+};

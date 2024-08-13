@@ -1,8 +1,8 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react';
 import { useActions, useAIState, useUIState } from 'ai/rsc'
-import { formatNumber } from '@/lib/utils'
+import { formatNumber, unixTsNow } from '@/lib/utils'
 
 import type { AI } from '@/lib/chat/actions'
 
@@ -10,15 +10,17 @@ interface Purchase {
   numberOfShares?: number
   symbol: string
   price: number
+  toolCallId: string
   status: 'requires_action' | 'completed' | 'expired'
 }
 
 export function Purchase({
-  props: { numberOfShares, symbol, price, status = 'expired' }
+  props: { numberOfShares, symbol, price, toolCallId, status = 'requires_action' }
 }: {
   props: Purchase
 }) {
   const [value, setValue] = useState(numberOfShares || 100)
+  const [purchaseStatus, setPurchaseStatus] = useState(status);
   const [purchasingUI, setPurchasingUI] = useState<null | React.ReactNode>(null)
   const [aiState, setAIState] = useAIState<typeof AI>()
   const [, setMessages] = useUIState<typeof AI>()
@@ -59,6 +61,51 @@ export function Purchase({
     setAIState({ ...aiState, messages: [...aiState.messages, message] })
   }
 
+  useEffect(() => {
+    const checkPurchaseStatus = () => {
+      if (purchaseStatus === 'requires_action') {
+        // check for purchase completion
+        // Find the tool message with the matching toolCallId
+        const toolMessage = aiState.messages.find(
+          message => 
+            message.role === 'tool' && 
+            message.content.some(part => part.toolCallId === toolCallId)
+        );
+
+        if (toolMessage) {
+          const toolMessageIndex = aiState.messages.indexOf(toolMessage);
+          // Check if the next message is a system message containing "purchased"
+          const nextMessage = aiState.messages[toolMessageIndex + 1];
+          if (
+            nextMessage?.role === 'system' &&
+            nextMessage.content.includes('purchased')
+          ) {
+            setPurchaseStatus('completed');
+          } else {
+            // Check for expiration
+            const requestedAt = toolMessage.createdAt;
+            if (!requestedAt || unixTsNow() - requestedAt > 30) {
+              setPurchaseStatus('expired');
+            }
+          }
+        }
+      }
+    };
+
+    checkPurchaseStatus();
+
+    let intervalId: NodeJS.Timeout | null = null;
+    if (purchaseStatus === 'requires_action') {
+      intervalId = setInterval(checkPurchaseStatus, 1000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [purchaseStatus, toolCallId, aiState.messages]);
+
   return (
     <div className="p-4 text-green-400 border rounded-xl bg-zinc-950">
       <div className="inline-block float-right px-2 py-1 text-xs rounded-full bg-white/10">
@@ -68,7 +115,7 @@ export function Purchase({
       <div className="text-3xl font-bold">${price}</div>
       {purchasingUI ? (
         <div className="mt-4 text-zinc-200">{purchasingUI}</div>
-      ) : status === 'requires_action' ? (
+      ) : purchaseStatus === 'requires_action' ? (
         <>
           <div className="relative pb-6 mt-6">
             <p>Shares to purchase</p>
@@ -133,12 +180,12 @@ export function Purchase({
             Purchase
           </button>
         </>
-      ) : status === 'completed' ? (
+      ) : purchaseStatus === 'completed' ? (
         <p className="mb-2 text-white">
           You have successfully purchased {value} ${symbol}. Total cost:{' '}
           {formatNumber(value * price)}
         </p>
-      ) : status === 'expired' ? (
+      ) : purchaseStatus === 'expired' ? (
         <p className="mb-2 text-white">Your checkout session has expired!</p>
       ) : null}
     </div>
