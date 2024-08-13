@@ -1,5 +1,7 @@
 'use client'
 
+import type { AI } from '@/lib/chat/actions'
+
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
@@ -24,7 +26,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const path = usePathname()
   const [input, setInput] = useState('')
   const [messages] = useUIState()
-  const [aiState] = useAIState()
+  const [aiState] = useAIState<typeof AI>()
 
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
@@ -39,6 +41,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   useEffect(() => {
     const messagesLength = aiState.messages?.length
     if (messagesLength === 2) {
+      router.refresh()
+    } else if (messagesLength === 3 && aiState.messages[2].role === 'tool') {
       router.refresh()
     }
   }, [aiState.messages, router])

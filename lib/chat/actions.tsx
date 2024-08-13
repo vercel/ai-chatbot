@@ -1,5 +1,6 @@
 import 'server-only'
 
+import type { MutableAIState } from '@/lib/types'
 import {
   createAI,
   createStreamableUI,
@@ -29,7 +30,8 @@ import {
   formatNumber,
   runAsyncFnWithoutBlocking,
   sleep,
-  nanoid
+  nanoid,
+  unixTsNow
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
@@ -82,7 +84,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
       </SystemMessage>
     )
 
-    aiState.done({
+    aiStateDone(aiState, {
       ...aiState.get(),
       messages: [
         ...aiState.get().messages,
@@ -159,7 +161,7 @@ async function submitUserMessage(content: string) {
 
       if (done) {
         textStream.done()
-        aiState.done({
+        aiStateDone(aiState, {
           ...aiState.get(),
           messages: [
             ...aiState.get().messages,
@@ -199,7 +201,7 @@ async function submitUserMessage(content: string) {
 
           const toolCallId = nanoid()
 
-          aiState.done({
+          aiStateDone(aiState, {
             ...aiState.get(),
             messages: [
               ...aiState.get().messages,
@@ -259,8 +261,7 @@ async function submitUserMessage(content: string) {
           await sleep(1000)
 
           const toolCallId = nanoid()
-
-          aiState.done({
+          aiStateDone(aiState, {
             ...aiState.get(),
             messages: [
               ...aiState.get().messages,
@@ -319,7 +320,7 @@ async function submitUserMessage(content: string) {
           const toolCallId = nanoid()
 
           if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
+            aiStateDone(aiState, {
               ...aiState.get(),
               messages: [
                 ...aiState.get().messages,
@@ -362,7 +363,7 @@ async function submitUserMessage(content: string) {
 
             return <BotMessage content={'Invalid amount'} />
           } else {
-            aiState.done({
+            aiStateDone(aiState, {
               ...aiState.get(),
               messages: [
                 ...aiState.get().messages,
@@ -381,6 +382,7 @@ async function submitUserMessage(content: string) {
                 {
                   id: nanoid(),
                   role: 'tool',
+                  createdAt: unixTsNow(),
                   content: [
                     {
                       type: 'tool-result',
@@ -404,6 +406,7 @@ async function submitUserMessage(content: string) {
                     numberOfShares,
                     symbol,
                     price: +price,
+                    toolCallId,
                     status: 'requires_action'
                   }}
                 />
@@ -437,7 +440,7 @@ async function submitUserMessage(content: string) {
 
           const toolCallId = nanoid()
 
-          aiState.done({
+          aiStateDone(aiState, {
             ...aiState.get(),
             messages: [
               ...aiState.get().messages,
@@ -517,36 +520,45 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  onSetAIState: async ({ state }) => {
-    'use server'
-
-    const session = await auth()
-
-    if (session && session.user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
-
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
-      }
-
-      await saveChat(chat)
-    } else {
-      return
-    }
-  }
 })
+
+const updateChat = async (state: AIState) => {
+  'use server'
+
+  const session = await auth()
+
+  if (session && session.user) {
+    const { chatId, messages } = state
+
+    const createdAt = new Date()
+    const userId = session.user.id as string
+    const path = `/chat/${chatId}`
+
+    const firstMessageContent = messages[0].content as string
+    const title = firstMessageContent.substring(0, 100)
+
+    const chat: Chat = {
+      id: chatId,
+      title,
+      userId,
+      createdAt,
+      messages,
+      path
+    }
+
+    await saveChat(chat)
+  } else {
+    return
+  }
+};
+
+const aiStateDone = (aiState: MutableAIState<AIState>, newState: AIState) => {
+  runAsyncFnWithoutBlocking(async () => {
+    // resolves race condition in aiState.done - the UI refreshed before db was updated
+    await updateChat(newState);
+    aiState.done(newState);
+  });
+};
 
 export const getUIStateFromAIState = (aiState: Chat) => {
   return aiState.messages
@@ -569,8 +581,13 @@ export const getUIStateFromAIState = (aiState: Chat) => {
               </BotCard>
             ) : tool.toolName === 'showStockPurchase' ? (
               <BotCard>
-                {/* @ts-expect-error */}
-                <Purchase props={tool.result} />
+                <Purchase
+                  // @ts-expect-error
+                  props={{
+                    ...(tool.result as object),
+                    toolCallId: tool.toolCallId,
+                  }}
+                />
               </BotCard>
             ) : tool.toolName === 'getEvents' ? (
               <BotCard>

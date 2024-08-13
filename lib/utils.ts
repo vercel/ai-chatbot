@@ -51,8 +51,10 @@ export const formatNumber = (value: number) =>
 export const runAsyncFnWithoutBlocking = (
   fn: (...args: any) => Promise<any>
 ) => {
-  fn()
-}
+  fn().catch(error => {
+    console.error('An error occurred in the async function:', error);
+  });
+};
 
 export const sleep = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms))
@@ -87,3 +89,5 @@ export const getMessageFromCode = (resultCode: string) => {
       return 'Logged in!'
   }
 }
+
+export const unixTsNow = () => Math.floor(Date.now() / 1000);
