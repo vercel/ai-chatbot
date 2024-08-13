@@ -137,6 +137,7 @@ async function submitUserMessage(content: string) {
    Try to keep the conversation going and help users learn new words and phrases.
    Help the user by providing them with the meaning of the word and how to use it in a sentence. 
    Be amicable and patient with the user, and try to find topics they are interested in.\
+   You can use markdown to format your messages.\
    `,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
