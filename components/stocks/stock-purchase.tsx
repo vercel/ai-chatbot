@@ -63,40 +63,40 @@ export function Purchase({
 
   useEffect(() => {
     const checkPurchaseStatus = () => {
-      if (purchaseStatus === 'requires_action') {
-        // check for purchase completion
-        // Find the tool message with the matching toolCallId
-        const toolMessage = aiState.messages.find(
-          message => 
-            message.role === 'tool' && 
-            message.content.some(part => part.toolCallId === toolCallId)
-        );
+      if (purchaseStatus !== 'requires_action') {
+        return;
+      }
+      // check for purchase completion
+      // Find the tool message with the matching toolCallId
+      const toolMessage = aiState.messages.find(
+        message =>
+          message.role === 'tool' &&
+          message.content.some(part => part.toolCallId === toolCallId)
+      );
 
-        if (toolMessage) {
-          const toolMessageIndex = aiState.messages.indexOf(toolMessage);
-          // Check if the next message is a system message containing "purchased"
-          const nextMessage = aiState.messages[toolMessageIndex + 1];
-          if (
-            nextMessage?.role === 'system' &&
-            nextMessage.content.includes('purchased')
-          ) {
-            setPurchaseStatus('completed');
-          } else {
-            // Check for expiration
-            const requestedAt = toolMessage.createdAt;
-            if (!requestedAt || unixTsNow() - requestedAt > 30) {
-              setPurchaseStatus('expired');
-            }
+      if (toolMessage) {
+        const toolMessageIndex = aiState.messages.indexOf(toolMessage);
+        // Check if the next message is a system message containing "purchased"
+        const nextMessage = aiState.messages[toolMessageIndex + 1];
+        if (
+          nextMessage?.role === 'system' &&
+          nextMessage.content.includes('purchased')
+        ) {
+          setPurchaseStatus('completed');
+        } else {
+          // Check for expiration
+          const requestedAt = toolMessage.createdAt;
+          if (!requestedAt || unixTsNow() - requestedAt > 30) {
+            setPurchaseStatus('expired');
           }
         }
       }
     };
-
     checkPurchaseStatus();
 
     let intervalId: NodeJS.Timeout | null = null;
     if (purchaseStatus === 'requires_action') {
-      intervalId = setInterval(checkPurchaseStatus, 1000);
+      intervalId = setInterval(checkPurchaseStatus, 5000);
     }
 
     return () => {
