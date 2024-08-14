@@ -20,7 +20,7 @@ import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
 
 const TalkingHeadComponent = () => {
-  const interal = false
+  const interal = true
   const avatarRef = useRef(null)
   const [loadingMessage, setLoadingMessage] = useState('Loading...')
   const [text, setText] = useState("Hi there. How are you? I'm fine.")
@@ -47,6 +47,18 @@ const TalkingHeadComponent = () => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
+  function getLocalStream() {
+    navigator.mediaDevices
+      .getUserMedia({ video: false, audio: true })
+      .then(stream => {
+        window.localStream = stream // A
+        window.localAudio.srcObject = stream // B
+        window.localAudio.autoplay = true // C
+      })
+      .catch(err => {
+        console.error(`you got an error: ${err}`)
+      })
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -72,6 +84,9 @@ const TalkingHeadComponent = () => {
     console.log('Head' + head.current)
     initTalkingHead(nodeAvatar)
   }, []) // Empty dependency array ensures this effect runs only once
+  useEffect(() => {
+    getLocalStream()
+  }, [])
   let subtitleBuffer = ''
   let timeoutHandle: string | number | NodeJS.Timeout | null | undefined = null
   const processBuffer = (lastIndex, setSubtitles) => {
