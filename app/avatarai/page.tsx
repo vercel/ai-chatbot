@@ -1,9 +1,11 @@
-// @ts-nocheck
 'use client'
+import 'regenerator-runtime/runtime'
 import React, { useEffect, useRef, useState, createContext } from 'react'
 // Ensure you have these dependencies correctly imported or available in your project
 import { TalkingHead } from '@/components/TalkingHead/modules/talkinghead.mjs' // This path might need to be adjusted based on your project setup
-
+import SpeechRecognition, {
+  useSpeechRecognition
+} from 'react-speech-recognition'
 import localImage from '../../public/background.png'
 import {
   removeConsecutivePunctuation,
@@ -18,6 +20,7 @@ import calculateTimeToSentence from '@/components/TalkingHead/utils/calculateTim
 import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
+import { use } from 'react'
 
 const TalkingHeadComponent = () => {
   const interal = true
@@ -59,6 +62,12 @@ const TalkingHeadComponent = () => {
         console.error(`you got an error: ${err}`)
       })
   }
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition
+  } = useSpeechRecognition()
 
   useEffect(() => {
     const handleResize = () => {
@@ -75,6 +84,9 @@ const TalkingHeadComponent = () => {
       window.removeEventListener('resize', handleResize)
     }
   }, [])
+  useEffect(() => {
+    console.log('Transcript:', transcript)
+  }, [transcript])
   useEffect(() => {
     if (initializedRef.current) return // Prevents further execution if already initialized
     initializedRef.current = true
@@ -1465,6 +1477,14 @@ const TalkingHeadComponent = () => {
         />
       )}
       {interal && <TestingUI handleSpeak={handleSpeak} head={head} />}
+      {listening && <p>Listening</p>}
+      <p>hola</p>
+      {browserSupportsSpeechRecognition && <p>Speech recognition supported</p>}
+      <p>{transcript}</p>
+      <button onClick={SpeechRecognition.startListening({ continuous: true })}>
+        Start
+      </button>
+      <button onClick={SpeechRecognition.stopListening}>Stop</button>
     </div>
   )
 }
