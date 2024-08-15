@@ -44,8 +44,10 @@
     "react-dom": "^18.3.1",
     "react-intersection-observer": "^9.10.3",
     "react-markdown": "^8.0.7",
+    "react-speech-recognition": "^3.10.0",
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.5.3",
+    "regenerator-runtime": "^0.14.1",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "sharp": "^0.33.4",
@@ -60,6 +62,7 @@
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/react-speech-recognition": "^3.9.5",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@typescript-eslint/parser": "^7.14.1",
     "autoprefixer": "^10.4.19",
@@ -75,5 +78,8 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.5.2"
   },
-  "packageManager": "pnpm@8.6.3"
+  "packageManager": "pnpm@8.6.3",
+  "browserslist": [
+    "last 2 Chrome versions"
+  ]
 }
