@@ -8,50 +8,11 @@ import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
 
 export async function getChats(userId?: string | null) {
-  const session = await auth()
-
-  if (!userId) {
-    return []
-  }
-
-  if (userId !== session?.user?.id) {
-    return {
-      error: 'Unauthorized'
-    }
-  }
-
-  try {
-    const pipeline = kv.pipeline()
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
-      rev: true
-    })
-
-    for (const chat of chats) {
-      pipeline.hgetall(chat)
-    }
-
-    const results = await pipeline.exec()
-
-    return results as Chat[]
-  } catch (error) {
-    return []
-  }
+  return []
 }
 
 export async function getChat(id: string, userId: string) {
-  const session = await auth()
-
-  if (userId !== session?.user?.id) {
-    return {
-      error: 'Unauthorized'
-    }
-  }
-  return {
-    id,
-    userId,
-    title: 'Chat',
-    messages: []
-  }
+  return
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
@@ -143,24 +104,10 @@ export async function shareChat(id: string) {
 }
 
 export async function saveChat(chat: Chat) {
-  const session = await auth()
-
-  if (session && session.user) {
-    const pipeline = kv.pipeline()
-    pipeline.hmset(`chat:${chat.id}`, chat)
-    pipeline.zadd(`user:chat:${chat.userId}`, {
-      score: Date.now(),
-      member: `chat:${chat.id}`
-    })
-    await pipeline.exec()
-  } else {
-    return
-  }
+  return
 }
 
-export async function refreshHistory(path: string) {
-  redirect(path)
-}
+export async function refreshHistory(path: string) {}
 
 export async function getMissingKeys() {
   const keysRequired = ['OPENAI_API_KEY']
