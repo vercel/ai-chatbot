@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime'
+
 import { SidebarDesktop } from '@/components/sidebar-desktop'
 
 interface ChatLayoutProps {

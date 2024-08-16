@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime'
+
 import { type Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 

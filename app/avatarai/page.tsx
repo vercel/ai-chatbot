@@ -1476,7 +1476,6 @@ const TalkingHeadComponent = () => {
           fontSize={fontSize}
         />
       )}
-      {interal && <TestingUI handleSpeak={handleSpeak} head={head} />}
       {listening && <p>Listening</p>}
       <p>hola</p>
       {browserSupportsSpeechRecognition && <p>Speech recognition supported</p>}
