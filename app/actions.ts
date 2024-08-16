@@ -6,13 +6,19 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { title } from 'process'
 
 export async function getChats(userId?: string | null) {
   return []
 }
 
 export async function getChat(id: string, userId: string) {
-  return
+  return {
+    title: 'Chat',
+    userId: '1',
+    id: 'chat',
+    messages: []
+  }
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
