@@ -8,7 +8,7 @@ import {
   streamUI,
   createStreamableValue
 } from 'ai/rsc'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 
 import {
   spinner,
@@ -125,6 +125,15 @@ async function submitUserMessage(content: string) {
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
+
+  const openai = createOpenAI({
+    compatibility: 'strict',
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: 'https://gateway.usevelvet.com/api/openai/v1',
+    headers: {
+      'velvet-auth': process.env.VELVET_API_KEY as string
+    }
+  })
 
   const result = await streamUI({
     model: openai('gpt-3.5-turbo'),
