@@ -36,24 +36,24 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: "Let's review",
+      subheading: `how to order food`,
+      message: `Let's review how to order food`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: `I want to roleplay`,
+      subheading: `telling my doctor about a terrible flu`,
+      message: `I want to roleplay telling my doctor about a terrible flu`
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: `Help me translate`,
+      subheading: `my presentation`,
+      message: `Help me translate my presentation`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: `I am preparing`,
+      subheading: `for a present perfect test, quiz me`,
+      message: `I am preparing for a present perfect test, quiz me`
     }
   ]
 
@@ -71,7 +71,7 @@ export function ChatPanel({
               <div
                 key={example.heading}
                 className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
-                  index > 1 && 'hidden md:block'
+                  index > 1 && `hidden md:block`
                 }`}
                 onClick={async () => {
                   setMessages(currentMessages => [
