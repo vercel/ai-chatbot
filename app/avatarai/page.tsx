@@ -1,4 +1,6 @@
+// @ts-nocheck
 'use client'
+
 import 'regenerator-runtime/runtime'
 import React, { useEffect, useRef, useState, createContext } from 'react'
 // Ensure you have these dependencies correctly imported or available in your project
@@ -20,7 +22,6 @@ import calculateTimeToSentence from '@/components/TalkingHead/utils/calculateTim
 import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
-import { use } from 'react'
 
 const TalkingHeadComponent = () => {
   const interal = true
@@ -50,18 +51,7 @@ const TalkingHeadComponent = () => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
-  function getLocalStream() {
-    navigator.mediaDevices
-      .getUserMedia({ video: false, audio: true })
-      .then(stream => {
-        window.localStream = stream // A
-        window.localAudio.srcObject = stream // B
-        window.localAudio.autoplay = true // C
-      })
-      .catch(err => {
-        console.error(`you got an error: ${err}`)
-      })
-  }
+
   const {
     transcript,
     listening,
@@ -96,9 +86,7 @@ const TalkingHeadComponent = () => {
     console.log('Head' + head.current)
     initTalkingHead(nodeAvatar)
   }, []) // Empty dependency array ensures this effect runs only once
-  useEffect(() => {
-    getLocalStream()
-  }, [])
+
   let subtitleBuffer = ''
   let timeoutHandle: string | number | NodeJS.Timeout | null | undefined = null
   const processBuffer = (lastIndex, setSubtitles) => {
