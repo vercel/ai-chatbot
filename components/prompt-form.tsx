@@ -17,6 +17,10 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import SpeechRecognition, {
+  useSpeechRecognition
+} from 'react-speech-recognition'
 
 export function PromptForm({
   input,
@@ -31,41 +35,75 @@ export function PromptForm({
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
   }, [])
+  const commands = [
+    {
+      command: 'Send (message)',
+      callback: () => handleSubmit(input)
+    },
+    {
+      command: 'Send (messages)',
+      callback: () => handleSubmit(input)
+    },
+    {
+      command: 'Enviar (mensaje)',
+      callback: () => handleSubmit(input)
+    },
+    {
+      command: 'Enviar (mensajes)',
+      callback: () => handleSubmit(input)
+    }
+  ]
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition
+  } = useSpeechRecognition({ commands })
+
+  useEffect(() => {
+    SpeechRecognition.startListening({ continuous: true })
+    return () => {
+      SpeechRecognition.stopListening()
+    }
+  }, [])
+  useEffect(() => {
+    console.log(transcript)
+    setInput(transcript)
+  }, [transcript, setInput])
+  const handleSubmit = async (e: any) => {
+    if (e && e.preventDefault) e?.preventDefault()
+    // reset dictation
+    resetTranscript()
+    // Blur focus on mobile
+    if (window.innerWidth < 600) {
+      e.target['message']?.blur()
+    }
+
+    const value = input.trim()
+    setInput('')
+    if (!value) return
+
+    // Optimistically add user message UI
+    setMessages(currentMessages => [
+      ...currentMessages,
+      {
+        id: nanoid(),
+        display: <UserMessage>{value}</UserMessage>
+      }
+    ])
+
+    // Submit and get response message
+    const responseMessage = await submitUserMessage(value)
+    setMessages(currentMessages => [...currentMessages, responseMessage])
+  }
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={async (e: any) => {
-        e.preventDefault()
-
-        // Blur focus on mobile
-        if (window.innerWidth < 600) {
-          e.target['message']?.blur()
-        }
-
-        const value = input.trim()
-        setInput('')
-        if (!value) return
-
-        // Optimistically add user message UI
-        setMessages(currentMessages => [
-          ...currentMessages,
-          {
-            id: nanoid(),
-            display: <UserMessage>{value}</UserMessage>
-          }
-        ])
-
-        // Submit and get response message
-        const responseMessage = await submitUserMessage(value)
-        setMessages(currentMessages => [...currentMessages, responseMessage])
-      }}
-    >
+    <form ref={formRef} onSubmit={handleSubmit}>
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
         <Tooltip>
           <TooltipTrigger asChild>
