@@ -12,9 +12,6 @@ import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
-import SpeechRecognition, {
-  useSpeechRecognition
-} from 'react-speech-recognition'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -34,9 +31,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   useEffect(() => {
     if (session?.user) {
-      if (!path.includes('chat') && messages.length === 1) {
-        window.history.replaceState({}, '', `/chat/${id}`)
-      }
     }
   }, [id, path, session?.user, messages])
 
@@ -48,13 +42,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [aiState.messages, router])
 
   useEffect(() => {
-    setNewChatId(id)
-    const speechRecognition = async () => {
-      if (!browserSupportsSpeechRecognition) {
-        return
-      }
-      SpeechRecognition.startListening({ continuous: true })
-    }
+    // setNewChatId(id)
   })
 
   useEffect(() => {
@@ -65,24 +53,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
     useScrollAnchor()
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition
-  } = useSpeechRecognition()
-  useEffect(() => {
-    SpeechRecognition.startListening({ continuous: true })
-    return () => {
-      SpeechRecognition.stopListening()
-    }
-  }, [])
-  useEffect(() => {
-    setInput(transcript)
-  }, [transcript])
 
-  console.log(transcript)
-  console.log(listening)
   return (
     <div
       className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
@@ -99,8 +70,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         )}
         <div className="w-full h-px" ref={visibilityRef} />
       </div>
-      <p>{transcript}</p>
-      <p>{listening}</p>
 
       <ChatPanel
         id={id}
