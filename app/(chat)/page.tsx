@@ -8,7 +8,7 @@ import { Session } from '@/lib/types'
 import { getMissingKeys } from '@/app/actions'
 
 export const metadata = {
-  title: 'Next.js AI Chatbot'
+  title: 'Edgen AI Chatbot'
 }
 
 export default async function IndexPage() {
