@@ -2,7 +2,7 @@ import supabase from '@/lib/supabase/supabase'
 
 export async function POST(request: Request) {
   const res = await request.json()
-  const { payment, onboarding_complete, user_id } = res
+  const { user_id } = res
   if (!user_id) {
     return
   }
