@@ -26,26 +26,22 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [messages] = useUIState()
   const [aiState] = useAIState()
 
-  const [_, setNewChatId] = useLocalStorage('newChatId', id)
+  const [_, setNewChatAnimationId] = useLocalStorage('newChatAnimationId', id)
 
   useEffect(() => {
     if (session?.user) {
       if (!path.includes('chat') && messages.length === 1) {
         window.history.replaceState({}, '', `/chat/${id}`)
+        setNewChatAnimationId(id)
       }
     }
-  }, [id, path, session?.user, messages])
+  }, [id, path, session?.user, messages, setNewChatAnimationId])
 
   useEffect(() => {
-    const messagesLength = aiState.messages?.length
-    if (messagesLength === 2) {
+    if (aiState.refreshKey) {
       router.refresh()
     }
-  }, [aiState.messages, router])
-
-  useEffect(() => {
-    setNewChatId(id)
-  })
+  }, [aiState.refreshKey, router])
 
   useEffect(() => {
     missingKeys.map(key => {

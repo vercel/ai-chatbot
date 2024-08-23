@@ -39,3 +39,9 @@ export interface User extends Record<string, any> {
   password: string
   salt: string
 }
+
+export type MutableAIState<AIState> = {
+  get: () => AIState
+  update: (newState: AIState | ((current: AIState) => AIState)) => void
+  done: ((newState: AIState) => void) | (() => void)
+}

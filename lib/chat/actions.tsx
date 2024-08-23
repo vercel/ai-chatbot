@@ -33,9 +33,38 @@ import {
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
-import { Chat, Message } from '@/lib/types'
+import type { Chat, Message, MutableAIState } from '@/lib/types'
 import { auth } from '@/auth'
 
+async function updateChat({
+  chatId,
+  messages
+}: {
+  chatId: string
+  messages: Message[]
+}) {
+  'use server'
+  const session = await auth()
+
+  if (session?.user) {
+    const createdAt = new Date()
+    const userId = session.user.id as string
+    const path = `/chat/${chatId}`
+
+    const firstMessageContent = messages[0].content as string
+    const title = firstMessageContent.substring(0, 100)
+
+    const chat: Chat = {
+      id: chatId,
+      title,
+      userId,
+      createdAt,
+      messages,
+      path
+    }
+    await saveChat(chat)
+  } 
+}
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
 
@@ -159,17 +188,13 @@ async function submitUserMessage(content: string) {
 
       if (done) {
         textStream.done()
-        aiState.done({
-          ...aiState.get(),
-          messages: [
-            ...aiState.get().messages,
-            {
-              id: nanoid(),
-              role: 'assistant',
-              content
-            }
-          ]
-        })
+        aiStateDone(aiState, [
+          {
+            id: nanoid(),
+            role: 'assistant',
+            content
+          }
+        ])
       } else {
         textStream.update(delta)
       }
@@ -198,37 +223,32 @@ async function submitUserMessage(content: string) {
           await sleep(1000)
 
           const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    args: { stocks }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'listStocks',
-                    toolCallId,
-                    result: stocks
-                  }
-                ]
-              }
-            ]
-          })
+          aiStateDone(aiState, [
+            {
+              id: nanoid(),
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'listStocks',
+                  toolCallId,
+                  args: { stocks }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'listStocks',
+                  toolCallId,
+                  result: stocks
+                }
+              ]
+            }
+          ])
 
           return (
             <BotCard>
@@ -259,37 +279,32 @@ async function submitUserMessage(content: string) {
           await sleep(1000)
 
           const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    args: { symbol, price, delta }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'showStockPrice',
-                    toolCallId,
-                    result: { symbol, price, delta }
-                  }
-                ]
-              }
-            ]
-          })
+          aiStateDone(aiState, [
+            {
+              id: nanoid(),
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'showStockPrice',
+                  toolCallId,
+                  args: { symbol, price, delta }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'showStockPrice',
+                  toolCallId,
+                  result: { symbol, price, delta }
+                }
+              ]
+            }
+          ])
 
           return (
             <BotCard>
@@ -319,83 +334,75 @@ async function submitUserMessage(content: string) {
           const toolCallId = nanoid()
 
           if (numberOfShares <= 0 || numberOfShares > 1000) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
+            aiStateDone(aiState, [
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'showStockPurchase',
+                    toolCallId,
+                    args: { symbol, price, numberOfShares }
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'showStockPurchase',
+                    toolCallId,
+                    result: {
+                      symbol,
+                      price,
+                      numberOfShares,
+                      status: 'expired'
                     }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares,
-                        status: 'expired'
-                      }
-                    }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'system',
-                  content: `[User has selected an invalid amount]`
-                }
-              ]
-            })
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'system',
+                content: `[User has selected an invalid amount]`
+              }
+            ])
 
             return <BotMessage content={'Invalid amount'} />
           } else {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: nanoid(),
-                  role: 'assistant',
-                  content: [
-                    {
-                      type: 'tool-call',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      args: { symbol, price, numberOfShares }
+            aiStateDone(aiState, [
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'showStockPurchase',
+                    toolCallId,
+                    args: { symbol, price, numberOfShares }
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'showStockPurchase',
+                    toolCallId,
+                    result: {
+                      symbol,
+                      price,
+                      numberOfShares
                     }
-                  ]
-                },
-                {
-                  id: nanoid(),
-                  role: 'tool',
-                  content: [
-                    {
-                      type: 'tool-result',
-                      toolName: 'showStockPurchase',
-                      toolCallId,
-                      result: {
-                        symbol,
-                        price,
-                        numberOfShares
-                      }
-                    }
-                  ]
-                }
-              ]
-            })
+                  }
+                ]
+              }
+            ])
 
             return (
               <BotCard>
@@ -436,37 +443,32 @@ async function submitUserMessage(content: string) {
           await sleep(1000)
 
           const toolCallId = nanoid()
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: nanoid(),
-                role: 'assistant',
-                content: [
-                  {
-                    type: 'tool-call',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    args: { events }
-                  }
-                ]
-              },
-              {
-                id: nanoid(),
-                role: 'tool',
-                content: [
-                  {
-                    type: 'tool-result',
-                    toolName: 'getEvents',
-                    toolCallId,
-                    result: events
-                  }
-                ]
-              }
-            ]
-          })
+          aiStateDone(aiState, [
+            {
+              id: nanoid(),
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'getEvents',
+                  toolCallId,
+                  args: { events }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'getEvents',
+                  toolCallId,
+                  result: events
+                }
+              ]
+            }
+          ])
 
           return (
             <BotCard>
@@ -487,6 +489,7 @@ async function submitUserMessage(content: string) {
 export type AIState = {
   chatId: string
   messages: Message[]
+  refreshKey?: string
 }
 
 export type UIState = {
@@ -516,38 +519,24 @@ export const AI = createAI<AIState, UIState>({
     } else {
       return
     }
-  },
-  onSetAIState: async ({ state }) => {
-    'use server'
-
-    const session = await auth()
-
-    if (session && session.user) {
-      const { chatId, messages } = state
-
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
-
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
-
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
-      }
-
-      await saveChat(chat)
-    } else {
-      return
-    }
   }
 })
-
+const aiStateDone = (
+  aiState: MutableAIState<AIState>,
+  newMessages: Message[]
+) => {
+  runAsyncFnWithoutBlocking(async () => {
+    const { chatId, messages } = aiState.get()
+    const newState = {
+      ...aiState.get(),
+      // Adds a key to trigger a router refresh on the client
+      refreshKey: nanoid(),
+      messages: [...messages, ...newMessages]
+    }
+    await updateChat({ chatId, messages: newState.messages })
+    aiState.done(newState)
+  })
+}
 export const getUIStateFromAIState = (aiState: Chat) => {
   return aiState.messages
     .filter(message => message.role !== 'system')
