@@ -11,7 +11,6 @@ export async function POST(request: Request) {
       users (
         id,
         firebase_id,
-        name -- Include other columns from the users table if needed
       )
     `
     )
