@@ -1,15 +1,50 @@
 'use client'
 
 import { useState, useRef, useEffect, useId } from 'react'
-import { scaleLinear } from 'd3-scale'
-import { subMonths, format } from 'date-fns'
-import { useResizeObserver } from 'usehooks-ts'
+import { subMonths, format } from 'lib/utils'
 import { useAIState } from 'ai/rsc'
 
 interface Stock {
   symbol: string
   price: number
   delta: number
+}
+
+function scaleLinear(domain: [number, number], range: [number, number]) {
+  const [d0, d1] = domain
+  const [r0, r1] = range
+
+  return function scale(value: number): number {
+    return r0 + ((value - d0) / (d1 - d0)) * (r1 - r0)
+  }
+}
+
+function useResizeObserver<T extends HTMLElement = HTMLElement>(
+  ref: React.RefObject<T>
+) {
+  const [size, setSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    if (!ref.current) return
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry.borderBoxSize && entry.borderBoxSize.length > 0) {
+        setSize({
+          width: entry.borderBoxSize[0].inlineSize,
+          height: entry.borderBoxSize[0].blockSize
+        })
+      } else {
+        // Fallback for browsers that don't support borderBoxSize
+        const { width, height } = entry.target.getBoundingClientRect()
+        setSize({ width, height })
+      }
+    })
+
+    observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [ref])
+
+  return size
 }
 
 export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
@@ -26,15 +61,13 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
   const [endHighlight, setEndHighlight] = useState(0)
 
   const chartRef = useRef<HTMLDivElement>(null)
-  const { width = 0 } = useResizeObserver({
-    ref: chartRef,
-    box: 'border-box'
-  })
+  const { width = 0 } = useResizeObserver(chartRef)
 
   const xToDate = scaleLinear(
     [0, width],
-    [subMonths(new Date(), 6), new Date()]
+    [subMonths(new Date(), 6).getTime(), new Date().getTime()]
   )
+
   const xToValue = scaleLinear(
     [0, width],
     [price - price / 2, price + price / 2]
@@ -46,9 +79,9 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
         id,
         role: 'system' as const,
         content: `[User has highlighted dates between between ${format(
-          xToDate(startHighlight),
+          new Date(xToDate(startHighlight)),
           'd LLL'
-        )} and ${format(xToDate(endHighlight), 'd LLL, yyyy')}`
+        )} and ${format(new Date(xToDate(endHighlight)), 'd LLL, yyyy')}`
       }
 
       if (aiState.messages[aiState.messages.length - 1]?.id === id) {
@@ -89,7 +122,7 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
             setEndHighlight(0)
 
             setPriceAtTime({
-              time: format(xToDate(clientX), 'dd LLL yy'),
+              time: format(new Date(xToDate(clientX)), 'dd LLL yy'),
               value: xToValue(clientX).toFixed(2),
               x: clientX - left
             })
@@ -109,7 +142,7 @@ export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
             const { left } = chartRef.current.getBoundingClientRect()
 
             setPriceAtTime({
-              time: format(xToDate(clientX), 'dd LLL yy'),
+              time: format(new Date(xToDate(clientX)), 'dd LLL yy'),
               value: xToValue(clientX).toFixed(2),
               x: clientX - left
             })
