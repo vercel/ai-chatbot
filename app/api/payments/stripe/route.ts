@@ -57,8 +57,9 @@ export async function POST(request: Request) {
       items: [{ price: prodId }],
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
-      trial_period_days: 3
-    })
+      // trial_period_days: 3, // Remove this line to disable the free trial
+    });
+    
 
     // Create an ephemeral key for client-side use
     const ephemeralKey = await stripe.ephemeralKeys.create(
