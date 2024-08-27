@@ -2,7 +2,7 @@ import check_missing_fields from '@/lib/api/check_missing_fields';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(
-  'sk_test_51PsVvRC4MrGK8gPUQ5KOxy5VFy9jVMUt3voKb4mcEQNltVViUhTiGXjAsyvUNArwNbG8ecdUHZH41Q1mbQCjqNTL000bY6qPbH',
+  'sk_test_51PbYoJRsQmUQn4A3WSGMWGEy7sUE3S0GwyRxjj0Gwv3IHoXfLQVI92h3KP7JHMPozEvJb76UxjBu19Sdh4hShR9J00l9sZoAba',
   {
     apiVersion: '2024-06-20',
   }
@@ -52,8 +52,8 @@ export async function POST(request: Request) {
     // Determine the price ID based on the plan
     const priceId =
       plan === 'yearly'
-        ? 'price_1PsW13C4MrGK8gPUsy6Po2nt'
-        : 'price_1PsW1vC4MrGK8gPUM6RnYWh7';
+        ? 'price_1PsRQ0RsQmUQn4A3ZqBPIH2t'
+        : 'price_1PsQnnRsQmUQn4A33OcScT4s';
 
     // Create a subscription
     console.log('Creating subscription for customer:', customer.id);
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         ephemeralKey: ephemeralKey.secret,
         customer: customer.id,
         publishableKey:
-          'pk_test_51PsVvRC4MrGK8gPUX2NExofxIryc7OAp5upRx8sC4Xtuts4vMB0cT8zupdcNJDS0ihPd3gE0JBgAyCdrZBqMNQEc00bg0HBzGt',
+          'pk_test_51PbYoJRsQmUQn4A3GHoqsIpL4lRtNGiAuUdfN3BlLXXxTVxnLn0BtqyI8Z7Jr6WUFWaUvzypvaKgA1V9y749CBfk00yCcpedHK',
       }),
       {
         status: 200,
