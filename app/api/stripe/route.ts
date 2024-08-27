@@ -11,24 +11,27 @@ export async function POST(request: Request) {
   const res = await request.json()
   console.log(res)
   const customer = await stripe.customers.create()
-
+  // Create a subscription
+  const subscription = await stripe.subscriptions.create({
+    customer: customer.id,
+    items: [{ price: 'prod_QjudObH4R5c9sX' }],
+    payment_behavior: 'default_incomplete',
+    expand: ['latest_invoice.payment_intent']
+  })
   const ephemeralKey = await stripe.ephemeralKeys.create(
     { customer: customer.id },
     { apiVersion: '2024-06-20' }
   )
-
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: 1199, // Amount in the smallest currency unit (e.g., cents for EUR)
-    currency: 'usd',
-    customer: customer.id,
-    automatic_payment_methods: {
-      enabled: true
-    }
-  })
   // TODO: this should be saved
   // Respond with the necessary client secrets and customer ID
+  const latestInvoice = subscription.latest_invoice
+  const paymentIntent =
+    typeof latestInvoice === 'object' && latestInvoice !== null
+      ? latestInvoice.payment_intent
+      : null
   return Response.json({
-    paymentIntent: paymentIntent.client_secret,
+    subscriptionId: subscription.id,
+    clientSecret: paymentIntent ? paymentIntent?.toString : null,
     ephemeralKey: ephemeralKey.secret,
     customer: customer.id,
     publishableKey:
