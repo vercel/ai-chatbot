@@ -9,12 +9,16 @@ const stripe = new Stripe(
 )
 export async function POST(request: Request) {
   const res = await request.json()
-  console.log(res)
-  const customer = await stripe.customers.create()
+  const { email, plan } = res
+  // check everything comes
+  // check options also, "yearly" or "monthly"
+  const customer = await stripe.customers.create({ email: email })
   // Create a subscription
+  const prodId =
+    plan === 'yearly' ? 'prod_QjvGTCqeDIfYhA' : 'prod_QjudObH4R5c9sX'
   const subscription = await stripe.subscriptions.create({
     customer: customer.id,
-    items: [{ price: 'prod_QjudObH4R5c9sX' }],
+    items: [{ price: prodId }],
     payment_behavior: 'default_incomplete',
     expand: ['latest_invoice.payment_intent']
   })
