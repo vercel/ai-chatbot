@@ -47,7 +47,9 @@ export async function POST(request: Request) {
 
     // Determine the product ID based on the plan
     const prodId =
-      plan === 'yearly' ? 'prod_QjvGTCqeDIfYhA' : 'prod_QjudObH4R5c9sX'
+      plan === 'yearly'
+        ? 'price_1PsRQ0RsQmUQn4A3ZqBPIH2t'
+        : 'price_1PsQnnRsQmUQn4A33OcScT4s'
 
     // Create a subscription
     const subscription = await stripe.subscriptions.create({
