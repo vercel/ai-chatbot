@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns'
+import { format, parseISO } from 'lib/utils'
 
 interface Event {
   date: string
