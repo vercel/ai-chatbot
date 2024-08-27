@@ -9,10 +9,10 @@ const stripe = new Stripe(
 )
 export async function POST(request: Request) {
   const res = await request.json()
-  const { email, plan } = res
+  const { plan } = res
   // check everything comes
   // check options also, "yearly" or "monthly"
-  const customer = await stripe.customers.create({ email: email })
+  const customer = await stripe.customers.create()
   // Create a subscription
   // yearly:prod_QjvGTCqeDIfYhA
   // monthly:prod_QjudObH4R5c9sX
