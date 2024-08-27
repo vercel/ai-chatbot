@@ -5,6 +5,8 @@ export async function GET() {
   return Response.json({ data })
 }
 
-export async function POST({ data }: { data: any }) {
-  return Response.json({ data })
+export async function POST(request: Request) {
+  const res = await request.json()
+
+  return Response.json({ res })
 }
