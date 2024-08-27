@@ -14,13 +14,16 @@ export async function POST(request: Request) {
   // check options also, "yearly" or "monthly"
   const customer = await stripe.customers.create({ email: email })
   // Create a subscription
+  // yearly:prod_QjvGTCqeDIfYhA
+  // monthly:prod_QjudObH4R5c9sX
   const prodId =
     plan === 'yearly' ? 'prod_QjvGTCqeDIfYhA' : 'prod_QjudObH4R5c9sX'
   const subscription = await stripe.subscriptions.create({
     customer: customer.id,
     items: [{ price: prodId }],
     payment_behavior: 'default_incomplete',
-    expand: ['latest_invoice.payment_intent']
+    expand: ['latest_invoice.payment_intent'],
+    trial_period_days: 3
   })
   const ephemeralKey = await stripe.ephemeralKeys.create(
     { customer: customer.id },
