@@ -1,168 +1,142 @@
-import supabase from '@/lib/supabase/supabase';
+import supabase from '@/lib/supabase/supabase'
+import create_response from '@/lib/api/create_response'
+import check_missing_fields from '@/lib/api/check_missing_fields'
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
 
     if (!userId || typeof userId !== 'string') {
-      return new Response(JSON.stringify({ error: 'Invalid or missing userId' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return create_response({
+        data: { error: 'Invalid or missing userId' },
+        status: 400
+      })
     }
 
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('firebase_id', userId)  // Updated to check against firebase_id
-      .single();
+      .eq('firebase_id', userId)
+      .single()
 
     if (error) {
-      console.error('Error fetching user data:', error.message);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('Error fetching user data:', error.message)
+      return create_response({
+        data: { error: error.message },
+        status: 500
+      })
     }
 
     if (!data) {
-      return new Response(JSON.stringify({ error: 'User not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return create_response({
+        data: { error: 'User not found' },
+        status: 404
+      })
     }
 
-    return new Response(JSON.stringify({ data }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
+    return create_response({
+      data: { data },
+      status: 200
+    })
   } catch (err) {
-    console.error('Error handling GET request:', err);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('Error handling GET request:', err)
+    return create_response({
+      data: { error: 'Internal Server Error' },
+      status: 500
+    })
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await request.json();
+    const res = await request.json()
 
-    if (!userId || typeof userId !== 'string') {
-      return new Response(JSON.stringify({ error: 'Invalid or missing userId' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Check for missing fields
+    const missing_fields = check_missing_fields({
+      fields: ['userId'],
+      reqBody: res
+    })
+
+    if (missing_fields) {
+      return create_response({
+        data: { missing_fields },
+        status: 400
+      })
     }
 
-    const { data, error } = await supabase
-      .from('users')
-      .insert([
-        {
-          firebase_id: userId, 
-          subscription: false,
-        },
-      ]);
+    const { userId } = res
+
+    const { data, error } = await supabase.from('users').insert([
+      {
+        firebase_id: userId,
+        subscription: false
+      }
+    ])
 
     if (error) {
-      console.error('Error creating user:', error.message);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('Error creating user:', error.message)
+      return create_response({
+        data: { error: error.message },
+        status: 500
+      })
     }
 
-    return new Response(JSON.stringify({ data }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
+    return create_response({
+      data: { data },
+      status: 201
+    })
   } catch (err) {
-    console.error('Error handling POST request:', err);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('Error handling POST request:', err)
+    return create_response({
+      data: { error: 'Internal Server Error' },
+      status: 500
+    })
   }
 }
 
 export async function PATCH(request: Request) {
   try {
-    const { userId, ...updates } = await request.json();
+    const res = await request.json()
 
-    if (!userId || typeof userId !== 'string') {
-      return new Response(JSON.stringify({ error: 'Invalid or missing userId' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // Check for missing fields
+    const missing_fields = check_missing_fields({
+      fields: ['userId'],
+      reqBody: res
+    })
+
+    if (missing_fields) {
+      return create_response({
+        data: { missing_fields },
+        status: 400
+      })
     }
+
+    const { userId, ...updates } = res
 
     const { data, error } = await supabase
       .from('users')
       .update(updates)
-      .eq('firebase_id', userId)  // Updated to check against firebase_id
-      .single();
+      .eq('firebase_id', userId)
+      .single()
 
     if (error) {
-      console.error('Error updating user:', error.message);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('Error updating user:', error.message)
+      return create_response({
+        data: { error: error.message },
+        status: 500
+      })
     }
 
-    return new Response(JSON.stringify({ data }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
+    return create_response({
+      data: { data },
+      status: 200
+    })
   } catch (err) {
-    console.error('Error handling PATCH request:', err);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { userId } = await request.json();
-
-    if (!userId || typeof userId !== 'string') {
-      return new Response(JSON.stringify({ error: 'Invalid or missing userId' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const { data, error } = await supabase
-      .from('users')
-      .delete()
-      .eq('firebase_id', userId)  // Updated to check against firebase_id
-      .single();
-
-    if (error) {
-      console.error('Error deleting user:', error.message);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify({ message: 'User deleted successfully' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-  } catch (err) {
-    console.error('Error handling DELETE request:', err);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('Error handling PATCH request:', err)
+    return create_response({
+      data: { error: 'Internal Server Error' },
+      status: 500
+    })
   }
 }
