@@ -64,7 +64,6 @@ export async function POST(request: Request) {
         {
           firebase_id: userId, 
           subscription: false,
-          auth_method:"anonymous",
         },
       ]);
 
