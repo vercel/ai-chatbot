@@ -1,4 +1,5 @@
 import check_missing_fields from '@/lib/api/check_missing_fields'
+import create_response from '@/lib/api/create_response'
 import supabase from '@/lib/supabase/supabase'
 
 export async function POST(request: Request) {
@@ -12,9 +13,9 @@ export async function POST(request: Request) {
     })
 
     if (missing_fields) {
-      return new Response(JSON.stringify({ missing_fields }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
+      return create_response({
+        data: { missing_fields },
+        status: 400
       })
     }
 
@@ -30,22 +31,22 @@ export async function POST(request: Request) {
       .upsert(preferencesToUpsert)
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
+      return create_response({
+        data: { error: error.message },
+        status: 500
       })
     }
 
     // Return the upserted data
-    return new Response(JSON.stringify({ data }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return create_response({
+      data: { data },
+      status: 200
     })
   } catch (err) {
     // Handle unexpected errors
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
+    return create_response({
+      data: { error: 'Internal Server Error', details: err },
+      status: 500
     })
   }
 }
@@ -57,13 +58,10 @@ export async function GET(request: Request) {
     const userId = url.searchParams.get('user_id')
 
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'Missing user_id query parameter' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
+      return create_response({
+        data: { error: 'Missing user_id query parameter' },
+        status: 400
+      })
     }
 
     // Fetch preferences for the specified user_id
@@ -73,35 +71,23 @@ export async function GET(request: Request) {
       .eq('user', userId)
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      return create_response({ data: { error: error.message }, status: 500 })
     }
 
     if (!data || data.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No preferences found for the user' }),
-        {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
+      return create_response({
+        data: { message: 'No preferences found for the user' },
+        status: 404
+      })
     }
 
     // Return the retrieved preferences
-    return new Response(JSON.stringify({ preferences: data }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return create_response({ data: { preferences: data }, status: 200 })
   } catch (err) {
     // Handle unexpected errors
-    return new Response(
-      JSON.stringify({ error: 'Internal Server Error', details: err }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    )
+    return create_response({
+      data: { error: 'Internal Server Error', details: err },
+      status: 500
+    })
   }
 }
