@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId)
+      .eq('firebase_id', userId)  // Updated to check against firebase_id
       .single();
 
     if (error) {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { userId, subscription, plan_type, billing_date, auth_method } = await request.json();
+    const { userId } = await request.json();
 
     if (!userId || typeof userId !== 'string') {
       return new Response(JSON.stringify({ error: 'Invalid or missing userId' }), {
@@ -62,11 +62,7 @@ export async function POST(request: Request) {
       .from('users')
       .insert([
         {
-          id: userId,
-          subscription,
-          plan_type,
-          billing_date,
-          auth_method
+          firebase_id: userId, 
         },
       ]);
 
@@ -106,7 +102,7 @@ export async function PATCH(request: Request) {
     const { data, error } = await supabase
       .from('users')
       .update(updates)
-      .eq('id', userId)
+      .eq('firebase_id', userId)  // Updated to check against firebase_id
       .single();
 
     if (error) {
@@ -145,7 +141,7 @@ export async function DELETE(request: Request) {
     const { data, error } = await supabase
       .from('users')
       .delete()
-      .eq('id', userId)
+      .eq('firebase_id', userId)  // Updated to check against firebase_id
       .single();
 
     if (error) {
