@@ -63,6 +63,8 @@ export async function POST(request: Request) {
       .insert([
         {
           firebase_id: userId, 
+          subscription: false,
+          auth_method:"anonymous",
         },
       ]);
 
