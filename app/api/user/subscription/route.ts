@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('users')
-      .select('subscription, plan_type, billing_date, auth_method')
+      .select('subscription, plan_type, billing_date, auth_method, id')
       .eq('firebase_id', userId) 
       .single();
 
