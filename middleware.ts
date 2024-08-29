@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function middleware(request: NextRequest) {
-  console.log('New request to', request.nextUrl.pathname)
+  const start = Date.now()
+  const requestId = uuidv4()
+
+  // Attach the start time and request ID to the request headers
+  request.headers.set('x-start-time', start.toString())
+  request.headers.set('x-request-id', requestId)
+
+  console.log(`[${requestId}] New request to`, request.nextUrl.pathname)
+
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|__nextjs_original-stack-frame|favicon.ico).*)'
-  ]
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)']
 }
