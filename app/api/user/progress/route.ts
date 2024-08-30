@@ -1,8 +1,9 @@
 import supabase from '@/lib/supabase/supabase'
 import check_missing_fields from '@/lib/api/check_missing_fields'
 import create_response from '@/lib/api/create_response'
+import { NextRequest } from 'next/server'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const res = await request.json()
 
@@ -14,6 +15,7 @@ export async function POST(request: Request) {
 
     if (missing_fields) {
       return create_response({
+        request,
         data: { missing_fields },
         status: 400
       })
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return create_response({
+        request,
         data: { error: error.message },
         status: 500
       })
@@ -45,19 +48,21 @@ export async function POST(request: Request) {
 
     // Return the fetched data
     return create_response({
+      request,
       data: { data },
       status: 200
     })
   } catch (err) {
     // Handle unexpected errors
     return create_response({
+      request,
       data: { error: 'Internal Server Error', details: err },
       status: 500
     })
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     // Extract firebase_id from query parameters
     const url = new URL(request.url)
@@ -65,6 +70,7 @@ export async function GET(request: Request) {
 
     if (!firebaseId) {
       return create_response({
+        request,
         data: { error: 'Missing firebase_id query parameter' },
         status: 400
       })
@@ -87,6 +93,7 @@ export async function GET(request: Request) {
 
     if (error) {
       return create_response({
+        request,
         data: { error: error.message },
         status: 500
       })
@@ -94,6 +101,7 @@ export async function GET(request: Request) {
 
     if (!data) {
       return create_response({
+        request,
         data: {
           message: 'No user progress found for the provided firebase_id'
         },
@@ -103,12 +111,14 @@ export async function GET(request: Request) {
 
     // Return the retrieved user progress data
     return create_response({
+      request,
       data: { data },
       status: 200
     })
   } catch (err) {
     // Handle unexpected errors
     return create_response({
+      request,
       data: { error: 'Internal Server Error', details: err },
       status: 500
     })

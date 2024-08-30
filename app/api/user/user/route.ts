@@ -1,14 +1,16 @@
 import supabase from '@/lib/supabase/supabase'
 import create_response from '@/lib/api/create_response'
 import check_missing_fields from '@/lib/api/check_missing_fields'
+import { NextRequest } from 'next/server'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 
     if (!userId || typeof userId !== 'string') {
       return create_response({
+        request,
         data: { error: 'Invalid or missing userId' },
         status: 400
       })
@@ -23,6 +25,7 @@ export async function GET(request: Request) {
     if (error) {
       console.error('Error fetching user data:', error.message)
       return create_response({
+        request,
         data: { error: error.message },
         status: 500
       })
@@ -30,25 +33,28 @@ export async function GET(request: Request) {
 
     if (!data) {
       return create_response({
+        request,
         data: { error: 'User not found' },
         status: 404
       })
     }
 
     return create_response({
+      request,
       data: { data },
       status: 200
     })
   } catch (err) {
     console.error('Error handling GET request:', err)
     return create_response({
+      request,
       data: { error: 'Internal Server Error' },
       status: 500
     })
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const res = await request.json()
 
@@ -60,6 +66,7 @@ export async function POST(request: Request) {
 
     if (missing_fields) {
       return create_response({
+        request,
         data: { missing_fields },
         status: 400
       })
@@ -77,25 +84,28 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Error creating user:', error.message)
       return create_response({
+        request,
         data: { error: error.message },
         status: 500
       })
     }
 
     return create_response({
+      request,
       data: { data },
       status: 201
     })
   } catch (err) {
     console.error('Error handling POST request:', err)
     return create_response({
+      request,
       data: { error: 'Internal Server Error' },
       status: 500
     })
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
     const res = await request.json()
 
@@ -107,6 +117,7 @@ export async function PATCH(request: Request) {
 
     if (missing_fields) {
       return create_response({
+        request,
         data: { missing_fields },
         status: 400
       })
@@ -123,18 +134,21 @@ export async function PATCH(request: Request) {
     if (error) {
       console.error('Error updating user:', error.message)
       return create_response({
+        request,
         data: { error: error.message },
         status: 500
       })
     }
 
     return create_response({
+      request,
       data: { data },
       status: 200
     })
   } catch (err) {
     console.error('Error handling PATCH request:', err)
     return create_response({
+      request,
       data: { error: 'Internal Server Error' },
       status: 500
     })

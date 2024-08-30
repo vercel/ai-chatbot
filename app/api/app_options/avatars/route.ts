@@ -1,6 +1,8 @@
+import create_response from '@/lib/api/create_response'
 import supabase from '@/lib/supabase/supabase'
+import { NextRequest } from 'next/server'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const res = await request.json()
   console.log(res)
   const data = [
@@ -30,5 +32,9 @@ export async function POST(request: Request) {
     }
   ]
 
-  return Response.json({ data })
+  return create_response({
+    request,
+    data,
+    status: 200
+  })
 }
