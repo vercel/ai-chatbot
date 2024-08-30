@@ -51,16 +51,24 @@ export interface User extends Record<string, any> {
          |___/ |___/         |___/ 
  */
 // Enforce a basic UUID format
-type UUID = `${string}-${string}-${string}-${string}-${string}`
+export type UUID = `${string}-${string}-${string}-${string}-${string}`
 
 // Enforce a string of digits (timestamp)
-type Timestamp = `${number}`
+export type Timestamp = `${number}`
 
 // HTTP methods
-type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'
+export type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PATCH'
+  | 'DELETE'
+  | 'PUT'
+  | 'HEAD'
+  | 'OPTIONS'
+  | 'CONNECT'
 
 // Route starting with "/"
-type Route = `/${string}`
+export type Route = `/${string}`
 
 // Combining everything into a log output type
 export type RouteLogOutput = `${UUID} | ${Timestamp} | ${HttpMethod} | ${Route}`
