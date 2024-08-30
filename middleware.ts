@@ -8,15 +8,15 @@ export async function middleware(request: NextRequest) {
   const requestId: UUID = uuidv4()
   const method = request.method as HttpMethod
   const pathname = request.nextUrl.pathname as Route
-
   // Attach the start time and request ID to the request headers
-  request.headers.set('x-start-time', start)
-  request.headers.set('x-request-id', requestId)
+  const response = NextResponse.next()
+  response.headers.set('x-start-time', start)
+  response.headers.set('x-request-id', requestId)
 
   const routeLog: RouteLogOutput = `${requestId} | ${start} | ${method} | ${pathname}`
   console.log(routeLog)
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {
