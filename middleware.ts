@@ -10,7 +10,9 @@ export async function middleware(request: NextRequest) {
   request.headers.set('x-start-time', start.toString())
   request.headers.set('x-request-id', requestId)
 
-  console.log(`[${requestId}] New request to`, request.nextUrl.pathname)
+  console.log(
+    `${requestId} | ${start.toString()} | ${request.method} | ${request.nextUrl.pathname}`
+  )
 
   return NextResponse.next()
 }
