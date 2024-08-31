@@ -39,3 +39,36 @@ export interface User extends Record<string, any> {
   password: string
   salt: string
 }
+
+/* 
+ _                   _             
+| |                 (_)            
+| | ___   __ _  __ _ _ _ __   __ _ 
+| |/ _ \ / _` |/ _` | | '_ \ / _` |
+| | (_) | (_| | (_| | | | | | (_| |
+|_|\___/ \__, |\__, |_|_| |_|\__, |
+          __/ | __/ |         __/ |
+         |___/ |___/         |___/ 
+ */
+// Enforce a basic UUID format
+export type UUID = `${string}-${string}-${string}-${string}-${string}`
+
+// Enforce a string of digits (timestamp)
+export type Timestamp = `${number}`
+
+// HTTP methods
+export type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PATCH'
+  | 'DELETE'
+  | 'PUT'
+  | 'HEAD'
+  | 'OPTIONS'
+  | 'CONNECT'
+
+// Route starting with "/"
+export type Route = `/${string}`
+
+// Combining everything into a log output type
+export type RouteLogOutput = `${UUID} | ${Timestamp} | ${HttpMethod} | ${Route}`
