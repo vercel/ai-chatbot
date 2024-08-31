@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(
-  'sk_test_51PbYoJRsQmUQn4A3WSGMWGEy7sUE3S0GwyRxjj0Gwv3IHoXfLQVI92h3KP7JHMPozEvJb76UxjBu19Sdh4hShR9J00l9sZoAba',
+  `${process.env.NEXT_PUBLIC_STRIPE_SECRET}`,
   {
     apiVersion: '2024-06-20',
   }
@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
     // Determine the price ID based on the plan
     const priceId =
       plan === 'yearly'
-        ? 'price_1PsRQ0RsQmUQn4A3ZqBPIH2t'
-        : 'price_1PsQnnRsQmUQn4A33OcScT4s';
+        ? 'price_1PtvV6RsQmUQn4A3KjPNyi5D'
+        : 'price_1PtvV9RsQmUQn4A3WGqf3GFQ';
     console.log('Price ID selected:', priceId);
 
     // Create a subscription
@@ -66,7 +66,10 @@ export async function POST(request: NextRequest) {
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
-      // trial_period_days: 3, // Uncomment if you want to include a trial period
+      trial_period_days: 3, // Free trial period
+      payment_settings: {
+        save_default_payment_method: 'on_subscription', // Save payment method for future use
+      },
     });
     console.log('Subscription created with ID:', subscription.id);
 
@@ -117,7 +120,7 @@ export async function POST(request: NextRequest) {
         ephemeralKey: ephemeralKey.secret,
         customer: customer.id,
         publishableKey:
-          'pk_test_51PbYoJRsQmUQn4A3GHoqsIpL4lRtNGiAuUdfN3BlLXXxTVxnLn0BtqyI8Z7Jr6WUFWaUvzypvaKgA1V9y749CBfk00yCcpedHK',
+          process.env.NEXT_PUBLIC_STRIPE_KEY
       }),
       {
         status: 200,
