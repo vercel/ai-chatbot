@@ -1,13 +1,9 @@
 // @ts-nocheck
 'use client'
 
-import 'regenerator-runtime/runtime'
 import React, { useEffect, useRef, useState, createContext } from 'react'
 // Ensure you have these dependencies correctly imported or available in your project
 import { TalkingHead } from '@/components/TalkingHead/modules/talkinghead.mjs' // This path might need to be adjusted based on your project setup
-import SpeechRecognition, {
-  useSpeechRecognition
-} from 'react-speech-recognition'
 import localImage from '../../public/background.png'
 import {
   removeConsecutivePunctuation,
@@ -52,13 +48,6 @@ const TalkingHeadComponent = () => {
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
 
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition
-  } = useSpeechRecognition()
-
   useEffect(() => {
     const handleResize = () => {
       setFontSize(
@@ -74,9 +63,7 @@ const TalkingHeadComponent = () => {
       window.removeEventListener('resize', handleResize)
     }
   }, [])
-  useEffect(() => {
-    console.log('Transcript:', transcript)
-  }, [transcript])
+
   useEffect(() => {
     if (initializedRef.current) return // Prevents further execution if already initialized
     initializedRef.current = true
@@ -1436,7 +1423,8 @@ const TalkingHeadComponent = () => {
       style={{
         position: 'relative',
         maxWidth: '100%',
-        height: '100vh', // Changed to viewport height to ensure it covers the whole screen
+        width: '100%',
+        height: 'calc(100vh - 64px)', // Changed to viewport height to ensure it covers the whole screen
         margin: '0 auto', // Updated for consistency, though 'auto' was fine for horizontal centering
         backgroundPosition: 'center', // Center the background image
         backgroundSize: 'cover', // Ensure the image covers the whole area
@@ -1444,19 +1432,22 @@ const TalkingHeadComponent = () => {
         backgroundRepeat: 'no-repeat'
       }}
     >
-      <div
-        id="avatar"
-        ref={avatarRef}
-        style={{
-          minWidth: '400px',
-          width: '100%',
-          height: '100%',
-          justifyContent: 'center',
-          alignItems: 'center',
-          pointerEvents: 'none'
-        }}
-      ></div>
-      {loadingMessage && <Loading message={loadingMessage} />}
+      {loadingMessage ? (
+        <Loading message={loadingMessage} />
+      ) : (
+        <div
+          id="avatar"
+          ref={avatarRef}
+          style={{
+            minWidth: '400px',
+            width: '100%',
+            height: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            pointerEvents: 'none'
+          }}
+        />
+      )}
       {subtitles !== '' && isSubtitlesActive && (
         <Subtitles
           subtitles={subtitles}
@@ -1464,14 +1455,6 @@ const TalkingHeadComponent = () => {
           fontSize={fontSize}
         />
       )}
-      {listening && <p>Listening</p>}
-      <p>hola</p>
-      {browserSupportsSpeechRecognition && <p>Speech recognition supported</p>}
-      <p>{transcript}</p>
-      <button onClick={SpeechRecognition.startListening({ continuous: true })}>
-        Start
-      </button>
-      <button onClick={SpeechRecognition.stopListening}>Stop</button>
     </div>
   )
 }
