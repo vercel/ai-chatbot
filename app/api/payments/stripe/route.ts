@@ -76,6 +76,8 @@ export async function POST(request: Request) {
 
     // Extract the payment intent from the latest invoice
     const latestInvoice = subscription.latest_invoice;
+    console.log('Latest invoice details:', JSON.stringify(latestInvoice, null, 2));
+    
     const paymentIntent = typeof latestInvoice === 'object' && latestInvoice !== null
         ? latestInvoice.payment_intent
         : null;
@@ -85,6 +87,7 @@ export async function POST(request: Request) {
       return new Response(
         JSON.stringify({
           error: 'Failed to retrieve valid payment intent',
+          invoiceDetails: latestInvoice, // Log invoice details for diagnosis
         }),
         {
           status: 500,
