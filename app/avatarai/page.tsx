@@ -1432,29 +1432,26 @@ const TalkingHeadComponent = () => {
         backgroundRepeat: 'no-repeat'
       }}
     >
-      {loadingMessage ? (
-        <Loading message={loadingMessage} />
-      ) : (
-        <div
-          id="avatar"
-          ref={avatarRef}
-          style={{
-            minWidth: '400px',
-            width: '100%',
-            height: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-            pointerEvents: 'none'
-          }}
-        />
-      )}
-      {subtitles !== '' && isSubtitlesActive && (
+      <div
+        id="avatar"
+        ref={avatarRef}
+        style={{
+          minWidth: '400px',
+          width: '100%',
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center',
+          pointerEvents: 'none'
+        }}
+      />
+      {loadingMessage ? <Loading message={loadingMessage} /> : null}
+      {subtitles !== '' && isSubtitlesActive ? (
         <Subtitles
           subtitles={subtitles}
           isKeyboardOpen={isKeyboardOpen}
           fontSize={fontSize}
         />
-      )}
+      ) : null}
     </div>
   )
 }
