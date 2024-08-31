@@ -18,9 +18,6 @@ import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import SpeechRecognition, {
-  useSpeechRecognition
-} from 'react-speech-recognition'
 
 export function PromptForm({
   input,
@@ -58,27 +55,9 @@ export function PromptForm({
       callback: () => handleSubmit(input)
     }
   ]
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition
-  } = useSpeechRecognition({ commands })
 
-  useEffect(() => {
-    SpeechRecognition.startListening({ continuous: true })
-    return () => {
-      SpeechRecognition.stopListening()
-    }
-  }, [])
-  useEffect(() => {
-    console.log(transcript)
-    setInput(transcript)
-  }, [transcript, setInput])
   const handleSubmit = async (e: any) => {
     if (e && e.preventDefault) e?.preventDefault()
-    // reset dictation
-    resetTranscript()
     // Blur focus on mobile
     if (window.innerWidth < 600) {
       e.target['message']?.blur()
