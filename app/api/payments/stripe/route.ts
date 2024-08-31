@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
-      trial_period_days: 3, // Uncomment if you want to include a trial period
+      // trial_period_days: 3, // Uncomment if you want to include a trial period
     });
     console.log('Subscription created with ID:', subscription.id);
 
