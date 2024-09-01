@@ -1,5 +1,5 @@
 import 'server-only'
-//prueba
+//prueba2
 import {
   createAI,
   createStreamableUI,
