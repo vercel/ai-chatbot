@@ -57,9 +57,9 @@ export async function POST(request: any) {
   // Create a FileLike object
   const fileLikeObject = {
     lastModified: Date.now(),
-    name: 'audio-file.m4a', // You may want to dynamically determine the file type or name
+    name: 'audio-file.webm', // You may want to dynamically determine the file type or name
     size: fileBuffer.length,
-    type: 'audio/m4a',
+    type: 'audio/webm',
     text: async () => fileBuffer.toString(),
     arrayBuffer: async () => fileBuffer.buffer,
     slice: (start, end, contentType) => {

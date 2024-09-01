@@ -61,31 +61,35 @@ const TalkingHeadComponent = () => {
       .getUserMedia({ audio: true })
       .then(stream => {
         setAudioStream(stream)
-
-        const recorder = new MediaRecorder(stream)
-        setMediaRecorder(recorder)
-
-        recorder.ondataavailable = event => {
-          setAudioBlob(event.data)
+        // Set MIME type to 'audio/mpeg' or 'audio/webm' depending on what's supported
+        const mimeType = 'audio/webm;codecs=opus' // 'audio/mpeg' or 'audio/mp4' can also be tried if supported by the browser
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          console.error(`${mimeType} is not supported in your browser.`)
+          return
         }
 
+        const recorder = new MediaRecorder(stream, { mimeType })
+        setMediaRecorder(recorder)
+        recorder.ondataavailable = event => {
+          if (event.data.size > 0) {
+            setAudioBlob(event.data)
+          }
+        }
         recorder.start()
-
-        // Automatically stop recording after a certain duration (e.g., 5 seconds)
         setTimeout(() => {
           recorder.stop()
-        }, 15000) // Adjust the duration as needed
+        }, 5000)
       })
       .catch(err => {
         console.error('Error accessing microphone:', err)
       })
-  }, [])
+  }, [audioBlob])
 
   useEffect(() => {
     if (audioBlob) {
       const formData = new FormData()
-      formData.append('audio', audioBlob, 'audio-file.m4a') // Append the Blob as a file
-
+      formData.append('audio', audioBlob, `${Date.now().toString()}.webm`) // Append the Blob as a file
+      setAudioStream(null)
       fetch('/api/groq', {
         method: 'POST',
         body: formData
