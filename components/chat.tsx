@@ -14,6 +14,55 @@ import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
 import TalkingHeadComponent from '../app/avatarai/page'
 
+const AudioPlayer = () => {
+  const fetchAndPlayAudio = async text => {
+    console.log('Fetching audio for:', text)
+    const SERVER_URL =
+      'https://hjngsvyig3.execute-api.us-west-1.amazonaws.com/testing/speak' // Use your server's IP address or domain
+    try {
+      console.log('Fetching:', `${SERVER_URL}?text=${encodeURIComponent(text)}`)
+      const response = await fetch(
+        `${SERVER_URL}?text=${encodeURIComponent(text)}`
+      )
+      console.log('Response:', response)
+      if (response.ok) {
+        console.log('Response is OK')
+        const audioContext = new window.AudioContext()
+        const arrayBuffer = await response.arrayBuffer()
+        console.log('Array buffer:', arrayBuffer)
+        const source = audioContext.createBufferSource()
+        try {
+          console.log('Decoding audio data...')
+          const testAudioBuffer =
+            await audioContext.decodeAudioData(arrayBuffer)
+          console.log('Test AudioBuffer:', testAudioBuffer)
+        } catch (error) {
+          console.error('Error decoding test audio data:', error)
+        }
+        /*     console.log('Audio buffer:', audioBuffer)
+        // Set the buffer to the audio source
+        source.buffer = audioBuffer
+        source.connect(audioContext.destination)
+        // Play the audio
+        source.start(0) */
+      } else {
+        console.error(`Error: ${response.status} - ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error('Error fetching or playing audio:', error)
+    }
+  }
+  const handleClick = () => {
+    const textToTTS = 'Today we are going to learn about english verb tenses'
+    console.log('Text to TTS:', textToTTS)
+    fetchAndPlayAudio(textToTTS)
+  }
+  return (
+    <div>
+      <button onClick={handleClick}>Play TTS</button>
+    </div>
+  )
+}
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
@@ -53,7 +102,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         recorder.start()
         setTimeout(() => {
           recorder.stop()
-        }, 5000)
+        }, 25000)
       })
       .catch(err => {
         console.error('Error accessing microphone:', err)
@@ -140,6 +189,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           scrollToBottom={scrollToBottom}
         />
       </div>
+      <AudioPlayer />
     </div>
   )
 }
