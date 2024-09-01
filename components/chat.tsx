@@ -12,6 +12,7 @@ import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+import TalkingHeadComponent from '../app/avatarai/page'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -28,7 +29,59 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [aiState] = useAIState()
 
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null)
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
 
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(stream => {
+        setAudioStream(stream)
+        // Set MIME type to 'audio/mpeg' or 'audio/webm' depending on what's supported
+        const mimeType = 'audio/webm;codecs=opus' // 'audio/mpeg' or 'audio/mp4' can also be tried if supported by the browser
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          console.error(`${mimeType} is not supported in your browser.`)
+          return
+        }
+
+        const recorder = new MediaRecorder(stream, { mimeType })
+        recorder.ondataavailable = event => {
+          if (event.data.size > 0) {
+            setAudioBlob(event.data)
+          }
+        }
+        recorder.start()
+        setTimeout(() => {
+          recorder.stop()
+        }, 5000)
+      })
+      .catch(err => {
+        console.error('Error accessing microphone:', err)
+      })
+  }, [audioBlob])
+
+  useEffect(() => {
+    if (audioBlob) {
+      const formData = new FormData()
+      formData.append('audio', audioBlob, `${Date.now().toString()}.webm`) // Append the Blob as a file
+      setAudioStream(null)
+      fetch('/api/groq', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Transcription result:', data)
+          setInput(`${input} ${data.transcription.text}`)
+        })
+        .catch(error => {
+          console.error('Error during transcription:', error)
+        })
+    }
+  }, [audioBlob])
+  useEffect(() => {
+    console.log(audioStream)
+  }, [audioStream])
   useEffect(() => {
     if (session?.user) {
     }
@@ -56,28 +109,37 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   return (
     <div
-      className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
-      ref={scrollRef}
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
     >
+      <TalkingHeadComponent />
       <div
-        className={cn('pb-[200px] pt-4 md:pt-10', className)}
-        ref={messagesRef}
+        className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
+        ref={scrollRef}
       >
-        {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
-        ) : (
-          <EmptyScreen />
-        )}
-        <div className="w-full h-px" ref={visibilityRef} />
-      </div>
+        <div
+          className={cn('pb-[200px] pt-4 md:pt-10', className)}
+          ref={messagesRef}
+        >
+          {messages.length ? (
+            <ChatList messages={messages} isShared={false} session={session} />
+          ) : (
+            <EmptyScreen />
+          )}
+          <div className="w-full h-px" ref={visibilityRef} />
+        </div>
 
-      <ChatPanel
-        id={id}
-        input={input}
-        setInput={setInput}
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-      />
+        <ChatPanel
+          id={id}
+          input={input}
+          setInput={setInput}
+          isAtBottom={isAtBottom}
+          scrollToBottom={scrollToBottom}
+        />
+      </div>
     </div>
   )
 }

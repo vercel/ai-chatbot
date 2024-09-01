@@ -52,60 +52,7 @@ const TalkingHeadComponent = () => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
-  const [audioStream, setAudioStream] = useState(null)
-  const [mediaRecorder, setMediaRecorder] = useState(null)
-  const [audioBlob, setAudioBlob] = useState(null)
 
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then(stream => {
-        setAudioStream(stream)
-        // Set MIME type to 'audio/mpeg' or 'audio/webm' depending on what's supported
-        const mimeType = 'audio/webm;codecs=opus' // 'audio/mpeg' or 'audio/mp4' can also be tried if supported by the browser
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          console.error(`${mimeType} is not supported in your browser.`)
-          return
-        }
-
-        const recorder = new MediaRecorder(stream, { mimeType })
-        setMediaRecorder(recorder)
-        recorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            setAudioBlob(event.data)
-          }
-        }
-        recorder.start()
-        setTimeout(() => {
-          recorder.stop()
-        }, 5000)
-      })
-      .catch(err => {
-        console.error('Error accessing microphone:', err)
-      })
-  }, [audioBlob])
-
-  useEffect(() => {
-    if (audioBlob) {
-      const formData = new FormData()
-      formData.append('audio', audioBlob, `${Date.now().toString()}.webm`) // Append the Blob as a file
-      setAudioStream(null)
-      fetch('/api/groq', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Transcription result:', data)
-        })
-        .catch(error => {
-          console.error('Error during transcription:', error)
-        })
-    }
-  }, [audioBlob])
-  useEffect(() => {
-    console.log(audioStream)
-  }, [audioStream])
   useEffect(() => {
     const handleResize = () => {
       setFontSize(
