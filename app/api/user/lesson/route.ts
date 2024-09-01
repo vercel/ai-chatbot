@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     let system_prompt = '';
     let lesson_data = {};
     let current_lesson = '';
-    let newLessonId = null;
 
     // Fetch the user_progress_id based on the user_id
     const { data: userProgress, error: userProgressError } = await supabase
@@ -145,14 +144,14 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Capture the ID of the newly created lesson entry
-      newLessonId = insertData?.id || null;
+      // Set current_lesson to the ID of the newly created lesson
+      current_lesson = insertData?.id || null;
     }
 
-    // Return lesson_data, current_lesson, and the new lesson ID (if created) in the API response
+    // Return lesson_data and current_lesson in the API response
     return create_response({
       request,
-      data: { lesson_data, current_lesson, newLessonId },
+      data: { lesson_data, current_lesson },
       status: 200,
     });
 
