@@ -57,7 +57,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         recorder.start()
         setTimeout(() => {
           recorder.stop()
-        }, 25000)
+        }, 2000)
       })
       .catch(err => {
         console.error('Error accessing microphone:', err)
@@ -77,16 +77,14 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         .then(data => {
           /*  console.log('Transcription result:', data)
           console.log('Transcription:', data.transcription.text) */
-          setInput(data.transcription.text)
+          setInput(input + ' ' + data.transcription.text)
         })
         .catch(error => {
           console.error('Error during transcription:', error)
         })
     }
   }, [audioBlob])
-  useEffect(() => {
-    console.log(audioStream)
-  }, [audioStream])
+
   useEffect(() => {
     if (session?.user) {
     }
@@ -94,11 +92,29 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   useEffect(() => {
     async function fetchData() {
-      if (messages[messages.length - 1]?.role === 'assistant') {
+      console.log('Messages:', messages[messages.length - 1]?.role)
+      console.log('Messages:', messages[messages.length - 1].content.length)
+      if (
+        messages[messages.length - 1]?.role === 'assistant' &&
+        (messages[messages.length - 1].content.length == 100 ||
+          messages[messages.length - 1].content.length == 101 ||
+          messages[messages.length - 1].content.length == 102 ||
+          messages[messages.length - 1].content.length == 103 ||
+          messages[messages.length - 1].content.length == 104 ||
+          messages[messages.length - 1].content.length == 105 ||
+          messages[messages.length - 1].content.length == 106 ||
+          messages[messages.length - 1].content.length == 107 ||
+          messages[messages.length - 1].content.length == 108 ||
+          messages[messages.length - 1].content.length == 109)
+      ) {
+        console.log(
+          'Fetching audio for:',
+          messages[messages.length - 1]?.content
+        )
         const audiB = await fetch_and_play_audio({
           text: messages[messages.length - 1]?.content
         })
-        setAudioBuffer(audiB)
+        console.log('Audio buffer:', audiB)
       }
     }
     fetchData()

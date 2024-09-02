@@ -43,7 +43,7 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
       source.buffer = decodedAudio
       source.connect(audioContext.destination)
       source.start(0) // Play the audio
-      return true
+      return audioBuffer
     } else {
       console.error(`Error: ${response.status} - ${response.statusText}`)
     }

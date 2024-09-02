@@ -24,7 +24,7 @@ import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
 
-const TalkingHeadComponent = () => {
+const TalkingHeadComponent = ({ toSay }) => {
   const interal = true
   const avatarRef = useRef(null)
   const [loadingMessage, setLoadingMessage] = useState('Loading...')
@@ -52,7 +52,37 @@ const TalkingHeadComponent = () => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
+  useEffect(() => {
+    console.log('TalkingHeadComponent mounted')
+    setTimeout(() => {
+      console.log('Sending message to speak')
+      /* head.current.speakText(
+        'hello, how are you today?',
+        null,
+        updateSubtitles,
+        undefined,
+        onComplete,
+        {
+          lang: 'en-US',
+          volume: 1.0,
+          rate: playSpeed.current,
+          voice: 'en-GB-Wavenet-F',
+          pitch: 0
+        }
+      ) */
+      head.current.speakAudio(
+        {
+          words: ['hi', 'there', 'there', 'there', 'there', 'there', 'there'],
+          wtimes: [0, 0.5, 0.15, 0.25, 0.35, 0.45, 0.55],
+          wdurations: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
+          audio: toSay
+        },
+        {}
+      )
 
+      console.log('SENT message ')
+    }, 4000)
+  }, [])
   useEffect(() => {
     const handleResize = () => {
       setFontSize(
