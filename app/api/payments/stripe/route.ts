@@ -2,9 +2,14 @@ import check_missing_fields from '@/lib/api/check_missing_fields';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET}`, {
+const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET_TEST}`, {
   apiVersion: '2024-06-20',
 });
+
+console.log("Stripe API Key in use:", process.env.NEXT_PUBLIC_STRIPE_SECRET_TEST);
+console.log("Stripe API Key in use:", process.env.NEXT_PUBLIC_STRIPE_KEY_TEST);
+
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
         JSON.stringify({
           setupIntentClientSecret: setupIntent.client_secret,
           customer: customer.id,
-          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY,
+          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY_TEST,
         }),
         {
           status: 200,
@@ -75,8 +80,10 @@ export async function POST(request: NextRequest) {
       // If free_trial is false, create a subscription and charge immediately
       const priceId =
         plan === 'yearly'
-          ? 'price_1PtvV6RsQmUQn4A3KjPNyi5D'
-          : 'price_1PtvV9RsQmUQn4A3WGqf3GFQ';
+        // ? 'price_1PtvV6RsQmUQn4A3KjPNyi5D'
+        ? 'price_1PsRQ0RsQmUQn4A3ZqBPIH2t'
+        // : 'price_1PtvV9RsQmUQn4A3WGqf3GFQ';
+        : 'price_1PsQnnRsQmUQn4A33OcScT4s';
       console.log('Price ID selected:', priceId);
 
       const subscription = await stripe.subscriptions.create({
@@ -104,7 +111,7 @@ export async function POST(request: NextRequest) {
           clientSecret: paymentIntent.client_secret,
           ephemeralKey: ephemeralKey.secret,
           customer: customer.id,
-          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY,
+          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY_TEST,
         }),
         {
           status: 200,
@@ -131,73 +138,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Second API endpoint to confirm subscription
-export async function confirmSubscription(request: NextRequest) {
-  try {
-    const res = await request.json();
-    const { customerId, paymentMethodId, plan, free_trial } = res;
-
-    // Determine the price ID based on the plan
-    const priceId =
-      plan === 'yearly'
-        ? 'price_1PtvV6RsQmUQn4A3KjPNyi5D'
-        : 'price_1PtvV9RsQmUQn4A3WGqf3GFQ';
-
-    // Calculate the trial end timestamp (e.g., 3 days from now)
-    const trialEndTimestamp = free_trial
-      ? Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60 // 3 days from now
-      : 'now';
-
-    // Set up subscription parameters
-    const subscriptionParams: Stripe.SubscriptionCreateParams = {
-      customer: customerId,
-      items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      expand: ['latest_invoice.payment_intent'],
-      ...(free_trial && { trial_end: trialEndTimestamp }),
-      default_payment_method: paymentMethodId, // Attach the valid payment method collected by SetupIntent
-    };
-
-    // Create the subscription
-    console.log('Creating subscription for customer:', customerId);
-    const subscription = await stripe.subscriptions.create(subscriptionParams);
-    console.log('Subscription created with ID:', subscription.id);
-
-    // Extract the payment intent from the latest invoice
-    const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
-    const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
-
-    if (!paymentIntent?.client_secret) {
-      throw new Error('Failed to retrieve payment intent client secret');
-    }
-
-    // Create an ephemeral key for client-side use
-    const ephemeralKey = await stripe.ephemeralKeys.create(
-      { customer: customerId },
-      { apiVersion: '2024-06-20' }
-    );
-
-    return new NextResponse(
-      JSON.stringify({
-        subscriptionId: subscription.id,
-        clientSecret: paymentIntent.client_secret,
-        ephemeralKey: ephemeralKey.secret,
-        customer: customerId,
-        publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  } catch (error) {
-    console.error('Error:', error);
-    return new NextResponse(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  }
-}
