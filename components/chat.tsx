@@ -33,7 +33,9 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const { messages, input, handleInputChange, handleSubmit } = useChat({})
+  let { messages, input, setInput, handleInputChange, handleSubmit } = useChat(
+    {}
+  )
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ audio: true })
@@ -73,7 +75,9 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       })
         .then(response => response.json())
         .then(data => {
-          console.log('Transcription result:', data)
+          /*  console.log('Transcription result:', data)
+          console.log('Transcription:', data.transcription.text) */
+          setInput(data.transcription.text)
         })
         .catch(error => {
           console.error('Error during transcription:', error)
@@ -110,7 +114,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     >
       <TalkingHeadComponent toSay={audioBuffer} />
 
-      <div>
+      <div style={{ width: '30%' }}>
         {messages.map(message => (
           <div key={message.id}>
             {message.role === 'user' ? 'User: ' : 'AI: '}
@@ -119,7 +123,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         ))}
 
         <form onSubmit={handleSubmit}>
-          <input name="prompt" value={input} onChange={handleInputChange} />
+          <textarea name="prompt" value={input} onChange={handleInputChange} />
           <button type="submit">Submit</button>
         </form>
       </div>
