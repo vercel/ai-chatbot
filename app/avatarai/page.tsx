@@ -143,7 +143,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       method: "POST",
       body: form,
       headers: {
-        "Authorization": "Bearer {API}" 
+        "Authorization": "Bearer {}" 
       }
     });
     
