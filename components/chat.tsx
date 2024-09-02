@@ -15,6 +15,8 @@ import { toast } from 'sonner'
 import TalkingHeadComponent from '../app/avatarai/page'
 import { useChat } from 'ai/react'
 import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio'
+
+
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
@@ -58,7 +60,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         recorder.start()
         setTimeout(() => {
           recorder.stop()
-        }, 2000) // Record for 2 seconds, send it to whisper
+        }, 10000)
       })
       .catch(err => {
         console.error('Error accessing microphone:', err)
@@ -76,8 +78,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       })
         .then(response => response.json())
         .then(data => {
-          /*  console.log('Transcription result:', data)
-          console.log('Transcription:', data.transcription.text) */
+          console.log('Transcription result:', data)
+          console.log('Transcription:', data.transcription.text) 
           setInput(input + ' ' + data.transcription.text)
         })
         .catch(error => {
@@ -119,8 +121,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         const audiB = await fetch_and_play_audio({
           text: messages[messages.length - 1]?.content
         })
-        setAudioBuffer(audiB)
-        console.log('Audio buffer:', audiB)
+        console.log('Audio ', audiB)
+        setAudioBuffer(audiB as any)
       }
     }
     getAudioAndPlay()

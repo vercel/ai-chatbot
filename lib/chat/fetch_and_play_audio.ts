@@ -4,6 +4,12 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
   try {
     const response = await fetch(
       `${SERVER_URL}?text=${encodeURIComponent(text)}`
+      , {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'audio/mpeg'
+        }
+      }
     )
     if (response.ok) {
       const audioContext = new window.AudioContext()
@@ -39,11 +45,11 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
         audioBuffer.buffer
       )
       // Create a buffer source
-      const source = audioContext.createBufferSource()
-      source.buffer = decodedAudio
-      source.connect(audioContext.destination)
-      source.start(0) // Play the audio
-      return audioBuffer
+      // const source = audioContext.createBufferSource()
+      // source.buffer = decodedAudio
+      // source.connect(audioContext.destination)
+      // source.start(0) // Play the audio
+      return decodedAudio
     } else {
       console.error(`Error: ${response.status} - ${response.statusText}`)
     }

@@ -55,39 +55,46 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
+  
   useEffect(() => {
     console.log('TalkingHeadComponent mounted')
+    if (toSay) {
     setTimeout(() => {
-      head?.current?.speakAudio(
+      console.log('Sending message to speak')
+      console.log("toSay",toSay)
+      /* head.current.speakText(
+        'hello, how are you today?',
+        null,
+        updateSubtitles,
+        undefined,
+        onComplete,
+        {
+          lang: 'en-US',
+          volume: 1.0,
+          rate: playSpeed.current,
+          voice: 'en-GB-Wavenet-F',
+          pitch: 0
+        }
+      ) */
+     calculateAudio(toSay).then( audio => {
+      head.current.speakAudio(
         {
           words: ['hi', 'there', 'there', 'there', 'there', 'there', 'there'],
           wtimes: [0, 0.5, 0.15, 0.25, 0.35, 0.45, 0.55],
           wdurations: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
-          audio: audioToSay
+          audio: toSay
         },
         {}
       )
 
       console.log('SENT message ')
+      })
+    
     }, 4000)
-  }, [])
-  useEffect(() => {
-    console.log('Sending message to speak')
-    head?.current?.speakText(
-      textToSay,
-      null,
-      updateSubtitles,
-      undefined,
-      onComplete,
-      {
-        lang: 'en-US',
-        volume: 1.0,
-        rate: playSpeed.current,
-        voice: 'en-GB-Wavenet-F',
-        pitch: 0
-      }
-    )
-  }, [textToSay])
+  }
+  }, [toSay])
+
+
   useEffect(() => {
     const handleResize = () => {
       setFontSize(
@@ -104,6 +111,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
     }
   }, [])
 
+  
   useEffect(() => {
     if (initializedRef.current) return // Prevents further execution if already initialized
     initializedRef.current = true
@@ -116,7 +124,48 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
 
   let subtitleBuffer = ''
   let timeoutHandle: string | number | NodeJS.Timeout | null | undefined = null
+  
+  const calculateAudio = async(audioBuffer) =>{
 
+    const file = new File([audioBuffer], "audio.wav");
+    console.log(file);
+    const form = new FormData();
+    form.append("file", file);
+    form.append("model", "whisper-1");
+    form.append("language", "en");
+    form.append("response_format", "verbose_json" );
+    form.append("timestamp_granularities[]", "word" );
+    form.append("timestamp_granularities[]", "segment" );
+
+    // NOTE: Never put your API key in a client-side code unless you know
+    //       that you are the only one to have access to that code!
+    const response = await fetch( "https://api.openai.com/v1/audio/transcriptions" , {
+      method: "POST",
+      body: form,
+      headers: {
+        "Authorization": "Bearer" // <- Change this
+      }
+    });
+    
+    let audio 
+    if ( response.ok ) {
+
+      const json = await response.json();
+      console.log("Whisper response",json);
+      nodeJSON.value = JSON.stringify(json, null, 4);
+      json.words.forEach( x => {
+        audio.words.push( x.word );
+        audio.wtimes.push( 1000 * x.start - 150 );
+        audio.wdurations.push( 1000 * (x.end - x.start) );
+      });
+
+
+    }
+    else {
+      nodeJSON.value = "Error: " + response.status;
+    }
+  }
+  
   const checkForExercises = async () => {
     try {
       if (currentUserId.current == '') {
