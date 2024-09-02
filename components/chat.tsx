@@ -6,14 +6,15 @@ import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
 import TalkingHeadComponent from '../app/avatarai/page'
-
+import { useChat } from 'ai/react'
+import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
@@ -24,14 +25,15 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const router = useRouter()
   const path = usePathname()
-  const [input, setInput] = useState('')
-  const [messages] = useUIState()
-  const [aiState] = useAIState()
 
+  const [aiState] = useAIState()
+  const [audioBuffer, setAudioBuffer] = useState<Uint8Array | undefined>(
+    undefined
+  )
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-
+  const { messages, input, handleInputChange, handleSubmit } = useChat({})
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ audio: true })
@@ -72,7 +74,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         .then(response => response.json())
         .then(data => {
           console.log('Transcription result:', data)
-          setInput(`${input} ${data.transcription.text}`)
         })
         .catch(error => {
           console.error('Error during transcription:', error)
@@ -88,24 +89,16 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [id, path, session?.user, messages])
 
   useEffect(() => {
-    const messagesLength = aiState.messages?.length
-    if (messagesLength === 2) {
-      router.refresh()
+    async function fetchData() {
+      if (messages[messages.length - 1]?.role === 'assistant') {
+        const audiB = await fetch_and_play_audio({
+          text: messages[messages.length - 1]?.content
+        })
+        setAudioBuffer(audiB)
+      }
     }
-  }, [aiState.messages, router])
-
-  useEffect(() => {
-    // setNewChatId(id)
-  })
-
-  useEffect(() => {
-    missingKeys.map(key => {
-      toast.error(`Missing ${key} environment variable!`)
-    })
-  }, [missingKeys])
-
-  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
-    useScrollAnchor()
+    fetchData()
+  }, [messages])
 
   return (
     <div
@@ -115,34 +108,20 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         alignItems: 'center'
       }}
     >
-      <TalkingHeadComponent />
-      <div
-        className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
-        ref={scrollRef}
-        style={{
-          maxHeight: 'calc(100vh - 4rem)',
-          height: 'calc(100vh - 4rem)'
-        }}
-      >
-        <div
-          className={cn('pb-[200px] pt-4 md:pt-10', className)}
-          ref={messagesRef}
-        >
-          {messages.length ? (
-            <ChatList messages={messages} isShared={false} session={session} />
-          ) : (
-            <EmptyScreen />
-          )}
-          <div className="w-full h-px" ref={visibilityRef} />
-        </div>
+      <TalkingHeadComponent toSay={audioBuffer} />
 
-        <ChatPanel
-          id={id}
-          input={input}
-          setInput={setInput}
-          isAtBottom={isAtBottom}
-          scrollToBottom={scrollToBottom}
-        />
+      <div>
+        {messages.map(message => (
+          <div key={message.id}>
+            {message.role === 'user' ? 'User: ' : 'AI: '}
+            {message.content}
+          </div>
+        ))}
+
+        <form onSubmit={handleSubmit}>
+          <input name="prompt" value={input} onChange={handleInputChange} />
+          <button type="submit">Submit</button>
+        </form>
       </div>
     </div>
   )
