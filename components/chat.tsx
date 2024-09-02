@@ -28,17 +28,45 @@ const AudioPlayer = () => {
       if (response.ok) {
         console.log('Response is OK')
         const audioContext = new window.AudioContext()
-        const arrayBuffer = await response.arrayBuffer()
-        console.log('Array buffer:', arrayBuffer)
-        const source = audioContext.createBufferSource()
-        try {
-          console.log('Decoding audio data...')
-          const testAudioBuffer =
-            await audioContext.decodeAudioData(arrayBuffer)
-          console.log('Test AudioBuffer:', testAudioBuffer)
-        } catch (error) {
-          console.error('Error decoding test audio data:', error)
+        if (!response.body) {
+          return
         }
+        const reader = response.body.getReader()
+        console.log('Reader:', reader)
+        // Create an empty buffer to store incoming audio chunks
+        let audioChunks = []
+
+        // Process the stream chunk by chunk
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) {
+            break
+          }
+          audioChunks.push(value)
+        }
+        console.log('Audio chunks:', audioChunks)
+        // Concatenate all chunks into a single array buffer
+        const audioBuffer = new Uint8Array(
+          audioChunks.reduce((acc, chunk) => acc + chunk.byteLength, 0)
+        )
+        let offset = 0
+        for (let chunk of audioChunks) {
+          audioBuffer.set(chunk, offset)
+          offset += chunk.byteLength
+        }
+        console.log('Audio buffer:', audioBuffer)
+
+        // Decode the audio data
+        const decodedAudio = await audioContext.decodeAudioData(
+          audioBuffer.buffer
+        )
+        console.log('Decoded audio:', decodedAudio)
+        // Create a buffer source
+        const source = audioContext.createBufferSource()
+        source.buffer = decodedAudio
+        source.connect(audioContext.destination)
+        console.log('Audio source:', source)
+        source.start(0) // Play the audio
         /*     console.log('Audio buffer:', audioBuffer)
         // Set the buffer to the audio source
         source.buffer = audioBuffer
