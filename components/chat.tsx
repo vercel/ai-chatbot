@@ -14,83 +14,6 @@ import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
 import TalkingHeadComponent from '../app/avatarai/page'
 
-const AudioPlayer = () => {
-  const fetchAndPlayAudio = async text => {
-    console.log('Fetching audio for:', text)
-    const SERVER_URL =
-      'https://hjngsvyig3.execute-api.us-west-1.amazonaws.com/testing/speak' // Use your server's IP address or domain
-    try {
-      console.log('Fetching:', `${SERVER_URL}?text=${encodeURIComponent(text)}`)
-      const response = await fetch(
-        `${SERVER_URL}?text=${encodeURIComponent(text)}`
-      )
-      console.log('Response:', response)
-      if (response.ok) {
-        console.log('Response is OK')
-        const audioContext = new window.AudioContext()
-        if (!response.body) {
-          return
-        }
-        const reader = response.body.getReader()
-        console.log('Reader:', reader)
-        // Create an empty buffer to store incoming audio chunks
-        let audioChunks = []
-
-        // Process the stream chunk by chunk
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) {
-            break
-          }
-          audioChunks.push(value)
-        }
-        console.log('Audio chunks:', audioChunks)
-        // Concatenate all chunks into a single array buffer
-        const audioBuffer = new Uint8Array(
-          audioChunks.reduce((acc, chunk) => acc + chunk.byteLength, 0)
-        )
-        let offset = 0
-        for (let chunk of audioChunks) {
-          audioBuffer.set(chunk, offset)
-          offset += chunk.byteLength
-        }
-        console.log('Audio buffer:', audioBuffer)
-
-        // Decode the audio data
-        const decodedAudio = await audioContext.decodeAudioData(
-          audioBuffer.buffer
-        )
-        console.log('Decoded audio:', decodedAudio)
-        // Create a buffer source
-        const source = audioContext.createBufferSource()
-        source.buffer = decodedAudio
-        source.connect(audioContext.destination)
-        console.log('Audio source:', source)
-        source.start(0) // Play the audio
-        /*     console.log('Audio buffer:', audioBuffer)
-        // Set the buffer to the audio source
-        source.buffer = audioBuffer
-        source.connect(audioContext.destination)
-        // Play the audio
-        source.start(0) */
-      } else {
-        console.error(`Error: ${response.status} - ${response.statusText}`)
-      }
-    } catch (error) {
-      console.error('Error fetching or playing audio:', error)
-    }
-  }
-  const handleClick = () => {
-    const textToTTS = 'Today we are going to learn about english verb tenses'
-    console.log('Text to TTS:', textToTTS)
-    fetchAndPlayAudio(textToTTS)
-  }
-  return (
-    <div>
-      <button onClick={handleClick}>Play TTS</button>
-    </div>
-  )
-}
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
@@ -217,7 +140,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           scrollToBottom={scrollToBottom}
         />
       </div>
-      <AudioPlayer />
     </div>
   )
 }
