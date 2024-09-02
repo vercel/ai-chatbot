@@ -24,7 +24,10 @@ import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
 
-const TalkingHeadComponent = ({ toSay }) => {
+const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
+  // the audioToSay is an audio Buffer, like what we get from the server
+  // the textToSay is the text that matches the audioToSay
+  // the hack consists on saying the textToSay
   const interal = true
   const avatarRef = useRef(null)
   const [loadingMessage, setLoadingMessage] = useState('Loading...')
@@ -55,27 +58,12 @@ const TalkingHeadComponent = ({ toSay }) => {
   useEffect(() => {
     console.log('TalkingHeadComponent mounted')
     setTimeout(() => {
-      console.log('Sending message to speak')
-      /* head.current.speakText(
-        'hello, how are you today?',
-        null,
-        updateSubtitles,
-        undefined,
-        onComplete,
-        {
-          lang: 'en-US',
-          volume: 1.0,
-          rate: playSpeed.current,
-          voice: 'en-GB-Wavenet-F',
-          pitch: 0
-        }
-      ) */
-      head.current.speakAudio(
+      head?.current?.speakAudio(
         {
           words: ['hi', 'there', 'there', 'there', 'there', 'there', 'there'],
           wtimes: [0, 0.5, 0.15, 0.25, 0.35, 0.45, 0.55],
           wdurations: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
-          audio: toSay
+          audio: audioToSay
         },
         {}
       )
@@ -83,6 +71,23 @@ const TalkingHeadComponent = ({ toSay }) => {
       console.log('SENT message ')
     }, 4000)
   }, [])
+  useEffect(() => {
+    console.log('Sending message to speak')
+    head?.current?.speakText(
+      textToSay,
+      null,
+      updateSubtitles,
+      undefined,
+      onComplete,
+      {
+        lang: 'en-US',
+        volume: 1.0,
+        rate: playSpeed.current,
+        voice: 'en-GB-Wavenet-F',
+        pitch: 0
+      }
+    )
+  }, [textToSay])
   useEffect(() => {
     const handleResize = () => {
       setFontSize(
@@ -301,7 +306,7 @@ const TalkingHeadComponent = ({ toSay }) => {
               'Trimmed content:',
               modifiedContent.replace(/undefiened/g, "'")
             )
-            head.current.speakText(
+            head?.current?.speakText(
               modifiedContent.replace(/undefiened/g, "'"),
               null,
               updateSubtitles,
@@ -327,7 +332,7 @@ const TalkingHeadComponent = ({ toSay }) => {
             }
             const trimmedContent = content.replace(/^[^a-zA-Z]+/, '')
             // window.ReactNativeWebView.postMessage(JSON.stringify({ "concept": "speak", "message": trimmedContent.replace(/undefiened/g, "'") }));
-            head.current.speakText(
+            head?.current?.speakText(
               trimmedContent.replace(/undefiened/g, "'").trim(),
               null,
               updateSubtitles,

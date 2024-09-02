@@ -33,6 +33,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [textResponse, setTextResponse] = useState('')
   let { messages, input, setInput, handleInputChange, handleSubmit } = useChat(
     {}
   )
@@ -57,7 +58,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         recorder.start()
         setTimeout(() => {
           recorder.stop()
-        }, 2000)
+        }, 2000) // Record for 2 seconds, send it to whisper
       })
       .catch(err => {
         console.error('Error accessing microphone:', err)
@@ -91,7 +92,10 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [id, path, session?.user, messages])
 
   useEffect(() => {
-    async function fetchData() {
+    async function getAudioAndPlay() {
+      if (messages.length === 0) {
+        return
+      }
       console.log('Messages:', messages[messages.length - 1]?.role)
       console.log('Messages:', messages[messages.length - 1].content.length)
       if (
@@ -111,13 +115,15 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           'Fetching audio for:',
           messages[messages.length - 1]?.content
         )
+        setTextResponse(messages[messages.length - 1]?.content)
         const audiB = await fetch_and_play_audio({
           text: messages[messages.length - 1]?.content
         })
+        setAudioBuffer(audiB)
         console.log('Audio buffer:', audiB)
       }
     }
-    fetchData()
+    getAudioAndPlay()
   }, [messages])
 
   return (
@@ -128,9 +134,9 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         alignItems: 'center'
       }}
     >
-      <TalkingHeadComponent toSay={audioBuffer} />
+      <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} />
 
-      <div style={{ width: '30%' }}>
+      <div style={{ width: '30%', height: '100vh', overflowY: 'scroll' }}>
         {messages.map(message => (
           <div key={message.id}>
             {message.role === 'user' ? 'User: ' : 'AI: '}
