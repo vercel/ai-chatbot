@@ -179,66 +179,75 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
     return buffer;
 };
 const startSegment = async () => {
-  head.lookAtCamera(500);
-  head.speakWithHands();
+  head.current.lookAtCamera(500);
+  head.current.speakWithHands();
 };
-
 const calculateAudio = async (audioBuffer) => {
   try {
-    console.log("Calculating audio")
-      // Save the audioBuffer to a temporary file
-      const wavBuffer = audioBufferToWav(audioBuffer);
-      const file = new File([wavBuffer], "audio.wav", { type: "audio/wav" });
-      console.log("File created:", file);
-      const form = new FormData();
-        form.append("file", file);
-        form.append("model", "whisper-1");
-        form.append("language", "en");
-        form.append("response_format", "verbose_json" );
-        form.append("timestamp_granularities[]", "word" );
-        form.append("timestamp_granularities[]", "segment" );
+    console.log("Calculating audio");
+    
+    // Save the audioBuffer to a temporary file
+    const wavBuffer = audioBufferToWav(audioBuffer);
+    const file = new File([wavBuffer], "audio.wav", { type: "audio/wav" });
+    console.log("File created:", file);
+    
+    const form = new FormData();
+    form.append("file", file);
+    form.append("model", "whisper-1");
+    form.append("language", "en");
+    form.append("response_format", "verbose_json");
+    form.append("timestamp_granularities[]", "word");
+    form.append("timestamp_granularities[]", "segment");
+    
+    console.log("API Key:", process.env.OPEN_AI_KEY);
+    
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      body: form,
+      headers: {
+        "Authorization": `Bearer ${process.env.OPEN_AI_KEY}`,
+      }
+    });
 
-        // NOTE: Never put your API key in a client-side code unless you know
-        //       that you are the only one to have access to that code!
-        console.log(process.env.OPEN_AI_KEY)
-        const response = await fetch( "https://api.openai.com/v1/audio/transcriptions" , {
-          method: "POST",
-          body: form,
-          headers: {
-            "Authorization": `Bearer ${process.env.OPEN_AI_KEY}` // <- Change this
-          }
-        });
-      let audio = {
-          words: [],
-          wtimes: [],
-          wdurations: [],
-          markers: [],
-          mtimes: []
-      };
+    // Check if the response is not OK and throw an error to catch it
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      console.error('API Error:', errorDetails);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
 
-      // Parse the translation result to extract words and timings
-      const result = await response.json();
-      console.log("Groq Whisper result:", result);
-      result.words.forEach( x => {
-        audio.words.push( x.word );
-        audio.wtimes.push( 1000 * x.start - 150 );
-        audio.wdurations.push( 1000 * (x.end - x.start) );
-      });
-      // Clean up temporary file
-      result.segments.forEach( x => {
-        if ( x.start > 2 && x.text.length > 10 ) {
-          audio.markers.push( startSegment );
-          audio.mtimes.push( 1000 * x.start - 1000 );
-        }
-      });
-      // Clean up temporary file
-      return audio;
+    const result = await response.json();
+    console.log("Groq Whisper result:", result);
+
+    let audio = {
+      words: [],
+      wtimes: [],
+      wdurations: [],
+      markers: [],
+      mtimes: []
+    };
+
+    // Parse the translation result to extract words and timings
+    result.words.forEach(x => {
+      audio.words.push(x.word);
+      audio.wtimes.push(1000 * x.start - 150);
+      audio.wdurations.push(1000 * (x.end - x.start));
+    });
+
+    result.segments.forEach(x => {
+      if (x.start > 2 && x.text.length > 10) {
+        audio.markers.push(startSegment);
+        audio.mtimes.push(1000 * x.start - 1000);
+      }
+    });
+
+    return audio;
   } catch (error) {
-      console.error("Error in calculateAudio:", error);
-      return null;
+    console.error("Error in calculateAudio:", error);
+    return null;
   }
-}
-  
+};
+
   const checkForExercises = async () => {
     try {
       if (currentUserId.current == '') {

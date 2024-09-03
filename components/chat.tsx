@@ -1,103 +1,74 @@
-'use client'
-import 'regenerator-runtime/runtime'
-
-import { cn } from '@/lib/utils'
-import { ChatList } from '@/components/chat-list'
-import { ChatPanel } from '@/components/chat-panel'
-import { EmptyScreen } from '@/components/empty-screen'
-import { useLocalStorage } from '@/lib/hooks/use-local-storage'
-import { use, useEffect, useState, useRef } from 'react'
-import { useUIState, useAIState } from 'ai/rsc'
-import { Message, Session } from '@/lib/types'
-import { usePathname, useRouter } from 'next/navigation'
-import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
-import { toast } from 'sonner'
-import TalkingHeadComponent from '../app/avatarai/page'
-import { useChat } from 'ai/react'
-import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio'
-
+'use client';
+import 'regenerator-runtime/runtime';
+import { cn } from '@/lib/utils';
+import { ChatList } from '@/components/chat-list';
+import { ChatPanel } from '@/components/chat-panel';
+import { EmptyScreen } from '@/components/empty-screen';
+import { useLocalStorage } from '@/lib/hooks/use-local-storage';
+import { useEffect, useState, useRef } from 'react';
+import { useUIState, useAIState } from 'ai/rsc';
+import { Message, Session } from '@/lib/types';
+import { usePathname, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import TalkingHeadComponent from '../app/avatarai/page';
+import { useChat } from 'ai/react';
+import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 export interface ChatProps extends React.ComponentProps<'div'> {
-  initialMessages?: Message[]
-  id?: string
-  session?: Session
-  missingKeys: string[]
+  initialMessages?: Message[];
+  id?: string;
+  session?: Session;
+  missingKeys: string[];
 }
 
 export function Chat({ id, className, session, missingKeys }: ChatProps) {
-  const router = useRouter()
-  const path = usePathname()
+  const router = useRouter();
+  const path = usePathname();
 
-  const [aiState] = useAIState()
-  const [audioBuffer, setAudioBuffer] = useState<Uint8Array | undefined>(undefined)
-  const [_, setNewChatId] = useLocalStorage('newChatId', id)
-  const [audioStream, setAudioStream] = useState<MediaStream | null>(null)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const [textResponse, setTextResponse] = useState('')
+  const [aiState] = useAIState();
+  const [audioBuffer, setAudioBuffer] = useState<Uint8Array | undefined>(undefined);
+  const [_, setNewChatId] = useLocalStorage('newChatId', id);
+  const [textResponse, setTextResponse] = useState('');
+  const [isEditing, setIsEditing] = useState(false); // Track whether the user is editing
 
-  const [isChatOpen, setIsChatOpen] = useState(false) // State to manage chat visibility
-  const [allMessages, setAllMessages] = useState<Message[]>([])
-  let { messages, input, setInput, handleInputChange, handleSubmit } = useChat(
-    {}
-  )
-  const lastAiMessageRef = useRef<Message | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
+  const [isChatOpen, setIsChatOpen] = useState(false); // State to manage chat visibility
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  let { messages, input, setInput, handleInputChange, handleSubmit } = useChat({});
+  const lastAiMessageRef = useRef<Message | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null); // Ref for the textarea
+  const [isResponding, setIsResponding] = useState(false); // Track if we are waiting for a response
 
-
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then(stream => {
-        setAudioStream(stream)
-        // Set MIME type to 'audio/mpeg' or 'audio/webm' depending on what's supported
-        const mimeType = 'audio/webm;codecs=opus' // 'audio/mpeg' or 'audio/mp4' can also be tried if supported by the browser
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          console.error(`${mimeType} is not supported in your browser.`)
-          return
-        }
-
-        const recorder = new MediaRecorder(stream, { mimeType })
-        recorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            setAudioBlob(event.data)
-          }
-        }
-        recorder.start()
-        setTimeout(() => {
-          recorder.stop()
-        }, 10000)
-      })
-      .catch(err => {
-        console.error('Error accessing microphone:', err)
-      })
-  }, [audioBlob])
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition, listening } = useSpeechRecognition();
 
   useEffect(() => {
-    if (audioBlob) {
-      const formData = new FormData()
-      formData.append('audio', audioBlob, `${Date.now().toString()}.webm`) // Append the Blob as a file
-      setAudioStream(null)
-      fetch('/api/groq', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Transcription result:', data)
-          console.log('Transcription:', data.transcription.text) 
-          setInput(input + ' ' + data.transcription.text)
-        })
-        .catch(error => {
-          console.error('Error during transcription:', error)
-        })
+    setInput(transcript);
+  }, [transcript]);
+
+  useEffect(() => {
+    if (!browserSupportsSpeechRecognition) {
+      console.error('Browser does not support speech recognition.');
+      return;
     }
-  }, [audioBlob, input, setInput])
+
+    if (!isEditing && !isResponding) {
+      // Start listening for speech immediately when the component mounts
+      SpeechRecognition.startListening({ continuous: true });
+      console.log("Listening for speech...");
+    }
+
+    return () => {
+      SpeechRecognition.stopListening(); // Clean up on unmount or when editing starts
+    };
+  }, [isEditing, isResponding]);  
+
 
   useEffect(() => {
     if (session?.user) {
+      // Add any session-based logic here
     }
-  }, [id, path, session?.user, messages])
-  
+  }, [id, path, session?.user, messages]);
+
   useEffect(() => {
     async function getAudioAndPlay() {
       if (messages.length === 0) {
@@ -118,6 +89,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           messages[messages.length - 1].content.length == 108 ||
           messages[messages.length - 1].content.length == 109)
       ) {
+        setIsResponding(true)
         console.log(
           'Fetching audio for:',
           messages[messages.length - 1]?.content
@@ -128,75 +100,95 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         })
         console.log('Audio ', audiB)
         setAudioBuffer(audiB as any)
+        setIsResponding(false)
       }
     }
     getAudioAndPlay()
   }, [messages])
-
   useEffect(() => {
     if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1]
+      const lastMessage = messages[messages.length - 1];
 
       if (lastMessage.role === 'assistant') {
-        const contentAsString = transformContentToString(lastMessage.content)
+        const contentAsString = transformContentToString(lastMessage.content);
 
         if (lastAiMessageRef.current) {
-          // If an AI message is already being displayed, update it
           setAllMessages(prevMessages =>
             prevMessages.map(msg =>
               msg.id === lastAiMessageRef.current?.id
                 ? { ...msg, content: contentAsString }
                 : msg
-            )
-          )
-          lastAiMessageRef.current.content = contentAsString
+            ) as any
+          );
+          lastAiMessageRef.current.content = contentAsString;
         } else {
-          // If it's a new AI message, add it to the chat
-          lastAiMessageRef.current = { ...lastMessage, content: contentAsString } as Message
-          setAllMessages(prevMessages => [...prevMessages, lastAiMessageRef.current])
+          lastAiMessageRef.current = { ...lastMessage, content: contentAsString } as Message;
+          setAllMessages(prevMessages => [...prevMessages, lastAiMessageRef.current] as any);
         }
       } else {
-        // If the message is from the user or other, add it to the chat
-        setAllMessages(prevMessages => [...prevMessages, lastMessage])
+        setAllMessages(prevMessages => [...prevMessages, lastMessage] as any);
       }
     }
-  }, [messages])
+  }, [messages]);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    handleSubmit()
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Prevent sending another message while waiting for a response
+    if (isResponding) return;
+
+    setIsResponding(true); // Block further submissions
+
+
+    // Call handleSubmit with the updated input state
+    handleSubmit();
+
+
+    // Reset the transcript after submission
+    resetTranscript();
+
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"
-    }    
-    lastAiMessageRef.current = null // Reset for the next AI message
+      textareaRef.current.style.height = 'auto';
+    }
+    
+    lastAiMessageRef.current = null; // Reset for the next AI message
+    setIsResponding(false); // Allow new submissions after response
+};
+function transformContentToString(content: any): string {
+  if (typeof content === 'string') {
+    return content;
   }
 
-  // Transform content to a renderable string
-  function transformContentToString(content: any): string {
-    if (typeof content === 'string') {
-      return content
-    }
-
-    if (Array.isArray(content)) {
-      return content.map(part => {
-        if (typeof part === 'string') return part
-        if (part.text) return part.text // Assuming parts have a text property
-        return '' // Fallback in case of an unknown structure
-      }).join('')
-    }
-
-    // Add more transformations as necessary based on content structure
-    return ''
+  if (Array.isArray(content)) {
+    return content
+      .map(part => {
+        if (typeof part === 'string') return part;
+        if (part.text) return part.text;
+        return ''; // Fallback in case of an unknown structure
+      })
+      .join('');
   }
 
-  const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value)
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
-    }
-  }
+  return '';
+};
 
+useEffect(() => {
+if (textareaRef.current) {
+  adjustTextareaHeight(); // Adjust height whenever transcript is updated
+}
+}, [transcript]);
+
+const adjustTextareaHeight = () => {
+if (textareaRef.current) {
+  textareaRef.current.style.height = 'auto'; // Reset the height
+  textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Adjust based on scroll height
+}
+};
+
+const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+setIsEditing(true); // Stop transcription when the user starts typing
+setInput(event.target.value); // Allow manual editing of the input
+};
 
   return (
     <div style={{ display: 'flex', position: 'relative', height: '100vh', flexDirection: 'column' }}>
@@ -224,7 +216,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} />
         </div>
       </div>
-  
+
       {!isChatOpen ? (
         <div
           style={{
@@ -247,7 +239,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           💬
         </div>
       ) : null}
-  
+
       {isChatOpen ? (
         <div
           style={{
@@ -302,7 +294,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
               </div>
             ))}
           </div>
-  
+
           <form
             onSubmit={onSubmit}
             style={{
@@ -313,7 +305,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
           >
             <textarea
               name="prompt"
-              value={input}
+              value={transcript}
               onChange={handleTextareaChange}
               ref={textareaRef} // Attach ref to the textarea
               rows={1}
@@ -342,7 +334,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
               Send
             </button>
           </form>
-  
+
           {/* Close Button */}
           <button
             onClick={() => setIsChatOpen(false)}
@@ -364,5 +356,5 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         </div>
       ) : null}
     </div>
-  )
-}  
+  );
+}
