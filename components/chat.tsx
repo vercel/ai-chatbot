@@ -49,7 +49,7 @@ export function Chat({ id }: ChatProps) {
   }, [transcript])
 
   useEffect(() => {
-    console.log("running lsistener")
+    console.log('running lsistener')
     if (!browserSupportsSpeechRecognition) {
       console.error('Browser does not support speech recognition.')
       return
@@ -61,7 +61,7 @@ export function Chat({ id }: ChatProps) {
       console.log('Listening for speech...')
     }
 
-    if (isResponding){
+    if (isResponding) {
       SpeechRecognition.stopListening() // Clean up on unmount or when editing starts
       console.log('Stopped listening for speech.')
     }
@@ -70,30 +70,8 @@ export function Chat({ id }: ChatProps) {
       SpeechRecognition.stopListening() // Clean up on unmount or when editing starts
       console.log('Stopped listening for speech.')
     }
-  }, [isResponding])
+  }, [isResponding, isEditing, browserSupportsSpeechRecognition])
 
-  const separateIntoSentences = (text: string) => {
-    // Regular expression to identify sentence-ending punctuation
-    const sentenceEndings = /(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!|\n)\s/
-
-    // Split the text based on the identified sentence endings
-    let sentences = text.trim().split(sentenceEndings)
-
-    // Filter out any empty strings from the array
-    sentences = sentences.filter(
-      (sentence: string) => sentence.trim().length > 0
-    )
-
-    // If no sentences are detected, return the original string as one sentence
-    if (sentences.length === 0) {
-      return [text.trim()]
-    }
-
-    return sentences
-  }
-
-  let textBuffer = ''
-  let lastProcessedSentence = ''
   useEffect(() => {
     async function getAudioAndPlay() {
       if (messages.length === 0) {
@@ -106,70 +84,17 @@ export function Chat({ id }: ChatProps) {
         const lastMessage = messages[messages.length - 1]
         console.log('Last message:', lastMessage.content)
 
-        // Append the new content to the buffer
-        textBuffer += lastMessage.content
+        setTextResponse(lastMessage.content)
 
-        // Check if the textBuffer ends with a sentence-ending punctuation mark
-        const sentenceEndRegex = /[^.!?]+[.!?](?:\s|$)/g
-        const sentences =
-          textBuffer
-            .match(sentenceEndRegex)
-            ?.map(sentence => `"${sentence.trim()}"`) || []
-        console.log('Sentences:', sentences)
-        if (sentences.length > 0) {
-          console.log(
-            'Fetching audio for complete sentence:',
-            sentences[sentences.length - 1]
-          )
-          lastProcessedSentence = sentences[sentences.length - 1]
-          setTextResponse(sentences[sentences.length - 1])
-          console.log('Is Responding true')
-
-          const audiB = await fetch_and_play_audio({
-            text: sentences[sentences.length - 1]
-          })
-          console.log('Audio ', audiB)
-          setAudioBuffer(audiB as any)
-          console.log('Is Responding false')
-
-
-          textBuffer = '' // Clear the buffer after processing
-        }
+        const audiB = await fetch_and_play_audio({
+          text: lastMessage.content
+        })
+        console.log('Audio ', audiB)
+        setAudioBuffer(audiB as any)
       }
     }
     getAudioAndPlay()
   }, [isLoading])
-  useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1]
-
-      if (lastMessage.role === 'assistant') {
-        const contentAsString = transformContentToString(lastMessage.content)
-
-        if (lastAiMessageRef.current) {
-          setAllMessages(
-            prevMessages =>
-              prevMessages.map(msg =>
-                msg.id === lastAiMessageRef.current?.id
-                  ? { ...msg, content: contentAsString }
-                  : msg
-              ) as any
-          )
-          lastAiMessageRef.current.content = contentAsString
-        } else {
-          lastAiMessageRef.current = {
-            ...lastMessage,
-            content: contentAsString
-          } as Message
-          setAllMessages(
-            prevMessages => [...prevMessages, lastAiMessageRef.current] as any
-          )
-        }
-      } else {
-        setAllMessages(prevMessages => [...prevMessages, lastMessage] as any)
-      }
-    }
-  }, [messages])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -235,7 +160,11 @@ export function Chat({ id }: ChatProps) {
         width: '100%'
       }}
     >
-      <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} setIsResponding={setIsResponding} />
+      <TalkingHeadComponent
+        textToSay={textResponse}
+        audioToSay={audioBuffer}
+        setIsResponding={setIsResponding}
+      />
       <div
         style={{
           width: '100%',
@@ -287,12 +216,13 @@ export function Chat({ id }: ChatProps) {
                 overflowY: 'auto' // Scrollable
               }}
             >
-              {allMessages.map((message, index) => (
+              {messages.map((message, index) => (
                 <div
                   key={index}
                   style={{
                     textAlign: message.role === 'user' ? 'right' : 'left',
-                    marginBottom: '8px'
+                    marginBottom: '8px',
+                    padding: '2px'
                   }}
                 >
                   <div
@@ -307,9 +237,7 @@ export function Chat({ id }: ChatProps) {
                       wordWrap: 'break-word'
                     }}
                   >
-                    {typeof message.content === 'string'
-                      ? message.content
-                      : transformContentToString(message.content)}
+                    {message.content}
                   </div>
                 </div>
               ))}
