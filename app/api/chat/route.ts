@@ -13,7 +13,8 @@ export async function POST(req: Request) {
 
   const result = await streamText({
     model: groq('llama3-8b-8192'),
-    system: 'You are a helpful assistant.',
+    system:
+      'You are Clara, an AI assistant to learn English. Use your name when asked. The student is the user and will communicate in spanish or a combination with english. Be patient and correct them nicely. You will try to respond in English and then spanish so the user can learn.',
     messages: convertToCoreMessages(messages)
   })
 
