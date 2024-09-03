@@ -207,7 +207,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       form.append('timestamp_granularities[]', 'word')
       form.append('timestamp_granularities[]', 'segment')
 
-      console.log('API Key:', process.env.OPEN_AI_KEY)
+      console.log('API Key:', process.env.OPENAI_API_KEY)
 
       const response = await fetch(
         'https://api.openai.com/v1/audio/transcriptions',
@@ -215,7 +215,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
           method: 'POST',
           body: form,
           headers: {
-            Authorization: `Bearer ${process.env.OPEN_AI_KEY}`
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
           }
         }
       )
