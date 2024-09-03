@@ -58,10 +58,10 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
   
   useEffect(() => {
     console.log('TalkingHeadComponent mounted')
-    if (toSay) {
+    if (audioToSay) {
     setTimeout(() => {
       console.log('Sending message to speak')
-      console.log("toSay",toSay)
+      console.log("audioToSay",audioToSay)
       /* head.current.speakText(
         'hello, how are you today?',
         null,
@@ -76,13 +76,13 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
           pitch: 0
         }
       ) */
-     calculateAudio(toSay).then( audio => {
+     calculateAudio(audioToSay).then( audio => {
       head.current.speakAudio(
         {
           words: ['hi', 'there', 'there', 'there', 'there', 'there', 'there'],
           wtimes: [0, 0.5, 0.15, 0.25, 0.35, 0.45, 0.55],
           wdurations: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
-          audio: toSay
+          audio: audioToSay
         },
         {}
       )
@@ -92,7 +92,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
     
     }, 4000)
   }
-  }, [toSay])
+  }, [audioToSay])
 
 
   useEffect(() => {
@@ -143,7 +143,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       method: "POST",
       body: form,
       headers: {
-        "Authorization": "Bearer" 
+        "Authorization":  `Bearer ${process.env.OPENAI_API_KEY}`
       }
     });
     
@@ -1432,13 +1432,13 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       style={{
         position: 'relative',
         maxWidth: '100%',
-        width: '100%',
-        height: 'calc(100vh - 64px)', // Changed to viewport height to ensure it covers the whole screen
-        margin: '0 auto', // Updated for consistency, though 'auto' was fine for horizontal centering
+        width: '100%', // Set width to 100% to make it responsive
+        height: 'calc(100vh - 64px)', // Adjust height for viewport
+        margin: '0 auto', // Center horizontally
         backgroundPosition: 'center', // Center the background image
-        backgroundSize: 'cover', // Ensure the image covers the whole area
-        backgroundImage: `url(${localImage})`, // Use backticks here
-        backgroundRepeat: 'no-repeat'
+        backgroundSize: 'contain', // Ensure the entire image is visible
+        backgroundImage: `url(${localImage})`, // Dynamic background image
+        backgroundRepeat: 'no-repeat',
       }}
     >
       <div
@@ -1463,6 +1463,5 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       ) : null}
     </div>
   )
-}
-
+}  
 export default TalkingHeadComponent
