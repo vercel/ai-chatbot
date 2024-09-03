@@ -23,7 +23,7 @@ import { setupWebSocket } from '@/components/avatarai/websocket'
 import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
-const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
+const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
   // the audioToSay is an audio Buffer, like what we get from the server
   // the textToSay is the text that matches the audioToSay
   // the hack consists on saying the textToSay
@@ -62,6 +62,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
     if (audioToSay) {
       setTimeout(() => {
         console.log('Sending message to speak')
+        // setIsResponding(true)
         console.log('toSay', audioToSay)
         /* head.current.speakText(
         'hello, how are you today?',
@@ -207,7 +208,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       form.append('timestamp_granularities[]', 'word')
       form.append('timestamp_granularities[]', 'segment')
 
-      console.log('API Key:', process.env.OPENAI_API_KEY)
+      console.log('API Key:', process.env.OPEN_AI_KEY)
 
       const response = await fetch(
         'https://api.openai.com/v1/audio/transcriptions',
@@ -215,7 +216,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
           method: 'POST',
           body: form,
           headers: {
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+            Authorization: `Bearer ${process.env.OPEN_AI_KEY}`
           }
         }
       )
@@ -325,75 +326,8 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
     }
   }
   const onComplete = () => {
-    if (interal) {
-      return
-    }
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({
-        concept: 'BOUNCETIME ',
-        message: bounceRef.current,
-        time: Math.floor(Date.now() / 1000)
-      })
-    )
-    if (bounceRef.current + 7 >= Math.floor(Date.now() / 1000)) {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ concept: 'bounce' })
-      )
-      return
-    }
-
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({
-        concept: 'lesson started',
-        message: lessonStarted.current
-      })
-    )
-    if (isEndQueued.current) {
-      isEndQueued.current = false
-      updateDoc(doc(firestore, 'lessons', lessonStarted.current), {
-        lessonTime: 0
-      })
-      updateDoc(doc(firestore, 'users', currentUserId.current), {
-        userPlaySpeed: playSpeed.current
-      })
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ concept: 'videoEnd', message: '' })
-      )
-      updateUserTime(currentUserId.current, lessonStarted.current)
-      lessonStarted.current = null
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({
-          concept: 'VIDEO HAS ENDED',
-          message: 'Practice ended'
-        })
-      )
-      isPaused.current = false
-      return
-    }
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ concept: isInExercise.current })
-    )
-    if (isInExercise.current != null) {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ concept: 'INSIDE', exercise: isInExercise.current })
-      )
-      handleExercise(isInExercise.current)
-      return
-    }
-    const exercise = checkForExercises()
-    if (!exercise || exercise == null || exercise == {}) {
-      updateDoc(doc(firestore, 'lessons', lessonStarted.current), {
-        lessonTime: 0
-      })
-      lessonStarted.current = null
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ concept: 'videoEnd' })
-      )
-    }
-    window.ReactNativeWebView.postMessage(JSON.stringify({ concept: exercise }))
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ concept: 'awaitingResponse' })
-    )
+    // setIsResponding(false)
+      console.log("running 'onComplete'")
   }
   function extractAndSeparate(text) {
     // Regular expression to match the <esp>...</esp> and <esp>...//esp> patterns
@@ -459,7 +393,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
                 rate: playSpeed.current,
                 voice: 'es-US-Standard-A',
                 pitch: 0
-              }
+              },
             )
           } else {
             if (!/[a-zA-Z]/.test(content)) {
@@ -473,6 +407,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
             }
             const trimmedContent = content.replace(/^[^a-zA-Z]+/, '')
             // window.ReactNativeWebView.postMessage(JSON.stringify({ "concept": "speak", "message": trimmedContent.replace(/undefiened/g, "'") }));
+            console.log("head.current", head.current.isAudioPlaying)
             head?.current?.speakText(
               trimmedContent.replace(/undefiened/g, "'").trim(),
               null,
@@ -485,7 +420,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
                 rate: playSpeed.current,
                 voice: 'en-GB-Wavenet-F',
                 pitch: 0
-              }
+              }, 
             )
           }
         }
