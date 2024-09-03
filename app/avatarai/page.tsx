@@ -232,7 +232,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
       }
 
       const result = await response.json()
-
+      console.log('API Result:', result)
       let audio = {
         words: [],
         wtimes: [],
@@ -242,16 +242,29 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
       }
 
       // Parse the translation result to extract words and timings
-      result.words.forEach(x => {
-        audio.words.push(x.word)
-        audio.wtimes.push(1000 * x.start - 150)
-        audio.wdurations.push(1000 * (x.end - x.start))
-      })
+      // Assuming result is the object structure you provided
+      result.segments.forEach(segment => {
+        // Split the segment text into words
+        const words = segment.text.trim().split(/\s+/)
+        console.log('Words:', words)
 
-      result.segments.forEach(x => {
-        if (x.start > 2 && x.text.length > 10) {
-          audio.markers.push(startSegment)
-          audio.mtimes.push(1000 * x.start - 1000)
+        // Iterate through each word and process its timing and duration
+        words.forEach((word, index) => {
+          const wordStart =
+            segment.start +
+            index * ((segment.end - segment.start) / words.length)
+          const wordEnd =
+            wordStart + (segment.end - segment.start) / words.length
+
+          audio.words.push(word)
+          audio.wtimes.push(1000 * wordStart - 150)
+          audio.wdurations.push(1000 * (wordEnd - wordStart))
+        })
+
+        // Add markers and mtimes only if start time is greater than 2 and text length is greater than 10
+        if (segment.start > 2 && segment.text.length > 10) {
+          audio.markers.push(segment.start)
+          audio.mtimes.push(1000 * segment.start - 1000)
         }
       })
 
