@@ -14,6 +14,7 @@ import TalkingHeadComponent from '../app/avatarai/page';
 import { useChat } from 'ai/react';
 import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import { text } from 'stream/consumers'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[];
@@ -67,40 +68,63 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     if (session?.user) {
       // Add any session-based logic here
     }
-  }, [id, path, session?.user, messages]);
+  }, [id, path, session?.user, messages])
 
+  const separateIntoSentences = (text: string) => {
+    // Regular expression to identify sentence-ending punctuation
+    const sentenceEndings = /(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!|\n)\s/
+
+    // Split the text based on the identified sentence endings
+    let sentences = text.trim().split(sentenceEndings)
+
+    // Filter out any empty strings from the array
+    sentences = sentences.filter(
+      (sentence: string) => sentence.trim().length > 0
+    )
+
+    // If no sentences are detected, return the original string as one sentence
+    if (sentences.length === 0) {
+      return [text.trim()]
+    }
+
+    return sentences
+  }
+
+  let textBuffer = ''
+  let lastProcessedSentence = ''
   useEffect(() => {
     async function getAudioAndPlay() {
       if (messages.length === 0) {
         return
       }
+      console.log('Last message', messages[messages.length - 1])
       console.log('Messages:', messages[messages.length - 1]?.role)
       console.log('Messages:', messages[messages.length - 1].content.length)
-      if (
-        messages[messages.length - 1]?.role === 'assistant' &&
-        (messages[messages.length - 1].content.length == 100 ||
-          messages[messages.length - 1].content.length == 101 ||
-          messages[messages.length - 1].content.length == 102 ||
-          messages[messages.length - 1].content.length == 103 ||
-          messages[messages.length - 1].content.length == 104 ||
-          messages[messages.length - 1].content.length == 105 ||
-          messages[messages.length - 1].content.length == 106 ||
-          messages[messages.length - 1].content.length == 107 ||
-          messages[messages.length - 1].content.length == 108 ||
-          messages[messages.length - 1].content.length == 109)
-      ) {
-        setIsResponding(true)
-        console.log(
-          'Fetching audio for:',
-          messages[messages.length - 1]?.content
-        )
-        setTextResponse(messages[messages.length - 1]?.content)
-        const audiB = await fetch_and_play_audio({
-          text: messages[messages.length - 1]?.content
-        })
-        console.log('Audio ', audiB)
-        setAudioBuffer(audiB as any)
-        setIsResponding(false)
+      if (messages[messages.length - 1]?.role === 'assistant') {
+        const lastMessage = messages[messages.length - 1]
+        console.log('Last message:', lastMessage.content)
+
+        // Append the new content to the buffer
+        textBuffer += lastMessage.content
+
+        // Check if the textBuffer ends with a sentence-ending punctuation mark
+        const sentenceEndRegex = /[^.!?]+[.!?](?:\s|$)/g;
+        const sentences = textBuffer.match(sentenceEndRegex)?.map(sentence => `"${sentence.trim()}"`) || [];
+        console.log('Sentences:', sentences)  
+        if (sentences.length > 0 ) {
+          console.log('Fetching audio for complete sentence:', sentences[sentences.length - 1]
+          )
+          lastProcessedSentence = sentences[sentences.length - 1]
+          setTextResponse(sentences[sentences.length - 1])  
+        
+          const audiB = await fetch_and_play_audio({
+            text: sentences[sentences.length - 1],
+          })
+          console.log('Audio ', audiB)
+          setAudioBuffer(audiB as any)
+          textBuffer = '' // Clear the buffer after processing
+        }
+       
       }
     }
     getAudioAndPlay()
@@ -191,7 +215,14 @@ setInput(event.target.value); // Allow manual editing of the input
 };
 
   return (
-    <div style={{ display: 'flex', position: 'relative', height: '100vh', flexDirection: 'column' }}>
+    <div
+      style={{
+        display: 'flex',
+        position: 'relative',
+        height: '100vh',
+        flexDirection: 'column'
+      }}
+    >
       <div
         style={{
           display: 'flex',
@@ -199,7 +230,7 @@ setInput(event.target.value); // Allow manual editing of the input
           alignItems: 'center',
           width: '100%',
           height: '100vh',
-          boxSizing: 'border-box',
+          boxSizing: 'border-box'
         }}
       >
         <div
@@ -210,10 +241,13 @@ setInput(event.target.value); // Allow manual editing of the input
             width: '100%',
             maxWidth: '600px', // Constrain the max width on larger screens
             margin: '0 auto', // Center the avatar horizontally
-            padding: '0 10px', // Additional padding for small screens
+            padding: '0 10px' // Additional padding for small screens
           }}
         >
-          <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} />
+          <TalkingHeadComponent
+            textToSay={textResponse}
+            audioToSay={audioBuffer}
+          />
         </div>
       </div>
 
@@ -232,7 +266,7 @@ setInput(event.target.value); // Allow manual editing of the input
             alignItems: 'center',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             cursor: 'pointer',
-            zIndex: 1000,
+            zIndex: 1000
           }}
           onClick={() => setIsChatOpen(true)}
         >
@@ -258,14 +292,14 @@ setInput(event.target.value); // Allow manual editing of the input
             zIndex: 999, // Ensure chat is above other elements
             marginLeft: 'auto', // Align to the right on smaller screens
             marginRight: 'auto', // Center the chat on smaller screens
-            paddingRight: '2vh', // Add padding to the right for smaller screens
+            paddingRight: '2vh' // Add padding to the right for smaller screens
           }}
         >
           <div
             style={{
               flex: '1',
               overflowY: 'auto', // Scrollable
-              padding: '16px',
+              padding: '16px'
             }}
           >
             {allMessages.map((message, index) => (
@@ -273,7 +307,7 @@ setInput(event.target.value); // Allow manual editing of the input
                 key={index}
                 style={{
                   textAlign: message.role === 'user' ? 'right' : 'left',
-                  marginBottom: '8px',
+                  marginBottom: '8px'
                 }}
               >
                 <div
@@ -281,10 +315,11 @@ setInput(event.target.value); // Allow manual editing of the input
                     display: 'inline-block',
                     padding: '8px 12px',
                     borderRadius: '20px',
-                    backgroundColor: message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
+                    backgroundColor:
+                      message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
                     color: '#000',
                     maxWidth: '75%',
-                    wordWrap: 'break-word',
+                    wordWrap: 'break-word'
                   }}
                 >
                   {typeof message.content === 'string'
@@ -300,7 +335,7 @@ setInput(event.target.value); // Allow manual editing of the input
             style={{
               display: 'flex',
               padding: '8px',
-              borderTop: '1px solid #E5E5EA',
+              borderTop: '1px solid #E5E5EA'
             }}
           >
             <textarea
@@ -316,7 +351,7 @@ setInput(event.target.value); // Allow manual editing of the input
                 border: 'none',
                 resize: 'none', // Disable manual resizing
                 overflow: 'hidden', // Hide overflow to make it look clean
-                backgroundColor: '#F0F0F0',
+                backgroundColor: '#F0F0F0'
               }}
             />
             <button
@@ -328,7 +363,7 @@ setInput(event.target.value); // Allow manual editing of the input
                 border: 'none',
                 backgroundColor: '#34B7F1',
                 color: '#fff',
-                cursor: 'pointer',
+                cursor: 'pointer'
               }}
             >
               Send
@@ -348,7 +383,7 @@ setInput(event.target.value); // Allow manual editing of the input
               padding: '5px',
               fontSize: '16px',
               fontWeight: 'bold',
-              color: '#34B7F1',
+              color: '#34B7F1'
             }}
           >
             ✖
