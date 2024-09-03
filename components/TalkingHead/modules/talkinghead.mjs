@@ -2148,10 +2148,11 @@ class TalkingHead {
   * @param {Options} [opt=null] Text-specific options for lipsyncLang
   * @param {subtitlesfn} [onsubtitles=null] Callback when a subtitle is written
   */
-  speakAudio(r, opt = null, onsubtitles = null ) {
+  speakAudio(r, opt = null, onComplete = null, onsubtitles = null ) {
     opt = opt || {};
     const lipsyncLang = opt.lipsyncLang || this.avatar.lipsyncLang || this.opt.lipsyncLang;
     const o = {};
+
 
 
     if ( r.words ) {
@@ -2247,6 +2248,14 @@ class TalkingHead {
       this.speechQueue.push(o);
       this.speechQueue.push( { break: 300 } );
       this.startSpeaking();
+      if (onComplete){
+        this.onComplete = onComplete;
+        console.log("onComplete speakaudio", onComplete)
+        console.log("onComplete speakaudio this", this.onComplete)
+
+      } else {
+        console.log("No onComplete")
+      }
     }
 
   }
@@ -2475,7 +2484,12 @@ class TalkingHead {
     } else {
       this.stateName = 'idle';
       this.isSpeaking = false;
-      this.onComplete();
+      if (this?.onComplete){
+        console.log("this.onComplete", this.onComplete)
+        this.onComplete();
+      } else {
+        console.log("completed")
+      }
     }
   }
 

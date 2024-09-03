@@ -62,7 +62,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
     if (audioToSay) {
       setTimeout(() => {
         console.log('Sending message to speak')
-        // setIsResponding(true)
+        setIsResponding(true)
         console.log('toSay', audioToSay)
         /* head.current.speakText(
         'hello, how are you today?',
@@ -89,6 +89,11 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
               audio: audioToSay,
               markers: audio.markers,
               mtimes: audio.mtimes
+            },
+            {},
+            () => {
+              setIsResponding(false)
+                console.log("running 'onComplete'")
             },
             {}
           )
@@ -326,7 +331,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
     }
   }
   const onComplete = () => {
-    // setIsResponding(false)
+    setIsResponding(false)
       console.log("running 'onComplete'")
   }
   function extractAndSeparate(text) {
