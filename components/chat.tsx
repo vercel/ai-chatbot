@@ -75,10 +75,10 @@ export function Chat({ id }: ChatProps) {
 
   const send_each_sentence = (phrase: string) => {
     const endofSentenceRegex = /([^\.\?\!]+[\.\?\!])/g
-    const sentences = phrase.match(endofSentenceRegex) || []; // Match sentences with punctuation
+    const sentences = phrase.match(endofSentenceRegex) || [] // Match sentences with punctuation
     console.log('Sentences:', sentences)
     return sentences
-}
+  }
 
   useEffect(() => {
     async function getAudioAndPlay() {
@@ -282,7 +282,8 @@ export function Chat({ id }: ChatProps) {
                   border: 'none',
                   resize: 'none', // Disable manual resizing
                   overflow: 'hidden', // Hide overflow to make it look clean
-                  backgroundColor: '#F0F0F0'
+                  backgroundColor: '#F0F0F0',
+                  color: 'black'
                 }}
               />
               <button
