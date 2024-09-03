@@ -343,25 +343,133 @@ export function Chat({ id }: ChatProps) {
             </form>
           </div>
         ) : (
-          <div
-            style={{
-              position: 'fixed',
-              right: '2vh',
-              bottom: '5vh',
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              backgroundColor: '#34B7F1',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              cursor: 'pointer',
-              zIndex: 1000
-            }}
-            onClick={() => setIsChatOpen(true)}
-          >
-            💬
+          <div>
+            <div
+              style={{
+                position: 'fixed',
+                right: '2vh',
+                bottom: '55vh',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                backgroundColor: '#34B7F1',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontSize: '24px'
+              }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              📅
+            </div>
+            <div
+              style={{
+                position: 'fixed',
+                right: '2vh',
+                bottom: '45vh',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                backgroundColor: '#34B7F1',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontSize: '24px'
+              }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              🏆
+            </div>
+            <div
+              style={{
+                position: 'fixed',
+                right: '2vh',
+                bottom: '35vh',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                backgroundColor: '#34B7F1',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontSize: '24px'
+              }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              🎁
+            </div>
+            <div
+              style={{
+                position: 'fixed',
+                right: '2vh',
+                bottom: '25vh',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                backgroundColor: '#34B7F1',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontSize: '24px'
+              }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              📖
+            </div>
+            <div
+              style={{
+                position: 'fixed',
+                right: '2vh',
+                bottom: '15vh',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                backgroundColor: '#34B7F1',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontSize: '24px'
+              }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              📞
+            </div>
+            <div
+              style={{
+                position: 'fixed',
+                right: '2vh',
+                bottom: '5vh',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                backgroundColor: '#34B7F1',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontSize: '24px'
+              }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              💬
+            </div>
           </div>
         )}
       </div>
