@@ -25,9 +25,14 @@ export function Chat({ id }: ChatProps) {
 
   const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
   const [allMessages, setAllMessages] = useState<Message[]>([])
-  let { messages, input, setInput, handleInputChange, handleSubmit } = useChat(
-    {}
-  )
+  let {
+    messages,
+    input,
+    setInput,
+    handleInputChange,
+    handleSubmit,
+    isLoading
+  } = useChat({})
   const lastAiMessageRef = useRef<Message | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
   const [isResponding, setIsResponding] = useState(false) // Track if we are waiting for a response
@@ -122,7 +127,7 @@ export function Chat({ id }: ChatProps) {
       }
     }
     getAudioAndPlay()
-  }, [messages])
+  }, [isLoading])
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1]
