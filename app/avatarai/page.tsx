@@ -93,7 +93,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
             {},
             () => {
               setIsResponding(false)
-                console.log("running 'onComplete'")
+              console.log("running 'onComplete'")
             },
             {}
           )
@@ -207,21 +207,19 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
 
       const form = new FormData()
       form.append('file', file)
-      form.append('model', 'whisper-1')
+      form.append('model', 'whisper-large-v3')
       form.append('language', 'en')
       form.append('response_format', 'verbose_json')
-      form.append('timestamp_granularities[]', 'word')
-      form.append('timestamp_granularities[]', 'segment')
 
       console.log('API Key:', process.env.OPEN_AI_KEY)
 
       const response = await fetch(
-        'https://api.openai.com/v1/audio/transcriptions',
+        'https://api.groq.com/openai/v1/audio/transcriptions',
         {
           method: 'POST',
           body: form,
           headers: {
-            Authorization: `Bearer ${process.env.OPEN_AI_KEY}`
+            Authorization: `Bearer ${process.env.GROQ_API_KEY}`
           }
         }
       )
@@ -332,7 +330,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
   }
   const onComplete = () => {
     setIsResponding(false)
-      console.log("running 'onComplete'")
+    console.log("running 'onComplete'")
   }
   function extractAndSeparate(text) {
     // Regular expression to match the <esp>...</esp> and <esp>...//esp> patterns
@@ -398,7 +396,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
                 rate: playSpeed.current,
                 voice: 'es-US-Standard-A',
                 pitch: 0
-              },
+              }
             )
           } else {
             if (!/[a-zA-Z]/.test(content)) {
@@ -412,7 +410,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
             }
             const trimmedContent = content.replace(/^[^a-zA-Z]+/, '')
             // window.ReactNativeWebView.postMessage(JSON.stringify({ "concept": "speak", "message": trimmedContent.replace(/undefiened/g, "'") }));
-            console.log("head.current", head.current.isAudioPlaying)
+            console.log('head.current', head.current.isAudioPlaying)
             head?.current?.speakText(
               trimmedContent.replace(/undefiened/g, "'").trim(),
               null,
@@ -425,7 +423,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
                 rate: playSpeed.current,
                 voice: 'en-GB-Wavenet-F',
                 pitch: 0
-              }, 
+              }
             )
           }
         }
