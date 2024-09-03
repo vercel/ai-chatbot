@@ -23,7 +23,7 @@ export function Chat({ id }: ChatProps) {
   const [textResponse, setTextResponse] = useState('')
   const [isEditing, setIsEditing] = useState(false) // Track whether the user is editing
 
-  const [isChatOpen, setIsChatOpen] = useState(false) // State to manage chat visibility
+  const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
   const [allMessages, setAllMessages] = useState<Message[]>([])
   let { messages, input, setInput, handleInputChange, handleSubmit } = useChat(
     {}
@@ -218,178 +218,153 @@ export function Chat({ id }: ChatProps) {
     <div
       style={{
         display: 'flex',
-        position: 'relative',
         height: '100vh',
-        flexDirection: 'column'
+        width: '100%'
       }}
     >
+      <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} />
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
           width: '100%',
-          height: '100vh',
-          boxSizing: 'border-box'
+          height: 'calc(100vh - 65px)',
+          display: 'flex',
+          flexDirection: 'column-reverse',
+          alignItems: 'space-evenly'
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '100%',
-            maxWidth: '600px', // Constrain the max width on larger screens
-            margin: '0 auto', // Center the avatar horizontally
-            padding: '0 10px' // Additional padding for small screens
-          }}
-        >
-          <TalkingHeadComponent
-            textToSay={textResponse}
-            audioToSay={audioBuffer}
-          />
-        </div>
-      </div>
-
-      {!isChatOpen ? (
-        <div
-          style={{
-            position: 'fixed',
-            right: '2vh',
-            bottom: '5vh',
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            backgroundColor: '#34B7F1',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            zIndex: 1000
-          }}
-          onClick={() => setIsChatOpen(true)}
-        >
-          💬
-        </div>
-      ) : null}
-
-      {isChatOpen ? (
-        <div
-          style={{
-            position: 'fixed',
-            right: '2vh',
-            bottom: '5vh',
-            width: 'calc(100% - 4vh)', // Responsive width based on viewport
-            maxWidth: '60vh', // Maximum width for larger screens
-            height: '70vh', // Fixed height
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            backgroundColor: '#fff',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            zIndex: 999, // Ensure chat is above other elements
-            marginLeft: 'auto', // Align to the right on smaller screens
-            marginRight: 'auto', // Center the chat on smaller screens
-            paddingRight: '2vh' // Add padding to the right for smaller screens
-          }}
-        >
+        {isChatOpen ? (
           <div
             style={{
-              flex: '1',
-              overflowY: 'auto', // Scrollable
-              padding: '16px'
-            }}
-          >
-            {allMessages.map((message, index) => (
-              <div
-                key={index}
-                style={{
-                  textAlign: message.role === 'user' ? 'right' : 'left',
-                  marginBottom: '8px'
-                }}
-              >
-                <div
-                  style={{
-                    display: 'inline-block',
-                    padding: '8px 12px',
-                    borderRadius: '20px',
-                    backgroundColor:
-                      message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
-                    color: '#000',
-                    maxWidth: '75%',
-                    wordWrap: 'break-word'
-                  }}
-                >
-                  {typeof message.content === 'string'
-                    ? message.content
-                    : transformContentToString(message.content)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <form
-            onSubmit={onSubmit}
-            style={{
+              width: '100%', // Responsive width based on viewport
+              height: '75vh', // Fixed height
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              backgroundColor: '#fff',
               display: 'flex',
-              padding: '8px',
-              borderTop: '1px solid #E5E5EA'
+              flexDirection: 'column',
+              justifyContent: 'flex-end' // Align chat to the bottom
             }}
           >
-            <textarea
-              name="prompt"
-              value={transcript}
-              onChange={handleTextareaChange}
-              ref={textareaRef} // Attach ref to the textarea
-              rows={1}
+            {/* Close Button */}
+            <div
               style={{
-                flex: '1',
-                padding: '8px',
-                borderRadius: '20px',
-                border: 'none',
-                resize: 'none', // Disable manual resizing
-                overflow: 'hidden', // Hide overflow to make it look clean
-                backgroundColor: '#F0F0F0'
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                marginLeft: '8px',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: 'none',
-                backgroundColor: '#34B7F1',
-                color: '#fff',
-                cursor: 'pointer'
+                display: 'flex',
+                justifyContent: 'flex-end'
               }}
             >
-              Send
-            </button>
-          </form>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '5px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  color: '#34B7F1'
+                }}
+              >
+                ✖
+              </button>
+            </div>
 
-          {/* Close Button */}
-          <button
-            onClick={() => setIsChatOpen(false)}
+            <div
+              style={{
+                flex: '1',
+                overflowY: 'auto' // Scrollable
+              }}
+            >
+              {allMessages.map((message, index) => (
+                <div
+                  key={index}
+                  style={{
+                    textAlign: message.role === 'user' ? 'right' : 'left',
+                    marginBottom: '8px'
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      padding: '8px 12px',
+                      borderRadius: '20px',
+                      backgroundColor:
+                        message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
+                      color: '#000',
+                      maxWidth: '75%',
+                      wordWrap: 'break-word'
+                    }}
+                  >
+                    {typeof message.content === 'string'
+                      ? message.content
+                      : transformContentToString(message.content)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form
+              onSubmit={onSubmit}
+              style={{
+                display: 'flex',
+                padding: '8px',
+                borderTop: '1px solid #E5E5EA'
+              }}
+            >
+              <textarea
+                name="prompt"
+                value={transcript}
+                onChange={handleTextareaChange}
+                ref={textareaRef} // Attach ref to the textarea
+                rows={1}
+                style={{
+                  flex: '1',
+                  padding: '8px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  resize: 'none', // Disable manual resizing
+                  overflow: 'hidden', // Hide overflow to make it look clean
+                  backgroundColor: '#F0F0F0'
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  marginLeft: '8px',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  backgroundColor: '#34B7F1',
+                  color: '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div
             style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              background: 'none',
-              border: 'none',
+              position: 'fixed',
+              right: '2vh',
+              bottom: '5vh',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              backgroundColor: '#34B7F1',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               cursor: 'pointer',
-              padding: '5px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#34B7F1'
+              zIndex: 1000
             }}
+            onClick={() => setIsChatOpen(true)}
           >
-            ✖
-          </button>
-        </div>
-      ) : null}
+            💬
+          </div>
+        )}
+      </div>
     </div>
   )
 }
