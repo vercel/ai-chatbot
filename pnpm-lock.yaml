@@ -59,6 +59,9 @@ importers:
       ai:
         specifier: ^3.2.16
         version: 3.2.16(openai@4.52.2)(react@18.3.1)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2))(zod@3.23.8)
+      audiobuffer-to-wav:
+        specifier: ^1.0.0
+        version: 1.0.0
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -1345,6 +1348,9 @@ packages:
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
+
+  audiobuffer-to-wav@1.0.0:
+    resolution: {integrity: sha512-CAoir4NRrAzAgYo20tEMiKZR84coE8bq/L+H2kwAaULVY4+0xySsEVtNT5raqpzmH6y0pqzY6EmoViLd9W8F/w==}
 
   autoprefixer@10.4.19:
     resolution: {integrity: sha512-BaENR2+zBZ8xXhM4pUaKUxlVdxZ0EZhjvbopwnXmxRUfqDmwSpC2lAi/QXvx7NRdPCo1WKEcEF6mV64si1z4Ew==}
@@ -4668,6 +4674,8 @@ snapshots:
   ast-types-flow@0.0.8: {}
 
   asynckit@0.4.0: {}
+
+  audiobuffer-to-wav@1.0.0: {}
 
   autoprefixer@10.4.19(postcss@8.4.39):
     dependencies:
