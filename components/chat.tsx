@@ -49,21 +49,28 @@ export function Chat({ id }: ChatProps) {
   }, [transcript])
 
   useEffect(() => {
+    console.log("running lsistener")
     if (!browserSupportsSpeechRecognition) {
       console.error('Browser does not support speech recognition.')
       return
     }
 
-    if (!isEditing && !isResponding) {
+    if (!isResponding) {
       // Start listening for speech immediately when the component mounts
       SpeechRecognition.startListening({ continuous: true })
       console.log('Listening for speech...')
     }
 
+    if (isResponding){
+      SpeechRecognition.stopListening() // Clean up on unmount or when editing starts
+      console.log('Stopped listening for speech.')
+    }
+
     return () => {
       SpeechRecognition.stopListening() // Clean up on unmount or when editing starts
+      console.log('Stopped listening for speech.')
     }
-  }, [isEditing, isResponding])
+  }, [isResponding])
 
   const separateIntoSentences = (text: string) => {
     // Regular expression to identify sentence-ending punctuation
@@ -116,12 +123,16 @@ export function Chat({ id }: ChatProps) {
           )
           lastProcessedSentence = sentences[sentences.length - 1]
           setTextResponse(sentences[sentences.length - 1])
+          console.log('Is Responding true')
 
           const audiB = await fetch_and_play_audio({
             text: sentences[sentences.length - 1]
           })
           console.log('Audio ', audiB)
           setAudioBuffer(audiB as any)
+          console.log('Is Responding false')
+
+
           textBuffer = '' // Clear the buffer after processing
         }
       }
@@ -166,8 +177,6 @@ export function Chat({ id }: ChatProps) {
     // Prevent sending another message while waiting for a response
     if (isResponding) return
 
-    setIsResponding(true) // Block further submissions
-
     // Call handleSubmit with the updated input state
     handleSubmit()
 
@@ -179,7 +188,6 @@ export function Chat({ id }: ChatProps) {
     }
 
     lastAiMessageRef.current = null // Reset for the next AI message
-    setIsResponding(false) // Allow new submissions after response
   }
   function transformContentToString(content: any): string {
     if (typeof content === 'string') {
@@ -227,7 +235,7 @@ export function Chat({ id }: ChatProps) {
         width: '100%'
       }}
     >
-      <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} />
+      <TalkingHeadComponent textToSay={textResponse} audioToSay={audioBuffer} setIsResponding={setIsResponding} />
       <div
         style={{
           width: '100%',
@@ -317,7 +325,7 @@ export function Chat({ id }: ChatProps) {
             >
               <textarea
                 name="prompt"
-                value={transcript}
+                value={input} // Always keep the input updated
                 onChange={handleTextareaChange}
                 ref={textareaRef} // Attach ref to the textarea
                 rows={1}
