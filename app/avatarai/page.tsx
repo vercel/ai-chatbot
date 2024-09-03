@@ -23,11 +23,13 @@ import { setupWebSocket } from '@/components/avatarai/websocket'
 import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
-
+import Groq from 'groq-sdk'
 const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
   // the audioToSay is an audio Buffer, like what we get from the server
   // the textToSay is the text that matches the audioToSay
   // the hack consists on saying the textToSay
+  const {toWav} = require('audiobuffer-to-wav')
+
   const interal = true
   const avatarRef = useRef(null)
   const [loadingMessage, setLoadingMessage] = useState('Loading...')
@@ -55,13 +57,15 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
+  const groq = new Groq({apiKey: process.env.GROQ_API_KEY, dangerouslyAllowBrowser: true});
+  
   
   useEffect(() => {
     console.log('TalkingHeadComponent mounted')
     if (audioToSay) {
     setTimeout(() => {
       console.log('Sending message to speak')
-      console.log("audioToSay",audioToSay)
+      console.log("toSay",audioToSay)
       /* head.current.speakText(
         'hello, how are you today?',
         null,
@@ -76,13 +80,18 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
           pitch: 0
         }
       ) */
-     calculateAudio(audioToSay).then( audio => {
+     calculateAudio(audioToSay).then((audio) => {
+      console.log('Audio calculated')
+     
+     
       head.current.speakAudio(
         {
-          words: ['hi', 'there', 'there', 'there', 'there', 'there', 'there'],
-          wtimes: [0, 0.5, 0.15, 0.25, 0.35, 0.45, 0.55],
-          wdurations: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
-          audio: audioToSay
+          words: audio.words,
+          wtimes: audio.wtimes,
+          wdurations: audio.wdurations,
+          audio: audioToSay,
+          markers: audio.markers,
+          mtimes: audio.mtimes
         },
         {}
       )
@@ -90,8 +99,9 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       console.log('SENT message ')
       })
     
-    }, 4000)
+    })
   }
+  
   }, [audioToSay])
 
 
@@ -125,46 +135,108 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
   let subtitleBuffer = ''
   let timeoutHandle: string | number | NodeJS.Timeout | null | undefined = null
   
-  const calculateAudio = async(audioBuffer) =>{
+  
+  const audioBufferToWav = (audioBuffer) => {
+    const numOfChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const length = audioBuffer.length * numOfChannels * 2 + 44; // 16-bit PCM format, hence * 2
+    const buffer = new ArrayBuffer(length);
+    const view = new DataView(buffer);
 
-    const file = new File([audioBuffer], "audio.wav");
-    console.log(file);
-    const form = new FormData();
-    form.append("file", file);
-    form.append("model", "whisper-1");
-    form.append("language", "en");
-    form.append("response_format", "verbose_json" );
-    form.append("timestamp_granularities[]", "word" );
-    form.append("timestamp_granularities[]", "segment" );
+    // Write WAV header
+    const writeString = (view, offset, string) => {
+        for (let i = 0; i < string.length; i++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+        }
+    };
 
-    // NOTE: Never put your API key in a client-side code unless you know
-    //       that you are the only one to have access to that code!
-    const response = await fetch( "https://api.openai.com/v1/audio/transcriptions" , {
-      method: "POST",
-      body: form,
-      headers: {
-        "Authorization":  `Bearer ${process.env.OPENAI_API_KEY}`
-      }
-    });
-    
-    let audio 
-    if ( response.ok ) {
+    let offset = 0;
+    writeString(view, offset, 'RIFF'); offset += 4;
+    view.setUint32(offset, 36 + audioBuffer.length * 2, true); offset += 4;
+    writeString(view, offset, 'WAVE'); offset += 4;
+    writeString(view, offset, 'fmt '); offset += 4;
+    view.setUint32(offset, 16, true); offset += 4; // PCM format
+    view.setUint16(offset, 1, true); offset += 2;
+    view.setUint16(offset, numOfChannels, true); offset += 2;
+    view.setUint32(offset, sampleRate, true); offset += 4;
+    view.setUint32(offset, sampleRate * 2, true); offset += 4;
+    view.setUint16(offset, numOfChannels * 2, true); offset += 2;
+    view.setUint16(offset, 16, true); offset += 2;
+    writeString(view, offset, 'data'); offset += 4;
+    view.setUint32(offset, audioBuffer.length * 2, true); offset += 4;
 
-      const json = await response.json();
-      console.log("Whisper response",json);
-      nodeJSON.value = JSON.stringify(json, null, 4);
-      json.words.forEach( x => {
+    // Write audio data
+    for (let channel = 0; channel < numOfChannels; channel++) {
+        const data = audioBuffer.getChannelData(channel);
+        let index = 44 + channel * 2;
+        for (let i = 0; i < data.length; i++) {
+            const sample = Math.max(-1, Math.min(1, data[i]));
+            view.setInt16(index, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            index += numOfChannels * 2;
+        }
+    }
+
+    return buffer;
+};
+const startSegment = async () => {
+  head.lookAtCamera(500);
+  head.speakWithHands();
+};
+
+const calculateAudio = async (audioBuffer) => {
+  try {
+    console.log("Calculating audio")
+      // Save the audioBuffer to a temporary file
+      const wavBuffer = audioBufferToWav(audioBuffer);
+      const file = new File([wavBuffer], "audio.wav", { type: "audio/wav" });
+      console.log("File created:", file);
+      const form = new FormData();
+        form.append("file", file);
+        form.append("model", "whisper-1");
+        form.append("language", "en");
+        form.append("response_format", "verbose_json" );
+        form.append("timestamp_granularities[]", "word" );
+        form.append("timestamp_granularities[]", "segment" );
+
+        // NOTE: Never put your API key in a client-side code unless you know
+        //       that you are the only one to have access to that code!
+        const response = await fetch( "https://api.openai.com/v1/audio/transcriptions" , {
+          method: "POST",
+          body: form,
+          headers: {
+            "Authorization": "Bearer" // <- Change this
+          }
+        });
+      let audio = {
+          words: [],
+          wtimes: [],
+          wdurations: [],
+          markers: [],
+          mtimes: []
+      };
+
+      // Parse the translation result to extract words and timings
+      const result = await response.json();
+      console.log("Groq Whisper result:", result);
+      result.words.forEach( x => {
         audio.words.push( x.word );
         audio.wtimes.push( 1000 * x.start - 150 );
         audio.wdurations.push( 1000 * (x.end - x.start) );
       });
-
-
-    }
-    else {
-      nodeJSON.value = "Error: " + response.status;
-    }
+      // Clean up temporary file
+      result.segments.forEach( x => {
+        if ( x.start > 2 && x.text.length > 10 ) {
+          audio.markers.push( startSegment );
+          audio.mtimes.push( 1000 * x.start - 1000 );
+        }
+      });
+      // Clean up temporary file
+      return audio;
+  } catch (error) {
+      console.error("Error in calculateAudio:", error);
+      return null;
   }
+}
   
   const checkForExercises = async () => {
     try {
@@ -1432,13 +1504,13 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       style={{
         position: 'relative',
         maxWidth: '100%',
-        width: '100%', // Set width to 100% to make it responsive
-        height: 'calc(100vh - 64px)', // Adjust height for viewport
-        margin: '0 auto', // Center horizontally
+        width: '100%',
+        height: 'calc(100vh - 64px)', // Changed to viewport height to ensure it covers the whole screen
+        margin: '0 auto', // Updated for consistency, though 'auto' was fine for horizontal centering
         backgroundPosition: 'center', // Center the background image
-        backgroundSize: 'contain', // Ensure the entire image is visible
-        backgroundImage: `url(${localImage})`, // Dynamic background image
-        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover', // Ensure the image covers the whole area
+        backgroundImage: `url(${localImage})`, // Use backticks here
+        backgroundRepeat: 'no-repeat'
       }}
     >
       <div
@@ -1463,5 +1535,6 @@ const TalkingHeadComponent = ({ audioToSay, textToSay }) => {
       ) : null}
     </div>
   )
-}  
+}
+
 export default TalkingHeadComponent
