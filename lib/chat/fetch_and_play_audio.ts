@@ -3,8 +3,8 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
     'https://hjngsvyig3.execute-api.us-west-1.amazonaws.com/testing/speak' // Use your server's IP address or domain
   try {
     const response = await fetch(
-      `${SERVER_URL}?text=${encodeURIComponent(text)}`
-      , {
+      `${SERVER_URL}?text=${encodeURIComponent(text)}`,
+      {
         method: 'GET',
         headers: {
           'Content-Type': 'audio/mpeg'
@@ -44,11 +44,7 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
       const decodedAudio = await audioContext.decodeAudioData(
         audioBuffer.buffer
       )
-      // Create a buffer source
-      // const source = audioContext.createBufferSource()
-      // source.buffer = decodedAudio
-      // source.connect(audioContext.destination)
-      // source.start(0) // Play the audio
+
       return decodedAudio
     } else {
       console.error(`Error: ${response.status} - ${response.statusText}`)
