@@ -211,7 +211,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
       form.append('language', 'en')
       form.append('response_format', 'verbose_json')
 
-      console.log('API Key:', process.env.OPEN_AI_KEY)
+      console.log('API Key:', process.env.OPENAI_KEY)
 
       const response = await fetch(
         'https://api.groq.com/openai/v1/audio/transcriptions',

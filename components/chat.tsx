@@ -8,6 +8,7 @@ import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio'
 import SpeechRecognition, {
   useSpeechRecognition
 } from 'react-speech-recognition'
+import { send } from 'process'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -72,6 +73,13 @@ export function Chat({ id }: ChatProps) {
     }
   }, [isResponding, isEditing, browserSupportsSpeechRecognition])
 
+  const send_each_sentence = (phrase: string) => {
+    const endofSentenceRegex = /([^\.\?\!]+[\.\?\!])/g
+    const sentences = phrase.match(endofSentenceRegex) || []; // Match sentences with punctuation
+    console.log('Sentences:', sentences)
+    return sentences
+}
+
   useEffect(() => {
     async function getAudioAndPlay() {
       if (messages.length === 0) {
@@ -83,14 +91,24 @@ export function Chat({ id }: ChatProps) {
       if (messages[messages.length - 1]?.role === 'assistant') {
         const lastMessage = messages[messages.length - 1]
         console.log('Last message:', lastMessage.content)
+        const sentences = send_each_sentence(lastMessage.content)
+        for (const sentence of sentences) {
+          console.log('Sentence:', sentence)
+          setTextResponse(sentence)
 
-        setTextResponse(lastMessage.content)
+          const audiB = await fetch_and_play_audio({
+            text: sentence
+          })
+          console.log('Audio ', audiB)
+          setAudioBuffer(audiB as any)
+        }
+        // setTextResponse(lastMessage.content)
 
-        const audiB = await fetch_and_play_audio({
-          text: lastMessage.content
-        })
-        console.log('Audio ', audiB)
-        setAudioBuffer(audiB as any)
+        // const audiB = await fetch_and_play_audio({
+        //   text: lastMessage.content
+        // })
+        // console.log('Audio ', audiB)
+        // setAudioBuffer(audiB as any)
       }
     }
     getAudioAndPlay()
