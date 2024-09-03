@@ -11,6 +11,7 @@ module.exports = {
     ]
   },
   env: {
-    GROQ_API_KEY: process.env.GROQ_API_KEY
+    GROQ_API_KEY: process.env.GROQ_API_KEY,
+    OPEN_AI_KEY: process.env.OPEN_AI_KEY
   }
 }

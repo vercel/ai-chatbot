@@ -200,11 +200,12 @@ const calculateAudio = async (audioBuffer) => {
 
         // NOTE: Never put your API key in a client-side code unless you know
         //       that you are the only one to have access to that code!
+        console.log(process.env.OPEN_AI_KEY)
         const response = await fetch( "https://api.openai.com/v1/audio/transcriptions" , {
           method: "POST",
           body: form,
           headers: {
-            "Authorization": "Bearer" // <- Change this
+            "Authorization": `Bearer ${process.env.OPEN_AI_KEY}` // <- Change this
           }
         });
       let audio = {
