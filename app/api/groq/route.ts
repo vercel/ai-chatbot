@@ -1,6 +1,5 @@
 import Groq from 'groq-sdk'
 import create_response from '@/lib/api/create_response'
-import { NextRequest } from 'next/server'
 import { Readable } from 'stream'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
@@ -56,6 +55,7 @@ export async function POST(request: any) {
     type: 'audio/webm',
     text: async () => fileBuffer.toString(),
     arrayBuffer: async () => fileBuffer.buffer,
+    // @ts-expect-error - The slice method is not part of the FileLike interface
     slice: (start, end, contentType) => {
       return new Blob([fileBuffer.slice(start, end)], { type: contentType })
     },
@@ -63,6 +63,7 @@ export async function POST(request: any) {
   }
 
   const transcriptionText = await groq.audio.transcriptions.create({
+    // @ts-expect-error - The file property we had to cohese to a FileLike object
     file: fileLikeObject,
     model: 'distil-whisper-large-v3-en',
     prompt: 'Specify context or spelling',
