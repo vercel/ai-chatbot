@@ -103,7 +103,7 @@ export function Chat({ id }: ChatProps) {
   )
   const [textResponse, setTextResponse] = useState('')
   const [isEditing, setIsEditing] = useState(false) // Track whether the user is editing
-  const [classType, setClassType] = useState('free')
+  const [classType, setClassType] = useState<string>('free')
   const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
   // API: https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
   let {
@@ -246,35 +246,61 @@ export function Chat({ id }: ChatProps) {
     >
       <div
         style={{
-          display: 'flex'
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
-        <div style={{ marginTop: '20px' }}>
-          <label htmlFor="background-select">Background: </label>
-          <select id="background-select" onChange={handleBackgroundChange}>
-            {backgrounds.map(bg => (
-              <option key={bg.name} value={bg.name}>
-                {bg.name}
-              </option>
-            ))}
-          </select>
+        <div
+          style={{
+            display: 'flex'
+          }}
+        >
+          <div>
+            <label htmlFor="background-select">Background: </label>
+            <select id="background-select" onChange={handleBackgroundChange}>
+              {backgrounds.map(bg => (
+                <option key={bg.name} value={bg.name}>
+                  {bg.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="background-select">Class: </label>
+            <select id="background-select" onChange={handleClassTypeChange}>
+              {classTypes.map(ct => (
+                <option key={ct.name} value={ct.name}>
+                  {ct.description}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div style={{ marginTop: '20px' }}>
-          <label htmlFor="background-select">Class: </label>
-          <select id="background-select" onChange={handleClassTypeChange}>
-            {classTypes.map(ct => (
-              <option key={ct.name} value={ct.name}>
-                {ct.description}
-              </option>
-            ))}
-          </select>
+        <div>
+          {classTypes[classTypes.findIndex(ct => ct.name === classType)]
+            ?.vocabulary?.length > 0 ? (
+            <div
+              style={{
+                display: 'flex', // Flexbox layout for horizontal alignment
+                listStyleType: 'none', // Remove bullet points (not needed for <div> but good to know)
+                padding: 0, // Remove default padding
+                margin: 0, // Remove default margin
+                gap: '20px' // Space between items (use marginRight if not using gap)
+              }}
+            >
+              {classTypes[
+                classTypes.findIndex(ct => ct.name === classType)
+              ].vocabulary.map((word, index) => (
+                <div key={index}>{word}</div> // Using <div> for each word
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
-
       <div
         style={{
           display: 'flex',
-          height: 'calc(100vh - 65px)',
+          height: 'calc(99vh - 65px)',
           width: '100%'
         }}
       >
@@ -283,7 +309,7 @@ export function Chat({ id }: ChatProps) {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             width: '100%',
-            height: 'calc(100vh - 65px)',
+            height: 'calc(99vh - 65px)',
             backgroundImage: `url(${selectedBackground})`,
             transition: 'background-image 0.5s ease-in-out'
           }}
@@ -297,7 +323,7 @@ export function Chat({ id }: ChatProps) {
         <div
           style={{
             width: '100%',
-            height: 'calc(100vh - 85px)',
+            height: 'calc(98vh - 85px)',
             display: 'flex',
             flexDirection: 'column-reverse',
             alignItems: 'space-evenly'
