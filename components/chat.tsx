@@ -37,15 +37,37 @@ const backgrounds = [
     src: '/bg4.jpg'
   }
 ]
+const classTypes = [
+  {
+    name: 'free',
+    description: 'A class with no specific topic'
+  },
+  {
+    name: 'restaurant',
+    description: 'Ask about menu items and recommend international cuisine		'
+  },
+  {
+    name: 'tourist',
+    description: 'Suggest interesting places to go in your city'
+  },
+  {
+    name: 'invitations',
+    description: 'Extend invitations'
+  },
+  {
+    name: 'occasion',
+    description: 'Talk about an upcoming special occasion'
+  }
+]
 export function Chat({ id }: ChatProps) {
   const [audioBuffer, setAudioBuffer] = useState<Uint8Array | undefined>(
     undefined
   )
   const [textResponse, setTextResponse] = useState('')
   const [isEditing, setIsEditing] = useState(false) // Track whether the user is editing
-
+  const [classType, setClassType] = useState('free')
   const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
-  const [allMessages, setAllMessages] = useState<Message[]>([])
+  // API: https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
   let {
     messages,
     input,
@@ -53,7 +75,11 @@ export function Chat({ id }: ChatProps) {
     handleInputChange,
     handleSubmit,
     isLoading
-  } = useChat({})
+  } = useChat({
+    body: {
+      classType
+    }
+  })
   const lastAiMessageRef = useRef<Message | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
   const [isResponding, setIsResponding] = useState(false) // Track if we are waiting for a response
@@ -64,6 +90,10 @@ export function Chat({ id }: ChatProps) {
     const selectedName = event.target.value
     const selected = backgrounds.find(bg => bg.name === selectedName)
     setSelectedBackground(selected!.src)
+  }
+  const handleClassTypeChange = (event: any) => {
+    const selectedName = event.target.value
+    setClassType(selectedName)
   }
   const {
     transcript,
@@ -176,16 +206,33 @@ export function Chat({ id }: ChatProps) {
         height: 'calc(100vh - 65px)'
       }}
     >
-      <div style={{ marginTop: '20px' }}>
-        <label htmlFor="background-select">Background: </label>
-        <select id="background-select" onChange={handleBackgroundChange}>
-          {backgrounds.map(bg => (
-            <option key={bg.name} value={bg.name}>
-              {bg.name}
-            </option>
-          ))}
-        </select>
+      <div
+        style={{
+          display: 'flex'
+        }}
+      >
+        <div style={{ marginTop: '20px' }}>
+          <label htmlFor="background-select">Background: </label>
+          <select id="background-select" onChange={handleBackgroundChange}>
+            {backgrounds.map(bg => (
+              <option key={bg.name} value={bg.name}>
+                {bg.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div style={{ marginTop: '20px' }}>
+          <label htmlFor="background-select">Class: </label>
+          <select id="background-select" onChange={handleClassTypeChange}>
+            {classTypes.map(ct => (
+              <option key={ct.name} value={ct.name}>
+                {ct.description}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
+
       <div
         style={{
           display: 'flex',
