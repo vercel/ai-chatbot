@@ -16,7 +16,28 @@ export interface ChatProps extends React.ComponentProps<'div'> {
   session?: Session
   missingKeys: string[]
 }
-
+const backgrounds = [
+  {
+    name: 'Restaurant',
+    src: '/bg0.jpg'
+  },
+  {
+    name: 'White',
+    src: '/bg1.jpg'
+  },
+  {
+    name: 'Street',
+    src: '/bg2.jpg'
+  },
+  {
+    name: 'House',
+    src: '/bg3.jpg'
+  },
+  {
+    name: 'Office',
+    src: '/bg4.jpg'
+  }
+]
 export function Chat({ id }: ChatProps) {
   const [audioBuffer, setAudioBuffer] = useState<Uint8Array | undefined>(
     undefined
@@ -37,7 +58,14 @@ export function Chat({ id }: ChatProps) {
   const lastAiMessageRef = useRef<Message | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
   const [isResponding, setIsResponding] = useState(false) // Track if we are waiting for a response
-
+  const [selectedBackground, setSelectedBackground] = useState(
+    backgrounds[0].src
+  )
+  const handleBackgroundChange = (event: any) => {
+    const selectedName = event.target.value
+    const selected = backgrounds.find(bg => bg.name === selectedName)
+    setSelectedBackground(selected!.src)
+  }
   const {
     transcript,
     resetTranscript,
@@ -174,264 +202,296 @@ export function Chat({ id }: ChatProps) {
     <div
       style={{
         display: 'flex',
-        height: '100vh',
-        width: '100%'
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: 'calc(100vh - 65px)'
       }}
     >
-      <TalkingHeadComponent
-        textToSay={textResponse}
-        audioToSay={audioBuffer}
-        setIsResponding={setIsResponding}
-      />
+      <div style={{ marginTop: '20px' }}>
+        <label htmlFor="background-select">Background: </label>
+        <select id="background-select" onChange={handleBackgroundChange}>
+          {backgrounds.map(bg => (
+            <option key={bg.name} value={bg.name}>
+              {bg.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <div
         style={{
-          width: '100%',
-          height: 'calc(100vh - 65px)',
           display: 'flex',
-          flexDirection: 'column-reverse',
-          alignItems: 'space-evenly'
+          height: 'calc(100vh - 65px)',
+          width: '100%'
         }}
       >
-        {isChatOpen ? (
-          <div
-            style={{
-              width: '100%', // Responsive width based on viewport
-              height: '75vh', // Fixed height
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              backgroundColor: '#fff',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end' // Align chat to the bottom
-            }}
-          >
-            {/* Close Button */}
+        <div
+          style={{
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            width: '100%',
+            height: 'calc(100vh - 65px)',
+            backgroundImage: `url(${selectedBackground})`,
+            transition: 'background-image 0.5s ease-in-out'
+          }}
+        >
+          <TalkingHeadComponent
+            textToSay={textResponse}
+            audioToSay={audioBuffer}
+            setIsResponding={setIsResponding}
+          />
+        </div>
+        <div
+          style={{
+            width: '100%',
+            height: 'calc(100vh - 65px)',
+            display: 'flex',
+            flexDirection: 'column-reverse',
+            alignItems: 'space-evenly'
+          }}
+        >
+          {isChatOpen ? (
             <div
               style={{
+                width: '100%', // Responsive width based on viewport
+                height: '75vh', // Fixed height
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                backgroundColor: '#fff',
                 display: 'flex',
-                justifyContent: 'flex-end'
+                flexDirection: 'column',
+                justifyContent: 'flex-end' // Align chat to the bottom
               }}
             >
-              <button
-                onClick={() => setIsChatOpen(false)}
+              {/* Close Button */}
+              <div
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '5px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  color: '#34B7F1'
+                  display: 'flex',
+                  justifyContent: 'flex-end'
                 }}
               >
-                ✖
-              </button>
-            </div>
-
-            <div
-              style={{
-                flex: '1',
-                overflowY: 'auto' // Scrollable
-              }}
-            >
-              {messages.map((message, index) => (
-                <div
-                  key={index}
+                <button
+                  onClick={() => setIsChatOpen(false)}
                   style={{
-                    textAlign: message.role === 'user' ? 'right' : 'left',
-                    marginBottom: '8px',
-                    padding: '2px'
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '5px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#34B7F1'
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      padding: '8px 12px',
-                      borderRadius: '20px',
-                      backgroundColor:
-                        message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
-                      color: '#000',
-                      maxWidth: '75%',
-                      wordWrap: 'break-word'
-                    }}
-                  >
-                    {message.content}
-                  </div>
-                </div>
-              ))}
-            </div>
+                  ✖
+                </button>
+              </div>
 
-            <form
-              onSubmit={onSubmit}
-              style={{
-                display: 'flex',
-                padding: '8px',
-                borderTop: '1px solid #E5E5EA'
-              }}
-            >
-              <textarea
-                name="prompt"
-                value={input} // Always keep the input updated
-                onChange={handleTextareaChange}
-                ref={textareaRef} // Attach ref to the textarea
-                rows={1}
+              <div
                 style={{
                   flex: '1',
-                  padding: '8px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  resize: 'none', // Disable manual resizing
-                  overflow: 'hidden', // Hide overflow to make it look clean
-                  backgroundColor: '#F0F0F0',
-                  color: 'black'
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  marginLeft: '8px',
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  backgroundColor: '#34B7F1',
-                  color: '#fff',
-                  cursor: 'pointer'
+                  overflowY: 'auto' // Scrollable
                 }}
               >
-                Send
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div>
-            <div
-              style={{
-                position: 'fixed',
-                right: '2vh',
-                bottom: '55vh',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#34B7F1',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontSize: '24px'
-              }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              📅
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      textAlign: message.role === 'user' ? 'right' : 'left',
+                      marginBottom: '8px',
+                      padding: '2px'
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        padding: '8px 12px',
+                        borderRadius: '20px',
+                        backgroundColor:
+                          message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
+                        color: '#000',
+                        maxWidth: '75%',
+                        wordWrap: 'break-word'
+                      }}
+                    >
+                      {message.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <form
+                onSubmit={onSubmit}
+                style={{
+                  display: 'flex',
+                  padding: '8px',
+                  borderTop: '1px solid #E5E5EA'
+                }}
+              >
+                <textarea
+                  name="prompt"
+                  value={input} // Always keep the input updated
+                  onChange={handleTextareaChange}
+                  ref={textareaRef} // Attach ref to the textarea
+                  rows={1}
+                  style={{
+                    flex: '1',
+                    padding: '8px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    resize: 'none', // Disable manual resizing
+                    overflow: 'hidden', // Hide overflow to make it look clean
+                    backgroundColor: '#F0F0F0',
+                    color: 'black'
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    marginLeft: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    backgroundColor: '#34B7F1',
+                    color: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Send
+                </button>
+              </form>
             </div>
-            <div
-              style={{
-                position: 'fixed',
-                right: '2vh',
-                bottom: '45vh',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#34B7F1',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontSize: '24px'
-              }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              🏆
+          ) : (
+            <div>
+              <div
+                style={{
+                  position: 'fixed',
+                  right: '2vh',
+                  bottom: '55vh',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34B7F1',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  zIndex: 1000,
+                  fontSize: '24px'
+                }}
+                onClick={() => setIsChatOpen(true)}
+              >
+                📅
+              </div>
+              <div
+                style={{
+                  position: 'fixed',
+                  right: '2vh',
+                  bottom: '45vh',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34B7F1',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  zIndex: 1000,
+                  fontSize: '24px'
+                }}
+                onClick={() => setIsChatOpen(true)}
+              >
+                🏆
+              </div>
+              <div
+                style={{
+                  position: 'fixed',
+                  right: '2vh',
+                  bottom: '35vh',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34B7F1',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  zIndex: 1000,
+                  fontSize: '24px'
+                }}
+                onClick={() => setIsChatOpen(true)}
+              >
+                🎁
+              </div>
+              <div
+                style={{
+                  position: 'fixed',
+                  right: '2vh',
+                  bottom: '25vh',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34B7F1',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  zIndex: 1000,
+                  fontSize: '24px'
+                }}
+                onClick={() => setIsChatOpen(true)}
+              >
+                📖
+              </div>
+              <div
+                style={{
+                  position: 'fixed',
+                  right: '2vh',
+                  bottom: '15vh',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34B7F1',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  zIndex: 1000,
+                  fontSize: '24px'
+                }}
+                onClick={() => setIsChatOpen(true)}
+              >
+                📞
+              </div>
+              <div
+                style={{
+                  position: 'fixed',
+                  right: '2vh',
+                  bottom: '5vh',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34B7F1',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  zIndex: 1000,
+                  fontSize: '24px'
+                }}
+                onClick={() => setIsChatOpen(true)}
+              >
+                💬
+              </div>
             </div>
-            <div
-              style={{
-                position: 'fixed',
-                right: '2vh',
-                bottom: '35vh',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#34B7F1',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontSize: '24px'
-              }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              🎁
-            </div>
-            <div
-              style={{
-                position: 'fixed',
-                right: '2vh',
-                bottom: '25vh',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#34B7F1',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontSize: '24px'
-              }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              📖
-            </div>
-            <div
-              style={{
-                position: 'fixed',
-                right: '2vh',
-                bottom: '15vh',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#34B7F1',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontSize: '24px'
-              }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              📞
-            </div>
-            <div
-              style={{
-                position: 'fixed',
-                right: '2vh',
-                bottom: '5vh',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#34B7F1',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontSize: '24px'
-              }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              💬
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )
