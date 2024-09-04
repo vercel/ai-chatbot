@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET_TEST}`, {
+const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET}`, {
   apiVersion: '2024-06-20',
 });
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     let message = '';
 
-    if (subscription.status === 'incomplete' || subscription.status === 'incomplete_expired') {
+    if (subscription.status === 'trialing') {
       // Cancel the subscription immediately if it hasn't been paid
       await stripe.subscriptions.cancel(subscriptionId);
       message = 'Subscription cancelled immediately.';

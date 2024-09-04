@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET_TEST}`, {
+const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET}`, {
   apiVersion: '2024-06-20',
 });
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         subscriptionId: subscription.id,
         clientSecret: paymentIntent ? paymentIntent.client_secret : null,
         customer: customerId,
-        publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY_TEST, // Ensure this is the test key
+        publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY, // Ensure this is the test key
       }),
       {
         status: 200,

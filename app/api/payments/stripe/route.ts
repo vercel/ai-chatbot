@@ -2,12 +2,12 @@ import check_missing_fields from '@/lib/api/check_missing_fields';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET_TEST}`, {
+const stripe = new Stripe(`${process.env.NEXT_PUBLIC_STRIPE_SECRET}`, {
   apiVersion: '2024-06-20',
 });
 
-console.log("Stripe API Key in use:", process.env.NEXT_PUBLIC_STRIPE_SECRET_TEST);
-console.log("Stripe API Key in use:", process.env.NEXT_PUBLIC_STRIPE_KEY_TEST);
+console.log("Stripe API Key in use:", process.env.NEXT_PUBLIC_STRIPE_SECRET);
+console.log("Stripe API Key in use:", process.env.NEXT_PUBLIC_STRIPE_KEY);
 
 
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         JSON.stringify({
           setupIntentClientSecret: setupIntent.client_secret,
           customer: customer.id,
-          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY_TEST,
+          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY,
         }),
         {
           status: 200,
@@ -80,10 +80,10 @@ export async function POST(request: NextRequest) {
       // If free_trial is false, create a subscription and charge immediately
       const priceId =
         plan === 'yearly'
-        // ? 'price_1PtvV6RsQmUQn4A3KjPNyi5D'
-        ? 'price_1PsRQ0RsQmUQn4A3ZqBPIH2t'
-        // : 'price_1PtvV9RsQmUQn4A3WGqf3GFQ';
-        : 'price_1PsQnnRsQmUQn4A33OcScT4s';
+        ? 'price_1PtvV6RsQmUQn4A3KjPNyi5D'
+        // ? 'price_1PsRQ0RsQmUQn4A3ZqBPIH2t'
+        : 'price_1PtvV9RsQmUQn4A3WGqf3GFQ';
+        // : 'price_1PsQnnRsQmUQn4A33OcScT4s';
       console.log('Price ID selected:', priceId);
 
       const subscription = await stripe.subscriptions.create({
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
           clientSecret: paymentIntent.client_secret,
           ephemeralKey: ephemeralKey.secret,
           customer: customer.id,
-          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY_TEST,
+          publishableKey: process.env.NEXT_PUBLIC_STRIPE_KEY,
         }),
         {
           status: 200,
