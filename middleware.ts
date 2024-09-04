@@ -5,7 +5,7 @@ import { HttpMethod, Route, RouteLogOutput, Timestamp, UUID } from './lib/types'
 
 export async function middleware(request: NextRequest) {
   const start: Timestamp = `${Date.now()}`
-  const requestId: UUID = uuidv4()
+  const requestId: UUID = uuidv4() as UUID
   const method = request.method as HttpMethod
   const pathname = request.nextUrl.pathname as Route
   // Attach the start time and request ID to the request headers
