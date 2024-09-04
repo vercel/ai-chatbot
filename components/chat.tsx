@@ -8,7 +8,6 @@ import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio'
 import SpeechRecognition, {
   useSpeechRecognition
 } from 'react-speech-recognition'
-import { send } from 'process'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -245,7 +244,7 @@ export function Chat({ id }: ChatProps) {
         <div
           style={{
             width: '100%',
-            height: 'calc(100vh - 65px)',
+            height: 'calc(100vh - 85px)',
             display: 'flex',
             flexDirection: 'column-reverse',
             alignItems: 'space-evenly'
