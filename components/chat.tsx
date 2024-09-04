@@ -115,7 +115,7 @@ export function Chat({ id }: ChatProps) {
 
     if (!isResponding) {
       // Start listening for speech immediately when the component mounts
-      SpeechRecognition.startListening({ continuous: true })
+      SpeechRecognition.startListening({ continuous: true, language: 'en-US' })
       console.log('Listening for speech...')
     }
 
