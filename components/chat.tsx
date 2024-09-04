@@ -1,6 +1,6 @@
 'use client'
 import 'regenerator-runtime/runtime'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, use } from 'react'
 import { Message, Session } from '@/lib/types'
 import TalkingHeadComponent from '@/components/avatarai/page'
 import { useChat } from 'ai/react'
@@ -124,6 +124,7 @@ export function Chat({ id }: ChatProps) {
   const [selectedBackground, setSelectedBackground] = useState(
     backgrounds[0].src
   )
+  const [saidWords, setSaidWords] = useState<string[]>([])
   const handleBackgroundChange = (event: any) => {
     const selectedName = event.target.value
     const selected = backgrounds.find(bg => bg.name === selectedName)
@@ -143,6 +144,20 @@ export function Chat({ id }: ChatProps) {
   useEffect(() => {
     setInput(transcript)
   }, [transcript])
+  useEffect(() => {
+    // check if the user has said any of the words in the vocabulary
+    // in the messages and add them to the list of said words
+    // for all messages, only checking the user messages
+    const userMessages = messages.filter(m => m.role === 'user')
+    const userWords = userMessages.map(m => m.content)
+    // remove characters that are not words
+    const words = userWords
+      .join(' ')
+      .replace(/[^a-zA-Z ]/g, '')
+      .split(' ')
+    const newWords = words.filter(w => !saidWords.includes(w))
+    setSaidWords([...saidWords, ...newWords])
+  }, [messages])
 
   useEffect(() => {
     console.log('running lsistener')
@@ -276,31 +291,11 @@ export function Chat({ id }: ChatProps) {
             </select>
           </div>
         </div>
-        <div>
-          {classTypes[classTypes.findIndex(ct => ct.name === classType)]
-            ?.vocabulary?.length > 0 ? (
-            <div
-              style={{
-                display: 'flex', // Flexbox layout for horizontal alignment
-                listStyleType: 'none', // Remove bullet points (not needed for <div> but good to know)
-                padding: 0, // Remove default padding
-                margin: 0, // Remove default margin
-                gap: '20px' // Space between items (use marginRight if not using gap)
-              }}
-            >
-              {classTypes[
-                classTypes.findIndex(ct => ct.name === classType)
-              ].vocabulary.map((word, index) => (
-                <div key={index}>{word}</div> // Using <div> for each word
-              ))}
-            </div>
-          ) : null}
-        </div>
       </div>
       <div
         style={{
           display: 'flex',
-          height: 'calc(99vh - 65px)',
+          height: 'calc(98vh - 65px)',
           width: '100%'
         }}
       >
@@ -309,7 +304,7 @@ export function Chat({ id }: ChatProps) {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             width: '100%',
-            height: 'calc(99vh - 65px)',
+            height: 'calc(98vh - 65px)',
             backgroundImage: `url(${selectedBackground})`,
             transition: 'background-image 0.5s ease-in-out'
           }}
@@ -438,6 +433,41 @@ export function Chat({ id }: ChatProps) {
                   Send
                 </button>
               </form>
+              <div>
+                {classTypes[classTypes.findIndex(ct => ct.name === classType)]
+                  ?.vocabulary?.length > 0 ? (
+                  <div
+                    style={{
+                      display: 'flex', // Flexbox layout for horizontal alignment
+                      padding: 0, // Remove default padding
+                      margin: 0, // Remove default margin
+                      gap: '20px' // Space between items (use marginRight if not using gap)
+                    }}
+                  >
+                    {classTypes[
+                      classTypes.findIndex(ct => ct.name === classType)
+                    ].vocabulary.map((word, index) => (
+                      <span
+                        key={index}
+                        // style so that the word is barely readable if not said
+                        // and animate when the user said it
+                        style={{
+                          padding: '8px',
+                          borderRadius: '20px',
+                          backgroundColor: saidWords.includes(word)
+                            ? '#DCF8C6'
+                            : '#E5E5EA',
+                          color: saidWords.includes(word) ? '#000' : '#fff',
+                          transition: 'background-color 0.5s ease-in-out',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {word}
+                      </span> // Using <div> for each word
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
           ) : (
             <div>
