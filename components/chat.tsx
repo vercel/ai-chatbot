@@ -40,22 +40,60 @@ const backgrounds = [
 const classTypes = [
   {
     name: 'free',
+    vocabulary: [],
     description: 'A class with no specific topic'
   },
   {
     name: 'restaurant',
+    vocabulary: [
+      'eaten',
+      'specialty',
+      'originates',
+      'grilled',
+      'stuffed',
+      'fresh',
+      'recommendation'
+    ],
     description: 'Ask about menu items and recommend international cuisine		'
   },
   {
     name: 'tourist',
+    vocabulary: [
+      'sight',
+      'tourist attraction',
+      'famous',
+      'statue',
+      'national park',
+      'must-see',
+      'suggestion',
+      'cuisine',
+      'depends'
+    ],
     description: 'Suggest interesting places to go in your city'
   },
   {
     name: 'invitations',
+    vocabulary: [
+      'annual',
+      'attend',
+      'formal',
+      'informal',
+      'luncheon',
+      'invite',
+      'Would you like to'
+    ],
     description: 'Extend invitations'
   },
   {
     name: 'occasion',
+    vocabulary: [
+      'party',
+      'have',
+      'special occasion',
+      'graduation',
+      'housewarming',
+      'baby shower'
+    ],
     description: 'Talk about an upcoming special occasion'
   }
 ]
