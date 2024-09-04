@@ -5,12 +5,6 @@ import { Readable } from 'stream'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
-export const config = {
-  api: {
-    bodyParser: false // Disable body parsing, so we can handle file uploads
-  }
-}
-
 function convertWebReadableStreamToNodeReadable(webStream: any) {
   const reader = webStream.getReader()
 
