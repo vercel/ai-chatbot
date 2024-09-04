@@ -100,10 +100,9 @@ export function Chat({ id }: ChatProps) {
     }
   }, [isResponding, isEditing, browserSupportsSpeechRecognition])
 
-  const send_each_sentence = (phrase: string) => {
+  const get_each_sentence = (phrase: string) => {
     const endofSentenceRegex = /([^\.\?\!]+[\.\?\!])/g
     const sentences = phrase.match(endofSentenceRegex) || [] // Match sentences with punctuation
-    console.log('Sentences:', sentences)
     return sentences
   }
 
@@ -112,30 +111,16 @@ export function Chat({ id }: ChatProps) {
       if (messages.length === 0) {
         return
       }
-      console.log('Last message', messages[messages.length - 1])
-      console.log('Messages:', messages[messages.length - 1]?.role)
-      console.log('Messages:', messages[messages.length - 1].content.length)
       if (messages[messages.length - 1]?.role === 'assistant') {
         const lastMessage = messages[messages.length - 1]
-        console.log('Last message:', lastMessage.content)
-        const sentences = send_each_sentence(lastMessage.content)
+        const sentences = get_each_sentence(lastMessage.content)
         for (const sentence of sentences) {
-          console.log('Sentence:', sentence)
-          setTextResponse(sentence)
-
           const audiB = await fetch_and_play_audio({
             text: sentence
           })
-          console.log('Audio ', audiB)
+          setTextResponse(sentence)
           setAudioBuffer(audiB as any)
         }
-        // setTextResponse(lastMessage.content)
-
-        // const audiB = await fetch_and_play_audio({
-        //   text: lastMessage.content
-        // })
-        // console.log('Audio ', audiB)
-        // setAudioBuffer(audiB as any)
       }
     }
     getAudioAndPlay()
@@ -158,23 +143,6 @@ export function Chat({ id }: ChatProps) {
     }
 
     lastAiMessageRef.current = null // Reset for the next AI message
-  }
-  function transformContentToString(content: any): string {
-    if (typeof content === 'string') {
-      return content
-    }
-
-    if (Array.isArray(content)) {
-      return content
-        .map(part => {
-          if (typeof part === 'string') return part
-          if (part.text) return part.text
-          return '' // Fallback in case of an unknown structure
-        })
-        .join('')
-    }
-
-    return ''
   }
 
   useEffect(() => {
