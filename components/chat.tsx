@@ -2,7 +2,7 @@
 import 'regenerator-runtime/runtime'
 import { useEffect, useState, useRef } from 'react'
 import { Message, Session } from '@/lib/types'
-import TalkingHeadComponent from '../app/avatarai/page'
+import TalkingHeadComponent from '@/components/avatarai/page'
 import { useChat } from 'ai/react'
 import fetch_and_play_audio from '@/lib/chat/fetch_and_play_audio'
 import SpeechRecognition, {
