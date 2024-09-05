@@ -3,11 +3,13 @@
 import * as React from 'react'
 
 interface ClassContextType {
-  selectedClass: string | null
-  setSelectedClass: (className: string) => void
+  selectedClass: string
+  setSelectedClass: (id: string) => void
 }
 
-const ClassContext = React.createContext<ClassContextType | undefined>(undefined)
+const ClassContext = React.createContext<ClassContextType | undefined>(
+  undefined
+)
 
 export function useClass() {
   const context = React.useContext(ClassContext)
@@ -22,14 +24,10 @@ interface ClassProviderProps {
 }
 
 export function ClassProvider({ children }: ClassProviderProps) {
-  const [selectedClass, setSelectedClass] = React.useState<string | null>(null)
-
-  const handleSetSelectedClass = (className: string) => {
-    setSelectedClass(className)
-  }
+  const [selectedClass, setSelectedClass] = React.useState<string>('1')
 
   return (
-    <ClassContext.Provider value={{ selectedClass, setSelectedClass: handleSetSelectedClass }}>
+    <ClassContext.Provider value={{ selectedClass, setSelectedClass }}>
       {children}
     </ClassContext.Provider>
   )

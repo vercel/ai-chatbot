@@ -10,6 +10,9 @@ import SpeechRecognition, {
 } from 'react-speech-recognition'
 import classTypes from '@/public/data/classTypes'
 import CrazyButtons from './crazy-buttons'
+import { useBackground } from '@/lib/hooks/background-context'
+import { useClass } from '@/lib/hooks/class-context'
+import Backgrounds from '@/public/data/backgrounds'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -17,28 +20,6 @@ export interface ChatProps extends React.ComponentProps<'div'> {
   session?: Session
   missingKeys: string[]
 }
-const backgrounds = [
-  {
-    name: 'Restaurant',
-    src: '/bg0.jpg'
-  },
-  {
-    name: 'White',
-    src: '/bg1.jpg'
-  },
-  {
-    name: 'Street',
-    src: '/bg2.jpg'
-  },
-  {
-    name: 'House',
-    src: '/bg3.jpg'
-  },
-  {
-    name: 'Office',
-    src: '/bg4.jpg'
-  }
-]
 
 export function Chat({ id }: ChatProps) {
   const [audioBuffer, setAudioBuffer] = useState<Uint8Array | undefined>(
@@ -46,7 +27,7 @@ export function Chat({ id }: ChatProps) {
   )
   const [textResponse, setTextResponse] = useState('')
   const [isEditing, setIsEditing] = useState(false) // Track whether the user is editing
-  const [classType, setClassType] = useState<string>('free')
+
   const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
   // API: https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
   let {
@@ -58,25 +39,15 @@ export function Chat({ id }: ChatProps) {
     isLoading
   } = useChat({
     body: {
-      classType
+      classType: '2'
     }
   })
   const lastAiMessageRef = useRef<Message | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
   const [isResponding, setIsResponding] = useState(false) // Track if we are waiting for a response
-  const [selectedBackground, setSelectedBackground] = useState(
-    backgrounds[0].src
-  )
   const [saidWords, setSaidWords] = useState<string[]>([])
-  const handleBackgroundChange = (event: any) => {
-    const selectedName = event.target.value
-    const selected = backgrounds.find(bg => bg.name === selectedName)
-    setSelectedBackground(selected!.src)
-  }
-  const handleClassTypeChange = (event: any) => {
-    const selectedName = event.target.value
-    setClassType(selectedName)
-  }
+  const { selectedBackground } = useBackground()
+  const { selectedClass } = useClass()
   const {
     transcript,
     resetTranscript,
@@ -87,6 +58,7 @@ export function Chat({ id }: ChatProps) {
   useEffect(() => {
     setInput(transcript)
   }, [transcript])
+
   useEffect(() => {
     // check if the user has said any of the words in the vocabulary
     // in the messages and add them to the list of said words
@@ -100,7 +72,8 @@ export function Chat({ id }: ChatProps) {
 
     // Define your vocabulary (which may include composite words/phrases)
     const vocabulary =
-      classTypes[classTypes.findIndex(ct => ct.name === classType)]?.vocabulary
+      classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
+        ?.vocabulary
     if (!vocabulary) {
       return
     }
@@ -221,32 +194,12 @@ export function Chat({ id }: ChatProps) {
           flexDirection: 'column'
         }}
       >
-        <div
-          style={{
-            display: 'flex'
-          }}
-        >
-          <div>
-            <label htmlFor="background-select">Background: </label>
-            <select id="background-select" onChange={handleBackgroundChange}>
-              {backgrounds.map(bg => (
-                <option key={bg.name} value={bg.name}>
-                  {bg.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="background-select">Class: </label>
-            <select id="background-select" onChange={handleClassTypeChange}>
-              {classTypes.map(ct => (
-                <option key={ct.name} value={ct.name}>
-                  {ct.description}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <span>
+          {
+            classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
+              ?.description
+          }
+        </span>
       </div>
       <div
         style={{
@@ -261,7 +214,11 @@ export function Chat({ id }: ChatProps) {
             backgroundPosition: 'center',
             width: '100%',
             height: 'calc(98vh - 65px)',
-            backgroundImage: `url(${selectedBackground})`,
+            backgroundImage: `url(${
+              Backgrounds.find
+                ? Backgrounds.find(bg => bg.id === selectedBackground)?.src
+                : Backgrounds[0].src
+            })`,
             transition: 'background-image 0.5s ease-in-out'
           }}
         >
@@ -390,7 +347,7 @@ export function Chat({ id }: ChatProps) {
                 </button>
               </form>
               <div>
-                {classTypes[classTypes.findIndex(ct => ct.name === classType)]
+                {classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
                   ?.vocabulary?.length > 0 ? (
                   <div
                     style={{
@@ -401,7 +358,7 @@ export function Chat({ id }: ChatProps) {
                     }}
                   >
                     {classTypes[
-                      classTypes.findIndex(ct => ct.name === classType)
+                      classTypes.findIndex(ct => ct.id === selectedClass)
                     ].vocabulary.map((word, index) => (
                       <span
                         key={index}
