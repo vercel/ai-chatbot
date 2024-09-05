@@ -72,7 +72,8 @@ const classTypes = [
       'vital signs',
       'to measure'
     ],
-    description: 'Lesson #3: Communicate a patient’s vital signs with the medical team'
+    description:
+      'Lesson #3: Communicate a patient’s vital signs with the medical team'
   },
   {
     name: 'Ask about a patient’s medical history',
@@ -88,14 +89,7 @@ const classTypes = [
   },
   {
     name: 'Talk to a patient after an accident',
-    vocabulary: [
-      'hurt',
-      'pain',
-      'bone',
-      'fracture',
-      'sprain',
-      'treatment'
-    ],
+    vocabulary: ['hurt', 'pain', 'bone', 'fracture', 'sprain', 'treatment'],
     description: 'Lesson #5: Talk to a patient after an accident'
   }
 ]
@@ -151,13 +145,26 @@ export function Chat({ id }: ChatProps) {
     // in the messages and add them to the list of said words
     // for all messages, only checking the user messages
     const userMessages = messages.filter(m => m.role === 'user')
-    const userWords = userMessages.map(m => m.content)
-    // remove characters that are not words
-    const words = userWords
+    // Concatenate all user messages into a single string
+    const userText = userMessages
+      .map(m => m.content)
       .join(' ')
-      .replace(/[^a-zA-Z ]/g, '')
-      .split(' ')
-    const newWords = words.filter(w => !saidWords.includes(w))
+      .toLowerCase()
+
+    // Define your vocabulary (which may include composite words/phrases)
+    const vocabulary =
+      classTypes[classTypes.findIndex(ct => ct.name === classType)]?.vocabulary
+    if (!vocabulary) {
+      return
+    }
+    // Filter vocabulary to find terms that are included in the user's text
+    const newWords = vocabulary?.filter(
+      term =>
+        userText.includes(term.toLowerCase()) &&
+        !saidWords.includes(term.toLowerCase())
+    )
+
+    // Update the saidWords state with any new terms found
     setSaidWords([...saidWords, ...newWords])
   }, [messages])
 
