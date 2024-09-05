@@ -1,6 +1,5 @@
-"use client"
+'use client'
 import * as React from 'react'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { SidebarList } from '@/components/sidebar-list'
 import { useClass } from '@/lib/hooks/classContext'
@@ -40,7 +39,8 @@ const classTypes = [
       'vital signs',
       'to measure'
     ],
-    description: 'Lesson #3: Communicate a patient’s vital signs with the medical team'
+    description:
+      'Lesson #3: Communicate a patient’s vital signs with the medical team'
   },
   {
     name: 'Ask about a patient’s medical history',
@@ -56,33 +56,22 @@ const classTypes = [
   },
   {
     name: 'Talk to a patient after an accident',
-    vocabulary: [
-      'hurt',
-      'pain',
-      'bone',
-      'fracture',
-      'sprain',
-      'treatment'
-    ],
+    vocabulary: ['hurt', 'pain', 'bone', 'fracture', 'sprain', 'treatment'],
     description: 'Lesson #5: Talk to a patient after an accident'
   }
 ]
 
-interface ChatHistoryProps {
-  userId?: string
-}
+interface ChatHistoryProps {}
 
-export function ChatHistory({ userId }: ChatHistoryProps) {
+export function ChatHistory({}: ChatHistoryProps) {
   const { selectedClass, setSelectedClass } = useClass()
 
   const handleClassSelect = (className: string) => {
     setSelectedClass(className)
-    console.log(`Selected class: ${className}`)
   }
 
-
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full justify-between">
       <div className="flex items-center justify-between p-4">
         <h4 className="text-sm font-medium">Lesson Options</h4>
       </div>
@@ -96,15 +85,14 @@ export function ChatHistory({ userId }: ChatHistoryProps) {
               onClick={() => handleClassSelect(classType.name)}
               className={cn(
                 'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800',
-                selectedClass === classType.name ? 'bg-blue-200 dark:bg-blue-700' : ''
+                selectedClass === classType.name
+                  ? 'bg-blue-200 dark:bg-blue-700'
+                  : ''
               )}
             >
               <span className="text-base font-medium">
-                {classType.name}
-              </span>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 {classType.description}
-              </p>
+              </span>
             </li>
           ))}
         </ul>
@@ -122,8 +110,7 @@ export function ChatHistory({ userId }: ChatHistoryProps) {
           </div>
         }
       >
-        {/* @ts-ignore */}
-        <SidebarList userId={userId} />
+        <SidebarList />
       </React.Suspense>
     </div>
   )

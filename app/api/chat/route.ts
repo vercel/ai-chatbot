@@ -19,25 +19,76 @@ export async function POST(req: Request) {
     You might be given a speaking goal, a performance guide and a vocabulary list, which are all important to keep in mind.
     Try to guide the student towards the target vocabulary, but don't force it.
     `
-  const classTypes: { [key: string]: string } = {
-    free: '',
-    restaurant: `Speaking goal: Ask about menu items and recommend international cuisine.
-    Act as a waiter at a restaurant that specializes in several international cuisines. Ask the customer if they have any questions about the menu, explain how the dishes are prepared, and offer recommendations based on their tastes.
-    The target vocabulary is: eaten, specialty, originates, grilled, stuffed, fresh, recommendation.`,
-    tourist: `Speaking goal: Suggest interesting places to go in your city.
-    Act as someone who has never visited the city where your friend lives. Try to plan a trip to visit them, asking for advice about what to see and do.
-    The target vocabulary is: sight, tourist attraction, famous, statue, national park, must-see, suggestion, cuisine, depends.`,
-    invitations: `Speaking goal: Extend invitations. 
-    Act as a friendly colleague. If your coworker invites you to an event, ask for relevant further information and determine if you will be able to attend. If you can, then confirm the details and express excitement . If you cannot, then politely decline and express your regret.											
-    The target vocabulary is: annual, attend, formal, informal, luncheon, invite, Would you like to.`,
-    occasion: `
-    Speaking goal: Talk about an upcoming special occasion. 
-    Act as someone who is curious about their neighbor's upcoming plans for a special occasion. Ask what the occasion is and what they are doing to celebrate. Be friendly and ask relevant follow-up questions.
-    The target vocabulary is: party, have, special occasion, graduation, housewarming, baby shower, hold.`
-  }
+  const classTypes: {
+    name: string
+    vocabulary: string[]
+    description: string
+  }[] = [
+    {
+      name: 'Identify important people and places in a hospital',
+      vocabulary: [
+        'medical',
+        'doctor (Dr.)',
+        'nurse',
+        'surgeon',
+        'operating room (OR)',
+        'emergency department (ED)'
+      ],
+      description:
+        'Lesson #1: Identify important people and places in a hospital'
+    },
+    {
+      name: 'Describe safety procedures',
+      vocabulary: [
+        'gloves',
+        'washing hands',
+        'mask',
+        'gown',
+        'isolation',
+        'to disinfect'
+      ],
+      description: 'Lesson #2: Describe safety procedures'
+    },
+    {
+      name: 'Communicate a patient’s vital signs with the medical team',
+      vocabulary: [
+        'weight',
+        'temperature',
+        'pulse',
+        'blood pressure',
+        'vital signs',
+        'to measure'
+      ],
+      description:
+        'Lesson #3: Communicate a patient’s vital signs with the medical team'
+    },
+    {
+      name: 'Ask about a patient’s medical history',
+      vocabulary: [
+        'medical history',
+        'illness',
+        'surgery',
+        'habits',
+        'allergy',
+        'medication'
+      ],
+      description: 'Lesson #4: Ask about a patient’s medical history'
+    },
+    {
+      name: 'Talk to a patient after an accident',
+      vocabulary: ['hurt', 'pain', 'bone', 'fracture', 'sprain', 'treatment'],
+      description: 'Lesson #5: Talk to a patient after an accident'
+    }
+  ]
+  const classText: string = `
+  Speaking goal:${classTypes[classType].name}
+  Performance guide: ${classTypes[classType].description}
+  Vocabulary: ${classTypes[classType].vocabulary.join(', ')}
+  `
+
   const result = await streamText({
     model: groq('llama3-8b-8192'),
-    system: sysPrompt + classTypes[classType],
+    system: sysPrompt + classText,
     messages: convertToCoreMessages(messages)
   })
 
