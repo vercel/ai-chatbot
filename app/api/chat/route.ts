@@ -80,10 +80,13 @@ export async function POST(req: Request) {
       description: 'Lesson #5: Talk to a patient after an accident'
     }
   ]
+  const currentClassType = classTypes.find(
+    classArray => classArray.name === classType
+  )
   const classText: string = `
-  Speaking goal:${classTypes[classType].name}
-  Performance guide: ${classTypes[classType].description}
-  Vocabulary: ${classTypes[classType].vocabulary.join(', ')}
+  Speaking goal:${currentClassType?.name}
+  Performance guide: ${currentClassType?.description}
+  Vocabulary: ${currentClassType?.vocabulary.join(', ')}
   `
 
   const result = await streamText({
