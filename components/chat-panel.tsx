@@ -1,110 +1,138 @@
 import * as React from 'react'
-
-import { shareChat } from '@/app/actions'
-import { Button } from '@/components/ui/button'
-import { PromptForm } from '@/components/prompt-form'
-import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
-import { IconShare } from '@/components/ui/icons'
-import { FooterText } from '@/components/footer'
-import { ChatShareDialog } from '@/components/chat-share-dialog'
-import { useAIState, useActions, useUIState } from 'ai/rsc'
-import type { AI } from '@/lib/chat/actions'
-import { nanoid } from 'nanoid'
-import { UserMessage } from './stocks/message'
+import VocabularyList from './vocabulary-list'
 
 export interface ChatPanelProps {
-  id?: string
-  title?: string
+  setIsChatOpen: (value: boolean) => void
+  messages: any[]
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  selectedClass: string
+  saidWords: string[]
   input: string
+  handleTextareaChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+  textareaRef: React.RefObject<HTMLTextAreaElement>
   setInput: (value: string) => void
-  isAtBottom: boolean
-  scrollToBottom: () => void
 }
 
 export function ChatPanel({
-  id,
-  title,
+  setIsChatOpen,
+  messages,
+  onSubmit,
+  selectedClass,
+  saidWords,
   input,
-  setInput,
-  isAtBottom,
-  scrollToBottom
+  handleTextareaChange,
+  textareaRef
 }: ChatPanelProps) {
-  const [aiState] = useAIState()
-  const [messages, setMessages] = useUIState<typeof AI>()
-  const { submitUserMessage } = useActions()
-  const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
-
-  const exampleMessages = [
-    {
-      heading: "Let's review",
-      subheading: `how to order food`,
-      message: `Let's review how to order food`
-    },
-    {
-      heading: `I want to roleplay`,
-      subheading: `telling my doctor about a terrible flu`,
-      message: `I want to roleplay telling my doctor about a terrible flu`
-    },
-    {
-      heading: `Help me translate`,
-      subheading: `my presentation`,
-      message: `Help me translate my presentation`
-    },
-    {
-      heading: `I am preparing`,
-      subheading: `for a present perfect test, quiz me`,
-      message: `I am preparing for a present perfect test, quiz me`
-    }
-  ]
-
   return (
-    <div className="inset-x-0 bottom-0 w-full bg-gradient-to-b from-muted/30 from-0% to-muted/30 to-50% duration-300 ease-in-out animate-in dark:from-background/10 dark:from-10% dark:to-background/80 peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]">
-      <ButtonScrollToBottom
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-      />
-
-      <div className="mx-auto sm:max-w-2xl sm:px-4">
-        <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
-          {messages.length === 0 &&
-            exampleMessages.map((example, index) => (
-              <div
-                key={example.heading}
-                className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
-                  index > 1 && `hidden md:block`
-                }`}
-                onClick={async () => {
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    {
-                      id: nanoid(),
-                      display: <UserMessage>{example.message}</UserMessage>
-                    }
-                  ])
-
-                  const responseMessage = await submitUserMessage(
-                    example.message
-                  )
-
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    responseMessage
-                  ])
-                }}
-              >
-                <div className="text-sm font-semibold">{example.heading}</div>
-                <div className="text-sm text-zinc-600">
-                  {example.subheading}
-                </div>
-              </div>
-            ))}
-        </div>
-
-        <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
-          <PromptForm input={input} setInput={setInput} />
-          <FooterText className="hidden sm:block" />
-        </div>
+    <div
+      style={{
+        width: '100%', // Responsive width based on viewport
+        height: '75vh', // Fixed height
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end' // Align chat to the bottom
+      }}
+    >
+      {/* Close Button */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end'
+        }}
+      >
+        <button
+          onClick={() => setIsChatOpen(false)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '5px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: '#34B7F1'
+          }}
+        >
+          ✖
+        </button>
       </div>
+
+      <div
+        style={{
+          flex: '1',
+          overflowY: 'auto' // Scrollable
+        }}
+      >
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            style={{
+              textAlign: message.role === 'user' ? 'right' : 'left',
+              marginBottom: '8px',
+              padding: '2px'
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-block',
+                padding: '8px 12px',
+                borderRadius: '20px',
+                backgroundColor:
+                  message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
+                color: '#000',
+                maxWidth: '75%',
+                wordWrap: 'break-word'
+              }}
+            >
+              {message.content}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <form
+        onSubmit={onSubmit}
+        style={{
+          display: 'flex',
+          padding: '8px',
+          borderTop: '1px solid #E5E5EA'
+        }}
+      >
+        <textarea
+          name="prompt"
+          value={input} // Always keep the input updated
+          onChange={handleTextareaChange}
+          ref={textareaRef} // Attach ref to the textarea
+          rows={1}
+          style={{
+            flex: '1',
+            padding: '8px',
+            borderRadius: '20px',
+            border: 'none',
+            resize: 'none', // Disable manual resizing
+            overflow: 'hidden', // Hide overflow to make it look clean
+            backgroundColor: '#F0F0F0',
+            color: 'black'
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            marginLeft: '8px',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: 'none',
+            backgroundColor: '#34B7F1',
+            color: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          Send
+        </button>
+      </form>
+      <VocabularyList selectedClass={selectedClass} saidWords={saidWords} />
     </div>
   )
 }
