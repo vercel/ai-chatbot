@@ -39,62 +39,64 @@ const backgrounds = [
 ]
 const classTypes = [
   {
-    name: 'free',
-    vocabulary: [],
-    description: 'A class with no specific topic'
+    name: 'Identify important people and places in a hospital',
+    vocabulary: [
+      'medical',
+      'doctor (Dr.)',
+      'nurse',
+      'surgeon',
+      'operating room (OR)',
+      'emergency department (ED)'
+    ],
+    description: 'Lesson #1: Identify important people and places in a hospital'
   },
   {
-    name: 'restaurant',
+    name: 'Describe safety procedures',
     vocabulary: [
-      'eaten',
-      'specialty',
-      'originates',
-      'grilled',
-      'stuffed',
-      'fresh',
-      'recommendation'
+      'gloves',
+      'washing hands',
+      'mask',
+      'gown',
+      'isolation',
+      'to disinfect'
     ],
-    description: 'Ask about menu items and recommend international cuisine		'
+    description: 'Lesson #2: Describe safety procedures'
   },
   {
-    name: 'tourist',
+    name: 'Communicate a patient’s vital signs with the medical team',
     vocabulary: [
-      'sight',
-      'tourist attraction',
-      'famous',
-      'statue',
-      'national park',
-      'must-see',
-      'suggestion',
-      'cuisine',
-      'depends'
+      'weight',
+      'temperature',
+      'pulse',
+      'blood pressure',
+      'vital signs',
+      'to measure'
     ],
-    description: 'Suggest interesting places to go in your city'
+    description: 'Lesson #3: Communicate a patient’s vital signs with the medical team'
   },
   {
-    name: 'invitations',
+    name: 'Ask about a patient’s medical history',
     vocabulary: [
-      'annual',
-      'attend',
-      'formal',
-      'informal',
-      'luncheon',
-      'invite',
-      'Would you like to'
+      'medical history',
+      'illness',
+      'surgery',
+      'habits',
+      'allergy',
+      'medication'
     ],
-    description: 'Extend invitations'
+    description: 'Lesson #4: Ask about a patient’s medical history'
   },
   {
-    name: 'occasion',
+    name: 'Talk to a patient after an accident',
     vocabulary: [
-      'party',
-      'have',
-      'special occasion',
-      'graduation',
-      'housewarming',
-      'baby shower'
+      'hurt',
+      'pain',
+      'bone',
+      'fracture',
+      'sprain',
+      'treatment'
     ],
-    description: 'Talk about an upcoming special occasion'
+    description: 'Lesson #5: Talk to a patient after an accident'
   }
 ]
 export function Chat({ id }: ChatProps) {
