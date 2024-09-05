@@ -47,7 +47,6 @@ export function Chat({ id }: ChatProps) {
   const lastAiMessageRef = useRef<Message | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
   const [isResponding, setIsResponding] = useState(false) // Track if we are waiting for a response
-  const [saidWords, setSaidWords] = useState<string[]>([])
   const { selectedBackground } = useBackground()
   const { selectedClass } = useClass()
   const {
@@ -60,35 +59,6 @@ export function Chat({ id }: ChatProps) {
   useEffect(() => {
     setInput(transcript)
   }, [transcript])
-
-  useEffect(() => {
-    // check if the user has said any of the words in the vocabulary
-    // in the messages and add them to the list of said words
-    // for all messages, only checking the user messages
-    const userMessages = messages.filter(m => m.role === 'user')
-    // Concatenate all user messages into a single string
-    const userText = userMessages
-      .map(m => m.content)
-      .join(' ')
-      .toLowerCase()
-
-    // Define your vocabulary (which may include composite words/phrases)
-    const vocabulary =
-      classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
-        ?.vocabulary
-    if (!vocabulary) {
-      return
-    }
-    // Filter vocabulary to find terms that are included in the user's text
-    const newWords = vocabulary?.filter(
-      term =>
-        userText.includes(term.toLowerCase()) &&
-        !saidWords.includes(term.toLowerCase())
-    )
-
-    // Update the saidWords state with any new terms found
-    setSaidWords([...saidWords, ...newWords])
-  }, [messages])
 
   useEffect(() => {
     console.log('running lsistener')
@@ -245,7 +215,6 @@ export function Chat({ id }: ChatProps) {
               messages={messages}
               onSubmit={onSubmit}
               selectedClass={selectedClass}
-              saidWords={saidWords}
               setInput={setInput}
               input={input}
               handleTextareaChange={handleTextareaChange}

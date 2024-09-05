@@ -1,12 +1,12 @@
-import * as React from 'react'
+import classTypes from '@/public/data/classTypes'
 import VocabularyList from './vocabulary-list'
+import { useEffect, useState } from 'react'
 
 export interface ChatPanelProps {
   setIsChatOpen: (value: boolean) => void
   messages: any[]
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
   selectedClass: string
-  saidWords: string[]
   input: string
   handleTextareaChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
   textareaRef: React.RefObject<HTMLTextAreaElement>
@@ -18,11 +18,41 @@ export function ChatPanel({
   messages,
   onSubmit,
   selectedClass,
-  saidWords,
   input,
   handleTextareaChange,
   textareaRef
 }: ChatPanelProps) {
+  const [saidWords, setSaidWords] = useState<string[]>([])
+
+  useEffect(() => {
+    // check if the user has said any of the words in the vocabulary
+    // in the messages and add them to the list of said words
+    // for all messages, only checking the user messages
+    const userMessages = messages.filter(m => m.role === 'user')
+    // Concatenate all user messages into a single string
+    const userText = userMessages
+      .map(m => m.content)
+      .join(' ')
+      .toLowerCase()
+
+    // Define your vocabulary (which may include composite words/phrases)
+    const vocabulary =
+      classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
+        ?.vocabulary
+    if (!vocabulary) {
+      return
+    }
+    // Filter vocabulary to find terms that are included in the user's text
+    const newWords = vocabulary?.filter(
+      term =>
+        userText.includes(term.toLowerCase()) &&
+        !saidWords.includes(term.toLowerCase())
+    )
+
+    // Update the saidWords state with any new terms found
+    setSaidWords([...saidWords, ...newWords])
+  }, [messages])
+
   return (
     <div
       style={{
