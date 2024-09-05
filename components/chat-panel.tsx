@@ -1,6 +1,7 @@
 import classTypes from '@/public/data/classTypes'
 import VocabularyList from './vocabulary-list'
 import { useEffect, useState } from 'react'
+import { Cross2Icon } from '@radix-ui/react-icons'
 
 export interface ChatPanelProps {
   setIsChatOpen: (value: boolean) => void
@@ -70,22 +71,17 @@ export function ChatPanel({
       <div
         style={{
           display: 'flex',
-          justifyContent: 'flex-end'
+          flexDirection: 'row-reverse'
         }}
       >
         <button
           onClick={() => setIsChatOpen(false)}
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '5px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            color: '#34B7F1'
+            height: '40px',
+            width: '40px'
           }}
         >
-          ✖
+          <Cross2Icon className="size-4" />
         </button>
       </div>
 
