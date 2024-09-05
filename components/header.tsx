@@ -1,16 +1,8 @@
 import * as React from 'react'
 import Link from 'next/link'
 
-import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
-import { Button, buttonVariants } from '@/components/ui/button'
-import {
-  IconGitHub,
-  IconNextChat,
-  IconSeparator,
-  IconVercel
-} from '@/components/ui/icons'
-import { UserMenu } from '@/components/user-menu'
+import { IconNextChat, IconSeparator } from '@/components/ui/icons'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
 import { ChatHistory } from './chat-history'
@@ -35,13 +27,6 @@ async function UserOrLogin() {
       )}
       <div className="flex items-center">
         <IconSeparator className="size-6 text-muted-foreground/50" />
-        {/* {session?.user ? (
-          <UserMenu user={session.user} />
-        ) : (
-          <Button variant="link" asChild className="-ml-2">
-            <Link href="/login">Login</Link>
-          </Button>
-        )} */}
       </div>
     </>
   )
@@ -55,7 +40,6 @@ export function Header() {
           <UserOrLogin />
         </React.Suspense>
         <h1 className="text-lg font-bold">Edgen AI Demo</h1>
-
       </div>
       <div className="flex items-center justify-end space-x-2"></div>
     </header>
