@@ -1,8 +1,10 @@
 import classTypes from '@/public/data/classTypes'
 import VocabularyList from './vocabulary-list'
 import { useEffect, useState } from 'react'
-import { Cross2Icon } from '@radix-ui/react-icons'
+import { Cross2Icon, PaperPlaneIcon } from '@radix-ui/react-icons'
 import Message from './message'
+import claraImg from '../public/claraImg.png'
+import Image from 'next/image'
 
 export interface ChatPanelProps {
   setIsChatOpen: (value: boolean) => void
@@ -14,7 +16,110 @@ export interface ChatPanelProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>
   setInput: (value: string) => void
 }
-
+const SubmitButton = () => (
+  <button
+    type="submit"
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+      marginLeft: '8px',
+      padding: '8px 16px',
+      borderRadius: '20px',
+      backgroundColor: '#f8fafc',
+      border: '1px solid #e5e7eb',
+      color: '#020617',
+      cursor: 'pointer'
+    }}
+  >
+    Send
+    <PaperPlaneIcon className="size-4" />
+  </button>
+)
+const ChatInput = ({
+  onSubmit,
+  input,
+  handleTextareaChange,
+  textareaRef
+}: {
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  input: string
+  handleTextareaChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+  textareaRef: React.RefObject<HTMLTextAreaElement>
+}) => (
+  <form
+    onSubmit={onSubmit}
+    style={{
+      display: 'flex',
+      padding: '8px',
+      borderTop: '1px solid #E5E5EA'
+    }}
+  >
+    <textarea
+      name="prompt"
+      value={input} // Always keep the input updated
+      onChange={handleTextareaChange}
+      ref={textareaRef} // Attach ref to the textarea
+      rows={1}
+      style={{
+        flex: '1',
+        padding: '8px',
+        borderRadius: '20px',
+        border: '1px solid #e5e7eb',
+        backgroundColor: '#f8fafc',
+        resize: 'none', // Disable manual resizing
+        overflow: 'hidden', // Hide overflow to make it look clean
+        color: 'black'
+      }}
+    />
+    <SubmitButton />
+  </form>
+)
+const Chatheader = ({
+  setIsChatOpen
+}: {
+  setIsChatOpen: (value: boolean) => void
+}) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'row',
+      borderBottom: '1px solid #E5E5EA',
+      padding: '8px'
+    }}
+  >
+    <div
+      style={{
+        flex: '1',
+        display: 'flex',
+        alignItems: 'center'
+      }}
+    >
+      <Image
+        src={`/images/clara.png`}
+        alt="clara headshot"
+        width={36}
+        height={36}
+        className="rounded-full"
+      />
+      <span
+        className="ml-2 text-lg font-semibold
+      "
+      >
+        Clara
+      </span>
+    </div>
+    <button
+      onClick={() => setIsChatOpen(false)}
+      style={{
+        height: '40px',
+        width: '40px'
+      }}
+    >
+      <Cross2Icon className="size-4" />
+    </button>
+  </div>
+)
 export function ChatPanel({
   setIsChatOpen,
   messages,
@@ -69,24 +174,7 @@ export function ChatPanel({
         justifyContent: 'flex-end' // Align chat to the bottom
       }}
     >
-      {/* Close Button */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row-reverse'
-        }}
-      >
-        <button
-          onClick={() => setIsChatOpen(false)}
-          style={{
-            height: '40px',
-            width: '40px'
-          }}
-        >
-          <Cross2Icon className="size-4" />
-        </button>
-      </div>
-
+      <Chatheader setIsChatOpen={setIsChatOpen} />
       <div
         style={{
           flex: '1',
@@ -97,47 +185,12 @@ export function ChatPanel({
           <Message key={index} message={message} />
         ))}
       </div>
-
-      <form
+      <ChatInput
         onSubmit={onSubmit}
-        style={{
-          display: 'flex',
-          padding: '8px',
-          borderTop: '1px solid #E5E5EA'
-        }}
-      >
-        <textarea
-          name="prompt"
-          value={input} // Always keep the input updated
-          onChange={handleTextareaChange}
-          ref={textareaRef} // Attach ref to the textarea
-          rows={1}
-          style={{
-            flex: '1',
-            padding: '8px',
-            borderRadius: '20px',
-            border: '1px solid #e5e7eb',
-            backgroundColor: '#f8fafc',
-            resize: 'none', // Disable manual resizing
-            overflow: 'hidden', // Hide overflow to make it look clean
-            color: 'black'
-          }}
-        />
-        <button
-          type="submit"
-          style={{
-            marginLeft: '8px',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e5e7eb',
-            color: '#020617',
-            cursor: 'pointer'
-          }}
-        >
-          Send
-        </button>
-      </form>
+        input={input}
+        handleTextareaChange={handleTextareaChange}
+        textareaRef={textareaRef}
+      />
       <VocabularyList selectedClass={selectedClass} saidWords={saidWords} />
     </div>
   )
