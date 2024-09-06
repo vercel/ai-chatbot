@@ -173,16 +173,10 @@ export function ChatPanel({
 
   return (
     <div
+      className="flex flex-col justify-end width-full rounded-lg shadow-lg bg-white"
       style={{
-        width: '100%', // Responsive width based on viewport
         maxWidth: '50vw',
-        height: '85vh', // Fixed height
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end' // Align chat to the bottom
+        height: '85vh' // Fixed height
       }}
     >
       <Chatheader setIsChatOpen={setIsChatOpen} />
