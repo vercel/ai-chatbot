@@ -149,36 +149,16 @@ export function Chat({ id }: ChatProps) {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: 'calc(100vh - 65px)'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <span>
+    <div className="flex flex-col items-center justify-center size-full">
+      <div className="flex flex-col items-center justify-center">
+        <span className="text-2xl font-semibold text-center p-1">
           {
             classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
               ?.description
           }
         </span>
       </div>
-      <div
-        style={{
-          display: 'flex',
-          height: 'calc(98vh - 65px)',
-          width: '100%'
-        }}
-      >
+      <div className="flex items-center justify-center size-full">
         <div
           style={{
             backgroundSize: 'cover',
@@ -199,15 +179,7 @@ export function Chat({ id }: ChatProps) {
             setIsResponding={setIsResponding}
           />
         </div>
-        <div
-          style={{
-            width: '100%',
-            height: 'calc(98vh - 85px)',
-            display: 'flex',
-            flexDirection: 'column-reverse',
-            alignItems: 'space-evenly'
-          }}
-        >
+        <div className="bg-white flex-col-reverse items-evenly px-2 shadow-sm">
           {isChatOpen ? (
             <ChatPanel
               setIsChatOpen={setIsChatOpen}

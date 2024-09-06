@@ -1,7 +1,7 @@
 import classTypes from '@/public/data/classTypes'
 import VocabularyList from './vocabulary-list'
 import { useEffect, useState } from 'react'
-import { Cross2Icon, PaperPlaneIcon } from '@radix-ui/react-icons'
+import { Cross2Icon, PaperPlaneIcon, PlusIcon } from '@radix-ui/react-icons'
 import Message from './message'
 import claraImg from '../public/claraImg.png'
 import Image from 'next/image'
@@ -16,23 +16,19 @@ export interface ChatPanelProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>
   setInput: (value: string) => void
 }
+const AttachButton = () => (
+  <button
+    disabled
+    className="flex items-center rounded-full px-3 border border-gray-300 mx-1"
+  >
+    <PlusIcon className="size-4" />
+  </button>
+)
 const SubmitButton = () => (
   <button
     type="submit"
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px',
-      marginLeft: '8px',
-      padding: '8px 16px',
-      borderRadius: '20px',
-      backgroundColor: '#f8fafc',
-      border: '1px solid #e5e7eb',
-      color: '#020617',
-      cursor: 'pointer'
-    }}
+    className="flex items-center rounded-full px-3 border border-gray-300 mx-1"
   >
-    Send
     <PaperPlaneIcon className="size-4" />
   </button>
 )
@@ -55,22 +51,14 @@ const ChatInput = ({
       borderTop: '1px solid #E5E5EA'
     }}
   >
+    <AttachButton />
     <textarea
       name="prompt"
       value={input} // Always keep the input updated
       onChange={handleTextareaChange}
       ref={textareaRef} // Attach ref to the textarea
       rows={1}
-      style={{
-        flex: '1',
-        padding: '8px',
-        borderRadius: '20px',
-        border: '1px solid #e5e7eb',
-        backgroundColor: '#f8fafc',
-        resize: 'none', // Disable manual resizing
-        overflow: 'hidden', // Hide overflow to make it look clean
-        color: 'black'
-      }}
+      className="flex p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring focus:border-blue-300  resize-none"
     />
     <SubmitButton />
   </form>
@@ -120,6 +108,18 @@ const Chatheader = ({
     </button>
   </div>
 )
+const MessageList = ({ messages }: { messages: any[] }) => (
+  <div
+    style={{
+      flex: '1',
+      overflowY: 'auto' // Scrollable
+    }}
+  >
+    {messages.map((message, index) => (
+      <Message key={index} message={message} />
+    ))}
+  </div>
+)
 export function ChatPanel({
   setIsChatOpen,
   messages,
@@ -165,7 +165,7 @@ export function ChatPanel({
       style={{
         width: '100%', // Responsive width based on viewport
         maxWidth: '50vw',
-        height: '75vh', // Fixed height
+        height: '85vh', // Fixed height
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         backgroundColor: '#fff',
@@ -175,16 +175,7 @@ export function ChatPanel({
       }}
     >
       <Chatheader setIsChatOpen={setIsChatOpen} />
-      <div
-        style={{
-          flex: '1',
-          overflowY: 'auto' // Scrollable
-        }}
-      >
-        {messages.map((message, index) => (
-          <Message key={index} message={message} />
-        ))}
-      </div>
+      <MessageList messages={messages} />
       <ChatInput
         onSubmit={onSubmit}
         input={input}
