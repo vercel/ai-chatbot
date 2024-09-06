@@ -1,56 +1,65 @@
-import supabase from '@/lib/supabase/supabase'
-import create_response from '@/lib/api/create_response'
-import check_missing_fields from '@/lib/api/check_missing_fields'
-import { NextRequest } from 'next/server'
+import supabase from '@/lib/supabase/supabase';
+import create_response from '@/lib/api/create_response';
+import check_missing_fields from '@/lib/api/check_missing_fields';
+import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    console.log('Received request to fetch user data');
+    console.log('Received userId:', userId);
 
     if (!userId || typeof userId !== 'string') {
+      console.error('Invalid or missing userId:', userId);
       return create_response({
         request,
         data: { error: 'Invalid or missing userId' },
         status: 400
-      })
+      });
     }
+
+    console.log('Fetching user data from Supabase for userId:', userId);
 
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('firebase_id', userId)
-      .single()
+      .eq('id', userId)
+      .single();
 
     if (error) {
-      console.error('Error fetching user data:', error.message)
+      console.error('Error fetching user data from Supabase:', error.message);
       return create_response({
         request,
         data: { error: error.message },
         status: 500
-      })
+      });
     }
 
     if (!data) {
+      console.error('User not found for userId:', userId);
       return create_response({
         request,
         data: { error: 'User not found' },
         status: 404
-      })
+      });
     }
+
+    console.log('User data successfully retrieved:', data);
 
     return create_response({
       request,
       data: { data },
       status: 200
-    })
+    });
   } catch (err) {
-    console.error('Error handling GET request:', err)
+    console.error('Error handling GET request:', err);
     return create_response({
       request,
       data: { error: 'Internal Server Error' },
       status: 500
-    })
+    });
   }
 }
 
@@ -128,7 +137,7 @@ export async function PATCH(request: NextRequest) {
     const { data, error } = await supabase
       .from('users')
       .update(updates)
-      .eq('firebase_id', userId)
+      .eq('id', userId)
       .single()
 
     if (error) {
