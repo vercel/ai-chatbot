@@ -12,8 +12,27 @@ export async function middleware(request: NextRequest) {
   const method = request.method as HttpMethod;
   const pathname = request.nextUrl.pathname as Route;
   
-  // Attach the start time and request ID to the request headers
+  // Create a NextResponse object to attach headers
   const response = NextResponse.next();
+  
+  // Attach CORS headers to allow cross-origin requests
+  response.headers.set('Access-Control-Allow-Origin', '*'); // Adjust origin as needed
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Allow these HTTP methods
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allow these headers
+  
+  // Handle preflight OPTIONS request
+  if (method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  }
+  
+  // Attach the start time and request ID to the request headers
   response.headers.set('x-start-time', start);
   response.headers.set('x-request-id', requestId);
 
@@ -24,5 +43,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)']
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'], // Apply middleware to all routes except static files
 };
