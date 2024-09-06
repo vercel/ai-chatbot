@@ -13,7 +13,6 @@ import CrazyButtons from './crazy-buttons'
 import { useBackground } from '@/lib/hooks/background-context'
 import { useClass } from '@/lib/hooks/class-context'
 import Backgrounds from '@/public/data/backgrounds'
-import VocabularyList from './vocabulary-list'
 import { ChatPanel } from './chat-panel'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
