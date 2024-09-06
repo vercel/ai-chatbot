@@ -5,6 +5,9 @@ import { Cross2Icon, PaperPlaneIcon, PlusIcon } from '@radix-ui/react-icons'
 import Message from './message'
 import claraImg from '../public/claraImg.png'
 import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { Textarea } from './ui/textarea'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export interface ChatPanelProps {
   setIsChatOpen: (value: boolean) => void
@@ -17,28 +20,14 @@ export interface ChatPanelProps {
   setInput: (value: string) => void
 }
 const AttachButton = () => (
-  <button
-    disabled
-    style={{
-      height: '40px',
-      width: '40px'
-    }}
-    className="flex items-center rounded-full px-3 border border-gray-300 mx-1"
-  >
-    <PlusIcon className="size-4" />
-  </button>
+  <Button variant="outline" size="icon" disabled>
+    <PlusIcon className="dark:text-white" />
+  </Button>
 )
 const SubmitButton = () => (
-  <button
-    type="submit"
-    style={{
-      height: '40px',
-      width: '40px'
-    }}
-    className="flex items-center rounded-full px-3 border border-gray-300 mx-1"
-  >
-    <PaperPlaneIcon className="size-4" />
-  </button>
+  <Button variant="outline" size="icon" type="submit">
+    <PaperPlaneIcon className="dark:text-white" />
+  </Button>
 )
 const ChatInput = ({
   onSubmit,
@@ -53,23 +42,18 @@ const ChatInput = ({
 }) => (
   <form
     onSubmit={onSubmit}
-    style={{
-      display: 'flex',
-      // push items to end
-      justifyContent: 'flex-end',
-      alignItems: 'flex-end',
-      padding: '8px',
-      borderTop: '1px solid #E5E5EA'
-    }}
+    className="flex gap-2 items-end justify-end p-2 border-t border-gray-200 dark:border-gray-700"
   >
     <AttachButton />
-    <textarea
+    <Textarea
+      style={{ resize: 'none' }}
+      className="dark:bg-primary dark:text-primary-foreground"
       name="prompt"
       value={input} // Always keep the input updated
       onChange={handleTextareaChange}
-      ref={textareaRef} // Attach ref to the textarea
+      ref={textareaRef} // Attach ref to the T
       rows={1}
-      className="flex p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring focus:border-blue-300  resize-none"
+      placeholder="Type or dictate a message"
     />
     <SubmitButton />
   </form>
@@ -94,29 +78,17 @@ const Chatheader = ({
         alignItems: 'center'
       }}
     >
-      <Image
-        src={`/images/clara.png`}
-        alt="clara headshot"
-        width={36}
-        height={36}
-        className="rounded-full"
-      />
-      <span
-        className="ml-2 text-lg font-semibold
-      "
-      >
+      <Avatar>
+        <AvatarImage src={`/images/clara.png`} alt="Clara" />
+        <AvatarFallback>Clara</AvatarFallback>
+      </Avatar>
+      <span className="ml-2 text-lg font-semibold dark:text-white text-black">
         Clara
       </span>
     </div>
-    <button
-      onClick={() => setIsChatOpen(false)}
-      style={{
-        height: '40px',
-        width: '40px'
-      }}
-    >
+    <Button variant="ghost" onClick={() => setIsChatOpen(false)} size={'icon'}>
       <Cross2Icon className="size-4" />
-    </button>
+    </Button>
   </div>
 )
 const MessageList = ({ messages }: { messages: any[] }) => (
@@ -173,7 +145,7 @@ export function ChatPanel({
 
   return (
     <div
-      className="flex flex-col justify-end width-full rounded-lg shadow-lg bg-white"
+      className="flex flex-col justify-end width-full rounded-lg shadow-lg "
       style={{
         maxWidth: '50vw',
         height: '85vh' // Fixed height

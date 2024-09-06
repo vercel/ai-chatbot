@@ -25,7 +25,7 @@ export function ChatHistory({}: ChatHistoryProps) {
     <div className="flex flex-col h-full justify-between">
       {settingTitle({ title: 'Class Types' })}
       {/* Scrollable Class Types Section */}
-      <div className="mb-2 px-4 flex-1 overflow-auto">
+      <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
         <ul className="space-y-2 mt-2">
           {classTypes.map((classType, index) => (
             <li
@@ -45,9 +45,10 @@ export function ChatHistory({}: ChatHistoryProps) {
           ))}
         </ul>
       </div>
+
       {settingTitle({ title: 'Backgrounds' })}
       {/* Scrollable Background Options Section */}
-      <div className="mb-2 px-4 flex-1 overflow-auto">
+      <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
         <ul className="space-y-2 mt-2">
           {backgrounds.map((background, index) => (
             <li
@@ -67,7 +68,7 @@ export function ChatHistory({}: ChatHistoryProps) {
       </div>
       {settingTitle({ title: 'Clara emotes' })}
       {/* Scrollable emotes Section */}
-      <div className="mb-2 px-4 flex-1 overflow-auto">
+      <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
         <ul className="space-y-2 mt-2">
           {emotes.map((emote, index) => (
             <li
