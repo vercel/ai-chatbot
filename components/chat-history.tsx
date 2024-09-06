@@ -6,6 +6,8 @@ import { useClass } from '@/lib/hooks/class-context'
 import { useBackground } from '@/lib/hooks/background-context'
 import classTypes from '@/public/data/classTypes'
 import backgrounds from '@/public/data/backgrounds'
+import emotes from '@/public/data/emotes'
+import { useEmote } from '@/lib/hooks/emote-context'
 
 interface ChatHistoryProps {}
 const settingTitle = ({ title }: { title: string }) => (
@@ -17,11 +19,11 @@ const settingTitle = ({ title }: { title: string }) => (
 export function ChatHistory({}: ChatHistoryProps) {
   const { selectedClass, setSelectedClass } = useClass()
   const { selectedBackground, setSelectedBackground } = useBackground()
+  const { setSelectedEmote } = useEmote()
 
   return (
     <div className="flex flex-col h-full justify-between">
       {settingTitle({ title: 'Class Types' })}
-
       {/* Scrollable Class Types Section */}
       <div className="mb-2 px-4 flex-1 overflow-auto">
         <ul className="space-y-2 mt-2">
@@ -43,11 +45,8 @@ export function ChatHistory({}: ChatHistoryProps) {
           ))}
         </ul>
       </div>
-
       {settingTitle({ title: 'Backgrounds' })}
-
       {/* Scrollable Background Options Section */}
-
       <div className="mb-2 px-4 flex-1 overflow-auto">
         <ul className="space-y-2 mt-2">
           {backgrounds.map((background, index) => (
@@ -66,7 +65,25 @@ export function ChatHistory({}: ChatHistoryProps) {
           ))}
         </ul>
       </div>
-
+      {settingTitle({ title: 'Clara emotes' })}
+      {/* Scrollable emotes Section */}
+      <div className="mb-2 px-4 flex-1 overflow-auto">
+        <ul className="space-y-2 mt-2">
+          {emotes.map((emote, index) => (
+            <li
+              key={index}
+              onClick={() => setSelectedEmote(emote.emoji)}
+              className={
+                'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800'
+              }
+            >
+              <span className="text-base font-medium">
+                {emote.emoji} {emote.name}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
       <React.Suspense
         fallback={
           <div className="flex flex-col flex-1 px-4 space-y-4 overflow-auto">

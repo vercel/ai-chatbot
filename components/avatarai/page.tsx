@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client'
 
-import React, { useEffect, useRef, useState, createContext } from 'react'
+import React, { useEffect, useRef, useState, createContext, use } from 'react'
 // Ensure you have these dependencies correctly imported or available in your project
 import { TalkingHead } from '@/components/TalkingHead/modules/talkinghead.mjs' // This path might need to be adjusted based on your project setup
 import localImage from '../../public/background.png'
@@ -23,6 +23,8 @@ import { setupWebSocket } from '@/components/avatarai/websocket'
 import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
+import { useEmote } from '@/lib/hooks/emote-context'
+
 const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
   // the audioToSay is an audio Buffer, like what we get from the server
   // the textToSay is the text that matches the audioToSay
@@ -56,6 +58,12 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
   const reactQueue = useRef([])
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
+  const { selectedEmote } = useEmote()
+
+  useEffect(() => {
+    if (selectedEmote && selectedEmote !== '')
+      head.current.speakEmoji(selectedEmote)
+  }, [selectedEmote])
 
   useEffect(() => {
     console.log('TalkingHeadComponent mounted')
