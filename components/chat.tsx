@@ -179,7 +179,7 @@ export function Chat({ id }: ChatProps) {
             setIsResponding={setIsResponding}
           />
         </div>
-        <div className="bg-white flex-col-reverse items-evenly px-2 shadow-sm">
+        <div className="flex-col-reverse items-evenly px-2">
           {isChatOpen ? (
             <ChatPanel
               setIsChatOpen={setIsChatOpen}

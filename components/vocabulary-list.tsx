@@ -17,7 +17,6 @@ const VocabularyList = ({
             overflowX: 'auto' /* Allow horizontal scrolling */,
             whiteSpace: 'nowrap', // Remove default margin
             padding: '8px',
-
             gap: '10px' // Space between items (use marginRight if not using gap)
           }}
         >
@@ -34,8 +33,7 @@ const VocabularyList = ({
                 borderRadius: '20px',
                 color: saidWords.includes(word) ? '#DCF8C6' : '#E5E5EA',
                 backgroundColor: saidWords.includes(word) ? '#000' : '#fff',
-                transition: 'background-color 0.5s ease-in-out',
-                cursor: 'pointer'
+                transition: 'background-color 0.5s ease-in-out'
               }}
             >
               {word}

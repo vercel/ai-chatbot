@@ -19,6 +19,10 @@ export interface ChatPanelProps {
 const AttachButton = () => (
   <button
     disabled
+    style={{
+      height: '40px',
+      width: '40px'
+    }}
     className="flex items-center rounded-full px-3 border border-gray-300 mx-1"
   >
     <PlusIcon className="size-4" />
@@ -27,6 +31,10 @@ const AttachButton = () => (
 const SubmitButton = () => (
   <button
     type="submit"
+    style={{
+      height: '40px',
+      width: '40px'
+    }}
     className="flex items-center rounded-full px-3 border border-gray-300 mx-1"
   >
     <PaperPlaneIcon className="size-4" />
@@ -47,6 +55,9 @@ const ChatInput = ({
     onSubmit={onSubmit}
     style={{
       display: 'flex',
+      // push items to end
+      justifyContent: 'flex-end',
+      alignItems: 'flex-end',
       padding: '8px',
       borderTop: '1px solid #E5E5EA'
     }}
