@@ -11,6 +11,8 @@ const classTypes: {
       'medical',
       'doctor (Dr.)',
       'nurse',
+      'Intensive Care Unit (ICU)',
+      'ward',
       'surgeon',
       'operating room (OR)',
       'emergency department (ED)'

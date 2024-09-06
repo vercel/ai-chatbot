@@ -2,6 +2,7 @@ import classTypes from '@/public/data/classTypes'
 import VocabularyList from './vocabulary-list'
 import { useEffect, useState } from 'react'
 import { Cross2Icon } from '@radix-ui/react-icons'
+import Message from './message'
 
 export interface ChatPanelProps {
   setIsChatOpen: (value: boolean) => void
@@ -58,6 +59,7 @@ export function ChatPanel({
     <div
       style={{
         width: '100%', // Responsive width based on viewport
+        maxWidth: '50vw',
         height: '75vh', // Fixed height
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -92,29 +94,7 @@ export function ChatPanel({
         }}
       >
         {messages.map((message, index) => (
-          <div
-            key={index}
-            style={{
-              textAlign: message.role === 'user' ? 'right' : 'left',
-              marginBottom: '8px',
-              padding: '2px'
-            }}
-          >
-            <div
-              style={{
-                display: 'inline-block',
-                padding: '8px 12px',
-                borderRadius: '20px',
-                backgroundColor:
-                  message.role === 'user' ? '#DCF8C6' : '#E5E5EA',
-                color: '#000',
-                maxWidth: '75%',
-                wordWrap: 'break-word'
-              }}
-            >
-              {message.content}
-            </div>
-          </div>
+          <Message key={index} message={message} />
         ))}
       </div>
 
@@ -136,10 +116,10 @@ export function ChatPanel({
             flex: '1',
             padding: '8px',
             borderRadius: '20px',
-            border: 'none',
+            border: '1px solid #e5e7eb',
+            backgroundColor: '#f8fafc',
             resize: 'none', // Disable manual resizing
             overflow: 'hidden', // Hide overflow to make it look clean
-            backgroundColor: '#F0F0F0',
             color: 'black'
           }}
         />
@@ -149,9 +129,9 @@ export function ChatPanel({
             marginLeft: '8px',
             padding: '8px 16px',
             borderRadius: '20px',
-            border: 'none',
-            backgroundColor: '#34B7F1',
-            color: '#fff',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e5e7eb',
+            color: '#020617',
             cursor: 'pointer'
           }}
         >

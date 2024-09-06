@@ -14,9 +14,11 @@ const VocabularyList = ({
         <div
           style={{
             display: 'flex', // Flexbox layout for horizontal alignment
-            padding: 0, // Remove default padding
-            margin: 0, // Remove default margin
-            gap: '20px' // Space between items (use marginRight if not using gap)
+            overflowX: 'auto' /* Allow horizontal scrolling */,
+            whiteSpace: 'nowrap', // Remove default margin
+            padding: '8px',
+
+            gap: '10px' // Space between items (use marginRight if not using gap)
           }}
         >
           {classTypes[
@@ -28,11 +30,10 @@ const VocabularyList = ({
               // and animate when the user said it
               style={{
                 padding: '8px',
+                border: '1px solid #e5e7eb',
                 borderRadius: '20px',
-                backgroundColor: saidWords.includes(word)
-                  ? '#DCF8C6'
-                  : '#E5E5EA',
-                color: saidWords.includes(word) ? '#000' : '#fff',
+                color: saidWords.includes(word) ? '#DCF8C6' : '#E5E5EA',
+                backgroundColor: saidWords.includes(word) ? '#000' : '#fff',
                 transition: 'background-color 0.5s ease-in-out',
                 cursor: 'pointer'
               }}
