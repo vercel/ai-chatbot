@@ -28,7 +28,7 @@ export function Chat({ id }: ChatProps) {
   )
   const [textResponse, setTextResponse] = useState('')
   const [isEditing, setIsEditing] = useState(false) // Track whether the user is editing
-
+  const [localClassType, setLocalClassType] = useState('2')
   const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
   // API: https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
   let {
@@ -40,7 +40,7 @@ export function Chat({ id }: ChatProps) {
     isLoading
   } = useChat({
     body: {
-      classType: '2'
+      classType: localClassType
     }
   })
   const lastAiMessageRef = useRef<Message | null>(null)
@@ -55,6 +55,9 @@ export function Chat({ id }: ChatProps) {
     listening
   } = useSpeechRecognition()
 
+  useEffect(() => {
+    setLocalClassType(selectedClass)
+  }, [selectedClass])
   useEffect(() => {
     setInput(transcript)
   }, [transcript])
