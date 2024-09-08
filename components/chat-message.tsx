@@ -1,5 +1,6 @@
 // Inspired by Chatbot-UI and modified to fit the needs of this project
 // @see https://github.com/mckaywrigley/chatbot-ui/blob/main/components/Chat/ChatMessage.tsx
+// Note this file is no longer in use, see message.tsx for message rendering
 
 import { Message } from 'ai'
 import remarkGfm from 'remark-gfm'
@@ -39,9 +40,9 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
             p({ children }) {
               return <p className="mb-2 last:mb-0">{children}</p>
             },
-            code({ node, inline, className, children, ...props }) {
-              if (children.length) {
-                if (children[0] == '▍') {
+            code({ node, className, children, ...props }) {
+              if (children && Array.isArray(children) && children.length > 0) {
+                if (children[0] === '▍') {
                   return (
                     <span className="mt-1 cursor-default animate-pulse">▍</span>
                   )
@@ -52,9 +53,9 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
 
               const match = /language-(\w+)/.exec(className || '')
 
-              if (inline) {
+              if (!className) {
                 return (
-                  <code className={className} {...props}>
+                  <code className="inline-code" {...props}>
                     {children}
                   </code>
                 )
