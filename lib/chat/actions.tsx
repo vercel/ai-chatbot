@@ -517,33 +517,35 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  onSetAIState: async ({ state }) => {
+  onSetAIState: async ({ state, done }) => {
     'use server'
 
-    const session = await auth()
+    if (done) {
+      const session = await auth()
 
-    if (session && session.user) {
-      const { chatId, messages } = state
+      if (session && session.user) {
+        const { chatId, messages } = state
 
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
+        const createdAt = new Date()
+        const userId = session.user.id as string
+        const path = `/chat/${chatId}`
 
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
+        const firstMessageContent = messages[0].content as string
+        const title = firstMessageContent.substring(0, 100)
 
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
+        const chat: Chat = {
+          id: chatId,
+          title,
+          userId,
+          createdAt,
+          messages,
+          path
+        }
+
+        await saveChat(chat)
+      } else {
+        return
       }
-
-      await saveChat(chat)
-    } else {
-      return
     }
   }
 })
