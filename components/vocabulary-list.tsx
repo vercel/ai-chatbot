@@ -24,7 +24,11 @@ const VocabularyList = ({
             </Badge>
           ))}
         </div>
-      ) : null}
+      ) : (
+        <div className="flex overflow-x-auto whitespace-nowrap p-2 gap-2 ">
+          <span className="text-gray-500">No vocabulary for this lesson</span>
+        </div>
+      )}
     </div>
   )
 }
