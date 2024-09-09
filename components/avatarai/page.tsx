@@ -1382,10 +1382,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
     }
     await processEvent(event)
   }
-  const initTalkingHead = async (
-    nodeAvatar,
-    url = 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb?morphTargets=ARKit,Oculus+Visemes,mouthOpen,mouthSmile,eyesClosed,eyesLookUp,eyesLookDown&textureSizeLimit=1024&textureFormat=png'
-  ) => {
+  const initTalkingHead = async (nodeAvatar, url = '/glb/clara.glb') => {
     if (!nodeAvatar) return
     const newHead = new TalkingHead(nodeAvatar, {
       ttsEndpoint:

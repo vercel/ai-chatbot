@@ -39,15 +39,6 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <link rel="preconnect" href="https://models.readyplayer.me/" />
-      <link
-        rel="preload"
-        href={
-          'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb?morphTargets=ARKit,Oculus+Visemes,mouthOpen,mouthSmile,eyesClosed,eyesLookUp,eyesLookDown&textureSizeLimit=1024&textureFormat=png'
-        }
-        as="fetch"
-      />
-
       <body
         className={cn(
           'font-sans antialiased',
