@@ -8,14 +8,20 @@ const VocabularyList = ({
   selectedClass: string
   saidWords: string[]
 }) => {
+  const vocabulary =
+    classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
+      ?.vocabulary || []
+  // Filter out the saidWords and concatenate them at the end
+  const filteredVocabulary = vocabulary.filter(
+    word => !saidWords.includes(word)
+  )
+  const updatedVocabulary = [...filteredVocabulary, ...saidWords]
+
   return (
     <div>
-      {classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
-        ?.vocabulary?.length > 0 ? (
-        <div className="flex overflow-x-auto whitespace-nowrap p-2 gap-2 ">
-          {classTypes[
-            classTypes.findIndex(ct => ct.id === selectedClass)
-          ].vocabulary.map((word, index) => (
+      {updatedVocabulary.length > 0 ? (
+        <div className="flex overflow-x-auto whitespace-nowrap p-2 gap-2">
+          {updatedVocabulary.map((word, index) => (
             <Badge
               key={index}
               variant={`${saidWords.includes(word) ? 'default' : 'secondary'}`}

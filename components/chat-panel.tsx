@@ -112,14 +112,21 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const [saidWords, setSaidWords] = useState<string[]>([])
 
+  const normalizeWord = (word: string) => {
+    return word
+      .replace(/\s*\(.*?\)\s*/g, '')
+      .trim()
+      .toLowerCase()
+  }
+
   useEffect(() => {
-    // check if the user has said any of the words in the vocabulary
+    // Check if the user has said any of the words in the vocabulary
     // in the messages and add them to the list of said words
     // for all messages, only checking the user messages
     const userMessages = messages.filter(m => m.role === 'user')
     // Concatenate all user messages into a single string
     const userText = userMessages
-      .map(m => m.content)
+      .map(m => normalizeWord(m.content))
       .join(' ')
       .toLowerCase()
 
@@ -130,16 +137,19 @@ export function ChatPanel({
     if (!vocabulary) {
       return
     }
-    // Filter vocabulary to find terms that are included in the user's text
-    const newWords = vocabulary?.filter(
-      term =>
-        userText.includes(term.toLowerCase()) &&
-        !saidWords.includes(term.toLowerCase())
-    )
+
+    // Normalize the vocabulary terms
+    const normalizedVocabulary = vocabulary.map(normalizeWord)
+
+    // Use regex to find whole words or phrases in the user's text
+    const newWords = normalizedVocabulary.filter(term => {
+      const termRegex = new RegExp(`\\b${term}\\b`, 'i') // Match whole words
+      return termRegex.test(userText) && !saidWords.includes(term)
+    })
 
     // Update the saidWords state with any new terms found
-    setSaidWords([...saidWords, ...newWords])
-  }, [messages])
+    setSaidWords(prevSaidWords => [...prevSaidWords, ...newWords])
+  }, [messages, classTypes, selectedClass])
 
   return (
     <div
