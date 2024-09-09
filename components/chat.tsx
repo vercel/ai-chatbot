@@ -195,7 +195,7 @@ export function Chat({ id }: ChatProps) {
                 ? Backgrounds.find(bg => bg.id === selectedBackground)?.src
                 : Backgrounds[0].src
             })`,
-            transition: 'background-image 0.5s ease-in-out'
+            transition: '1s ease 0.1s'
           }}
         >
           <TalkingHeadComponent

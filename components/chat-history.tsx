@@ -8,7 +8,7 @@ import classTypes from '@/public/data/classTypes'
 import backgrounds from '@/public/data/backgrounds'
 import emotes from '@/public/data/emotes'
 import { useEmote } from '@/lib/hooks/emote-context'
-
+import Image from 'next/image'
 interface ChatHistoryProps {}
 const settingTitle = ({ title }: { title: string }) => (
   <div className="flex items-center justify-between p-4">
@@ -55,13 +55,19 @@ export function ChatHistory({}: ChatHistoryProps) {
               key={index}
               onClick={() => setSelectedBackground(background.id)}
               className={cn(
-                'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800',
+                'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800 flex items-center justify-between',
                 selectedBackground === background.id
                   ? 'bg-blue-200 dark:bg-blue-700'
                   : ''
               )}
             >
               <span className="text-base font-medium">{background.name}</span>
+              <Image
+                src={background.src}
+                alt={background.name}
+                width={40}
+                height={40}
+              />
             </li>
           ))}
         </ul>
