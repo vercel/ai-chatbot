@@ -64,6 +64,13 @@ const classTypes: {
     name: 'Talk to a patient after an accident',
     vocabulary: ['hurt', 'pain', 'bone', 'fracture', 'sprain', 'treatment'],
     description: 'Lesson #5: Talk to a patient after an accident'
+  },
+  {
+    id: '6',
+    name: 'Talk about health in general with no specific context',
+    vocabulary: [],
+    description:
+      'Free lesson: Talk about health in general with no specific context'
   }
 ]
 
