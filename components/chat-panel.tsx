@@ -61,21 +61,8 @@ const Chatheader = ({
 }: {
   setIsChatOpen: (value: boolean) => void
 }) => (
-  <div
-    style={{
-      display: 'flex',
-      flexDirection: 'row',
-      borderBottom: '1px solid #E5E5EA',
-      padding: '8px'
-    }}
-  >
-    <div
-      style={{
-        flex: '1',
-        display: 'flex',
-        alignItems: 'center'
-      }}
-    >
+  <div className="flex flex-row justify-between border-b border-gray-200 dark:border-gray-700 p-2">
+    <div className="flex items-center">
       <Avatar>
         <AvatarImage src={`/images/clara.png`} alt="Clara" />
         <AvatarFallback>Clara</AvatarFallback>
