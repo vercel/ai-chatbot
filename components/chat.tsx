@@ -188,7 +188,7 @@ export function Chat({ id }: ChatProps) {
       </div>
       <div className="flex size-full justify-between">
         <div
-          className="bg-cover bg-center w-full w-1/2"
+          className="bg-cover bg-center h-full w-1/2"
           style={{
             backgroundImage: `url(${
               Backgrounds.find
