@@ -9,7 +9,6 @@ import { Header } from '@/components/header'
 import { Toaster } from '@/components/ui/sonner'
 import 'regenerator-runtime/runtime'
 
-
 export const metadata = {
   metadataBase: process.env.VERCEL_URL
     ? new URL(`https://${process.env.VERCEL_URL}`)
@@ -40,6 +39,15 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <link rel="preconnect" href="https://models.readyplayer.me/" />
+      <link
+        rel="preload"
+        href={
+          'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb?morphTargets=ARKit,Oculus+Visemes,mouthOpen,mouthSmile,eyesClosed,eyesLookUp,eyesLookDown&textureSizeLimit=1024&textureFormat=png'
+        }
+        as="fetch"
+      />
+
       <body
         className={cn(
           'font-sans antialiased',
@@ -54,7 +62,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           enableSystem
           disableTransitionOnChange
         >
-          
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
