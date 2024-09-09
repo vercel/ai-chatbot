@@ -6,7 +6,6 @@ export const maxDuration = 30
 
 export async function POST(req: Request) {
   const { messages, classType } = await req.json()
-  console.log(messages, classType)
   const groq = createOpenAI({
     baseURL: 'https://api.groq.com/openai/v1',
     apiKey: process.env.GROQ_API_KEY
@@ -25,7 +24,6 @@ export async function POST(req: Request) {
   const currentClassType = classTypes.find(
     classArray => classArray.id === classType
   )
-  console.log(currentClassType)
   const classText: string = `
   Speaking goal:${currentClassType?.name}
   Performance guide: ${currentClassType?.description}

@@ -37,7 +37,8 @@ export function Chat({ id }: ChatProps) {
     setInput,
     handleInputChange,
     handleSubmit,
-    isLoading
+    isLoading,
+    setMessages
   } = useChat({
     body: {
       classType: localClassType
@@ -61,7 +62,9 @@ export function Chat({ id }: ChatProps) {
   useEffect(() => {
     setInput(transcript)
   }, [transcript])
-
+  useEffect(() => {
+    setMessages([])
+  }, [localClassType])
   useEffect(() => {
     console.log('running lsistener')
     if (!browserSupportsSpeechRecognition) {
