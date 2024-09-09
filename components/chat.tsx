@@ -95,9 +95,25 @@ export function Chat({ id }: ChatProps) {
   const get_each_sentence = (phrase: string) => {
     const endofSentenceRegex = /([^\.\?\!]+[\.\?\!])/g
     const sentences = phrase.match(endofSentenceRegex) || [] // Match sentences with punctuation
-    return sentences
-  }
 
+    // Merge sentences under 5 words with the next one
+    const mergedSentences = []
+    let tempSentence = ''
+    const min_words = 5
+    for (let i = 0; i < sentences.length; i++) {
+      const wordCount = sentences[i].split(' ').length
+      if (wordCount < min_words) {
+        tempSentence += sentences[i]
+        if (i < sentences.length - 1) {
+          continue
+        }
+      }
+      mergedSentences.push(tempSentence + ' ' + sentences[i])
+      tempSentence = ''
+    }
+
+    return mergedSentences
+  }
   useEffect(() => {
     async function getAudioAndPlay() {
       if (messages.length === 0) {
