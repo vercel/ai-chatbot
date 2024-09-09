@@ -27,10 +27,12 @@ export function Chat({ id }: ChatProps) {
     undefined
   )
   const [textResponse, setTextResponse] = useState('')
-  const [isEditing, setIsEditing] = useState(false) // Track whether the user is editing
+  const [isEditing, setIsEditing] = useState(false)
   const [localClassType, setLocalClassType] = useState('2')
-  const [isChatOpen, setIsChatOpen] = useState(true) // State to manage chat visibility
-  // API: https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
+  const [isChatOpen, setIsChatOpen] = useState(true)
+  const [isResponding, setIsResponding] = useState(false)
+
+  // https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
   let {
     messages,
     input,
@@ -44,17 +46,18 @@ export function Chat({ id }: ChatProps) {
       classType: localClassType
     }
   })
-  const lastAiMessageRef = useRef<Message | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
-  const [isResponding, setIsResponding] = useState(false) // Track if we are waiting for a response
-  const { selectedBackground } = useBackground()
-  const { selectedClass } = useClass()
+
   const {
     transcript,
     resetTranscript,
     browserSupportsSpeechRecognition,
     listening
   } = useSpeechRecognition()
+  const { selectedBackground } = useBackground()
+  const { selectedClass } = useClass()
+
+  const lastAiMessageRef = useRef<Message | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
 
   useEffect(() => {
     setLocalClassType(selectedClass)
@@ -138,7 +141,7 @@ export function Chat({ id }: ChatProps) {
     if (textareaRef.current) {
       adjustTextareaHeight() // Adjust height whenever transcript is updated
     }
-  }, [transcript])
+  }, [transcript, input])
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
