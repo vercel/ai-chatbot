@@ -153,24 +153,24 @@ export function Chat({ id }: ChatProps) {
     setIsEditing(true) // Stop transcription when the user starts typing
     handleInputChange(event) // Allow manual editing of the input
   }
+  const ClassTitle = () => (
+    <span className="text-2xl font-semibold text-center">
+      {
+        classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
+          ?.description
+      }
+    </span>
+  )
 
   return (
-    <div className="flex flex-col items-center justify-center size-full">
-      <div className="flex flex-col items-center justify-center">
-        <span className="text-2xl font-semibold text-center p-1">
-          {
-            classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
-              ?.description
-          }
-        </span>
+    <div className="flex flex-col size-full ">
+      <div className="flex items-start justify-start width-full">
+        <ClassTitle />
       </div>
-      <div className="flex items-center justify-center size-full">
+      <div className="flex size-full justify-between">
         <div
+          className="bg-cover bg-center w-full w-1/2"
           style={{
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            width: '100%',
-            height: 'calc(98vh - 65px)',
             backgroundImage: `url(${
               Backgrounds.find
                 ? Backgrounds.find(bg => bg.id === selectedBackground)?.src
@@ -185,7 +185,7 @@ export function Chat({ id }: ChatProps) {
             setIsResponding={setIsResponding}
           />
         </div>
-        <div className="flex-col-reverse items-evenly px-2">
+        <div className="px-2 max-w-2xl w-1/2">
           {isChatOpen ? (
             <ChatPanel
               setIsChatOpen={setIsChatOpen}
