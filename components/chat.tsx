@@ -1,6 +1,7 @@
 'use client'
 import 'regenerator-runtime/runtime'
-import { useEffect, useState, useRef, use } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import Image from 'next/image'
 import { Message, Session } from '@/lib/types'
 import TalkingHeadComponent from '@/components/avatarai/page'
 import { useChat } from 'ai/react'
@@ -187,17 +188,20 @@ export function Chat({ id }: ChatProps) {
         <ClassTitle />
       </div>
       <div className="flex size-full justify-between">
-        <div
-          className="bg-cover bg-center h-full w-1/2"
-          style={{
-            backgroundImage: `url(${
-              Backgrounds.find
-                ? Backgrounds.find(bg => bg.id === selectedBackground)?.src
+        <div className="relative h-full w-1/2">
+          <Image
+            src={
+              selectedBackground &&
+              Backgrounds &&
+              Backgrounds.find(bg => bg.id === selectedBackground)
+                ? Backgrounds.find(bg => bg.id === selectedBackground)!.src
                 : Backgrounds[0].src
-            })`,
-            transition: '1s ease 0.1s'
-          }}
-        >
+            }
+            alt="Background"
+            layout="fill"
+            objectFit="cover"
+            className="transition ease-in-out duration-1000"
+          />
           <TalkingHeadComponent
             textToSay={textResponse}
             audioToSay={audioBuffer}
