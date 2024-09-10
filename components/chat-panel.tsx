@@ -16,6 +16,7 @@ export interface ChatPanelProps {
   handleTextareaChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
   textareaRef: React.RefObject<HTMLTextAreaElement>
   setInput: (value: string) => void
+  playText: ({ text }: { text: string }) => void
 }
 const AttachButton = () => (
   <Button variant="outline" size="icon" disabled>
@@ -95,7 +96,8 @@ export function ChatPanel({
   selectedClass,
   input,
   handleTextareaChange,
-  textareaRef
+  textareaRef,
+  playText
 }: ChatPanelProps) {
   const [saidWords, setSaidWords] = useState<string[]>([])
 
@@ -154,7 +156,11 @@ export function ChatPanel({
         handleTextareaChange={handleTextareaChange}
         textareaRef={textareaRef}
       />
-      <VocabularyList selectedClass={selectedClass} saidWords={saidWords} />
+      <VocabularyList
+        selectedClass={selectedClass}
+        saidWords={saidWords}
+        playText={playText}
+      />
     </div>
   )
 }

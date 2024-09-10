@@ -115,6 +115,13 @@ export function Chat({ id }: ChatProps) {
 
     return mergedSentences
   }
+  async function playText({ text }: { text: string }) {
+    const audiB = await fetch_and_play_audio({
+      text: text
+    })
+    setTextResponse(text)
+    setAudioBuffer(audiB as any)
+  }
   useEffect(() => {
     async function getAudioAndPlay() {
       if (messages.length === 0) {
@@ -219,6 +226,7 @@ export function Chat({ id }: ChatProps) {
               input={input}
               handleTextareaChange={handleTextareaChange}
               textareaRef={textareaRef}
+              playText={playText}
             />
           ) : (
             <CrazyButtons setIsChatOpen={setIsChatOpen} />

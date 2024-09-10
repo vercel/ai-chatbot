@@ -8,10 +8,12 @@ import {
 
 const VocabularyList = ({
   selectedClass,
-  saidWords
+  saidWords,
+  playText
 }: {
   selectedClass: string
   saidWords: string[]
+  playText: ({ text }: { text: string }) => void
 }) => {
   const vocabulary =
     classTypes[classTypes.findIndex(ct => ct.id === selectedClass)]
@@ -41,6 +43,13 @@ const VocabularyList = ({
                 <TooltipTrigger>
                   <Badge
                     variant={`${saidWords.includes(word) ? 'default' : 'secondary'}`}
+                    onClick={() =>
+                      playText({
+                        text: definition
+                          ? `The word ${word} means ${definition}`
+                          : `Repeat after me: ${word}`
+                      })
+                    }
                   >
                     {word}
                   </Badge>
