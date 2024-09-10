@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown'
+
 const Message = ({ key, message }: { key: number; message: any }) => {
   return (
     <div
@@ -20,7 +22,7 @@ const Message = ({ key, message }: { key: number; message: any }) => {
           maxWidth: '75%'
         }}
       >
-        {message.content}
+        <ReactMarkdown>{message.content}</ReactMarkdown>
       </div>
     </div>
   )

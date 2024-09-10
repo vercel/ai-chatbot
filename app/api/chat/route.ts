@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     You must keep the conversation going by asking a followup.
     You might be given a speaking goal, a performance guide and a vocabulary list, which are all important to keep in mind.
     Try to guide the student towards the target vocabulary, but don't force it.
+    You may use markdown. Use to higlight vocabulary.
     `
 
   const currentClassType = classTypes.find(
