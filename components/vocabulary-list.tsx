@@ -1,5 +1,10 @@
 import classTypes from '@/public/data/classTypes'
 import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
 
 const VocabularyList = ({
   selectedClass,
@@ -16,19 +21,38 @@ const VocabularyList = ({
     word => !saidWords.includes(word)
   )
   const updatedVocabulary = [...filteredVocabulary, ...saidWords]
-
+  const selectedClassType = classTypes.find(ct => ct.id === selectedClass)
+  const vocabularyDefinitions = selectedClassType?.vocabularyDefinitions || []
   return (
     <div>
       {updatedVocabulary.length > 0 ? (
         <div className="flex overflow-x-auto whitespace-nowrap p-2 gap-2">
-          {updatedVocabulary.map((word, index) => (
-            <Badge
-              key={index}
-              variant={`${saidWords.includes(word) ? 'default' : 'secondary'}`}
-            >
-              {word}
-            </Badge>
-          ))}
+          {updatedVocabulary.map((word, index) => {
+            // Find the corresponding definition if it exists
+            const definitionIndex = vocabulary.findIndex(v => v === word)
+
+            const definition =
+              definitionIndex !== -1
+                ? vocabularyDefinitions[definitionIndex]
+                : null
+
+            return (
+              <Tooltip key={index}>
+                <TooltipTrigger>
+                  <Badge
+                    variant={`${saidWords.includes(word) ? 'default' : 'secondary'}`}
+                  >
+                    {word}
+                  </Badge>
+                </TooltipTrigger>
+                {definition && (
+                  <TooltipContent>
+                    <p>{definition}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )
+          })}
         </div>
       ) : (
         <div className="flex overflow-x-auto whitespace-nowrap p-2 gap-2 ">
