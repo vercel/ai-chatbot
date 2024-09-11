@@ -53,36 +53,10 @@ export async function POST(request: NextRequest) {
     const user_progress_id = userProgress.id;
 
     if (type === 'lesson_plan') {
-      // Fetch the lesson_id from user_lessons table using class_id
-      const { data: userLesson, error: userLessonError } = await supabase
-        .from('user_lessons')
-        .select('lesson_id')
-        .eq('id', class_id) // Assuming class_id is the id in user_lessons
-        .single();
+      // Use class_id directly as lesson_id
+      const lesson_id = class_id;
 
-      if (userLessonError) {
-        console.error('Error fetching user lesson:', userLessonError);
-        return create_response({
-          request,
-          data: { error: userLessonError.message },
-          status: 500,
-        });
-      }
-
-      console.log('Fetched lesson_id from user_lessons:', userLesson);
-
-      const lesson_id = userLesson?.lesson_id;
-
-      if (!lesson_id) {
-        console.error('No lesson_id found for the given class_id');
-        return create_response({
-          request,
-          data: { error: 'No lesson_id found for the given class_id' },
-          status: 400,
-        });
-      }
-
-      // Now fetch the lesson details from the lesson_plan table using the lesson_id
+      // Fetch the lesson details from the lesson_plan table using the class_id
       const { data: lessonDataResponse, error: lessonError } = await supabase
         .from('lesson_plan')
         .select(`
@@ -93,7 +67,7 @@ export async function POST(request: NextRequest) {
           duration,
           category
         `)
-        .eq('id', lesson_id)  // Query using the lesson_id fetched from user_lessons
+        .eq('id', lesson_id)  // Directly using class_id as lesson_id
         .single();
 
       if (lessonError) {

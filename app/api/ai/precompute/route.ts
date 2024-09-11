@@ -1,47 +1,3 @@
-/**
- * Handles the POST request for processing a lesson interaction between a user and an AI assistant.
- * The function extracts lesson-related parameters from the request body, retrieves message history
- * from MongoDB, constructs a system prompt, and processes the user's input to provide a response.
- *
- * @param {NextRequest} req - The incoming request object from Next.js containing the user's request data.
- * @returns {Promise<NextResponse>} - A NextResponse object containing the result of processing the user message.
- *
- * @async
- * @function POST
- *
- * @example
- * // Example usage of the POST function:
- * const response = await POST(req);
- *
- * @param {NextRequest} req - The HTTP request object from Next.js, which includes query parameters and request body.
- *
- * The request body must contain the following parameters:
- * @param {string} lesson_id - The unique identifier for the lesson.
- * @param {string} duration - The total duration of the lesson in minutes.
- * @param {string} topic - The topic of the lesson.
- * @param {string} session_sequence - The sequence of activities within the session.
- * @param {any} learning_results - The expected learning outcomes of the lesson.
- * @param {any} learning_experiences - A description of the user's learning experiences during the lesson.
- * @param {string} class_type - The type of the class (e.g., "Pronunciation", "Vocabulary", "Grammar").
- * @param {number} time_component - The amount of time spent so far in the lesson.
- * @param {string} user_message - The user’s message to the assistant.
- * @param {string} lesson_type - The type of the lesson (e.g., "free class", "guided class").
- *
- * The function performs the following steps:
- * 1. Extracts user and lesson data from the request.
- * 2. Connects to a MongoDB database using the provided connection string to retrieve chat history.
- * 3. Iterates over the retrieved messages and classifies them as either 'user' or 'assistant' messages.
- * 4. Limits the number of tokens (approx. 200) for processing the history to ensure efficient handling.
- * 5. Calls the `get_system_prompt` function to generate a system prompt based on the lesson's parameters.
- * 6. Uses the `process_script` function to process and clean the user's input.
- * 
- * The MongoDB collection used to store chat messages is identified by `chat_messages`, and session-specific
- * information is stored and retrieved using the sessionId.
- * 
- * The function logs key events, such as the connection string, newly processed messages, and system prompts, 
- * for debugging and monitoring purposes.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import get_system_prompt from "@/lib/api/get_system_prompt";
 import { process_script } from "@/lib/api/process_script";
@@ -66,10 +22,10 @@ export async function POST(req: NextRequest) {
     session_sequence,
     learning_results,
     learning_experiences,
-    class_type,
-    time_component,
-    user_message,
     lesson_type,
+    time_component,
+    user_message = '',  // Default to empty string if user_message is undefined
+    type,
   } = body as {
     lesson_id: string;
     duration: string;
@@ -77,47 +33,65 @@ export async function POST(req: NextRequest) {
     session_sequence: string;
     learning_results: any;
     learning_experiences: any;
-    class_type: string;
+    lesson_type: string;
     time_component: number;
     user_message: string;
-    lesson_type: string;
+    type: string;
   }; // Time component is the time spent in the lesson as minutes
 
-  const mongodb_history = new MongoDBChatMessageHistory({
-    collection: client.db().collection("chat_messages"),
-    sessionId: connection_string,
-  });
-  const messages = await mongodb_history.getMessages();
-  let history = "";
-  const newMessages: Array<{ role: string; content: string }> = [];
-
-  for (const message of messages) {
-    const num_tokens = history.length / 5;
-    if (num_tokens > 200) break;
-
-    if (message instanceof HumanMessage) {
-      newMessages.push({ role: "user", content: message.content.toString() });
-    } else {
-      newMessages.push({
-        role: "assistant",
-        content: message.content.toString(),
-      });
-    }
-  }
-  console.log("New messages", newMessages);
-
-  const system_prompt = await get_system_prompt(
-    class_type,
+  // Logging all the parameters for debugging
+  console.log("Parameters passed to get_system_prompt:", {
+    lesson_type,
     learning_experiences,
     learning_results,
     session_sequence,
     topic,
     duration,
     time_component,
-    lesson_type
-  );
-  console.log("System prompt", system_prompt);
+    type,
+  });
 
+  // Call get_system_prompt and log the prompt
+  const system_prompt = get_system_prompt(
+    lesson_type,
+    learning_experiences,
+    learning_results,
+    session_sequence,
+    topic,
+    duration,
+    time_component,
+    type
+  );
+
+  console.log("Generated system prompt:", system_prompt);
+  
+  if (!system_prompt) {
+    console.error("Error: System prompt is empty or undefined");
+    return NextResponse.json({
+      error: "System prompt is required but missing.",
+    }, { status: 400 });
+  }
+
+  // Fetch chat history from MongoDB
+  const mongodb_history = new MongoDBChatMessageHistory({
+    collection: client.db().collection("beluga-test"),
+    sessionId: connection_string,
+  });
+  const messages = await mongodb_history.getMessages();
+  console.log("Messages fetched from MongoDB:", messages);
+  
+  // Prepare messages for the chat model
+  let newMessages: Array<{ role: string; content: string }> = [];
+  for (const message of messages) {
+    if (message instanceof HumanMessage) {
+      newMessages.push({ role: "user", content: message.content.toString() });
+    } else {
+      newMessages.push({ role: "assistant", content: message.content.toString() });
+    }
+  }
+  console.log("New messages prepared for Groq:", newMessages);
+
+  // Create the Groq API stream request
   const stream = await groq_client.chat.completions.create({
     messages: [
       {
@@ -129,9 +103,7 @@ export async function POST(req: NextRequest) {
         content:
           user_message !== ""
             ? user_message
-            : `Start ${
-                lesson_type === "free class" ? "chatting" : "lesson"
-              } on topic: ${topic}`,
+            : `Start ${type === "free class" ? "chatting" : "lesson"} on topic: ${topic}`,
       },
     ],
     model: "llama3-70b-8192",
@@ -142,20 +114,19 @@ export async function POST(req: NextRequest) {
     stream: true,
   });
 
+  // Processing the response from Groq
   let generated_text = "";
   let new_text_counter = 0;
   const global_exercises: any[] = [];
   let complete_text = "";
-  let pronanucaiotion_count = 0;
+  let pronunciation_count = 0;
 
   for await (const new_text of stream) {
     if (new_text.choices[0].delta.content == null) continue;
-
     generated_text += new_text.choices[0].delta.content;
     generated_text = generated_text.replace(/\n/g, " ").replace("</s>", "");
     if (/[.!?]$/.test(generated_text.trim())) {
         generated_text = generated_text.replace(/\n/g, " ").replace("</s>", "");
-    
     // Process <pronunciation> tags
     if (generated_text.includes("<pronunciation>")) {
       if (generated_text.includes("</pronunciation>")) {
@@ -167,13 +138,10 @@ export async function POST(req: NextRequest) {
             tagged_text_content,
             "<TAGGED_TEXT_PLACEHOLDER>"
           );
-
           const sentences = generated_text.split(/(?<!\d)[.!?](?!\d)\s+/);
           const pattern = /<TAGGED_TEXT_PLACEHOLDER>/g;
-
           for (let sentence of sentences) {
             sentence = sentence.replace(pattern, tagged_text_content).trim();
-
             if (sentence) {
               const { clean_script, exercises } = process_script(sentence) as any;
               if (exercises && global_exercises.length < 2) {
@@ -182,14 +150,13 @@ export async function POST(req: NextRequest) {
                   global_exercises.push(exercise);
                 }
               }
-
               if (
                 clean_script &&
                 clean_script.length >= 8 &&
-                pronanucaiotion_count < 1
+                pronunciation_count < 1
               ) {
                 complete_text += clean_script + "// ";
-                pronanucaiotion_count++;
+                pronunciation_count++;
                 generated_text = "";
                 new_text_counter++;
               }
@@ -197,25 +164,21 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-
       // Process <fill> tags with answers
       const fillRegex = /<fill>([\s\S]*?)<\/fill>\[ANSWER: ([\s\S]*?)\]/g;
       const match = fillRegex.exec(generated_text);
-
       if (match) {{
           const tagged_text_content = match[0];
           const tagged_text_answer = match[1];
           generated_text = generated_text
             .replace(tagged_text_content, "FILL_TEXT_PLACEHOLDER")
             .replace(tagged_text_answer, "FILL_ANSWER_PLACEHOLDER");
-
           const sentences = generated_text.split(/(?<!\d)[.!?](?!\d)\s+/);
           sentences.forEach((sentence) => {
             sentence = sentence
               .replace("FILL_TEXT_PLACEHOLDER", tagged_text_content)
               .replace("FILL_ANSWER_PLACEHOLDER", tagged_text_answer)
               .trim();
-
             if (sentence) {
               const { cleanText: clean_script, exercises } = process_script(sentence) as { cleanText: string; exercises: Object[] };
               if (exercises) {
@@ -224,7 +187,6 @@ export async function POST(req: NextRequest) {
                   global_exercises.push(exercise);
                 });
               }
-
               if (clean_script && clean_script.length >= 8) {
                 complete_text += clean_script + " // ";
                 generated_text = "";
@@ -255,26 +217,28 @@ export async function POST(req: NextRequest) {
   }
 
   const ai_message = complete_text.slice(2); // Remove leading `//`
-  console.log("AI message", ai_message);
-  console.log("Global exercises", global_exercises);
+  console.log("AI message generated:", ai_message);
+  console.log("Global exercises generated:", global_exercises);
+
+  // Prepare final response
   const ai_message_array = complete_text
-  .split("//")                   // Split the text by the "//" separator
-  .map(sentence => sentence.trim()) // Trim leading/trailing spaces for each sentence
-  .filter(sentence => sentence.length > 0); // Filter out empty sentences
+    .split("//")
+    .map(sentence => sentence.trim())
+    .filter(sentence => sentence.length > 0);
 
   if (ai_message_array.length > 0) {
     const history = new MongoDBChatMessageHistory({
-        collection: client.db().collection("chat_messages"),
-        sessionId: lesson_id,
+      collection: client.db().collection("chat_messages"),
+      sessionId: lesson_id,
     });
     history.addAIMessage(ai_message_array.join(" ").replace("/", ""));
-    console.log("Added to history", ai_message_array.join(" ").replace("/", ""));
+    console.log("Added to history:", ai_message_array.join(" ").replace("/", ""));
 
     return NextResponse.json({
-        Output: ai_message_array,  // Return the array of sentences instead of concatenated string
-        exercises: lesson_type !== "audio" ? global_exercises : [],
+      Output: ai_message_array,
+      exercises: type !== "audio" ? global_exercises : [],
     });
-} else {
+  } else {
     return NextResponse.json({ Output: "Error there is no message." });
-}
+  }
 }
