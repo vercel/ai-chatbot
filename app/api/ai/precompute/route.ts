@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     time_component,
     user_message = '',  // Default to empty string if user_message is undefined
     type,
+    topics, // Add topics to handle free type
   } = body as {
     lesson_id: string;
     duration: string;
@@ -37,32 +38,63 @@ export async function POST(req: NextRequest) {
     time_component: number;
     user_message: string;
     type: string;
-  }; // Time component is the time spent in the lesson as minutes
+    topics?: string[]; // Optional for free type lessons
+  };
 
-  // Logging all the parameters for debugging
-  console.log("Parameters passed to get_system_prompt:", {
-    lesson_type,
-    learning_experiences,
-    learning_results,
-    session_sequence,
-    topic,
-    duration,
-    time_component,
-    type,
-  });
+  // Conditional logging based on the type of lesson
+  if (type === "free") {
+    console.log("Free lesson type. Topics:", topics);
+  } else {
+    console.log("Parameters passed to get_system_prompt for structured lesson:", {
+      lesson_type,
+      learning_experiences,
+      learning_results,
+      session_sequence,
+      topic,
+      duration,
+      time_component,
+      type,
+      topics,
+    });
+  }
 
-  // Call get_system_prompt and log the prompt
-  const system_prompt = get_system_prompt(
-    lesson_type,
-    learning_experiences,
-    learning_results,
-    session_sequence,
-    topic,
-    duration,
-    time_component,
-    type
-  );
 
+  // Call get_system_prompt based on the lesson type
+  let system_prompt;
+  if (type === "free") {
+    if (!topics || topics.length === 0) {
+      return NextResponse.json({
+        error: "Topics are required for free lessons.",
+      }, { status: 400 });
+    }
+  
+    // Call get_system_prompt with only type and topics for free lessons
+    system_prompt = get_system_prompt(
+      null,        // No lesson_type for free lessons
+      null,        // No learning_experiences for free lessons
+      null,        // No learning_results for free lessons
+      null,        // No session_sequence for free lessons
+      null,        // No single topic for free lessons
+      topics,      // Pass topics array
+      null,        // No duration for free lessons
+      null,        // No time_component for free lessons
+      type         // Free lesson type
+    );
+  } else {
+    // Call get_system_prompt for structured lessons with all the necessary fields
+    system_prompt = get_system_prompt(
+      lesson_type,          // Structured lesson type
+      learning_experiences, // Learning experiences
+      learning_results,     // Learning results
+      session_sequence,     // Session sequence
+      topic,                // Single topic
+      null,                 // No topics array for structured lessons
+      duration,             // Duration for structured lessons
+      time_component,       // Time component for structured lessons
+      type                  // Structured lesson type
+    );
+  }
+    
   console.log("Generated system prompt:", system_prompt);
   
   if (!system_prompt) {
