@@ -25,6 +25,8 @@ const VocabularyList = ({
   const updatedVocabulary = [...filteredVocabulary, ...saidWords]
   const selectedClassType = classTypes.find(ct => ct.id === selectedClass)
   const vocabularyDefinitions = selectedClassType?.vocabularyDefinitions || []
+  const vocabularyAbbreviations =
+    selectedClassType?.vocabularyAbbreviations || []
   return (
     <div>
       {updatedVocabulary.length > 0 ? (
@@ -51,7 +53,11 @@ const VocabularyList = ({
                       })
                     }
                   >
-                    {word}
+                    {`${word}${
+                      vocabularyAbbreviations[definitionIndex]
+                        ? ` (${vocabularyAbbreviations[definitionIndex]})`
+                        : ''
+                    }`}
                   </Badge>
                 </TooltipTrigger>
                 {definition && (

@@ -2,6 +2,7 @@ const classTypes: {
   id: string
   name: string
   vocabulary: string[]
+  vocabularyAbbreviations?: string[]
   vocabularyDefinitions?: string[]
   description: string
 }[] = [
@@ -10,14 +11,15 @@ const classTypes: {
     name: 'Identify important people and places in a hospital',
     vocabulary: [
       'medical',
-      'doctor (Dr.)',
+      'doctor',
       'nurse',
-      'Intensive Care Unit (ICU)',
+      'Intensive Care Unit',
       'ward',
       'surgeon',
-      'operating room (OR)',
-      'emergency department (ED)'
+      'operating room',
+      'emergency department'
     ],
+    vocabularyAbbreviations: ['', 'Dr.', '', 'ICU', '', '', 'OR', 'ED'],
     vocabularyDefinitions: [
       'relating to the science or practice of medicine',
       'a qualified practitioner of medicine; a physician',
