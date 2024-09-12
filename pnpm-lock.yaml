@@ -102,8 +102,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       use-stick-to-bottom:
-        specifier: ^1.0.4
-        version: 1.0.4(react@18.3.1)
+        specifier: ^1.0.7
+        version: 1.0.7(react@18.3.1)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -2068,8 +2068,8 @@ packages:
       '@types/react':
         optional: true
 
-  use-stick-to-bottom@1.0.4:
-    resolution: {integrity: sha512-U0XXEpz591FhH/RLvXf8gpnPVt7aqctpAmTjr5jniezKgCd9MqFy6YitQvbMcLE0XjH7k0IG2DMpoBtEwef69w==}
+  use-stick-to-bottom@1.0.7:
+    resolution: {integrity: sha512-ViJkP2EN1AKEeejn/RjlLptLRunZoaliWnfOVEuboko7T1hhXwePGOoEVJXY/WmTM8wBBYYTlg6dIy2WZY2Arg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
@@ -4194,7 +4194,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.4
 
-  use-stick-to-bottom@1.0.4(react@18.3.1):
+  use-stick-to-bottom@1.0.7(react@18.3.1):
     dependencies:
       react: 18.3.1
 

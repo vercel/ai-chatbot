@@ -54,23 +54,24 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [missingKeys])
 
   return (
-    <StickToBottom
-      className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
-    >
-      <div
-        className={cn('pb-[200px] pt-4 md:pt-10', className)}
-      >
-        {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
-        ) : (
-          <EmptyScreen />
-        )}
-      </div>
-      <ChatPanel
-        id={id}
-        input={input}
-        setInput={setInput}
-      />
+    <StickToBottom className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]">
+      {ref => (
+        <>
+          <div className={cn('pb-[200px] pt-4 md:pt-10', className)} ref={ref}>
+            {messages.length ? (
+              <ChatList
+                messages={messages}
+                isShared={false}
+                session={session}
+              />
+            ) : (
+              <EmptyScreen />
+            )}
+          </div>
+
+          <ChatPanel id={id} input={input} setInput={setInput} />
+        </>
+      )}
     </StickToBottom>
   )
 }
