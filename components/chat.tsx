@@ -68,6 +68,7 @@ export function Chat({ id }: ChatProps) {
   }, [transcript])
   useEffect(() => {
     setMessages([])
+    setInput('')
   }, [localClassType])
   useEffect(() => {
     console.log('running lsistener')
