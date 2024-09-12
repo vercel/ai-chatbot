@@ -19,6 +19,8 @@ export async function POST(req: Request) {
     You must keep the conversation going by asking a followup.
     You might be given a speaking goal, a performance guide and a vocabulary list, which are all important to keep in mind.
     Try to guide the student towards the target vocabulary, but don't force it.
+    Some classes might include abbreviations.
+    Some classes might include definitions.
     You may use markdown. Use to higlight vocabulary.
     `
 
@@ -29,6 +31,20 @@ export async function POST(req: Request) {
   Speaking goal:${currentClassType?.name}
   Performance guide: ${currentClassType?.description}
   Vocabulary: ${currentClassType?.vocabulary.join(', ')}
+  ${
+    currentClassType?.vocabularyDefinitions?.length ?? 0 > 0
+      ? `
+  Definitions: ${currentClassType?.vocabularyDefinitions?.join(', ')}
+  `
+      : ''
+  }
+  ${
+    currentClassType?.vocabularyAbbreviations?.length ?? 0 > 0
+      ? `
+  Abbreviations: ${currentClassType?.vocabularyAbbreviations?.join(', ')}
+  `
+      : ''
+  }
   `
 
   const result = await streamText({
