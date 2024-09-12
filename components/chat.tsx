@@ -97,24 +97,34 @@ export function Chat({ id }: ChatProps) {
     const endofSentenceRegex = /([^\.\?\!]+[\.\?\!])/g
     const sentences = phrase.match(endofSentenceRegex) || [] // Match sentences with punctuation
 
-    // Merge sentences under 5 words with the next one
-    const mergedSentences = []
+    const mergedSentences: string[] = []
     let tempSentence = ''
     const min_words = 5
     for (let i = 0; i < sentences.length; i++) {
       const wordCount = sentences[i].split(' ').length
+      // Accumulate sentence if it's under the word limit
       if (wordCount < min_words) {
         tempSentence += sentences[i]
-        if (i < sentences.length - 1) {
-          continue
-        }
+        continue
       }
-      mergedSentences.push(tempSentence + ' ' + sentences[i])
-      tempSentence = ''
+
+      // Merge with accumulated sentences if needed
+      if (tempSentence) {
+        mergedSentences.push(tempSentence + ' ' + sentences[i])
+        tempSentence = '' // Clear temp after merging
+      } else {
+        mergedSentences.push(sentences[i]) // Otherwise, push current sentence
+      }
+    }
+
+    // In case the last tempSentence was not added (if it has fewer than min_words)
+    if (tempSentence) {
+      mergedSentences.push(tempSentence.trim())
     }
 
     return mergedSentences
   }
+
   async function playText({ text }: { text: string }) {
     const audiB = await fetch_and_play_audio({
       text: text
