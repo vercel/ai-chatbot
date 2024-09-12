@@ -69,26 +69,9 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
     console.log('TalkingHeadComponent mounted')
     if (audioToSay) {
       setTimeout(() => {
-        console.log('Sending message to speak')
         setIsResponding(true)
-        console.log('toSay', audioToSay)
-        /* head.current.speakText(
-        'hello, how are you today?',
-        null,
-        updateSubtitles,
-        undefined,
-        onComplete,
-        {
-          lang: 'en-US',
-          volume: 1.0,
-          rate: playSpeed.current,
-          voice: 'en-GB-Wavenet-F',
-          pitch: 0
-        }
-      ) */
-        calculateAudio(audioToSay).then(audio => {
-          console.log('Audio calculated')
 
+        calculateAudio(audioToSay).then(audio => {
           head.current.speakAudio(
             {
               words: audio.words,
@@ -101,12 +84,11 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
             {},
             () => {
               setIsResponding(false)
-              console.log("running 'onComplete'")
             },
-            {}
+            () => {
+              console.log('Audio started')
+            }
           )
-
-          console.log('SENT message ')
         })
       })
     }
@@ -211,15 +193,12 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
       // Save the audioBuffer to a temporary file
       const wavBuffer = audioBufferToWav(audioBuffer)
       const file = new File([wavBuffer], 'audio.wav', { type: 'audio/wav' })
-      console.log('File created:', file)
 
       const form = new FormData()
       form.append('file', file)
       form.append('model', 'whisper-large-v3')
       form.append('language', 'en')
       form.append('response_format', 'verbose_json')
-
-      console.log('API Key:', process.env.OPENAI_KEY)
 
       const response = await fetch(
         'https://api.groq.com/openai/v1/audio/transcriptions',
@@ -240,7 +219,6 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
       }
 
       const result = await response.json()
-      console.log('API Result:', result)
       let audio = {
         words: [],
         wtimes: [],
@@ -254,7 +232,6 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
       result.segments.forEach(segment => {
         // Split the segment text into words
         const words = segment.text.trim().split(/\s+/)
-        console.log('Words:', words)
 
         // Iterate through each word and process its timing and duration
         words.forEach((word, index) => {

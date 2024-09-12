@@ -28,7 +28,6 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
         }
         audioChunks.push(value)
       }
-      console.log('Audio chunks:', audioChunks)
       // Concatenate all chunks into a single array buffer
       const audioBuffer = new Uint8Array(
         audioChunks.reduce((acc, chunk) => acc + chunk.byteLength, 0)
@@ -38,7 +37,6 @@ export default async function fetch_and_play_audio({ text }: { text: string }) {
         audioBuffer.set(chunk, offset)
         offset += chunk.byteLength
       }
-      console.log('Audio buffer:', audioBuffer)
 
       // Decode the audio data
       const decodedAudio = await audioContext.decodeAudioData(
