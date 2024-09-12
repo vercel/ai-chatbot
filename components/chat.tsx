@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
-import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
+import { StickToBottom } from 'use-stick-to-bottom'
 import { toast } from 'sonner'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -53,32 +53,24 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     })
   }, [missingKeys])
 
-  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
-    useScrollAnchor()
-
   return (
-    <div
+    <StickToBottom
       className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
-      ref={scrollRef}
     >
       <div
         className={cn('pb-[200px] pt-4 md:pt-10', className)}
-        ref={messagesRef}
       >
         {messages.length ? (
           <ChatList messages={messages} isShared={false} session={session} />
         ) : (
           <EmptyScreen />
         )}
-        <div className="w-full h-px" ref={visibilityRef} />
       </div>
       <ChatPanel
         id={id}
         input={input}
         setInput={setInput}
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
       />
-    </div>
+    </StickToBottom>
   )
 }
