@@ -84,6 +84,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
             {},
             () => {
               setIsResponding(false)
+              setSubtitles('')
             },
             () => {
               setSubtitles(textToSay)
