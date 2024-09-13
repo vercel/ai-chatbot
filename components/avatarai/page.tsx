@@ -24,6 +24,7 @@ import TestingUI from '@/components/TalkingHead/components/testingUI'
 import Subtitles from '@/components/TalkingHead/components/subtitles'
 import Loading from '@/components/TalkingHead/components/loading'
 import { useEmote } from '@/lib/hooks/emote-context'
+import { useSubtitles } from '@/lib/hooks/subtitles-context'
 
 const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
   // the audioToSay is an audio Buffer, like what we get from the server
@@ -59,7 +60,7 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
   const [fontSize, setFontSize] = useState(16)
   const speakQueue = useRef([])
   const { selectedEmote } = useEmote()
-
+  const { subtitlesState } = useSubtitles()
   useEffect(() => {
     if (selectedEmote && selectedEmote !== '')
       head.current.speakEmoji(selectedEmote)
@@ -84,10 +85,10 @@ const TalkingHeadComponent = ({ audioToSay, textToSay, setIsResponding }) => {
             {},
             () => {
               setIsResponding(false)
-              setSubtitles('')
+              if (subtitlesState) setSubtitles('')
             },
             () => {
-              setSubtitles(textToSay)
+              if (subtitlesState) setSubtitles(textToSay)
             }
           )
         })

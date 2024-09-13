@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ClassProvider } from '@/lib/hooks/class-context'
 import { EmoteProvider } from '@/lib/hooks/emote-context'
 import { BackgroundProvider } from '@/lib/hooks/background-context'
+import { SubtitlesProvider } from '@/lib/hooks/subtitles-context'
 
 export function Providers({ children, ...props }: ThemeProviderProps) {
   return (
@@ -16,7 +17,9 @@ export function Providers({ children, ...props }: ThemeProviderProps) {
         <TooltipProvider>
           <ClassProvider>
             <EmoteProvider>
-              <BackgroundProvider>{children}</BackgroundProvider>
+              <SubtitlesProvider>
+                <BackgroundProvider>{children}</BackgroundProvider>
+              </SubtitlesProvider>
             </EmoteProvider>
           </ClassProvider>
         </TooltipProvider>
