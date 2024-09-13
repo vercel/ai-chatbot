@@ -217,7 +217,8 @@ export function Chat({ id }: ChatProps) {
             }
             alt="Background"
             layout="fill"
-            objectFit="cover"
+            style={{ objectFit: 'cover' }}
+            priority={true}
             className="transition ease-in-out duration-1000"
           />
           <TalkingHeadComponent
