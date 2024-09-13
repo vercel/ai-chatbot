@@ -5,7 +5,10 @@ import { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Request received:', request.method);
+
     const res = await request.json();
+    console.log('Parsed request body:', res);
 
     // Check if lessonId is provided
     const missing_fields = check_missing_fields({
@@ -14,6 +17,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (missing_fields) {
+      console.log('Missing fields:', missing_fields);
       return create_response({
         request,
         data: { missing_fields },
@@ -22,32 +26,17 @@ export async function POST(request: NextRequest) {
     }
 
     const { lessonId } = res;
+    console.log('Lesson ID:', lessonId);
 
-    // Fetch lesson_id from user_lessons
-    const { data: userLessonData, error: userLessonError } = await supabase
-      .from('user_lessons')
-      .select('lesson_id')
-      .eq('id', lessonId)
-      .single();
-
-    if (userLessonError || !userLessonData) {
-      return create_response({
-        request,
-        data: { error: 'Lesson not found in user_lessons' },
-        status: 404,
-      });
-    }
-
-    const lessonIdFromUserLesson = userLessonData.lesson_id;
-
-    // Fetch class_id from lesson_plan using lesson_id
+    // Fetch class_id directly from lesson_plan using the provided lessonId
     const { data: lessonPlanData, error: lessonPlanError } = await supabase
       .from('lesson_plan')
       .select('class_id')
-      .eq('id', lessonIdFromUserLesson)
+      .eq('id', lessonId)
       .single();
 
     if (lessonPlanError || !lessonPlanData) {
+      console.error('Error fetching from lesson_plan:', lessonPlanError);
       return create_response({
         request,
         data: { error: 'Lesson not found in lesson_plan' },
@@ -55,14 +44,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('Lesson Plan Data:', lessonPlanData);
     const classId = lessonPlanData.class_id;
+    console.log('Class ID from lesson_plan:', classId);
 
+    // Return the classId to the client
     return create_response({
       request,
       data: { classId },
       status: 200,
     });
   } catch (err) {
+    console.error('Unexpected error:', err);
     return create_response({
       request,
       data: { error: 'Internal Server Error', details: (err as Error).message },

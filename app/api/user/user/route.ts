@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const res = await request.json()
+    console.log('Received request to update user:', res)
 
     // Check for missing fields
     const missing_fields = check_missing_fields({
@@ -133,6 +134,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { userId, ...updates } = res
+    console.log('Received updates:', updates)
+    console.log('Received userId:', userId)
 
     const { data, error } = await supabase
       .from('users')
