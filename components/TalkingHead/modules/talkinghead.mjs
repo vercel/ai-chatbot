@@ -4180,7 +4180,7 @@ class TalkingHead {
 
         // Make a playlist
         this.audioPlaylist.push({ anim: line.anim, audio: line.audio })
-        // this.onSubtitles = line.onSubtitles || null;
+        this.onSubtitles = line.onSubtitles || null
         this.resetLips()
         if (line.mood) this.setMood(line.mood)
         this.playAudio()
