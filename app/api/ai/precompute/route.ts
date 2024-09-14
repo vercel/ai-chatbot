@@ -12,7 +12,6 @@ const client = new MongoClient(connection_string);
 const groq_client = new Groq();
 
 export async function POST(req: NextRequest) {
-  const uid = req.nextUrl.searchParams.get('uid');
   const body = await req.json();
 
   const {
@@ -27,6 +26,7 @@ export async function POST(req: NextRequest) {
     user_message = '',  // Default to empty string if user_message is undefined
     type,
     topics, // Add topics to handle free type
+    user_name
   } = body as {
     lesson_id: string;
     duration: string;
@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
     user_message: string;
     type: string;
     topics?: string[]; // Optional for free type lessons
+    user_name: string;
   };
 
   // Conditional logging based on the type of lesson
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
       time_component,
       type,
       topics,
+      user_name
     });
   }
 
@@ -78,7 +80,8 @@ export async function POST(req: NextRequest) {
       topics,      // Pass topics array
       null,        // No duration for free lessons
       null,        // No time_component for free lessons
-      type         // Free lesson type
+      type,        // Free lesson type
+      user_name
     );
   } else {
     // Call get_system_prompt for structured lessons with all the necessary fields
@@ -91,7 +94,8 @@ export async function POST(req: NextRequest) {
       null,                 // No topics array for structured lessons
       duration,             // Duration for structured lessons
       time_component,       // Time component for structured lessons
-      type                  // Structured lesson type
+      type,                 // Structured lesson type
+      user_name
     );
   }
     

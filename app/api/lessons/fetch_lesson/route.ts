@@ -33,6 +33,25 @@ export async function POST(request: NextRequest) {
     let lesson_data = {};
     let current_lesson = '';
 
+        // Fetch the user name based on the user_id
+        const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', user_id)
+        .single();
+  
+      if (userError) {
+        console.error('Error fetching user name:', userError);
+        return create_response({
+          request,
+          data: { error: userError.message },
+          status: 500,
+        });
+      }
+  
+      const user_name = userData.name;
+      console.log('Fetched user name:', user_name);
+
     // Fetch the user_progress_id based on the user_id
     const { data: userProgress, error: userProgressError } = await supabase
       .from('user_progress')
@@ -119,6 +138,7 @@ export async function POST(request: NextRequest) {
         duration,
         lesson_type: lessonTypeName,
         type,
+        user_name
       };
       console.log('Constructed lesson_data:', lesson_data);
 
@@ -146,6 +166,7 @@ export async function POST(request: NextRequest) {
       lesson_data = {
         type,
         topics,
+        user_name
       };
       console.log('Constructed lesson_data for "free" type:', lesson_data);
 
