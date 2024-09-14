@@ -17,6 +17,7 @@ import {
   Stock,
   Purchase
 } from '@/components/stocks'
+import { auth } from '@clerk/nextjs/server'
 
 import { z } from 'zod'
 import { EventsSkeleton } from '@/components/stocks/events-skeleton'
@@ -30,10 +31,8 @@ import {
   sleep,
   nanoid
 } from '@/lib/utils'
-import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
-import { auth } from '@/auth'
 
 const openai = createOpenAI({
   baseURL: 'https://proxy.tune.app',
@@ -114,6 +113,9 @@ async function submitUserMessage(content: string) {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
+  const session = await auth()
+  const metadata = session.sessionClaims?.metadata
+  console.log(JSON.stringify(session))
 
   aiState.update({
     ...aiState.get(),
@@ -133,7 +135,7 @@ async function submitUserMessage(content: string) {
   const result = await streamUI({
     model: openai('meta/llama-3.1-8b-instruct'),
     initial: <SpinnerMessage />,
-    system: `Only reply with the letter "a""`,
+    system: `I have health information regarding a user, please help them diagnose the issue: ${JSON.stringify(metadata)}`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -190,52 +192,56 @@ export const AI = createAI<AIState, UIState>({
     confirmPurchase
   },
   initialUIState: [],
-  initialAIState: { chatId: nanoid(), messages: [] },
-  onGetUIState: async () => {
-    'use server'
+  initialAIState: { chatId: nanoid(), messages: [] }
+  //
+  // SET AND SAVE CHATS HERE
+  //
+  //
+  // onGetUIState: async () => {
+  //   'use server'
 
-    const session = await auth()
+  //   const session = await auth()
 
-    if (session && session.user) {
-      const aiState = getAIState() as Chat
+  //   if (session && session.user) {
+  //     const aiState = getAIState() as Chat
 
-      if (aiState) {
-        const uiState = getUIStateFromAIState(aiState)
-        return uiState
-      }
-    } else {
-      return
-    }
-  },
-  onSetAIState: async ({ state }) => {
-    'use server'
+  //     if (aiState) {
+  //       const uiState = getUIStateFromAIState(aiState)
+  //       return uiState
+  //     }
+  //   } else {
+  //     return
+  //   }
+  // },
+  // onSetAIState: async ({ state }) => {
+  //   'use server'
 
-    const session = await auth()
+  //   const session = await auth()
 
-    if (session && session.user) {
-      const { chatId, messages } = state
+  //   if (session && session.user) {
+  //     const { chatId, messages } = state
 
-      const createdAt = new Date()
-      const userId = session.user.id as string
-      const path = `/chat/${chatId}`
+  //     const createdAt = new Date()
+  //     const userId = session.user.id as string
+  //     const path = `/chat/${chatId}`
 
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
+  //     const firstMessageContent = messages[0].content as string
+  //     const title = firstMessageContent.substring(0, 100)
 
-      const chat: Chat = {
-        id: chatId,
-        title,
-        userId,
-        createdAt,
-        messages,
-        path
-      }
+  //     const chat: Chat = {
+  //       id: chatId,
+  //       title,
+  //       userId,
+  //       createdAt,
+  //       messages,
+  //       path
+  //     }
 
-      await saveChat(chat)
-    } else {
-      return
-    }
-  }
+  //     await saveChat(chat)
+  //   } else {
+  //     return
+  //   }
+  // }
 })
 
 export const getUIStateFromAIState = (aiState: Chat) => {
