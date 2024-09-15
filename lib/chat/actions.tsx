@@ -51,8 +51,8 @@ async function submitUserMessage(content: string) {
     initial: <SpinnerMessage />,
     system:
       session.orgSlug === 'doctor'
-        ? `You are assisting a doctor. Provide technical medical information and treatment suggestions based on this health information: ${JSON.stringify(metadata)}.`
-        : `You are assisting a patient. Help diagnose any issues or give health advice in summary based on this personal health information: ${JSON.stringify(metadata)}.`,
+        ? `You are assisting a doctor. Provide technical medical information and treatment suggestions based on this health information: ${JSON.stringify(metadata)}. Today is ${new Date().toDateString()}, use this and the birthday when calculating the patient's age.`
+        : `You are assisting a patient. Help diagnose any issues or give health advice in summary based on this personal health information: ${JSON.stringify(metadata)}. Today is ${new Date().toDateString()}, use this and the birthday when calculating the patient's age.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,

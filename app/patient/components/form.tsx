@@ -22,8 +22,8 @@ const formSchema = z.object({
   gender: z.string().min(0, {
     message: 'Gender should be either M or F.'
   }),
-  birthday: z.string().min(7, {
-    message: 'Birthday should be in the form MM/DD/YY.'
+  birthday: z.string().min(8, {
+    message: 'Birthday should be in the form MM/DD/YYY.'
   }),
   weight: z.string().min(2, {
     message: 'Weight must be at least 2 characters.'
@@ -39,7 +39,7 @@ export function ProfileForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       gender: 'M',
-      birthday: '01/01/00',
+      birthday: '01/01/2000',
       weight: '150',
       height: '170'
     }
@@ -80,12 +80,12 @@ export function ProfileForm() {
           name="birthday"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Birthday (MM/DD/YY)</FormLabel>
+              <FormLabel>Birthday (MM/DD/YYYY)</FormLabel>
               <FormControl>
                 <Input type="string" placeholder="Enter birthday" {...field} />
               </FormControl>
               <FormDescription>
-                This is your birthday in MMDDYY.
+                This is your birthday in MMDDYYYY.
               </FormDescription>
               <FormMessage />
             </FormItem>
