@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 
 import { ProfileForm } from './components/form'
+import { Widget } from './components/TerraWidget'
 
 export default function Page() {
   return (
@@ -24,7 +26,7 @@ export default function Page() {
         </div>
         <div className="flex">
           <div className="box-section fifty" id="upcoming">
-            <h2>Upcoming Appointments</h2>
+            <Widget />
           </div>
           <div className="box-section fifty" id="alerts">
             <h2>Medical Alerts</h2>
@@ -37,8 +39,10 @@ export default function Page() {
           style={{ minHeight: "30vh" }}
         >
           <div style={{ alignContent: "center" }}>
-            <h1>Chat with Teddy!</h1>
-            <h3>Feeling under the weather? I can help!</h3>
+            <Link href="/chat">
+              <h1>Chat with Teddy!</h1>
+              <h3>Feeling under the weather? I can help!</h3>
+            </Link>
           </div>
           <img
             src="teddy.png"

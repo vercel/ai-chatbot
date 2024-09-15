@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button"
+import * as React from "react"
+import Image from "next/image"
+ 
+import { ScrollArea } from "@/components/ui/scroll-area"
 
-export function ButtonDemo() {
-  return <Button>Button</Button>
-}
+const tags = Array.from({ length: 50 }).map(
+  (_, i, a) => `v1.2.0-beta.${a.length - i}`
+)
 
 export default async function () {
   return (
@@ -18,6 +21,14 @@ export default async function () {
     <div className="flex" style={{ height: "75vh" }}>
       <div className="box-section fifty">
         <h1>Patients</h1>
+        <ScrollArea className="h-[200px] w-[350px] rounded-md border p-4">
+  Jokester began sneaking into the castle in the middle of the night and leaving
+  jokes all over the place: under the king's pillow, in his soup, even in the
+  royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
+  then, one day, the people of the kingdom discovered that the jokes left by
+  Jokester were so funny that they couldn't help but laugh. And once they
+  started laughing, they couldn't stop.
+    </ScrollArea>
         
       </div>
       <div className="flex column fifty">
