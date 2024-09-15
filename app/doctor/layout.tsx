@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@clerk/nextjs/server'
+import '../fonts.css'
+import './styles.css'
 
 export default async function DoctorLayout({
   children
