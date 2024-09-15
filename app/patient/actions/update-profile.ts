@@ -3,10 +3,14 @@
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/clerk-sdk-node'
 
-export async function updateHeartRate({
-  newHeartRate
+export async function updateProfile({
+  newBirthday,
+  newWeight,
+  newHeight
 }: {
-  newHeartRate: string
+  newBirthday: string
+  newWeight: string
+  newHeight: string
 }) {
   const session = await auth()
   const user_id = session.userId
@@ -15,6 +19,6 @@ export async function updateHeartRate({
   }
   // Update the postgres database???
   await clerkClient.users.updateUser(user_id, {
-    publicMetadata: { heartRate: newHeartRate, weight: '1234' }
+    publicMetadata: { Birthday: newBirthday, newWeight, newHeight }
   })
 }

@@ -67,7 +67,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
               </main>
             </SignedIn>
             <SignedOut>
-              // center this
               <div className="flex flex-col items-center justify-center flex-1 bg-muted/50">
                 <SignIn />
               </div>

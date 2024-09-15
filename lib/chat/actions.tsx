@@ -47,7 +47,8 @@ async function submitUserMessage(content: string) {
   const result = await streamUI({
     model: openai('meta/llama-3.1-8b-instruct'),
     initial: <SpinnerMessage />,
-    system: `I have health information regarding a user, please help them diagnose the issue: ${JSON.stringify(metadata)}`,
+    system: `I have these personal health information: ${JSON.stringify(metadata)}. 
+    If there are any issues, help me diagnose them, otherwise give me some health advice in summary.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,

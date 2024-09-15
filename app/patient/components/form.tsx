@@ -15,15 +15,18 @@ import {
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { updateHeartRate } from '../actions/update-heartreate'
+import { updateProfile } from '../actions/update-profile'
 import { useState } from 'react'
 
 const formSchema = z.object({
-  heartrate: z.string().min(2, {
-    message: 'Heart rate must be at least 2 characters.'
+  birthday: z.string().min(7, {
+    message: 'Birthday should be in the form MM/DD/YY.'
   }),
   weight: z.string().min(2, {
     message: 'Weight must be at least 2 characters.'
+  }),
+  height: z.string().min(2, {
+    message: 'Height must be at least 2 characters.'
   })
 })
 
@@ -32,14 +35,19 @@ export function ProfileForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      heartrate: '123',
-      weight: '123'
+      birthday: '01/01/00',
+      weight: '123',
+      height: '123'
     }
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setSubmitting(true)
-    await updateHeartRate({ newHeartRate: values.heartrate })
+    await updateProfile({
+      newBirthday: values.birthday,
+      newWeight: values.weight,
+      newHeight: values.height
+    })
     setSubmitting(false)
 
     console.log(values)
@@ -50,18 +58,16 @@ export function ProfileForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="heartrate"
+          name="birthday"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Heart Rate</FormLabel>
+              <FormLabel>Birthday (MM/DD/YY)</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter heart rate"
-                  {...field}
-                />
+                <Input type="string" placeholder="Enter birthday" {...field} />
               </FormControl>
-              <FormDescription>This is your heart rate value.</FormDescription>
+              <FormDescription>
+                This is your birthday in MMDDYY.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -71,11 +77,25 @@ export function ProfileForm() {
           name="weight"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Weight</FormLabel>
+              <FormLabel>Weight (lb)</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="Enter weight" {...field} />
               </FormControl>
               <FormDescription>This is your weight value.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="height"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Height (cm)</FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="Enter height" {...field} />
+              </FormControl>
+              <FormDescription>This is your height value.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
