@@ -17,7 +17,10 @@ export function Header() {
       <div className="flex items-center justify-end space-x-2">
         <UserButton />
         <IconSeparator />
-        <OrganizationSwitcher afterSelectOrganizationUrl={'/'} />
+        <OrganizationSwitcher
+          afterSelectOrganizationUrl={'/'}
+          hidePersonal={true}
+        />
       </div>
     </header>
   )
