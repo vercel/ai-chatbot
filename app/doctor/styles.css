@@ -31,7 +31,7 @@ body {
 }
 .main-container{
     height: 100%;
-    overflow-y: hidden;
+    overflow-x: hidden;
     padding: 50px 10vw;
     width: 100%;
 }
