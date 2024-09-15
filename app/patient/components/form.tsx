@@ -19,6 +19,9 @@ import { updateProfile } from '../actions/update-profile'
 import { useState } from 'react'
 
 const formSchema = z.object({
+  gender: z.string().min(0, {
+    message: 'Gender should be either M or F.'
+  }),
   birthday: z.string().min(7, {
     message: 'Birthday should be in the form MM/DD/YY.'
   }),
@@ -35,6 +38,7 @@ export function ProfileForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      gender: 'M',
       birthday: '01/01/00',
       weight: '150',
       height: '170'
@@ -44,6 +48,7 @@ export function ProfileForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setSubmitting(true)
     await updateProfile({
+      gender: values.gender,
       birthday: values.birthday,
       weight: values.weight,
       height: values.height
@@ -56,6 +61,20 @@ export function ProfileForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Gender (M/F)</FormLabel>
+              <FormControl>
+                <Input type="string" placeholder="Enter gender" {...field} />
+              </FormControl>
+              <FormDescription>This is your gender in M/F.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="birthday"
