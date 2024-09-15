@@ -1,6 +1,9 @@
 import { clerkClient } from '@clerk/clerk-sdk-node'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: Request) {
-  const clerk = clerkClient({ apiKey: process.env.CLERK_API_KEY })
-  return new Response('Hello, Terra!')
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
+  // Your API logic here
+  return NextResponse.json({ message: 'Hello from Terra API' })
 }

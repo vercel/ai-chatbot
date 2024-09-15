@@ -20,12 +20,13 @@ import { useState } from 'react'
 
 const formSchema = z.object({
   heartrate: z.string().min(2, {
-    message: 'heartrate must be at least 2 characters.'
+    message: 'Heart rate must be at least 2 characters.'
   }),
   weight: z.string().min(2, {
-    message: 'weight must be at least 2 characters.'
+    message: 'Weight must be at least 2 characters.'
   })
 })
+
 export function ProfileForm() {
   const [submitting, setSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,7 +37,6 @@ export function ProfileForm() {
     }
   })
 
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setSubmitting(true)
     await updateHeartRate({ newHeartRate: values.heartrate })
@@ -52,28 +52,32 @@ export function ProfileForm() {
           control={form.control}
           name="heartrate"
           render={({ field }) => (
-            <>
-              <FormItem>
-                <FormLabel>heartrate</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="shadcn" {...field} />
-                </FormControl>
-                <FormDescription>
-                  This is your public display name.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-              <FormItem>
-                <FormLabel>weight</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="hello" {...field} />
-                </FormControl>
-                <FormDescription>
-                  This is your public display name.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            </>
+            <FormItem>
+              <FormLabel>Heart Rate</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Enter heart rate"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>This is your heart rate value.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="weight"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Weight</FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="Enter weight" {...field} />
+              </FormControl>
+              <FormDescription>This is your weight value.</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
         />
         <Button disabled={submitting} type="submit">
