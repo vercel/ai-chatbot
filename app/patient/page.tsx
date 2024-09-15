@@ -1,30 +1,27 @@
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog'
+'use client'
 
-import { ProfileForm } from './components/form'
+import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { PatientForm } from './components/form'
 
-export default function Page() {
+export default function PatientPage() {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const authStatus = searchParams.get('auth')
+    if (authStatus === 'success') {
+      console.log('Device connected successfully')
+      // Handle successful connection (e.g., show a success message, update user state)
+    } else if (authStatus === 'failure') {
+      console.log('Device connection failed')
+      // Handle failed connection (e.g., show an error message)
+    }
+  }, [searchParams])
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">Edit Profile</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
-          <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
-          </DialogDescription>
-        </DialogHeader>
-        <ProfileForm />
-      </DialogContent>
-    </Dialog>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Patient Health Device Connection</h1>
+      <PatientForm />
+    </div>
   )
 }
