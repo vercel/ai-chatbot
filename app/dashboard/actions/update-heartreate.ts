@@ -13,7 +13,8 @@ export async function updateHeartRate({
   if (!user_id) {
     throw new Error('YOU ARE NOT LOGGED IN')
   }
+  // Update the postgres database???
   await clerkClient.users.updateUser(user_id, {
-    publicMetadata: { heartRate: newHeartRate }
+    publicMetadata: { heartRate: newHeartRate, weight: '1234' }
   })
 }

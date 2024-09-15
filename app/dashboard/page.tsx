@@ -3,16 +3,14 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+
 import { ProfileForm } from './components/form'
 
-export function DialogDemo() {
+export default function Page() {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -28,21 +26,5 @@ export function DialogDemo() {
         <ProfileForm />
       </DialogContent>
     </Dialog>
-  )
-}
-
-export default function Page() {
-  return (
-    <div>
-      <DialogDemo />
-    </div>
-  )
-}
-
-function SomeComponent() {
-  return (
-    <div>
-      <h1>asdad</h1>
-    </div>
   )
 }
