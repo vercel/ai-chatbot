@@ -36,8 +36,8 @@ export function ProfileForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       birthday: '01/01/00',
-      weight: '123',
-      height: '123'
+      weight: '150',
+      height: '170'
     }
   })
 
