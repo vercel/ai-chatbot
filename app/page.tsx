@@ -7,7 +7,7 @@ export default async function Page() {
 
   const org = session.orgSlug
 
-  if (!org) return <OrganizationList />
+  if (!org) return <OrganizationList hidePersonal={true} />
 
   redirect(`/${org}`)
 }
