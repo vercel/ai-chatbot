@@ -4,21 +4,21 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/clerk-sdk-node'
 
 export async function updateProfile({
-  newBirthday,
-  newWeight,
-  newHeight
+  birthday,
+  weight,
+  height
 }: {
-  newBirthday: string
-  newWeight: string
-  newHeight: string
+  birthday: string
+  weight: string
+  height: string
 }) {
   const session = await auth()
   const user_id = session.userId
   if (!user_id) {
-    throw new Error('YOU ARE NOT LOGGED IN')
+    throw Error('YOU ARE NOT LOGGED IN')
   }
   // Update the postgres database???
   await clerkClient.users.updateUser(user_id, {
-    publicMetadata: { Birthday: newBirthday, newWeight, newHeight }
+    publicMetadata: { birthday: birthday, weight, height }
   })
 }

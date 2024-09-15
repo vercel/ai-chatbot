@@ -44,9 +44,9 @@ export function ProfileForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setSubmitting(true)
     await updateProfile({
-      newBirthday: values.birthday,
-      newWeight: values.weight,
-      newHeight: values.height
+      birthday: values.birthday,
+      weight: values.weight,
+      height: values.height
     })
     setSubmitting(false)
 
