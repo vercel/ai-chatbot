@@ -18,6 +18,7 @@ export default async function () {
     <div className="flex" style={{ height: "75vh" }}>
       <div className="box-section fifty">
         <h1>Patients</h1>
+        
       </div>
       <div className="flex column fifty">
         <div className="box-section flex-grow" style={{ maxHeight: "100%" }}>
