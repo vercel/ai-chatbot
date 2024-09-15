@@ -1,16 +1,23 @@
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog'
+'use client'
 
-import { ProfileForm } from './components/form'
+import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { PatientForm } from './components/form'
 
-export default function Page() {
+export default function PatientPage() {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const authStatus = searchParams.get('auth')
+    if (authStatus === 'success') {
+      console.log('Device connected successfully')
+      // Handle successful connection (e.g., show a success message, update user state)
+    } else if (authStatus === 'failure') {
+      console.log('Device connection failed')
+      // Handle failed connection (e.g., show an error message)
+    }
+  }, [searchParams])
+
   return (
     <>
   <div className="main-container flex column" style={{}}>
