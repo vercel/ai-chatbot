@@ -1,3 +1,4 @@
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +13,6 @@ import {
 import { ProfileForm } from './components/form'
 import { Widget } from './components/TerraWidget'
 
-export default function Page() {
   return (
     <>
   <div className="main-container flex column" style={{}}>

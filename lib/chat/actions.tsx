@@ -27,6 +27,8 @@ async function submitUserMessage(content: string) {
   const aiState = getMutableAIState<typeof AI>()
   const session = await auth()
   const metadata = session.sessionClaims?.metadata
+  const userRole = session.orgSlug === 'doctor' ? 'doctor' : 'patient'
+
   console.log(JSON.stringify(session))
 
   aiState.update({
@@ -47,8 +49,10 @@ async function submitUserMessage(content: string) {
   const result = await streamUI({
     model: openai('meta/llama-3.1-8b-instruct'),
     initial: <SpinnerMessage />,
-    system: `I have these personal health information: ${JSON.stringify(metadata)}. 
-    If there are any issues, help me diagnose them, otherwise give me some health advice in summary.`,
+    system:
+      session.orgSlug === 'doctor'
+        ? `You are assisting a doctor. Provide technical medical information and treatment suggestions based on this health information: ${JSON.stringify(metadata)}. Today is ${new Date().toDateString()}, use this and the birthday when calculating the patient's age.`
+        : `You are assisting a patient. Help diagnose any issues or give health advice in summary based on this personal health information: ${JSON.stringify(metadata)}. Today is ${new Date().toDateString()}, use this and the birthday when calculating the patient's age.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
