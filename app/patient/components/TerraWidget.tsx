@@ -1,74 +1,61 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-const api_key = process.env.NEXT_PUBLIC_TERRA_API_KEY;
-const reference_id = process.env.NEXT_PUBLIC_TERRA_DEV_ID;
-
-/// The getWidgetAsync function is an asynchronous function that fetches the widget session URL from the Terra API
-/// and sets the url state using the setUrl function.
-/// It takes an object with an onSuccess callback function as a parameter to set state back to the main component.
-export const getWidgetAsync = async (props: { onSuccess: any }) => {
+export const getWidgetAsync = async (props: { onSuccess: (url: string) => void }) => {
   try {
-    const response = await fetch(
-      'https://api.tryterra.co/v2/auth/generateWidgetSession',
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'dev-id': 'testingTerra',
-          'content-type': 'application/json',
-          'x-api-key': api_key as string,
-        },
-        body: JSON.stringify({
-          reference_id: reference_id,
-          providers:
-            'GARMIN,WITHINGS,FITBIT,GOOGLE,OURA,WAHOO,PELOTON,ZWIFT,TRAININGPEAKS,FREESTYLELIBRE,DEXCOM,COROS,HUAWEI,OMRON,RENPHO,POLAR,SUUNTO,EIGHT,APPLE,CONCEPT2,WHOOP,IFIT,TEMPO,CRONOMETER,FATSECRET,NUTRACHECK,UNDERARMOUR',
-          language: 'en',
-          auth_success_redirect_url: 'terraficapp://request',
-          auth_failure_redirect_url: 'terraficapp://login',
-        }),
-      },
-    );
+    console.log('Fetching widget URL...');
+    const response = await fetch('/api/terra/generateWidgetSession', { method: 'GET' });
+    console.log('Response status:', response.status);
     const json = await response.json();
-    props.onSuccess(json.url);
+    console.log('API Response:', json);
+    if (json.url) {
+      props.onSuccess(json.url);
+    } else {
+      console.error('No URL in response:', json);
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Error in getWidgetAsync:', error);
   }
 };
 
 export const Widget = () => {
-  const [url, setUrl] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Close the browser when authentication is completed. Authentication completion can be detected by listening to the incoming link.
-  // The success or fail url is logged into the console.
-  const _handleURL = (event: MessageEvent) => {
-    console.log(event.data);
+  const handlePressButton = async () => {
+    try {
+      setError(null);
+      setIsLoading(true);
+      console.log('Button clicked');
+      await getWidgetAsync({ 
+        onSuccess: (newUrl: string) => {
+          console.log('Received URL:', newUrl);
+          if (newUrl) {
+            window.open(newUrl, '_blank');
+          } else {
+            setError('Received empty URL from Terra API');
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error opening widget:', error);
+      setError('Failed to open widget');
+    } finally {
+      setIsLoading(false);
+    }
   };
-  // Open the browser for authentication using the Widget components.
-  const _handlePressButtonAsync = async () => {
-    getWidgetAsync({ onSuccess: setUrl });
-    // Use window.open instead of WebBrowser.openBrowserAsync
-    window.open(url, '_blank');
-  };
-
-  // set up an url listener and invoke getWidgetAsync when the component is mounted
-  useEffect(() => {
-    // Linking.addEventListener is not available in Next.js
-    // We can use window.addEventListener for similar functionality
-    window.addEventListener('message', _handleURL);
-    getWidgetAsync({ onSuccess: setUrl });
-
-    // Cleanup function
-    return () => {
-      window.removeEventListener('message', _handleURL);
-    };
-  }, []);
 
   return (
     <div>
-      <Button onClick={_handlePressButtonAsync}>open widget</Button>
+      <Button 
+        onClick={handlePressButton} 
+        disabled={isLoading}
+      >
+        {isLoading ? 'Loading...' : 'Open Widget'}
+      </Button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>
   );
 };
