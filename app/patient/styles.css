@@ -1,0 +1,94 @@
+:root{
+    --white: #ffffff;
+    --black: #000000;
+    --planetary: #334eac;
+    --venus: #bad6eb;
+    --meteor: #f7f3eb;
+    --universe: #7096d1;
+    --galaxy: #081f5c;
+    --milky-way: #fff9f0;
+    --sky: #d0e3ff;
+}
+.sky{
+    background-color: var(--sky);
+}
+.round{
+    border-radius: 20px;
+}
+body{
+    max-height: 100vh;
+    background-color: var(--milky-way);
+    padding: 0;
+
+    font-family: 'SF Pro Display', helvetica, snas-serif;
+    font-weight: 400;
+    font-size: 20px;
+}
+.fifty{
+    flex-basis: 50%;
+}
+.main-container{
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow: hidden;
+    padding: 50px 10vw;
+}
+.flex{
+    display: flex;
+    margin: 0;
+}
+.flex-grow{
+    flex-grow: 1;
+}
+.box-section{
+    background-color: var(--sky);
+    margin: 10px;
+    padding: 30px;
+    border-radius: 20px;
+}
+.clickable:hover{
+    background-color: white;
+    border: var(--planetary);
+    border-width: 1px;
+    border-style: solid;
+}
+#alerts{
+    min-height: 20vh;
+}
+.heading{
+    margin: 010px;
+    flex-basis: 100%;
+    font-size: 3em;
+    max-height: 20vh;
+}
+@media (max-width: 800px) {
+    .main-container{
+        padding: 10px 10px;
+    }
+    .heading {
+        font-size: 10vw;
+    }
+}
+.column{
+    flex-direction: column;
+}
+.blue{
+    background-color: blue;
+}
+.red{
+    background-color: red;
+}
+h1{
+    margin: 0;
+    font-size: 32px;
+}
+h2{
+    margin:0;
+    font-weight: 500;
+    font-size: 24px;
+}
+h3{
+    margin: 0;
+    font-weight: 300;
+}
+
