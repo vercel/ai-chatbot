@@ -38,4 +38,4 @@ yarn-error.log*
 .env*.local
 
 # typescript
-.tsconfig.tsbuildinfo
+tsconfig.tsbuildinfo
