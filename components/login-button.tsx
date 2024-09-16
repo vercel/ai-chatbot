@@ -1,11 +1,11 @@
 'use client'
 
 import * as React from 'react'
-import { signIn } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconGitHub, IconSpinner } from '@/components/ui/icons'
+import { createClient } from '@/utils/supabase/client'
 
 interface LoginButtonProps extends ButtonProps {
   showGithubIcon?: boolean
@@ -19,13 +19,17 @@ export function LoginButton({
   ...props
 }: LoginButtonProps) {
   const [isLoading, setIsLoading] = React.useState(false)
+  const supabase = createClient()
+
   return (
     <Button
       variant="outline"
-      onClick={() => {
+      onClick={async () => {
         setIsLoading(true)
-        // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
-        signIn('github', { callbackUrl: `/` })
+        await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: { redirectTo: `${location.origin}/api/auth/callback` }
+        })
       }}
       disabled={isLoading}
       className={cn(className)}

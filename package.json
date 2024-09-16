@@ -5,6 +5,7 @@
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
+    "supabase:generate:types": "supabase gen types --lang=typescript --local > utils/supabase/types.ts",
     "format:write": "prettier --write \"{app,lib,components}/**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },
@@ -30,7 +31,6 @@
     "geist": "^1.3.1",
     "nanoid": "^5.0.7",
     "next": "14.2.6",
-    "next-auth": "5.0.0-beta.4",
     "next-themes": "^0.3.0",
     "openai": "^4.56.0",
     "react": "^18.3.1",
@@ -57,6 +57,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss": "^3.4.10",
     "tailwindcss-animate": "^1.0.7",
+    "type-fest": "^4.26.1",
     "typescript": "^5.5.4"
   },
   "packageManager": "pnpm@8.6.3"
