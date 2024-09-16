@@ -21,6 +21,10 @@ export function LoginButton({
   const [isLoading, setIsLoading] = React.useState(false)
   const supabase = createClient()
 
+  if (process.env.NEXT_PUBLIC_AUTH_GITHUB !== 'true') {
+    return null
+  }
+
   return (
     <Button
       variant="outline"
