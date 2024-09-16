@@ -39,19 +39,24 @@ export const updateSession = async (request: NextRequest) => {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const user = await supabase.auth.getUser()
 
-    const isLoggedIn = !Boolean(user.error)
-    const isOnLoginPage = request.nextUrl.pathname.startsWith('/login')
-    const isOnSignupPage = request.nextUrl.pathname.startsWith('/signup')
+    const isLoggedIn = user.error === null
+    const isOnAuthPage =
+      request.nextUrl.pathname.startsWith('/login') ||
+      request.nextUrl.pathname.startsWith('/signup')
 
     if (isLoggedIn) {
-      if (isOnLoginPage || isOnSignupPage) {
+      if (isOnAuthPage) {
         return NextResponse.redirect(new URL('/', request.nextUrl))
       }
 
       return response
     }
 
-    return NextResponse.redirect(new URL('/sign-in', request.url))
+    if (isOnAuthPage) {
+      return response
+    }
+
+    return NextResponse.redirect(new URL('/login', request.url))
   } catch (e) {
     // If you are here, a Supabase client could not be created!
     // This is likely because you have not set up environment variables.
