@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { IconSpinner } from './ui/icons'
 import { getMessageFromCode } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { LoginWithGitHubButton } from './login-with-github-button'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -71,6 +72,8 @@ export default function LoginForm() {
           </div>
         </div>
         <LoginButton />
+        <hr />
+        <LoginWithGitHubButton />
       </div>
 
       <Link

@@ -7,17 +7,17 @@ import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconGitHub, IconSpinner } from '@/components/ui/icons'
 import { createClient } from '@/utils/supabase/client'
 
-interface LoginButtonProps extends ButtonProps {
+interface LoginWithGitHubButtonProps extends ButtonProps {
   showGithubIcon?: boolean
   text?: string
 }
 
-export function LoginButton({
+export function LoginWithGitHubButton({
   text = 'Login with GitHub',
   showGithubIcon = true,
   className,
   ...props
-}: LoginButtonProps) {
+}: LoginWithGitHubButtonProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const supabase = createClient()
 
@@ -32,11 +32,14 @@ export function LoginButton({
         setIsLoading(true)
         await supabase.auth.signInWithOAuth({
           provider: 'github',
-          options: { redirectTo: `${location.origin}/api/auth/callback` }
+          options: { redirectTo: `${location.origin}/auth/callback` }
         })
       }}
       disabled={isLoading}
-      className={cn(className)}
+      className={cn(
+        className,
+        'my-4 flex h-10 w-full flex-row items-center justify-center rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200'
+      )}
       {...props}
     >
       {isLoading ? (

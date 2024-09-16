@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { IconSpinner } from './ui/icons'
 import { getMessageFromCode } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { LoginWithGitHubButton } from './login-with-github-button'
 
 export default function SignupForm() {
   const router = useRouter()
@@ -71,6 +72,8 @@ export default function SignupForm() {
           </div>
         </div>
         <LoginButton />
+        <hr />
+        <LoginWithGitHubButton />
       </div>
 
       <Link href="/login" className="flex flex-row gap-1 text-sm text-zinc-400">
