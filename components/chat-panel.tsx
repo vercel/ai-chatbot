@@ -84,9 +84,9 @@ const MessageList = ({ messages }: { messages: any[] }) => (
       overflowY: 'auto' // Scrollable
     }}
   >
-    {messages.map((message, index) => (
-      <Message key={index} message={message} />
-    ))}
+    {messages.map((message, index) =>
+      index > 0 ? <Message key={index} message={message} /> : null
+    )}
   </div>
 )
 export function ChatPanel({

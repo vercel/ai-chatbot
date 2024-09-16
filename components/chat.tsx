@@ -41,7 +41,8 @@ export function Chat({ id }: ChatProps) {
     handleInputChange,
     handleSubmit,
     isLoading,
-    setMessages
+    setMessages,
+    append
   } = useChat({
     body: {
       classType: localClassType
@@ -59,6 +60,12 @@ export function Chat({ id }: ChatProps) {
 
   const lastAiMessageRef = useRef<Message | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null) // Ref for the textarea
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      append({ role: 'user', content: "Hello, let's start the class!" })
+    }
+  }, [append, messages])
 
   useEffect(() => {
     setLocalClassType(selectedClass)
