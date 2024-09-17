@@ -42,27 +42,27 @@ You can deploy your own version of the Next.js AI Chatbot to Vercel with one cli
 
 ## Store your Chat History in Supabase
 
-Go to [supabase.com](https://supabase.com/) and click "Start your project" in the top right to create a new project. When your project is created, grab your api keys. Click the Connect button in the top right of the project homepage -> App Frameworks -> Next.js. Copy the contents of the `.env.local` file with the api keys and add this to your local `.env.local` file.
+In your new Vercel project, click the Storage tab at the top, then click the Supabase project you just created. From there, click “Open in Supabase”.
 
-## Get an OpenAI API key
+Setup your Supabase project to store your Chat History:
 
-Go to the [OpenAI Platform](https://platform.openai.com/api-keys) and login or signup, and create a new secret key. Add this key to your `.env.local` file as `OPENAI_API_KEY`.
+1. In `/supabase/migrations/20240916140519_init.sql`, you'll find a SQL script to setup your database tables in Supabase
+2. Copy this script, and visit the [SQL Editor](https://supabase.com/dashboard/project/_/sql/new)
+3. Paste in the script and hit "RUN".
+
+## Get an OpenAI API keyp
+
+Go to the [OpenAI Platform](https://platform.openai.com/api-keys) and login or signup, and create a new secret key. Add this key to your `.env` file as `OPENAI_API_KEY`.
 
 ## Running locally
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env.local` file is all that is necessary.
+You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
 
-> Note: You should not commit your `.env.local` file or it will expose secrets that will allow others to control access to your various OpenAI and authentication provider accounts.
+> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various OpenAI and authentication provider accounts.
 
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
-
-Next, setup your Supabase project to store your Chat History.
-
-1. In `/supabase/migrations/20240916140519_init.sql`, you'll find a SQL script to setup your database tables in Supabase
-2. Copy this script, and visit the [SQL Editor](https://supabase.com/dashboard/project/zlarqpgkbjqgrvuquugu/sql/new) of the project you just created.
-3. Paste in the script and hit "RUN".
 
 Last, start your local server:
 
