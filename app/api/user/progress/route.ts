@@ -1,126 +1,130 @@
-import supabase from '@/lib/supabase/supabase'
-import check_missing_fields from '@/lib/api/check_missing_fields'
-import create_response from '@/lib/api/create_response'
-import { NextRequest } from 'next/server'
+import supabase from '@/lib/supabase/supabase';
+import check_missing_fields from '@/lib/api/check_missing_fields';
+import create_response from '@/lib/api/create_response';
+import { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const res = await request.json()
+    console.log('Request received:', request.method);
+
+    const res = await request.json();
+    console.log('Parsed request body:', res);
 
     // Check for missing fields
     const missing_fields = check_missing_fields({
-      fields: ['firebase_id'],
-      reqBody: res
-    })
+      fields: ['supabase_id'],
+      reqBody: res,
+    });
 
     if (missing_fields) {
+      console.log('Missing fields:', missing_fields);
       return create_response({
         request,
         data: { missing_fields },
-        status: 400
-      })
+        status: 400,
+      });
     }
 
-    const { firebase_id } = res
+    const { supabase_id } = res;
+    console.log('Supabase ID:', supabase_id);
 
-    // Query the database
-    const { data, error } = await supabase
+    // Query the database for user progress (first query)
+    const { data: progressData, error: progressError } = await supabase
       .from('user_progress')
-      .select(
-        `
-        *,
-        users (
-          id,
-          firebase_id
-        )
-      `
-      )
-      .eq('users.firebase_id', firebase_id)
-      .single()
+      .select(`
+        id,
+        progress,
+        level,
+        current_lesson
+      `)
+      .eq('user_id', supabase_id) // Filter by supabase_id
+      .single();
 
-    if (error) {
+    if (progressError || !progressData) {
+      console.error('Error fetching user progress data:', progressError);
       return create_response({
         request,
-        data: { error: error.message },
-        status: 500
-      })
+        data: { error: progressError?.message || 'No data found' },
+        status: 500,
+      });
     }
 
-    // Return the fetched data
-    return create_response({
-      request,
-      data: { data },
-      status: 200
-    })
-  } catch (err) {
-    // Handle unexpected errors
-    return create_response({
-      request,
-      data: { error: 'Internal Server Error', details: err },
-      status: 500
-    })
-  }
-}
+    const levelId = progressData?.level;
+    console.log('Fetched level ID:', levelId);
 
-export async function GET(request: NextRequest) {
-  try {
-    // Extract firebase_id from query parameters
-    const url = new URL(request.url)
-    const firebaseId = url.searchParams.get('firebase_id')
+    // Query the levels table for the name of the level (second query)
+    const { data: levelData, error: levelError } = await supabase
+      .from('levels')
+      .select('name')
+      .eq('id', levelId)
+      .single();
 
-    if (!firebaseId) {
+    if (levelError || !levelData) {
+      console.error('Error fetching level data:', levelError);
       return create_response({
         request,
-        data: { error: 'Missing firebase_id query parameter' },
-        status: 400
-      })
+        data: { error: levelError?.message || 'No level data found' },
+        status: 500,
+      });
     }
 
-    // Query the database to get the user's progress
-    const { data, error } = await supabase
-      .from('user_progress')
-      .select(
-        `
-        *,
-        users (
-          id,
-          firebase_id
-        )
-      `
-      )
-      .eq('users.firebase_id', firebaseId)
-      .single()
+    const levelName = levelData?.name || 'Unknown';
+    console.log('Fetched level name:', levelName);
 
-    if (error) {
-      return create_response({
-        request,
-        data: { error: error.message },
-        status: 500
-      })
-    }
+    // Query the number of classes taken
+    const { data: classesTakenData, error: classesTakenError } = await supabase
+      .from('user_lessons')
+      .select('id')
+      .eq('user_progress_id', progressData.id)
+      .gt('progress', 50); // Progress greater than 50%
 
-    if (!data) {
+    const classes_taken = classesTakenData ? classesTakenData.length : 0;
+
+    // Query the total number of classes in the current level using the correct prefix
+    const levelPrefix = levelName.split('.').slice(0, 2).join('.'); // Extract level prefix like 'C1.1'
+
+    const { data: totalClassesData, error: totalClassesError } = await supabase
+      .from('lesson_plan')
+      .select('id')
+      .like('class_id', `${levelPrefix}%`); // Match the class_id prefix
+
+    const total_classes = totalClassesData ? totalClassesData.length : 0;
+
+    if (classesTakenError || totalClassesError) {
+      console.error('Error fetching class data:', classesTakenError, totalClassesError);
       return create_response({
         request,
         data: {
-          message: 'No user progress found for the provided firebase_id'
+          error: 'Error fetching class data',
         },
-        status: 404
-      })
+        status: 500,
+      });
     }
+
+    // Create the response format
+    const response = {
+      progress: progressData?.progress || 0,
+      level: levelName,
+      current_lesson: progressData?.current_lesson || null, // Add current lesson ID
+      classes_taken,
+      total_classes,
+      message: `${classes_taken}/${total_classes} ${levelName} classes completed`,
+    };
+
+    console.log('Final response:', response);
 
     // Return the retrieved user progress data
     return create_response({
       request,
-      data: { data },
-      status: 200
-    })
+      data: { response },
+      status: 200,
+    });
   } catch (err) {
-    // Handle unexpected errors
+    console.error('Unexpected error:', err);
     return create_response({
       request,
       data: { error: 'Internal Server Error', details: err },
-      status: 500
-    })
+      status: 500,
+    });
   }
 }

@@ -5,7 +5,11 @@ import { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // Log incoming request
+    console.log('Incoming request:', request);
+
     const res = await request.json();
+    console.log('Request JSON parsed:', res);
 
     // Check for missing fields
     const missing_fields = check_missing_fields({
@@ -14,6 +18,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (missing_fields) {
+      console.log('Missing fields:', missing_fields);
       return create_response({
         request,
         data: { missing_fields },
@@ -22,19 +27,40 @@ export async function POST(request: NextRequest) {
     }
 
     const { class_id, type, user_id, topics = [], message: userMessage = '' } = res;
+    console.log('Destructured request data:', { class_id, type, user_id, topics, userMessage });
 
     let system_prompt = '';
     let lesson_data = {};
     let current_lesson = '';
 
+        // Fetch the user name based on the user_id
+        const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', user_id)
+        .single();
+  
+      if (userError) {
+        console.error('Error fetching user name:', userError);
+        return create_response({
+          request,
+          data: { error: userError.message },
+          status: 500,
+        });
+      }
+  
+      const user_name = userData.name;
+      console.log('Fetched user name:', user_name);
+
     // Fetch the user_progress_id based on the user_id
     const { data: userProgress, error: userProgressError } = await supabase
       .from('user_progress')
       .select('id')
-      .eq('user', user_id)
+      .eq('user_id', user_id)
       .single();
 
     if (userProgressError) {
+      console.error('Error fetching user_progress:', userProgressError);
       return create_response({
         request,
         data: { error: userProgressError.message },
@@ -42,24 +68,29 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('Fetched user progress:', userProgress);
     const user_progress_id = userProgress.id;
 
     if (type === 'lesson_plan') {
-      // Query the lesson_plan table
-      const { data: lesson_dataResponse, error: lessonError } = await supabase
+      // Use class_id directly as lesson_id
+      const lesson_id = class_id;
+
+      // Fetch the lesson details from the lesson_plan table using the class_id
+      const { data: lessonDataResponse, error: lessonError } = await supabase
         .from('lesson_plan')
         .select(`
           session_sequence,
-          topic, 
+          topic,
           learning_experiences,
           learning_results,
-          duration, 
+          duration,
           category
         `)
-        .eq('class_id', class_id)
+        .eq('id', lesson_id)  // Directly using class_id as lesson_id
         .single();
 
       if (lessonError) {
+        console.error('Error fetching lesson_plan:', lessonError);
         return create_response({
           request,
           data: { error: lessonError.message },
@@ -67,7 +98,9 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Extract fields from lesson_dataResponse
+      console.log('Fetched lesson plan details:', lessonDataResponse);
+
+      // Extract fields from lessonDataResponse
       const {
         session_sequence,
         topic,
@@ -75,7 +108,7 @@ export async function POST(request: NextRequest) {
         learning_results,
         duration,
         category,
-      } = lesson_dataResponse || {};
+      } = lessonDataResponse || {};
 
       // Query the lesson_types table to get the name of the lesson type
       const { data: lessonTypeResponse, error: lessonTypeError } = await supabase
@@ -85,6 +118,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (lessonTypeError) {
+        console.error('Error fetching lesson_types:', lessonTypeError);
         return create_response({
           request,
           data: { error: lessonTypeError.message },
@@ -92,6 +126,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      console.log('Fetched lesson type:', lessonTypeResponse);
       const { name: lessonTypeName } = lessonTypeResponse;
 
       // Construct lesson_data object
@@ -103,7 +138,9 @@ export async function POST(request: NextRequest) {
         duration,
         lesson_type: lessonTypeName,
         type,
+        user_name
       };
+      console.log('Constructed lesson_data:', lesson_data);
 
       // Query the user_progress table to get the current lesson for the user
       const { data: lesson, error: current_lesson_error } = await supabase
@@ -113,6 +150,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (current_lesson_error) {
+        console.error('Error fetching current lesson:', current_lesson_error);
         return create_response({
           request,
           data: { error: current_lesson_error.message },
@@ -121,13 +159,16 @@ export async function POST(request: NextRequest) {
       }
 
       current_lesson = lesson?.current_lesson || '';
+      console.log('Fetched current lesson:', current_lesson);
 
     } else if (type === 'free') {
       // Handle "free" type, returning topics
       lesson_data = {
         type,
         topics,
+        user_name
       };
+      console.log('Constructed lesson_data for "free" type:', lesson_data);
 
       // Insert the new entry into the user_lessons table
       const { data: insertData, error: insertError } = await supabase
@@ -137,6 +178,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (insertError) {
+        console.error('Error inserting into user_lessons:', insertError);
         return create_response({
           request,
           data: { error: insertError.message },
@@ -146,9 +188,11 @@ export async function POST(request: NextRequest) {
 
       // Set current_lesson to the ID of the newly created lesson
       current_lesson = insertData?.id || null;
+      console.log('Inserted new lesson, current_lesson:', current_lesson);
     }
 
-    // Return lesson_data and current_lesson in the API response
+    // Log the final response before returning it
+    console.log('Final response data:', { lesson_data, current_lesson });
     return create_response({
       request,
       data: { lesson_data, current_lesson },
@@ -156,7 +200,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (err) {
-    // Handle unexpected errors
+    console.error('Unexpected error:', err);
     return create_response({
       request,
       data: { error: 'Internal Server Error', details: err },

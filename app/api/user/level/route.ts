@@ -108,3 +108,68 @@ export async function POST(request: NextRequest) {
     });
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return create_response({
+        request,
+        data: { error: 'User ID is required' },
+        status: 400,
+      });
+    }
+
+    // Step 1: Fetch the user's current level ID from user_progress
+    const { data: userProgress, error: progressError } = await supabase
+      .from('user_progress')
+      .select('level')
+      .eq('user_id', userId)
+      .single();
+
+    if (progressError || !userProgress) {
+      return create_response({
+        request,
+        data: { error: 'User progress not found' },
+        status: 404,
+      });
+    }
+
+    console.log('User progress:', userProgress);
+
+    const levelId = userProgress.level;
+    console.log('Level ID:', levelId);
+
+    // Step 2: Use the level ID to fetch the name from the levels table
+    const { data: levelData, error: levelError } = await supabase
+      .from('levels')
+      .select('name')
+      .eq('id', levelId)
+      .single();
+
+    if (levelError || !levelData) {
+      return create_response({
+        request,
+        data: { error: 'Level not found' },
+        status: 404,
+      });
+    }
+
+    console.log(levelData, "levelData");
+
+    // Step 3: Return the level name
+    return create_response({
+      request,
+      data: { levelName: levelData.name },
+      status: 200,
+    });
+  } catch (err) {
+    return create_response({
+      request,
+      data: { error: 'Internal Server Error', details: (err as Error).message },
+      status: 500,
+    });
+  }
+}
