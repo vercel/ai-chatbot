@@ -80,7 +80,7 @@ export const getMessageFromCode = (resultCode: string) => {
     case ResultCode.UserAlreadyExists:
       return 'User already exists, please log in!'
     case ResultCode.UserCreated:
-      return 'User created, welcome!'
+      return 'Confirm your account via email and log in!'
     case ResultCode.UnknownError:
       return 'Something went wrong, please try again!'
     case ResultCode.UserLoggedIn:
