@@ -89,7 +89,11 @@ export async function clearChats() {
 
   try {
     const supabase = createClient()
-    await supabase.from('chats').delete().throwOnError()
+    await supabase
+      .from('chats')
+      .delete()
+      .eq('user_id', session.user.id)
+      .throwOnError()
   } catch (_) {
     return {
       error: 'Unauthorized'
@@ -156,21 +160,35 @@ export async function saveChat(chat: Chat) {
   const session = await auth()
 
   if (session && session.user) {
-    const supabase = createClient()
-
-    await supabase.from('chats').insert({
-      id: chat.id,
-      user_id: chat.userId,
-      payload: chat
-    })
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('chats').upsert(
+        {
+          id: chat.id,
+          user_id: chat.userId,
+          payload: chat
+        },
+        { onConflict: 'id' }
+      )
+      if (error) {
+        console.error('Error saving chat:', error)
+        return { error: error.message }
+      }
+      return { success: true }
+    } catch (err) {
+      console.error('Unexpected error saving chat:', err)
+      return { error: 'An unexpected error occurred' }
+    }
   } else {
-    return
+    console.warn('Attempted to save chat without an active session')
+    return { error: 'No active session' }
   }
 }
 
-export async function refreshHistory(path: string) {
-  redirect(path)
-}
+// not in use?
+// export async function refreshHistory(path: string) {
+//   redirect(path)
+// }
 
 export async function getMissingKeys() {
   const keysRequired = ['OPENAI_API_KEY']
