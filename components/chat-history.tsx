@@ -25,7 +25,7 @@ export function ChatHistory({}: ChatHistoryProps) {
     <div className="flex flex-col h-full justify-between">
       {settingTitle({ title: 'Class Types' })}
       {/* Scrollable Class Types Section */}
-      <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
+      <div className="mb-2 px-4 flex-2 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
         <ul className="space-y-2 mt-2">
           {classTypes.map((classType, index) => (
             <li
@@ -45,52 +45,56 @@ export function ChatHistory({}: ChatHistoryProps) {
           ))}
         </ul>
       </div>
+      <details>
+        <summary className="text-sm font-medium">Backgrounds</summary>
+        {/* Scrollable Background Options Section */}
+        <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
+          <ul className="space-y-2 mt-2">
+            {backgrounds.map((background, index) => (
+              <li
+                key={index}
+                onClick={() => setSelectedBackground(background.id)}
+                className={cn(
+                  'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800 flex items-center justify-between',
+                  selectedBackground === background.id
+                    ? 'bg-blue-200 dark:bg-blue-700'
+                    : ''
+                )}
+              >
+                <span className="text-base font-medium">{background.name}</span>
+                <Image
+                  src={background.src}
+                  alt={background.name}
+                  width={40}
+                  height={40}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary className="text-sm font-medium">Emotes</summary>
+        {/* Scrollable emotes Section */}
+        <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
+          <ul className="space-y-2 mt-2">
+            {emotes.map((emote, index) => (
+              <li
+                key={index}
+                onClick={() => setSelectedEmote(emote.emoji)}
+                className={
+                  'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800'
+                }
+              >
+                <span className="text-base font-medium">
+                  {emote.emoji} {emote.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
 
-      {settingTitle({ title: 'Backgrounds' })}
-      {/* Scrollable Background Options Section */}
-      <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
-        <ul className="space-y-2 mt-2">
-          {backgrounds.map((background, index) => (
-            <li
-              key={index}
-              onClick={() => setSelectedBackground(background.id)}
-              className={cn(
-                'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800 flex items-center justify-between',
-                selectedBackground === background.id
-                  ? 'bg-blue-200 dark:bg-blue-700'
-                  : ''
-              )}
-            >
-              <span className="text-base font-medium">{background.name}</span>
-              <Image
-                src={background.src}
-                alt={background.name}
-                width={40}
-                height={40}
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
-      {settingTitle({ title: 'Clara emotes' })}
-      {/* Scrollable emotes Section */}
-      <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
-        <ul className="space-y-2 mt-2">
-          {emotes.map((emote, index) => (
-            <li
-              key={index}
-              onClick={() => setSelectedEmote(emote.emoji)}
-              className={
-                'p-2 border border-zinc-200 rounded-md cursor-pointer dark:border-zinc-700 dark:bg-zinc-800'
-              }
-            >
-              <span className="text-base font-medium">
-                {emote.emoji} {emote.name}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
       <React.Suspense
         fallback={
           <div className="flex flex-col flex-1 px-4 space-y-4 overflow-auto">
