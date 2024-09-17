@@ -50,6 +50,11 @@ Setup your Supabase project to store your Chat History:
 2. Copy this script, and visit the [SQL Editor](https://supabase.com/dashboard/project/_/sql/new)
 3. Paste in the script and hit "RUN".
 
+Change the Auth confirmation path in the email confirmation template:
+
+1. Go to the [Auth templates](https://supabase.com/dashboard/project/_/auth/templates) page in your dashboard.
+2. In the `Confirm signup` template, change `{{ .ConfirmationURL }}` to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup`.
+
 ## Get an OpenAI API keyp
 
 Go to the [OpenAI Platform](https://platform.openai.com/api-keys) and login or signup, and create a new secret key. Add this key to your `.env` file as `OPENAI_API_KEY`.
