@@ -42,6 +42,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.45.4",
     "@tailwindcss/typography": "^0.5.14",
     "@types/node": "^22.5.0",
     "@types/react": "^18.3.4",

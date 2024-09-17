@@ -6,10 +6,8 @@ export const updateSession = async (request: NextRequest) => {
   // Feel free to remove once you have Supabase connected.
   try {
     // Create an unmodified response
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers
-      }
+    let supabaseResponse = NextResponse.next({
+      request
     })
 
     const supabase = createServerClient(
@@ -24,39 +22,34 @@ export const updateSession = async (request: NextRequest) => {
             cookiesToSet.forEach(({ name, value }) =>
               request.cookies.set(name, value)
             )
-            response = NextResponse.next({
+            supabaseResponse = NextResponse.next({
               request
             })
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
+              supabaseResponse.cookies.set(name, value, options)
             )
           }
         }
       }
     )
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
 
-    const isLoggedIn = user.error === null
-    const isOnAuthPage =
-      request.nextUrl.pathname.startsWith('/login') ||
-      request.nextUrl.pathname.startsWith('/signup')
-
-    if (isLoggedIn) {
-      if (isOnAuthPage) {
-        return NextResponse.redirect(new URL('/', request.nextUrl))
-      }
-
-      return response
+    if (
+      !user &&
+      !request.nextUrl.pathname.startsWith('/login') &&
+      !request.nextUrl.pathname.startsWith('/signup') &&
+      !request.nextUrl.pathname.startsWith('/auth')
+    ) {
+      // no user, potentially respond by redirecting the user to the login page
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
     }
 
-    if (isOnAuthPage) {
-      return response
-    }
-
-    return NextResponse.redirect(new URL('/login', request.url))
+    return supabaseResponse
   } catch (e) {
     // If you are here, a Supabase client could not be created!
     // This is likely because you have not set up environment variables.

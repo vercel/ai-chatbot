@@ -32,10 +32,7 @@ export async function signup(
 
     const { error } = await supabase.auth.signUp({
       email,
-      password,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`
-      }
+      password
     })
 
     if (error) {
