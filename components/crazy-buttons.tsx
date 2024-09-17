@@ -1,61 +1,82 @@
+import { Button } from './ui/button'
+
 // @ts-nocheck
 export default function CrazyButtons({
   setIsChatOpen
 }: {
   setIsChatOpen: (open: boolean) => void
 }) {
-  const buttonStyle = {
-    position: 'fixed',
-    right: '2vh',
-    width: '50px',
-    height: '50px',
-    borderRadius: '50%',
-    backgroundColor: '#34B7F1',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    cursor: 'pointer',
-    zIndex: 1000,
-    fontSize: '24px'
-  }
+  const TipCard = ({
+    title,
+    description
+  }: {
+    title: string
+    description: string
+  }) => (
+    <div
+      className={
+        'p-2 border border-zinc-200 rounded-md cursor-help dark:border-zinc-700 dark:bg-zinc-800 w-full'
+      }
+    >
+      <span className="text-base font-medium">{title}</span>
+      <p className="text-sm font-light">{description}</p>
+    </div>
+  )
   return (
-    <div>
-      <div
-        style={{ ...buttonStyle, bottom: '55vh' }}
-        onClick={() => setIsChatOpen(true)}
-      >
-        📅
+    <div
+      className="flex flex-row items-around gap-1"
+      style={{
+        maxWidth: '50vw',
+        height: '85vh' // Fixed height
+      }}
+    >
+      <div className="flex flex-col items-start justify-start gap-2 height-full flex-3">
+        <TipCard
+          title="Try dictating a message"
+          description="Just start talking, your pronunciation matters"
+        />
+        <TipCard
+          title="Ask about anything"
+          description="Clara can help you with a lot of things, just ask"
+        />
+        <TipCard
+          title="Hover the vocabulary words"
+          description="Hover the words to see their meaning"
+        />
+        <TipCard
+          title="Click on the vocabulary words"
+          description="Clara will help you with the pronunciation, and read the definition"
+        />
+        <TipCard
+          title="Change the background"
+          description="Go to settings on the sidebar to change the background"
+        />
+        <TipCard
+          title="Make Clara smile"
+          description="You can test out Clara's emotes on the sidebar"
+        />
+        <TipCard
+          title="Be nice to your teacher"
+          description="Be patient and learn a ton!"
+        />
       </div>
-      <div
-        style={{ ...buttonStyle, bottom: '45vh' }}
-        onClick={() => setIsChatOpen(true)}
-      >
-        🏆
-      </div>
-      <div
-        style={{ ...buttonStyle, bottom: '35vh' }}
-        onClick={() => setIsChatOpen(true)}
-      >
-        🎁
-      </div>
-      <div
-        style={{ ...buttonStyle, bottom: '25vh' }}
-        onClick={() => setIsChatOpen(true)}
-      >
-        📖
-      </div>
-      <div
-        style={{ ...buttonStyle, bottom: '15vh' }}
-        onClick={() => setIsChatOpen(true)}
-      >
-        📞
-      </div>
-      <div
-        style={{ ...buttonStyle, bottom: '5vh' }}
-        onClick={() => setIsChatOpen(true)}
-      >
-        💬
+      <div className="flex flex-col items-end justify-end gap-2 height-full flex-1">
+        <Button disabled variant={'secondary'}>
+          📅
+        </Button>
+        <Button disabled variant={'secondary'}>
+          🏆
+        </Button>
+        <Button disabled variant={'secondary'}>
+          🎁
+        </Button>
+        <Button disabled variant={'secondary'}>
+          📖
+        </Button>
+        <Button disabled variant={'secondary'}>
+          📞
+        </Button>
+        <Button onClick={() => setIsChatOpen(true)}>💬</Button>
       </div>
     </div>
   )
