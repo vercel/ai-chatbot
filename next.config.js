@@ -14,6 +14,7 @@ module.exports = {
     GROQ_API_KEY: process.env.GROQ_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     OPENAI_KEY: process.env.OPEN_AI_KEY,
+    SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
     NEXT_PUBLIC_STRIPE_KEY: process.env.NEXT_PUBLIC_STRIPE_KEY,
     NEXT_PUBLIC_STRIPE_SECRET: process.env.NEXT_PUBLIC_STRIPE_SECRET
   }
