@@ -6,7 +6,13 @@ export default function CrazyButtons({
 }: {
   setIsChatOpen: (open: boolean) => void
 }) {
-  const TipCard = ({ title, description }) => (
+  const TipCard = ({
+    title,
+    description
+  }: {
+    title: string
+    description: string
+  }) => (
     <div
       className={
         'p-2 border border-zinc-200 rounded-md cursor-help dark:border-zinc-700 dark:bg-zinc-800 w-full'
