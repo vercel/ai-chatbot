@@ -7,7 +7,7 @@ interface SidebarListProps {
   children?: React.ReactNode
 }
 
-export async function SidebarList({}: SidebarListProps) {
+export function SidebarList({}: SidebarListProps) {
   const { subtitlesState, setSubtitlesState } = useSubtitles()
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
