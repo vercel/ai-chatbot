@@ -45,7 +45,7 @@ export function ChatHistory({}: ChatHistoryProps) {
           ))}
         </ul>
       </div>
-      <details>
+      <details className="px-4 overflow-auto">
         <summary className="text-sm font-medium">Backgrounds</summary>
         {/* Scrollable Background Options Section */}
         <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
@@ -73,7 +73,7 @@ export function ChatHistory({}: ChatHistoryProps) {
           </ul>
         </div>
       </details>
-      <details>
+      <details className="px-4 overflow-auto">
         <summary className="text-sm font-medium">Emotes</summary>
         {/* Scrollable emotes Section */}
         <div className="mb-2 px-4 flex-1 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
