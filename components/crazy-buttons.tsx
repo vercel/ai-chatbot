@@ -31,6 +31,9 @@ export default function CrazyButtons({
       }}
     >
       <div className="flex flex-col items-start justify-start gap-2 height-full flex-3">
+        <span className="text-xl font-semibold dark:text-white text-black">
+          Tips for learning with Clara
+        </span>
         <TipCard
           title="Try dictating a message"
           description="Just start talking, your pronunciation matters"

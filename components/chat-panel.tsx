@@ -6,6 +6,7 @@ import Message from './message'
 import { Button } from '@/components/ui/button'
 import { Textarea } from './ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useRef } from 'react'
 
 export interface ChatPanelProps {
   setIsChatOpen: (value: boolean) => void
@@ -13,6 +14,7 @@ export interface ChatPanelProps {
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
   selectedClass: string
   input: string
+  setMessages: (value: any) => void
   handleTextareaChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
   textareaRef: React.RefObject<HTMLTextAreaElement>
   setInput: (value: string) => void
@@ -77,15 +79,34 @@ const Chatheader = ({
     </Button>
   </div>
 )
-const MessageList = ({ messages }: { messages: any[] }) => (
+
+const MessageList = ({
+  messages,
+  onStartRecording,
+  onStopRecording,
+  isRecording
+}: {
+  messages: Object[]
+  onStartRecording: Function
+  onStopRecording: Function
+  isRecording: boolean
+}) => (
   <div
     style={{
       flex: '1',
       overflowY: 'auto' // Scrollable
     }}
   >
-    {messages.map((message, index) =>
-      index > 0 ? <Message key={index} message={message} /> : null
+    {messages.map((message: any, index: number) =>
+      index > 0 ? (
+        <Message
+          key={index}
+          message={message}
+          onStartRecording={onStartRecording}
+          onStopRecording={onStopRecording}
+          isRecording={isRecording}
+        />
+      ) : null
     )}
   </div>
 )
@@ -95,12 +116,137 @@ export function ChatPanel({
   onSubmit,
   selectedClass,
   input,
+  setMessages,
   handleTextareaChange,
   textareaRef,
   playText
 }: ChatPanelProps) {
   const [saidWords, setSaidWords] = useState<string[]>([])
+  // New state for recording
+  const [isRecording, setIsRecording] = useState(false)
+  const [expectedText, setExpectedText] = useState('')
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
 
+  // Function to start recording
+  const handleStartRecording = async (textToPronounce: string) => {
+    setIsRecording(true)
+    setExpectedText(textToPronounce)
+    audioChunksRef.current = []
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+
+      mediaRecorderRef.current.ondataavailable = event => {
+        audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorderRef.current.onstop = async () => {
+        setIsRecording(false)
+        // Stop all audio tracks
+        stream.getTracks().forEach(track => track.stop())
+
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: 'audio/wav'
+        })
+        const audioFile = new File([audioBlob], 'recording.wav', {
+          type: 'audio/wav'
+        })
+        const evaluationResult = await evaluateAudio(audioFile, expectedText)
+
+        // Update messages with evaluation result
+        setMessages((messages: any) => [
+          ...messages,
+          {
+            role: 'assistant',
+            content: evaluationResult.coloredText,
+            id: ''
+          }
+        ])
+      }
+
+      mediaRecorderRef.current.start()
+    } catch (error) {
+      console.error('Error accessing microphone:', error)
+      setIsRecording(false)
+    }
+  }
+
+  // Function to stop recording
+  const handleStopRecording = () => {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== 'inactive'
+    ) {
+      mediaRecorderRef.current.stop()
+    }
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== 'inactive'
+      ) {
+        mediaRecorderRef.current.stop()
+      }
+    }
+  }, [])
+
+  // Function to evaluate audio
+  const evaluateAudio = async (file: File, transcription: string) => {
+    const apiUrl =
+      'https://hjngsvyig3.execute-api.us-west-1.amazonaws.com/production/audioEval'
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('transcription', transcription)
+    formData.append('language', 'en')
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log(data)
+
+      const realTranscript = data.real_transcript
+      const letterCorrectness = data.is_letter_correct_all_words
+        .trim()
+        .split(' ')
+      const pronunciationAccuracy = data.pronunciation_accuracy
+
+      // Generate colored transcript based on the correctness
+      const coloredText = realTranscript
+        .split('')
+        .map((letter: string, index: number) => {
+          const isCorrect = letterCorrectness[index] === '1'
+          return isCorrect
+            ? `<span style="color: green">${letter}</span>`
+            : `<span style="color: red">${letter}</span>`
+        })
+        .join('')
+
+      return {
+        accuracyScore: pronunciationAccuracy,
+        coloredText
+      }
+    } catch (error) {
+      console.error('Error during API request:', error)
+      return {
+        accuracyScore: 0,
+        coloredText: 'Error evaluating pronunciation.'
+      }
+    }
+  }
   const normalizeWord = (word: string) => {
     return word
       .replace(/\s*\(.*?\)\s*/g, '')
@@ -149,7 +295,12 @@ export function ChatPanel({
       }}
     >
       <Chatheader setIsChatOpen={setIsChatOpen} />
-      <MessageList messages={messages} />
+      <MessageList
+        messages={messages}
+        onStartRecording={handleStartRecording}
+        onStopRecording={handleStopRecording}
+        isRecording={isRecording}
+      />
       <ChatInput
         onSubmit={onSubmit}
         input={input}

@@ -33,6 +33,7 @@ export function Chat({ id }: ChatProps) {
   const [isChatOpen, setIsChatOpen] = useState(true)
   const [isResponding, setIsResponding] = useState(false)
 
+
   // https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat
   let {
     messages,
@@ -132,6 +133,22 @@ export function Chat({ id }: ChatProps) {
 
     return mergedSentences
   }
+  
+  const extractPronunciationContent = (text:string) => {
+    // Regex to match content between <pronunciation> and </pronunciation>, including multiline content
+    const pronunciationRegex = /<pronunciation>([\s\S]*?)<\/pronunciation>/g;
+    const pronunciationMatches = [];
+    let match;
+
+    // Loop through all matches and extract content between the tags
+    while ((match = pronunciationRegex.exec(text)) !== null) {
+        pronunciationMatches.push(match[1].trim()); // Push the matched content (trimmed) into the array
+    }
+
+    // Return the matches or a message if no tags are found
+    return pronunciationMatches.length > 0 ? pronunciationMatches : text;
+};
+
 
   async function playText({ text }: { text: string }) {
     const audiB = await fetch_and_play_audio({
@@ -147,6 +164,13 @@ export function Chat({ id }: ChatProps) {
       }
       if (messages[messages.length - 1]?.role === 'assistant') {
         const lastMessage = messages[messages.length - 1]
+        const pronunciation_exercise = extractPronunciationContent(lastMessage.content)
+        if (typeof(pronunciation_exercise) !== "string") {
+          setMessages([...messages, {
+            role: 'assistant', content: pronunciation_exercise[0],
+            id: ''
+          }])
+        }
         const sentences = get_each_sentence(lastMessage.content)
         for (const sentence of sentences) {
           const audiB = await fetch_and_play_audio({
@@ -246,6 +270,7 @@ export function Chat({ id }: ChatProps) {
               handleTextareaChange={handleTextareaChange}
               textareaRef={textareaRef}
               playText={playText}
+              setMessages={setMessages}
             />
           ) : (
             <CrazyButtons setIsChatOpen={setIsChatOpen} />
