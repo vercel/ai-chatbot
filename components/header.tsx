@@ -12,6 +12,8 @@ import {
 import { UserMenu } from '@/components/user-menu'
 import { Session } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
+// import RibbonSupertraceLogo from '../public/ribbon_supertrace_logo.svg'
 import { ChatHistory } from './chat-history'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
@@ -29,8 +31,15 @@ async function UserOrLogin() {
         </>
       ) : (
         <Link href="/new" rel="nofollow">
-          <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
-          <IconNextChat className="hidden size-6 mr-2 dark:block" />
+          {/* <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
+          <IconNextChat className="hidden size-6 mr-2 dark:block" /> */}
+          <Image
+            src="/images/ribbon_x_supertrace.png"
+            alt="My Image"
+            width={50}
+            height={300}
+          />
+          {/* <RibbonSupertraceLogo /> */}
         </Link>
       )}
       {/* <div className="flex items-center">

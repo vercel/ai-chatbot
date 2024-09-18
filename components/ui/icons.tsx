@@ -477,31 +477,6 @@ function IconChevronUpDown({
 }
 
 export {
-  IconEdit,
-  IconNextChat,
-  IconOpenAI,
-  IconVercel,
-  IconGitHub,
-  IconSeparator,
-  IconArrowDown,
-  IconArrowRight,
-  IconUser,
-  IconPlus,
-  IconArrowElbow,
-  IconSpinner,
-  IconMessage,
-  IconTrash,
-  IconRefresh,
-  IconStop,
-  IconSidebar,
-  IconMoon,
-  IconSun,
-  IconCopy,
-  IconCheck,
-  IconDownload,
-  IconClose,
-  IconShare,
-  IconUsers,
-  IconExternalLink,
-  IconChevronUpDown
+  IconArrowDown, IconArrowElbow, IconArrowRight, IconCheck, IconChevronUpDown, IconClose, IconCopy, IconDownload, IconEdit, IconExternalLink, IconGitHub, IconMessage, IconMoon, IconNextChat,
+  IconOpenAI, IconPlus, IconRefresh, IconSeparator, IconShare, IconSidebar, IconSpinner, IconStop, IconSun, IconTrash, IconUser, IconUsers, IconVercel
 }
