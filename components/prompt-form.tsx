@@ -16,7 +16,7 @@ import { type AI } from '@/lib/chat/actions'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import { BotMessage, UserMessage } from './stocks/message'
+import { BotMessage, RibbonBotMessage, SpinnerMessage, UserMessage } from './stocks/message'
 
 export function PromptForm({
   input,
@@ -59,11 +59,19 @@ export function PromptForm({
             id: nanoid(),
             display: <UserMessage>{value}</UserMessage>
           },
+          {
+            id: nanoid(),
+            display: <SpinnerMessage />
+          }
         ])
 
         // Submit and get response message
         const responseMessage = await submitUserMessage(value)
-        setMessages(currentMessages => [...currentMessages, responseMessage])
+        // setMessages(currentMessages => [...currentMessages, responseMessage])
+        setMessages(currentMessages => [...currentMessages.slice(0, -1), {
+          id: nanoid(),
+          display: <RibbonBotMessage children={responseMessage.display} />
+        }])
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">

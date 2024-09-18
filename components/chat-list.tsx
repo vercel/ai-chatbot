@@ -48,12 +48,6 @@ export function ChatList({ messages, session, isShared }: ChatList) {
           {index < messages.length - 1 && <Separator className="my-4" />}
         </div>
       ))}
-      {messages.length % 2 === 1 && (
-        <>
-          <Separator className="my-4" />
-          <SpinnerMessage />
-        </>
-      )}
     </div>
   )
 }

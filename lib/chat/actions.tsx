@@ -14,6 +14,7 @@ import {
   BotCard,
   BotMessage,
   Purchase,
+  RibbonBotMessage,
   spinner,
   Stock,
   SystemMessage
@@ -69,8 +70,7 @@ async function submitUserMessage(content: string) {
 
   return {
     id: nanoid(),
-    // TODO: update result to have image for assistant
-    display: result
+    display: result,
   }
 }
 
@@ -173,6 +173,6 @@ export const getUIStateFromAIState = (aiState: Chat) => {
         ) : message.role === 'assistant' &&
           typeof message.content === 'string' ? (
           <BotMessage content={message.content} />
-        ) : <BotMessage content={'loading...'} />
+        ) : <RibbonBotMessage content={'loading...'} />
     }))
 }

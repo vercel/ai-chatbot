@@ -10,7 +10,7 @@ import { IconShare } from '@/components/ui/icons'
 import type { AI } from '@/lib/chat/actions'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
 import { nanoid } from 'nanoid'
-import { UserMessage } from './stocks/message'
+import { RibbonBotMessage, SpinnerMessage, UserMessage } from './stocks/message'
 
 export interface ChatPanelProps {
   id?: string
@@ -83,6 +83,10 @@ export function ChatPanel({
                     {
                       id: nanoid(),
                       display: <UserMessage>{example.message}</UserMessage>
+                    },
+                    {
+                      id: nanoid(),
+                      display: <SpinnerMessage />
                     }
                   ])
 
@@ -90,10 +94,15 @@ export function ChatPanel({
                     example.message
                   )
 
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    responseMessage
-                  ])
+                  // setMessages(currentMessages => [
+                  //   ...currentMessages,
+                  //   responseMessage
+                  // ])
+                  setMessages(currentMessages => [...currentMessages.slice(0, -1), {
+                    id: nanoid(),
+                    display: <RibbonBotMessage children={responseMessage.display} />
+                  }])
+
                 }}
               >
                 <div className="text-sm font-semibold">{example.heading}</div>
