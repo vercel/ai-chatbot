@@ -12,7 +12,7 @@ export function FooterText({ className, ...props }: React.ComponentProps<'p'>) {
       )}
       {...props}
     >
-      This is a demo.
+      This is a demo and not intended for production use. Check important info.
     </p>
   )
 }
