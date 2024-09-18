@@ -6,7 +6,7 @@ import { Session } from '@/lib/types'
 import { nanoid } from '@/lib/utils'
 
 export const metadata = {
-  title: 'Ribbon x Supertrace Chatbot'
+  title: 'Ribbon x Supertrace AI'
 }
 
 export default async function IndexPage() {
