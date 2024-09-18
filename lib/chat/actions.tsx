@@ -38,6 +38,8 @@ import {
 import axios from 'axios';
 import { z } from 'zod';
 
+export const maxDuration = 300;
+
 async function submitUserMessage(content: string) {
   'use server'
 
