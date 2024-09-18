@@ -1,3 +1,4 @@
+import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Separator } from '@/components/ui/separator'
 import { UIState } from '@/lib/chat/actions'
 import { Session } from '@/lib/types'
@@ -47,6 +48,12 @@ export function ChatList({ messages, session, isShared }: ChatList) {
           {index < messages.length - 1 && <Separator className="my-4" />}
         </div>
       ))}
+      {messages.length % 2 === 1 && (
+        <>
+          <Separator className="my-4" />
+          <SpinnerMessage />
+        </>
+      )}
     </div>
   )
 }

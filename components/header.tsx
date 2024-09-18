@@ -13,7 +13,6 @@ import { UserMenu } from '@/components/user-menu'
 import { Session } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-// import RibbonSupertraceLogo from '../public/ribbon_supertrace_logo.svg'
 import { ChatHistory } from './chat-history'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
@@ -39,7 +38,6 @@ async function UserOrLogin() {
             width={50}
             height={300}
           />
-          {/* <RibbonSupertraceLogo /> */}
         </Link>
       )}
       {/* <div className="flex items-center">

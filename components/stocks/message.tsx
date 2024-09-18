@@ -1,14 +1,15 @@
 'use client'
 
 import { IconOpenAI, IconUser } from '@/components/ui/icons'
+import { useStreamableText } from '@/lib/hooks/use-streamable-text'
 import { cn } from '@/lib/utils'
-import { spinner } from './spinner'
-import { CodeBlock } from '../ui/codeblock'
-import { MemoizedReactMarkdown } from '../markdown'
+import { StreamableValue } from 'ai/rsc'
+import Image from 'next/image'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-import { StreamableValue } from 'ai/rsc'
-import { useStreamableText } from '@/lib/hooks/use-streamable-text'
+import { MemoizedReactMarkdown } from '../markdown'
+import { CodeBlock } from '../ui/codeblock'
+import { spinner } from './spinner'
 
 // Different types of message bubbles.
 
@@ -123,8 +124,13 @@ export function SystemMessage({ children }: { children: React.ReactNode }) {
 export function SpinnerMessage() {
   return (
     <div className="group relative flex items-start md:-ml-12">
-      <div className="flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border bg-primary text-primary-foreground shadow-sm">
-        <IconOpenAI />
+      <div className="flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border text-primary-foreground shadow-sm">
+        <Image
+            src="/tab_icon.svg"
+            alt="My Image"
+            width={50}
+            height={300}
+          />
       </div>
       <div className="ml-4 h-[24px] flex flex-row items-center flex-1 space-y-2 overflow-hidden px-1">
         {spinner}

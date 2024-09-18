@@ -69,6 +69,7 @@ async function submitUserMessage(content: string) {
 
   return {
     id: nanoid(),
+    // TODO: update result to have image for assistant
     display: result
   }
 }
@@ -172,6 +173,6 @@ export const getUIStateFromAIState = (aiState: Chat) => {
         ) : message.role === 'assistant' &&
           typeof message.content === 'string' ? (
           <BotMessage content={message.content} />
-        ) : null
+        ) : <BotMessage content={'loading...'} />
     }))
 }
