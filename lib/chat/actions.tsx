@@ -1,41 +1,41 @@
-import 'server-only'
+import 'server-only';
 
+import { openai } from '@ai-sdk/openai';
 import {
   createAI,
   createStreamableUI,
-  getMutableAIState,
+  createStreamableValue,
   getAIState,
-  streamUI,
-  createStreamableValue
-} from 'ai/rsc'
-import { openai } from '@ai-sdk/openai'
+  getMutableAIState,
+  streamUI
+} from 'ai/rsc';
 
 import {
-  spinner,
   BotCard,
   BotMessage,
-  SystemMessage,
+  Purchase,
+  spinner,
   Stock,
-  Purchase
-} from '@/components/stocks'
+  SystemMessage
+} from '@/components/stocks';
 
-import axios from 'axios';
-import { z } from 'zod'
-import { EventsSkeleton } from '@/components/stocks/events-skeleton'
-import { Events } from '@/components/stocks/events'
-import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
-import { Stocks } from '@/components/stocks/stocks'
-import { StockSkeleton } from '@/components/stocks/stock-skeleton'
+import { saveChat } from '@/app/actions';
+import { auth } from '@/auth';
+import { Events } from '@/components/stocks/events';
+import { EventsSkeleton } from '@/components/stocks/events-skeleton';
+import { SpinnerMessage, UserMessage } from '@/components/stocks/message';
+import { StockSkeleton } from '@/components/stocks/stock-skeleton';
+import { Stocks } from '@/components/stocks/stocks';
+import { StocksSkeleton } from '@/components/stocks/stocks-skeleton';
+import { Chat, Message } from '@/lib/types';
 import {
   formatNumber,
+  nanoid,
   runAsyncFnWithoutBlocking,
-  sleep,
-  nanoid
-} from '@/lib/utils'
-import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
-import { Chat, Message } from '@/lib/types'
-import { auth } from '@/auth'
+  sleep
+} from '@/lib/utils';
+import axios from 'axios';
+import { z } from 'zod';
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -59,8 +59,9 @@ async function submitUserMessage(content: string) {
   let result: string;
 
   try {
-    const response = await axios.get('https://ribbon-hackathon-14745658b484.herokuapp.com/query?q=' + content);
+    const response = await axios.get('https://ribbon-hackathon-14745658b484.herokuapp.com/query?q=' + content + '&chatId=' + aiState.get().chatId);
     result = response.data['response'];
+
   } catch (error: any) {
     console.error('Error making API call:', error.message);
     result = "Something went wrong. Can you please repeat your question?";
