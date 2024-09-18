@@ -1,7 +1,6 @@
-import * as React from 'react'
 import Link from 'next/link'
+import * as React from 'react'
 
-import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
@@ -11,10 +10,11 @@ import {
   IconVercel
 } from '@/components/ui/icons'
 import { UserMenu } from '@/components/user-menu'
+import { Session } from '@/lib/types'
+import { cn } from '@/lib/utils'
+import { ChatHistory } from './chat-history'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
-import { ChatHistory } from './chat-history'
-import { Session } from '@/lib/types'
 
 async function UserOrLogin() {
   const session = (await auth()) as Session
@@ -33,7 +33,7 @@ async function UserOrLogin() {
           <IconNextChat className="hidden size-6 mr-2 dark:block" />
         </Link>
       )}
-      <div className="flex items-center">
+      {/* <div className="flex items-center">
         <IconSeparator className="size-6 text-muted-foreground/50" />
         {session?.user ? (
           <UserMenu user={session.user} />
@@ -42,7 +42,7 @@ async function UserOrLogin() {
             <Link href="/login">Login</Link>
           </Button>
         )}
-      </div>
+      </div> */}
     </>
   )
 }
