@@ -1,20 +1,20 @@
-import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
+import { GeistSans } from 'geist/font/sans'
 
 import '@/app/globals.css'
-import { cn } from '@/lib/utils'
-import { TailwindIndicator } from '@/components/tailwind-indicator'
-import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
+import { Providers } from '@/components/providers'
+import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Toaster } from '@/components/ui/sonner'
+import { cn } from '@/lib/utils'
 
 export const metadata = {
   metadataBase: process.env.VERCEL_URL
     ? new URL(`https://${process.env.VERCEL_URL}`)
     : undefined,
   title: {
-    default: 'Next.js AI Chatbot',
-    template: `%s - Next.js AI Chatbot`
+    default: 'Ribbon x Supertrace Chatbot',
+    template: `%s`
   },
   description: 'An AI-powered chatbot template built with Next.js and Vercel.',
   icons: {
