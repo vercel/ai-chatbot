@@ -34,7 +34,7 @@ async function UserOrLogin() {
           {/* <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
           <IconNextChat className="hidden size-6 mr-2 dark:block" /> */}
           <Image
-            src="/images/ribbon_x_supertrace.png"
+            src="/ribbon_x_supertrace.png"
             alt="My Image"
             width={50}
             height={300}
