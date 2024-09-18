@@ -9,6 +9,8 @@ export const metadata = {
   title: 'Ribbon x Supertrace AI'
 }
 
+export const maxDuration = 300
+
 export default async function IndexPage() {
   const id = nanoid()
   const session = (await auth()) as Session
