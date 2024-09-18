@@ -59,7 +59,7 @@ async function submitUserMessage(content: string) {
   let result: string;
 
   try {
-    const response = await axios.get('https://ribbon-hackathon-14745658b484.herokuapp.com/query?q=' + content + '&chatId=' + aiState.get().chatId);
+    const response = await axios.get(process.env.BACKEND_URL + '/query?q=' + content + '&chatId=' + aiState.get().chatId);
     result = response.data['response'];
 
   } catch (error: any) {
