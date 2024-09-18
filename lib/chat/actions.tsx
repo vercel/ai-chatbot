@@ -173,6 +173,6 @@ export const getUIStateFromAIState = (aiState: Chat) => {
         ) : message.role === 'assistant' &&
           typeof message.content === 'string' ? (
           <BotMessage content={message.content} />
-        ) : <RibbonBotMessage content={'loading...'} />
+        ) : null
     }))
 }
