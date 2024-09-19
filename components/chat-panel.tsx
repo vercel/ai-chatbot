@@ -79,14 +79,15 @@ export function ChatPanel({
                 }`}
                 onClick={async () => {
                   setMessages(currentMessages => [
-                    ...currentMessages,
+                    ...currentMessages.filter(message => !React.isValidElement(message.display) || message.display.type !== SpinnerMessage),
                     {
                       id: nanoid(),
                       display: <UserMessage>{example.message}</UserMessage>
                     },
                     {
                       id: nanoid(),
-                      display: <SpinnerMessage />
+                      display: <SpinnerMessage />,
+                      // type: 'spinner'
                     }
                   ])
 
@@ -98,10 +99,18 @@ export function ChatPanel({
                   //   ...currentMessages,
                   //   responseMessage
                   // ])
-                  setMessages(currentMessages => [...currentMessages.slice(0, -1), {
-                    id: nanoid(),
-                    display: <RibbonBotMessage children={responseMessage.display} />
-                  }])
+                  setMessages(currentMessages => [
+                    ...currentMessages.filter(message => !React.isValidElement(message.display) || message.display.type !== SpinnerMessage),
+                    {
+                      id: nanoid(),
+                      display: <RibbonBotMessage children={responseMessage.display} />
+                    }
+                  ])
+
+                  // setMessages(currentMessages => [...currentMessages.slice(0, -1), {
+                  //   id: nanoid(),
+                  //   display: <RibbonBotMessage children={responseMessage.display} />
+                  // }])
 
                 }}
               >

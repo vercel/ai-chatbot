@@ -54,24 +54,28 @@ export function PromptForm({
 
         // Optimistically add user message UI
         setMessages(currentMessages => [
-          ...currentMessages,
+          ...currentMessages.filter(message => !React.isValidElement(message.display) || message.display.type !== SpinnerMessage),
           {
             id: nanoid(),
             display: <UserMessage>{value}</UserMessage>
           },
           {
             id: nanoid(),
-            display: <SpinnerMessage />
+            display: <SpinnerMessage />,
+            // type: 'spinner'
           }
         ])
 
         // Submit and get response message
         const responseMessage = await submitUserMessage(value)
         // setMessages(currentMessages => [...currentMessages, responseMessage])
-        setMessages(currentMessages => [...currentMessages.slice(0, -1), {
-          id: nanoid(),
-          display: <RibbonBotMessage children={responseMessage.display} />
-        }])
+        setMessages(currentMessages => [
+          ...currentMessages.filter(message => !React.isValidElement(message.display) || message.display.type !== SpinnerMessage),
+          {
+            id: nanoid(),
+            display: <RibbonBotMessage children={responseMessage.display} />
+          }
+        ])
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
