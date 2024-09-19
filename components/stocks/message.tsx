@@ -5,6 +5,7 @@ import { useStreamableText } from '@/lib/hooks/use-streamable-text'
 import { cn } from '@/lib/utils'
 import { StreamableValue } from 'ai/rsc'
 import Image from 'next/image'
+import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import { MemoizedReactMarkdown } from '../markdown'
@@ -125,7 +126,7 @@ export function SpinnerMessage() {
   return (
     <div className="group relative flex items-start md:-ml-12">
       <div className="flex size-[25px] shrink-0 select-none items-center justify-center rounded-md border bg-background shadow-sm">
-        <Image
+      <Image
             src="/ribbon_ai_logo.svg"
             alt="ribbon_ai_logo"
             width={50}
@@ -151,8 +152,24 @@ export function RibbonBotMessage({ children }: { children: React.ReactNode }) {
           />
       </div>
       <div className="ml-4 flex-1 space-y-2 overflow-hidden pl-2">
-        {children}
+        <MarkdownWithGfm
+          markdown={String(children)}
+        />
       </div>
     </div>
   )
 }
+
+const MarkdownWithGfm = ({ markdown }: { markdown: string }) => {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      className=" prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0"
+
+    >
+      {markdown}
+    </ReactMarkdown>
+  );
+};
+
+export { MarkdownWithGfm }
