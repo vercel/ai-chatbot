@@ -32,12 +32,20 @@ async function UserOrLogin() {
         <Link href="/new" rel="nofollow">
           {/* <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
           <IconNextChat className="hidden size-6 mr-2 dark:block" /> */}
-          <Image
+          {/* <Image
           src="/tab_icon.svg"
           alt="logo"
           width={50}
           height={300}
-        />
+        /> */}
+        <div className="flex items-center justify-start space-x-2 bg-black pl-4 pr-4 pt-2 pb-2 rounded-lg">
+        <Image
+            src="/ribbon_x_supertrace.png"
+            alt="ribbon_x_supertrace"
+            width={50}
+            height={300}
+          />
+        </div>
         </Link>
       )}
       {/* <div className="flex items-center">
@@ -62,14 +70,6 @@ export function Header() {
           <UserOrLogin />
         </React.Suspense>
       </div>
-      <div className="flex items-center justify-end space-x-2 bg-black p-4 rounded-lg">
-        <Image
-            src="/ribbon_x_supertrace.png"
-            alt="ribbon_x_supertrace"
-            width={50}
-            height={300}
-          />
-        </div>
     </header>
   )
 }
