@@ -62,6 +62,7 @@ async function submitUserMessage(content: string) {
   let result: string;
 
   try {
+    // const response = await axios.get(process.env.BACKEND_URL + '/test?q=' + content + '&chat_id=' + aiState.get().chatId);
     const response = await axios.get(process.env.BACKEND_URL + '/query?q=' + content + '&chat_id=' + aiState.get().chatId);
     result = response.data['response'];
 
@@ -69,6 +70,8 @@ async function submitUserMessage(content: string) {
     console.error('Error making API call:', error.message);
     result = "Something went wrong. Can you please repeat your question?";
   }
+
+  console.log("result: ", result)
 
   return {
     id: nanoid(),

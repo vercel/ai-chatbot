@@ -40,24 +40,24 @@ export function ChatPanel({
     message: string
   }[] = [
     {
-      heading: 'TODO add fake question here',
-      subheading: 'fake question?',
-      message: `What are the trending memecoins today?`
+      heading: 'SBC Core Call Leg Overview',
+      subheading: 'What is a call leg in SBC core?',
+      message: `What is a call leg in SBC core?`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'Integrating DSC SWe into IP Network',
+      subheading: 'How do I integrate DSC SWe into my IP Network for Ribbon Network?',
+      message: 'How do I integrate DSC SWe into my IP Network for Ribbon Network?'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'Adding a VPN Tunnel in EdgeMarc',
+      subheading: 'How do I add a VPN tunnel in EdgeMarc for Ribbon Networks?',
+      message: `How do I add a VPN tunnel in EdgeMarc for Ribbon Networks?`
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'EdgeView SCC Installation Requirements',
+      subheading: `What are the installation requirements EdgeView SCC?`,
+      message: `What are the installation requirements EdgeView SCC?`
     }
   ]
 
