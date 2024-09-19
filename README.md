@@ -36,30 +36,35 @@ This template ships with OpenAI `gpt-3.5-turbo` as the default. However, thanks 
 
 ## Deploy Your Own
 
+### Get an OpenAI API key and Deploy
+
+Go to the [OpenAI Platform](https://platform.openai.com/api-keys) and login or signup, and create a new secret key. Add this key to your `.env` file as `OPENAI_API_KEY`.
+
 You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-title=Next.js+Chat&demo-description=A+full-featured%2C+hackable+Next.js+AI+chatbot+built+by+Vercel+Labs&demo-url=https%3A%2F%2Fchat.vercel.ai%2F&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4aVPvWuTmBvzM5cEdRdqeW%2F4234f9baf160f68ffb385a43c3527645%2FCleanShot_2023-06-16_at_17.09.21.png&project-name=Next.js+Chat&repository-name=nextjs-chat&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fai-chatbot&from=templates&skippable-integrations=1&env=OPENAI_API_KEY%2CAUTH_SECRET&envDescription=How+to+get+these+env+vars&envLink=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fai-chatbot%2Fblob%2Fmain%2F.env.example&teamCreateStatus=hidden&stores=[{"type":"kv"}])
 
-## Store your Chat History in Supabase
-
-In your new Vercel project, click the Storage tab at the top, then click the Supabase project you just created. From there, click “Open in Supabase”.
+### Store your Chat History in Supabase
 
 Setup your Supabase project to store your Chat History:
 
-1. In `/supabase/migrations/20240916140519_init.sql`, you'll find a SQL script to setup your database tables in Supabase
-2. Copy this script, and visit the [SQL Editor](https://supabase.com/dashboard/project/_/sql/new)
-3. Paste in the script and hit "RUN".
+1. In your new Vercel project, click the Storage tab at the top, then click the Supabase project you just created. From there, click “Open in Supabase”.
+2. Copy the contents of [../supabase/migrations/20240916140519_init.sql](https://github.com/vercel/ai-chatbot/supabase/migrations/20240916140519_init.sql). While in 
+the Supabase dashbaord; Paste the SQL you copied into the SQL editor and click "run".
 
-Change the Auth confirmation path in the email confirmation template:
+### Setup Redirect URLs for Authentication sign up:
 
-1. Go to the [Auth templates](https://supabase.com/dashboard/project/_/auth/templates) page in your dashboard.
+1. While still in the Supabase dashbaord; Go to "Authentication", then "URL Configuration", and add in redirect URLs.
+  i. Add the following `https:/[vercel-deployment-url]-*-[VERCEL-TEAM-URL-SLUG].vercel.app/*/*`, `https://[vercel-deployment-url.vercel].app/**`
+  ii. For example, with the deployment url and team slug, these would look like, `https://nextjs-with-supabase-site.vercel.app/**`, `https://nextjs-with-supabase-site-*-supabase.vercel.app/**`
+
+### Change the Auth confirmation path in the email confirmation template:
+
+1. While still in the Supabase dashbaord; Go to "Authentication", then "Email templates" 
 2. In the `Confirm signup` template, change `{{ .ConfirmationURL }}` to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup`.
 
-## Get an OpenAI API keyp
 
-Go to the [OpenAI Platform](https://platform.openai.com/api-keys) and login or signup, and create a new secret key. Add this key to your `.env` file as `OPENAI_API_KEY`.
-
-## Running locally
+### Running locally
 
 You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
 
