@@ -126,8 +126,8 @@ export function SpinnerMessage() {
     <div className="group relative flex items-start md:-ml-12">
       <div className="flex size-[25px] shrink-0 select-none items-center justify-center rounded-md border bg-background shadow-sm">
         <Image
-            src="/tab_icon.svg"
-            alt="tab_icon"
+            src="/ribbon_ai_logo.svg"
+            alt="ribbon_ai_logo"
             width={50}
             height={300}
           />
@@ -144,8 +144,8 @@ export function RibbonBotMessage({ children }: { children: React.ReactNode }) {
     <div className="group relative flex items-start md:-ml-12">
       <div className="flex size-[25px] shrink-0 select-none items-center justify-center rounded-md border bg-background shadow-sm">
         <Image
-            src="/tab_icon.svg"
-            alt="tab_icon"
+            src="/ribbon_ai_logo.svg"
+            alt="ribbon_ai_logo"
             width={50}
             height={300}
           />
