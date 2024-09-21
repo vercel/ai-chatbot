@@ -2,6 +2,7 @@ import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
 
 import '@/app/globals.css'
+import AuthWrapper from '@/components/auth-wrapper'
 import { Header } from '@/components/header'
 import { Providers } from '@/components/providers'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
@@ -54,7 +55,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         >
           <div className="flex flex-col min-h-screen">
             <Header />
+            <AuthWrapper>
             <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
+          </AuthWrapper>
           </div>
           <TailwindIndicator />
         </Providers>
