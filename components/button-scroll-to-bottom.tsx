@@ -5,18 +5,11 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconArrowDown } from '@/components/ui/icons'
+import { useStickToBottomContext } from 'use-stick-to-bottom'
 
-interface ButtonScrollToBottomProps extends ButtonProps {
-  isAtBottom: boolean
-  scrollToBottom: () => void
-}
+export function ButtonScrollToBottom({ className, ...props }: ButtonProps) {
+  const { isAtBottom, scrollToBottom } = useStickToBottomContext()
 
-export function ButtonScrollToBottom({
-  className,
-  isAtBottom,
-  scrollToBottom,
-  ...props
-}: ButtonScrollToBottomProps) {
   return (
     <Button
       variant="outline"

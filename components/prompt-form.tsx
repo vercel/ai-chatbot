@@ -17,6 +17,7 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import { useStickToBottomContext } from 'use-stick-to-bottom'
 
 export function PromptForm({
   input,
@@ -30,6 +31,7 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+  const { scrollToBottom } = useStickToBottomContext()
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -60,6 +62,8 @@ export function PromptForm({
             display: <UserMessage>{value}</UserMessage>
           }
         ])
+
+        scrollToBottom()
 
         // Submit and get response message
         const responseMessage = await submitUserMessage(value)
