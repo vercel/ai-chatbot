@@ -5,19 +5,10 @@ import { useActions, useAIState, useUIState } from 'ai/rsc'
 import { formatNumber } from '@/lib/utils'
 
 import type { AI } from '@/lib/chat/actions'
+import { PurchaseProps } from '@/lib/types'
 
-interface Purchase {
-  numberOfShares?: number
-  symbol: string
-  price: number
-  status: 'requires_action' | 'completed' | 'expired'
-}
 
-export function Purchase({
-  props: { numberOfShares, symbol, price, status = 'expired' }
-}: {
-  props: Purchase
-}) {
+export function Purchase({ numberOfShares, symbol, price, status = 'expired' }: PurchaseProps) {
   const [value, setValue] = useState(numberOfShares || 100)
   const [purchasingUI, setPurchasingUI] = useState<null | React.ReactNode>(null)
   const [aiState, setAIState] = useAIState<typeof AI>()
