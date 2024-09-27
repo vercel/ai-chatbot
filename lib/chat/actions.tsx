@@ -33,8 +33,9 @@ import {
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
-import { Chat, Message } from '@/lib/types'
+import { Chat, GetEventProps, ListStockProps, Message, PurchaseProps, ShowStockPriceProps } from '@/lib/types'
 import { auth } from '@/auth'
+import { getEventsSchema, listStockSchema, showStockPriceSchema, showStockPurchaseSchema } from '../schemas'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -89,9 +90,8 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
         {
           id: nanoid(),
           role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
+          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${amount * price
+            }]`
         }
       ]
     })
@@ -179,15 +179,7 @@ async function submitUserMessage(content: string) {
     tools: {
       listStocks: {
         description: 'List three imaginary stocks that are trending.',
-        parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          )
-        }),
+        parameters: listStockSchema,
         generate: async function* ({ stocks }) {
           yield (
             <BotCard>
@@ -232,7 +224,7 @@ async function submitUserMessage(content: string) {
 
           return (
             <BotCard>
-              <Stocks props={stocks} />
+              <Stocks stocks={stocks} />
             </BotCard>
           )
         }
@@ -240,15 +232,7 @@ async function submitUserMessage(content: string) {
       showStockPrice: {
         description:
           'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        }),
+        parameters: showStockPriceSchema,
         generate: async function* ({ symbol, price, delta }) {
           yield (
             <BotCard>
@@ -293,7 +277,7 @@ async function submitUserMessage(content: string) {
 
           return (
             <BotCard>
-              <Stock props={{ symbol, price, delta }} />
+              <Stock symbol={symbol} price={price} delta={delta} />
             </BotCard>
           )
         }
@@ -301,20 +285,7 @@ async function submitUserMessage(content: string) {
       showStockPurchase: {
         description:
           'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-        parameters: z.object({
-          symbol: z
-            .string()
-            .describe(
-              'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-            ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z
-            .number()
-            .optional()
-            .describe(
-              'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-            )
-        }),
+        parameters: showStockPurchaseSchema,
         generate: async function* ({ symbol, price, numberOfShares = 100 }) {
           const toolCallId = nanoid()
 
@@ -400,12 +371,10 @@ async function submitUserMessage(content: string) {
             return (
               <BotCard>
                 <Purchase
-                  props={{
-                    numberOfShares,
-                    symbol,
-                    price: +price,
-                    status: 'requires_action'
-                  }}
+                  price={+price}
+                  status="requires_action"
+                  symbol={symbol}
+                  numberOfShares={numberOfShares}
                 />
               </BotCard>
             )
@@ -415,17 +384,7 @@ async function submitUserMessage(content: string) {
       getEvents: {
         description:
           'List funny imaginary events between user highlighted dates that describe stock activity.',
-        parameters: z.object({
-          events: z.array(
-            z.object({
-              date: z
-                .string()
-                .describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        }),
+        parameters: getEventsSchema,
         generate: async function* ({ events }) {
           yield (
             <BotCard>
@@ -470,7 +429,7 @@ async function submitUserMessage(content: string) {
 
           return (
             <BotCard>
-              <Events props={events} />
+              <Events events={events} />
             </BotCard>
           )
         }
@@ -557,24 +516,19 @@ export const getUIStateFromAIState = (aiState: Chat) => {
           message.content.map(tool => {
             return tool.toolName === 'listStocks' ? (
               <BotCard>
-                {/* TODO: Infer types based on the tool result*/}
-                {/* @ts-expect-error */}
-                <Stocks props={tool.result} />
+                <Stocks {...tool.result as ListStockProps} />
               </BotCard>
             ) : tool.toolName === 'showStockPrice' ? (
               <BotCard>
-                {/* @ts-expect-error */}
-                <Stock props={tool.result} />
+                <Stock {...tool.result as ShowStockPriceProps} />
               </BotCard>
             ) : tool.toolName === 'showStockPurchase' ? (
               <BotCard>
-                {/* @ts-expect-error */}
-                <Purchase props={tool.result} />
+                <Purchase {...tool.result as PurchaseProps} />
               </BotCard>
             ) : tool.toolName === 'getEvents' ? (
               <BotCard>
-                {/* @ts-expect-error */}
-                <Events props={tool.result} />
+                <Events events={tool.result as GetEventProps["events"]} />
               </BotCard>
             ) : null
           })

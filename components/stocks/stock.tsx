@@ -3,12 +3,8 @@
 import { useState, useRef, useEffect, useId } from 'react'
 import { subMonths, format } from 'lib/utils'
 import { useAIState } from 'ai/rsc'
+import { ShowStockPriceProps } from '@/lib/types'
 
-interface Stock {
-  symbol: string
-  price: number
-  delta: number
-}
 
 function scaleLinear(domain: [number, number], range: [number, number]) {
   const [d0, d1] = domain
@@ -47,7 +43,7 @@ function useResizeObserver<T extends HTMLElement = HTMLElement>(
   return size
 }
 
-export function Stock({ props: { symbol, price, delta } }: { props: Stock }) {
+export function Stock({ symbol, price, delta }: ShowStockPriceProps ) {
   const [aiState, setAIState] = useAIState()
   const id = useId()
 
