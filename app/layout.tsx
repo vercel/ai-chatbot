@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
+import { KasadaClient } from "@/utils/kasada/kasada-client";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -19,6 +20,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${GeistSans.className}`}>
+        <KasadaClient />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
