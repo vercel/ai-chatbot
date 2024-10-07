@@ -46,6 +46,7 @@ export function Chat({
               role={message.role}
               content={message.content}
               attachments={message.experimental_attachments}
+              toolInvocations={message.toolInvocations}
             />
           ))}
           <div
