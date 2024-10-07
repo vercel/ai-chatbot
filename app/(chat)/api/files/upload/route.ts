@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const user = await getUserFromSession();
 
   if (!user) {
-    return Response.redirect("/login");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (request.body === null) {

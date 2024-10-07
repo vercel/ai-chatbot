@@ -7,13 +7,16 @@ import { Message as PreviewMessage } from "@/components/message";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
+import { User } from "@supabase/supabase-js";
 
 export function Chat({
   id,
   initialMessages,
+  user,
 }: {
   id: string;
   initialMessages: Array<Message>;
+  user: User | null;
 }) {
   const [selectedFilePathnames] = useState<Array<string>>([]);
 
@@ -22,7 +25,9 @@ export function Chat({
       body: { id, selectedFilePathnames },
       initialMessages,
       onFinish: () => {
-        window.history.replaceState({}, "", `/${id}`);
+        if (user) {
+          window.history.replaceState({}, "", `/${id}`);
+        }
       },
     });
 

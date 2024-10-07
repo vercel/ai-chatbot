@@ -9,10 +9,6 @@ export async function POST(request: Request) {
 
   const user = await getUserFromSession();
 
-  if (!user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
   const result = await streamText({
     model: customModel,
     system:
@@ -24,11 +20,13 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ text }) => {
-      await saveChat({
-        id,
-        messages: [...messages, { role: "assistant", content: text }],
-        userId: user.id,
-      });
+      if (user) {
+        await saveChat({
+          id,
+          messages: [...messages, { role: "assistant", content: text }],
+          userId: user.id,
+        });
+      }
     },
     experimental_telemetry: {
       isEnabled: true,

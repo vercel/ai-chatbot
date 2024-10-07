@@ -15,6 +15,7 @@ import React, {
   ChangeEvent,
 } from "react";
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
+import { toast } from "sonner";
 
 const suggestedActions = [
   {
@@ -132,7 +133,7 @@ export function MultimodalInput({
           ...uploadedAttachments,
         ]);
       } catch (error) {
-        console.error("Error uploading files:", error);
+        toast.error("Error uploading files!");
       } finally {
         setUploadQueue([]);
       }
