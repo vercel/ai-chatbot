@@ -9,6 +9,7 @@ import {
 } from "./shadcn/dropdown-menu";
 import { getUserFromSession, signOut } from "@/app/(auth)/actions";
 import { ThemeToggle } from "./theme-toggle";
+import { VercelIcon } from "./icons";
 
 export const Navbar = async () => {
   let user = await getUserFromSession();
@@ -23,43 +24,57 @@ export const Navbar = async () => {
           </div>
         </div>
 
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="py-1.5 px-2 h-fit font-normal"
-                variant="outline"
-              >
-                {user.email}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <ThemeToggle />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="p-1 z-50">
-                <form
-                  className="w-full"
-                  action={async () => {
-                    "use server";
-                    await signOut();
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="w-full text-left px-1 py-0.5 text-red-500"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button className="py-1.5 px-2 h-fit border" asChild>
-            <Link href="/login">Login</Link>
+        <div className="flex flex-row gap-3 items-center">
+          <Button className="py-1.5 px-2 h-fit font-normal" asChild>
+            <Link
+              href="https://vercel.com/templates/next.js/nextjs-ai-chatbot"
+              target="_noblank"
+            >
+              <div className="flex flex-row gap-2 items-center">
+                <VercelIcon size={14} />
+                Deploy with Vercel
+              </div>
+            </Link>
           </Button>
-        )}
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="py-1.5 px-2 h-fit font-normal"
+                  variant="outline"
+                >
+                  {user.email}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <ThemeToggle />
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-1 z-50">
+                  <form
+                    className="w-full"
+                    action={async () => {
+                      "use server";
+                      await signOut();
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="w-full text-left px-1 py-0.5 text-red-500"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button className="py-1.5 px-2 h-fit border font-normal" asChild>
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
+        </div>
       </div>
     </>
   );
