@@ -3,6 +3,7 @@ import { Chat } from "@/utils/supabase/schema";
 import { getChatById } from "../actions";
 import { notFound } from "next/navigation";
 import { Chat as PreviewChat } from "@/components/chat";
+import { getUserFromSession } from "@/app/(auth)/actions";
 
 export default async function Page({ params }: { params: any }) {
   const { id } = params;
@@ -18,5 +19,9 @@ export default async function Page({ params }: { params: any }) {
     messages: chatFromDb.messages as Message[],
   };
 
-  return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
+  const user = await getUserFromSession();
+
+  return (
+    <PreviewChat id={chat.id} initialMessages={chat.messages} user={user} />
+  );
 }
