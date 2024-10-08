@@ -2,12 +2,14 @@
 
 import { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
+import { User } from "next-auth";
 import { useState } from "react";
+
 import { Message as PreviewMessage } from "@/components/message";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
-import { User } from "@supabase/supabase-js";
 
 export function Chat({
   id,
@@ -16,7 +18,7 @@ export function Chat({
 }: {
   id: string;
   initialMessages: Array<Message>;
-  user: User | null;
+  user: User | undefined;
 }) {
   const [selectedFilePathnames] = useState<Array<string>>([]);
 
@@ -51,6 +53,7 @@ export function Chat({
               role={message.role}
               content={message.content}
               attachments={message.experimental_attachments}
+              toolInvocations={message.toolInvocations}
             />
           ))}
           <div

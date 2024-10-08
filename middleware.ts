@@ -1,9 +1,12 @@
 import { kv } from "@vercel/kv";
-import { NextFetchEvent, type NextRequest } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
+import NextAuth from "next-auth";
+import { NextFetchEvent, NextRequest } from "next/server";
 import { kasadaHandler } from "./utils/kasada/kasada-server";
+import { authConfig } from "@/app/(auth)/auth.config";
 
 const MAX_REQUESTS = 25;
+
+export const { auth } = NextAuth(authConfig);
 
 export async function botProtectionMiddleware(
   request: NextRequest,
@@ -32,7 +35,8 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const response = await botProtectionMiddleware(request, event);
   if (response) return response;
 
-  return await updateSession(request);
+  // @ts-expect-error type mismatch
+  return auth(request, event);
 }
 
 export const config = {

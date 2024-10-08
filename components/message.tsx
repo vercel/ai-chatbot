@@ -1,19 +1,23 @@
 "use client";
 
+import { Attachment, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
-import { BotIcon, UserIcon } from "./icons";
 import { ReactNode } from "react";
+
+import { BotIcon, UserIcon } from "./icons";
 import { Markdown } from "./markdown";
-import { Attachment } from "ai";
 import { PreviewAttachment } from "./preview-attachment";
+import { Weather } from "./weather";
 
 export const Message = ({
   role,
   content,
+  toolInvocations,
   attachments,
 }: {
   role: string;
   content: string | ReactNode;
+  toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
 }) => {
   return (
@@ -27,16 +31,45 @@ export const Message = ({
       </div>
 
       <div className="flex flex-col gap-2 w-full">
-        <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
-          <Markdown>{content as string}</Markdown>
-        </div>
+        {content && (
+          <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
+            <Markdown>{content as string}</Markdown>
+          </div>
+        )}
 
-        <div className="flex flex-row gap-2">
-          {attachments &&
-            attachments.map((attachment) => (
+        {toolInvocations && (
+          <div className="flex flex-col gap-4">
+            {toolInvocations.map((toolInvocation) => {
+              const { toolName, toolCallId, state } = toolInvocation;
+
+              if (state === "result") {
+                const { result } = toolInvocation;
+
+                return (
+                  <div key={toolCallId}>
+                    {toolName === "getWeather" ? (
+                      <Weather weatherAtLocation={result} />
+                    ) : null}
+                  </div>
+                );
+              } else {
+                return (
+                  <div key={toolCallId} className="skeleton">
+                    {toolName === "getWeather" ? <Weather /> : null}
+                  </div>
+                );
+              }
+            })}
+          </div>
+        )}
+
+        {attachments && (
+          <div className="flex flex-row gap-2">
+            {attachments.map((attachment) => (
               <PreviewAttachment key={attachment.url} attachment={attachment} />
             ))}
-        </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

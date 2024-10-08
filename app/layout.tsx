@@ -1,9 +1,9 @@
-import { Navbar } from "@/components/navbar";
 import { Metadata } from "next";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "@/components/theme-provider";
-import { GeistSans } from "geist/font/sans";
+
 import "./globals.css";
+import { Navbar } from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 import { KasadaClient } from "@/utils/kasada/kasada-client";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${GeistSans.className}`}>
+      <body>
         <KasadaClient />
         <ThemeProvider
           attribute="class"

@@ -1,13 +1,14 @@
-import { customModel } from "@/ai";
-import { saveChat } from "@/app/(chat)/actions";
 import { convertToCoreMessages, streamText } from "ai";
-import { getUserFromSession } from "@/app/(auth)/actions";
-import { createClient } from "@/utils/supabase/server";
+import { z } from "zod";
+
+import { customModel } from "@/ai";
+import { auth } from "@/app/(auth)/auth";
+import { deleteChatById, getChatById, saveChat } from "@/db/queries";
 
 export async function POST(request: Request) {
   const { id, messages, selectedFilePathnames } = await request.json();
 
-  const user = await getUserFromSession();
+  const session = await auth();
 
   const result = await streamText({
     model: customModel,
@@ -19,12 +20,30 @@ export async function POST(request: Request) {
         selection: selectedFilePathnames,
       },
     },
+    maxSteps: 5,
+    tools: {
+      getWeather: {
+        description: "Get the current weather at a location",
+        parameters: z.object({
+          latitude: z.number(),
+          longitude: z.number(),
+        }),
+        execute: async ({ latitude, longitude }) => {
+          const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+          );
+
+          const weatherData = await response.json();
+          return weatherData;
+        },
+      },
+    },
     onFinish: async ({ text }) => {
-      if (user) {
+      if (session && session.user && session.user.id) {
         await saveChat({
           id,
           messages: [...messages, { role: "assistant", content: text }],
-          userId: user.id,
+          userId: session.user.id,
         });
       }
     },
@@ -45,14 +64,22 @@ export async function DELETE(request: Request) {
     return new Response("Not Found", { status: 404 });
   }
 
-  const supabase = createClient();
+  const session = await auth();
+
+  if (!session || !session.user) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   try {
-    const { data, error } = await supabase.from("chat").delete().eq("id", id);
+    const chat = await getChatById({ id });
 
-    if (error) throw error;
+    if (chat.userId !== session.user.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
-    return Response.json(data);
+    await deleteChatById({ id });
+
+    return new Response("Chat deleted", { status: 200 });
   } catch (error) {
     return new Response("An error occurred while processing your request", {
       status: 500,

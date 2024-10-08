@@ -1,17 +1,13 @@
-import { getUserFromSession } from "@/app/(auth)/actions";
-import { createClient } from "@/utils/supabase/server";
+import { auth } from "@/app/(auth)/auth";
+import { getChatsByUserId } from "@/db/queries";
 
 export async function GET() {
-  const supabase = createClient();
-  const user = await getUserFromSession();
+  const session = await auth();
 
-  if (!user) {
+  if (!session || !session.user) {
     return Response.json("Unauthorized!", { status: 401 });
   }
 
-  const { data: chats } = await supabase
-    .from("chat")
-    .select("*")
-    .order("createdAt", { ascending: false });
+  const chats = await getChatsByUserId({ id: session.user.id! });
   return Response.json(chats);
 }
