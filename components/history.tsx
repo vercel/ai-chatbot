@@ -53,7 +53,7 @@ export const History = ({ user }: { user: User | undefined }) => {
     data: history,
     isLoading,
     mutate,
-  } = useSWR<Array<Chat>>("/api/history", fetcher, {
+  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
     fallbackData: [],
   });
 
@@ -220,7 +220,7 @@ export const History = ({ user }: { user: User | undefined }) => {
       </Sheet>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-muted">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
