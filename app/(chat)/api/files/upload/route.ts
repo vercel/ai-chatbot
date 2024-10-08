@@ -1,19 +1,18 @@
-import { getUserFromSession } from "@/app/(auth)/actions";
-import { createClient } from "@/utils/supabase/server";
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  const user = await getUserFromSession();
+import { auth } from "@/app/(auth)/auth";
 
-  if (!user) {
-    return Response.redirect("/login");
+export async function POST(request: Request) {
+  const session = await auth();
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (request.body === null) {
     return new Response("Request body is empty", { status: 400 });
   }
-
-  const supabase = createClient();
 
   try {
     const formData = await request.formData();
@@ -26,18 +25,15 @@ export async function POST(request: Request) {
     const filename = file.name;
     const fileBuffer = await file.arrayBuffer();
 
-    const { data, error } = await supabase.storage
-      .from("attachments")
-      .upload(filename, fileBuffer, {
-        contentType: file.type,
-        upsert: true,
+    try {
+      const data = await put(`${filename}`, fileBuffer, {
+        access: "public",
       });
 
-    if (error) {
+      return NextResponse.json(data);
+    } catch (error) {
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
-
-    return NextResponse.json({ data });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to process request" },

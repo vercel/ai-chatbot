@@ -1,4 +1,5 @@
 import { Attachment } from "ai";
+
 import { LoaderIcon } from "./icons";
 
 export const PreviewAttachment = ({

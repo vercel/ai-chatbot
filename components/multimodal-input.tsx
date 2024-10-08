@@ -1,10 +1,7 @@
 "use client";
 
-import { Button } from "./shadcn/button";
+import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
 import { motion } from "framer-motion";
-import { Textarea } from "./shadcn/textarea";
-import { PreviewAttachment } from "./preview-attachment";
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import React, {
   useRef,
   useEffect,
@@ -14,7 +11,12 @@ import React, {
   SetStateAction,
   ChangeEvent,
 } from "react";
-import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
+
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
+import { PreviewAttachment } from "./preview-attachment";
+import { Button } from "./shadcn/button";
+import { Textarea } from "./shadcn/textarea";
+
 
 const suggestedActions = [
   {
@@ -100,13 +102,13 @@ export function MultimodalInput({
       });
 
       if (response.ok) {
-        const { data } = await response.json();
-        const { path } = data;
+        const data = await response.json();
+        const { url, pathname, contentType } = data;
 
         return {
-          url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${path}`,
-          name: file.name,
-          contentType: file.type,
+          url,
+          name: pathname,
+          contentType: contentType,
         };
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);

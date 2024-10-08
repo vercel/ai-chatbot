@@ -1,6 +1,17 @@
 "use client";
 
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import cx from "classnames";
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
+import { User } from "next-auth";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import useSWR from "swr";
+
+import { Chat } from "@/db/schema";
+import { fetcher } from "@/utils/functions";
+
 import {
   InfoIcon,
   MenuIcon,
@@ -8,20 +19,6 @@ import {
   PencilEditIcon,
   TrashIcon,
 } from "./icons";
-import { useEffect, useState } from "react";
-import useSWR from "swr";
-import Link from "next/link";
-import cx from "classnames";
-import { useParams, usePathname } from "next/navigation";
-import { Chat } from "@/utils/supabase/schema";
-import { fetcher } from "@/utils/functions";
-import { Button } from "./shadcn/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./shadcn/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +29,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./shadcn/alert-dialog";
-import { toast } from "sonner";
+import { Button } from "./shadcn/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./shadcn/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -40,17 +43,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./shadcn/sheet";
-import { User } from "@supabase/supabase-js";
-import { ThemeToggle } from "./theme-toggle";
 
-export const History = ({ user }: { user: User | null }) => {
+export const History = ({ user }: { user: User | undefined }) => {
   const { id } = useParams();
   const pathname = usePathname();
 
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
   const {
     data: history,
-    error,
     isLoading,
     mutate,
   } = useSWR<Array<Chat>>("/api/history", fetcher, {

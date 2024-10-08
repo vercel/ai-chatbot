@@ -1,7 +1,9 @@
 "use client";
 
-import { LoaderIcon } from "@/components/icons";
 import { useFormStatus } from "react-dom";
+
+import { LoaderIcon } from "@/components/icons";
+
 import { Button } from "./shadcn/button";
 
 export function SubmitButton({ children }: { children: React.ReactNode }) {

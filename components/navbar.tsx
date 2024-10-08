@@ -1,4 +1,7 @@
 import Link from "next/link";
+
+import { auth, signOut } from "@/app/(auth)/auth";
+
 import { History } from "./history";
 import { Button } from "./shadcn/button";
 import {
@@ -7,30 +10,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./shadcn/dropdown-menu";
-import { getUserFromSession, signOut } from "@/app/(auth)/actions";
 import { ThemeToggle } from "./theme-toggle";
 
 export const Navbar = async () => {
-  let user = await getUserFromSession();
+  let session = await auth();
 
   return (
     <>
       <div className="bg-background absolute top-0 left-0 w-dvw border-b py-2 px-3 justify-between flex flex-row items-center z-30">
         <div className="flex flex-row gap-3 items-center">
-          <History user={user} />
+          <History user={session?.user} />
           <div className="flex flex-row gap-2 items-center">
             <div className="text-sm dark:text-zinc-300">Chatbot</div>
           </div>
         </div>
 
-        {user ? (
+        {session ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 className="py-1.5 px-2 h-fit font-normal"
                 variant="outline"
               >
-                {user.email}
+                {session.user?.email}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
