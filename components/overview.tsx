@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-import { MessageIcon, VercelIcon } from "./icons";
+import { LogoOpenAI, MessageIcon, VercelIcon } from "./icons";
 
 export const Overview = () => {
   return (
@@ -18,22 +18,26 @@ export const Overview = () => {
           <VercelIcon />
           <span>+</span>
           <MessageIcon />
+          <span>+</span>
+          <LogoOpenAI />
         </p>
         <p>
-          This is an open source chatbot app template built with Next.js and the
-          AI SDK by Vercel. It uses the streamText function on the server and
-          the useChat hook on the client to create a seamless chatbot
-          experience.
+          This is an open source Chatbot template powered by the OpenAI gpt-4o
+          model built with Next.js and the AI SDK by Vercel. It uses the{" "}
+          <code className="rounded-md bg-muted px-1 py-0.5">streamText</code>{" "}
+          function in the server and the{" "}
+          <code className="rounded-md bg-muted px-1 py-0.5">useChat</code> hook
+          on the client to create a seamless chat experience.
         </p>
         <p>
           {" "}
-          You can learn more about the AI SDK by reading the{" "}
+          You can learn more about the AI SDK by visiting the{" "}
           <Link
             className="text-blue-500 dark:text-blue-400"
             href="https://sdk.vercel.ai/docs"
             target="_blank"
           >
-            documentation
+            Docs
           </Link>
           .
         </p>
