@@ -27,7 +27,10 @@ export const Navbar = async () => {
         </div>
 
         <div className="flex flex-row gap-3 items-center">
-          <Button className="py-1.5 px-2 h-fit font-normal" asChild>
+          <Button
+            className="hidden md:block py-1.5 px-2 h-fit font-normal"
+            asChild
+          >
             <Link
               href="https://vercel.com/templates/next.js/nextjs-ai-chatbot"
               target="_blank"
