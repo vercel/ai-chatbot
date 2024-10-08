@@ -14,7 +14,7 @@ import {
 import { ThemeToggle } from "./theme-toggle";
 
 export const Navbar = async () => {
-  let session = await auth();
+  const session = await auth();
 
   return (
     <>
@@ -30,7 +30,8 @@ export const Navbar = async () => {
           <Button className="py-1.5 px-2 h-fit font-normal" asChild>
             <Link
               href="https://vercel.com/templates/next.js/nextjs-ai-chatbot"
-              target="_noblank"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div className="flex flex-row gap-2 items-center">
                 <VercelIcon size={14} />
@@ -44,7 +45,7 @@ export const Navbar = async () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   className="py-1.5 px-2 h-fit font-normal"
-                  variant="outline"
+                  variant="secondary"
                 >
                   {session.user?.email}
                 </Button>
@@ -58,7 +59,9 @@ export const Navbar = async () => {
                     className="w-full"
                     action={async () => {
                       "use server";
-                      await signOut();
+                      await signOut({
+                        redirectTo: "/",
+                      });
                     }}
                   >
                     <button
@@ -72,7 +75,7 @@ export const Navbar = async () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button className="py-1.5 px-2 h-fit border" asChild>
+            <Button className="py-1.5 px-2 h-fit font-normal" asChild>
               <Link href="/login">Login</Link>
             </Button>
           )}
