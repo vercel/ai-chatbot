@@ -30,7 +30,7 @@ export const Navbar = async () => {
             <DropdownMenuTrigger asChild>
               <Button
                 className="py-1.5 px-2 h-fit font-normal"
-                variant="outline"
+                variant="secondary"
               >
                 {session.user?.email}
               </Button>
@@ -44,7 +44,10 @@ export const Navbar = async () => {
                   className="w-full"
                   action={async () => {
                     "use server";
-                    await signOut();
+
+                    await signOut({
+                      redirectTo: "/",
+                    });
                   }}
                 >
                   <button
@@ -58,7 +61,7 @@ export const Navbar = async () => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button className="py-1.5 px-2 h-fit border" asChild>
+          <Button className="py-1.5 px-2 h-fit font-normal" asChild>
             <Link href="/login">Login</Link>
           </Button>
         )}
