@@ -215,7 +215,12 @@ export function MultimodalInput({
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
-            submitForm();
+
+            if (isLoading) {
+              toast.error("Please wait for the model to finish its response!");
+            } else {
+              submitForm();
+            }
           }
         }}
       />

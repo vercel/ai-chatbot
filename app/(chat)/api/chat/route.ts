@@ -10,11 +10,13 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
+  const coreMessages = convertToCoreMessages(messages);
+
   const result = await streamText({
     model: customModel,
     system:
       "you are a friendly assistant! keep your responses concise and helpful.",
-    messages: convertToCoreMessages(messages),
+    messages: coreMessages,
     experimental_providerMetadata: {
       files: {
         selection: selectedFilePathnames,
@@ -38,11 +40,11 @@ export async function POST(request: Request) {
         },
       },
     },
-    onFinish: async ({ text }) => {
+    onFinish: async ({ responseMessages }) => {
       if (session && session.user && session.user.id) {
         await saveChat({
           id,
-          messages: [...messages, { role: "assistant", content: text }],
+          messages: [...coreMessages, ...responseMessages],
           userId: session.user.id,
         });
       }
