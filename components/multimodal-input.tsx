@@ -11,6 +11,7 @@ import React, {
   SetStateAction,
   ChangeEvent,
 } from "react";
+import { toast } from "sonner";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
@@ -214,7 +215,12 @@ export function MultimodalInput({
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
-            submitForm();
+
+            if (isLoading) {
+              toast.error("Please wait for the model to finish its response!");
+            } else {
+              submitForm();
+            }
           }
         }}
       />
