@@ -1,12 +1,14 @@
 import { Input } from "./shadcn/input";
 import { Label } from "./shadcn/label";
 
-export function Form({
+export function AuthForm({
   action,
   children,
+  defaultEmail = "",
 }: {
   action: any;
   children: React.ReactNode;
+  defaultEmail?: string;
 }) {
   return (
     <form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
@@ -26,6 +28,7 @@ export function Form({
           placeholder="user@acme.com"
           autoComplete="email"
           required
+          defaultValue={defaultEmail}
         />
 
         <Label

@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Form } from "@/components/form";
+import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
 
 import { login, LoginActionState } from "../actions";
 
-
 export default function Page() {
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -29,6 +30,11 @@ export default function Page() {
     }
   }, [state.status, router]);
 
+  const handleSubmit = (formData: FormData) => {
+    setEmail(formData.get("email") as string);
+    formAction(formData);
+  };
+
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-background">
       <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
@@ -38,7 +44,7 @@ export default function Page() {
             Use your email and password to sign in
           </p>
         </div>
-        <Form action={formAction}>
+        <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {"Don't have an account? "}
@@ -50,7 +56,7 @@ export default function Page() {
             </Link>
             {" for free."}
           </p>
-        </Form>
+        </AuthForm>
       </div>
     </div>
   );
