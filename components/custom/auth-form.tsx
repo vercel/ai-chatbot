@@ -1,5 +1,5 @@
-import { Input } from "./shadcn/input";
-import { Label } from "./shadcn/label";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 export function AuthForm({
   action,

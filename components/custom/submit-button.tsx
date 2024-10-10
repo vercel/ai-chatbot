@@ -2,9 +2,9 @@
 
 import { useFormStatus } from "react-dom";
 
-import { LoaderIcon } from "@/components/icons";
+import { LoaderIcon } from "@/components/custom/icons";
 
-import { Button } from "./shadcn/button";
+import { Button } from "../ui/button";
 
 export function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();

@@ -4,8 +4,8 @@ import { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
 import { useState } from "react";
 
-import { Message as PreviewMessage } from "@/components/message";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { Message as PreviewMessage } from "@/components/custom/message";
+import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
