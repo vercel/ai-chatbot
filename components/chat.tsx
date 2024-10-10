@@ -53,7 +53,7 @@ export function Chat({
           ))}
           <div
             ref={messagesEndRef}
-            className="flex-shrink-0 min-w-[24px] min-h-[24px]"
+            className="shrink-0 min-w-[24px] min-h-[24px]"
           />
         </div>
 
