@@ -111,11 +111,11 @@ export function MultimodalInput({
           contentType: contentType,
         };
       } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const { error } = await response.json();
+        toast.error(error);
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
-      throw error;
+      toast.error("Failed to upload file, please try again!");
     }
   };
 
@@ -128,13 +128,16 @@ export function MultimodalInput({
       try {
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
+        const successfullyUploadedAttachments = uploadedAttachments.filter(
+          (attachment) => attachment !== undefined,
+        );
 
         setAttachments((currentAttachments) => [
           ...currentAttachments,
-          ...uploadedAttachments,
+          ...successfullyUploadedAttachments,
         ]);
       } catch (error) {
-        console.error("Error uploading files:", error);
+        console.error("Error uploading files!", error);
       } finally {
         setUploadQueue([]);
       }
