@@ -17,11 +17,9 @@ export function Chat({
   id: string;
   initialMessages: Array<Message>;
 }) {
-  const [selectedFilePathnames] = useState<Array<string>>([]);
-
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } =
     useChat({
-      body: { id, selectedFilePathnames },
+      body: { id },
       initialMessages,
       onFinish: () => {
         window.history.replaceState({}, "", `/${id}`);
