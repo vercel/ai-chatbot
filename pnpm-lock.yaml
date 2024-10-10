@@ -95,6 +95,9 @@ dependencies:
   remark-gfm:
     specifier: ^4.0.0
     version: 4.0.0
+  server-only:
+    specifier: ^0.0.1
+    version: 0.0.1
   sonner:
     specifier: ^1.5.0
     version: 1.5.0(react-dom@19.0.0-rc-7771d3a7-20240827)(react@19.0.0-rc-7771d3a7-20240827)

@@ -1,3 +1,5 @@
+"server-only";
+
 import { genSaltSync, hashSync } from "bcrypt-ts";
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
