@@ -180,7 +180,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                       asChild
                     >
                       <Link
-                        href={`/${chat.id}`}
+                        href={`/chat/${chat.id}`}
                         className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900"
                       >
                         {chat.messages[0].content as string}
