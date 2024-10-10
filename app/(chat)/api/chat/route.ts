@@ -42,11 +42,15 @@ export async function POST(request: Request) {
     },
     onFinish: async ({ responseMessages }) => {
       if (session.user && session.user.id) {
-        await saveChat({
-          id,
-          messages: [...coreMessages, ...responseMessages],
-          userId: session.user.id,
-        });
+        try {
+          await saveChat({
+            id,
+            messages: [...coreMessages, ...responseMessages],
+            userId: session.user.id,
+          });
+        } catch (error) {
+          console.error("Failed to save chat");
+        }
       }
     },
     experimental_telemetry: {
