@@ -4,14 +4,14 @@ import { auth, signOut } from "@/app/(auth)/auth";
 
 import { History } from "./history";
 import { VercelIcon } from "./icons";
-import { Button } from "./shadcn/button";
+import { ThemeToggle } from "./theme-toggle";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./shadcn/dropdown-menu";
-import { ThemeToggle } from "./theme-toggle";
+} from "../ui/dropdown-menu";
 
 export const Navbar = async () => {
   const session = await auth();

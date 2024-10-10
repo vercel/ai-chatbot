@@ -1,4 +1,4 @@
-import { convertToCoreMessages, streamText } from "ai";
+import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
 
 import { customModel } from "@/ai";
@@ -6,7 +6,8 @@ import { auth } from "@/app/(auth)/auth";
 import { deleteChatById, getChatById, saveChat } from "@/db/queries";
 
 export async function POST(request: Request) {
-  const { id, messages, selectedFilePathnames } = await request.json();
+  const { id, messages }: { id: string; messages: Array<Message> } =
+    await request.json();
 
   const session = await auth();
 
@@ -17,11 +18,6 @@ export async function POST(request: Request) {
     system:
       "you are a friendly assistant! keep your responses concise and helpful.",
     messages: coreMessages,
-    experimental_providerMetadata: {
-      files: {
-        selection: selectedFilePathnames,
-      },
-    },
     maxSteps: 5,
     tools: {
       getWeather: {
@@ -42,11 +38,15 @@ export async function POST(request: Request) {
     },
     onFinish: async ({ responseMessages }) => {
       if (session && session.user && session.user.id) {
-        await saveChat({
-          id,
-          messages: [...coreMessages, ...responseMessages],
-          userId: session.user.id,
-        });
+        try {
+          await saveChat({
+            id,
+            messages: [...coreMessages, ...responseMessages],
+            userId: session.user.id,
+          });
+        } catch (error) {
+          console.error("Failed to save chat");
+        }
       }
     },
     experimental_telemetry: {

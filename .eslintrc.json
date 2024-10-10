@@ -2,10 +2,14 @@
   "extends": [
     "next/core-web-vitals",
     "plugin:import/recommended",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "prettier",
+    "plugin:tailwindcss/recommended"
   ],
-  "plugins": ["import"],
+  "plugins": ["import", "tailwindcss"],
   "rules": {
+    "tailwindcss/no-custom-classname": "off",
+    "tailwindcss/classnames-order": "off",
     "import/order": [
       "error",
       {
@@ -33,5 +37,5 @@
       }
     }
   },
-  "ignorePatterns": ["**/shadcn/**"]
+  "ignorePatterns": ["**/components/ui/**"]
 }

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import useSWR from "swr";
 
 import { Chat } from "@/db/schema";
-import { fetcher } from "@/utils/functions";
+import { fetcher } from "@/lib/utils";
 
 import {
   InfoIcon,
@@ -28,21 +28,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./shadcn/alert-dialog";
-import { Button } from "./shadcn/button";
+} from "../ui/alert-dialog";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./shadcn/dropdown-menu";
+} from "../ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "./shadcn/sheet";
+} from "../ui/sheet";
 
 export const History = ({ user }: { user: User | undefined }) => {
   const { id } = useParams();
@@ -180,7 +180,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                       asChild
                     >
                       <Link
-                        href={`/${chat.id}`}
+                        href={`/chat/${chat.id}`}
                         className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900"
                       >
                         {chat.messages[0].content as string}

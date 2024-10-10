@@ -1,10 +1,11 @@
 import { Metadata } from "next";
 import { Toaster } from "sonner";
 
-import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Navbar } from "@/components/custom/navbar";
+import { ThemeProvider } from "@/components/custom/theme-provider";
 import { KasadaClient } from "@/utils/kasada/kasada-client";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),

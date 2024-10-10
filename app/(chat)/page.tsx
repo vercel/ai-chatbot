@@ -1,5 +1,5 @@
-import { Chat } from "@/components/chat";
-import { generateUUID } from "@/utils/functions";
+import { Chat } from "@/components/custom/chat";
+import { generateUUID } from "@/lib/utils";
 
 import { auth } from "../(auth)/auth";
 
