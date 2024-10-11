@@ -4,6 +4,7 @@ import { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
 import { User } from "next-auth";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Message as PreviewMessage } from "@/components/custom/message";
 import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
@@ -26,6 +27,11 @@ export function Chat({
       initialMessages,
       onFinish: () => {
         window.history.replaceState({}, "", `/chat/${id}`);
+      },
+      onError: (error) => {
+        if (error.message === "Too many requests") {
+          toast.error("Too many requests. Please try again later!");
+        }
       },
     });
 
