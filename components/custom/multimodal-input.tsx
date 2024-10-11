@@ -20,14 +20,14 @@ import { Textarea } from "../ui/textarea";
 
 const suggestedActions = [
   {
-    title: "What is",
-    label: "the meaning of life?",
-    action: "what is the meaning of life?",
+    title: "What is the weather",
+    label: "in San Francisco?",
+    action: "what is the weather in San Francisco?",
   },
   {
-    title: "Why do",
-    label: "developers use Next.js?",
-    action: "why do developers use Next.js?",
+    title: "Answer like I'm 5,",
+    label: "why is the sky blue?",
+    action: "Answer like I'm 5, why is the sky blue?",
   },
 ];
 
