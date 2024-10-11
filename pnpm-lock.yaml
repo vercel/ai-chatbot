@@ -2322,8 +2322,8 @@ packages:
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  /@upstash/redis@1.34.2:
-    resolution: {integrity: sha512-sx7GbdiRCTzvHKDYmntXSsrLXz3Oslm+jsIvCll85PCLQgv9c++Vq4pTIG8frku4zclEdCNL5Zbz83cKMb7aJQ==}
+  /@upstash/redis@1.34.3:
+    resolution: {integrity: sha512-VT25TyODGy/8ljl7GADnJoMmtmJ1F8d84UXfGonRRF8fWYJz7+2J6GzW+a6ETGtk4OyuRTt7FRSvFG5GvrfSdQ==}
     dependencies:
       crypto-js: 4.2.0
     dev: false
@@ -2358,7 +2358,7 @@ packages:
     resolution: {integrity: sha512-pKT8fRnfyYk2MgvyB6fn6ipJPCdfZwiKDdw7vB+HL50rjboEBHDVBEcnwfkEpVSp2AjNtoaOUH7zG+bVC/rvSg==}
     engines: {node: '>=14.6'}
     dependencies:
-      '@upstash/redis': 1.34.2
+      '@upstash/redis': 1.34.3
     dev: false
 
   /@vercel/postgres@0.10.0:

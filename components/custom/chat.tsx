@@ -26,7 +26,9 @@ export function Chat({
       body: { id },
       initialMessages,
       onFinish: () => {
-        window.history.replaceState({}, "", `/chat/${id}`);
+        if (user) {
+          window.history.replaceState({}, "", `/chat/${id}`);
+        }
       },
       onError: (error) => {
         if (error.message === "Too many requests") {
