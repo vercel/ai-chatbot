@@ -1,7 +1,7 @@
 "use client";
 
 import cx from "classnames";
-import { addHours, format, isWithinInterval } from "date-fns";
+import { format, isWithinInterval } from "date-fns";
 import { useEffect, useState } from "react";
 
 interface WeatherAtLocation {
@@ -247,7 +247,7 @@ export function Weather({
   return (
     <div
       className={cx(
-        "flex flex-col gap-4 rounded-2xl p-4",
+        "flex flex-col gap-4 rounded-2xl p-4 skeleton-bg",
         {
           "bg-blue-400": isDay,
         },
@@ -260,7 +260,7 @@ export function Weather({
         <div className="flex flex-row gap-2 items-center">
           <div
             className={cx(
-              "size-10 rounded-full",
+              "size-10 rounded-full skeleton-div",
               {
                 "bg-yellow-300": isDay,
               },
@@ -286,7 +286,7 @@ export function Weather({
             </div>
             <div
               className={cx(
-                "size-6 rounded-full",
+                "size-6 rounded-full skeleton-div",
                 {
                   "bg-yellow-300": isDay,
                 },
