@@ -19,9 +19,12 @@ export const Navbar = async () => {
     <>
       <div className="bg-background absolute top-0 left-0 w-dvw py-2 px-3 justify-between flex flex-row items-center z-30">
         <div className="flex flex-row gap-3 items-center">
-          <History user={session?.user} />
+          {session ? (
+            <History user={session?.user} />
+            ) : null 
+          }
           <div className="flex flex-row gap-2 items-center">
-            <div className="text-sm dark:text-zinc-300">Next.js Chatbot</div>
+            <div className="text-sm dark:text-zinc-300 font-semibold">Campaigns Assistant</div>
           </div>
         </div>
 
@@ -60,11 +63,7 @@ export const Navbar = async () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        ) : (
-          <Button className="py-1.5 px-2 h-fit font-normal" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
-        )}
+        ) : null }
       </div>
     </>
   );
