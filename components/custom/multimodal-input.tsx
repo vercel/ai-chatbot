@@ -92,7 +92,7 @@ export function MultimodalInput({
 
     setAttachments([]);
 
-    if (width > 768) {
+    if (width && width > 768) {
       textareaRef.current?.focus();
     }
   }, [attachments, handleSubmit, setAttachments, width]);
