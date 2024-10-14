@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
+import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 
@@ -22,7 +23,7 @@ const suggestedActions = [
   {
     title: "What is the weather",
     label: "in San Francisco?",
-    action: "what is the weather in San Francisco?",
+    action: "What is the weather in San Francisco?",
   },
   {
     title: "Answer like I'm 5,",
@@ -61,6 +62,7 @@ export function MultimodalInput({
   ) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { width } = useWindowSize();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -89,7 +91,11 @@ export function MultimodalInput({
     });
 
     setAttachments([]);
-  }, [attachments, handleSubmit, setAttachments]);
+
+    if (width && width > 768) {
+      textareaRef.current?.focus();
+    }
+  }, [attachments, handleSubmit, setAttachments, width]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -242,7 +248,8 @@ export function MultimodalInput({
         <Button
           className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
           onClick={(event) => {
-            handleSubmit(event);
+            event.preventDefault();
+            submitForm();
           }}
           disabled={input.length === 0 || uploadQueue.length > 0}
         >
