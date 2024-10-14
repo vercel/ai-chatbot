@@ -197,6 +197,10 @@ const SAMPLE = {
   },
 };
 
+function n(num: number): number {
+  return Math.ceil(num);
+}
+
 export function Weather({
   weatherAtLocation = SAMPLE,
 }: {
@@ -270,12 +274,12 @@ export function Weather({
             )}
           />
           <div className="text-4xl font-medium text-blue-50">
-            {weatherAtLocation.current.temperature_2m}
+            {n(weatherAtLocation.current.temperature_2m)}
             {weatherAtLocation.current_units.temperature_2m}
           </div>
         </div>
 
-        <div className="text-blue-50">{`H:${currentHigh}° L:${currentLow}°`}</div>
+        <div className="text-blue-50">{`H:${n(currentHigh)}° L:${n(currentLow)}°`}</div>
       </div>
 
       <div className="flex flex-row justify-between">
@@ -296,7 +300,7 @@ export function Weather({
               )}
             />
             <div className="text-blue-50 text-sm">
-              {displayTemperatures[index]}
+              {n(displayTemperatures[index])}
               {weatherAtLocation.hourly_units.temperature_2m}
             </div>
           </div>
