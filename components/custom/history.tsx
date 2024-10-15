@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import useSWR from "swr";
 
 import { Chat } from "@/db/schema";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getTitleFromChat } from "@/lib/utils";
 
 import {
   InfoIcon,
@@ -183,7 +183,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                         href={`/chat/${chat.id}`}
                         className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900"
                       >
-                        {chat.messages[0].content as string}
+                        {getTitleFromChat(chat)}
                       </Link>
                     </Button>
 
