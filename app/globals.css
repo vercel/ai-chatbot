@@ -103,6 +103,10 @@
 }
 
 .skeleton {
+  * {
+    pointer-events: none !important;
+  }
+
   *[class^="text-"] {
     color: transparent;
     @apply rounded-md bg-foreground/20 select-none animate-pulse;
