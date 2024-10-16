@@ -1,3 +1,4 @@
+import Form from 'next/form';
 import Link from "next/link";
 
 import { auth, signOut } from "@/app/(auth)/auth";
@@ -40,7 +41,7 @@ export const Navbar = async () => {
                 <ThemeToggle />
               </DropdownMenuItem>
               <DropdownMenuItem className="p-1 z-50">
-                <form
+                <Form
                   className="w-full"
                   action={async () => {
                     "use server";
@@ -56,7 +57,7 @@ export const Navbar = async () => {
                   >
                     Sign out
                   </button>
-                </form>
+                </Form>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
