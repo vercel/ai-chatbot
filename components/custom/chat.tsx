@@ -36,7 +36,7 @@ export function Chat({
       <div className="flex flex-col justify-between items-center gap-4">
         <div
           ref={messagesContainerRef}
-          className="flex flex-col gap-4 h-full w-dvw items-center overflow-y-scroll"
+          className="flex flex-col gap-4 h-full w-dvw items-center overflow-y-auto"
         >
           {messages.length === 0 && <Overview />}
 
