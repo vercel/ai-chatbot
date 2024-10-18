@@ -11,6 +11,7 @@ import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+import { getUser } from '@/app/(chat)/chat/[id]/actions'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -26,10 +27,16 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [messages] = useUIState()
   const [aiState] = useAIState()
 
+  const [subscriber, setSubscriber] = useLocalStorage('plan', {} as any);
+
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
   useEffect(() => {
     if (session?.user) {
+      getUser(session.user.email).then(subsInfo => {
+        setSubscriber(subsInfo as unknown as Session)
+      })
+        
       if (!path.includes('chat') && messages.length === 1) {
         window.history.replaceState({}, '', `/chat/${id}`)
       }

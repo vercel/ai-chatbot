@@ -24,7 +24,9 @@ export async function createUser(
       id: crypto.randomUUID(),
       email,
       password: hashedPassword,
-      salt
+      salt,
+      plan: 'free',
+      period: 'monthly'
     }
 
     await kv.hmset(`user:${email}`, user)
@@ -32,6 +34,34 @@ export async function createUser(
     return {
       type: 'success',
       resultCode: ResultCode.UserCreated
+    }
+  }
+}
+
+export async function editUser(
+  email: string,
+  plan: string,
+  period: string
+) {
+  const user = await getUser(email)
+
+  if (user) {
+    const updatedUser = {
+      ...user,
+      plan,
+      period
+    }
+
+    await kv.hmset(`user:${email}`, updatedUser)
+
+    return {
+      type: 'success',
+      resultCode: ResultCode.UserEdited
+    }
+  } else {
+    return {
+      type: 'error',
+      resultCode: ResultCode.UserNotFound
     }
   }
 }

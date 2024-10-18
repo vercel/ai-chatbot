@@ -58,6 +58,10 @@ export function Header() {
         </React.Suspense>
       </div>
       <div className="flex items-center">
+        {/* Logo */}
+        <Image src="/lexgpt.png" alt="Next Chat" width={50} height={50} />
+      </div>
+      <div className="flex items-center">
         {/* Selector */}
         <AirtableSelector />
       </div>

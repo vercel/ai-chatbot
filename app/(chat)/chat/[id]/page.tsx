@@ -29,7 +29,7 @@ export async function generateMetadata({
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const session = (await auth()) as Session
+  const session = (await auth()) as unknown as Session
   const missingKeys = await getMissingKeys()
 
   if (!session?.user) {

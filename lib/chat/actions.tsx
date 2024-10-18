@@ -9,6 +9,7 @@ import {
   createStreamableValue
 } from 'ai/rsc'
 import { openai } from '@ai-sdk/openai'
+import { generateText } from 'ai';
 
 import { createEmbeddings,
   getEmbeddingsFromPinecone, 
@@ -28,10 +29,11 @@ import {
   nanoid
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
+import { BotCard, SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import { vectorsIDs } from './utils'
+import { rateLimit } from './rateLimit'
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -103,17 +105,131 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
   }
 }
 
+async function describeImage(imageBase64: string) {
+  'use server'
+
+  // await rateLimit()
+
+  const aiState = getMutableAIState()
+  const spinnerStream = createStreamableUI(null)
+  const messageStream = createStreamableUI(null)
+  const uiStream = createStreamableUI()
+
+  uiStream.update(
+    <BotCard>
+      <SpinnerMessage />
+    </BotCard>
+  )
+  messageStream.update(
+    <BotCard>
+      <BotMessage content="Analizando a imagem..." />
+    </BotCard>
+  )
+  ;(async () => {
+    try {
+      let text = ''
+
+      // attachment as video for demo purposes,
+      // add your implementation here to support
+      // video as input for prompts.
+      if (imageBase64 === '') {
+        await new Promise(resolve => setTimeout(resolve, 5000))
+
+        text = `I'm sorry, I couldn't find any books in the image.`
+      } else {
+        // const imageData = imageBase64.split(',')[1]
+
+        const model = openai(process.env.STANDARD_MODEL || 'gpt-4o-mini')
+        const prompt = 'Analyze the image and describe it in detail. Answer in Brazilian Portuguese.'
+        // const image = {
+        //   inlineData: {
+        //     data: imageData,
+        //     mimeType: 'image/png'
+        //   }
+        // }
+
+        const result = await generateText({
+          model,
+          maxTokens: 1024,
+          messages: [
+            {
+              role: 'system',
+              content: prompt
+            },
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: 'Analyze the image and describe it in detail from a legal perspective.'
+                },
+                {
+                  type: 'image',
+                  image: imageBase64
+                }
+              ]
+            }
+          ],
+        })
+        text = result.text
+        console.log('describeImage',result.text)
+      }
+
+      spinnerStream.done(null)
+      // messageStream.done(null)
+
+      uiStream.done(
+        <BotCard>
+          <BotMessage content={text} />
+        </BotCard>
+      )
+
+      messageStream.done(
+        <BotCard>
+          <BotMessage content={text} />
+        </BotCard>
+      )
+
+      aiState.done({
+        ...aiState.get(),
+        interactions: [text]
+      })
+    } catch (e) {
+      console.error(e)
+
+      const error = new Error(
+        'The AI got rate limited, please try again later.'
+      )
+      uiStream.error(error)
+      spinnerStream.error(error)
+      messageStream.error(error)
+      aiState.done(null)
+    }
+  })()
+
+  return {
+    id: nanoid(),
+    attachments: uiStream.value,
+    spinner: spinnerStream.value,
+    display: messageStream.value
+  }
+}
+
 async function submitUserMessage(content: string, chat?: any) {
   'use server'
 
-  if (!chat) {
+  // Rate limit
+  await rateLimit()
+
+  if (!chat)
     chat = {
       "Name": "standard",
       "Model": "gpt-3.5-turbo",
       "Vector": ["reciPa2dwv431SRrU"],
       "System prompt": null,
     }
-  }
+
+  // console.log("Chat: ", chat)
   
   const aiState = getMutableAIState<typeof AI>()
 
@@ -129,51 +245,52 @@ async function submitUserMessage(content: string, chat?: any) {
     ]
   })  
 
-  // Gambiarra, remover
-  const vectorName = vectorsIDs.find(vector => vector.id === chat["Vector"][0])?.name || 'other'
+  let CONTEXT = ''
 
-  // Create input embedding
-  // const embeddings = content.split(' ').length > 2 ? await createEmbeddings(content) as number[] : []
-  const embeddings = await createEmbeddings(content, vectorName) as number[]
+  if (chat["Vector"]) {
 
-  // Mapping vectors to the correct service
-  let CONTEXT
-  if (vectorName == 'pinecone') 
-    CONTEXT = await getEmbeddingsFromPinecone(embeddings)
-  else if (vectorName == 'qdrant')
-    CONTEXT = await getEmbeddingsFromQdrant(embeddings, chat["Name"])
-  else if (vectorName == 'weviate') 
-    CONTEXT = await getEmbeddingsFromWeviate(embeddings)
-  else 
-    CONTEXT = []
+      // Gambiarra, remover
+      const vectorName = (chat["Vector"][0] ?? vectorsIDs.find(vector => vector.id === chat["Vector"][0])?.name) || 'other'
+
+      // Create input embedding
+      // const embeddings = content.split(' ').length > 2 ? await createEmbeddings(content) as number[] : []
+      const embeddings = await createEmbeddings(content, vectorName) as number[]
+
+      // Mapping vectors to the correct service
+      
+      if (vectorName == 'pinecone') 
+        CONTEXT = await getEmbeddingsFromPinecone(embeddings)
+      else if (vectorName == 'qdrant')
+        CONTEXT = await getEmbeddingsFromQdrant(embeddings, chat["Name"])
+      else if (vectorName == 'weviate') 
+        CONTEXT = await getEmbeddingsFromWeviate(embeddings)
+  }
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
 
-  console.log("Prompt: ", chat["System prompt"] + ` 
-  [CONTEXT: ${CONTEXT}]
-  
-  [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]
-  `)
+  // console.log("Prompt: ", chat["System prompt"])
+
+  // console.log("Content: ", content)
 
   const result = await streamUI({
-    model: openai(chat['Model'] || 'gpt-4o'),
+    model: openai(chat['Model'] || 'gpt-4o-mini'),
     initial: <SpinnerMessage />,
     temperature: 0,
-    system: chat["System prompt"] + ` 
+    system: chat["System prompt"],
+    prompt: `[User prompt: ${content}] 
 
     [CONTEXT: ${CONTEXT}]
     
     [Conversation history: ${aiState.get().messages.map((message: any) => message.content).join(' ').slice(0, 1024)}]
     `,
-    
-    messages: [
-      ...aiState.get().messages.map((message: any) => ({
-        role: message.role,
-        content: message.content,
-        name: message.name
-      }))
-    ],
+    // messages: [
+    //   ...aiState.get().messages.map((message: any) => ({
+    //     role: message.role,
+    //     content: message.content,
+    //     name: message.name
+    //   }))
+    // ],
     text: ({ content, done, delta }) => {
       if (!textStream) {
         textStream = createStreamableValue('')
@@ -220,7 +337,8 @@ export type UIState = {
 export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
-    confirmPurchase
+    confirmPurchase,
+    describeImage
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
@@ -252,8 +370,8 @@ export const AI = createAI<AIState, UIState>({
       const userId = session.user.id as string
       const path = `/chat/${chatId}`
 
-      const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
+      const firstMessageContent = messages[0]?.content as string || ''
+      const title = firstMessageContent.substring(0, 100) || 'Image description'
 
       const chat: Chat = {
         id: chatId,

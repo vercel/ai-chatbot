@@ -31,11 +31,10 @@ export const { auth, signIn, signOut } = NextAuth({
           )
           const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
 
-          if (hashedPassword === user.password) {
+          if (hashedPassword === user.password)
             return user
-          } else {
-            return null
-          }
+          
+          return null
         }
 
         return null

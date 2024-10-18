@@ -25,6 +25,9 @@ export interface Session {
   user: {
     id: string
     email: string
+    period: string
+    plan: string
+    subscriptionId: string
   }
 }
 
@@ -38,4 +41,14 @@ export interface User extends Record<string, any> {
   email: string
   password: string
   salt: string
+  subscriptionId: string
+}
+
+export interface subscription {
+  id: string
+  userId: string
+  plan: string
+  period: string
+  startDate: Date
+  endDate: Date
 }

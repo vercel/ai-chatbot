@@ -11,6 +11,7 @@ import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from './stocks/message'
+import { useChat } from '@/context/chatContext'
 
 export interface ChatPanelProps {
   id?: string
@@ -66,7 +67,8 @@ export function ChatPanel({
 
       <div className="mx-auto sm:max-w-2xl sm:px-4">
         <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
-          {messages.length === 0 &&
+          {/* TODO: revome this false */}
+          {messages.length === 0 && false &&
             exampleMessages.map((example, index) => (
               <div
                 key={example.heading}

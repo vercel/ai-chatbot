@@ -68,7 +68,9 @@ export enum ResultCode {
   UserAlreadyExists = 'USER_ALREADY_EXISTS',
   UnknownError = 'UNKNOWN_ERROR',
   UserCreated = 'USER_CREATED',
-  UserLoggedIn = 'USER_LOGGED_IN'
+  UserLoggedIn = 'USER_LOGGED_IN',
+  UserEdited = 'USER_EDITED',
+  UserNotFound = 'USER_NOT_FOUND'
 }
 
 export const getMessageFromCode = (resultCode: string) => {

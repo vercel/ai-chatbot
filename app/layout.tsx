@@ -16,11 +16,11 @@ export const metadata = {
     default: 'LexGPT',
     template: `%s - LexGPT - AI Chatbot`
   },
-  description: 'Um chat especializado em responder jurisprudência do STJ.',
+  description: 'Um chat especializado em responder jurisprudência e leis.',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png'
+    apple: '/lexgpt.png'
   }
 }
 

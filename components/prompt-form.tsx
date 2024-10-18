@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useState } from 'react'
 import Textarea from 'react-textarea-autosize'
 
 import { useActions, useUIState } from 'ai/rsc'
@@ -19,6 +20,7 @@ import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
 
 import { useChat, useChatDispatch } from '@/context/chatContext'
+import { toast } from 'sonner'
 
 export function PromptForm({
   input,
@@ -30,16 +32,23 @@ export function PromptForm({
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const { submitUserMessage } = useActions()
+  const { submitUserMessage, describeImage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
   const chats = useChat()
+  const [showActions, setShowActions] = useState(false)
 
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
-    
-  }, [])
+
+    if (input === '/') 
+      setShowActions(true)
+    else
+      setShowActions(false)
+  }, [input])
+
+  const fileRef = React.useRef<HTMLInputElement>(null)
 
   return (
     <form
@@ -66,28 +75,72 @@ export function PromptForm({
         ])
 
         // Submit and get response message
-        const responseMessage = await submitUserMessage(value, chats)
-        setMessages(currentMessages => [...currentMessages, responseMessage])
+        try {
+          const responseMessage = await submitUserMessage(value, chats)
+          setMessages(currentMessages => [...currentMessages, responseMessage])
+        } catch {
+          toast(
+            <div className="text-red-600">
+              Você atingiu o limite de mensagens. Aguarde um momento e tente novemente.
+            </div>
+          )
+        }
       }}
     >
+      <input
+        type="file"
+        className="hidden"
+        id="file"
+        ref={fileRef}
+        onChange={async event => {
+          if (!event.target.files) {
+            toast.error('No file selected')
+            return
+          }
+
+          const file = event.target.files[0]
+
+          if (file.type.startsWith('video/')) {
+            const responseMessage = await describeImage('')
+            setMessages(currentMessages => [
+              ...currentMessages,
+              responseMessage
+            ])
+          } else {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+
+            reader.onloadend = async () => {
+              const base64String = reader.result
+              const responseMessage = await describeImage(base64String)
+              setMessages(currentMessages => [
+                ...currentMessages,
+                responseMessage
+              ])
+            }
+          }
+        }}
+      />
+      { showActions &&
+        <ul className="list-none m-0 p-0">
+          <li className="cursor-pointer p-2 hover:bg-gray-200" onClick={e => setInput('/stj ')}>
+            <span className="text-gray-400 text-sm">/stj <strong className='ml-8'>Buscar no STJ </strong></span> 
+          </li>
+        </ul>
+      }
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
         {/* TODO: Implementar file upload */}
-        {/* <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
-              onClick={() => {
-                router.push('/new')
-              }}
-            >
-              <IconPlus />
-              <span className="sr-only">Novo Chat</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Novo Chat</TooltipContent>
-        </Tooltip> */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute left-4 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
+          onClick={() => {
+            fileRef.current?.click()
+          }}
+        >
+          <IconPlus />
+          <span className="sr-only">New Chat</span>
+        </Button>
         <Textarea
           ref={inputRef}
           tabIndex={0}
