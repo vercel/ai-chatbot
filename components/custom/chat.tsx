@@ -22,7 +22,7 @@ export function Chat({
       body: { id },
       initialMessages,
       onFinish: () => {
-        window.history.replaceState({}, "", `/chat/${id}`);
+        window.history.replaceState({}, "", `/en/chat/${id}`);
       },
     });
 

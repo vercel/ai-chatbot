@@ -34,6 +34,7 @@
     "lucide-react": "^0.446.0",
     "next": "15.0.0-canary.152",
     "next-auth": "5.0.0-beta.22",
+    "next-intl": "^3.21.1",
     "next-themes": "^0.3.0",
     "postgres": "^3.4.4",
     "react": "19.0.0-rc-7771d3a7-20240827",

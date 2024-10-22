@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { auth, signOut } from "@/app/(auth)/auth";
+import { auth, signOut } from "@/app/[locale]/(auth)/auth";
 
 import { History } from "./history";
 import { ThemeToggle } from "./theme-toggle";

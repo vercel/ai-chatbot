@@ -41,3 +41,9 @@ export function generateUUID(): string {
     return v.toString(16);
   });
 }
+
+export function validateEmailDomainemailAddress(email: string) {
+  const whitelistDomains = organisations.organisationsData.map((record) => record.fields['Domain'])
+  const emailAddressDomain = _.split(emailAddress, '@')[1]
+  return whitelistDomains.includes(emailAddressDomain)
+}

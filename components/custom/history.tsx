@@ -53,7 +53,7 @@ export const History = ({ user }: { user: User | undefined }) => {
     data: history,
     isLoading,
     mutate,
-  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
+  } = useSWR<Array<Chat>>(user ? "/en/api/history" : null, fetcher, {
     fallbackData: [],
   });
 
@@ -65,7 +65,7 @@ export const History = ({ user }: { user: User | undefined }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDelete = async () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
+    const deletePromise = fetch(`/en/api/chat?id=${deleteId}`, {
       method: "DELETE",
     });
 
@@ -180,7 +180,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                       asChild
                     >
                       <Link
-                        href={`/chat/${chat.id}`}
+                        href={`en/chat/${chat.id}`}
                         className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900"
                       >
                         {chat.messages[0].content as string}

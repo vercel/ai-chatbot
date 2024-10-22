@@ -5,10 +5,18 @@ CREATE TABLE IF NOT EXISTS "Chat" (
 	"userId" uuid NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "Organisation" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" varchar(64) NOT NULL,
+	"country" varchar(64) NOT NULL,
+	"domain" varchar(64) NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "User" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar(64) NOT NULL,
-	"password" varchar(64)
+	"password" varchar(64),
+	"organisationId" uuid
 );
 --> statement-breakpoint
 DO $$ BEGIN

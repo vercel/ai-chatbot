@@ -1,0 +1,19 @@
+{
+  "language": "Zulu",
+  "site_title": "Campagins Assistant",
+  "chat": "Chat",
+  "sign_up": "Sign Up",
+  "log_in": "Login",
+  "log_out": "Logout",
+  "profile": "Profile",
+  "register": "Register",
+  "toggle": "Toggle",
+  "light": "Light",
+  "mode": "Mode",
+  "login_account": "Use your email and password to login",
+  "create_account": "Create an account with your email and password",
+  "new_chat": "Start a new chat",
+  "new_chat_hero": "An AI Chatbot designed to assist progressive NFP",
+  "no_chat": "No chats found",
+  "history": "History"
+}

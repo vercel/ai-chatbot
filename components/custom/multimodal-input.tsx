@@ -96,7 +96,7 @@ export function MultimodalInput({
     formData.append("file", file);
 
     try {
-      const response = await fetch(`/api/files/upload`, {
+      const response = await fetch(`/en/api/files/upload`, {
         method: "POST",
         body: formData,
       });
