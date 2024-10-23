@@ -4,7 +4,6 @@ import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/custom/theme-provider';
 
 import './globals.css';
-import { TooltipProvider } from '@/components/ui/tooltip';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
