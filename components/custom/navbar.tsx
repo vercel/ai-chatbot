@@ -1,16 +1,17 @@
-import Link from "next/link";
+import Form from 'next/form';
+import Link from 'next/link';
 
-import { auth, signOut } from "@/app/(auth)/auth";
+import { auth, signOut } from '@/app/(auth)/auth';
 
-import { History } from "./history";
-import { ThemeToggle } from "./theme-toggle";
-import { Button } from "../ui/button";
+import { History } from './history';
+import { ThemeToggle } from './theme-toggle';
+import { Button } from '../ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from '../ui/dropdown-menu';
 
 export const Navbar = async () => {
   let session = await auth();
@@ -40,13 +41,13 @@ export const Navbar = async () => {
                 <ThemeToggle />
               </DropdownMenuItem>
               <DropdownMenuItem className="p-1 z-50">
-                <form
+                <Form
                   className="w-full"
                   action={async () => {
-                    "use server";
+                    'use server';
 
                     await signOut({
-                      redirectTo: "/",
+                      redirectTo: '/',
                     });
                   }}
                 >
@@ -56,7 +57,7 @@ export const Navbar = async () => {
                   >
                     Sign out
                   </button>
-                </form>
+                </Form>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
