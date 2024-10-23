@@ -1,5 +1,11 @@
 'use client';
-import { ChevronUp, PencilIcon, PencilLineIcon, User2 } from 'lucide-react';
+import {
+  ChevronUp,
+  PencilIcon,
+  PencilLineIcon,
+  SquarePen,
+  User2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { type User } from 'next-auth';
@@ -101,14 +107,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
     <>
       <Sidebar>
         <SidebarHeader>
-          <div className="text-base font-semibold dark:text-zinc-300 tracking-tight flex flex-row items-center gap-2 justify-between">
+          <div className="flex flex-row items-center  justify-between">
             <BetterTooltip content="Close Sidebar" align="start">
               <SidebarTrigger />
             </BetterTooltip>
             <BetterTooltip content="New Chat" align="start">
               <Button variant="ghost" size="icon" asChild>
                 <Link href="/">
-                  <PencilLineIcon />
+                  <SquarePen className="size-5" />
                   <span className="sr-only">New Chat</span>
                 </Link>
               </Button>

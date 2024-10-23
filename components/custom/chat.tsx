@@ -2,7 +2,7 @@
 
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
-import { PencilIcon, PencilLineIcon, PencilOffIcon } from 'lucide-react';
+import { SquarePen } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -10,12 +10,18 @@ import { Message as PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { cn } from '@/lib/utils';
 
-import { PencilEditIcon } from './icons';
-import { MultimodalInput } from './multimodal-input';
-import { Overview } from './overview';
 import { Button } from '../ui/button';
 import { SidebarTrigger, useSidebar } from '../ui/sidebar';
-import { Tooltip } from '../ui/tooltip';
+import { BetterTooltip, Tooltip } from '../ui/tooltip';
+import { MultimodalInput } from './multimodal-input';
+import { Overview } from './overview';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function Chat({
   id,
@@ -42,19 +48,40 @@ export function Chat({
   return (
     <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background">
       <div className="flex flex-col justify-between items-center gap-4">
-        <div className="w-full p-2">
+        <div className="w-full flex flex-row gap-1 items-center p-2">
           {open ? null : (
             <>
-              <SidebarTrigger />
-              <Tooltip>
+              <BetterTooltip content="Open Sidebar" align="start">
+                <SidebarTrigger />
+              </BetterTooltip>
+              <BetterTooltip content="New Chat" align="start">
                 <Button variant="ghost" size="icon" asChild>
                   <Link href="/">
-                    <PencilLineIcon />
+                    <SquarePen className="size-5" />
                   </Link>
                 </Button>
-              </Tooltip>
+              </BetterTooltip>
             </>
           )}
+          <Select defaultValue="nextgpt-4o">
+            <SelectTrigger className="w-auto text-lg font-semibold tracking-tight text-foreground/80 border-none hover:bg-muted">
+              <SelectValue placeholder="NextGPT 4o " />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="nextgpt-4o"
+                className="text-lg font-semibold tracking-tight text-foreground/80 "
+              >
+                NextGPT 4o
+              </SelectItem>
+              <SelectItem
+                value="nextgpt-4o-mini"
+                className="text-lg font-semibold tracking-tight text-foreground/80"
+              >
+                NextGPT 4o mini
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div
           ref={messagesContainerRef}
