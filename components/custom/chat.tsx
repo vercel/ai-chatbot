@@ -2,15 +2,20 @@
 
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
+import { PencilIcon, PencilLineIcon, PencilOffIcon } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { Message as PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { cn } from '@/lib/utils';
 
+import { PencilEditIcon } from './icons';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
-import { useSidebar } from '../ui/sidebar';
+import { Button } from '../ui/button';
+import { SidebarTrigger, useSidebar } from '../ui/sidebar';
+import { Tooltip } from '../ui/tooltip';
 
 export function Chat({
   id,
@@ -37,6 +42,20 @@ export function Chat({
   return (
     <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background">
       <div className="flex flex-col justify-between items-center gap-4">
+        <div className="w-full p-2">
+          {open ? null : (
+            <>
+              <SidebarTrigger />
+              <Tooltip>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/">
+                    <PencilLineIcon />
+                  </Link>
+                </Button>
+              </Tooltip>
+            </>
+          )}
+        </div>
         <div
           ref={messagesContainerRef}
           className={cn(

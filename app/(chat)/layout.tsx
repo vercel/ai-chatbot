@@ -1,5 +1,5 @@
 import { AppSidebar } from '@/components/app-sidebar';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 import { auth } from '../(auth)/auth';
 
@@ -12,10 +12,7 @@ export default async function Layout({
   return (
     <SidebarProvider>
       <AppSidebar user={session?.user} />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
+      <main>{children}</main>
     </SidebarProvider>
   );
 }

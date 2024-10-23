@@ -1,5 +1,5 @@
 'use client';
-import { ChevronUp, User2 } from 'lucide-react';
+import { ChevronUp, PencilIcon, PencilLineIcon, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { type User } from 'next-auth';
@@ -18,6 +18,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Chat } from '@/db/schema';
 import { cn, fetcher, getTitleFromChat } from '@/lib/utils';
@@ -47,6 +48,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import {
+  BetterTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const { id } = useParams();
@@ -94,26 +101,21 @@ export function AppSidebar({ user }: { user: User | undefined }) {
     <>
       <Sidebar>
         <SidebarHeader>
-          <div className="text-base font-semibold dark:text-zinc-300 tracking-tight flex flex-row items-center gap-2">
-            <MessageIcon />
-            Next.js Chatbot
+          <div className="text-base font-semibold dark:text-zinc-300 tracking-tight flex flex-row items-center gap-2 justify-between">
+            <BetterTooltip content="Close Sidebar" align="start">
+              <SidebarTrigger />
+            </BetterTooltip>
+            <BetterTooltip content="New Chat" align="start">
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/">
+                  <PencilLineIcon />
+                  <span className="sr-only">New Chat</span>
+                </Link>
+              </Button>
+            </BetterTooltip>
           </div>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup>
-            {user && (
-              <Button
-                className="font-normal text-sm flex flex-row justify-between"
-                asChild
-                variant="outline"
-              >
-                <Link href="/">
-                  <div>Start a new chat</div>
-                  <PencilEditIcon size={14} />
-                </Link>
-              </Button>
-            )}
-          </SidebarGroup>
           <SidebarGroup>
             {!user ? (
               <div className="text-zinc-500 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
