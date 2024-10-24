@@ -9,7 +9,12 @@ export function SidebarToggle({
 }: ComponentProps<typeof SidebarTrigger>) {
   return (
     <BetterTooltip content="Toggle Sidebar" align="start">
-      <SidebarTrigger className={cn('size-8', className)} />
+      <SidebarTrigger
+        className={cn(
+          'size-10 md:size-8 [&>svg]:!size-5 md:[&>svg]:!size-4',
+          className
+        )}
+      />
     </BetterTooltip>
   );
 }
