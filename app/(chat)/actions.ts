@@ -3,6 +3,6 @@
 import { cookies } from 'next/headers';
 
 export async function saveModel(model: string) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set('model', model);
 }
