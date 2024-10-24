@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
-import { motion } from "framer-motion";
+import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import { motion } from 'framer-motion';
 import React, {
   useRef,
   useEffect,
@@ -10,24 +10,24 @@ import React, {
   Dispatch,
   SetStateAction,
   ChangeEvent,
-} from "react";
-import { toast } from "sonner";
+} from 'react';
+import { toast } from 'sonner';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
-import { PreviewAttachment } from "./preview-attachment";
-import useWindowSize from "./use-window-size";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { PreviewAttachment } from './preview-attachment';
+import useWindowSize from './use-window-size';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
 
 const suggestedActions = [
   {
-    title: "What is the weather",
-    label: "in San Francisco?",
-    action: "What is the weather in San Francisco?",
+    title: 'What is the weather',
+    label: 'in San Francisco?',
+    action: 'What is the weather in San Francisco?',
   },
   {
     title: "Answer like I'm 5,",
-    label: "why is the sky blue?",
+    label: 'why is the sky blue?',
     action: "Answer like I'm 5, why is the sky blue?",
   },
 ];
@@ -52,13 +52,13 @@ export function MultimodalInput({
   messages: Array<Message>;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   handleSubmit: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -72,7 +72,7 @@ export function MultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   };
@@ -99,11 +99,11 @@ export function MultimodalInput({
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     try {
       const response = await fetch(`/api/files/upload`, {
-        method: "POST",
+        method: 'POST',
         body: formData,
       });
 
@@ -121,7 +121,7 @@ export function MultimodalInput({
         toast.error(error);
       }
     } catch (error) {
-      toast.error("Failed to upload file, please try again!");
+      toast.error('Failed to upload file, please try again!');
     }
   };
 
@@ -135,7 +135,7 @@ export function MultimodalInput({
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined,
+          (attachment) => attachment !== undefined
         );
 
         setAttachments((currentAttachments) => [
@@ -143,12 +143,12 @@ export function MultimodalInput({
           ...successfullyUploadedAttachments,
         ]);
       } catch (error) {
-        console.error("Error uploading files!", error);
+        console.error('Error uploading files!', error);
       } finally {
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments]
   );
 
   return (
@@ -156,7 +156,7 @@ export function MultimodalInput({
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-2 w-full md:px-0 mx-auto md:max-w-[500px]">
+          <div className="grid sm:grid-cols-2 gap-2 w-full">
             {suggestedActions.map((suggestedAction, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -164,22 +164,23 @@ export function MultimodalInput({
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: 0.05 * index }}
                 key={index}
-                className={index > 1 ? "hidden sm:block" : "block"}
+                className={index > 1 ? 'hidden sm:block' : 'block'}
               >
-                <button
+                <Button
+                  variant="ghost"
                   onClick={async () => {
                     append({
-                      role: "user",
+                      role: 'user',
                       content: suggestedAction.action,
                     });
                   }}
-                  className="w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
+                  className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-muted-foreground">
                     {suggestedAction.label}
                   </span>
-                </button>
+                </Button>
               </motion.div>
             ))}
           </div>
@@ -204,9 +205,9 @@ export function MultimodalInput({
             <PreviewAttachment
               key={filename}
               attachment={{
-                url: "",
+                url: '',
                 name: filename,
-                contentType: "",
+                contentType: '',
               }}
               isUploading={true}
             />
@@ -219,14 +220,14 @@ export function MultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted"
+        className="min-h-[24px] overflow-hidden resize-none rounded-xl p-4 focus-visible:ring-0 focus-visible:ring-offset-0 text-base bg-muted border-none"
         rows={3}
         onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
+          if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
 
             if (isLoading) {
-              toast.error("Please wait for the model to finish its response!");
+              toast.error('Please wait for the model to finish its response!');
             } else {
               submitForm();
             }
