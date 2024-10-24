@@ -1,11 +1,10 @@
 'use client';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import { type User } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 
-import { ThemeToggle } from '@/components/custom/theme-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
