@@ -36,11 +36,13 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Chat } from '@/db/schema';
 import { fetcher, getTitleFromChat } from '@/lib/utils';
 
 export function SidebarHistory({ user }: { user: User | undefined }) {
+  const { setOpenMobile } = useSidebar();
   const { id } = useParams();
   const pathname = usePathname();
   const {
@@ -151,7 +153,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               history.map((chat) => (
                 <SidebarMenuItem key={chat.id}>
                   <SidebarMenuButton asChild isActive={chat.id === id}>
-                    <Link href={`/chat/${chat.id}`}>
+                    <Link
+                      href={`/chat/${chat.id}`}
+                      onClick={() => setOpenMobile(false)}
+                    >
                       <span>{getTitleFromChat(chat)}</span>
                     </Link>
                   </SidebarMenuButton>

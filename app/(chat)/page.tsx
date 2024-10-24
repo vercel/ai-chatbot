@@ -13,6 +13,11 @@ export default async function Page() {
     models.find((m) => m.name === value)?.name || DEFAULT_MODEL_NAME;
 
   return (
-    <Chat id={id} initialMessages={[]} selectedModelName={selectedModelName} />
+    <Chat
+      key={id}
+      id={id}
+      initialMessages={[]}
+      selectedModelName={selectedModelName}
+    />
   );
 }
