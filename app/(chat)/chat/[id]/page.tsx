@@ -1,11 +1,13 @@
-import { CoreMessage } from "ai";
-import { notFound } from "next/navigation";
+import { CoreMessage } from 'ai';
+import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 
-import { auth } from "@/app/(auth)/auth";
-import { Chat as PreviewChat } from "@/components/custom/chat";
-import { getChatById } from "@/db/queries";
-import { Chat } from "@/db/schema";
-import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import { auth } from '@/app/(auth)/auth';
+import { Chat as PreviewChat } from '@/components/custom/chat';
+import { getChatById } from '@/db/queries';
+import { Chat } from '@/db/schema';
+import { DEFAULT_MODEL_NAME, models } from '@/lib/model';
+import { convertToUIMessages } from '@/lib/utils';
 
 export default async function Page(props: { params: Promise<any> }) {
   const params = await props.params;
@@ -32,5 +34,16 @@ export default async function Page(props: { params: Promise<any> }) {
     return notFound();
   }
 
-  return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
+  const cookieStore = await cookies();
+  const value = cookieStore.get('model')?.value;
+  const selectedModelName =
+    models.find((m) => m.name === value)?.name || DEFAULT_MODEL_NAME;
+
+  return (
+    <PreviewChat
+      id={chat.id}
+      initialMessages={chat.messages}
+      selectedModelName={selectedModelName}
+    />
+  );
 }
