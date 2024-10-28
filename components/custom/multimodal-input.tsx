@@ -13,9 +13,10 @@ import React, {
 } from 'react';
 import { toast } from 'sonner';
 
+import useWindowSize from '@/hooks/use-window-size';
+
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
-import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 

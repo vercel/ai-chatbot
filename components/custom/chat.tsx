@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
-import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
+import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import { Model } from '@/lib/model';
 
 import { MultimodalInput } from './multimodal-input';
