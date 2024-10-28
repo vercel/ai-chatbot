@@ -1,10 +1,10 @@
-import { kv } from "@vercel/kv";
-import { NextFetchEvent, NextRequest } from "next/server";
-import NextAuth from "next-auth";
+import { kv } from '@vercel/kv';
+import { NextFetchEvent, NextRequest } from 'next/server';
+import NextAuth from 'next-auth';
 
-import { authConfig } from "@/app/(auth)/auth.config";
+import { authConfig } from '@/app/(auth)/auth.config';
 
-import { kasadaHandler } from "./utils/kasada/kasada-server";
+import { kasadaHandler } from './utils/kasada/kasada-server';
 
 const MAX_REQUESTS = 25;
 
@@ -12,21 +12,27 @@ export const { auth } = NextAuth(authConfig);
 
 export async function botProtectionMiddleware(
   request: NextRequest,
-  event: NextFetchEvent,
+  event: NextFetchEvent
 ) {
-  if (["POST", "DELETE"].includes(request.method)) {
-    const realIp = request.headers.get("x-real-ip") || "no-ip";
+  const path = request.nextUrl.pathname;
+
+  if (path === '/login' || path === '/register') {
+    return undefined;
+  }
+
+  if (['POST', 'DELETE'].includes(request.method)) {
+    const realIp = request.headers.get('x-real-ip') || 'no-ip';
     const pipeline = kv.pipeline();
     pipeline.incr(`rate-limit:${realIp}`);
     pipeline.expire(`rate-limit:${realIp}`, 60 * 60 * 24);
     const [requests] = (await pipeline.exec()) as [number];
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       return undefined;
     }
 
     if (requests > MAX_REQUESTS) {
-      return new Response("Too many requests", { status: 429 });
+      return new Response('Too many requests', { status: 429 });
     }
 
     return kasadaHandler(request, event);
@@ -42,5 +48,5 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/", "/:id", "/api/:path*", "/login", "/register"],
+  matcher: ['/', '/:id', '/api/:path*', '/login', '/register'],
 };
