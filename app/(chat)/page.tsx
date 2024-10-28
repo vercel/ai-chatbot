@@ -4,11 +4,9 @@ import { Chat } from '@/components/custom/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/model';
 import { generateUUID } from '@/lib/utils';
 
-import { auth } from '../(auth)/auth';
-
 export default async function Page() {
   const id = generateUUID();
-  const session = await auth();
+
   const cookieStore = await cookies();
   const value = cookieStore.get('model')?.value;
   const selectedModelName =
@@ -20,7 +18,6 @@ export default async function Page() {
       id={id}
       initialMessages={[]}
       selectedModelName={selectedModelName}
-      user={session?.user}
     />
   );
 }
