@@ -14,12 +14,6 @@ export async function botProtectionMiddleware(
   request: NextRequest,
   event: NextFetchEvent
 ) {
-  const path = request.nextUrl.pathname;
-
-  if (path === '/login' || path === '/register') {
-    return undefined;
-  }
-
   if (['POST', 'DELETE'].includes(request.method)) {
     const realIp = request.headers.get('x-real-ip') || 'no-ip';
     const pipeline = kv.pipeline();

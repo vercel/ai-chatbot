@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
 
-import Script from "next/script";
+import Script from 'next/script';
 
 export function KasadaClient() {
   return (
@@ -17,9 +17,14 @@ export function KasadaClient() {
                   path: "/api/chat",
                   method: "POST",
                 },
+                {
+                  domain: location.host,
+                  path: "/api/auth/signout",
+                  method: "POST",
+                },
               ]);
             });
-            `.replace(/[\n\r\s]/g, ""),
+            `.replace(/[\n\r\s]/g, ''),
         }}
       ></Script>
       <Script
