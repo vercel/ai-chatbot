@@ -47,6 +47,9 @@ importers:
       '@vercel/blob':
         specifier: ^0.24.1
         version: 0.24.1
+      '@vercel/functions':
+        specifier: ^1.4.2
+        version: 1.4.2
       '@vercel/kv':
         specifier: ^3.0.0
         version: 3.0.0
@@ -1536,6 +1539,15 @@ packages:
   '@vercel/blob@0.24.1':
     resolution: {integrity: sha512-wHzgKzvAuF4tRDoXk3wGBYzQZ9z2fLr4oftiR1hOclPEdA1aj2/0mizvO2l5w91eZlTAaFth0S1DlqrrXqpntg==}
     engines: {node: '>=16.14'}
+
+  '@vercel/functions@1.4.2':
+    resolution: {integrity: sha512-WLY3g6NT1SVJDAoAqz5pJfJ8uyOmEejZkatZn0q57Dn6qXNrh/pjbeffolQy9npWRYJPcfwjgqw8tUqolTEyuw==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      '@aws-sdk/credential-provider-web-identity': '*'
+    peerDependenciesMeta:
+      '@aws-sdk/credential-provider-web-identity':
+        optional: true
 
   '@vercel/kv@3.0.0':
     resolution: {integrity: sha512-pKT8fRnfyYk2MgvyB6fn6ipJPCdfZwiKDdw7vB+HL50rjboEBHDVBEcnwfkEpVSp2AjNtoaOUH7zG+bVC/rvSg==}
@@ -4812,6 +4824,8 @@ snapshots:
       bytes: 3.1.2
       is-buffer: 2.0.5
       undici: 5.28.4
+
+  '@vercel/functions@1.4.2': {}
 
   '@vercel/kv@3.0.0':
     dependencies:
