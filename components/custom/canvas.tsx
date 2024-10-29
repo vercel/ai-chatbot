@@ -238,7 +238,7 @@ export function Canvas({
         ? currentVersionIndex === documents.length - 1
         : true;
 
-  const { width: windowWidth } = useWindowSize();
+  const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
   return (
@@ -251,9 +251,19 @@ export function Canvas({
       {!isMobile && (
         <motion.div
           className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
-          initial={{ opacity: 0, x: 0, scale: 0.95 }}
-          animate={{ opacity: 1, x: 0, scale: 1, transition: { delay: 0.2 } }}
-          exit={{ opacity: 0, x: 0, scale: 0.95, transition: { delay: 0 } }}
+          initial={{ opacity: 0, x: 10, scale: 1 }}
+          animate={{
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            transition: {
+              delay: 0.2,
+              type: 'spring',
+              stiffness: 200,
+              damping: 30,
+            },
+          }}
+          exit={{ opacity: 0, x: 10, scale: 0.95, transition: { delay: 0 } }}
         >
           <div className="-right-12 w-12 bg-muted absolute h-dvh top-0" />
           <div className="flex flex-col h-full justify-between items-center gap-4">
@@ -299,7 +309,7 @@ export function Canvas({
       )}
 
       <motion.div
-        className="fixed dark:bg-muted bg-background h-dvh flex flex-col"
+        className="fixed dark:bg-muted bg-background h-dvh flex flex-col shadow-xl overflow-y-scroll"
         initial={
           isMobile
             ? {
@@ -307,14 +317,16 @@ export function Canvas({
                 x: 0,
                 y: 0,
                 width: windowWidth,
-                height: '100dvh',
+                height: windowHeight,
+                borderRadius: 50,
               }
             : {
                 opacity: 0,
                 x: canvas.boundingBox.left,
                 y: canvas.boundingBox.top,
-                height: 38,
-                width: 181,
+                height: canvas.boundingBox.height,
+                width: canvas.boundingBox.width,
+                borderRadius: 50,
               }
         }
         animate={
@@ -325,6 +337,7 @@ export function Canvas({
                 y: 0,
                 width: windowWidth,
                 height: '100dvh',
+                borderRadius: 0,
                 transition: {
                   delay: 0,
                   type: 'spring',
@@ -336,8 +349,9 @@ export function Canvas({
                 opacity: 1,
                 x: 400,
                 y: 0,
-                height: '100dvh',
+                height: windowHeight,
                 width: windowWidth ? windowWidth - 400 : 'calc(100dvw-400px)',
+                borderRadius: 0,
                 transition: {
                   delay: 0,
                   type: 'spring',

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
-import { UISuggestion } from "@/lib/editor/suggestions";
+import { UISuggestion } from '@/lib/editor/suggestions';
 
-import { CrossIcon, MessageIcon } from "./icons";
-import { Button } from "../ui/button";
+import { CrossIcon, MessageIcon } from './icons';
+import { Button } from '../ui/button';
 
 export const Suggestion = ({
   suggestion,
@@ -29,7 +29,7 @@ export const Suggestion = ({
   ) : (
     <motion.div
       className="absolute bg-background p-3 flex flex-col gap-3 rounded-2xl border text-sm w-56 shadow-xl z-50 -right-12 md:-right-20"
-      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       whileHover={{ scale: 1.05 }}
     >
       <div className="flex flex-row items-center justify-between">
