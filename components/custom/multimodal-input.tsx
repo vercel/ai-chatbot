@@ -27,9 +27,9 @@ const suggestedActions = [
     action: 'What is the weather in San Francisco?',
   },
   {
-    title: "Answer like I'm 5,",
-    label: 'why is the sky blue?',
-    action: "Answer like I'm 5, why is the sky blue?",
+    title: 'Help me draft an essay',
+    label: 'about Silicon Valley',
+    action: 'Help me draft an essay about Silicon Valley',
   },
 ];
 
