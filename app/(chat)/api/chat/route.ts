@@ -16,9 +16,14 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
-  if (!session) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  /*
+   * NOTE: We allow unauthenticated users to interact
+   * with the chatbot so the following check is disabled.
+   */
+
+  // if (!session) {
+  //   return new Response('Unauthorized', { status: 401 });
+  // }
 
   if (!models.find((m) => m.name === model)) {
     return new Response('Model not found', { status: 404 });
