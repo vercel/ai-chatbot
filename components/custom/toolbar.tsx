@@ -1,27 +1,33 @@
-"use client";
+'use client';
 
-import { ChatRequestOptions, CreateMessage, Message } from "ai";
-import cx from "classnames";
+import { ChatRequestOptions, CreateMessage, Message } from 'ai';
+import cx from 'classnames';
 import {
   AnimatePresence,
   motion,
   useMotionValue,
   useTransform,
-} from "framer-motion";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+} from 'framer-motion';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip';
 
-import { ArrowUpIcon, MessageIcon, PenIcon, SummarizeIcon } from "./icons";
-import useClickOutside from "./use-click-outside";
+import {
+  ArrowUpIcon,
+  MessageIcon,
+  PenIcon,
+  StopIcon,
+  SummarizeIcon,
+} from './icons';
+import useClickOutside from './use-click-outside';
 
 type ToolProps = {
-  type: "final-polish" | "request-suggestions" | "adjust-reading-level";
+  type: 'final-polish' | 'request-suggestions' | 'adjust-reading-level';
   description: string;
   icon: JSX.Element;
   selectedTool: string | null;
@@ -31,7 +37,7 @@ type ToolProps = {
   isAnimating: boolean;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
 };
 
@@ -58,8 +64,8 @@ const Tool = ({
     <Tooltip open={isHovered && !isAnimating}>
       <TooltipTrigger>
         <motion.div
-          className={cx("p-3 rounded-full", {
-            "bg-foreground !text-background": selectedTool === type,
+          className={cx('p-3 rounded-full', {
+            'bg-foreground !text-background': selectedTool === type,
           })}
           onHoverStart={() => {
             setIsHovered(true);
@@ -91,19 +97,19 @@ const Tool = ({
             if (selectedTool !== type) {
               setSelectedTool(type);
             } else {
-              if (type === "final-polish") {
+              if (type === 'final-polish') {
                 append({
-                  role: "user",
+                  role: 'user',
                   content:
-                    "Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.",
+                    'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
                 });
 
                 setSelectedTool(null);
-              } else if (type === "request-suggestions") {
+              } else if (type === 'request-suggestions') {
                 append({
-                  role: "user",
+                  role: 'user',
                   content:
-                    "Please add suggestions you have that could improve the writing.",
+                    'Please add suggestions you have that could improve the writing.',
                 });
 
                 setSelectedTool(null);
@@ -134,16 +140,16 @@ const ReadingLevelSelector = ({
   isAnimating: boolean;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
 }) => {
   const LEVELS = [
-    "Elementary",
-    "Middle School",
-    "Keep current level",
-    "High School",
-    "College",
-    "Graduate",
+    'Elementary',
+    'Middle School',
+    'Keep current level',
+    'High School',
+    'College',
+    'Graduate',
   ];
 
   const y = useMotionValue(-40 * 2);
@@ -155,7 +161,7 @@ const ReadingLevelSelector = ({
     useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = yToLevel.on("change", (latest) => {
+    const unsubscribe = yToLevel.on('change', (latest) => {
       const level = Math.min(5, Math.max(0, Math.round(Math.abs(latest))));
       setCurrentLevel(level);
     });
@@ -165,7 +171,6 @@ const ReadingLevelSelector = ({
 
   return (
     <div className="relative flex flex-col justify-end items-center">
-      {/* Dots */}
       {[...Array(6)].map((_, index) => (
         <motion.div
           key={`dot-${index}`}
@@ -184,11 +189,11 @@ const ReadingLevelSelector = ({
           <TooltipTrigger asChild>
             <motion.div
               className={cx(
-                "absolute bg-background p-3 border rounded-full flex flex-row items-center",
+                'absolute bg-background p-3 border rounded-full flex flex-row items-center',
                 {
-                  "bg-foreground text-background": currentLevel !== 2,
-                  "bg-background text-foreground": currentLevel === 2,
-                },
+                  'bg-foreground text-background': currentLevel !== 2,
+                  'bg-background text-foreground': currentLevel === 2,
+                }
               )}
               style={{ y }}
               drag="y"
@@ -211,7 +216,7 @@ const ReadingLevelSelector = ({
               onClick={() => {
                 if (currentLevel !== 2 && hasUserSelectedLevel) {
                   append({
-                    role: "user",
+                    role: 'user',
                     content: `Please adjust the reading level to ${LEVELS[currentLevel]} level.`,
                   });
 
@@ -239,15 +244,21 @@ export const Toolbar = ({
   isToolbarVisible,
   setIsToolbarVisible,
   append,
+  isLoading,
+  stop,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
+  isLoading: boolean;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
+  stop: () => void;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -298,6 +309,37 @@ export const Toolbar = ({
     </>
   );
 
+  const startCloseTimer = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setSelectedTool(null);
+      setIsToolbarVisible(false);
+    }, 2000);
+  };
+
+  const cancelCloseTimer = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      setIsToolbarVisible(false);
+    }
+  }, [isLoading, setIsToolbarVisible]);
+
   return (
     <TooltipProvider delayDuration={0}>
       <motion.div
@@ -305,7 +347,7 @@ export const Toolbar = ({
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible
-            ? selectedTool === "adjust-reading-level"
+            ? selectedTool === 'adjust-reading-level'
               ? {
                   opacity: 1,
                   y: 0,
@@ -323,13 +365,18 @@ export const Toolbar = ({
             : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
         }
         exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        whileTap={{ scale: isLoading ? 0.9 : 1 }}
         onHoverStart={() => {
+          if (isLoading) return;
+
+          cancelCloseTimer();
           setIsToolbarVisible(true);
         }}
         onHoverEnd={() => {
-          setSelectedTool(null);
-          setIsToolbarVisible(false);
+          if (isLoading) return;
+
+          startCloseTimer();
         }}
         onAnimationStart={() => {
           setIsAnimating(true);
@@ -339,7 +386,16 @@ export const Toolbar = ({
         }}
         ref={toolbarRef}
       >
-        {selectedTool === "adjust-reading-level" ? (
+        {isLoading ? (
+          <div
+            className="p-3"
+            onClick={() => {
+              stop();
+            }}
+          >
+            <StopIcon />
+          </div>
+        ) : selectedTool === 'adjust-reading-level' ? (
           <ReadingLevelSelector
             append={append}
             setSelectedTool={setSelectedTool}

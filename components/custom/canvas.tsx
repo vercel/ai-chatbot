@@ -30,6 +30,9 @@ import { useDebounce } from './use-debounce';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
+import { Markdown } from './markdown';
+import { DOCUMENT_PLACEHOLDER } from '@/lib/placeholders';
+import { DocumentSkeleton } from './document-skeleton';
 
 export interface UICanvas {
   title: string;
@@ -426,7 +429,9 @@ export function Canvas({
 
         <div className="prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll px-4 py-8 md:p-20 !max-w-full pb-40 items-center">
           <div className="flex flex-row max-w-[600px] mx-auto">
-            {mode === 'edit' ? (
+            {isDocumentsFetching ? (
+              <DocumentSkeleton />
+            ) : mode === 'edit' ? (
               <Editor
                 content={
                   isCurrentVersion
@@ -520,6 +525,8 @@ export function Canvas({
             isToolbarVisible={isToolbarVisible}
             setIsToolbarVisible={setIsToolbarVisible}
             append={append}
+            isLoading={isLoading}
+            stop={stop}
           />
         )}
       </AnimatePresence>
