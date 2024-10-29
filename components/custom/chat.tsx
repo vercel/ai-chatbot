@@ -11,9 +11,9 @@ import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { Model } from '@/lib/model';
 
 import { Canvas, UICanvas } from './canvas';
+import { CanvasStreamHandler } from './canvas-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
-import { useCanvasStream } from './use-canvas-stream';
 
 export function Chat({
   id,
@@ -42,11 +42,6 @@ export function Chat({
   });
 
   const [canvas, setCanvas] = useState<UICanvas | null>(null);
-
-  useCanvasStream({
-    streamingData,
-    setCanvas,
-  });
 
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -112,6 +107,11 @@ export function Chat({
           />
         )}
       </AnimatePresence>
+
+      <CanvasStreamHandler
+        streamingData={streamingData}
+        setCanvas={setCanvas}
+      />
     </>
   );
 }

@@ -1,4 +1,10 @@
-import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import {
+  Attachment,
+  ChatRequestOptions,
+  CreateMessage,
+  JSONValue,
+  Message,
+} from 'ai';
 import cx from 'classnames';
 import { formatDistance, isAfter } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -81,13 +87,20 @@ export function Canvas({
     isValidating: isDocumentsValidating,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    canvas ? `/api/document?id=${canvas.documentId}` : null,
+    canvas && canvas.status !== 'streaming'
+      ? `/api/document?id=${canvas.documentId}`
+      : null,
     fetcher
   );
 
   const { data: suggestions } = useSWR<Array<Suggestion>>(
-    canvas ? `/api/suggestions?documentId=${canvas.documentId}` : null,
-    fetcher
+    documents && canvas && canvas.status !== 'streaming'
+      ? `/api/suggestions?documentId=${canvas.documentId}`
+      : null,
+    fetcher,
+    {
+      dedupingInterval: 5000,
+    }
   );
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');

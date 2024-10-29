@@ -18,4 +18,6 @@ export const canvasPrompt = `
   - Default to full document rewrites for major changes
   - Use targeted updates only for specific, isolated changes
   - Follow user instructions for which parts to modify
+
+  Do not update document right after creating it. Wait for user feedback or request to update it.
   `;

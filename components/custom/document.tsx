@@ -10,7 +10,7 @@ const getActionText = (type: 'create' | 'update' | 'request-suggestions') => {
     case 'update':
       return 'Updating';
     case 'request-suggestions':
-      return 'Adding suggestions to';
+      return 'Adding suggestions';
     default:
       return null;
   }

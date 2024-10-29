@@ -19,11 +19,11 @@ export async function GET(request: Request) {
     documentId,
   });
 
-  if (!suggestions) {
-    return new Response('Not Found', { status: 404 });
-  }
-
   const [suggestion] = suggestions;
+
+  if (!suggestion) {
+    return Response.json([], { status: 200 });
+  }
 
   if (suggestion.userId !== session.user.id) {
     return new Response('Unauthorized', { status: 401 });
