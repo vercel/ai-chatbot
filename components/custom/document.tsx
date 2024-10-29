@@ -88,9 +88,9 @@ interface DocumentToolCallProps {
 
 export function DocumentToolCall({ type, args }: DocumentToolCallProps) {
   return (
-    <div className="w-fit border p-2 rounded-xl flex flex-row items-center justify-between gap-2">
-      <div className="flex flex-row gap-2 items-center">
-        <div className="text-zinc-500">
+    <div className="w-fit border p-3 rounded-xl flex flex-row items-start justify-between gap-3">
+      <div className="flex flex-row gap-3 items-start">
+        <div className="text-zinc-500 mt-1">
           {type === 'create' ? (
             <FileIcon />
           ) : type === 'update' ? (
@@ -101,11 +101,11 @@ export function DocumentToolCall({ type, args }: DocumentToolCallProps) {
         </div>
 
         <div className="">
-          {getActionText(type)} {args.title}
+          {getActionText(type)} {result.title}
         </div>
       </div>
 
-      <div className="animate-spin">{<LoaderIcon />}</div>
+      <div className="animate-spin mt-1">{<LoaderIcon />}</div>
     </div>
   );
 }

@@ -346,8 +346,8 @@ export function Canvas({
           },
         }}
       >
-        <div className="p-2 flex flex-row justify-between items-start lg:items-center">
-          <div className="flex flex-row gap-4 items-start lg:items-center">
+        <div className="p-2 flex flex-row justify-between items-start">
+          <div className="flex flex-row gap-4 items-start">
             <div
               className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground"
               onClick={() => {
@@ -357,14 +357,14 @@ export function Canvas({
               <CrossIcon size={18} />
             </div>
 
-            <div className="flex flex-col pt-1 lg:flex-row lg:items-center lg:gap-3 lg:pt-0">
+            <div className="flex flex-col pt-1">
               <div className="font-medium">
                 {document?.title ?? canvas.title}
               </div>
 
               {isContentDirty ? (
-                <div className="animate-spin text-muted-foreground">
-                  <LoaderIcon />
+                <div className="text-sm text-muted-foreground">
+                  Saving changes...
                 </div>
               ) : document ? (
                 <div className="text-sm text-muted-foreground">
