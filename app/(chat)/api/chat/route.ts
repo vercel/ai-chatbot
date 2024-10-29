@@ -21,7 +21,7 @@ import {
   saveSuggestions,
 } from '@/db/queries';
 import { Suggestion } from '@/db/schema';
-import { generateUUID } from '@/lib/utils';
+import { generateUUID, sanitizeResponseMessages } from '@/lib/utils';
 
 type AllowedTools =
   | 'createDocument'
@@ -100,6 +100,11 @@ export async function POST(request: Request) {
           streamingData.append({
             type: 'title',
             content: title,
+          });
+
+          streamingData.append({
+            type: 'clear',
+            content: '',
           });
 
           const { fullStream } = await streamText({
@@ -288,9 +293,15 @@ export async function POST(request: Request) {
     onFinish: async ({ responseMessages }) => {
       if (session.user && session.user.id) {
         try {
+          const responseMessagesWithoutIncompleteToolCalls =
+            sanitizeResponseMessages(responseMessages);
+
           await saveChat({
             id,
-            messages: [...coreMessages, ...responseMessages],
+            messages: [
+              ...coreMessages,
+              ...responseMessagesWithoutIncompleteToolCalls,
+            ],
             userId: session.user.id,
           });
         } catch (error) {

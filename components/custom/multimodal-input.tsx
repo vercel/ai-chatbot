@@ -14,6 +14,8 @@ import React, {
 } from 'react';
 import { toast } from 'sonner';
 
+import { sanitizeUIMessages } from '@/lib/utils';
+
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import useWindowSize from './use-window-size';
@@ -41,6 +43,7 @@ export function MultimodalInput({
   attachments,
   setAttachments,
   messages,
+  setMessages,
   append,
   handleSubmit,
   className,
@@ -52,6 +55,7 @@ export function MultimodalInput({
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -247,6 +251,7 @@ export function MultimodalInput({
           onClick={(event) => {
             event.preventDefault();
             stop();
+            setMessages((messages) => sanitizeUIMessages(messages));
           }}
         >
           <StopIcon size={14} />

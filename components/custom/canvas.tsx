@@ -1,10 +1,4 @@
-import {
-  Attachment,
-  ChatRequestOptions,
-  CreateMessage,
-  JSONValue,
-  Message,
-} from 'ai';
+import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
 import cx from 'classnames';
 import { formatDistance, isAfter } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -23,8 +17,7 @@ import { fetcher } from '@/lib/utils';
 import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
-import { CrossIcon, DeltaIcon, LoaderIcon, RedoIcon, UndoIcon } from './icons';
-import { Markdown } from './markdown';
+import { CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
 import { Message as PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
@@ -32,8 +25,6 @@ import { useDebounce } from './use-debounce';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
-
-import { DOCUMENT_PLACEHOLDER } from '@/lib/placeholders';
 
 export interface UICanvas {
   title: string;
@@ -61,6 +52,7 @@ export function Canvas({
   canvas,
   setCanvas,
   messages,
+  setMessages,
 }: {
   input: string;
   setInput: (input: string) => void;
@@ -71,6 +63,7 @@ export function Canvas({
   canvas: UICanvas;
   setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
   messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -298,6 +291,7 @@ export function Canvas({
                 messages={messages}
                 append={append}
                 className="bg-background dark:bg-muted"
+                setMessages={setMessages}
               />
             </form>
           </div>
@@ -528,6 +522,7 @@ export function Canvas({
             append={append}
             isLoading={isLoading}
             stop={stop}
+            setMessages={setMessages}
           />
         )}
       </AnimatePresence>

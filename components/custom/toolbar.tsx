@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { sanitizeUIMessages } from '@/lib/utils';
 
 import {
   ArrowUpIcon,
@@ -246,6 +247,7 @@ export const Toolbar = ({
   append,
   isLoading,
   stop,
+  setMessages,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
@@ -255,6 +257,7 @@ export const Toolbar = ({
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   stop: () => void;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -390,6 +393,7 @@ export const Toolbar = ({
             className="p-3"
             onClick={() => {
               stop();
+              setMessages((messages) => sanitizeUIMessages(messages));
             }}
           >
             <StopIcon />

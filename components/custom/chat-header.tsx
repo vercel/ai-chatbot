@@ -1,7 +1,6 @@
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import { Model } from '@/ai/models';
 import { ModelSelector } from '@/components/custom/model-selector';
 import { SidebarToggle } from '@/components/custom/sidebar-toggle';
 import { Button } from '@/components/ui/button';

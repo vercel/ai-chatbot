@@ -26,6 +26,7 @@ export function Chat({
 }) {
   const {
     messages,
+    setMessages,
     handleSubmit,
     input,
     setInput,
@@ -85,6 +86,7 @@ export function Chat({
             attachments={attachments}
             setAttachments={setAttachments}
             messages={messages}
+            setMessages={setMessages}
             append={append}
           />
         </form>
@@ -104,6 +106,7 @@ export function Chat({
             canvas={canvas}
             setCanvas={setCanvas}
             messages={messages}
+            setMessages={setMessages}
           />
         )}
       </AnimatePresence>
