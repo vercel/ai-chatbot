@@ -101,7 +101,7 @@ export function DocumentToolCall({ type, args }: DocumentToolCallProps) {
         </div>
 
         <div className="">
-          {getActionText(type)} {result.title}
+          {getActionText(type)} {args.title}
         </div>
       </div>
 

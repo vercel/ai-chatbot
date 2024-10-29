@@ -8,6 +8,7 @@ import {
 import { z } from 'zod';
 
 import { customModel } from '@/ai';
+import { canvasPrompt } from '@/ai/prompts';
 import { auth } from '@/app/(auth)/auth';
 import {
   deleteChatById,
@@ -43,8 +44,7 @@ export async function POST(request: Request) {
 
   const result = await streamText({
     model: customModel(modelName),
-    system:
-      'you are a friendly assistant! keep your responses concise and helpful.',
+    system: `you are a friendly assistant! keep your responses concise and helpful. ${canvasPrompt}`,
     messages: coreMessages,
     maxSteps: 5,
     tools: {
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
           const { text: content, fullStream } = await streamText({
             model: customModel(modelName),
             system:
-              'Write about the given topic. Markdown is supported. Use proper hierarchy of headings, starting from h1.',
+              'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
             prompt: title,
           });
 
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
           return {
             id,
             title,
-            content: `The following document was created and is now displayed to the user: \n\n${content}`,
+            content: `A document was created and is now visible to the user.`,
           };
         },
       },
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
           return {
             id,
             title: document.title,
-            content: draftText,
+            content: 'The document has been updated successfully.',
           };
         },
       },

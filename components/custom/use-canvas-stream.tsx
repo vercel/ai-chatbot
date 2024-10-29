@@ -1,11 +1,11 @@
-import { JSONValue } from "ai";
-import { Dispatch, SetStateAction, useEffect, useCallback } from "react";
-import { useSWRConfig } from "swr";
+import { JSONValue } from 'ai';
+import { Dispatch, SetStateAction, useEffect, useCallback } from 'react';
+import { useSWRConfig } from 'swr';
 
-import { UICanvas } from "./canvas";
+import { UICanvas } from './canvas';
 
 type StreamingDelta = {
-  type: "text-delta" | "title" | "id" | "suggestions" | "clear" | "finish";
+  type: 'text-delta' | 'title' | 'id' | 'suggestions' | 'clear' | 'finish';
   content: string;
 };
 
@@ -23,7 +23,7 @@ export function useCanvasStream({
       const url = `/api/suggestions?documentId=${documentId}`;
       mutate(url, await fetch(url).then((res) => res.json()));
     },
-    [mutate],
+    [mutate]
   );
 
   useEffect(() => {
@@ -35,11 +35,11 @@ export function useCanvasStream({
     setCanvas((draftCanvas) => {
       if (!draftCanvas) {
         return {
-          content: "",
-          title: "",
+          content: '',
+          title: '',
           isVisible: false,
-          documentId: delta.type === "id" ? delta.content : "",
-          status: "idle",
+          documentId: delta.type === 'id' ? delta.content : '',
+          status: 'idle',
           boundingBox: {
             top: 0,
             left: 0,
@@ -50,41 +50,41 @@ export function useCanvasStream({
       }
 
       switch (delta.type) {
-        case "text-delta":
+        case 'text-delta':
           return {
             ...draftCanvas,
             content: draftCanvas.content + delta.content,
             isVisible:
-              draftCanvas.status === "streaming"
+              draftCanvas.status === 'streaming'
                 ? true
                 : draftCanvas.content.length > 200,
-            status: "streaming",
+            status: 'streaming',
           };
 
-        case "title":
+        case 'title':
           return {
             ...draftCanvas,
             title: delta.content,
           };
 
-        case "suggestions":
+        case 'suggestions':
           if (draftCanvas.documentId) {
             void fetchSuggestions(draftCanvas.documentId);
           }
 
           return draftCanvas;
 
-        case "clear":
+        case 'clear':
           return {
             ...draftCanvas,
-            content: "",
-            status: "streaming",
+            content: '',
+            status: 'streaming',
           };
 
-        case "finish":
+        case 'finish':
           return {
             ...draftCanvas,
-            status: "idle",
+            status: 'idle',
           };
 
         default:
