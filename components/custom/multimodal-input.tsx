@@ -1,6 +1,7 @@
 'use client';
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import cx from 'classnames';
 import { motion } from 'framer-motion';
 import React, {
   useRef,
@@ -42,6 +43,7 @@ export function MultimodalInput({
   messages,
   append,
   handleSubmit,
+  className,
 }: {
   input: string;
   setInput: (value: string) => void;
@@ -60,6 +62,7 @@ export function MultimodalInput({
     },
     chatRequestOptions?: ChatRequestOptions
   ) => void;
+  className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -220,7 +223,10 @@ export function MultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-xl p-4 focus-visible:ring-0 focus-visible:ring-offset-0 text-base bg-muted border-none"
+        className={cx(
+          'min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted',
+          className
+        )}
         rows={3}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {

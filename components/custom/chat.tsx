@@ -2,6 +2,7 @@
 
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
+import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
 import { ChatHeader } from '@/components/custom/chat-header';
@@ -9,8 +10,10 @@ import { Message as PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { Model } from '@/lib/model';
 
+import { Canvas, UICanvas } from './canvas';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
+import { useCanvasStream } from './use-canvas-stream';
 
 export function Chat({
   id,
@@ -21,14 +24,29 @@ export function Chat({
   initialMessages: Array<Message>;
   selectedModelName: Model['name'];
 }) {
-  const { messages, handleSubmit, input, setInput, append, isLoading, stop } =
-    useChat({
-      body: { id, model: selectedModelName },
-      initialMessages,
-      onFinish: () => {
-        window.history.replaceState({}, '', `/chat/${id}`);
-      },
-    });
+  const {
+    messages,
+    handleSubmit,
+    input,
+    setInput,
+    append,
+    isLoading,
+    stop,
+    data: streamingData,
+  } = useChat({
+    body: { id, modelName: selectedModelName },
+    initialMessages,
+    onFinish: () => {
+      window.history.replaceState({}, '', `/chat/${id}`);
+    },
+  });
+
+  const [canvas, setCanvas] = useState<UICanvas | null>(null);
+
+  useCanvasStream({
+    streamingData,
+    setCanvas,
+  });
 
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -36,42 +54,64 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   return (
-    <div className="flex flex-col min-w-0 h-dvh bg-background">
-      <ChatHeader selectedModelName={selectedModelName} />
-      <div
-        ref={messagesContainerRef}
-        className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"
-      >
-        {messages.length === 0 && <Overview />}
-
-        {messages.map((message) => (
-          <PreviewMessage
-            key={message.id}
-            role={message.role}
-            content={message.content}
-            attachments={message.experimental_attachments}
-            toolInvocations={message.toolInvocations}
-          />
-        ))}
-
+    <>
+      <div className="flex flex-col min-w-0 h-dvh bg-background">
+        <ChatHeader selectedModelName={selectedModelName} />
         <div
-          ref={messagesEndRef}
-          className="shrink-0 min-w-[24px] min-h-[24px]"
-        />
+          ref={messagesContainerRef}
+          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"
+        >
+          {messages.length === 0 && <Overview />}
+
+          {messages.map((message) => (
+            <PreviewMessage
+              key={message.id}
+              role={message.role}
+              content={message.content}
+              attachments={message.experimental_attachments}
+              toolInvocations={message.toolInvocations}
+              canvas={canvas}
+              setCanvas={setCanvas}
+            />
+          ))}
+
+          <div
+            ref={messagesEndRef}
+            className="shrink-0 min-w-[24px] min-h-[24px]"
+          />
+        </div>
+        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+          <MultimodalInput
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+            stop={stop}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            messages={messages}
+            append={append}
+          />
+        </form>
       </div>
-      <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-        <MultimodalInput
-          input={input}
-          setInput={setInput}
-          handleSubmit={handleSubmit}
-          isLoading={isLoading}
-          stop={stop}
-          attachments={attachments}
-          setAttachments={setAttachments}
-          messages={messages}
-          append={append}
-        />
-      </form>
-    </div>
+
+      <AnimatePresence>
+        {canvas && canvas.isVisible && (
+          <Canvas
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+            stop={stop}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            append={append}
+            canvas={canvas}
+            setCanvas={setCanvas}
+            messages={messages}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
