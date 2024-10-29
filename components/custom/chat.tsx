@@ -2,6 +2,7 @@
 
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { ChatHeader } from '@/components/custom/chat-header';
@@ -21,12 +22,13 @@ export function Chat({
   initialMessages: Array<Message>;
   selectedModelName: Model['name'];
 }) {
+  const router = useRouter();
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } =
     useChat({
       body: { id, model: selectedModelName },
       initialMessages,
       onFinish: () => {
-        window.history.replaceState({}, '', `/chat/${id}`);
+        router.replace(`/chat/${id}`);
       },
     });
 
