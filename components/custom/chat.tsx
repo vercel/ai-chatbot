@@ -5,10 +5,10 @@ import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
+import { Model } from '@/ai/models';
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
-import { Model } from '@/lib/model';
 
 import { Canvas, UICanvas } from './canvas';
 import { CanvasStreamHandler } from './canvas-stream-handler';
@@ -18,11 +18,11 @@ import { Overview } from './overview';
 export function Chat({
   id,
   initialMessages,
-  selectedModelName,
+  selectedModelId,
 }: {
   id: string;
   initialMessages: Array<Message>;
-  selectedModelName: Model['name'];
+  selectedModelId: string;
 }) {
   const {
     messages,
@@ -34,7 +34,7 @@ export function Chat({
     stop,
     data: streamingData,
   } = useChat({
-    body: { id, modelName: selectedModelName },
+    body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
       window.history.replaceState({}, '', `/chat/${id}`);
@@ -51,7 +51,7 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelName={selectedModelName} />
+        <ChatHeader selectedModelId={selectedModelId} />
         <div
           ref={messagesContainerRef}
           className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"

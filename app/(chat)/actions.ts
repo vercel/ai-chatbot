@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 
-export async function saveModel(model: string) {
+export async function saveModelId(model: string) {
   const cookieStore = await cookies();
-  cookieStore.set('model', model);
+  cookieStore.set('model-id', model);
 }

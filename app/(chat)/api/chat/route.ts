@@ -8,7 +8,8 @@ import {
 import { z } from 'zod';
 
 import { customModel } from '@/ai';
-import { canvasPrompt } from '@/ai/prompts';
+import { models } from '@/ai/models';
+import { canvasPrompt, regularPrompt } from '@/ai/prompts';
 import { auth } from '@/app/(auth)/auth';
 import {
   deleteChatById,
@@ -18,15 +19,28 @@ import {
   saveDocument,
   saveSuggestions,
 } from '@/db/queries';
-import { Model, models } from '@/lib/model';
 import { generateUUID } from '@/lib/utils';
+
+type AllowedTools =
+  | 'createDocument'
+  | 'updateDocument'
+  | 'requestSuggestions'
+  | 'getWeather';
+
+const canvasTools: AllowedTools[] = [
+  'createDocument',
+  'updateDocument',
+  'requestSuggestions',
+];
+
+const weatherTools: AllowedTools[] = ['getWeather'];
 
 export async function POST(request: Request) {
   const {
     id,
     messages,
-    modelName,
-  }: { id: string; messages: Array<Message>; modelName: Model['name'] } =
+    modelId,
+  }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
   const session = await auth();
@@ -35,7 +49,9 @@ export async function POST(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  if (!models.find((model) => model.name === modelName)) {
+  const model = models.find((model) => model.id === modelId);
+
+  if (!model) {
     return new Response('Model not found', { status: 404 });
   }
 
@@ -43,10 +59,12 @@ export async function POST(request: Request) {
   const streamingData = new StreamData();
 
   const result = await streamText({
-    model: customModel(modelName),
-    system: `you are a friendly assistant! keep your responses concise and helpful. ${canvasPrompt}`,
+    model: customModel(model.apiIdentifier),
+    system: modelId === 'gpt-4o-canvas' ? canvasPrompt : regularPrompt,
     messages: coreMessages,
     maxSteps: 5,
+    experimental_activeTools:
+      modelId === 'gpt-4o-canvas' ? canvasTools : weatherTools,
     tools: {
       getWeather: {
         description: 'Get the current weather at a location',
@@ -82,8 +100,8 @@ export async function POST(request: Request) {
             content: title,
           });
 
-          const { text: content, fullStream } = await streamText({
-            model: customModel(modelName),
+          const { fullStream } = await streamText({
+            model: customModel(model.apiIdentifier),
             system:
               'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
             prompt: title,
@@ -147,7 +165,7 @@ export async function POST(request: Request) {
           });
 
           const { fullStream } = await streamText({
-            model: customModel(modelName),
+            model: customModel(model.apiIdentifier),
             system:
               'You are a helpful writing assistant. Based on the description, please update the piece of writing.',
             messages: [
@@ -208,7 +226,7 @@ export async function POST(request: Request) {
           }
 
           const { object: suggestions } = await generateObject({
-            model: customModel(modelName),
+            model: customModel(model.apiIdentifier),
             system:
               'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Maximum suggestions: 7.',
             prompt: document.content,

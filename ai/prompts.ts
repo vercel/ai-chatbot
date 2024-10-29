@@ -21,3 +21,6 @@ export const canvasPrompt = `
 
   Do not update document right after creating it. Wait for user feedback or request to update it.
   `;
+
+export const regularPrompt =
+  'You are a friendly assistant! Keep your responses concise and helpful.';
