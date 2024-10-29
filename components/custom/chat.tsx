@@ -48,7 +48,7 @@ export function Chat({
 
   return (
     <div className="flex flex-col min-w-0 h-dvh bg-background">
-      <ChatHeader selectedModelName={selectedModelName} />
+      <ChatHeader selectedModelName={selectedModelName} user={user} />
       <div
         ref={messagesContainerRef}
         className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"
