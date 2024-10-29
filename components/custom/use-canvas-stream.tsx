@@ -1,12 +1,14 @@
 import { JSONValue } from 'ai';
-import { Dispatch, SetStateAction, useEffect, useCallback } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
+
+import { Suggestion } from '@/db/schema';
 
 import { UICanvas } from './canvas';
 
 type StreamingDelta = {
-  type: 'text-delta' | 'title' | 'id' | 'suggestions' | 'clear' | 'finish';
-  content: string;
+  type: 'text-delta' | 'title' | 'id' | 'suggestion' | 'clear' | 'finish';
+  content: string | Suggestion;
 };
 
 export function useCanvasStream({
@@ -17,14 +19,17 @@ export function useCanvasStream({
   setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
 }) {
   const { mutate } = useSWRConfig();
+  const [optimisticSuggestions, setOptimisticSuggestions] = useState<
+    Array<Suggestion>
+  >([]);
 
-  const fetchSuggestions = useCallback(
-    async (documentId: string) => {
-      const url = `/api/suggestions?documentId=${documentId}`;
-      mutate(url, await fetch(url).then((res) => res.json()));
-    },
-    [mutate]
-  );
+  useEffect(() => {
+    if (optimisticSuggestions && optimisticSuggestions.length > 0) {
+      const [optimisticSuggestion] = optimisticSuggestions;
+      const url = `/api/suggestions?documentId=${optimisticSuggestion.documentId}`;
+      mutate(url, optimisticSuggestions, false);
+    }
+  }, [optimisticSuggestions, mutate]);
 
   useEffect(() => {
     const mostRecentDelta = streamingData?.at(-1);
@@ -38,7 +43,7 @@ export function useCanvasStream({
           content: '',
           title: '',
           isVisible: false,
-          documentId: delta.type === 'id' ? delta.content : '',
+          documentId: delta.type === 'id' ? (delta.content as string) : '',
           status: 'idle',
           boundingBox: {
             top: 0,
@@ -53,7 +58,7 @@ export function useCanvasStream({
         case 'text-delta':
           return {
             ...draftCanvas,
-            content: draftCanvas.content + delta.content,
+            content: draftCanvas.content + (delta.content as string),
             isVisible:
               draftCanvas.status === 'streaming'
                 ? true
@@ -64,13 +69,16 @@ export function useCanvasStream({
         case 'title':
           return {
             ...draftCanvas,
-            title: delta.content,
+            title: delta.content as string,
           };
 
-        case 'suggestions':
-          if (draftCanvas.documentId) {
-            void fetchSuggestions(draftCanvas.documentId);
-          }
+        case 'suggestion':
+          setTimeout(() => {
+            setOptimisticSuggestions((currentSuggestions) => [
+              ...currentSuggestions,
+              delta.content as Suggestion,
+            ]);
+          }, 0);
 
           return draftCanvas;
 
@@ -91,5 +99,5 @@ export function useCanvasStream({
           return draftCanvas;
       }
     });
-  }, [streamingData, setCanvas, fetchSuggestions]);
+  }, [streamingData, setCanvas]);
 }

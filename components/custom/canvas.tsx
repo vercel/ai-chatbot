@@ -21,8 +21,10 @@ import { Document, Suggestion } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';
+import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
 import { CrossIcon, DeltaIcon, LoaderIcon, RedoIcon, UndoIcon } from './icons';
+import { Markdown } from './markdown';
 import { Message as PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
@@ -30,9 +32,8 @@ import { useDebounce } from './use-debounce';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
-import { Markdown } from './markdown';
+
 import { DOCUMENT_PLACEHOLDER } from '@/lib/placeholders';
-import { DocumentSkeleton } from './document-skeleton';
 
 export interface UICanvas {
   title: string;
@@ -429,7 +430,7 @@ export function Canvas({
 
         <div className="prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll px-4 py-8 md:p-20 !max-w-full pb-40 items-center">
           <div className="flex flex-row max-w-[600px] mx-auto">
-            {isDocumentsFetching ? (
+            {isDocumentsFetching && !canvas.content ? (
               <DocumentSkeleton />
             ) : mode === 'edit' ? (
               <Editor

@@ -3,6 +3,7 @@ import {
   generateObject,
   Message,
   StreamData,
+  streamObject,
   streamText,
 } from 'ai';
 import { z } from 'zod';
@@ -19,6 +20,7 @@ import {
   saveDocument,
   saveSuggestions,
 } from '@/db/queries';
+import { Suggestion } from '@/db/schema';
 import { generateUUID } from '@/lib/utils';
 
 type AllowedTools =
@@ -225,10 +227,14 @@ export async function POST(request: Request) {
             };
           }
 
-          const { object: suggestions } = await generateObject({
+          let suggestions: Array<
+            Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
+          > = [];
+
+          const { elementStream } = await streamObject({
             model: customModel(model.apiIdentifier),
             system:
-              'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Maximum suggestions: 7.',
+              'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words.',
             prompt: document.content,
             output: 'array',
             schema: z.object({
@@ -240,25 +246,36 @@ export async function POST(request: Request) {
             }),
           });
 
+          for await (const element of elementStream) {
+            const suggestion = {
+              originalText: element.originalSentence,
+              suggestedText: element.suggestedSentence,
+              description: element.description,
+              id: generateUUID(),
+              documentId: documentId,
+              isResolved: false,
+            };
+
+            streamingData.append({
+              type: 'suggestion',
+              content: suggestion,
+            });
+
+            suggestions.push(suggestion);
+          }
+
           if (session.user && session.user.id) {
             const userId = session.user.id;
 
             await saveSuggestions({
               suggestions: suggestions.map((suggestion) => ({
                 ...suggestion,
-                originalText: suggestion.originalSentence,
-                suggestedText: suggestion.suggestedSentence,
-                id: generateUUID(),
                 userId,
                 createdAt: new Date(),
-                documentId: documentId,
                 documentCreatedAt: document.createdAt,
-                isResolved: false,
               })),
             });
           }
-
-          streamingData.append({ type: 'suggestions', content: '' });
 
           return {
             id: documentId,

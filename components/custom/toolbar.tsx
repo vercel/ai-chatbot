@@ -366,7 +366,6 @@ export const Toolbar = ({
         }
         exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        whileTap={{ scale: isLoading ? 0.9 : 1 }}
         onHoverStart={() => {
           if (isLoading) return;
 

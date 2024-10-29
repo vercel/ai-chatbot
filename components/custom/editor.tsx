@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import { exampleSetup } from "prosemirror-example-setup";
-import { inputRules, textblockTypeInputRule } from "prosemirror-inputrules";
-import { defaultMarkdownSerializer } from "prosemirror-markdown";
-import { Schema, DOMParser } from "prosemirror-model";
-import { schema } from "prosemirror-schema-basic";
-import { addListNodes } from "prosemirror-schema-list";
-import { EditorState } from "prosemirror-state";
-import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import React, { memo, useEffect, useMemo, useRef, useState } from "react";
-import { renderToString } from "react-dom/server";
+import { exampleSetup } from 'prosemirror-example-setup';
+import { inputRules, textblockTypeInputRule } from 'prosemirror-inputrules';
+import { defaultMarkdownSerializer } from 'prosemirror-markdown';
+import { Schema, DOMParser } from 'prosemirror-model';
+import { schema } from 'prosemirror-schema-basic';
+import { addListNodes } from 'prosemirror-schema-list';
+import { EditorState } from 'prosemirror-state';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { renderToString } from 'react-dom/server';
 
-import { Suggestion } from "@/db/schema";
+import { Suggestion } from '@/db/schema';
 import {
   createSuggestionWidget,
   projectWithHighlights,
   suggestionsPlugin,
   suggestionsPluginKey,
   UISuggestion,
-} from "@/lib/editor/suggestions";
+} from '@/lib/editor/suggestions';
 
-import { Markdown } from "./markdown";
+import { Markdown } from './markdown';
 
 const mySchema = new Schema({
-  nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
+  nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
   // @ts-expect-error: TODO need to fix type mismatch
   marks: {
     ...schema.spec.marks,
@@ -34,7 +34,7 @@ function headingRule(level: number) {
   return textblockTypeInputRule(
     new RegExp(`^(#{1,${level}})\\s$`),
     mySchema.nodes.heading,
-    () => ({ level }),
+    () => ({ level })
   );
 }
 
@@ -45,7 +45,7 @@ interface WidgetRoot {
 type EditorProps = {
   content: string;
   onChange: (updatedContent: string) => void;
-  status: "streaming" | "idle";
+  status: 'streaming' | 'idle';
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
 };
@@ -66,7 +66,7 @@ function PureEditor({
 
         const htmlContent = renderToString(<Markdown>{content}</Markdown>);
 
-        const container = document.createElement("div");
+        const container = document.createElement('div');
         container.innerHTML = htmlContent;
 
         const state = EditorState.create({
@@ -100,7 +100,7 @@ function PureEditor({
           },
         });
       } else {
-        console.error("Schema is not properly initialized");
+        console.error('Schema is not properly initialized');
       }
     }
 
@@ -116,15 +116,15 @@ function PureEditor({
     if (viewRef.current && viewRef.current.state.doc && content) {
       const computedSuggestions = projectWithHighlights(
         viewRef.current.state.doc,
-        suggestionsWithoutHighlights,
+        suggestionsWithoutHighlights
       ).filter(
         (suggestion) =>
-          suggestion.selectionStart !== 0 && suggestion.selectionEnd !== 0,
+          suggestion.selectionStart !== 0 && suggestion.selectionEnd !== 0
       );
 
       const decorations = createDecorations(
         computedSuggestions,
-        viewRef.current,
+        viewRef.current
       );
       const transaction = viewRef.current.state.tr;
       transaction.setMeta(suggestionsPluginKey, { decorations });
@@ -139,8 +139,8 @@ function PureEditor({
       decorations.push(
         Decoration.inline(suggestion.selectionStart, suggestion.selectionEnd, {
           class:
-            "suggestion-highlight bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40",
-        }),
+            'suggestion-highlight bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40',
+        })
       );
 
       decorations.push(
@@ -149,7 +149,7 @@ function PureEditor({
           const key = `widget-${suggestion.id}`;
           widgetRootsRef.current.set(key, { destroy });
           return dom;
-        }),
+        })
       );
     });
 
@@ -177,13 +177,13 @@ function PureEditor({
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.suggestions !== nextProps.suggestions) {
     return false;
-  } else if (prevProps.content === "" && nextProps.content !== "") {
+  } else if (prevProps.content === '' && nextProps.content !== '') {
     return false;
   } else if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) {
     return false;
   } else if (prevProps.onChange !== nextProps.onChange) {
     return false;
-  } else if (prevProps.status === "idle") {
+  } else if (prevProps.status === 'idle') {
     return true;
   } else {
     return prevProps.content === nextProps.content;
