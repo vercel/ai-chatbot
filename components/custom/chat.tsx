@@ -2,7 +2,9 @@
 
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
+import { User } from 'next-auth';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
@@ -16,17 +18,26 @@ export function Chat({
   id,
   initialMessages,
   selectedModelName,
+  user,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelName: Model['name'];
+  user: User | undefined;
 }) {
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } =
     useChat({
       body: { id, model: selectedModelName },
       initialMessages,
       onFinish: () => {
-        window.history.replaceState({}, '', `/chat/${id}`);
+        if (user) {
+          window.history.replaceState({}, '', `/chat/${id}`);
+        }
+      },
+      onError: (error) => {
+        if (error.message === 'Too many requests') {
+          toast.error('Too many requests. Please try again later!');
+        }
       },
     });
 
