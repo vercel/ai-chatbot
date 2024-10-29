@@ -357,7 +357,7 @@ export function Canvas({
               <CrossIcon size={18} />
             </div>
 
-            <div className="flex flex-col pt-1 lg:pt-0 lg:flex-row lg:items-center lg:gap-3 lg:pt-0">
+            <div className="flex flex-col pt-1 lg:flex-row lg:items-center lg:gap-3 lg:pt-0">
               <div className="font-medium">
                 {document?.title ?? canvas.title}
               </div>
