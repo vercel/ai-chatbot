@@ -21,6 +21,14 @@ export async function botProtectionMiddleware(
     pipeline.expire(`rate-limit:${realIp}`, 60 * 60 * 24);
     const [requests] = (await pipeline.exec()) as [number];
 
+    /*
+     * NOTE: Do not pass server actions through bot protection
+     */
+
+    if (request.nextUrl.pathname === '/') {
+      return undefined;
+    }
+
     if (process.env.NODE_ENV === 'development') {
       return undefined;
     }
