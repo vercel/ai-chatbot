@@ -34,15 +34,9 @@ export async function botProtectionMiddleware(
       return undefined;
     }
 
-    /*
-     * TODO: Rate limiting is temporarily disabled because due
-     * to changes in header contents after upgradin to next 15, will have
-     * to re-implement.
-     */
-
-    // if (requests > MAX_REQUESTS) {
-    //   return new Response('Too many requests', { status: 429 });
-    // }
+    if (requests > MAX_REQUESTS) {
+      return new Response('Too many requests (rate limit)', { status: 429 });
+    }
 
     return kasadaHandler(request, event);
   }
