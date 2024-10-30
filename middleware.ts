@@ -16,12 +16,6 @@ export async function botProtectionMiddleware(
   event: NextFetchEvent
 ) {
   if (['POST', 'DELETE'].includes(request.method)) {
-    const realIp = ipAddress(request) ?? 'no-ip';
-    const pipeline = kv.pipeline();
-    pipeline.incr(`rate-limit:${realIp}`);
-    pipeline.expire(`rate-limit:${realIp}`, 60 * 60 * 24);
-    const [requests] = (await pipeline.exec()) as [number];
-
     /*
      * NOTE: Do not pass server actions through bot protection
      */
@@ -34,7 +28,11 @@ export async function botProtectionMiddleware(
       return undefined;
     }
 
-    console.log(realIp);
+    const realIp = ipAddress(request) ?? 'no-ip';
+    const pipeline = kv.pipeline();
+    pipeline.incr(`rate-limit:${realIp}`);
+    pipeline.expire(`rate-limit:${realIp}`, 60 * 60 * 24, 'NX');
+    const [requests] = (await pipeline.exec()) as [number];
 
     if (requests > MAX_REQUESTS) {
       return new Response('Too many requests (rate limit)', { status: 429 });
