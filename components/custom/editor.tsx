@@ -44,7 +44,7 @@ interface WidgetRoot {
 
 type EditorProps = {
   content: string;
-  onChange: (updatedContent: string) => void;
+  onChange: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
@@ -95,7 +95,12 @@ function PureEditor({
 
             if (transaction.docChanged) {
               const content = defaultMarkdownSerializer.serialize(newState.doc);
-              onChange(content);
+
+              if (transaction.getMeta('no-debounce')) {
+                onChange(content, false);
+              } else {
+                onChange(content, true);
+              }
             }
           },
         });
@@ -137,19 +142,34 @@ function PureEditor({
 
     suggestions.forEach((suggestion) => {
       decorations.push(
-        Decoration.inline(suggestion.selectionStart, suggestion.selectionEnd, {
-          class:
-            'suggestion-highlight bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40',
-        })
+        Decoration.inline(
+          suggestion.selectionStart,
+          suggestion.selectionEnd,
+          {
+            class:
+              'suggestion-highlight bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40',
+          },
+          {
+            suggestionId: suggestion.id,
+            type: 'highlight',
+          }
+        )
       );
 
       decorations.push(
-        Decoration.widget(suggestion.selectionStart, (view) => {
-          const { dom, destroy } = createSuggestionWidget(suggestion, view);
-          const key = `widget-${suggestion.id}`;
-          widgetRootsRef.current.set(key, { destroy });
-          return dom;
-        })
+        Decoration.widget(
+          suggestion.selectionStart,
+          (view) => {
+            const { dom, destroy } = createSuggestionWidget(suggestion, view);
+            const key = `widget-${suggestion.id}`;
+            widgetRootsRef.current.set(key, { destroy });
+            return dom;
+          },
+          {
+            suggestionId: suggestion.id,
+            type: 'widget',
+          }
+        )
       );
     });
 

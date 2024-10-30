@@ -180,13 +180,18 @@ export function Canvas({
   );
 
   const handleEditorChange = useCallback(
-    (updatedContent: string) => {
+    (updatedContent: string, debounce: boolean) => {
       if (document && updatedContent !== document.content) {
-        debouncedHandleEditorChange(updatedContent);
+        if (debounce) {
+          debouncedHandleEditorChange(updatedContent);
+        } else {
+          handleContentChange(updatedContent);
+        }
+
         setIsContentDirty(true);
       }
     },
-    [document, debouncedHandleEditorChange]
+    [document, debouncedHandleEditorChange, handleContentChange]
   );
 
   function getDocumentContentById(index: number) {
