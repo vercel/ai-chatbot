@@ -7,13 +7,12 @@ import { ModelSelector } from '@/components/custom/model-selector';
 import { SidebarToggle } from '@/components/custom/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import { BetterTooltip } from '@/components/ui/tooltip';
-import { Model } from '@/lib/model';
 
 export function ChatHeader({
-  selectedModelName,
+  selectedModelId,
   user,
 }: {
-  selectedModelName: Model['name'];
+  selectedModelId: string;
   user: User | undefined;
 }) {
   return (
@@ -32,8 +31,9 @@ export function ChatHeader({
         </Button>
       </BetterTooltip>
       <ModelSelector
-        selectedModelName={selectedModelName}
+        selectedModelId={selectedModelId}
         className="order-1 md:order-2"
+        user={user}
       />
       {!user ? (
         <Button className="py-1.5 px-2 h-fit order-4 md:ml-auto">
