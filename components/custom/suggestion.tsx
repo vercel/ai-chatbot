@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { UISuggestion } from '@/lib/editor/suggestions';
 
 import { CrossIcon, MessageIcon } from './icons';
-import { Button } from '../ui/button';
 import useWindowSize from './use-window-size';
+import { Button } from '../ui/button';
 
 export const Suggestion = ({
   suggestion,
