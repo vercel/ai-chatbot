@@ -1,6 +1,6 @@
 import { Node } from 'prosemirror-model';
 import { PluginKey, Plugin } from 'prosemirror-state';
-import { DecorationSet, EditorView } from 'prosemirror-view';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/custom/suggestion';
@@ -69,15 +69,40 @@ export function createSuggestionWidget(
   const dom = document.createElement('span');
   const root = createRoot(dom);
 
+  dom.addEventListener('mousedown', (event) => {
+    event.preventDefault();
+    view.dom.blur();
+  });
+
   const onApply = () => {
     const { state, dispatch } = view;
-    const tr = state.tr.replaceWith(
+
+    let decorationTransaction = state.tr;
+    const currentState = suggestionsPluginKey.getState(state);
+    const currentDecorations = currentState?.decorations;
+
+    if (currentDecorations) {
+      const newDecorations = DecorationSet.create(
+        state.doc,
+        currentDecorations.find().filter((decoration: Decoration) => {
+          return decoration.spec.suggestionId !== suggestion.id;
+        })
+      );
+
+      decorationTransaction.setMeta(suggestionsPluginKey, {
+        decorations: newDecorations,
+        selected: null,
+      });
+      dispatch(decorationTransaction);
+    }
+
+    const textTransaction = view.state.tr.replaceWith(
       suggestion.selectionStart,
       suggestion.selectionEnd,
       state.schema.text(suggestion.suggestedText)
     );
 
-    dispatch(tr);
+    dispatch(textTransaction);
   };
 
   root.render(<PreviewSuggestion suggestion={suggestion} onApply={onApply} />);
