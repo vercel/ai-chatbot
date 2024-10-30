@@ -270,7 +270,17 @@ export function Canvas({
           }}
           exit={{ opacity: 0, x: 10, scale: 0.95, transition: { delay: 0 } }}
         >
-          <div className="-right-12 w-12 bg-muted absolute h-dvh top-0" />
+          <AnimatePresence>
+            {!isCurrentVersion && (
+              <motion.div
+                className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              />
+            )}
+          </AnimatePresence>
+
           <div className="flex flex-col h-full justify-between items-center gap-4">
             <div
               ref={messagesContainerRef}
@@ -379,7 +389,7 @@ export function Canvas({
         <div className="p-2 flex flex-row justify-between items-start">
           <div className="flex flex-row gap-4 items-start">
             <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground"
+              className="cursor-pointer hover:bg-muted dark:hover:bg-zinc-700 p-2 rounded-lg text-muted-foreground"
               onClick={() => {
                 setCanvas(null);
               }}
@@ -412,7 +422,7 @@ export function Canvas({
 
           <div className="flex flex-row gap-1">
             <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground"
+              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
               onClick={() => {
                 handleVersionChange('prev');
               }}
@@ -420,7 +430,7 @@ export function Canvas({
               <UndoIcon size={18} />
             </div>
             <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground"
+              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
               onClick={() => {
                 handleVersionChange('next');
               }}
@@ -429,8 +439,8 @@ export function Canvas({
             </div>
             <div
               className={cx(
-                'cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground',
-                { 'bg-muted': mode === 'diff' }
+                'cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700',
+                { 'bg-muted dark:bg-zinc-700': mode === 'diff' }
               )}
               onClick={() => {
                 handleVersionChange('toggle');

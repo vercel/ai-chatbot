@@ -5,6 +5,7 @@ import { useSWRConfig } from 'swr';
 import { Suggestion } from '@/db/schema';
 
 import { UICanvas } from './canvas';
+import useWindowSize from './use-window-size';
 
 type StreamingDelta = {
   type: 'text-delta' | 'title' | 'id' | 'suggestion' | 'clear' | 'finish';
@@ -31,6 +32,9 @@ export function useCanvasStream({
     }
   }, [optimisticSuggestions, mutate]);
 
+  const { width: windowWidth = 1920, height: windowHeight = 1080 } =
+    useWindowSize();
+
   useEffect(() => {
     const mostRecentDelta = streamingData?.at(-1);
     if (!mostRecentDelta) return;
@@ -46,10 +50,10 @@ export function useCanvasStream({
           documentId: delta.type === 'id' ? (delta.content as string) : '',
           status: 'idle',
           boundingBox: {
-            top: 0,
-            left: 0,
-            width: 0,
-            height: 0,
+            top: windowHeight / 4,
+            left: windowWidth / 4,
+            width: 250,
+            height: 50,
           },
         };
       }
