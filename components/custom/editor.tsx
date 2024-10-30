@@ -44,7 +44,7 @@ interface WidgetRoot {
 
 type EditorProps = {
   content: string;
-  onChange: (updatedContent: string) => void;
+  onChange: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
@@ -95,7 +95,12 @@ function PureEditor({
 
             if (transaction.docChanged) {
               const content = defaultMarkdownSerializer.serialize(newState.doc);
-              onChange(content);
+
+              if (transaction.getMeta('no-debounce')) {
+                onChange(content, false);
+              } else {
+                onChange(content, true);
+              }
             }
           },
         });

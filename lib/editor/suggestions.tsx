@@ -1,3 +1,4 @@
+import { defaultMarkdownSerializer } from 'prosemirror-markdown';
 import { Node } from 'prosemirror-model';
 import { PluginKey, Plugin } from 'prosemirror-state';
 import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
@@ -101,6 +102,8 @@ export function createSuggestionWidget(
       suggestion.selectionEnd,
       state.schema.text(suggestion.suggestedText)
     );
+
+    textTransaction.setMeta('no-debounce', true);
 
     dispatch(textTransaction);
   };
