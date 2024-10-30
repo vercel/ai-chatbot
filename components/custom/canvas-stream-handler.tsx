@@ -18,8 +18,6 @@ export function PureCanvasStreamHandler({
     setCanvas,
   });
 
-  // console.log(streamingData?.length);
-
   return null;
 }
 
