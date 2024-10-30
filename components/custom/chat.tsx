@@ -13,6 +13,7 @@ import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 
 import { Canvas, UICanvas } from './canvas';
 import { CanvasStreamHandler } from './canvas-stream-handler';
+import { DeployDialog } from './deploy-dialog';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
 
@@ -46,18 +47,18 @@ export function Chat({
       }
     },
     onError: (error) => {
-      if (error.message === 'Too many requests') {
-        toast.error('Too many requests. Please try again later!');
+      if (error.message.startsWith('Too many requests')) {
+        setIsDeployDialogOpen(true);
       }
     },
   });
 
-  const [canvas, setCanvas] = useState<UICanvas | null>(null);
-
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
+  const [canvas, setCanvas] = useState<UICanvas | null>(null);
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const [isDeployDialogOpen, setIsDeployDialogOpen] = useState(false);
 
   return (
     <>
@@ -125,6 +126,11 @@ export function Chat({
       <CanvasStreamHandler
         streamingData={streamingData}
         setCanvas={setCanvas}
+      />
+
+      <DeployDialog
+        isOpen={isDeployDialogOpen}
+        setIsOpen={setIsDeployDialogOpen}
       />
     </>
   );
