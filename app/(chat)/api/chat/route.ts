@@ -23,6 +23,8 @@ import {
 import { Suggestion } from '@/db/schema';
 import { generateUUID, sanitizeResponseMessages } from '@/lib/utils';
 
+export const maxDuration = 60;
+
 type AllowedTools =
   | 'createDocument'
   | 'updateDocument'
