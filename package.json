@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "build": "tsx db/migrate && next build",
     "start": "next start",
     "lint": "next lint"
@@ -32,8 +32,9 @@
     "framer-motion": "^11.3.19",
     "geist": "^1.3.1",
     "lucide-react": "^0.446.0",
-    "next": "15.0.0-canary.152",
+    "next": "15.0.1",
     "next-auth": "5.0.0-beta.22",
+    "next-intl": "^3.22.0",
     "next-themes": "^0.3.0",
     "postgres": "^3.4.4",
     "react": "19.0.0-rc-7771d3a7-20240827",

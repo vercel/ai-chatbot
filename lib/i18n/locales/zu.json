@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "IsiZulu"
+  },
+  "globals": {
+    "site_title": "Usizo Lomkhankaso"
+  },
+  "locales": {
+    "af": "i-Afrikaans",
+    "de": "IsiJalimane",
+    "en": "IsiNgisi",
+    "es": "IsiSpeyini",
+    "fr": "IsiFulentshi",
+    "ga": "IsiGaelic",
+    "hi": "IsiHindi",
+    "it": "IsiNtaliyane",
+    "nl": "IsiDashi",
+    "pl": "IsiPolish",
+    "pt": "IsiPutukezi",
+    "zu": "IsiZulu"
+  },
+  "content": {
+    "chat": "Xoxa",
+    "sign_up": "Bhalisa",
+    "log_in": "Ngena",
+    "log_out": "Phuma",
+    "profile": "Iphrofayela",
+    "register": "Bhalisa",
+    "toggle": "Shintsha",
+    "light": "Ukukhanya",
+    "mode": "Imodi",
+    "login_account": "Sebenzisa i-imeyili yakho nephasiwedi ukungena",
+    "create_account": "Dala i-akhawunti nge-imeyili nephasiwedi yakho",
+    "new_chat": "Qala ingxoxo entsha",
+    "new_chat_hero": "I-AI chatbot eyakhelwe ukusiza ama-NPO athuthukayo",
+    "no_chat": "Azikho izingxoxo ezitholakele",
+    "history": "Umlando",
+    "switch_language": "Shintsha Ulimi",
+    "already_have_account": "Unayo i-akhawunti?",
+    "dont_have_account": "Awunayo i-akhawunti?",
+    "instead": "esikhundleni salokho",
+    "account_exists_notice": "I-akhawunti ikhona kakade",
+    "acount_create_failed_notice": "Ukudaleka kwe-akhawunti kwehlulekile",
+    "failed_validation_notice": "Ukuqinisekiswa kokufaka kwakho kwehlulekile!",
+    "account_created_notice": "I-akhawunti idalwe ngempumelelo",
+    "invalid_credentials": "Izifakazelo ezingalungile!",
+    "overview_notice": "Lo yi-chatbot yomthombo ovulekile.",
+    "send_message": "Thumela umlayezo...",
+    "please_wait": "Sicela ulinde kuze kube imodeli iqeda impendulo yayo!",
+    "splash_overview_message": "Ngena ukuze uqale!"
+  },
+  "404": {
+    "page_title": "Ikhasi Alitholakalanga",
+    "page_description": "Uxolo, ikhasi olifunayo alikho.",
+    "home_link": "Buyela ekhaya"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Ngisize ukuklama isu lezinyanga ezi-3 lokuxhasa [umthetho noma inhloso]",
+      "label": "Yimaphi amaphuzu abalulekile, izethameli ezihlosiwe, kanye nezinkundla ezihambisana nalolu daba?",
+      "action": "Ngisize ukuklama isu lezinyanga ezi-3 lokuxhasa [umthetho noma inhloso]. Yimaphi amaphuzu abalulekile, izethameli ezihlosiwe, kanye nezinkundla ezihambisana nalolu daba?"
+    },
+    "social_toolkit": {
+      "title": "Thuthukisa amathuluzi okusekela ukukhulisa [umkhankaso] ku-inthanethi.",
+      "label": "Ingabe kufanele sifake imibhalo ebhalwe ngaphambili, izinfographics noma izifanekiso zevidiyo?",
+      "action": "Thuthukisa amathuluzi okusekela ukukhulisa [umkhankaso] ku-inthanethi. Ingabe kufanele sifake imibhalo ebhalwe ngaphambili, izinfographics noma izifanekiso zevidiyo?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Bhala iskripthi sokushayela ucingo ukuze uqashe amavolontiya [umcimbi].",
+      "label": "Ingabe kufanele sigcizelele umthelela womuntu siqu, ubunzima, noma ukubamba iqhaza komphakathi?",
+      "action": "Bhala iskripthi sokushayela ucingo ukuze uqashe amavolontiya [umcimbi]. Ingabe kufanele sigcizelele umthelela womuntu siqu, ubunzima, noma ukubamba iqhaza komphakathi?"
+    },
+    "standard_campaign": {
+      "title": "Thuthukisa amathuluzi okusekela ukukhulisa [umkhankaso] ku-inthanethi.",
+      "label": "Ingabe kufanele sifake imibhalo ebhalwe ngaphambili, izinfographics noma izifanekiso zevidiyo?",
+      "action": "Thuthukisa amathuluzi okusekela ukukhulisa [umkhankaso] ku-inthanethi. Ingabe kufanele sifake imibhalo ebhalwe ngaphambili, izinfographics noma izifanekiso zevidiyo?"
+    }
+  }
+}

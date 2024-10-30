@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Afrikaans"
+  },
+  "globals": {
+    "site_title": "Veldtogte Assistent"
+  },
+  "locales": {
+    "af": "Afrikaans",
+    "de": "Duits",
+    "en": "Engels",
+    "es": "Spaans",
+    "fr": "Frans",
+    "ga": "Gaelies",
+    "hi": "Hindi",
+    "it": "Italiaans",
+    "nl": "Nederlands",
+    "pl": "Pools",
+    "pt": "Portugees",
+    "zu": "Zoeloe"
+  },
+  "content": {
+    "chat": "Gesels",
+    "sign_up": "Teken Aan",
+    "log_in": "Meld Aan",
+    "log_out": "Meld Af",
+    "profile": "Profiel",
+    "register": "Registreer",
+    "toggle": "Wissel",
+    "light": "Lig",
+    "mode": "Modus",
+    "login_account": "Gebruik jou e-pos en wagwoord om aan te meld",
+    "create_account": "Skep ’n rekening met jou e-pos en wagwoord",
+    "new_chat": "Begin ’n nuwe geselsie",
+    "new_chat_hero": "’n KI-kletsbot wat ontwerp is om progressiewe NVO’s te ondersteun",
+    "no_chat": "Geen gesprekke gevind nie",
+    "history": "Geskiedenis",
+    "switch_language": "Wissel Taal",
+    "already_have_account": "Het jy al 'n rekening?",
+    "dont_have_account": "Het jy nie 'n rekening nie?",
+    "instead": "in plaas daarvan",
+    "account_exists_notice": "Rekening bestaan reeds",
+    "acount_create_failed_notice": "Kon nie rekening skep nie",
+    "failed_validation_notice": "Validasie van jou inskrywing het misluk!",
+    "account_created_notice": "Rekening suksesvol geskep",
+    "invalid_credentials": "Ongeldige geloofsbriewe!",
+    "overview_notice": "Dit is 'n oopbron-kletsbot.",
+    "send_message": "Stuur ’n boodskap...",
+    "please_wait": "Wag asseblief totdat die model sy reaksie voltooi!",
+    "splash_overview_message": "Teken in om te begin!"
+  },
+  "404": {
+    "page_title": "Bladsy Nie Gevind Nie",
+    "page_description": "Jammer, die bladsy wat jy soek bestaan nie.",
+    "home_link": "Gaan terug huis toe"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Help my om ’n 3-maande strategie te ontwerp om vir [beleid of saak] te pleit",
+      "label": "Wat is die belangrikste mylpale, teikengehore en platforms wat by hierdie saak pas?",
+      "action": "Help my om ’n 3-maande strategie te ontwerp om vir [beleid of saak] te pleit. Wat is die belangrikste mylpale, teikengehore en platforms wat by hierdie saak pas?"
+    },
+    "social_toolkit": {
+      "title": "Ontwikkel ’n hulpmiddel vir ondersteuners om [veldtog] aanlyn te versterk.",
+      "label": "Moet ons voorafgeskrewe plasings, infografika of videotemplates insluit?",
+      "action": "Ontwikkel ’n hulpmiddel vir ondersteuners om [veldtog] aanlyn te versterk. Moet ons voorafgeskrewe plasings, infografika of videotemplates insluit?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Skryf ’n telefoonskrip om vrywilligers vir [gebeurtenis] te werf.",
+      "label": "Moet ons die persoonlike impak, dringendheid of gemeenskapsbetrokkenheid beklemtoon?",
+      "action": "Skryf ’n telefoonskrip om vrywilligers vir [gebeurtenis] te werf. Moet ons die persoonlike impak, dringendheid of gemeenskapsbetrokkenheid beklemtoon?"
+    },
+    "standard_campaign": {
+      "title": "Ontwikkel ’n hulpmiddel vir ondersteuners om [veldtog] aanlyn te versterk.",
+      "label": "Moet ons voorafgeskrewe plasings, infografika of videotemplates insluit?",
+      "action": "Ontwikkel ’n hulpmiddel vir ondersteuners om [veldtog] aanlyn te versterk. Moet ons voorafgeskrewe plasings, infografika of videotemplates insluit?"
+    }
+  }
+}

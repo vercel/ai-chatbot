@@ -4,7 +4,7 @@ import {useTranslations} from 'next-intl';
 
 import { LogoOpenAI, MessageIcon, VercelIcon } from "./icons";
 
-export const Overview = () => {
+export function SplashOverview(){
   const globals = useTranslations('globals');
   const content = useTranslations('content');
 
@@ -22,7 +22,7 @@ export const Overview = () => {
           { globals('site_title') }
         </p>
         <p>
-          { content('overview_notice') }{'.'}
+          { content('splash_overview_message') }
         </p>
       </div>
     </motion.div>

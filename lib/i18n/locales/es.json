@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Español"
+  },
+  "globals": {
+    "site_title": "Asistente de Campañas"
+  },
+  "locales": {
+    "af": "Afrikáans",
+    "de": "Alemán",
+    "en": "Inglés",
+    "es": "Español",
+    "fr": "Francés",
+    "ga": "Gaélico",
+    "hi": "Hindi",
+    "it": "Italiano",
+    "nl": "Neerlandés",
+    "pl": "Polaco",
+    "pt": "Portugués",
+    "zu": "Zulú"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "Registrarse",
+    "log_in": "Iniciar sesión",
+    "log_out": "Cerrar sesión",
+    "profile": "Perfil",
+    "register": "Registrarse",
+    "toggle": "Alternar",
+    "light": "Claro",
+    "mode": "Modo",
+    "login_account": "Usa tu correo electrónico y contraseña para iniciar sesión",
+    "create_account": "Crea una cuenta con tu correo electrónico y contraseña",
+    "new_chat": "Iniciar un nuevo chat",
+    "new_chat_hero": "Un chatbot de IA diseñado para ayudar a ONGs progresistas",
+    "no_chat": "No se encontraron chats",
+    "history": "Historial",
+    "switch_language": "Cambiar Idioma",
+    "already_have_account": "¿Ya tienes una cuenta?",
+    "dont_have_account": "¿No tienes una cuenta?",
+    "instead": "en su lugar",
+    "account_exists_notice": "La cuenta ya existe",
+    "acount_create_failed_notice": "No se pudo crear la cuenta",
+    "failed_validation_notice": "¡Error al validar tu envío!",
+    "account_created_notice": "Cuenta creada con éxito",
+    "invalid_credentials": "¡Credenciales inválidas!",
+    "overview_notice": "Este es un chatbot de código abierto.",
+    "send_message": "Enviar un mensaje...",
+    "please_wait": "¡Por favor, espera a que el modelo termine su respuesta!",
+    "splash_overview_message": "¡Inicia sesión para comenzar!"
+  },
+  "404": {
+    "page_title": "Página No Encontrada",
+    "page_description": "Lo siento, la página que buscas no existe.",
+    "home_link": "Volver al inicio"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Ayúdame a diseñar una estrategia de 3 meses para abogar por [política o causa]",
+      "label": "¿Cuáles son los hitos clave, audiencias objetivo y plataformas que se alinean con este tema?",
+      "action": "Ayúdame a diseñar una estrategia de 3 meses para abogar por [política o causa]. ¿Cuáles son los hitos clave, audiencias objetivo y plataformas que se alinean con este tema?"
+    },
+    "social_toolkit": {
+      "title": "Desarrolla un kit de herramientas para que los seguidores amplifiquen [campaña] en línea.",
+      "label": "¿Deberíamos incluir publicaciones preescritas, infografías o plantillas de video?",
+      "action": "Desarrolla un kit de herramientas para que los seguidores amplifiquen [campaña] en línea. ¿Deberíamos incluir publicaciones preescritas, infografías o plantillas de video?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Escribe un guion para llamadas telefónicas para reclutar voluntarios para [evento].",
+      "label": "¿Deberíamos enfatizar el impacto personal, la urgencia o la participación comunitaria?",
+      "action": "Escribe un guion para llamadas telefónicas para reclutar voluntarios para [evento]. ¿Deberíamos enfatizar el impacto personal, la urgencia o la participación comunitaria?"
+    },
+    "standard_campaign": {
+      "title": "Desarrolla un kit de herramientas para que los seguidores amplifiquen [campaña] en línea.",
+      "label": "¿Deberíamos incluir publicaciones preescritas, infografías o plantillas de video?",
+      "action": "Desarrolla un kit de herramientas para que los seguidores amplifiquen [campaña] en línea. ¿Deberíamos incluir publicaciones preescritas, infografías o plantillas de video?"
+    }
+  }
+}

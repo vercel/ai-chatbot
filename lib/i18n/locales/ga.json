@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Gaeilge"
+  },
+  "globals": {
+    "site_title": "Cúntóir Feachtais"
+  },
+  "locales": {
+    "af": "Afracáinis",
+    "de": "Gearmáinis",
+    "en": "Béarla",
+    "es": "Spáinnis",
+    "fr": "Fraincis",
+    "ga": "Gaeilge",
+    "hi": "Hiondúis",
+    "it": "Iodáilis",
+    "nl": "Ollainnis",
+    "pl": "Polainnis",
+    "pt": "Portaingéilis",
+    "zu": "Súlúis"
+  },
+  "content": {
+    "chat": "Comhrá",
+    "sign_up": "Cláraigh",
+    "log_in": "Logáil Isteach",
+    "log_out": "Logáil Amach",
+    "profile": "Próifíl",
+    "register": "Cláraigh",
+    "toggle": "Athraigh",
+    "light": "Éadrom",
+    "mode": "Mód",
+    "login_account": "Bain úsáid as do r-phost agus do phasfhocal chun logáil isteach",
+    "create_account": "Cruthaigh cuntas le do r-phost agus do phasfhocal",
+    "new_chat": "Tosaigh comhrá nua",
+    "new_chat_hero": "Briathra AI deartha chun cabhrú le Eagraíochtaí Deonacha Forásacha",
+    "no_chat": "Gan comhráite aimsithe",
+    "history": "Stair",
+    "switch_language": "Aistrigh Teanga",
+    "already_have_account": "An bhfuil cuntas agat cheana?",
+    "dont_have_account": "Nach bhfuil cuntas agat?",
+    "instead": "ina ionad sin",
+    "account_exists_notice": "Tá cuntas ann cheana",
+    "acount_create_failed_notice": "Theip ar chruthú cuntais",
+    "failed_validation_notice": "Theip ar do chur isteach a bhailíochtú!",
+    "account_created_notice": "Cruthaíodh an cuntas go rathúil",
+    "invalid_credentials": "Faisnéis neamhbhailí!",
+    "overview_notice": "Is bot comhrá foinse oscailte é seo.",
+    "send_message": "Seol teachtaireacht...",
+    "please_wait": "Fan le do thoil go gcríochnaíonn an tsamhail a freagra!",
+    "splash_overview_message": "Logáil isteach chun tosú!"
+  },
+  "404": {
+    "page_title": "Leathanach Gan Aimsiú",
+    "page_description": "Tá brón orainn, níl an leathanach a lorgaíonn tú ann.",
+    "home_link": "Dul ar ais abhaile"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Cuidigh liom straitéis 3 mhí a dhearadh chun tacú le [polasaí nó cúis]",
+      "label": "Cad iad na príomhchomharthaí bóthair, na spriocghrúpaí agus na hardáin atá ag teacht leis an gceist seo?",
+      "action": "Cuidigh liom straitéis 3 mhí a dhearadh chun tacú le [polasaí nó cúis]. Cad iad na príomhchomharthaí bóthair, na spriocghrúpaí agus na hardáin atá ag teacht leis an gceist seo?"
+    },
+    "social_toolkit": {
+      "title": "Déan trealamh uirlisí chun tacú le [feachtas] ar líne.",
+      "label": "An gcuirfimid postálacha réamh-scríofa, infographics nó teimpléid físe san áireamh?",
+      "action": "Déan trealamh uirlisí chun tacú le [feachtas] ar líne. An gcuirfimid postálacha réamh-scríofa, infographics nó teimpléid físe san áireamh?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Scríobh script chun oibrithe deonacha a mhealladh do [imeacht].",
+      "label": "Ar cheart dúinn an tionchar pearsanta, an práinn nó an rannpháirtíocht pobail a chur in iúl?",
+      "action": "Scríobh script chun oibrithe deonacha a mhealladh do [imeacht]. Ar cheart dúinn an tionchar pearsanta, an práinn nó an rannpháirtíocht pobail a chur in iúl?"
+    },
+    "standard_campaign": {
+      "title": "Déan trealamh uirlisí chun tacú le [feachtas] ar líne.",
+      "label": "An gcuirfimid postálacha réamh-scríofa, infographics nó teimpléid físe san áireamh?",
+      "action": "Déan trealamh uirlisí chun tacú le [feachtas] ar líne. An gcuirfimid postálacha réamh-scríofa, infographics nó teimpléid físe san áireamh?"
+    }
+  }
+}

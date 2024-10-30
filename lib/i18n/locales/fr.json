@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Français"
+  },
+  "globals": {
+    "site_title": "Assistant de Campagnes"
+  },
+  "locales": {
+    "af": "Afrikaans",
+    "de": "Allemand",
+    "en": "Anglais",
+    "es": "Espagnol",
+    "fr": "Français",
+    "ga": "Gaélique",
+    "hi": "Hindi",
+    "it": "Italien",
+    "nl": "Néerlandais",
+    "pl": "Polonais",
+    "pt": "Portugais",
+    "zu": "Zoulou"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "S'inscrire",
+    "log_in": "Se connecter",
+    "log_out": "Se déconnecter",
+    "profile": "Profil",
+    "register": "S'inscrire",
+    "toggle": "Basculer",
+    "light": "Clair",
+    "mode": "Mode",
+    "login_account": "Utilisez votre e-mail et votre mot de passe pour vous connecter",
+    "create_account": "Créez un compte avec votre e-mail et votre mot de passe",
+    "new_chat": "Démarrer un nouveau chat",
+    "new_chat_hero": "Un chatbot IA conçu pour aider les ONG progressistes",
+    "no_chat": "Aucun chat trouvé",
+    "history": "Historique",
+    "switch_language": "Changer de Langue",
+    "already_have_account": "Vous avez déjà un compte ?",
+    "dont_have_account": "Vous n'avez pas de compte ?",
+    "instead": "à la place",
+    "account_exists_notice": "Le compte existe déjà",
+    "acount_create_failed_notice": "Échec de la création du compte",
+    "failed_validation_notice": "Échec de la validation de votre soumission !",
+    "account_created_notice": "Compte créé avec succès",
+    "invalid_credentials": "Identifiants invalides !",
+    "overview_notice": "Ceci est un chatbot open source.",
+    "send_message": "Envoyer un message...",
+    "please_wait": "Veuillez attendre que le modèle ait terminé sa réponse !",
+    "splash_overview_message": "Connectez-vous pour commencer!"
+  },
+  "404": {
+    "page_title": "Page Non Trouvée",
+    "page_description": "Désolé, la page que vous cherchez n'existe pas.",
+    "home_link": "Retourner à l'accueil"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Aidez-moi à concevoir une stratégie de 3 mois pour défendre [politique ou cause]",
+      "label": "Quels sont les jalons clés, les publics cibles et les plateformes alignés avec cette question?",
+      "action": "Aidez-moi à concevoir une stratégie de 3 mois pour défendre [politique ou cause]. Quels sont les jalons clés, les publics cibles et les plateformes alignés avec cette question?"
+    },
+    "social_toolkit": {
+      "title": "Développez une boîte à outils pour que les supporters amplifient [campagne] en ligne.",
+      "label": "Devons-nous inclure des publications pré-écrites, des infographies ou des modèles vidéo?",
+      "action": "Développez une boîte à outils pour que les supporters amplifient [campagne] en ligne. Devons-nous inclure des publications pré-écrites, des infographies ou des modèles vidéo?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Rédigez un script d'appels téléphoniques pour recruter des bénévoles pour [événement].",
+      "label": "Devrions-nous insister sur l'impact personnel, l'urgence ou la participation communautaire?",
+      "action": "Rédigez un script d'appels téléphoniques pour recruter des bénévoles pour [événement]. Devrions-nous insister sur l'impact personnel, l'urgence ou la participation communautaire?"
+    },
+    "standard_campaign": {
+      "title": "Développez une boîte à outils pour que les supporters amplifient [campagne] en ligne.",
+      "label": "Devons-nous inclure des publications pré-écrites, des infographies ou des modèles vidéo?",
+      "action": "Développez une boîte à outils pour que les supporters amplifient [campagne] en ligne. Devons-nous inclure des publications pré-écrites, des infographies ou des modèles vidéo?"
+    }
+  }
+}

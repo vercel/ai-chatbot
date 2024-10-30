@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Português"
+  },
+  "globals": {
+    "site_title": "Assistente de Campanhas"
+  },
+  "locales": {
+    "af": "Africâner",
+    "de": "Alemão",
+    "en": "Inglês",
+    "es": "Espanhol",
+    "fr": "Francês",
+    "ga": "Gaélico",
+    "hi": "Hindi",
+    "it": "Italiano",
+    "nl": "Holandês",
+    "pl": "Polonês",
+    "pt": "Português",
+    "zu": "Zulu"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "Inscrever-se",
+    "log_in": "Entrar",
+    "log_out": "Sair",
+    "profile": "Perfil",
+    "register": "Registrar",
+    "toggle": "Alternar",
+    "light": "Claro",
+    "mode": "Modo",
+    "login_account": "Use seu e-mail e senha para entrar",
+    "create_account": "Crie uma conta com seu e-mail e senha",
+    "new_chat": "Iniciar um novo chat",
+    "new_chat_hero": "Um chatbot de IA projetado para apoiar ONGs progressistas",
+    "no_chat": "Nenhum chat encontrado",
+    "history": "Histórico",
+    "switch_language": "Mudar Idioma",
+    "already_have_account": "Já tem uma conta?",
+    "dont_have_account": "Não tem uma conta?",
+    "instead": "em vez disso",
+    "account_exists_notice": "A conta já existe",
+    "acount_create_failed_notice": "Falha ao criar a conta",
+    "failed_validation_notice": "Falha na validação da sua submissão!",
+    "account_created_notice": "Conta criada com sucesso",
+    "invalid_credentials": "Credenciais inválidas!",
+    "overview_notice": "Este é um chatbot de código aberto.",
+    "send_message": "Enviar uma mensagem...",
+    "please_wait": "Por favor, aguarde enquanto o modelo termina sua resposta!",
+    "splash_overview_message": "Faça login para começar!"
+  },
+  "404": {
+    "page_title": "Página Não Encontrada",
+    "page_description": "Desculpe, a página que você procura não existe.",
+    "home_link": "Voltar para a página inicial"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Ajude-me a criar uma estratégia de 3 meses para defender [política ou causa]",
+      "label": "Quais são os marcos principais, os públicos-alvo e as plataformas alinhadas com este problema?",
+      "action": "Ajude-me a criar uma estratégia de 3 meses para defender [política ou causa]. Quais são os marcos principais, os públicos-alvo e as plataformas alinhadas com este problema?"
+    },
+    "social_toolkit": {
+      "title": "Desenvolva um kit de ferramentas para apoiar a ampliação de [campanha] online.",
+      "label": "Devemos incluir postagens pré-escritas, infográficos ou modelos de vídeo?",
+      "action": "Desenvolva um kit de ferramentas para apoiar a ampliação de [campanha] online. Devemos incluir postagens pré-escritas, infográficos ou modelos de vídeo?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Escreva um script de telefone para recrutar voluntários para [evento].",
+      "label": "Devemos enfatizar o impacto pessoal, a urgência ou o envolvimento da comunidade?",
+      "action": "Escreva um script de telefone para recrutar voluntários para [evento]. Devemos enfatizar o impacto pessoal, a urgência ou o envolvimento da comunidade?"
+    },
+    "standard_campaign": {
+      "title": "Desenvolva um kit de ferramentas para apoiar a ampliação de [campanha] online.",
+      "label": "Devemos incluir postagens pré-escritas, infográficos ou modelos de vídeo?",
+      "action": "Desenvolva um kit de ferramentas para apoiar a ampliação de [campanha] online. Devemos incluir postagens pré-escritas, infográficos ou modelos de vídeo?"
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Italiano"
+  },
+  "globals": {
+    "site_title": "Assistente Campagne"
+  },
+  "locales": {
+    "af": "Afrikaans",
+    "de": "Tedesco",
+    "en": "Inglese",
+    "es": "Spagnolo",
+    "fr": "Francese",
+    "ga": "Gaelico",
+    "hi": "Hindi",
+    "it": "Italiano",
+    "nl": "Olandese",
+    "pl": "Polacco",
+    "pt": "Portoghese",
+    "zu": "Zulu"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "Iscriviti",
+    "log_in": "Accedi",
+    "log_out": "Disconnetti",
+    "profile": "Profilo",
+    "register": "Registrati",
+    "toggle": "Alterna",
+    "light": "Chiaro",
+    "mode": "Modalità",
+    "login_account": "Usa la tua email e password per accedere",
+    "create_account": "Crea un account con la tua email e password",
+    "new_chat": "Inizia una nuova chat",
+    "new_chat_hero": "Un chatbot AI progettato per supportare le NPO progressiste",
+    "no_chat": "Nessuna chat trovata",
+    "history": "Cronologia",
+    "switch_language": "Cambia Lingua",
+    "already_have_account": "Hai già un account?",
+    "dont_have_account": "Non hai un account?",
+    "instead": "invece",
+    "account_exists_notice": "L'account esiste già",
+    "acount_create_failed_notice": "Creazione dell'account fallita",
+    "failed_validation_notice": "Convalida della tua richiesta fallita!",
+    "account_created_notice": "Account creato con successo",
+    "invalid_credentials": "Credenziali non valide!",
+    "overview_notice": "Questo è un chatbot open source.",
+    "send_message": "Invia un messaggio...",
+    "please_wait": "Attendere che il modello completi la risposta!",
+    "splash_overview_message": "Accedi per iniziare!"
+  },
+  "404": {
+    "page_title": "Pagina Non Trovata",
+    "page_description": "Spiacente, la pagina che cerchi non esiste.",
+    "home_link": "Torna alla home"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Aiutami a progettare una strategia di 3 mesi per promuovere [politica o causa]",
+      "label": "Quali sono i traguardi chiave, i pubblici target e le piattaforme in linea con questo problema?",
+      "action": "Aiutami a progettare una strategia di 3 mesi per promuovere [politica o causa]. Quali sono i traguardi chiave, i pubblici target e le piattaforme in linea con questo problema?"
+    },
+    "social_toolkit": {
+      "title": "Sviluppa un kit di strumenti per aiutare i sostenitori a promuovere [campagna] online.",
+      "label": "Dovremmo includere post pre-scritti, infografiche o modelli video?",
+      "action": "Sviluppa un kit di strumenti per aiutare i sostenitori a promuovere [campagna] online. Dovremmo includere post pre-scritti, infografiche o modelli video?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Scrivi uno script per il phone banking per reclutare volontari per [evento].",
+      "label": "Dovremmo enfatizzare l'impatto personale, l'urgenza o il coinvolgimento della comunità?",
+      "action": "Scrivi uno script per il phone banking per reclutare volontari per [evento]. Dovremmo enfatizzare l'impatto personale, l'urgenza o il coinvolgimento della comunità?"
+    },
+    "standard_campaign": {
+      "title": "Sviluppa un kit di strumenti per aiutare i sostenitori a promuovere [campagna] online.",
+      "label": "Dovremmo includere post pre-scritti, infografiche o modelli video?",
+      "action": "Sviluppa un kit di strumenti per aiutare i sostenitori a promuovere [campagna] online. Dovremmo includere post pre-scritti, infografiche o modelli video?"
+    }
+  }
+}

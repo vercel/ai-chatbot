@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { getTranslations } from 'next-intl/server';
 
-import { auth, signOut } from "@/app/(auth)/auth";
+import { auth, signOut } from "@/app/[locale]/(auth)/auth";
 
 import { History } from "./history";
+import { LocaleDropdown } from "./locale-dropdown";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "../ui/button";
 import {
@@ -14,6 +16,8 @@ import {
 
 export const Navbar = async () => {
   let session = await auth();
+  const globals = await getTranslations('globals');
+  const content = await getTranslations('content');
 
   return (
     <>
@@ -21,7 +25,11 @@ export const Navbar = async () => {
         <div className="flex flex-row gap-3 items-center">
           <History user={session?.user} />
           <div className="flex flex-row gap-2 items-center">
-            <div className="text-sm dark:text-zinc-300">Next.js Chatbot</div>
+            <div className="text-sm dark:text-zinc-300">
+              <Link href="/">
+                { globals('site_title') }
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -54,16 +62,19 @@ export const Navbar = async () => {
                     type="submit"
                     className="w-full text-left px-1 py-0.5 text-red-500"
                   >
-                    Sign out
+                    { content('log_out') }
                   </button>
                 </form>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button className="py-1.5 px-2 h-fit font-normal" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
+          <div>
+            <LocaleDropdown/>
+            <Button className="py-1.5 px-2 h-fit font-normal" asChild>
+              <Link href="/login">{ content('log_in') }</Link>
+            </Button>
+          </div>
         )}
       </div>
     </>

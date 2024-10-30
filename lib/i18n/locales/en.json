@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "English"
+  },
+  "globals": {
+    "site_title": "Campagins Assistant"
+  },
+  "locales": {
+    "af": "Afrikaans",
+    "de": "German",
+    "en": "English",
+    "es": "Spanish",
+    "fr": "French",
+    "ga": "Gaelic",
+    "hi": "Hindi",
+    "it": "Italian",
+    "nl": "Dutch",
+    "pl": "Polish",
+    "pt": "Portuguese",
+    "zu": "Zulu"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "Sign Up",
+    "log_in": "Login",
+    "log_out": "Logout",
+    "profile": "Profile",
+    "register": "Register",
+    "toggle": "Toggle",
+    "light": "Light",
+    "mode": "Mode",
+    "login_account": "Use your email and password to login",
+    "create_account": "Create an account with your email and password",
+    "new_chat": "Start a new chat",
+    "new_chat_hero": "An AI Chatbot designed to assist progressive NFP",
+    "no_chat": "No chats found",
+    "history": "History",
+    "switch_language": "Switch Language",
+    "already_have_account": "Already have an account?",
+    "dont_have_account": "Don't have an account?",
+    "instead": "instead",
+    "account_exists_notice": "Account already exists",
+    "acount_create_failed_notice": "Failed to create account",
+    "failed_validation_notice": "Failed validating your submission!",
+    "account_created_notice": "Account created successfully",
+    "invalid_credentials": "Invalid credentials!",
+    "overview_notice": "This is an open source Chatbot..",
+    "send_message": "Send a message...",
+    "please_wait": "Please wait for the model to finish its response!",
+    "splash_overview_message": "Login to get started!"
+  },
+  "404": {
+    "page_title": "Page Not Found",
+    "page_description": "Sorry, the page you are looking for does not exist.",
+    "home_link": "Go back home"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Help me design a 3-month strategy to advocate for [policy or cause]",
+      "label": "What are the key milestones, target audiences, and platforms that align with this issue?",
+      "action": "Help me design a 3-month strategy to advocate for [policy or cause]. What are the key milestones, target audiences, and platforms that align with this issue?"
+    },
+    "social_toolkit": {
+      "title": "Develop a toolkit for supporters to amplify [campaign] online.",
+      "label": "Should we include pre-written posts, infographics, or video templates?",
+      "action": "Develop a toolkit for supporters to amplify [campaign] online. Should we include pre-written posts, infographics, or video templates?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Write a phone banking script to recruit volunteers for [event].",
+      "label": "Should we emphasize the personal impact, urgency, or community involvement?",
+      "action": "Write a phone banking script to recruit volunteers for [event]. Should we emphasize the personal impact, urgency, or community involvement?"
+    },
+    "standard_campaign": {
+      "title": "Develop a toolkit for supporters to amplify [campaign] online.",
+      "label": "Should we include pre-written posts, infographics, or video templates?",
+      "action": "Develop a toolkit for supporters to amplify [campaign] online. Should we include pre-written posts, infographics, or video templates?"
+    }
+  }
+}

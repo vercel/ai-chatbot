@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Deutsch"
+  },
+  "globals": {
+    "site_title": "Kampagnen-Assistent"
+  },
+  "locales": {
+    "af": "Afrikaans",
+    "de": "Deutsch",
+    "en": "Englisch",
+    "es": "Spanisch",
+    "fr": "Französisch",
+    "ga": "Gälisch",
+    "hi": "Hindi",
+    "it": "Italienisch",
+    "nl": "Niederländisch",
+    "pl": "Polnisch",
+    "pt": "Portugiesisch",
+    "zu": "Zulu"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "Registrieren",
+    "log_in": "Einloggen",
+    "log_out": "Ausloggen",
+    "profile": "Profil",
+    "register": "Registrieren",
+    "toggle": "Umschalten",
+    "light": "Hell",
+    "mode": "Modus",
+    "login_account": "Verwenden Sie Ihre E-Mail und Ihr Passwort zum Einloggen",
+    "create_account": "Erstellen Sie ein Konto mit Ihrer E-Mail und Ihrem Passwort",
+    "new_chat": "Neuen Chat starten",
+    "new_chat_hero": "Ein KI-Chatbot zur Unterstützung progressiver NPOs",
+    "no_chat": "Keine Chats gefunden",
+    "history": "Verlauf",
+    "switch_language": "Sprache wechseln",
+    "already_have_account": "Haben Sie bereits ein Konto?",
+    "dont_have_account": "Haben Sie kein Konto?",
+    "instead": "stattdessen",
+    "account_exists_notice": "Konto existiert bereits",
+    "acount_create_failed_notice": "Konto konnte nicht erstellt werden",
+    "failed_validation_notice": "Validierung Ihrer Eingabe fehlgeschlagen!",
+    "account_created_notice": "Konto erfolgreich erstellt",
+    "invalid_credentials": "Ungültige Anmeldedaten!",
+    "overview_notice": "Dies ist ein Open-Source-Chatbot.",
+    "send_message": "Nachricht senden...",
+    "please_wait": "Bitte warten Sie, bis das Modell seine Antwort abgeschlossen hat!",
+    "splash_overview_message": "Melden Sie sich an, um zu starten!"
+  },
+  "404": {
+    "page_title": "Seite Nicht Gefunden",
+    "page_description": "Entschuldigung, die gesuchte Seite existiert nicht.",
+    "home_link": "Zurück zur Startseite"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Helfen Sie mir, eine 3-monatige Strategie zur Förderung von [Politik oder Anliegen] zu entwickeln",
+      "label": "Was sind die wichtigsten Meilensteine, Zielgruppen und Plattformen, die zu diesem Thema passen?",
+      "action": "Helfen Sie mir, eine 3-monatige Strategie zur Förderung von [Politik oder Anliegen] zu entwickeln. Was sind die wichtigsten Meilensteine, Zielgruppen und Plattformen, die zu diesem Thema passen?"
+    },
+    "social_toolkit": {
+      "title": "Entwickeln Sie ein Toolkit, damit Unterstützer [Kampagne] online verstärken können.",
+      "label": "Sollten wir vorgefertigte Beiträge, Infografiken oder Videovorlagen einbeziehen?",
+      "action": "Entwickeln Sie ein Toolkit, damit Unterstützer [Kampagne] online verstärken können. Sollten wir vorgefertigte Beiträge, Infografiken oder Videovorlagen einbeziehen?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Schreiben Sie ein Telefonskript, um Freiwillige für [Veranstaltung] zu rekrutieren.",
+      "label": "Sollten wir den persönlichen Einfluss, die Dringlichkeit oder die Gemeinschaftsbeteiligung betonen?",
+      "action": "Schreiben Sie ein Telefonskript, um Freiwillige für [Veranstaltung] zu rekrutieren. Sollten wir den persönlichen Einfluss, die Dringlichkeit oder die Gemeinschaftsbeteiligung betonen?"
+    },
+    "standard_campaign": {
+      "title": "Entwickeln Sie ein Toolkit, damit Unterstützer [Kampagne] online verstärken können.",
+      "label": "Sollten wir vorgefertigte Beiträge, Infografiken oder Videovorlagen einbeziehen?",
+      "action": "Entwickeln Sie ein Toolkit, damit Unterstützer [Kampagne] online verstärken können. Sollten wir vorgefertigte Beiträge, Infografiken oder Videovorlagen einbeziehen?"
+    }
+  }
+}

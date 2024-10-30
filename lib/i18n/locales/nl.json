@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Nederlands"
+  },
+  "globals": {
+    "site_title": "Campagne Assistent"
+  },
+  "locales": {
+    "af": "Afrikaans",
+    "de": "Duits",
+    "en": "Engels",
+    "es": "Spaans",
+    "fr": "Frans",
+    "ga": "Gaelisch",
+    "hi": "Hindi",
+    "it": "Italiaans",
+    "nl": "Nederlands",
+    "pl": "Pools",
+    "pt": "Portugees",
+    "zu": "Zulu"
+  },
+  "content": {
+    "chat": "Chat",
+    "sign_up": "Aanmelden",
+    "log_in": "Inloggen",
+    "log_out": "Uitloggen",
+    "profile": "Profiel",
+    "register": "Registreren",
+    "toggle": "Schakelen",
+    "light": "Licht",
+    "mode": "Modus",
+    "login_account": "Gebruik uw e-mail en wachtwoord om in te loggen",
+    "create_account": "Maak een account met uw e-mail en wachtwoord",
+    "new_chat": "Start een nieuwe chat",
+    "new_chat_hero": "Een AI-chatbot ontworpen om progressieve NPO's te ondersteunen",
+    "no_chat": "Geen chats gevonden",
+    "history": "Geschiedenis",
+    "switch_language": "Taal Wisselen",
+    "already_have_account": "Heb je al een account?",
+    "dont_have_account": "Heb je geen account?",
+    "instead": "in plaats daarvan",
+    "account_exists_notice": "Account bestaat al",
+    "acount_create_failed_notice": "Account aanmaken mislukt",
+    "failed_validation_notice": "Validatie van je inzending mislukt!",
+    "account_created_notice": "Account succesvol aangemaakt",
+    "invalid_credentials": "Ongeldige inloggegevens!",
+    "overview_notice": "Dit is een open-source chatbot.",
+    "send_message": "Stuur een bericht...",
+    "please_wait": "Wacht alstublieft tot het model zijn antwoord heeft voltooid!",
+    "splash_overview_message": "Log in om te beginnen!"
+  },
+  "404": {
+    "page_title": "Pagina Niet Gevonden",
+    "page_description": "Sorry, de pagina die je zoekt bestaat niet.",
+    "home_link": "Ga terug naar de startpagina"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Help me een strategie van 3 maanden ontwerpen om te pleiten voor [beleid of zaak]",
+      "label": "Wat zijn de belangrijkste mijlpalen, doelgroepen en platforms die aansluiten bij dit probleem?",
+      "action": "Help me een strategie van 3 maanden ontwerpen om te pleiten voor [beleid of zaak]. Wat zijn de belangrijkste mijlpalen, doelgroepen en platforms die aansluiten bij dit probleem?"
+    },
+    "social_toolkit": {
+      "title": "Ontwikkel een toolkit voor supporters om [campagne] online te versterken.",
+      "label": "Moeten we voorgeschreven berichten, infographics of videotemplates toevoegen?",
+      "action": "Ontwikkel een toolkit voor supporters om [campagne] online te versterken. Moeten we voorgeschreven berichten, infographics of videotemplates toevoegen?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Schrijf een telefoonscript om vrijwilligers te werven voor [evenement].",
+      "label": "Moeten we de persoonlijke impact, urgentie of betrokkenheid van de gemeenschap benadrukken?",
+      "action": "Schrijf een telefoonscript om vrijwilligers te werven voor [evenement]. Moeten we de persoonlijke impact, urgentie of betrokkenheid van de gemeenschap benadrukken?"
+    },
+    "standard_campaign": {
+      "title": "Ontwikkel een toolkit voor supporters om [campagne] online te versterken.",
+      "label": "Moeten we voorgeschreven berichten, infographics of videotemplates toevoegen?",
+      "action": "Ontwikkel een toolkit voor supporters om [campagne] online te versterken. Moeten we voorgeschreven berichten, infographics of videotemplates toevoegen?"
+    }
+  }
+}

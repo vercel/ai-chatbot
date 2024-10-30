@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "language": "Polski"
+  },
+  "globals": {
+    "site_title": "Asystent Kampanii"
+  },
+  "locales": {
+    "af": "Afrykanerski",
+    "de": "Niemiecki",
+    "en": "Angielski",
+    "es": "Hiszpański",
+    "fr": "Francuski",
+    "ga": "Gaelicki",
+    "hi": "Hindi",
+    "it": "Włoski",
+    "nl": "Niderlandzki",
+    "pl": "Polski",
+    "pt": "Portugalski",
+    "zu": "Zulu"
+  },
+  "content": {
+    "chat": "Czat",
+    "sign_up": "Zarejestruj się",
+    "log_in": "Zaloguj się",
+    "log_out": "Wyloguj się",
+    "profile": "Profil",
+    "register": "Zarejestruj się",
+    "toggle": "Przełącz",
+    "light": "Jasny",
+    "mode": "Tryb",
+    "login_account": "Użyj swojego e-maila i hasła, aby się zalogować",
+    "create_account": "Utwórz konto za pomocą e-maila i hasła",
+    "new_chat": "Rozpocznij nowy czat",
+    "new_chat_hero": "Chatbot AI zaprojektowany do wspierania postępowych NGO",
+    "no_chat": "Nie znaleziono czatów",
+    "history": "Historia",
+    "switch_language": "Zmień Język",
+    "already_have_account": "Masz już konto?",
+    "dont_have_account": "Nie masz konta?",
+    "instead": "zamiast tego",
+    "account_exists_notice": "Konto już istnieje",
+    "acount_create_failed_notice": "Nie udało się utworzyć konta",
+    "failed_validation_notice": "Nie udało się zweryfikować Twojego zgłoszenia!",
+    "account_created_notice": "Konto zostało pomyślnie utworzone",
+    "invalid_credentials": "Nieprawidłowe dane logowania!",
+    "overview_notice": "To jest chatbot open source.",
+    "send_message": "Wyślij wiadomość...",
+    "please_wait": "Proszę poczekać, aż model zakończy odpowiedź!",
+    "splash_overview_message": "Zaloguj się, aby rozpocząć!"
+  },
+  "404": {
+    "page_title": "Strona Nie Znaleziona",
+    "page_description": "Przepraszamy, strona, której szukasz, nie istnieje.",
+    "home_link": "Wróć na stronę główną"
+  },
+  "suggested_prompts": {
+    "strategic_campaign": {
+      "title": "Pomóż mi zaprojektować 3-miesięczną strategię wspierania [polityki lub sprawy]",
+      "label": "Jakie są kluczowe kamienie milowe, docelowe grupy odbiorców i platformy zgodne z tym tematem?",
+      "action": "Pomóż mi zaprojektować 3-miesięczną strategię wspierania [polityki lub sprawy]. Jakie są kluczowe kamienie milowe, docelowe grupy odbiorców i platformy zgodne z tym tematem?"
+    },
+    "social_toolkit": {
+      "title": "Opracuj zestaw narzędzi dla zwolenników, aby wzmocnić [kampanię] online.",
+      "label": "Czy powinniśmy uwzględnić gotowe posty, infografiki lub szablony wideo?",
+      "action": "Opracuj zestaw narzędzi dla zwolenników, aby wzmocnić [kampanię] online. Czy powinniśmy uwzględnić gotowe posty, infografiki lub szablony wideo?"
+    },
+    "volunteer_mobilisation": {
+      "title": "Napisz skrypt do telefonowania w celu rekrutacji wolontariuszy na [wydarzenie].",
+      "label": "Czy powinniśmy podkreślić osobisty wpływ, pilność lub zaangażowanie społeczności?",
+      "action": "Napisz skrypt do telefonowania w celu rekrutacji wolontariuszy na [wydarzenie]. Czy powinniśmy podkreślić osobisty wpływ, pilność lub zaangażowanie społeczności?"
+    },
+    "standard_campaign": {
+      "title": "Opracuj zestaw narzędzi dla zwolenników, aby wzmocnić [kampanię] online.",
+      "label": "Czy powinniśmy uwzględnić gotowe posty, infografiki lub szablony wideo?",
+      "action": "Opracuj zestaw narzędzi dla zwolenników, aby wzmocnić [kampanię] online. Czy powinniśmy uwzględnić gotowe posty, infografiki lub szablony wideo?"
+    }
+  }
+}
