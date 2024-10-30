@@ -1,3 +1,4 @@
+import { ipAddress } from '@vercel/functions';
 import { kv } from '@vercel/kv';
 import { NextFetchEvent, NextRequest } from 'next/server';
 import NextAuth from 'next-auth';
@@ -15,7 +16,7 @@ export async function botProtectionMiddleware(
   event: NextFetchEvent
 ) {
   if (['POST', 'DELETE'].includes(request.method)) {
-    const realIp = request.headers.get('x-real-ip') || 'no-ip';
+    const realIp = ipAddress(request) ?? 'no-ip';
     const pipeline = kv.pipeline();
     pipeline.incr(`rate-limit:${realIp}`);
     pipeline.expire(`rate-limit:${realIp}`, 60 * 60 * 24);
