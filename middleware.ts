@@ -34,6 +34,8 @@ export async function botProtectionMiddleware(
       return undefined;
     }
 
+    console.log(realIp);
+
     if (requests > MAX_REQUESTS) {
       return new Response('Too many requests (rate limit)', { status: 429 });
     }
