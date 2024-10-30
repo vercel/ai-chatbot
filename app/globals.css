@@ -136,3 +136,7 @@
     @apply bg-foreground/20 animate-pulse;
   }
 }
+
+.ProseMirror {
+  outline: none;
+}

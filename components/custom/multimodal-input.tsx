@@ -1,6 +1,7 @@
 'use client';
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import cx from 'classnames';
 import { motion } from 'framer-motion';
 import React, {
   useRef,
@@ -12,6 +13,8 @@ import React, {
   ChangeEvent,
 } from 'react';
 import { toast } from 'sonner';
+
+import { sanitizeUIMessages } from '@/lib/utils';
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
@@ -26,9 +29,9 @@ const suggestedActions = [
     action: 'What is the weather in San Francisco?',
   },
   {
-    title: "Answer like I'm 5,",
-    label: 'why is the sky blue?',
-    action: "Answer like I'm 5, why is the sky blue?",
+    title: 'Help me draft an essay',
+    label: 'about Silicon Valley',
+    action: 'Help me draft an essay about Silicon Valley',
   },
 ];
 
@@ -40,8 +43,10 @@ export function MultimodalInput({
   attachments,
   setAttachments,
   messages,
+  setMessages,
   append,
   handleSubmit,
+  className,
 }: {
   input: string;
   setInput: (value: string) => void;
@@ -50,6 +55,7 @@ export function MultimodalInput({
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -60,6 +66,7 @@ export function MultimodalInput({
     },
     chatRequestOptions?: ChatRequestOptions
   ) => void;
+  className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -220,7 +227,10 @@ export function MultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-xl p-4 focus-visible:ring-0 focus-visible:ring-offset-0 text-base bg-muted border-none"
+        className={cx(
+          'min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted',
+          className
+        )}
         rows={3}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
@@ -241,6 +251,7 @@ export function MultimodalInput({
           onClick={(event) => {
             event.preventDefault();
             stop();
+            setMessages((messages) => sanitizeUIMessages(messages));
           }}
         >
           <StopIcon size={14} />

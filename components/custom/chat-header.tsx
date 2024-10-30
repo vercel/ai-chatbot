@@ -5,13 +5,8 @@ import { ModelSelector } from '@/components/custom/model-selector';
 import { SidebarToggle } from '@/components/custom/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import { BetterTooltip } from '@/components/ui/tooltip';
-import { Model } from '@/lib/model';
 
-export function ChatHeader({
-  selectedModelName,
-}: {
-  selectedModelName: Model['name'];
-}) {
+export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
   return (
     <header className="flex h-16 sticky top-0 bg-background md:h-12 items-center px-2 md:px-2 z-10">
       <SidebarToggle />
@@ -28,7 +23,7 @@ export function ChatHeader({
         </Button>
       </BetterTooltip>
       <ModelSelector
-        selectedModelName={selectedModelName}
+        selectedModelId={selectedModelId}
         className="order-1 md:order-2"
       />
     </header>
