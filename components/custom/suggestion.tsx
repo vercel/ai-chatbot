@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { UISuggestion } from '@/lib/editor/suggestions';
 
 import { CrossIcon, MessageIcon } from './icons';
+import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
 
 export const Suggestion = ({
@@ -16,15 +17,16 @@ export const Suggestion = ({
   onApply: () => void;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { width: windowWidth } = useWindowSize();
 
   return !isExpanded ? (
     <div
-      className="absolute cursor-pointer text-muted-foreground mt-1 -right-8"
+      className="absolute cursor-pointer text-muted-foreground -right-8 p-1"
       onClick={() => {
         setIsExpanded(true);
       }}
     >
-      <MessageIcon size={14} />
+      <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
     </div>
   ) : (
     <motion.div
