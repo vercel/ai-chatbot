@@ -90,16 +90,17 @@ export function MultimodalInput({
     ''
   );
 
-  useEffect(
-    () => {
-      if (localStorageInput) {
-        setInput(localStorageInput);
-      }
-    },
-    // NOTE: This runs only once on mount
+  useEffect(() => {
+    if (textareaRef.current) {
+      const domValue = textareaRef.current.value;
+      // Prefer DOM value over localStorage to handle hydration
+      const finalValue = domValue || localStorageInput || '';
+      setInput(finalValue);
+      adjustHeight();
+    }
+    // Only run once after hydration
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  }, []);
 
   useEffect(() => {
     setLocalStorageInput(input);
