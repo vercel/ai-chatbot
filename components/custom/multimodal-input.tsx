@@ -13,6 +13,7 @@ import React, {
   ChangeEvent,
 } from 'react';
 import { toast } from 'sonner';
+import { useLocalStorage } from 'usehooks-ts';
 
 import { sanitizeUIMessages } from '@/lib/utils';
 
@@ -84,6 +85,27 @@ export function MultimodalInput({
     }
   };
 
+  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
+    'input',
+    ''
+  );
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      const domValue = textareaRef.current.value;
+      // Prefer DOM value over localStorage to handle hydration
+      const finalValue = domValue || localStorageInput || '';
+      setInput(finalValue);
+      adjustHeight();
+    }
+    // Only run once after hydration
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setLocalStorageInput(input);
+  }, [input, setLocalStorageInput]);
+
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
     adjustHeight();
@@ -98,11 +120,12 @@ export function MultimodalInput({
     });
 
     setAttachments([]);
+    setLocalStorageInput('');
 
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [attachments, handleSubmit, setAttachments, width]);
+  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput, width]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
