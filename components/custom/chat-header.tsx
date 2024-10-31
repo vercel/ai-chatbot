@@ -1,4 +1,3 @@
-import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 import { ModelSelector } from '@/components/custom/model-selector';
@@ -6,9 +5,11 @@ import { SidebarToggle } from '@/components/custom/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import { BetterTooltip } from '@/components/ui/tooltip';
 
+import { PlusIcon } from './icons';
+
 export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
   return (
-    <header className="flex h-16 sticky top-0 bg-background md:h-12 items-center px-2 md:px-2 z-10">
+    <header className="flex h-16 sticky top-0 bg-background md:h-12 items-center px-2 md:px-2 gap-2">
       <SidebarToggle />
       <BetterTooltip content="New Chat">
         <Button
@@ -17,7 +18,7 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
           asChild
         >
           <Link href="/">
-            <Plus />
+            <PlusIcon />
             <span className="md:sr-only">New Chat</span>
           </Link>
         </Button>
