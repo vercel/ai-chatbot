@@ -1,5 +1,6 @@
 'use client';
 
+import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { exampleSetup } from 'prosemirror-example-setup';
 import { inputRules, textblockTypeInputRule } from 'prosemirror-inputrules';
 import { defaultMarkdownSerializer } from 'prosemirror-markdown';
@@ -20,9 +21,8 @@ import {
   UISuggestion,
 } from '@/lib/editor/suggestions';
 
-import { Markdown } from './markdown';
 import { FloatingMenu, FloatingMenuState } from './floating-menu';
-import { ChatRequestOptions, CreateMessage, Message } from 'ai';
+import { Markdown } from './markdown';
 
 const mySchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),

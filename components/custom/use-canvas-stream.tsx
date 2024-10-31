@@ -103,5 +103,5 @@ export function useCanvasStream({
           return draftCanvas;
       }
     });
-  }, [streamingData, setCanvas]);
+  }, [streamingData, setCanvas, windowWidth, windowHeight]);
 }
