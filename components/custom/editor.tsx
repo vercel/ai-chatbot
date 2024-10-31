@@ -8,7 +8,7 @@ import { schema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
 import { EditorState } from 'prosemirror-state';
 import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 
 import { Suggestion } from '@/db/schema';
@@ -21,6 +21,8 @@ import {
 } from '@/lib/editor/suggestions';
 
 import { Markdown } from './markdown';
+import { FloatingMenu, FloatingMenuState } from './floating-menu';
+import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 
 const mySchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
@@ -48,16 +50,28 @@ type EditorProps = {
   status: 'streaming' | 'idle';
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: ChatRequestOptions
+  ) => Promise<string | null | undefined>;
 };
 
 function PureEditor({
   content,
   onChange,
+  status,
   suggestions: suggestionsWithoutHighlights,
+  append,
 }: EditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const widgetRootsRef = useRef<Map<string, WidgetRoot>>(new Map());
+
+  const [floatingMenu, setFloatingMenu] = useState<FloatingMenuState>({
+    isVisible: false,
+    position: { top: 0, left: 0 },
+    selectedText: '',
+  });
 
   useEffect(() => {
     if (editorRef.current && !viewRef.current) {
@@ -104,6 +118,42 @@ function PureEditor({
             }
           },
         });
+
+        const handleSelectionChange = () => {
+          const view = viewRef.current;
+          if (!view) return;
+
+          const { from, to } = view.state.selection;
+
+          if (from === to) {
+            setFloatingMenu({
+              isVisible: false,
+              position: { top: 0, left: 0 },
+              selectedText: '',
+            });
+            return;
+          }
+
+          const selectedText = view.state.doc.textBetween(from, to);
+
+          const coords = view.coordsAtPos(from);
+          const editorRect = editorRef.current!.getBoundingClientRect();
+
+          setFloatingMenu({
+            isVisible: true,
+            selectedText,
+            position: {
+              top: coords.top - editorRect.top - 40,
+              left: coords.left - editorRect.left,
+            },
+          });
+        };
+
+        const handleMouseUp = () => {
+          setTimeout(handleSelectionChange, 0);
+        };
+
+        viewRef.current.dom.addEventListener('mouseup', handleMouseUp);
       } else {
         console.error('Schema is not properly initialized');
       }
@@ -191,7 +241,17 @@ function PureEditor({
     };
   }, []);
 
-  return <div className="relative prose dark:prose-invert" ref={editorRef} />;
+  return (
+    <div className="relative prose dark:prose-invert" ref={editorRef}>
+      {status === 'idle' && (
+        <FloatingMenu
+          floatingMenu={floatingMenu}
+          setFloatingMenu={setFloatingMenu}
+          append={append}
+        />
+      )}
+    </div>
+  );
 }
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {

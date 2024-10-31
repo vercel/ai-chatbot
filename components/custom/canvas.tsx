@@ -466,6 +466,7 @@ export function Canvas({
                 status={canvas.status ?? 'idle'}
                 onChange={handleEditorChange}
                 suggestions={isCurrentVersion ? (suggestions ?? []) : []}
+                append={append}
               />
             ) : (
               <DiffView
