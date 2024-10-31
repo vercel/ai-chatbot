@@ -136,12 +136,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   if (!user) {
     return (
       <SidebarGroup>
-        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          Today
-        </div>
         <SidebarGroupContent>
-          <div className="text-zinc-500 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
-            <InfoIcon />
+          <div className="text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             <div>Login to save and revisit previous chats!</div>
           </div>
         </SidebarGroupContent>
