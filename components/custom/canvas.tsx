@@ -1,6 +1,6 @@
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
 import cx from 'classnames';
-import { formatDistance, isAfter } from 'date-fns';
+import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Dispatch,
@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
 import { Document, Suggestion } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
@@ -18,14 +19,12 @@ import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
 import { CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
+import { Markdown } from './markdown';
 import { Message as PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
-import { useDebounce } from './use-debounce';
 import { useScrollToBottom } from './use-scroll-to-bottom';
-import useWindowSize from './use-window-size';
-import { Button } from '../ui/button';
-
+import { VersionFooter } from './version-footer';
 export interface UICanvas {
   title: string;
   documentId: string;
@@ -61,7 +60,7 @@ export function Canvas({
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   canvas: UICanvas;
-  setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
+  setCanvas: Dispatch<SetStateAction<UICanvas>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
@@ -81,7 +80,6 @@ export function Canvas({
   const {
     data: documents,
     isLoading: isDocumentsFetching,
-    isValidating: isDocumentsValidating,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
     canvas && canvas.status !== 'streaming'
@@ -111,14 +109,10 @@ export function Canvas({
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
-        setCanvas((currentCanvas) =>
-          currentCanvas
-            ? {
-                ...currentCanvas,
-                content: mostRecentDocument.content ?? '',
-              }
-            : null
-        );
+        setCanvas((currentCanvas) => ({
+          ...currentCanvas,
+          content: mostRecentDocument.content ?? '',
+        }));
       }
     }
   }, [documents, setCanvas]);
@@ -174,35 +168,30 @@ export function Canvas({
     [canvas, mutate]
   );
 
-  const debouncedHandleEditorChange = useCallback(
-    useDebounce(handleContentChange, 4000),
-    [handleContentChange]
+  const debouncedHandleContentChange = useDebounceCallback(
+    handleContentChange,
+    2000
   );
 
-  const handleEditorChange = useCallback(
+  const saveContent = useCallback(
     (updatedContent: string, debounce: boolean) => {
       if (document && updatedContent !== document.content) {
+        setIsContentDirty(true);
+
         if (debounce) {
-          debouncedHandleEditorChange(updatedContent);
+          debouncedHandleContentChange(updatedContent);
         } else {
           handleContentChange(updatedContent);
         }
-
-        setIsContentDirty(true);
       }
     },
-    [document, debouncedHandleEditorChange, handleContentChange]
+    [document, debouncedHandleContentChange, handleContentChange]
   );
 
   function getDocumentContentById(index: number) {
     if (!documents) return '';
     if (!documents[index]) return '';
     return documents[index].content ?? '';
-  }
-
-  function getDocumentTimestampById(index: number) {
-    if (!documents) return '';
-    return documents[index]?.createdAt ?? '';
   }
 
   const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
@@ -237,11 +226,9 @@ export function Canvas({
    */
 
   const isCurrentVersion =
-    isDocumentsFetching || isDocumentsValidating
-      ? true
-      : documents && documents.length > 0
-        ? currentVersionIndex === documents.length - 1
-        : true;
+    documents && documents.length > 0
+      ? currentVersionIndex === documents.length - 1
+      : true;
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
@@ -391,7 +378,10 @@ export function Canvas({
             <div
               className="cursor-pointer hover:bg-muted dark:hover:bg-zinc-700 p-2 rounded-lg text-muted-foreground"
               onClick={() => {
-                setCanvas(null);
+                setCanvas((currentCanvas) => ({
+                  ...currentCanvas,
+                  isVisible: false,
+                }));
               }}
             >
               <CrossIcon size={18} />
@@ -462,9 +452,10 @@ export function Canvas({
                     ? canvas.content
                     : getDocumentContentById(currentVersionIndex)
                 }
+                isCurrentVersion={isCurrentVersion}
                 currentVersionIndex={currentVersionIndex}
-                status={canvas.status ?? 'idle'}
-                onChange={handleEditorChange}
+                status={canvas.status}
+                saveContent={saveContent}
                 suggestions={isCurrentVersion ? (suggestions ?? []) : []}
               />
             ) : (
@@ -482,63 +473,12 @@ export function Canvas({
 
         <AnimatePresence>
           {!isCurrentVersion && (
-            <motion.div
-              className="absolute flex flex-col gap-4 lg:flex-row bottom-0 bg-background p-4 w-full border-t z-50 justify-between"
-              initial={{ y: isMobile ? 200 : 77 }}
-              animate={{ y: 0 }}
-              exit={{ y: isMobile ? 200 : 77 }}
-              transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-            >
-              <div>
-                <div>You are viewing a previous version</div>
-                <div className="text-muted-foreground text-sm">
-                  Restore this version to make edits
-                </div>
-              </div>
-
-              <div className="flex flex-row gap-4">
-                <Button
-                  onClick={async () => {
-                    mutate(
-                      `/api/document?id=${canvas.documentId}`,
-                      await fetch(`/api/document?id=${canvas.documentId}`, {
-                        method: 'PATCH',
-                        body: JSON.stringify({
-                          timestamp:
-                            getDocumentTimestampById(currentVersionIndex),
-                        }),
-                      }),
-                      {
-                        optimisticData: documents
-                          ? [
-                              ...documents.filter((d) =>
-                                isAfter(
-                                  new Date(d.createdAt),
-                                  new Date(
-                                    getDocumentTimestampById(
-                                      currentVersionIndex
-                                    )
-                                  )
-                                )
-                              ),
-                            ]
-                          : [],
-                      }
-                    );
-                  }}
-                >
-                  Restore this version
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    handleVersionChange('latest');
-                  }}
-                >
-                  Back to latest version
-                </Button>
-              </div>
-            </motion.div>
+            <VersionFooter
+              canvas={canvas}
+              currentVersionIndex={currentVersionIndex}
+              documents={documents}
+              handleVersionChange={handleVersionChange}
+            />
           )}
         </AnimatePresence>
       </motion.div>

@@ -9,6 +9,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { useOnClickOutside } from 'usehooks-ts';
 
 import {
   Tooltip,
@@ -25,7 +26,6 @@ import {
   StopIcon,
   SummarizeIcon,
 } from './icons';
-import useClickOutside from './use-click-outside';
 
 type ToolProps = {
   type: 'final-polish' | 'request-suggestions' | 'adjust-reading-level';
@@ -265,7 +265,7 @@ export const Toolbar = ({
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useClickOutside(toolbarRef, () => {
+  useOnClickOutside(toolbarRef, () => {
     setIsToolbarVisible(false);
     setSelectedTool(null);
   });
