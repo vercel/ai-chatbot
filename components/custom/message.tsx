@@ -24,8 +24,8 @@ export const Message = ({
   content: string | ReactNode;
   toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
-  canvas: UICanvas | null;
-  setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
+  canvas: UICanvas;
+  setCanvas: Dispatch<SetStateAction<UICanvas>>;
 }) => {
   return (
     <motion.div

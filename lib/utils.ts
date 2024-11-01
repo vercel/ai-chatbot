@@ -9,7 +9,7 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Chat } from '@/db/schema';
+import { Chat, Document } from '@/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -220,4 +220,14 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
       message.content.length > 0 ||
       (message.toolInvocations && message.toolInvocations.length > 0)
   );
+}
+
+export function getDocumentTimestampByIndex(
+  documents: Array<Document>,
+  index: number
+) {
+  if (!documents) return new Date();
+  if (index > documents.length) return new Date();
+
+  return documents[index].createdAt;
 }
