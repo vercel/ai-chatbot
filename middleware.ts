@@ -6,6 +6,7 @@ import NextAuth from 'next-auth';
 import { authConfig } from '@/app/(auth)/auth.config';
 
 import { kasadaHandler } from './utils/kasada/kasada-server';
+import { headers } from 'next/headers';
 
 const MAX_REQUESTS = 25;
 
@@ -43,10 +44,18 @@ export async function botProtectionMiddleware(
 }
 
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
-  const response = await botProtectionMiddleware(request, event);
-  if (response) return response;
+  const headersList = await headers();
+  const botCheckBypassToken = headersList.get('x-vercel-bot-check-bypass');
 
-  // @ts-expect-error type mismatch
+  if (botCheckBypassToken === process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+    // @ts-expect-error TODO: fix type mismatch
+    return auth(request, event);
+  }
+
+  const botProtectionResponse = await botProtectionMiddleware(request, event);
+  if (botProtectionResponse) return botProtectionResponse;
+
+  // @ts-expect-error TODO: fix type mismatch
   return auth(request, event);
 }
 
