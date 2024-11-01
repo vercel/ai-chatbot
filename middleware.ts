@@ -1,5 +1,6 @@
 import { ipAddress } from '@vercel/functions';
 import { kv } from '@vercel/kv';
+import { headers } from 'next/headers';
 import { NextFetchEvent, NextRequest } from 'next/server';
 import NextAuth from 'next-auth';
 
@@ -43,10 +44,18 @@ export async function botProtectionMiddleware(
 }
 
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
-  const response = await botProtectionMiddleware(request, event);
-  if (response) return response;
+  const headersList = await headers();
+  const botCheckBypassToken = headersList.get('x-vercel-protection-bypass');
 
-  // @ts-expect-error type mismatch
+  if (botCheckBypassToken === process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+    // @ts-expect-error TODO: fix type mismatch
+    return auth(request, event);
+  }
+
+  const botProtectionResponse = await botProtectionMiddleware(request, event);
+  if (botProtectionResponse) return botProtectionResponse;
+
+  // @ts-expect-error TODO: fix type mismatch
   return auth(request, event);
 }
 
