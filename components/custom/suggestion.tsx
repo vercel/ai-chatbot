@@ -2,11 +2,11 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { useWindowSize } from 'usehooks-ts';
 
 import { UISuggestion } from '@/lib/editor/suggestions';
 
 import { CrossIcon, MessageIcon } from './icons';
-import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
 
 export const Suggestion = ({

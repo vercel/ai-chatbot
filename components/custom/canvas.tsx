@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { useDebounceCallback } from 'usehooks-ts';
+import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
 import { Document, Suggestion } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
@@ -24,7 +24,6 @@ import { Message as PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
-import useWindowSize from './use-window-size';
 import { VersionFooter } from './version-footer';
 export interface UICanvas {
   title: string;

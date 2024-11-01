@@ -4,6 +4,7 @@ import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { useWindowSize } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
@@ -13,7 +14,6 @@ import { Canvas, UICanvas } from './canvas';
 import { CanvasStreamHandler } from './canvas-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
-import useWindowSize from './use-window-size';
 
 export function Chat({
   id,
