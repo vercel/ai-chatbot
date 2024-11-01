@@ -19,8 +19,8 @@ const getActionText = (type: 'create' | 'update' | 'request-suggestions') => {
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
   result: any;
-  canvas: UICanvas | null;
-  setCanvas: (value: SetStateAction<UICanvas | null>) => void;
+  canvas: UICanvas;
+  setCanvas: (value: SetStateAction<UICanvas>) => void;
 }
 
 export function DocumentToolResult({
@@ -42,27 +42,14 @@ export function DocumentToolResult({
           height: rect.height,
         };
 
-        if (!canvas) {
-          setCanvas({
-            documentId: result.id,
-            content: '',
-            title: result.title,
-            isVisible: true,
-            status: 'idle',
-            boundingBox,
-          });
-        } else {
-          if (canvas.documentId !== result.id) {
-            setCanvas({
-              documentId: result.id,
-              content: '',
-              title: result.title,
-              isVisible: true,
-              status: 'idle',
-              boundingBox,
-            });
-          }
-        }
+        setCanvas({
+          documentId: result.id,
+          content: '',
+          title: result.title,
+          isVisible: true,
+          status: 'idle',
+          boundingBox,
+        });
       }}
     >
       <div className="text-muted-foreground mt-1">

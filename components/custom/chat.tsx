@@ -5,7 +5,7 @@ import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { User } from 'next-auth';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { useWindowSize } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
@@ -53,10 +53,26 @@ export function Chat({
     },
   });
 
+  const { width: windowWidth = 1920, height: windowHeight = 1080 } =
+    useWindowSize();
+
+  const [canvas, setCanvas] = useState<UICanvas>({
+    documentId: 'init',
+    content: '',
+    title: '',
+    status: 'idle',
+    isVisible: false,
+    boundingBox: {
+      top: windowHeight / 4,
+      left: windowWidth / 4,
+      width: 250,
+      height: 50,
+    },
+  });
+
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
-  const [canvas, setCanvas] = useState<UICanvas | null>(null);
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const [isDeployDialogOpen, setIsDeployDialogOpen] = useState(false);
 

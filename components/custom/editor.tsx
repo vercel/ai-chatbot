@@ -1,213 +1,170 @@
 'use client';
 
 import { exampleSetup } from 'prosemirror-example-setup';
-import { inputRules, textblockTypeInputRule } from 'prosemirror-inputrules';
-import { defaultMarkdownSerializer } from 'prosemirror-markdown';
-import { Schema, DOMParser } from 'prosemirror-model';
-import { schema } from 'prosemirror-schema-basic';
-import { addListNodes } from 'prosemirror-schema-list';
+import { inputRules } from 'prosemirror-inputrules';
 import { EditorState } from 'prosemirror-state';
-import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { renderToString } from 'react-dom/server';
+import { EditorView } from 'prosemirror-view';
+import React, { memo, useEffect, useRef } from 'react';
 
 import { Suggestion } from '@/db/schema';
 import {
-  createSuggestionWidget,
-  projectWithHighlights,
+  documentSchema,
+  handleTransaction,
+  headingRule,
+} from '@/lib/editor/config';
+import {
+  buildContentFromDocument,
+  buildDocumentFromContent,
+  createDecorations,
+} from '@/lib/editor/functions';
+import {
+  projectWithPositions,
   suggestionsPlugin,
   suggestionsPluginKey,
-  UISuggestion,
 } from '@/lib/editor/suggestions';
-
-import { Markdown } from './markdown';
-
-const mySchema = new Schema({
-  nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
-  // @ts-expect-error: TODO need to fix type mismatch
-  marks: {
-    ...schema.spec.marks,
-  },
-});
-
-function headingRule(level: number) {
-  return textblockTypeInputRule(
-    new RegExp(`^(#{1,${level}})\\s$`),
-    mySchema.nodes.heading,
-    () => ({ level })
-  );
-}
-
-interface WidgetRoot {
-  destroy: () => void;
-}
 
 type EditorProps = {
   content: string;
-  onChange: (updatedContent: string, debounce: boolean) => void;
+  saveContent: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
+  isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
 };
 
 function PureEditor({
   content,
-  onChange,
-  suggestions: suggestionsWithoutHighlights,
+  saveContent,
+  suggestions,
+  status,
 }: EditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef<EditorView | null>(null);
-  const widgetRootsRef = useRef<Map<string, WidgetRoot>>(new Map());
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
-    if (editorRef.current && !viewRef.current) {
-      if (mySchema) {
-        const parser = DOMParser.fromSchema(mySchema);
+    if (containerRef.current && !editorRef.current) {
+      const state = EditorState.create({
+        doc: buildDocumentFromContent(content),
+        plugins: [
+          ...exampleSetup({ schema: documentSchema, menuBar: false }),
+          inputRules({
+            rules: [
+              headingRule(1),
+              headingRule(2),
+              headingRule(3),
+              headingRule(4),
+              headingRule(5),
+              headingRule(6),
+            ],
+          }),
+          suggestionsPlugin,
+        ],
+      });
 
-        const htmlContent = renderToString(<Markdown>{content}</Markdown>);
-
-        const container = document.createElement('div');
-        container.innerHTML = htmlContent;
-
-        const state = EditorState.create({
-          doc: parser.parse(container),
-          plugins: [
-            ...exampleSetup({ schema: mySchema, menuBar: false }),
-            inputRules({
-              rules: [
-                headingRule(1),
-                headingRule(2),
-                headingRule(3),
-                headingRule(4),
-                headingRule(5),
-                headingRule(6),
-              ],
-            }),
-            suggestionsPlugin,
-          ],
-        });
-
-        viewRef.current = new EditorView(editorRef.current, {
-          state,
-          dispatchTransaction: (transaction) => {
-            const newState = viewRef.current!.state.apply(transaction);
-            viewRef.current!.updateState(newState);
-
-            if (transaction.docChanged) {
-              const content = defaultMarkdownSerializer.serialize(newState.doc);
-
-              if (transaction.getMeta('no-debounce')) {
-                onChange(content, false);
-              } else {
-                onChange(content, true);
-              }
-            }
-          },
-        });
-      } else {
-        console.error('Schema is not properly initialized');
-      }
+      editorRef.current = new EditorView(containerRef.current, {
+        state,
+      });
     }
 
     return () => {
-      if (viewRef.current) {
-        viewRef.current.destroy();
-        viewRef.current = null;
+      if (editorRef.current) {
+        editorRef.current.destroy();
+        editorRef.current = null;
       }
     };
-  }, [content, onChange]);
+    // NOTE: we only want to run this effect once
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
-    if (viewRef.current && viewRef.current.state.doc && content) {
-      const computedSuggestions = projectWithHighlights(
-        viewRef.current.state.doc,
-        suggestionsWithoutHighlights
+    if (editorRef.current) {
+      editorRef.current.setProps({
+        dispatchTransaction: (transaction) => {
+          handleTransaction({ transaction, editorRef, saveContent });
+        },
+      });
+    }
+  }, [saveContent]);
+
+  useEffect(() => {
+    if (editorRef.current && content) {
+      const currentContent = buildContentFromDocument(
+        editorRef.current.state.doc
+      );
+
+      if (status === 'streaming') {
+        const newDocument = buildDocumentFromContent(content);
+
+        const transaction = editorRef.current.state.tr.replaceWith(
+          0,
+          editorRef.current.state.doc.content.size,
+          newDocument.content
+        );
+
+        transaction.setMeta('no-save', true);
+        editorRef.current.dispatch(transaction);
+        return;
+      }
+
+      if (currentContent !== content) {
+        const newDocument = buildDocumentFromContent(content);
+
+        const transaction = editorRef.current.state.tr.replaceWith(
+          0,
+          editorRef.current.state.doc.content.size,
+          newDocument.content
+        );
+
+        transaction.setMeta('no-save', true);
+        editorRef.current.dispatch(transaction);
+      }
+    }
+  }, [content, status]);
+
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.state.doc && content) {
+      const projectedSuggestions = projectWithPositions(
+        editorRef.current.state.doc,
+        suggestions
       ).filter(
-        (suggestion) =>
-          suggestion.selectionStart !== 0 && suggestion.selectionEnd !== 0
+        (suggestion) => suggestion.selectionStart && suggestion.selectionEnd
       );
 
       const decorations = createDecorations(
-        computedSuggestions,
-        viewRef.current
+        projectedSuggestions,
+        editorRef.current
       );
-      const transaction = viewRef.current.state.tr;
+
+      const transaction = editorRef.current.state.tr;
       transaction.setMeta(suggestionsPluginKey, { decorations });
-      viewRef.current.dispatch(transaction);
+      editorRef.current.dispatch(transaction);
     }
-  }, [suggestionsWithoutHighlights, content]);
+  }, [suggestions, content]);
 
-  const createDecorations = (suggestions: UISuggestion[], view: EditorView) => {
-    const decorations: Decoration[] = [];
-
-    suggestions.forEach((suggestion) => {
-      decorations.push(
-        Decoration.inline(
-          suggestion.selectionStart,
-          suggestion.selectionEnd,
-          {
-            class:
-              'suggestion-highlight bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40',
-          },
-          {
-            suggestionId: suggestion.id,
-            type: 'highlight',
-          }
-        )
-      );
-
-      decorations.push(
-        Decoration.widget(
-          suggestion.selectionStart,
-          (view) => {
-            const { dom, destroy } = createSuggestionWidget(suggestion, view);
-            const key = `widget-${suggestion.id}`;
-            widgetRootsRef.current.set(key, { destroy });
-            return dom;
-          },
-          {
-            suggestionId: suggestion.id,
-            type: 'widget',
-          }
-        )
-      );
-    });
-
-    return DecorationSet.create(view.state.doc, decorations);
-  };
-
-  useEffect(() => {
-    return () => {
-      widgetRootsRef.current.forEach((root) => {
-        root.destroy();
-      });
-
-      widgetRootsRef.current.clear();
-
-      if (viewRef.current) {
-        viewRef.current.destroy();
-        viewRef.current = null;
-      }
-    };
-  }, []);
-
-  return <div className="relative prose dark:prose-invert" ref={editorRef} />;
+  return (
+    <div className="relative prose dark:prose-invert" ref={containerRef} />
+  );
 }
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.suggestions !== nextProps.suggestions) {
     return false;
-  } else if (prevProps.content === '' && nextProps.content !== '') {
-    return false;
   } else if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) {
     return false;
-  } else if (prevProps.onChange !== nextProps.onChange) {
+  } else if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) {
     return false;
-  } else if (prevProps.status === 'idle') {
-    return true;
-  } else {
-    return prevProps.content === nextProps.content;
+  } else if (
+    prevProps.status === 'streaming' &&
+    nextProps.status === 'streaming'
+  ) {
+    return false;
+  } else if (prevProps.content !== nextProps.content) {
+    return false;
+  } else if (prevProps.saveContent !== nextProps.saveContent) {
+    return false;
   }
+
+  return true;
 }
 
 export const Editor = memo(PureEditor, areEqual);

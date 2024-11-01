@@ -1,4 +1,3 @@
-import { defaultMarkdownSerializer } from 'prosemirror-markdown';
 import { Node } from 'prosemirror-model';
 import { PluginKey, Plugin } from 'prosemirror-state';
 import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
@@ -40,7 +39,7 @@ function findPositionsInDoc(doc: Node, searchText: string): Position | null {
   return positions;
 }
 
-export function projectWithHighlights(
+export function projectWithPositions(
   doc: Node,
   suggestions: Array<Suggestion>
 ): Array<UISuggestion> {
