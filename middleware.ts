@@ -45,7 +45,7 @@ export async function botProtectionMiddleware(
 
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const headersList = await headers();
-  const botCheckBypassToken = headersList.get('x-vercel-bot-check-bypass');
+  const botCheckBypassToken = headersList.get('x-vercel-protection-bypass');
 
   if (botCheckBypassToken === process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
     // @ts-expect-error TODO: fix type mismatch
