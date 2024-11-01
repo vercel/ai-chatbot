@@ -5,7 +5,6 @@ import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-import { Model } from '@/ai/models';
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
@@ -14,6 +13,7 @@ import { Canvas, UICanvas } from './canvas';
 import { CanvasStreamHandler } from './canvas-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
+import useWindowSize from './use-window-size';
 
 export function Chat({
   id,
@@ -42,7 +42,22 @@ export function Chat({
     },
   });
 
-  const [canvas, setCanvas] = useState<UICanvas | null>(null);
+  const { width: windowWidth = 1920, height: windowHeight = 1080 } =
+    useWindowSize();
+
+  const [canvas, setCanvas] = useState<UICanvas>({
+    documentId: 'init',
+    content: '',
+    title: '',
+    status: 'idle',
+    isVisible: false,
+    boundingBox: {
+      top: windowHeight / 4,
+      left: windowWidth / 4,
+      width: 250,
+      height: 50,
+    },
+  });
 
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();

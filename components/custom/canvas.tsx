@@ -19,13 +19,13 @@ import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
 import { CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
+import { Markdown } from './markdown';
 import { Message as PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import useWindowSize from './use-window-size';
 import { VersionFooter } from './version-footer';
-
 export interface UICanvas {
   title: string;
   documentId: string;
@@ -61,7 +61,7 @@ export function Canvas({
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   canvas: UICanvas;
-  setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
+  setCanvas: Dispatch<SetStateAction<UICanvas>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
@@ -110,14 +110,10 @@ export function Canvas({
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
-        setCanvas((currentCanvas) =>
-          currentCanvas
-            ? {
-                ...currentCanvas,
-                content: mostRecentDocument.content ?? '',
-              }
-            : null
-        );
+        setCanvas((currentCanvas) => ({
+          ...currentCanvas,
+          content: mostRecentDocument.content ?? '',
+        }));
       }
     }
   }, [documents, setCanvas]);
@@ -383,7 +379,10 @@ export function Canvas({
             <div
               className="cursor-pointer hover:bg-muted dark:hover:bg-zinc-700 p-2 rounded-lg text-muted-foreground"
               onClick={() => {
-                setCanvas(null);
+                setCanvas((currentCanvas) => ({
+                  ...currentCanvas,
+                  isVisible: false,
+                }));
               }}
             >
               <CrossIcon size={18} />

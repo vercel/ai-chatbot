@@ -3,8 +3,8 @@
 import { exampleSetup } from 'prosemirror-example-setup';
 import { inputRules } from 'prosemirror-inputrules';
 import { EditorState } from 'prosemirror-state';
-import { Decoration, EditorView } from 'prosemirror-view';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import { EditorView } from 'prosemirror-view';
+import React, { memo, useEffect, useRef } from 'react';
 
 import { Suggestion } from '@/db/schema';
 import {
@@ -32,7 +32,12 @@ type EditorProps = {
   suggestions: Array<Suggestion>;
 };
 
-function PureEditor({ content, saveContent, suggestions }: EditorProps) {
+function PureEditor({
+  content,
+  saveContent,
+  suggestions,
+  status,
+}: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
 
@@ -87,6 +92,20 @@ function PureEditor({ content, saveContent, suggestions }: EditorProps) {
         editorRef.current.state.doc
       );
 
+      if (status === 'streaming') {
+        const newDocument = buildDocumentFromContent(content);
+
+        const transaction = editorRef.current.state.tr.replaceWith(
+          0,
+          editorRef.current.state.doc.content.size,
+          newDocument.content
+        );
+
+        transaction.setMeta('no-save', true);
+        editorRef.current.dispatch(transaction);
+        return;
+      }
+
       if (currentContent !== content) {
         const newDocument = buildDocumentFromContent(content);
 
@@ -100,7 +119,7 @@ function PureEditor({ content, saveContent, suggestions }: EditorProps) {
         editorRef.current.dispatch(transaction);
       }
     }
-  }, [content]);
+  }, [content, status]);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.state.doc && content) {
@@ -108,8 +127,7 @@ function PureEditor({ content, saveContent, suggestions }: EditorProps) {
         editorRef.current.state.doc,
         suggestions
       ).filter(
-        (suggestion) =>
-          suggestion.selectionStart !== 0 && suggestion.selectionEnd !== 0
+        (suggestion) => suggestion.selectionStart && suggestion.selectionEnd
       );
 
       const decorations = createDecorations(

@@ -5,7 +5,6 @@ import { useSWRConfig } from 'swr';
 import { Suggestion } from '@/db/schema';
 
 import { UICanvas } from './canvas';
-import useWindowSize from './use-window-size';
 
 type StreamingDelta = {
   type: 'text-delta' | 'title' | 'id' | 'suggestion' | 'clear' | 'finish';
@@ -17,7 +16,7 @@ export function useCanvasStream({
   setCanvas,
 }: {
   streamingData: JSONValue[] | undefined;
-  setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
+  setCanvas: Dispatch<SetStateAction<UICanvas>>;
 }) {
   const { mutate } = useSWRConfig();
   const [optimisticSuggestions, setOptimisticSuggestions] = useState<
@@ -32,9 +31,6 @@ export function useCanvasStream({
     }
   }, [optimisticSuggestions, mutate]);
 
-  const { width: windowWidth = 1920, height: windowHeight = 1080 } =
-    useWindowSize();
-
   useEffect(() => {
     const mostRecentDelta = streamingData?.at(-1);
     if (!mostRecentDelta) return;
@@ -42,23 +38,19 @@ export function useCanvasStream({
     const delta = mostRecentDelta as StreamingDelta;
 
     setCanvas((draftCanvas) => {
-      if (!draftCanvas) {
-        return {
-          content: '',
-          title: '',
-          isVisible: false,
-          documentId: delta.type === 'id' ? (delta.content as string) : '',
-          status: 'idle',
-          boundingBox: {
-            top: windowHeight / 4,
-            left: windowWidth / 4,
-            width: 250,
-            height: 50,
-          },
-        };
-      }
-
       switch (delta.type) {
+        case 'id':
+          return {
+            ...draftCanvas,
+            documentId: delta.content as string,
+          };
+
+        case 'title':
+          return {
+            ...draftCanvas,
+            title: delta.content as string,
+          };
+
         case 'text-delta':
           return {
             ...draftCanvas,
@@ -68,12 +60,6 @@ export function useCanvasStream({
                 ? true
                 : draftCanvas.content.length > 200,
             status: 'streaming',
-          };
-
-        case 'title':
-          return {
-            ...draftCanvas,
-            title: delta.content as string,
           };
 
         case 'suggestion':

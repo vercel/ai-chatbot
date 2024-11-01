@@ -5,7 +5,7 @@ import { UICanvas } from './canvas';
 import { useCanvasStream } from './use-canvas-stream';
 
 interface CanvasStreamHandlerProps {
-  setCanvas: Dispatch<SetStateAction<UICanvas | null>>;
+  setCanvas: Dispatch<SetStateAction<UICanvas>>;
   streamingData: JSONValue[] | undefined;
 }
 

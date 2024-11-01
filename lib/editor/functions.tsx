@@ -34,8 +34,7 @@ export const createDecorations = (
         suggestion.selectionStart,
         suggestion.selectionEnd,
         {
-          class:
-            'suggestion-highlight bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40',
+          class: 'suggestion-highlight',
         },
         {
           suggestionId: suggestion.id,

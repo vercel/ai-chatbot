@@ -7,11 +7,11 @@ import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
 import { Document } from '@/db/schema';
+import { getDocumentTimestampByIndex } from '@/lib/utils';
 
 import { UICanvas } from './canvas';
-import { Button } from '../ui/button';
 import { LoaderIcon } from './icons';
-import { getDocumentTimestampByIndex } from '@/lib/utils';
+import { Button } from '../ui/button';
 
 interface VersionFooterProps {
   canvas: UICanvas;
