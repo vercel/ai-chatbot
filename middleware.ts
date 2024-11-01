@@ -1,12 +1,12 @@
 import { ipAddress } from '@vercel/functions';
 import { kv } from '@vercel/kv';
+import { headers } from 'next/headers';
 import { NextFetchEvent, NextRequest } from 'next/server';
 import NextAuth from 'next-auth';
 
 import { authConfig } from '@/app/(auth)/auth.config';
 
 import { kasadaHandler } from './utils/kasada/kasada-server';
-import { headers } from 'next/headers';
 
 const MAX_REQUESTS = 25;
 
