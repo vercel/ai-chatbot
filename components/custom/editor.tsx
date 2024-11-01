@@ -8,7 +8,7 @@ import { schema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
 import { EditorState } from 'prosemirror-state';
 import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 
 import { Suggestion } from '@/db/schema';

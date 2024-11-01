@@ -13,7 +13,7 @@ import React, { useEffect, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 import ReactMarkdown from 'react-markdown';
 
-import { diffEditor, DiffType } from '@/lib/editor/index';
+import { diffEditor, DiffType } from '@/lib/editor/diff';
 
 const diffSchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
