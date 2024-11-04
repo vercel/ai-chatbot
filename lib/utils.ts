@@ -37,13 +37,6 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function getLocalStorage(key: string) {
-  if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  }
-  return [];
-}
-
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
@@ -102,18 +95,30 @@ export function convertToUIMessages(
     if (typeof message.content === 'string') {
       textContent = message.content;
     } else if (Array.isArray(message.content)) {
-      for (const content of message.content) {
-        if (content.type === 'text') {
-          textContent += content.text;
-        } else if (content.type === 'tool-call') {
-          toolInvocations.push({
-            state: 'call',
-            toolCallId: content.toolCallId,
-            toolName: content.toolName,
-            args: content.args,
-          });
+      message.content.forEach((content) => {
+        try {
+          switch (content.type) {
+            case 'text':
+              textContent += content.text;
+              break;
+
+            case 'image':
+              textContent += `![md-image](${content.image.toString()})`;
+              break;
+
+            case 'tool-call':
+              toolInvocations.push({
+                state: 'call',
+                toolCallId: content.toolCallId,
+                toolName: content.toolName,
+                args: content.args || {},
+              });
+              break;
+          }
+        } catch (error) {
+          console.warn('Error processing message content item:', error);
         }
-      }
+      });
     }
 
     chatMessages.push({
@@ -137,18 +142,6 @@ export function getTitleFromChat(chat: Chat) {
 
   return firstMessage.content;
 }
-
-const emptyAssistantMessage = [
-  {
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: '',
-      },
-    ],
-  },
-];
 
 export function sanitizeResponseMessages(
   messages: Array<CoreToolMessage | CoreAssistantMessage>

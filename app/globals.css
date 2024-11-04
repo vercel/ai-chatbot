@@ -144,3 +144,9 @@
 .suggestion-highlight {
   @apply bg-yellow-100 hover:bg-yellow-200 dark:hover:bg-yellow-400/50 dark:text-yellow-50 dark:bg-yellow-400/40;
 }
+
+img[alt=md-image] {
+  width: 5rem;
+  margin: 0.5rem 0;
+  border-radius: 0.5rem;
+}
