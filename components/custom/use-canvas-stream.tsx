@@ -2,7 +2,7 @@ import { JSONValue } from 'ai';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
 
-import { Suggestion } from '@/db/schema';
+import { suggestion } from '@/db/schema';
 
 import { UICanvas } from './canvas';
 

@@ -20,7 +20,7 @@ import {
   saveDocument,
   saveSuggestions,
 } from '@/db/queries';
-import { Suggestion } from '@/db/schema';
+import { suggestion } from '@/db/schema';
 import { generateUUID, sanitizeResponseMessages } from '@/lib/utils';
 
 export const maxDuration = 60;

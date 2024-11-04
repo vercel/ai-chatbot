@@ -15,6 +15,13 @@
       "when": 1730207363999,
       "tag": "0001_sparkling_blue_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730656213174,
+      "tag": "0002_easy_gertrude_yorkes",
+      "breakpoints": true
     }
   ]
 }
