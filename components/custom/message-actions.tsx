@@ -65,7 +65,7 @@ export function MessageActions({
                 });
 
                 toast.promise(upvote, {
-                  loading: 'Upvoting...',
+                  loading: 'Upvoting Response...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -88,9 +88,9 @@ export function MessageActions({
                       { revalidate: false }
                     );
 
-                    return 'Upvoted!';
+                    return 'Upvoted Response!';
                   },
-                  error: 'Failed to upvote.',
+                  error: 'Failed to upvote response.',
                 });
               }}
             >
@@ -119,7 +119,7 @@ export function MessageActions({
                 });
 
                 toast.promise(downvote, {
-                  loading: 'Downvoting...',
+                  loading: 'Downvoting Response...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -142,9 +142,9 @@ export function MessageActions({
                       { revalidate: false }
                     );
 
-                    return 'Downvoted!';
+                    return 'Downvoted Response!';
                   },
-                  error: 'Failed to downvote.',
+                  error: 'Failed to downvote response.',
                 });
               }}
             >
