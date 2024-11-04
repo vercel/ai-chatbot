@@ -127,29 +127,6 @@ export function convertToUIMessages(
   }, []);
 }
 
-export function getTitleFromChat(chat: Chat) {
-  const messages = convertToUIMessages(chat.messages as Array<CoreMessage>);
-  const firstMessage = messages[0];
-
-  if (!firstMessage) {
-    return 'Untitled';
-  }
-
-  return firstMessage.content;
-}
-
-const emptyAssistantMessage = [
-  {
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: '',
-      },
-    ],
-  },
-];
-
 export function sanitizeResponseMessages(
   messages: Array<CoreToolMessage | CoreAssistantMessage>
 ): Array<CoreToolMessage | CoreAssistantMessage> {
@@ -220,6 +197,11 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
       message.content.length > 0 ||
       (message.toolInvocations && message.toolInvocations.length > 0)
   );
+}
+
+export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
+  const userMessages = messages.filter((message) => message.role === 'user');
+  return userMessages.at(-1);
 }
 
 export function getDocumentTimestampByIndex(
