@@ -9,8 +9,13 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
-import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
+import {
+  useCopyToClipboard,
+  useDebounceCallback,
+  useWindowSize,
+} from 'usehooks-ts';
 
 import { Document, Suggestion } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
@@ -18,13 +23,14 @@ import { fetcher } from '@/lib/utils';
 import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
-import { CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
+import { CopyIcon, CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
 import { Markdown } from './markdown';
 import { Message as PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 export interface UICanvas {
   title: string;
   documentId: string;
@@ -233,6 +239,8 @@ export function Canvas({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
+  const [_, copyToClipboard] = useCopyToClipboard();
+
   return (
     <motion.div
       className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-muted"
@@ -243,10 +251,10 @@ export function Canvas({
       {!isMobile && (
         <motion.div
           className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
-          initial={{ opacity: 0, x: 10, scale: 1 }}
+          initial={{ opacity: 0, x: windowWidth - 420, scale: 1 }}
           animate={{
             opacity: 1,
-            x: 0,
+            x: windowWidth - 400,
             scale: 1,
             transition: {
               delay: 0.2,
@@ -255,7 +263,12 @@ export function Canvas({
               damping: 30,
             },
           }}
-          exit={{ opacity: 0, x: 10, scale: 0.95, transition: { delay: 0 } }}
+          exit={{
+            opacity: 0,
+            x: windowWidth - 420,
+            scale: 0.95,
+            transition: { delay: 0 },
+          }}
         >
           <AnimatePresence>
             {!isCurrentVersion && (
@@ -349,7 +362,7 @@ export function Canvas({
               }
             : {
                 opacity: 1,
-                x: 400,
+                x: 0,
                 y: 0,
                 height: windowHeight,
                 width: windowWidth ? windowWidth - 400 : 'calc(100dvw-400px)',
@@ -411,33 +424,62 @@ export function Canvas({
           </div>
 
           <div className="flex flex-row gap-1">
-            <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
-              onClick={() => {
-                handleVersionChange('prev');
-              }}
-            >
-              <UndoIcon size={18} />
-            </div>
-            <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
-              onClick={() => {
-                handleVersionChange('next');
-              }}
-            >
-              <RedoIcon size={18} />
-            </div>
-            <div
-              className={cx(
-                'cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700',
-                { 'bg-muted dark:bg-zinc-700': mode === 'diff' }
-              )}
-              onClick={() => {
-                handleVersionChange('toggle');
-              }}
-            >
-              <DeltaIcon size={18} />
-            </div>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
+                  onClick={() => {
+                    copyToClipboard(canvas.content);
+                    toast.success('Copied to clipboard!');
+                  }}
+                >
+                  <CopyIcon size={18} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Copy to clipboard</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
+                  onClick={() => {
+                    handleVersionChange('prev');
+                  }}
+                >
+                  <UndoIcon size={18} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>View Previous version</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
+                  onClick={() => {
+                    handleVersionChange('next');
+                  }}
+                >
+                  <RedoIcon size={18} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>View Next version</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  className={cx(
+                    'cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700',
+                    { 'bg-muted dark:bg-zinc-700': mode === 'diff' }
+                  )}
+                  onClick={() => {
+                    handleVersionChange('toggle');
+                  }}
+                >
+                  <DeltaIcon size={18} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>View changes</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
@@ -468,6 +510,19 @@ export function Canvas({
             {suggestions ? (
               <div className="md:hidden h-dvh w-12 shrink-0" />
             ) : null}
+
+            <AnimatePresence>
+              {isCurrentVersion && (
+                <Toolbar
+                  isToolbarVisible={isToolbarVisible}
+                  setIsToolbarVisible={setIsToolbarVisible}
+                  append={append}
+                  isLoading={isLoading}
+                  stop={stop}
+                  setMessages={setMessages}
+                />
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -482,19 +537,6 @@ export function Canvas({
           )}
         </AnimatePresence>
       </motion.div>
-
-      <AnimatePresence>
-        {isCurrentVersion && (
-          <Toolbar
-            isToolbarVisible={isToolbarVisible}
-            setIsToolbarVisible={setIsToolbarVisible}
-            append={append}
-            isLoading={isLoading}
-            stop={stop}
-            setMessages={setMessages}
-          />
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
