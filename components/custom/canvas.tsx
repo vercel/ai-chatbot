@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
 import {
   useCopyToClipboard,
@@ -29,7 +30,6 @@ import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
-import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 export interface UICanvas {
   title: string;
