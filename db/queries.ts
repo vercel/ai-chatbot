@@ -13,6 +13,7 @@ import {
   Suggestion,
   Message,
   message,
+  vote,
 } from './schema';
 
 // Optionally, if not using email/pass login, you can
@@ -114,6 +115,48 @@ export async function getMessagesByChatId({ id }: { id: string }) {
       .orderBy(asc(message.createdAt));
   } catch (error) {
     console.error('Failed to get messages by chat id from database', error);
+    throw error;
+  }
+}
+
+export async function voteMessage({
+  chatId,
+  messageId,
+  type,
+}: {
+  chatId: string;
+  messageId: string;
+  type: 'up' | 'down';
+}) {
+  try {
+    const [existingVote] = await db
+      .select()
+      .from(vote)
+      .where(and(eq(vote.messageId, messageId)));
+
+    if (existingVote) {
+      return await db
+        .update(vote)
+        .set({ isUpvoted: type === 'up' ? true : false })
+        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+    } else {
+      return await db.insert(vote).values({
+        chatId,
+        messageId,
+        isUpvoted: type === 'up' ? true : false,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to upvote message in database', error);
+    throw error;
+  }
+}
+
+export async function getVotesByChatId({ id }: { id: string }) {
+  try {
+    return await db.select().from(vote).where(eq(vote.chatId, id));
+  } catch (error) {
+    console.error('Failed to get votes by chat id from database', error);
     throw error;
   }
 }

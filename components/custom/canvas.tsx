@@ -12,15 +12,14 @@ import {
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
-import { Document, Suggestion } from '@/db/schema';
+import { Document, Suggestion, Vote } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
 import { CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
-import { Markdown } from './markdown';
-import { Message as PreviewMessage } from './message';
+import { PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
@@ -40,6 +39,7 @@ export interface UICanvas {
 }
 
 export function Canvas({
+  chatId,
   input,
   setInput,
   handleSubmit,
@@ -52,7 +52,9 @@ export function Canvas({
   setCanvas,
   messages,
   setMessages,
+  votes,
 }: {
+  chatId: string;
   input: string;
   setInput: (input: string) => void;
   isLoading: boolean;
@@ -63,6 +65,7 @@ export function Canvas({
   setCanvas: Dispatch<SetStateAction<UICanvas>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
+  votes: Array<Vote> | undefined;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -275,13 +278,16 @@ export function Canvas({
             >
               {messages.map((message) => (
                 <PreviewMessage
+                  chatId={chatId}
                   key={message.id}
-                  role={message.role}
-                  content={message.content}
-                  attachments={message.experimental_attachments}
-                  toolInvocations={message.toolInvocations}
+                  message={message}
                   canvas={canvas}
                   setCanvas={setCanvas}
+                  vote={
+                    votes
+                      ? votes.find((vote) => vote.messageId === message.id)
+                      : undefined
+                  }
                 />
               ))}
 

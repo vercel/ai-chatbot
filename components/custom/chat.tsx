@@ -4,11 +4,14 @@ import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import useSWR from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/custom/chat-header';
-import { Message as PreviewMessage } from '@/components/custom/message';
+import { PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
+import { Vote } from '@/db/schema';
+import { fetcher } from '@/lib/utils';
 
 import { Canvas, UICanvas } from './canvas';
 import { CanvasStreamHandler } from './canvas-stream-handler';
@@ -59,6 +62,11 @@ export function Chat({
     },
   });
 
+  const { data: votes } = useSWR<Array<Vote>>(
+    `/api/vote?chatId=${id}`,
+    fetcher
+  );
+
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
@@ -77,12 +85,15 @@ export function Chat({
           {messages.map((message) => (
             <PreviewMessage
               key={message.id}
-              role={message.role}
-              content={message.content}
-              attachments={message.experimental_attachments}
-              toolInvocations={message.toolInvocations}
+              chatId={id}
+              message={message}
               canvas={canvas}
               setCanvas={setCanvas}
+              vote={
+                votes
+                  ? votes.find((vote) => vote.messageId === message.id)
+                  : undefined
+              }
             />
           ))}
 
@@ -110,6 +121,7 @@ export function Chat({
       <AnimatePresence>
         {canvas && canvas.isVisible && (
           <Canvas
+            chatId={id}
             input={input}
             setInput={setInput}
             handleSubmit={handleSubmit}
@@ -122,6 +134,7 @@ export function Chat({
             setCanvas={setCanvas}
             messages={messages}
             setMessages={setMessages}
+            votes={votes}
           />
         )}
       </AnimatePresence>

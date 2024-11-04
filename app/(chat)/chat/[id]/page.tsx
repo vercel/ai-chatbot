@@ -27,9 +27,9 @@ export default async function Page(props: { params: Promise<any> }) {
     return notFound();
   }
 
-  const messages = (await getMessagesByChatId({
+  const messagesFromDb = await getMessagesByChatId({
     id,
-  })) as Array<CoreMessage>;
+  });
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('model-id')?.value;
@@ -40,7 +40,7 @@ export default async function Page(props: { params: Promise<any> }) {
   return (
     <PreviewChat
       id={chat.id}
-      initialMessages={convertToUIMessages(messages)}
+      initialMessages={convertToUIMessages(messagesFromDb)}
       selectedModelId={selectedModelId}
     />
   );

@@ -2,14 +2,13 @@ import {
   CoreAssistantMessage,
   CoreMessage,
   CoreToolMessage,
-  generateId,
   Message,
   ToolInvocation,
 } from 'ai';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Chat, Document } from '@/db/schema';
+import { Message as DBMessage, Document } from '@/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -86,7 +85,7 @@ function addToolMessageToChat({
 }
 
 export function convertToUIMessages(
-  messages: Array<CoreMessage>
+  messages: Array<DBMessage>
 ): Array<Message> {
   return messages.reduce((chatMessages: Array<Message>, message) => {
     if (message.role === 'tool') {
@@ -117,8 +116,8 @@ export function convertToUIMessages(
     }
 
     chatMessages.push({
-      id: generateId(),
-      role: message.role,
+      id: message.id,
+      role: message.role as Message['role'],
       content: textContent,
       toolInvocations,
     });
