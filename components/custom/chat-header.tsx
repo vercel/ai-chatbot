@@ -37,7 +37,7 @@ export function ChatHeader({
         user={user}
       />
       {!user ? (
-        <Button className="py-1.5 px-2 h-fit order-4 md:ml-auto">
+        <Button className="py-1.5 px-2 h-fit order-4 md:ml-auto" asChild>
           <Link href="/login">Login</Link>
         </Button>
       ) : null}
