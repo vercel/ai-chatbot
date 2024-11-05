@@ -33,7 +33,9 @@ export function AuthForm({
           autoFocus
           defaultValue={defaultEmail}
         />
+      </div>
 
+      <div className="flex flex-col gap-2">
         <Label
           htmlFor="password"
           className="text-zinc-600 font-normal dark:text-zinc-400"
