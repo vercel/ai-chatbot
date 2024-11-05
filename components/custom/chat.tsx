@@ -84,13 +84,14 @@ export function Chat({
         >
           {messages.length === 0 && <Overview />}
 
-          {messages.map((message) => (
+          {messages.map((message, index) => (
             <PreviewMessage
               key={message.id}
               chatId={id}
               message={message}
               canvas={canvas}
               setCanvas={setCanvas}
+              isLoading={isLoading && messages.length - 1 === index}
               vote={
                 votes
                   ? votes.find((vote) => vote.messageId === message.id)

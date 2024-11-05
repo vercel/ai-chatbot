@@ -21,12 +21,14 @@ export const PreviewMessage = ({
   canvas,
   setCanvas,
   vote,
+  isLoading,
 }: {
   chatId: string;
   message: Message;
   canvas: UICanvas;
   setCanvas: Dispatch<SetStateAction<UICanvas>>;
   vote: Vote | undefined;
+  isLoading: boolean;
 }) => {
   return (
     <motion.div
@@ -139,6 +141,7 @@ export const PreviewMessage = ({
             chatId={chatId}
             message={message}
             vote={vote}
+            isLoading={isLoading}
           />
         </div>
       </div>

@@ -19,14 +19,17 @@ export function MessageActions({
   chatId,
   message,
   vote,
+  isLoading,
 }: {
   chatId: string;
   message: Message;
   vote: Vote | undefined;
+  isLoading: boolean;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
+  if (isLoading) return null;
   if (message.role === 'user') return null;
   if (message.toolInvocations && message.toolInvocations.length > 0)
     return null;
