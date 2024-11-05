@@ -229,7 +229,9 @@ export function MultimodalInput({
                       return;
                     }
 
-                    window.history.replaceState({}, '', `/chat/${chatId}`);
+                    if (user) {
+                      window.history.replaceState({}, '', `/chat/${chatId}`);
+                    }
 
                     append({
                       role: 'user',

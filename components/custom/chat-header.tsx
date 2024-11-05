@@ -32,7 +32,7 @@ export function ChatHeader({
             className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
             asChild
           >
-            <Link href="/">
+            <Link href="/new">
               <PlusIcon />
               <span className="md:sr-only">New Chat</span>
             </Link>

@@ -35,7 +35,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         <SidebarMenu>
           <div className="flex flex-row justify-between items-center">
             <Link
-              href="/"
+              href="/new"
               onClick={() => setOpenMobile(false)}
               className="flex flex-row gap-3 items-center"
             >
@@ -43,7 +43,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
             </Link>
             <BetterTooltip content="New Chat" align="start">
               <Button variant="ghost" className="p-2 h-fit" asChild>
-                <Link href="/" onClick={() => setOpenMobile(false)}>
+                <Link href="/new" onClick={() => setOpenMobile(false)}>
                   <PlusIcon />
                 </Link>
               </Button>
