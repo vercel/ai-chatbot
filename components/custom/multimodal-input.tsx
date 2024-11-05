@@ -28,11 +28,13 @@ const suggestedActions = [
     title: 'What is the weather',
     label: 'in San Francisco?',
     action: 'What is the weather in San Francisco?',
+    models: ['gpt-4o-mini', 'gpt-4o'],
   },
   {
     title: 'Help me draft an essay',
     label: 'about Silicon Valley',
     action: 'Help me draft an essay about Silicon Valley',
+    models: ['gpt-4o-canvas'],
   },
 ];
 
@@ -50,6 +52,7 @@ export function MultimodalInput({
   handleSubmit,
   className,
   user,
+  selectedModelId,
 }: {
   chatId: string;
   input: string;
@@ -60,6 +63,7 @@ export function MultimodalInput({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
+  selectedModelId: string;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -214,7 +218,17 @@ export function MultimodalInput({
               >
                 <Button
                   variant="ghost"
-                  onClick={async () => {
+                  onClick={async (event) => {
+                    event.preventDefault();
+
+                    if (!suggestedAction.models.includes(selectedModelId)) {
+                      toast.error(
+                        'Please switch to a model that supports canvas!'
+                      );
+
+                      return;
+                    }
+
                     window.history.replaceState({}, '', `/chat/${chatId}`);
 
                     append({

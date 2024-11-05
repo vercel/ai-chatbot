@@ -137,6 +137,7 @@ export function Chat({
             setMessages={setMessages}
             append={append}
             user={user}
+            selectedModelId={selectedModelId}
           />
         </form>
       </div>
@@ -159,6 +160,7 @@ export function Chat({
             setMessages={setMessages}
             votes={votes}
             user={user}
+            selectedModelId={selectedModelId}
           />
         )}
       </AnimatePresence>

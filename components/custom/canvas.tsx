@@ -61,6 +61,7 @@ export function Canvas({
   setMessages,
   votes,
   user,
+  selectedModelId,
 }: {
   chatId: string;
   input: string;
@@ -75,6 +76,7 @@ export function Canvas({
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   votes: Array<Vote> | undefined;
   user: User | undefined;
+  selectedModelId: string;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -330,6 +332,7 @@ export function Canvas({
                 className="bg-background dark:bg-muted"
                 setMessages={setMessages}
                 user={user}
+                selectedModelId={selectedModelId}
               />
             </form>
           </div>
