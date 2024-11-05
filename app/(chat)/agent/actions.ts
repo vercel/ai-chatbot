@@ -3,7 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { createAgent, getAgentById, updateAgent } from '@/db/queries';
+import {
+  createAgent,
+  deleteAgentById,
+  deleteChatsByAgentId,
+  getAgentById,
+  updateAgent,
+} from '@/db/queries';
 
 interface AgentFormData {
   name: string;
@@ -27,7 +33,7 @@ export async function createAgentAction(userId: string, formData: FormData) {
       userId,
     });
 
-    revalidatePath('/');
+    console.log('Created agent:', agent);
     redirect(`/agent/${agent.id}`);
   } catch (error) {
     console.error('Failed to create agent:', error);
@@ -65,10 +71,35 @@ export async function updateAgentAction(
       ...data,
     });
 
-    revalidatePath(`/agent/${agentId}`);
     redirect(`/agent/${agentId}`);
   } catch (error) {
     console.error('Failed to update agent:', error);
+    throw error;
+  }
+}
+
+export async function deleteAgentAction(userId: string, agentId: string) {
+  try {
+    // Get the agent to verify ownership
+    const existingAgent = await getAgentById({ id: agentId });
+
+    if (!existingAgent) {
+      throw new Error('Agent not found');
+    }
+
+    // Verify ownership
+    if (existingAgent.userId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    await deleteChatsByAgentId({ id: agentId });
+    await deleteAgentById({ id: agentId }); // cascade for now
+
+    revalidatePath(`/agent/${agentId}`);
+    revalidatePath(`/`);
+    redirect(`/`);
+  } catch (error) {
+    console.error('Failed to delete agent:', error);
     throw error;
   }
 }

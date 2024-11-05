@@ -80,6 +80,24 @@ export async function deleteChatById({ id }: { id: string }) {
   }
 }
 
+export async function deleteAgentById({ id }: { id: string }) {
+  try {
+    return await db.delete(agent).where(eq(agent.id, id));
+  } catch (error) {
+    console.error('Failed to delete agent by id from database');
+    throw error;
+  }
+}
+
+export async function deleteChatsByAgentId({ id }: { id: string }) {
+  try {
+    return await db.delete(chat).where(eq(chat.agentId, id));
+  } catch (error) {
+    console.error('Failed to delete chats by agent id from database');
+    throw error;
+  }
+}
+
 export async function getChatsByUserId({ id }: { id: string }) {
   try {
     return await db
@@ -299,7 +317,7 @@ export async function createAgent({
       .returning();
     return newAgent;
   } catch (error) {
-    console.error('Failed to create Agent in database');
+    console.error('Failed to create Agent in database', error);
     throw error;
   }
 }

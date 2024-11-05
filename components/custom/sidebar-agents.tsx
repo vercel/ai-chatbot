@@ -2,6 +2,7 @@ import { PlusIcon, MoreHorizontalIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+import { deleteAgentAction } from '@/app/(chat)/agent/actions';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +18,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { agent, type Agent } from '@/db/schema';
+import { type Agent } from '@/db/schema';
 
-
-import { BotIcon, PencilEditIcon } from './icons';
-
+import { BotIcon, PencilEditIcon, TrashIcon } from './icons';
 
 export function SidebarAgents({ agents }: { agents: Agent[] }) {
   const { id } = useParams();
@@ -58,15 +57,15 @@ export function SidebarAgents({ agents }: { agents: Agent[] }) {
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                  {/* <DropdownMenuContent side="bottom" align="end">
+                  <DropdownMenuContent side="bottom" align="end">
                     <DropdownMenuItem
                       className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
-                      onSelect={() => onDelete(item.id)}
+                      onSelect={() => deleteAgentAction(item.userId, item.id)}
                     >
                       <TrashIcon />
                       <span>Delete</span>
                     </DropdownMenuItem>
-                  </DropdownMenuContent> */}
+                  </DropdownMenuContent>
                 </DropdownMenu>
               </SidebarMenuItem>
             ))}
