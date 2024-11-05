@@ -39,7 +39,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Chat } from '@/db/schema';
-import { fetcher, getTitleFromChat } from '@/lib/utils';
+import { fetcher } from '@/lib/utils';
 
 type GroupedChats = {
   today: Chat[];
@@ -69,7 +69,7 @@ const ChatItem = ({
   <SidebarMenuItem>
     <SidebarMenuButton asChild isActive={isActive}>
       <Link href={getChatPath(chat)} onClick={() => setOpenMobile(false)}>
-        <span>{getTitleFromChat(chat)}</span>
+        <span>{chat.title}</span>
       </Link>
     </SidebarMenuButton>
     <DropdownMenu modal={true}>

@@ -15,6 +15,20 @@
       "when": 1730207363999,
       "tag": "0001_sparkling_blue_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730725226313,
+      "tag": "0002_wandering_riptide",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1730819920452,
+      "tag": "0003_material_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }

@@ -51,7 +51,7 @@ export function AppSidebar({
               <span className="text-lg font-semibold px-2">Chatbot</span>
             </Link>
             <BetterTooltip content="New Chat" align="start">
-              <Button variant="ghost" className="p-2 h-fit">
+              <Button variant="ghost" className="p-2 h-fit" asChild>
                 <Link href="/" onClick={() => setOpenMobile(false)}>
                   <PlusIcon />
                 </Link>

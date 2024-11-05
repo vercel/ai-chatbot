@@ -8,12 +8,15 @@ import postgres from 'postgres';
 import {
   user,
   chat,
-  document,
   agent,
   suggestion,
   type Agent,
   type User,
   type Suggestion,
+  document,
+  Message,
+  message,
+  vote,
 } from './schema';
 
 // Optionally, if not using email/pass login, you can
@@ -45,32 +48,20 @@ export async function createUser(email: string, password: string) {
 
 export async function saveChat({
   id,
-  messages,
   userId,
   agentId,
+  title,
 }: {
   id: string;
-  messages: any;
   userId: string;
   agentId?: string;
+  title: string;
 }) {
   try {
-    const selectedChats = await db.select().from(chat).where(eq(chat.id, id));
-
-    if (selectedChats.length > 0) {
-      return await db
-        .update(chat)
-        .set({
-          messages: JSON.stringify(messages),
-        })
-        .where(eq(chat.id, id));
-    }
-
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
-      updatedAt: new Date(),
-      messages: JSON.stringify(messages),
+      title,
       userId,
       agentId,
     });
@@ -108,6 +99,70 @@ export async function getChatById({ id }: { id: string }) {
     return selectedChat;
   } catch (error) {
     console.error('Failed to get chat by id from database');
+    throw error;
+  }
+}
+
+export async function saveMessages({ messages }: { messages: Array<Message> }) {
+  try {
+    return await db.insert(message).values(messages);
+  } catch (error) {
+    console.error('Failed to save messages in database', error);
+    throw error;
+  }
+}
+
+export async function getMessagesByChatId({ id }: { id: string }) {
+  try {
+    return await db
+      .select()
+      .from(message)
+      .where(eq(message.chatId, id))
+      .orderBy(asc(message.createdAt));
+  } catch (error) {
+    console.error('Failed to get messages by chat id from database', error);
+    throw error;
+  }
+}
+
+export async function voteMessage({
+  chatId,
+  messageId,
+  type,
+}: {
+  chatId: string;
+  messageId: string;
+  type: 'up' | 'down';
+}) {
+  try {
+    const [existingVote] = await db
+      .select()
+      .from(vote)
+      .where(and(eq(vote.messageId, messageId)));
+
+    if (existingVote) {
+      return await db
+        .update(vote)
+        .set({ isUpvoted: type === 'up' ? true : false })
+        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+    } else {
+      return await db.insert(vote).values({
+        chatId,
+        messageId,
+        isUpvoted: type === 'up' ? true : false,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to upvote message in database', error);
+    throw error;
+  }
+}
+
+export async function getVotesByChatId({ id }: { id: string }) {
+  try {
+    return await db.select().from(vote).where(eq(vote.chatId, id));
+  } catch (error) {
+    console.error('Failed to get votes by chat id from database', error);
     throw error;
   }
 }
