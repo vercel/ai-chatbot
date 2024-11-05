@@ -1,5 +1,3 @@
-'use client';
-
 import Form from 'next/form';
 
 import { Input } from '../ui/input';
