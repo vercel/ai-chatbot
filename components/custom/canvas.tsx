@@ -289,13 +289,14 @@ export function Canvas({
               ref={messagesContainerRef}
               className="flex flex-col gap-4 h-full items-center overflow-y-scroll px-4 pt-20"
             >
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <PreviewMessage
                   chatId={chatId}
                   key={message.id}
                   message={message}
                   canvas={canvas}
                   setCanvas={setCanvas}
+                  isLoading={isLoading && index === messages.length - 1}
                   vote={
                     votes
                       ? votes.find((vote) => vote.messageId === message.id)
