@@ -28,7 +28,7 @@ const suggestedActions = [
     title: 'What is the weather',
     label: 'in San Francisco?',
     action: 'What is the weather in San Francisco?',
-    models: ['gpt-4o-mini', 'gpt-4o'],
+    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4o-canvas'],
   },
   {
     title: 'Help me draft an essay',

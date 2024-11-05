@@ -1,5 +1,6 @@
 'use client';
 
+import { Message } from 'ai';
 import Link from 'next/link';
 import { User } from 'next-auth';
 import { useWindowSize } from 'usehooks-ts';
@@ -15,9 +16,13 @@ import { useSidebar } from '../ui/sidebar';
 export function ChatHeader({
   selectedModelId,
   user,
+  setMessages,
 }: {
   selectedModelId: string;
   user: User | undefined;
+  setMessages: (
+    messages: Message[] | ((messages: Message[]) => Message[])
+  ) => void;
 }) {
   const { open } = useSidebar();
   const { width: windowWidth } = useWindowSize();
@@ -30,9 +35,12 @@ export function ChatHeader({
           <Button
             variant="outline"
             className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
+            onClick={() => {
+              setMessages([]);
+            }}
             asChild
           >
-            <Link href="/new">
+            <Link href="/">
               <PlusIcon />
               <span className="md:sr-only">New Chat</span>
             </Link>

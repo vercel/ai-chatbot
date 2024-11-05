@@ -107,7 +107,9 @@ export async function POST(request: Request) {
     messages: coreMessages,
     maxSteps: 5,
     experimental_activeTools:
-      modelId === 'gpt-4o-canvas' ? canvasTools : weatherTools,
+      modelId === 'gpt-4o-canvas'
+        ? [...weatherTools, ...canvasTools]
+        : weatherTools,
     tools: {
       getWeather: {
         description: 'Get the current weather at a location',

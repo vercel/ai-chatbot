@@ -28,7 +28,7 @@ export default async function Page() {
   return (
     <Chat
       key={id}
-      id={id}
+      id={session ? id : 'guest'}
       initialMessages={[]}
       selectedModelId={selectedModelId}
       user={session?.user}

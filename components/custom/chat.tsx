@@ -44,6 +44,7 @@ export function Chat({
     stop,
     data: streamingData,
   } = useChat({
+    id,
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
@@ -87,7 +88,11 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} user={user} />
+        <ChatHeader
+          selectedModelId={selectedModelId}
+          user={user}
+          setMessages={setMessages}
+        />
 
         <div
           ref={messagesContainerRef}
