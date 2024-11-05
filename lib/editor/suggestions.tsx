@@ -4,12 +4,12 @@ import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/custom/suggestion';
-import { suggestion } from '@/db/schema';
+import { type Suggestion } from '@/db/schema';
 
-export interface UISuggestion extends Suggestion {
+export type UISuggestion = Suggestion & {
   selectionStart: number;
   selectionEnd: number;
-}
+};
 
 interface Position {
   start: number;
