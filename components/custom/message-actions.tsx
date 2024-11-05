@@ -1,10 +1,10 @@
 import { Message } from 'ai';
-import cx from 'classnames';
 import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
 import { Vote } from '@/db/schema';
+import { getMessageIdFromAnnotations } from '@/lib/utils';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
 import { Button } from '../ui/button';
@@ -26,6 +26,10 @@ export function MessageActions({
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
+
+  if (message.role === 'user') return null;
+  if (message.toolInvocations && message.toolInvocations.length > 0)
+    return null;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -49,17 +53,17 @@ export function MessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className={cx('py-1 px-2 h-fit', {
-                'text-muted-foreground': !vote || !vote.isUpvoted,
-                'text-background': vote && vote.isUpvoted,
-              })}
-              variant={vote && vote.isUpvoted ? 'default' : 'outline'}
+              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              disabled={vote && vote.isUpvoted}
+              variant="outline"
               onClick={async () => {
+                const messageId = getMessageIdFromAnnotations(message);
+
                 const upvote = fetch('/api/vote', {
                   method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
-                    messageId: message.id,
+                    messageId,
                     type: 'up',
                   }),
                 });
@@ -103,17 +107,17 @@ export function MessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className={cx('py-1 px-2 h-fit', {
-                'text-muted-foreground': !vote || !vote.isUpvoted,
-                'text-background': vote && !vote.isUpvoted,
-              })}
-              variant={vote && !vote.isUpvoted ? 'default' : 'outline'}
+              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              variant="outline"
+              disabled={vote && !vote.isUpvoted}
               onClick={async () => {
+                const messageId = getMessageIdFromAnnotations(message);
+
                 const downvote = fetch('/api/vote', {
                   method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
-                    messageId: message.id,
+                    messageId,
                     type: 'down',
                   }),
                 });

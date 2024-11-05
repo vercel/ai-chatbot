@@ -36,6 +36,7 @@ const suggestedActions = [
 ];
 
 export function MultimodalInput({
+  chatId,
   input,
   setInput,
   isLoading,
@@ -48,6 +49,7 @@ export function MultimodalInput({
   handleSubmit,
   className,
 }: {
+  chatId: string;
   input: string;
   setInput: (value: string) => void;
   isLoading: boolean;
@@ -114,6 +116,8 @@ export function MultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
+    window.history.replaceState({}, '', `/chat/${chatId}`);
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
     });
@@ -124,7 +128,14 @@ export function MultimodalInput({
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput, width]);
+  }, [
+    attachments,
+    handleSubmit,
+    setAttachments,
+    setLocalStorageInput,
+    width,
+    chatId,
+  ]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();

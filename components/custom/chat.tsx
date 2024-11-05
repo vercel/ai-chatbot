@@ -4,7 +4,7 @@ import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/custom/chat-header';
@@ -27,6 +27,8 @@ export function Chat({
   initialMessages: Array<Message>;
   selectedModelId: string;
 }) {
+  const { mutate } = useSWRConfig();
+
   const {
     messages,
     setMessages,
@@ -41,7 +43,7 @@ export function Chat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
-      window.history.replaceState({}, '', `/chat/${id}`);
+      mutate('/api/history');
     },
   });
 
@@ -104,6 +106,7 @@ export function Chat({
         </div>
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           <MultimodalInput
+            chatId={id}
             input={input}
             setInput={setInput}
             handleSubmit={handleSubmit}

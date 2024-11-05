@@ -1,6 +1,5 @@
 import {
   convertToCoreMessages,
-  generateObject,
   Message,
   StreamData,
   streamObject,
@@ -326,13 +325,23 @@ export async function POST(request: Request) {
 
           await saveMessages({
             messages: responseMessagesWithoutIncompleteToolCalls.map(
-              (message) => ({
-                id: generateUUID(),
-                chatId: id,
-                role: message.role,
-                content: message.content,
-                createdAt: new Date(),
-              })
+              (message) => {
+                const messageId = generateUUID();
+
+                if (message.role === 'assistant') {
+                  streamingData.appendMessageAnnotation({
+                    messageIdFromServer: messageId,
+                  });
+                }
+
+                return {
+                  id: messageId,
+                  chatId: id,
+                  role: message.role,
+                  content: message.content,
+                  createdAt: new Date(),
+                };
+              }
             ),
           });
         } catch (error) {

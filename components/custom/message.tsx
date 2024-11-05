@@ -134,14 +134,12 @@ export const PreviewMessage = ({
             </div>
           )}
 
-          {message.role === 'assistant' && (
-            <MessageActions
-              key={`action-${message.id}`}
-              chatId={chatId}
-              message={message}
-              vote={vote}
-            />
-          )}
+          <MessageActions
+            key={`action-${message.id}`}
+            chatId={chatId}
+            message={message}
+            vote={vote}
+          />
         </div>
       </div>
     </motion.div>
