@@ -10,7 +10,6 @@ interface AgentFormData {
   description?: string;
   customInstructions?: string;
   aiModel: string;
-  activatedTools: Record<string, boolean>;
 }
 
 export async function createAgentAction(userId: string, formData: FormData) {
@@ -21,12 +20,6 @@ export async function createAgentAction(userId: string, formData: FormData) {
       description: formData.get('description') as string,
       customInstructions: formData.get('customInstructions') as string,
       aiModel: formData.get('aiModel') as string,
-      activatedTools: Object.fromEntries(
-        ['webSearch', 'dataAnalysis', 'codeInterpreter'].map((tool) => [
-          tool,
-          formData.get(`activatedTools.${tool}`) === 'on',
-        ])
-      ),
     };
 
     const agent = await createAgent({
@@ -65,12 +58,6 @@ export async function updateAgentAction(
       description: formData.get('description') as string,
       customInstructions: formData.get('customInstructions') as string,
       aiModel: formData.get('aiModel') as string,
-      activatedTools: Object.fromEntries(
-        ['webSearch', 'dataAnalysis', 'codeInterpreter'].map((tool) => [
-          tool,
-          formData.get(`activatedTools.${tool}`) === 'on',
-        ])
-      ),
     };
 
     await updateAgent({
