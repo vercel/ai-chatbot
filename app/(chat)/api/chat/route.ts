@@ -1,6 +1,5 @@
 import {
   convertToCoreMessages,
-  generateObject,
   Message,
   StreamData,
   streamObject,
@@ -18,10 +17,17 @@ import {
   getDocumentById,
   saveChat,
   saveDocument,
+  saveMessages,
   saveSuggestions,
 } from '@/db/queries';
 import { Suggestion } from '@/db/schema';
-import { generateUUID, sanitizeResponseMessages } from '@/lib/utils';
+import {
+  generateUUID,
+  getMostRecentUserMessage,
+  sanitizeResponseMessages,
+} from '@/lib/utils';
+
+import { generateTitleFromUserMessage } from '../../actions';
 
 export const maxDuration = 60;
 
@@ -49,7 +55,7 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
-  if (!session) {
+  if (!session || !session.user || !session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -60,6 +66,25 @@ export async function POST(request: Request) {
   }
 
   const coreMessages = convertToCoreMessages(messages);
+  const userMessage = getMostRecentUserMessage(coreMessages);
+
+  if (!userMessage) {
+    return new Response('No user message found', { status: 400 });
+  }
+
+  const chat = await getChatById({ id });
+
+  if (!chat) {
+    const title = await generateTitleFromUserMessage({ message: userMessage });
+    await saveChat({ id, userId: session.user.id, title });
+  }
+
+  await saveMessages({
+    messages: [
+      { ...userMessage, id: generateUUID(), createdAt: new Date(), chatId: id },
+    ],
+  });
+
   const streamingData = new StreamData();
 
   const result = await streamText({
@@ -298,13 +323,26 @@ export async function POST(request: Request) {
           const responseMessagesWithoutIncompleteToolCalls =
             sanitizeResponseMessages(responseMessages);
 
-          await saveChat({
-            id,
-            messages: [
-              ...coreMessages,
-              ...responseMessagesWithoutIncompleteToolCalls,
-            ],
-            userId: session.user.id,
+          await saveMessages({
+            messages: responseMessagesWithoutIncompleteToolCalls.map(
+              (message) => {
+                const messageId = generateUUID();
+
+                if (message.role === 'assistant') {
+                  streamingData.appendMessageAnnotation({
+                    messageIdFromServer: messageId,
+                  });
+                }
+
+                return {
+                  id: messageId,
+                  chatId: id,
+                  role: message.role,
+                  content: message.content,
+                  createdAt: new Date(),
+                };
+              }
+            ),
           });
         } catch (error) {
           console.error('Failed to save chat');
