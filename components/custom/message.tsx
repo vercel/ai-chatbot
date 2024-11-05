@@ -2,6 +2,7 @@
 
 import { Message } from 'ai';
 import cx from 'classnames';
+import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -30,8 +31,10 @@ export const PreviewMessage = ({
   isLoading: boolean;
 }) => {
   return (
-    <div
+    <motion.div
       className="w-full mx-auto max-w-3xl px-4 group/message "
+      initial={{ y: 5, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       data-role={message.role}
     >
       <div
@@ -142,6 +145,6 @@ export const PreviewMessage = ({
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
