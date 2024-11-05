@@ -72,7 +72,7 @@ export async function deleteChatById({ id }: { id: string }) {
 
     return await db.delete(chat).where(eq(chat.id, id));
   } catch (error) {
-    console.error('Failed to delete chat by id from database', error);
+    console.error('Failed to delete chat by id from database');
     throw error;
   }
 }
