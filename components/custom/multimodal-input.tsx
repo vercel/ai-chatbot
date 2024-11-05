@@ -209,6 +209,8 @@ export function MultimodalInput({
                 <Button
                   variant="ghost"
                   onClick={async () => {
+                    window.history.replaceState({}, '', `/chat/${chatId}`);
+
                     append({
                       role: 'user',
                       content: suggestedAction.action,
