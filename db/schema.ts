@@ -1,4 +1,3 @@
-import { Message } from 'ai';
 import { InferSelectModel } from 'drizzle-orm';
 import {
   pgTable,
@@ -23,15 +22,45 @@ export type User = InferSelectModel<typeof user>;
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   createdAt: timestamp('createdAt').notNull(),
-  messages: json('messages').notNull(),
+  title: text('title').notNull(),
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
 });
 
-export type Chat = Omit<InferSelectModel<typeof chat>, 'messages'> & {
-  messages: Array<Message>;
-};
+export type Chat = InferSelectModel<typeof chat>;
+
+export const message = pgTable('Message', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  chatId: uuid('chatId')
+    .notNull()
+    .references(() => chat.id),
+  role: varchar('role').notNull(),
+  content: json('content').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export type Message = InferSelectModel<typeof message>;
+
+export const vote = pgTable(
+  'Vote',
+  {
+    chatId: uuid('chatId')
+      .notNull()
+      .references(() => chat.id),
+    messageId: uuid('messageId')
+      .notNull()
+      .references(() => message.id),
+    isUpvoted: boolean('isUpvoted').notNull(),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.chatId, table.messageId] }),
+    };
+  }
+);
+
+export type Vote = InferSelectModel<typeof vote>;
 
 export const document = pgTable(
   'Document',

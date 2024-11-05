@@ -3,6 +3,7 @@
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
+import { User } from 'next-auth';
 import React, {
   useRef,
   useEffect,
@@ -36,6 +37,7 @@ const suggestedActions = [
 ];
 
 export function MultimodalInput({
+  chatId,
   input,
   setInput,
   isLoading,
@@ -47,7 +49,9 @@ export function MultimodalInput({
   append,
   handleSubmit,
   className,
+  user,
 }: {
+  chatId: string;
   input: string;
   setInput: (value: string) => void;
   isLoading: boolean;
@@ -67,6 +71,7 @@ export function MultimodalInput({
     chatRequestOptions?: ChatRequestOptions
   ) => void;
   className?: string;
+  user: User | undefined;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -114,6 +119,10 @@ export function MultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
+    if (user) {
+      window.history.replaceState({}, '', `/chat/${chatId}`);
+    }
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
     });
@@ -124,7 +133,15 @@ export function MultimodalInput({
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput, width]);
+  }, [
+    attachments,
+    handleSubmit,
+    setAttachments,
+    setLocalStorageInput,
+    width,
+    chatId,
+    user,
+  ]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
