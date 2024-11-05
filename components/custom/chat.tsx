@@ -10,7 +10,7 @@ import { useWindowSize } from 'usehooks-ts';
 import { ChatHeader } from '@/components/custom/chat-header';
 import { PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
-import { Vote } from '@/db/schema';
+import { type Agent, type Vote } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { Canvas, UICanvas } from './canvas';
