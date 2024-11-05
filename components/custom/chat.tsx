@@ -3,7 +3,6 @@
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
@@ -28,7 +27,6 @@ export function Chat({
   initialMessages: Array<Message>;
   selectedModelId: string;
 }) {
-  const router = useRouter();
   const { mutate } = useSWRConfig();
 
   const {
@@ -46,7 +44,6 @@ export function Chat({
     initialMessages,
     onFinish: () => {
       mutate('/api/history');
-      router.push(`/chat/${id}`);
     },
   });
 
