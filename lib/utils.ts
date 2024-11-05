@@ -2,14 +2,13 @@ import {
   CoreAssistantMessage,
   CoreMessage,
   CoreToolMessage,
-  generateId,
   Message,
   ToolInvocation,
 } from 'ai';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Chat, Document } from '@/db/schema';
+import { Message as DBMessage, Document } from '@/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -86,7 +85,7 @@ function addToolMessageToChat({
 }
 
 export function convertToUIMessages(
-  messages: Array<CoreMessage>
+  messages: Array<DBMessage>
 ): Array<Message> {
   return messages.reduce((chatMessages: Array<Message>, message) => {
     if (message.role === 'tool') {
@@ -117,8 +116,8 @@ export function convertToUIMessages(
     }
 
     chatMessages.push({
-      id: generateId(),
-      role: message.role,
+      id: message.id,
+      role: message.role as Message['role'],
       content: textContent,
       toolInvocations,
     });
@@ -126,29 +125,6 @@ export function convertToUIMessages(
     return chatMessages;
   }, []);
 }
-
-export function getTitleFromChat(chat: Chat) {
-  const messages = convertToUIMessages(chat.messages as Array<CoreMessage>);
-  const firstMessage = messages[0];
-
-  if (!firstMessage) {
-    return 'Untitled';
-  }
-
-  return firstMessage.content;
-}
-
-const emptyAssistantMessage = [
-  {
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: '',
-      },
-    ],
-  },
-];
 
 export function sanitizeResponseMessages(
   messages: Array<CoreToolMessage | CoreAssistantMessage>
@@ -222,6 +198,11 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   );
 }
 
+export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
+  const userMessages = messages.filter((message) => message.role === 'user');
+  return userMessages.at(-1);
+}
+
 export function getDocumentTimestampByIndex(
   documents: Array<Document>,
   index: number
@@ -230,4 +211,14 @@ export function getDocumentTimestampByIndex(
   if (index > documents.length) return new Date();
 
   return documents[index].createdAt;
+}
+
+export function getMessageIdFromAnnotations(message: Message) {
+  if (!message.annotations) return message.id;
+
+  const [annotation] = message.annotations;
+  if (!annotation) return message.id;
+
+  // @ts-expect-error messageIdFromServer is not defined in MessageAnnotation
+  return annotation.messageIdFromServer;
 }
