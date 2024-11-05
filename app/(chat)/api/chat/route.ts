@@ -14,6 +14,7 @@ import { canvasPrompt, regularPrompt } from '@/ai/prompts';
 import { auth } from '@/app/(auth)/auth';
 import {
   deleteChatById,
+  getAgentById,
   getChatById,
   getDocumentById,
   saveChat,
@@ -49,14 +50,29 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
-  if (!session) {
+  if (!session || !session.user) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const model = models.find((model) => model.id === modelId);
-
+  let model = models.find((model) => model.id === modelId);
+  let agent: Agent | undefined;
   if (!model) {
-    return new Response('Model not found', { status: 404 });
+    agent = await getAgentById({ id: modelId });
+
+    if (!agent) {
+      return new Response('Agent not found', { status: 404 });
+    }
+
+    if (agent.userId !== session.user.id) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    model = {
+      id: agent.id,
+      label: agent.name,
+      apiIdentifier: agent.aiModel,
+      description: agent.description || '',
+    };
   }
 
   const coreMessages = convertToCoreMessages(messages);
@@ -64,11 +80,16 @@ export async function POST(request: Request) {
 
   const result = await streamText({
     model: customModel(model.apiIdentifier),
-    system: modelId === 'gpt-4o-canvas' ? canvasPrompt : regularPrompt,
+    system:
+      modelId === 'gpt-4o-canvas'
+        ? canvasPrompt
+        : agent
+          ? (agent.customInstructions ?? regularPrompt)
+          : regularPrompt,
     messages: coreMessages,
     maxSteps: 5,
     experimental_activeTools:
-      modelId === 'gpt-4o-canvas' ? canvasTools : weatherTools,
+      modelId === 'gpt-4o-canvas' ? canvasTools : agent ? [] : weatherTools,
     tools: {
       getWeather: {
         description: 'Get the current weather at a location',
@@ -305,6 +326,7 @@ export async function POST(request: Request) {
               ...responseMessagesWithoutIncompleteToolCalls,
             ],
             userId: session.user.id,
+            agentId: agent.id ?? null,
           });
         } catch (error) {
           console.error('Failed to save chat');

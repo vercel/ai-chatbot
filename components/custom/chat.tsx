@@ -9,6 +9,7 @@ import { useWindowSize } from 'usehooks-ts';
 import { ChatHeader } from '@/components/custom/chat-header';
 import { Message as PreviewMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
+import { type Agent } from '@/db/schema';
 
 import { Canvas, UICanvas } from './canvas';
 import { CanvasStreamHandler } from './canvas-stream-handler';
@@ -19,10 +20,12 @@ export function Chat({
   id,
   initialMessages,
   selectedModelId,
+  agent,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
+  agent?: Agent;
 }) {
   const {
     messages,
@@ -35,10 +38,11 @@ export function Chat({
     stop,
     data: streamingData,
   } = useChat({
-    body: { id, modelId: selectedModelId },
+    body: { id, modelId: selectedModelId, agentId: agent?.id },
     initialMessages,
     onFinish: () => {
-      window.history.replaceState({}, '', `/chat/${id}`);
+      const path = agent ? `/agent/${agent.id}/chat/${id}` : `/chat/${id}`;
+      window.history.replaceState({}, '', path);
     },
   });
 
@@ -67,7 +71,7 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
+        <ChatHeader selectedModelId={selectedModelId} agent={agent} />
         <div
           ref={messagesContainerRef}
           className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"

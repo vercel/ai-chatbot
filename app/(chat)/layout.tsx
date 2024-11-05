@@ -2,9 +2,9 @@ import { cookies } from 'next/headers';
 
 import { AppSidebar } from '@/components/custom/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { getAgentsByUserId } from '@/db/queries';
 
 import { auth } from '../(auth)/auth';
-import { getAgentsByUserId } from '@/db/queries';
 
 export const experimental_ppr = true;
 

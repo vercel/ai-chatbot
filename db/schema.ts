@@ -1,16 +1,15 @@
 import { Message } from 'ai';
 import { InferSelectModel } from 'drizzle-orm';
 import {
-  pgTable,
-  varchar,
-  timestamp,
-  json,
-  uuid,
-  text,
-  primaryKey,
-  foreignKey,
   boolean,
-  jsonb,
+  foreignKey,
+  json,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -28,6 +27,7 @@ export const chat = pgTable('Chat', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
+  agentId: uuid('agentId').references(() => agent.id),
 });
 
 export type Chat = Omit<InferSelectModel<typeof chat>, 'messages'> & {
@@ -86,7 +86,6 @@ export const agent = pgTable('Agent', {
   description: text('description'),
   customInstructions: text('customInstructions'),
   aiModel: varchar('aiModel', { length: 50 }).notNull(),
-  activatedTools: jsonb('activatedTools'),
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),

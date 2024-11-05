@@ -7,11 +7,18 @@ import { ModelSelector } from '@/components/custom/model-selector';
 import { SidebarToggle } from '@/components/custom/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import { BetterTooltip } from '@/components/ui/tooltip';
+import { type Agent } from '@/db/schema';
 
 import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from '../ui/sidebar';
 
-export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
+export function ChatHeader({
+  selectedModelId,
+  agent,
+}: {
+  selectedModelId: string;
+  agent?: Agent;
+}) {
   const { open } = useSidebar();
 
   const { width: windowWidth } = useWindowSize();
@@ -33,10 +40,14 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
           </Button>
         </BetterTooltip>
       )}
-      <ModelSelector
-        selectedModelId={selectedModelId}
-        className="order-1 md:order-2"
-      />
+      {agent ? (
+        <Button variant="outline">{agent.name}</Button>
+      ) : (
+        <ModelSelector
+          selectedModelId={selectedModelId}
+          className="order-1 md:order-2"
+        />
+      )}
       <Button
         className="hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-4 md:ml-auto"
         asChild

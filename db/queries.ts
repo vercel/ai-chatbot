@@ -47,10 +47,12 @@ export async function saveChat({
   id,
   messages,
   userId,
+  agentId,
 }: {
   id: string;
   messages: any;
   userId: string;
+  agentId?: string;
 }) {
   try {
     const selectedChats = await db.select().from(chat).where(eq(chat.id, id));
@@ -70,6 +72,7 @@ export async function saveChat({
       updatedAt: new Date(),
       messages: JSON.stringify(messages),
       userId,
+      agentId,
     });
   } catch (error) {
     console.error('Failed to save chat in database');
@@ -220,14 +223,12 @@ export async function createAgent({
   description,
   customInstructions,
   aiModel,
-  activatedTools,
   userId,
 }: {
   name: string;
   description?: string;
   customInstructions?: string;
   aiModel: string;
-  activatedTools?: object;
   userId: string;
 }): Promise<Agent> {
   try {
@@ -238,7 +239,6 @@ export async function createAgent({
         description,
         customInstructions,
         aiModel,
-        activatedTools,
         userId,
       })
       .returning();
@@ -288,14 +288,12 @@ export async function updateAgent({
   description,
   customInstructions,
   aiModel,
-  activatedTools,
 }: {
   id: string;
   name?: string;
   description?: string;
   customInstructions?: string;
   aiModel?: string;
-  activatedTools?: object;
 }): Promise<Agent | undefined> {
   try {
     const [updatedAgent] = await db
@@ -305,7 +303,6 @@ export async function updateAgent({
         description,
         customInstructions,
         aiModel,
-        activatedTools,
         updatedAt: new Date(),
       })
       .where(eq(agent.id, id))

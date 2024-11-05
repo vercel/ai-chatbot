@@ -49,6 +49,12 @@ type GroupedChats = {
   older: Chat[];
 };
 
+const getChatPath = (chat: Chat) => {
+  if (chat.agentId) {
+    return `/agent/${chat.agentId}/chat/${chat.id}`;
+  }
+  return `/chat/${chat.id}`;
+};
 const ChatItem = ({
   chat,
   isActive,
@@ -62,7 +68,7 @@ const ChatItem = ({
 }) => (
   <SidebarMenuItem>
     <SidebarMenuButton asChild isActive={isActive}>
-      <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+      <Link href={getChatPath(chat)} onClick={() => setOpenMobile(false)}>
         <span>{getTitleFromChat(chat)}</span>
       </Link>
     </SidebarMenuButton>

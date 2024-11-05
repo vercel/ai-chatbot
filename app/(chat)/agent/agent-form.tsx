@@ -1,5 +1,8 @@
 'use client';
 
+import Form from 'next/form';
+import { User } from 'next-auth';
+
 import {
   createAgentAction,
   updateAgentAction,
@@ -24,8 +27,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { type Agent } from '@/db/schema';
-import { User } from 'next-auth';
-import Form from 'next/form';
 
 interface AgentFormProps {
   user: User;

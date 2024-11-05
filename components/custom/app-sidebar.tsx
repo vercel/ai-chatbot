@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/sidebar';
 import { BetterTooltip } from '@/components/ui/tooltip';
 import { type Agent } from '@/db/schema';
+
 import { SidebarAgents } from './sidebar-agents';
 
 export function AppSidebar({

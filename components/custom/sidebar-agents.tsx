@@ -1,3 +1,13 @@
+import { PlusIcon, MoreHorizontalIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -7,17 +17,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { agent, type Agent } from '@/db/schema';
-import { PlusIcon, MoreHorizontalIcon } from 'lucide-react';
-import Link from 'next/link';
+
+
 import { BotIcon, PencilEditIcon } from './icons';
-import { useParams } from 'next/navigation';
+
 
 export function SidebarAgents({ agents }: { agents: Agent[] }) {
   const { id } = useParams();

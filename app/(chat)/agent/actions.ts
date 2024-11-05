@@ -1,8 +1,9 @@
 'use server';
 
-import { createAgent, getAgentById, updateAgent } from '@/db/queries';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+
+import { createAgent, getAgentById, updateAgent } from '@/db/queries';
 
 interface AgentFormData {
   name: string;
