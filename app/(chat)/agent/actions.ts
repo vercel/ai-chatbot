@@ -10,6 +10,7 @@ import {
   getAgentById,
   updateAgent,
 } from '@/db/queries';
+import { Agent } from '@/db/schema';
 
 interface AgentFormData {
   name: string;
@@ -19,6 +20,7 @@ interface AgentFormData {
 }
 
 export async function createAgentAction(userId: string, formData: FormData) {
+  let agent: Agent | null = null;
   try {
     // Extract and validate form data
     const data: AgentFormData = {
@@ -28,16 +30,18 @@ export async function createAgentAction(userId: string, formData: FormData) {
       aiModel: formData.get('aiModel') as string,
     };
 
-    const agent = await createAgent({
+    agent = await createAgent({
       ...data,
       userId,
     });
-
-    console.log('Created agent:', agent);
-    redirect(`/agent/${agent.id}`);
   } catch (error) {
     console.error('Failed to create agent:', error);
     throw new Error('Failed to create agent');
+  }
+
+  if (agent != null) {
+    revalidatePath(`/`);
+    redirect(`/agent/${agent.id}`);
   }
 }
 
@@ -70,12 +74,12 @@ export async function updateAgentAction(
       id: agentId,
       ...data,
     });
-
-    redirect(`/agent/${agentId}`);
   } catch (error) {
     console.error('Failed to update agent:', error);
     throw error;
   }
+  revalidatePath(`/agent/${agentId}`);
+  redirect(`/agent/${agentId}`);
 }
 
 export async function deleteAgentAction(userId: string, agentId: string) {
@@ -94,12 +98,11 @@ export async function deleteAgentAction(userId: string, agentId: string) {
 
     await deleteChatsByAgentId({ id: agentId });
     await deleteAgentById({ id: agentId }); // cascade for now
-
-    revalidatePath(`/agent/${agentId}`);
-    revalidatePath(`/`);
-    redirect(`/`);
   } catch (error) {
     console.error('Failed to delete agent:', error);
     throw error;
   }
+  revalidatePath(`/agent/${agentId}`);
+  revalidatePath(`/`);
+  redirect(`/`);
 }
