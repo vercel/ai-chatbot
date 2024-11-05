@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
+import { ChevronDownIcon } from './icons';
+
 export function ModelSelector({
   selectedModelId,
   className,
@@ -34,13 +36,13 @@ export function ModelSelector({
       <DropdownMenuTrigger
         asChild
         className={cn(
-          'px-2 w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground md:h-8 [&>svg]:!size-5 md:[&>svg]:!size-4',
+          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
           className
         )}
       >
-        <Button variant="ghost">
+        <Button variant="outline" className="md:px-2 md:h-[34px]">
           {selectModel?.label}
-          <ChevronDown className="text-muted-foreground" />
+          <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[300px]">
