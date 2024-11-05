@@ -8,11 +8,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
-import {
-  InfoIcon,
-  MoreHorizontalIcon,
-  TrashIcon,
-} from '@/components/custom/icons';
+import { MoreHorizontalIcon, TrashIcon } from '@/components/custom/icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -127,6 +123,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     });
 
     setShowDeleteDialog(false);
+
     if (deleteId === id) {
       router.push('/');
     }
