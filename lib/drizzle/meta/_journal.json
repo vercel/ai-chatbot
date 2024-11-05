@@ -15,27 +15,6 @@
       "when": 1730207363999,
       "tag": "0001_sparkling_blue_marvel",
       "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1730656213174,
-      "tag": "0002_easy_gertrude_yorkes",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1730816315520,
-      "tag": "0003_absent_thunderbolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1730816950637,
-      "tag": "0004_closed_warstar",
-      "breakpoints": true
     }
   ]
 }
