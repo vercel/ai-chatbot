@@ -3,7 +3,6 @@
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { User } from 'next-auth';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -32,7 +31,6 @@ export function Chat({
   selectedModelId: string;
   user: User | undefined;
 }) {
-  const router = useRouter();
   const { mutate } = useSWRConfig();
 
   const {
@@ -50,10 +48,6 @@ export function Chat({
     initialMessages,
     onFinish: () => {
       mutate('/api/history');
-
-      if (user) {
-        router.push(`/chat/${id}`);
-      }
     },
     onError: (error) => {
       if (error.message.startsWith('Too many requests')) {
