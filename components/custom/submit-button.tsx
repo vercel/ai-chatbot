@@ -13,8 +13,8 @@ export function SubmitButton({ children }: { children: React.ReactNode }) {
     <Button
       type={pending ? 'button' : 'submit'}
       aria-disabled={pending}
+      disabled={pending}
       className="relative"
-      variant={pending ? 'secondary' : 'default'}
     >
       {children}
       {pending && (
