@@ -6,7 +6,7 @@ import { useParams, usePathname, useRouter } from 'next/navigation';
 import { type User } from 'next-auth';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 
 import {
   InfoIcon,
@@ -127,6 +127,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     });
 
     setShowDeleteDialog(false);
+
     if (deleteId === id) {
       router.push('/');
     }
