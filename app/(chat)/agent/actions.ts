@@ -37,11 +37,11 @@ export async function createAgentAction(userId: string, formData: FormData) {
   } catch (error) {
     console.error('Failed to create agent:', error);
     throw new Error('Failed to create agent');
-  }
-
-  if (agent != null) {
-    revalidatePath(`/`);
-    redirect(`/agent/${agent.id}`);
+  } finally {
+    if (agent != null) {
+      revalidatePath(`/`);
+      redirect(`/agent/${agent.id}`);
+    }
   }
 }
 
@@ -77,9 +77,10 @@ export async function updateAgentAction(
   } catch (error) {
     console.error('Failed to update agent:', error);
     throw error;
+  } finally {
+    revalidatePath(`/agent/${agentId}`);
+    redirect(`/agent/${agentId}`);
   }
-  revalidatePath(`/agent/${agentId}`);
-  redirect(`/agent/${agentId}`);
 }
 
 export async function deleteAgentAction(userId: string, agentId: string) {
@@ -101,8 +102,9 @@ export async function deleteAgentAction(userId: string, agentId: string) {
   } catch (error) {
     console.error('Failed to delete agent:', error);
     throw error;
+  } finally {
+    revalidatePath(`/agent/${agentId}`);
+    revalidatePath(`/`);
+    redirect(`/`);
   }
-  revalidatePath(`/agent/${agentId}`);
-  revalidatePath(`/`);
-  redirect(`/`);
 }
