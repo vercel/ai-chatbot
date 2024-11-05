@@ -1,12 +1,8 @@
-import { CoreMessage } from 'ai';
-import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
-import { DEFAULT_MODEL_NAME, models } from '@/ai/models';
 import { auth } from '@/app/(auth)/auth';
 import { Chat as PreviewChat } from '@/components/custom/chat';
-import { getAgentById, getChatById } from '@/db/queries';
-import { Chat } from '@/db/schema';
+import { getAgentById, getChatById, getMessagesByChatId } from '@/db/queries';
 import { convertToUIMessages } from '@/lib/utils';
 
 export default async function Page(props: {
@@ -18,14 +14,8 @@ export default async function Page(props: {
   const agentFromDb = await getAgentById({ id: agentId });
 
   if (!chatFromDb || !agentFromDb) {
-    notFound();
+    return notFound();
   }
-
-  // type casting
-  const chat: Chat = {
-    ...chatFromDb,
-    messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
-  };
 
   const session = await auth();
 
@@ -33,20 +23,18 @@ export default async function Page(props: {
     return notFound();
   }
 
-  if (session.user.id !== chat.userId) {
+  if (session.user.id !== chatFromDb.userId) {
     return notFound();
   }
 
-  const cookieStore = await cookies();
-  const modelIdFromCookie = cookieStore.get('model-id')?.value;
-  const selectedModelId =
-    models.find((model) => model.id === modelIdFromCookie)?.id ||
-    DEFAULT_MODEL_NAME;
+  const messagesFromDb = await getMessagesByChatId({
+    id,
+  });
 
   return (
     <PreviewChat
-      id={chat.id}
-      initialMessages={chat.messages}
+      id={chatFromDb.id}
+      initialMessages={convertToUIMessages(messagesFromDb)}
       selectedModelId={agentFromDb.id}
       agent={agentFromDb}
     />
