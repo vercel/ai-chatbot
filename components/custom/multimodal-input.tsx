@@ -265,6 +265,7 @@ export function MultimodalInput({
           className
         )}
         rows={3}
+        autoFocus
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();

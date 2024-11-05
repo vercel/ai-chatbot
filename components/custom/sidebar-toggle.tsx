@@ -16,10 +16,10 @@ export function SidebarToggle({
     <BetterTooltip content="Toggle Sidebar" align="start">
       <Button
         onClick={toggleSidebar}
-        variant="ghost"
+        variant="outline"
         className="md:px-2 md:h-fit"
       >
-        <SidebarLeftIcon />
+        <SidebarLeftIcon size={16} />
       </Button>
     </BetterTooltip>
   );
