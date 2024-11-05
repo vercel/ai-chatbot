@@ -1,3 +1,5 @@
+'use client';
+
 import Form from 'next/form';
 
 import { Input } from '../ui/input';
@@ -30,6 +32,7 @@ export function AuthForm({
           placeholder="user@acme.com"
           autoComplete="email"
           required
+          autoFocus
           defaultValue={defaultEmail}
         />
 
