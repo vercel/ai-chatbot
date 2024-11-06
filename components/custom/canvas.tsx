@@ -29,6 +29,7 @@ import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
+import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 export interface UICanvas {
   title: string;
@@ -254,10 +255,10 @@ export function Canvas({
       {!isMobile && (
         <motion.div
           className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
-          initial={{ opacity: 0, x: windowWidth - 420, scale: 1 }}
+          initial={{ opacity: 0, x: 10, scale: 1 }}
           animate={{
             opacity: 1,
-            x: windowWidth - 400,
+            x: 0,
             scale: 1,
             transition: {
               delay: 0.2,
@@ -268,7 +269,7 @@ export function Canvas({
           }}
           exit={{
             opacity: 0,
-            x: windowWidth - 420,
+            x: 0,
             scale: 0.95,
             transition: { delay: 0 },
           }}
@@ -370,7 +371,7 @@ export function Canvas({
               }
             : {
                 opacity: 1,
-                x: 0,
+                x: 400,
                 y: 0,
                 height: windowHeight,
                 width: windowWidth ? windowWidth - 400 : 'calc(100dvw-400px)',
@@ -396,8 +397,9 @@ export function Canvas({
       >
         <div className="p-2 flex flex-row justify-between items-start">
           <div className="flex flex-row gap-4 items-start">
-            <div
-              className="cursor-pointer hover:bg-muted dark:hover:bg-zinc-700 p-2 rounded-lg text-muted-foreground"
+            <Button
+              variant="outline"
+              className="h-fit p-2 dark:hover:bg-zinc-700"
               onClick={() => {
                 setCanvas((currentCanvas) => ({
                   ...currentCanvas,
@@ -406,9 +408,9 @@ export function Canvas({
               }}
             >
               <CrossIcon size={18} />
-            </div>
+            </Button>
 
-            <div className="flex flex-col pt-1">
+            <div className="flex flex-col">
               <div className="font-medium">
                 {document?.title ?? canvas.title}
               </div>
@@ -433,58 +435,63 @@ export function Canvas({
 
           <div className="flex flex-row gap-1">
             <Tooltip>
-              <TooltipTrigger>
-                <div
-                  className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="p-2 h-fit dark:hover:bg-zinc-700"
                   onClick={() => {
                     copyToClipboard(canvas.content);
                     toast.success('Copied to clipboard!');
                   }}
                 >
                   <CopyIcon size={18} />
-                </div>
+                </Button>
               </TooltipTrigger>
               <TooltipContent>Copy to clipboard</TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger>
-                <div
-                  className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
                   onClick={() => {
                     handleVersionChange('prev');
                   }}
+                  disabled={currentVersionIndex === 0}
                 >
                   <UndoIcon size={18} />
-                </div>
+                </Button>
               </TooltipTrigger>
               <TooltipContent>View Previous version</TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger>
-                <div
-                  className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
                   onClick={() => {
                     handleVersionChange('next');
                   }}
+                  disabled={isCurrentVersion}
                 >
                   <RedoIcon size={18} />
-                </div>
+                </Button>
               </TooltipTrigger>
               <TooltipContent>View Next version</TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger>
-                <div
-                  className={cx(
-                    'cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700',
-                    { 'bg-muted dark:bg-zinc-700': mode === 'diff' }
-                  )}
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cx('p-2 h-fit dark:hover:bg-zinc-700', {
+                    'bg-muted': mode === 'diff',
+                  })}
                   onClick={() => {
                     handleVersionChange('toggle');
                   }}
                 >
                   <DeltaIcon size={18} />
-                </div>
+                </Button>
               </TooltipTrigger>
               <TooltipContent>View changes</TooltipContent>
             </Tooltip>
