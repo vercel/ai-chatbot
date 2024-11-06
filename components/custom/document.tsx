@@ -1,6 +1,6 @@
 import { SetStateAction } from 'react';
 
-import { UICanvas } from './canvas';
+import { UIBlock } from './block';
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from './icons';
 
 const getActionText = (type: 'create' | 'update' | 'request-suggestions') => {
@@ -19,15 +19,15 @@ const getActionText = (type: 'create' | 'update' | 'request-suggestions') => {
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
   result: any;
-  canvas: UICanvas;
-  setCanvas: (value: SetStateAction<UICanvas>) => void;
+  block: UIBlock;
+  setBlock: (value: SetStateAction<UIBlock>) => void;
 }
 
 export function DocumentToolResult({
   type,
   result,
-  canvas,
-  setCanvas,
+  block,
+  setBlock,
 }: DocumentToolResultProps) {
   return (
     <div
@@ -42,7 +42,7 @@ export function DocumentToolResult({
           height: rect.height,
         };
 
-        setCanvas({
+        setBlock({
           documentId: result.id,
           content: '',
           title: result.title,

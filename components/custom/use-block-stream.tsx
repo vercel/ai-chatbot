@@ -4,19 +4,19 @@ import { useSWRConfig } from 'swr';
 
 import { Suggestion } from '@/db/schema';
 
-import { UICanvas } from './canvas';
+import { UIBlock } from './block';
 
 type StreamingDelta = {
   type: 'text-delta' | 'title' | 'id' | 'suggestion' | 'clear' | 'finish';
   content: string | Suggestion;
 };
 
-export function useCanvasStream({
+export function useBlockStream({
   streamingData,
-  setCanvas,
+  setBlock,
 }: {
   streamingData: JSONValue[] | undefined;
-  setCanvas: Dispatch<SetStateAction<UICanvas>>;
+  setBlock: Dispatch<SetStateAction<UIBlock>>;
 }) {
   const { mutate } = useSWRConfig();
   const [optimisticSuggestions, setOptimisticSuggestions] = useState<
@@ -37,30 +37,30 @@ export function useCanvasStream({
 
     const delta = mostRecentDelta as StreamingDelta;
 
-    setCanvas((draftCanvas) => {
+    setBlock((draftBlock) => {
       switch (delta.type) {
         case 'id':
           return {
-            ...draftCanvas,
+            ...draftBlock,
             documentId: delta.content as string,
           };
 
         case 'title':
           return {
-            ...draftCanvas,
+            ...draftBlock,
             title: delta.content as string,
           };
 
         case 'text-delta':
           return {
-            ...draftCanvas,
-            content: draftCanvas.content + (delta.content as string),
+            ...draftBlock,
+            content: draftBlock.content + (delta.content as string),
             isVisible:
-              draftCanvas.status === 'streaming' &&
-              draftCanvas.content.length > 200 &&
-              draftCanvas.content.length < 250
+              draftBlock.status === 'streaming' &&
+              draftBlock.content.length > 200 &&
+              draftBlock.content.length < 250
                 ? true
-                : draftCanvas.isVisible,
+                : draftBlock.isVisible,
             status: 'streaming',
           };
 
@@ -72,24 +72,24 @@ export function useCanvasStream({
             ]);
           }, 0);
 
-          return draftCanvas;
+          return draftBlock;
 
         case 'clear':
           return {
-            ...draftCanvas,
+            ...draftBlock,
             content: '',
             status: 'streaming',
           };
 
         case 'finish':
           return {
-            ...draftCanvas,
+            ...draftBlock,
             status: 'idle',
           };
 
         default:
-          return draftCanvas;
+          return draftBlock;
       }
     });
-  }, [streamingData, setCanvas]);
+  }, [streamingData, setBlock]);
 }
