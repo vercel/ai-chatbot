@@ -1,6 +1,5 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
 import { User } from 'next-auth';
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
 
@@ -15,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-import { ChevronDownIcon } from './icons';
+import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 
 export function ModelSelector({
   selectedModelId,
@@ -60,7 +59,7 @@ export function ModelSelector({
                 saveModelId(model.id);
               });
             }}
-            className="gap-4 group/item"
+            className="gap-4 group/item flex flex-row justify-between items-center"
             data-active={model.id === optimisticModelId}
             disabled={model.requiresAuth && !user}
           >
@@ -73,7 +72,9 @@ export function ModelSelector({
                 </div>
               )}
             </div>
-            <Check className="size-4 ml-auto opacity-0 group-data-[active=true]/item:opacity-100" />
+            <div className="text-primary dark:text-primary-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+              <CheckCircleFillIcon />
+            </div>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
