@@ -26,6 +26,7 @@ import {
   StopIcon,
   SummarizeIcon,
 } from './icons';
+import { Button } from '../ui/button';
 
 type ToolProps = {
   type: 'final-polish' | 'request-suggestions' | 'adjust-reading-level';
@@ -61,18 +62,58 @@ const Tool = ({
     }
   }, [selectedTool, type]);
 
+  const handleSelect = () => {
+    if (!isToolbarVisible && setIsToolbarVisible) {
+      setIsToolbarVisible(true);
+      return;
+    }
+
+    if (!selectedTool) {
+      setIsHovered(true);
+      setSelectedTool(type);
+      return;
+    }
+
+    if (selectedTool !== type) {
+      setSelectedTool(type);
+    } else {
+      if (type === 'final-polish') {
+        append({
+          role: 'user',
+          content:
+            'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
+        });
+
+        setSelectedTool(null);
+      } else if (type === 'request-suggestions') {
+        append({
+          role: 'user',
+          content:
+            'Please add suggestions you have that could improve the writing.',
+        });
+
+        setSelectedTool(null);
+      }
+    }
+  };
+
   return (
     <Tooltip open={isHovered && !isAnimating}>
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <motion.div
           className={cx('p-3 rounded-full', {
-            'bg-foreground !text-background': selectedTool === type,
+            'bg-primary !text-primary-foreground': selectedTool === type,
           })}
           onHoverStart={() => {
             setIsHovered(true);
           }}
           onHoverEnd={() => {
             if (selectedTool !== type) setIsHovered(false);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              handleSelect();
+            }
           }}
           initial={{ scale: 1, opacity: 0 }}
           animate={{ opacity: 1, transition: { delay: 0.1 } }}
@@ -84,38 +125,7 @@ const Tool = ({
             transition: { duration: 0.1 },
           }}
           onClick={() => {
-            if (!isToolbarVisible && setIsToolbarVisible) {
-              setIsToolbarVisible(true);
-              return;
-            }
-
-            if (!selectedTool) {
-              setIsHovered(true);
-              setSelectedTool(type);
-              return;
-            }
-
-            if (selectedTool !== type) {
-              setSelectedTool(type);
-            } else {
-              if (type === 'final-polish') {
-                append({
-                  role: 'user',
-                  content:
-                    'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
-                });
-
-                setSelectedTool(null);
-              } else if (type === 'request-suggestions') {
-                append({
-                  role: 'user',
-                  content:
-                    'Please add suggestions you have that could improve the writing.',
-                });
-
-                setSelectedTool(null);
-              }
-            }
+            handleSelect();
           }}
         >
           {selectedTool === type ? <ArrowUpIcon /> : icon}
@@ -192,7 +202,7 @@ const ReadingLevelSelector = ({
               className={cx(
                 'absolute bg-background p-3 border rounded-full flex flex-row items-center',
                 {
-                  'bg-foreground text-background': currentLevel !== 2,
+                  'bg-primary text-primary-foreground': currentLevel !== 2,
                   'bg-background text-foreground': currentLevel === 2,
                 }
               )}
@@ -241,37 +251,31 @@ const ReadingLevelSelector = ({
   );
 };
 
-export const Toolbar = ({
+export const Tools = ({
   isToolbarVisible,
-  setIsToolbarVisible,
+  selectedTool,
+  setSelectedTool,
   append,
-  isLoading,
-  stop,
-  setMessages,
+  isAnimating,
+  setIsToolbarVisible,
 }: {
   isToolbarVisible: boolean;
-  setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  isLoading: boolean;
+  selectedTool: string | null;
+  setSelectedTool: Dispatch<SetStateAction<string | null>>;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
-  stop: () => void;
-  setMessages: Dispatch<SetStateAction<Message[]>>;
+  isAnimating: boolean;
+  setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-
-  const [selectedTool, setSelectedTool] = useState<string | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useOnClickOutside(toolbarRef, () => {
-    setIsToolbarVisible(false);
-    setSelectedTool(null);
-  });
-
-  const Tools = (
-    <>
+  return (
+    <motion.div
+      className="flex flex-col"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+    >
       <AnimatePresence>
         {isToolbarVisible && (
           <>
@@ -309,8 +313,38 @@ export const Toolbar = ({
         append={append}
         isAnimating={isAnimating}
       />
-    </>
+    </motion.div>
   );
+};
+
+export const Toolbar = ({
+  isToolbarVisible,
+  setIsToolbarVisible,
+  append,
+  isLoading,
+  stop,
+  setMessages,
+}: {
+  isToolbarVisible: boolean;
+  setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
+  isLoading: boolean;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: ChatRequestOptions
+  ) => Promise<string | null | undefined>;
+  stop: () => void;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
+}) => {
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useOnClickOutside(toolbarRef, () => {
+    setIsToolbarVisible(false);
+    setSelectedTool(null);
+  });
 
   const startCloseTimer = () => {
     if (timeoutRef.current) {
@@ -389,7 +423,11 @@ export const Toolbar = ({
         ref={toolbarRef}
       >
         {isLoading ? (
-          <div
+          <motion.div
+            key="stop-icon"
+            initial={{ scale: 1 }}
+            animate={{ scale: 1.4 }}
+            exit={{ scale: 1 }}
             className="p-3"
             onClick={() => {
               stop();
@@ -397,15 +435,24 @@ export const Toolbar = ({
             }}
           >
             <StopIcon />
-          </div>
+          </motion.div>
         ) : selectedTool === 'adjust-reading-level' ? (
           <ReadingLevelSelector
+            key="reading-level-selector"
             append={append}
             setSelectedTool={setSelectedTool}
             isAnimating={isAnimating}
           />
         ) : (
-          Tools
+          <Tools
+            key="tools"
+            append={append}
+            isAnimating={isAnimating}
+            isToolbarVisible={isToolbarVisible}
+            selectedTool={selectedTool}
+            setIsToolbarVisible={setIsToolbarVisible}
+            setSelectedTool={setSelectedTool}
+          />
         )}
       </motion.div>
     </TooltipProvider>
