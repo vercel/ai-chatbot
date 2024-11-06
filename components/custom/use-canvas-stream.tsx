@@ -56,9 +56,11 @@ export function useCanvasStream({
             ...draftCanvas,
             content: draftCanvas.content + (delta.content as string),
             isVisible:
-              draftCanvas.status === 'streaming'
+              draftCanvas.status === 'streaming' &&
+              draftCanvas.content.length > 200 &&
+              draftCanvas.content.length < 250
                 ? true
-                : draftCanvas.content.length > 200,
+                : draftCanvas.isVisible,
             status: 'streaming',
           };
 

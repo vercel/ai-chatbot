@@ -1,7 +1,6 @@
 'use client';
 
 import { useChat } from 'ai/react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type User } from 'next-auth';
 
