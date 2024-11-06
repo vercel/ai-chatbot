@@ -11,6 +11,7 @@ import {
   User,
   document,
   Suggestion,
+  suggestion,
   Message,
   message,
   vote,
@@ -227,6 +228,15 @@ export async function deleteDocumentsByIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
+    await db
+      .delete(suggestion)
+      .where(
+        and(
+          eq(suggestion.documentId, id),
+          gt(suggestion.documentCreatedAt, timestamp)
+        )
+      );
+
     return await db
       .delete(document)
       .where(and(eq(document.id, id), gt(document.createdAt, timestamp)));
@@ -244,7 +254,7 @@ export async function saveSuggestions({
   suggestions: Array<Suggestion>;
 }) {
   try {
-    return await db.insert(Suggestion).values(suggestions);
+    return await db.insert(suggestion).values(suggestions);
   } catch (error) {
     console.error('Failed to save suggestions in database');
     throw error;
@@ -259,8 +269,8 @@ export async function getSuggestionsByDocumentId({
   try {
     return await db
       .select()
-      .from(Suggestion)
-      .where(and(eq(Suggestion.documentId, documentId)));
+      .from(suggestion)
+      .where(and(eq(suggestion.documentId, documentId)));
   } catch (error) {
     console.error(
       'Failed to get suggestions by document version from database'
