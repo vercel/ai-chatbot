@@ -8,7 +8,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { Vote } from '@/db/schema';
 
-import { UICanvas } from './canvas';
+import { UIBlock } from './block';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { SparklesIcon } from './icons';
 import { Markdown } from './markdown';
@@ -19,16 +19,16 @@ import { Weather } from './weather';
 export const PreviewMessage = ({
   chatId,
   message,
-  canvas,
-  setCanvas,
+  block,
+  setBlock,
   vote,
   isLoading,
   user,
 }: {
   chatId: string;
   message: Message;
-  canvas: UICanvas;
-  setCanvas: Dispatch<SetStateAction<UICanvas>>;
+  block: UIBlock;
+  setBlock: Dispatch<SetStateAction<UIBlock>>;
   vote: Vote | undefined;
   isLoading: boolean;
   user: User | undefined;
@@ -74,22 +74,22 @@ export const PreviewMessage = ({
                         <DocumentToolResult
                           type="create"
                           result={result}
-                          canvas={canvas}
-                          setCanvas={setCanvas}
+                          block={block}
+                          setBlock={setBlock}
                         />
                       ) : toolName === 'updateDocument' ? (
                         <DocumentToolResult
                           type="update"
                           result={result}
-                          canvas={canvas}
-                          setCanvas={setCanvas}
+                          block={block}
+                          setBlock={setBlock}
                         />
                       ) : toolName === 'requestSuggestions' ? (
                         <DocumentToolResult
                           type="request-suggestions"
                           result={result}
-                          canvas={canvas}
-                          setCanvas={setCanvas}
+                          block={block}
+                          setBlock={setBlock}
                         />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>

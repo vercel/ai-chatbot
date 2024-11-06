@@ -32,7 +32,7 @@ import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-export interface UICanvas {
+export interface UIBlock {
   title: string;
   documentId: string;
   content: string;
@@ -46,7 +46,7 @@ export interface UICanvas {
   };
 }
 
-export function Canvas({
+export function Block({
   chatId,
   input,
   setInput,
@@ -56,8 +56,8 @@ export function Canvas({
   attachments,
   setAttachments,
   append,
-  canvas,
-  setCanvas,
+  block,
+  setBlock,
   messages,
   setMessages,
   votes,
@@ -71,8 +71,8 @@ export function Canvas({
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  canvas: UICanvas;
-  setCanvas: Dispatch<SetStateAction<UICanvas>>;
+  block: UIBlock;
+  setBlock: Dispatch<SetStateAction<UIBlock>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   votes: Array<Vote> | undefined;
@@ -97,15 +97,15 @@ export function Canvas({
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    canvas && canvas.status !== 'streaming'
-      ? `/api/document?id=${canvas.documentId}`
+    block && block.status !== 'streaming'
+      ? `/api/document?id=${block.documentId}`
       : null,
     fetcher
   );
 
   const { data: suggestions } = useSWR<Array<Suggestion>>(
-    documents && canvas && canvas.status !== 'streaming'
-      ? `/api/suggestions?documentId=${canvas.documentId}`
+    documents && block && block.status !== 'streaming'
+      ? `/api/suggestions?documentId=${block.documentId}`
       : null,
     fetcher,
     {
@@ -124,27 +124,27 @@ export function Canvas({
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
-        setCanvas((currentCanvas) => ({
-          ...currentCanvas,
+        setBlock((currentBlock) => ({
+          ...currentBlock,
           content: mostRecentDocument.content ?? '',
         }));
       }
     }
-  }, [documents, setCanvas]);
+  }, [documents, setBlock]);
 
   useEffect(() => {
     mutateDocuments();
-  }, [canvas.status, mutateDocuments]);
+  }, [block.status, mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
 
   const handleContentChange = useCallback(
     (updatedContent: string) => {
-      if (!canvas) return;
+      if (!block) return;
 
       mutate<Array<Document>>(
-        `/api/document?id=${canvas.documentId}`,
+        `/api/document?id=${block.documentId}`,
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
@@ -156,10 +156,10 @@ export function Canvas({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${canvas.documentId}`, {
+            await fetch(`/api/document?id=${block.documentId}`, {
               method: 'POST',
               body: JSON.stringify({
-                title: canvas.title,
+                title: block.title,
                 content: updatedContent,
               }),
             });
@@ -180,7 +180,7 @@ export function Canvas({
         { revalidate: false }
       );
     },
-    [canvas, mutate]
+    [block, mutate]
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
@@ -300,8 +300,8 @@ export function Canvas({
                   chatId={chatId}
                   key={message.id}
                   message={message}
-                  canvas={canvas}
-                  setCanvas={setCanvas}
+                  block={block}
+                  setBlock={setBlock}
                   isLoading={isLoading && index === messages.length - 1}
                   user={user}
                   vote={
@@ -354,10 +354,10 @@ export function Canvas({
               }
             : {
                 opacity: 0,
-                x: canvas.boundingBox.left,
-                y: canvas.boundingBox.top,
-                height: canvas.boundingBox.height,
-                width: canvas.boundingBox.width,
+                x: block.boundingBox.left,
+                y: block.boundingBox.top,
+                height: block.boundingBox.height,
+                width: block.boundingBox.width,
                 borderRadius: 50,
               }
         }
@@ -409,8 +409,8 @@ export function Canvas({
               variant="outline"
               className="h-fit p-2 dark:hover:bg-zinc-700"
               onClick={() => {
-                setCanvas((currentCanvas) => ({
-                  ...currentCanvas,
+                setBlock((currentBlock) => ({
+                  ...currentBlock,
                   isVisible: false,
                 }));
               }}
@@ -420,7 +420,7 @@ export function Canvas({
 
             <div className="flex flex-col">
               <div className="font-medium">
-                {document?.title ?? canvas.title}
+                {document?.title ?? block.title}
               </div>
 
               {isContentDirty ? (
@@ -450,10 +450,10 @@ export function Canvas({
                   variant="outline"
                   className="p-2 h-fit dark:hover:bg-zinc-700"
                   onClick={() => {
-                    copyToClipboard(canvas.content);
+                    copyToClipboard(block.content);
                     toast.success('Copied to clipboard!');
                   }}
-                  disabled={canvas.status === 'streaming'}
+                  disabled={block.status === 'streaming'}
                 >
                   <CopyIcon size={18} />
                 </Button>
@@ -469,7 +469,7 @@ export function Canvas({
                     handleVersionChange('prev');
                   }}
                   disabled={
-                    currentVersionIndex === 0 || canvas.status === 'streaming'
+                    currentVersionIndex === 0 || block.status === 'streaming'
                   }
                 >
                   <UndoIcon size={18} />
@@ -485,7 +485,7 @@ export function Canvas({
                   onClick={() => {
                     handleVersionChange('next');
                   }}
-                  disabled={isCurrentVersion || canvas.status === 'streaming'}
+                  disabled={isCurrentVersion || block.status === 'streaming'}
                 >
                   <RedoIcon size={18} />
                 </Button>
@@ -506,7 +506,7 @@ export function Canvas({
                     handleVersionChange('toggle');
                   }}
                   disabled={
-                    canvas.status === 'streaming' || currentVersionIndex === 0
+                    block.status === 'streaming' || currentVersionIndex === 0
                   }
                 >
                   <DeltaIcon size={18} />
@@ -519,18 +519,18 @@ export function Canvas({
 
         <div className="prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll px-4 py-8 md:p-20 !max-w-full pb-40 items-center">
           <div className="flex flex-row max-w-[600px] mx-auto">
-            {isDocumentsFetching && !canvas.content ? (
+            {isDocumentsFetching && !block.content ? (
               <DocumentSkeleton />
             ) : mode === 'edit' ? (
               <Editor
                 content={
                   isCurrentVersion
-                    ? canvas.content
+                    ? block.content
                     : getDocumentContentById(currentVersionIndex)
                 }
                 isCurrentVersion={isCurrentVersion}
                 currentVersionIndex={currentVersionIndex}
-                status={canvas.status}
+                status={block.status}
                 saveContent={saveContent}
                 suggestions={isCurrentVersion ? (suggestions ?? []) : []}
               />
@@ -563,7 +563,7 @@ export function Canvas({
         <AnimatePresence>
           {!isCurrentVersion && (
             <VersionFooter
-              canvas={canvas}
+              block={block}
               currentVersionIndex={currentVersionIndex}
               documents={documents}
               handleVersionChange={handleVersionChange}

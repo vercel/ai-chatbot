@@ -14,8 +14,8 @@ import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { Vote } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
 
-import { Canvas, UICanvas } from './canvas';
-import { CanvasStreamHandler } from './canvas-stream-handler';
+import { Block, UIBlock } from './block';
+import { BlockStreamHandler } from './block-stream-handler';
 import { DeployDialog } from './deploy-dialog';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
@@ -60,7 +60,7 @@ export function Chat({
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize();
 
-  const [canvas, setCanvas] = useState<UICanvas>({
+  const [block, setBlock] = useState<UIBlock>({
     documentId: 'init',
     content: '',
     title: '',
@@ -105,8 +105,8 @@ export function Chat({
               key={message.id}
               chatId={id}
               message={message}
-              canvas={canvas}
-              setCanvas={setCanvas}
+              block={block}
+              setBlock={setBlock}
               isLoading={isLoading && messages.length - 1 === index}
               user={user}
               vote={
@@ -148,8 +148,8 @@ export function Chat({
       </div>
 
       <AnimatePresence>
-        {canvas && canvas.isVisible && (
-          <Canvas
+        {block && block.isVisible && (
+          <Block
             chatId={id}
             input={input}
             setInput={setInput}
@@ -159,8 +159,8 @@ export function Chat({
             attachments={attachments}
             setAttachments={setAttachments}
             append={append}
-            canvas={canvas}
-            setCanvas={setCanvas}
+            block={block}
+            setBlock={setBlock}
             messages={messages}
             setMessages={setMessages}
             votes={votes}
@@ -170,10 +170,7 @@ export function Chat({
         )}
       </AnimatePresence>
 
-      <CanvasStreamHandler
-        streamingData={streamingData}
-        setCanvas={setCanvas}
-      />
+      <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
 
       <DeployDialog
         isOpen={isDeployDialogOpen}
