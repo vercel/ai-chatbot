@@ -488,13 +488,18 @@ export function Canvas({
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  className={cx('p-2 h-fit dark:hover:bg-zinc-700', {
-                    'bg-muted': mode === 'diff',
-                  })}
+                  className={cx(
+                    'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
+                    {
+                      'bg-muted': mode === 'diff',
+                    }
+                  )}
                   onClick={() => {
                     handleVersionChange('toggle');
                   }}
-                  disabled={canvas.status === 'streaming'}
+                  disabled={
+                    canvas.status === 'streaming' || currentVersionIndex === 0
+                  }
                 >
                   <DeltaIcon size={18} />
                 </Button>
