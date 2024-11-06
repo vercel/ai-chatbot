@@ -82,7 +82,7 @@ export const document = pgTable(
 
 export type Document = InferSelectModel<typeof document>;
 
-export const Suggestion = pgTable(
+export const suggestion = pgTable(
   'Suggestion',
   {
     id: uuid('id').notNull().defaultRandom(),
@@ -106,4 +106,4 @@ export const Suggestion = pgTable(
   })
 );
 
-export type Suggestion = InferSelectModel<typeof Suggestion>;
+export type Suggestion = InferSelectModel<typeof suggestion>;
