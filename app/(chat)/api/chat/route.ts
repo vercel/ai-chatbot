@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     messages: coreMessages,
     maxSteps: 5,
     experimental_activeTools:
-      modelId === 'gpt-4o-canvas'
+      modelId === 'gpt-4o-blocks'
         ? [...weatherTools, ...blocksTools]
         : weatherTools,
 

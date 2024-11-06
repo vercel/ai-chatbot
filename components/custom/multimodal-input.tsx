@@ -28,13 +28,13 @@ const suggestedActions = [
     title: 'What is the weather',
     label: 'in San Francisco?',
     action: 'What is the weather in San Francisco?',
-    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4o-canvas'],
+    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4o-blocks'],
   },
   {
     title: 'Help me draft an essay',
     label: 'about Silicon Valley',
     action: 'Help me draft a short essay about Silicon Valley',
-    models: ['gpt-4o-canvas'],
+    models: ['gpt-4o-blocks'],
   },
 ];
 
@@ -223,7 +223,7 @@ export function MultimodalInput({
 
                     if (!suggestedAction.models.includes(selectedModelId)) {
                       toast.error(
-                        'Please switch to a model that supports canvas!'
+                        'Please switch to a model that supports blocks!'
                       );
 
                       return;
