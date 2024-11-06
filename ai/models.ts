@@ -21,8 +21,8 @@ export const models: Array<Model> = [
     description: 'For complex, multi-step tasks',
   },
   {
-    id: 'gpt-4o-canvas',
-    label: 'GPT 4o with Canvas',
+    id: 'gpt-4o-blocks',
+    label: 'GPT 4o with Blocks',
     apiIdentifier: 'gpt-4o',
     description: 'Collaborate with writing',
   },

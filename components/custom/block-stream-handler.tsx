@@ -1,29 +1,29 @@
 import { JSONValue } from 'ai';
 import { Dispatch, memo, SetStateAction } from 'react';
 
-import { UICanvas } from './canvas';
-import { useCanvasStream } from './use-canvas-stream';
+import { UIBlock } from './block';
+import { useBlockStream } from './use-block-stream';
 
-interface CanvasStreamHandlerProps {
-  setCanvas: Dispatch<SetStateAction<UICanvas>>;
+interface BlockStreamHandlerProps {
+  setBlock: Dispatch<SetStateAction<UIBlock>>;
   streamingData: JSONValue[] | undefined;
 }
 
-export function PureCanvasStreamHandler({
-  setCanvas,
+export function PureBlockStreamHandler({
+  setBlock,
   streamingData,
-}: CanvasStreamHandlerProps) {
-  useCanvasStream({
+}: BlockStreamHandlerProps) {
+  useBlockStream({
     streamingData,
-    setCanvas,
+    setBlock,
   });
 
   return null;
 }
 
 function areEqual(
-  prevProps: CanvasStreamHandlerProps,
-  nextProps: CanvasStreamHandlerProps
+  prevProps: BlockStreamHandlerProps,
+  nextProps: BlockStreamHandlerProps
 ) {
   if (!prevProps.streamingData && !nextProps.streamingData) {
     return true;
@@ -40,4 +40,4 @@ function areEqual(
   return true;
 }
 
-export const CanvasStreamHandler = memo(PureCanvasStreamHandler, areEqual);
+export const BlockStreamHandler = memo(PureBlockStreamHandler, areEqual);
