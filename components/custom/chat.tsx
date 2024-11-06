@@ -8,7 +8,7 @@ import useSWR, { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/custom/chat-header';
-import { PreviewMessage } from '@/components/custom/message';
+import { PreviewMessage, ThinkingMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { Vote } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
@@ -99,6 +99,12 @@ export function Chat({
               }
             />
           ))}
+
+          {isLoading &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === 'user' && (
+              <ThinkingMessage />
+            )}
 
           <div
             ref={messagesEndRef}
