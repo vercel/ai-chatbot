@@ -25,7 +25,7 @@
     "@vercel/functions": "^1.4.2",
     "@vercel/kv": "^3.0.0",
     "@vercel/postgres": "^0.10.0",
-    "ai": "3.4.32",
+    "ai": "3.4.33",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
