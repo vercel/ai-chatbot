@@ -1,6 +1,5 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
 
 import { models } from '@/ai/models';
@@ -14,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-import { ChevronDownIcon } from './icons';
+import { CheckCirclFillIcon, ChevronDownIcon } from './icons';
 
 export function ModelSelector({
   selectedModelId,
@@ -57,7 +56,7 @@ export function ModelSelector({
                 saveModelId(model.id);
               });
             }}
-            className="gap-4 group/item"
+            className="gap-4 group/item flex flex-row justify-between items-center"
             data-active={model.id === optimisticModelId}
           >
             <div className="flex flex-col gap-1 items-start">
@@ -68,7 +67,9 @@ export function ModelSelector({
                 </div>
               )}
             </div>
-            <Check className="size-4 ml-auto opacity-0 group-data-[active=true]/item:opacity-100" />
+            <div className="text-primary dark:text-primary-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+              <CheckCirclFillIcon />
+            </div>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
