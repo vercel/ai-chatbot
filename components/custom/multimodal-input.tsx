@@ -33,7 +33,7 @@ const suggestedActions = [
   {
     title: 'Help me draft an essay',
     label: 'about Silicon Valley',
-    action: 'Help me draft a short essay about Silicon Valley',
+    action: 'Help me draft a short essay about Silicon Valley using blocks',
     models: ['gpt-4o-blocks'],
   },
 ];
