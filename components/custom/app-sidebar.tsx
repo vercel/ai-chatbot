@@ -2,6 +2,7 @@
 
 import { useChat } from 'ai/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { type User } from 'next-auth';
 
 import { PlusIcon } from '@/components/custom/icons';
@@ -21,6 +22,7 @@ import {
 import { BetterTooltip } from '@/components/ui/tooltip';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
+  const router = useRouter();
   const { setOpenMobile } = useSidebar();
   const { setMessages } = useChat({ id: 'guest' });
 
@@ -29,29 +31,37 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <SidebarHeader>
         <SidebarMenu>
           <div className="flex flex-row justify-between items-center">
-            <Link
-              href="/"
+            <div
               onClick={() => {
-                setMessages([]);
                 setOpenMobile(false);
+
+                if (!user) {
+                  setMessages([]);
+                } else {
+                  router.push('/');
+                  router.refresh();
+                }
               }}
-              className="flex flex-row gap-3 items-center"
+              className="flex flex-row gap-3 items-center hover:bg-muted rounded-md"
             >
               <span className="text-lg font-semibold px-2">Chatbot</span>
-            </Link>
+            </div>
             <BetterTooltip content="New Chat" align="start">
               <Button
                 variant="ghost"
                 className="p-2 h-fit"
                 onClick={() => {
-                  setMessages([]);
                   setOpenMobile(false);
+
+                  if (!user) {
+                    setMessages([]);
+                  } else {
+                    router.push('/');
+                    router.refresh();
+                  }
                 }}
-                asChild
               >
-                <Link href="/">
-                  <PlusIcon />
-                </Link>
+                <PlusIcon />
               </Button>
             </BetterTooltip>
           </div>

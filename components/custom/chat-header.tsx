@@ -2,6 +2,7 @@
 
 import { Message } from 'ai';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User } from 'next-auth';
 import { useWindowSize } from 'usehooks-ts';
 
@@ -24,6 +25,7 @@ export function ChatHeader({
     messages: Message[] | ((messages: Message[]) => Message[])
   ) => void;
 }) {
+  const router = useRouter();
   const { open } = useSidebar();
   const { width: windowWidth } = useWindowSize();
 
@@ -36,14 +38,16 @@ export function ChatHeader({
             variant="outline"
             className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
             onClick={() => {
-              setMessages([]);
+              if (!user) {
+                setMessages([]);
+              } else {
+                router.push('/');
+                router.refresh();
+              }
             }}
-            asChild
           >
-            <Link href="/">
-              <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
-            </Link>
+            <PlusIcon />
+            <span className="md:sr-only">New Chat</span>
           </Button>
         </BetterTooltip>
       )}
