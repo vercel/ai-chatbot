@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ModelSelector } from '@/components/custom/model-selector';
@@ -12,6 +13,7 @@ import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from '../ui/sidebar';
 
 export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
+  const router = useRouter();
   const { open } = useSidebar();
 
   const { width: windowWidth } = useWindowSize();
@@ -24,12 +26,13 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
           <Button
             variant="outline"
             className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
-            asChild
+            onClick={() => {
+              router.push('/');
+              router.refresh();
+            }}
           >
-            <Link href="/">
-              <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
-            </Link>
+            <PlusIcon />
+            <span className="md:sr-only">New Chat</span>
           </Button>
         </BetterTooltip>
       )}
