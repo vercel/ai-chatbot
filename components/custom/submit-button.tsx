@@ -6,24 +6,32 @@ import { LoaderIcon } from '@/components/custom/icons';
 
 import { Button } from '../ui/button';
 
-export function SubmitButton({ children }: { children: React.ReactNode }) {
+export function SubmitButton({
+  children,
+  isSuccessful,
+}: {
+  children: React.ReactNode;
+  isSuccessful: boolean;
+}) {
   const { pending } = useFormStatus();
 
   return (
     <Button
       type={pending ? 'button' : 'submit'}
-      aria-disabled={pending}
-      disabled={pending}
+      aria-disabled={pending || isSuccessful}
+      disabled={pending || isSuccessful}
       className="relative"
     >
       {children}
-      {pending && (
+
+      {(pending || isSuccessful) && (
         <span className="animate-spin absolute right-4">
           <LoaderIcon />
         </span>
       )}
+
       <span aria-live="polite" className="sr-only" role="status">
-        {pending ? 'Loading' : 'Submit form'}
+        {pending || isSuccessful ? 'Loading' : 'Submit form'}
       </span>
     </Button>
   );
