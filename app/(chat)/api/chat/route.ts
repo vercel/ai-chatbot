@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 import { customModel } from '@/ai';
 import { models } from '@/ai/models';
-import { blocksPrompt, regularPrompt } from '@/ai/prompts';
+import { blocksPrompt, regularPrompt, systemPrompt } from '@/ai/prompts';
 import { auth } from '@/app/(auth)/auth';
 import {
   deleteChatById,
@@ -44,6 +44,8 @@ const blocksTools: AllowedTools[] = [
 ];
 
 const weatherTools: AllowedTools[] = ['getWeather'];
+
+const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
 export async function POST(request: Request) {
   const {
@@ -89,11 +91,10 @@ export async function POST(request: Request) {
 
   const result = await streamText({
     model: customModel(model.apiIdentifier),
-    system: modelId === 'gpt-4o-blocks' ? blocksPrompt : regularPrompt,
+    system: systemPrompt,
     messages: coreMessages,
     maxSteps: 5,
-    experimental_activeTools:
-      modelId === 'gpt-4o-blocks' ? blocksTools : weatherTools,
+    experimental_activeTools: allTools,
     tools: {
       getWeather: {
         description: 'Get the current weather at a location',
