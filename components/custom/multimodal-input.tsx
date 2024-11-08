@@ -28,13 +28,11 @@ const suggestedActions = [
     title: 'What is the weather',
     label: 'in San Francisco?',
     action: 'What is the weather in San Francisco?',
-    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4o-blocks'],
   },
   {
     title: 'Help me draft an essay',
     label: 'about Silicon Valley',
-    action: 'Help me draft a short essay about Silicon Valley using blocks',
-    models: ['gpt-4o-blocks'],
+    action: 'Help me draft an essay about Silicon Valley',
   },
 ];
 
@@ -220,14 +218,6 @@ export function MultimodalInput({
                   variant="ghost"
                   onClick={async (event) => {
                     event.preventDefault();
-
-                    if (!suggestedAction.models.includes(selectedModelId)) {
-                      toast.error(
-                        'Please switch to a model that supports blocks!'
-                      );
-
-                      return;
-                    }
 
                     if (user) {
                       window.history.replaceState({}, '', `/chat/${chatId}`);

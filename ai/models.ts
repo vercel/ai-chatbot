@@ -23,13 +23,6 @@ export const models: Array<Model> = [
     description: 'For complex, multi-step tasks',
     requiresAuth: true,
   },
-  {
-    id: 'gpt-4o-blocks',
-    label: 'GPT 4o with Blocks',
-    apiIdentifier: 'gpt-4o',
-    description: 'Collaborate with writing',
-    requiresAuth: true,
-  },
 ] as const;
 
 export const DEFAULT_MODEL_NAME: string = 'gpt-4o-mini';
