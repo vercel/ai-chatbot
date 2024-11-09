@@ -4,6 +4,7 @@ import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Dispatch,
+  FormEvent,
   SetStateAction,
   useCallback,
   useEffect,
@@ -75,14 +76,14 @@ export function Block({
   votes: Array<Vote> | undefined;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+    requestOptions?: {
+      data?: Record<string, string>;
+    }
+  ) => Promise<void>;
   handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions
-  ) => void;
+    event?: FormEvent<HTMLFormElement> | undefined,
+    requestOptions?: { data?: Record<string, string> | undefined } | undefined
+  ) => Promise<void>;
 }) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();

@@ -18,7 +18,7 @@ export const user = pgTable('User', {
 export type User = InferSelectModel<typeof user>;
 
 export const chat = pgTable('Chat', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: text('id').primaryKey().notNull(),
   createdAt: timestamp('createdAt').notNull(),
   title: text('title').notNull(),
   userId: uuid('userId')
@@ -29,8 +29,9 @@ export const chat = pgTable('Chat', {
 export type Chat = InferSelectModel<typeof chat>;
 
 export const message = pgTable('Message', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  chatId: uuid('chatId')
+  id: text('id').primaryKey().notNull()
+  ,
+  chatId: text('chatId')
     .notNull()
     .references(() => chat.id),
   role: varchar('role').notNull(),
@@ -43,10 +44,10 @@ export type Message = InferSelectModel<typeof message>;
 export const vote = pgTable(
   'Vote',
   {
-    chatId: uuid('chatId')
+    chatId: text('chatId')
       .notNull()
       .references(() => chat.id),
-    messageId: uuid('messageId')
+    messageId: text('messageId')
       .notNull()
       .references(() => message.id),
     isUpvoted: boolean('isUpvoted').notNull(),

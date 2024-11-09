@@ -11,12 +11,16 @@ export async function saveUserId() {
     'user',
     JSON.stringify({ id: String(Math.random() * 10_000) })
   );
-  console.log('User id saved');
 }
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
   cookieStore.set('model-id', model);
+}
+
+export async function saveChatId(chatId: string) {
+  const cookieStore = await cookies();
+  cookieStore.set('chat-id', chatId);
 }
 
 export async function generateTitleFromUserMessage({

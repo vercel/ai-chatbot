@@ -144,7 +144,11 @@ export function sanitizeResponseMessages(
   const messagesBySanitizedContent = messages.map((message) => {
     if (message.role !== 'assistant') return message;
 
-    if (typeof message.content === 'string') return message;
+    if (
+      typeof message.content === 'string' ||
+      message.content[0].type === 'text'
+    )
+      return message;
 
     const sanitizedContent = message.content.filter((content) =>
       content.type === 'tool-call'

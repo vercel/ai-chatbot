@@ -11,6 +11,7 @@ import React, {
   Dispatch,
   SetStateAction,
   ChangeEvent,
+  FormEvent,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
@@ -60,14 +61,14 @@ export function MultimodalInput({
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+    requestOptions?: {
+      data?: Record<string, string>;
+    }
+  ) => Promise<void>;
   handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions
-  ) => void;
+    event?: FormEvent<HTMLFormElement> | undefined,
+    requestOptions?: { data?: Record<string, string> | undefined } | undefined
+  ) => Promise<void>;
   className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -116,10 +117,8 @@ export function MultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/chat/${chatId}`);
-
     handleSubmit(undefined, {
-      experimental_attachments: attachments,
+      // experimental_attachments: attachments,
     });
 
     setAttachments([]);
@@ -209,8 +208,6 @@ export function MultimodalInput({
                 <Button
                   variant="ghost"
                   onClick={async () => {
-                    window.history.replaceState({}, '', `/chat/${chatId}`);
-
                     append({
                       role: 'user',
                       content: suggestedAction.action,

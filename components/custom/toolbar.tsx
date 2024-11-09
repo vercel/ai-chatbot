@@ -39,8 +39,10 @@ type ToolProps = {
   isAnimating: boolean;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+    requestOptions?: {
+      data?: Record<string, string>;
+    }
+  ) => Promise<void>;
 };
 
 const Tool = ({
@@ -151,8 +153,10 @@ const ReadingLevelSelector = ({
   isAnimating: boolean;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+    requestOptions?: {
+      data?: Record<string, string>;
+    }
+  ) => Promise<void>;
 }) => {
   const LEVELS = [
     'Elementary',
@@ -264,8 +268,10 @@ export const Tools = ({
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+    requestOptions?: {
+      data?: Record<string, string>;
+    }
+  ) => Promise<void>;
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -330,8 +336,10 @@ export const Toolbar = ({
   isLoading: boolean;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
+    requestOptions?: {
+      data?: Record<string, string>;
+    }
+  ) => Promise<void>;
   stop: () => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
 }) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
+import { useAssistant } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -27,25 +27,22 @@ export function Chat({
   initialMessages: Array<Message>;
   selectedModelId: string;
 }) {
-  const { mutate } = useSWRConfig();
-
   const {
     messages,
     setMessages,
-    handleSubmit,
+    submitMessage,
     input,
+    threadId,
     setInput,
     append,
-    isLoading,
+    status,
     stop,
-    data: streamingData,
-  } = useChat({
-    body: { id, modelId: selectedModelId },
-    initialMessages,
-    onFinish: () => {
-      mutate('/api/history');
-    },
+  } = useAssistant({
+    api: '/api/assistant',
+    threadId: id,
   });
+
+  const allMessages = [...initialMessages, ...messages];
 
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize();
@@ -65,7 +62,7 @@ export function Chat({
   });
 
   const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
+    `/api/vote?chatId=${threadId}`,
     fetcher
   );
 
@@ -82,16 +79,18 @@ export function Chat({
           ref={messagesContainerRef}
           className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
         >
-          {messages.length === 0 && <Overview />}
+          {allMessages.length === 0 && <Overview />}
 
-          {messages.map((message, index) => (
+          {allMessages.map((message, index) => (
             <PreviewMessage
               key={message.id}
-              chatId={id}
+              chatId={threadId ?? id}
               message={message}
               block={block}
               setBlock={setBlock}
-              isLoading={isLoading && messages.length - 1 === index}
+              isLoading={
+                status === 'in_progress' && allMessages.length - 1 === index
+              }
               vote={
                 votes
                   ? votes.find((vote) => vote.messageId === message.id)
@@ -100,9 +99,9 @@ export function Chat({
             />
           ))}
 
-          {isLoading &&
-            messages.length > 0 &&
-            messages[messages.length - 1].role === 'user' && (
+          {status === 'in_progress' &&
+            allMessages.length > 0 &&
+            allMessages[allMessages.length - 1].role === 'user' && (
               <ThinkingMessage />
             )}
 
@@ -113,11 +112,11 @@ export function Chat({
         </div>
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           <MultimodalInput
-            chatId={id}
+            chatId={threadId ?? id}
             input={input}
             setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
+            handleSubmit={submitMessage}
+            isLoading={status === 'in_progress'}
             stop={stop}
             attachments={attachments}
             setAttachments={setAttachments}
@@ -131,11 +130,11 @@ export function Chat({
       <AnimatePresence>
         {block && block.isVisible && (
           <Block
-            chatId={id}
+            chatId={threadId ?? id}
             input={input}
             setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
+            handleSubmit={submitMessage}
+            isLoading={status === 'in_progress'}
             stop={stop}
             attachments={attachments}
             setAttachments={setAttachments}
@@ -149,7 +148,7 @@ export function Chat({
         )}
       </AnimatePresence>
 
-      <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
+      {/* <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} /> */}
     </>
   );
 }
