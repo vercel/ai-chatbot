@@ -1,13 +1,9 @@
 import { AssistantResponse } from 'ai';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
+import { default as OpenAI } from 'openai';
 
 import { saveChat, saveMessages } from '@/db/queries';
-import {
-  generateUUID,
-  getMostRecentUserMessage,
-  sanitizeResponseMessages,
-} from '@/lib/utils';
+import { generateUUID, sanitizeResponseMessages } from '@/lib/utils';
 
 import {
   generateTitleFromUserMessage,
@@ -27,6 +23,7 @@ export async function POST(req: Request) {
     threadId: string | null;
     message: string;
   } = await req.json();
+  console.log(input, 'input');
 
   // Create a thread if needed
   const threadId = input.threadId
@@ -34,10 +31,21 @@ export async function POST(req: Request) {
     : (await openai.beta.threads.create({})).id;
 
   // Add a message to the thread
-  console.log(threadId, 'threadId');
   const createdMessage = await openai.beta.threads.messages.create(threadId, {
     role: 'user',
     content: input.message,
+  });
+
+  await saveMessages({
+    messages: [
+      {
+        role: 'user',
+        content: input.message,
+        id: generateUUID(),
+        createdAt: new Date(),
+        chatId: threadId,
+      },
+    ],
   });
 
   if (!input.threadId) {
@@ -98,12 +106,12 @@ export async function POST(req: Request) {
       if (runResult?.status === 'completed') {
         try {
           const messages = await openai.beta.threads.messages.list(threadId);
+          const lastMessage = messages.data
+            .filter((role) => role.role === 'assistant')
+            .pop();
 
-          console.log(messages);
           const responseMessagesWithoutIncompleteToolCalls =
-            sanitizeResponseMessages(messages.data as any);
-
-          console.log({ responseMessagesWithoutIncompleteToolCalls });
+            sanitizeResponseMessages([lastMessage] as any);
 
           await saveMessages({
             messages: responseMessagesWithoutIncompleteToolCalls.map(
