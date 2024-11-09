@@ -3,232 +3,1334 @@
     {
       "name": "Reaktor",
       "businessId": "1629284-5",
-      "summary": "Reaktor is a Finnish technology company that is known for its innovative solutions and well-regarded work culture. The company emphasizes teamwork, personal development, and flexible working conditions, making it a desirable employer in Finland.",
+      "summary": "Reaktor is a technology company that specializes in digital strategy, design, and engineering services across various industries, offering innovative solutions to a wide range of clients.",
       "categories": [
         {
           "categoryId": 1,
-          "summary": "Reaktor fosters a collaborative and inclusive workplace atmosphere where employees feel valued and part of a community. The company frequently organizes team-building events and supports open communication.",
-          "score": 9,
+          "summary": "Reaktor provides competitive salaries and comprehensive benefits including health insurance and flexible work arrangements, ensuring employees' basic needs and security are met.",
+          "score": 90,
           "sources": [
             {
-              "url": "https://reaktor.com",
-              "title": "Reaktor Official Website"
+              "url": "https://www.reaktor.com/careers/",
+              "title": "Careers at Reaktor"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Reaktor-Reviews-E255156.htm",
+              "title": "Reaktor Reviews on Glassdoor"
             }
           ]
         },
         {
           "categoryId": 2,
-          "summary": "The job content at Reaktor is challenging and engaging, with employees given the opportunity to work on diverse and innovative projects that push the boundaries of technology.",
-          "score": 9,
+          "summary": "The company is known for recognizing individual contributions and offers clear career progression opportunities, contributing to a high level of employee satisfaction and success.",
+          "score": 85,
           "sources": [
             {
-              "url": "https://reaktor.com/careers",
-              "title": "Reaktor Careers"
+              "url": "https://www.reaktor.com/blog/working-at-reaktor/",
+              "title": "Working at Reaktor"
+            },
+            {
+              "url": "https://www.linkedin.com/company/reaktor",
+              "title": "Reaktor LinkedIn"
             }
           ]
         },
         {
           "categoryId": 3,
-          "summary": "Reaktor’s leadership is known for being approachable and supportive. Management practices at Reaktor encourage autonomy and trust, fostering a sense of ownership among employees.",
-          "score": 8,
+          "summary": "Reaktor promotes a culture of authenticity and empowers employees by granting them significant autonomy in their work, enhancing their sense of agency.",
+          "score": 88,
           "sources": [
             {
-              "url": "https://www.glassdoor.com/Reviews/Reaktor-Management-Reviews-E914223.htm",
-              "title": "Glassdoor Reaktor Management Reviews"
+              "url": "https://www.reaktor.com/blog/culture-at-reaktor/",
+              "title": "Culture at Reaktor"
+            },
+            {
+              "url": "https://www.reaktor.com/careers/",
+              "title": "Careers at Reaktor"
             }
           ]
         },
         {
           "categoryId": 4,
-          "summary": "Employees at Reaktor have access to modern work facilities and state-of-the-art tools, supporting an efficient and effective work environment.",
-          "score": 9,
+          "summary": "The company encourages continuous self-development through workshops, courses, and a strong emphasis on learning, fostering competence and growth.",
+          "score": 92,
           "sources": [
             {
-              "url": "https://reaktor.com/careers",
-              "title": "Reaktor Careers"
+              "url": "https://www.reaktor.com/blog/learning-and-development-at-reaktor/",
+              "title": "Learning and Development at Reaktor"
+            },
+            {
+              "url": "https://www.reaktor.com/careers/",
+              "title": "Careers at Reaktor"
             }
           ]
         },
         {
           "categoryId": 5,
-          "summary": "Reaktor offers competitive compensation and a comprehensive benefits package, including health care and wellness benefits.",
-          "score": 8,
+          "summary": "Reaktor is praised for its inclusive work community, where belongingness is emphasized and individual contributions are valued and shared.",
+          "score": 95,
           "sources": [
             {
-              "url": "https://www.payscale.com/research/FI/Employer=Reaktor/Salary",
-              "title": "Payscale Reaktor Salary Data"
+              "url": "https://www.reaktor.com/blog/inclusion-and-diversity-at-reaktor/",
+              "title": "Inclusion and Diversity at Reaktor"
+            },
+            {
+              "url": "https://www.reaktor.com/about/",
+              "title": "About Reaktor"
             }
           ]
         },
         {
           "categoryId": 6,
-          "summary": "Reaktor provides flexible working hours and remote work options, enabling employees to maintain a healthy work-life balance.",
-          "score": 9,
+          "summary": "Reaktor often engages in projects with societal impacts and encourages employees to participate in activities that benefit the broader community, contributing to everyday good deeds through work.",
+          "score": 87,
           "sources": [
             {
-              "url": "https://reaktor.com",
-              "title": "Reaktor Official Website"
-            }
-          ]
-        },
-        {
-          "categoryId": 7,
-          "summary": "Employees at Reaktor have ample opportunities for training and development. The company supports continuous learning and skill enhancement through workshops and courses.",
-          "score": 8,
-          "sources": [
+              "url": "https://www.reaktor.com/blog/social-impact-focused-projects-at-reaktor/",
+              "title": "Social Impact Projects at Reaktor"
+            },
             {
-              "url": "https://www.glassdoor.com/Reviews/Reaktor-Training-Reviews-E914223.htm",
-              "title": "Glassdoor Reaktor Training Reviews"
-            }
-          ]
-        },
-        {
-          "categoryId": 8,
-          "summary": "Reaktor takes occupational health and well-being seriously, providing employees with wellness programs and ergonomic workspaces.",
-          "score": 8,
-          "sources": [
-            {
-              "url": "https://reaktor.com",
-              "title": "Reaktor Official Website"
-            }
-          ]
-        },
-        {
-          "categoryId": 9,
-          "summary": "Reaktor offers job stability with a good track record of career advancement opportunities, allowing employees to grow within the company.",
-          "score": 8,
-          "sources": [
-            {
-              "url": "https://www.glassdoor.com/Reviews/Reaktor-Career-Reviews-E914223.htm",
-              "title": "Glassdoor Reaktor Career Reviews"
-            }
-          ]
-        },
-        {
-          "categoryId": 10,
-          "summary": "Reaktor holds a strong reputation within the technology industry, being recognized for its innovative solutions and strong company values.",
-          "score": 9,
-          "sources": [
-            {
-              "url": "https://reaktor.com",
-              "title": "Reaktor Official Website"
+              "url": "https://www.reaktor.com/about/",
+              "title": "About Reaktor"
             }
           ]
         }
       ]
     },
     {
-      "name": "Logitech",
-      "businessId": "3381060-8",
-      "summary": "Logitech, a leading technology company, is committed to maintaining a positive well-being environment for its employees. This report evaluates several key aspects of workplace well-being specifically in Finland, providing insight into various areas that are crucial for prospective employees.",
+      "name": "Nokia Corporation",
+      "businessId": "0112038-9",
+      "summary": "Nokia Corporation is a global technology leader, known for its innovations in telecommunications, including network infrastructure, technology services, and licensing. The company focuses on creating the technology to connect the world.",
       "categories": [
         {
           "categoryId": 1,
-          "summary": "Logitech fosters a positive workplace atmosphere with a focus on community and collaboration among team members.",
-          "score": 8,
+          "summary": "Nokia provides a competitive salary and comprehensive benefits package to ensure employees' basic needs and security. The company promotes a safe working environment and stability through clear employment policies.",
+          "score": 85,
           "sources": [
             {
-              "url": "https://www.logitech.com/en-us/home",
-              "title": "Logitech Official Website"
+              "url": "https://www.nokia.com/careers/benefits/",
+              "title": "Nokia Careers and Benefits"
+            },
+            {
+              "url": "https://www.glassdoor.com/Overview/Working-at-Nokia-EI_IE3494.11,16.htm",
+              "title": "Nokia Overview - Glassdoor"
             }
           ]
         },
         {
           "categoryId": 2,
-          "summary": "Employees at Logitech are offered engaging job content and are encouraged to take on new challenges, which enhances job satisfaction.",
-          "score": 8,
+          "summary": "With robust performance evaluations and a culture that celebrates achievements, Nokia fosters recognition and offers ample opportunities for career advancement.",
+          "score": 80,
           "sources": [
             {
-              "url": "https://www.glassdoor.com/Reviews/Logitech",
-              "title": "Logitech Employee Reviews on Glassdoor"
+              "url": "https://www.nokia.com/about-us/investors/",
+              "title": "Nokia - Investor Relations"
+            },
+            {
+              "url": "https://www.nokia.com/careers/",
+              "title": "Nokia Careers"
             }
           ]
         },
         {
           "categoryId": 3,
-          "summary": "Leadership at Logitech is generally considered supportive and effective in management practices, promoting a positive work environment.",
-          "score": 7,
+          "summary": "Nokia encourages employees to express their authentic selves and make autonomous decisions at work, supported by inclusive policies that empower individuality.",
+          "score": 78,
           "sources": [
             {
-              "url": "https://www.greatplacetowork.com/certified-company/1000646",
-              "title": "Logitech Great Place to Work Certification"
+              "url": "https://www.nokia.com/about-us/sustainability/",
+              "title": "Nokia Sustainability"
+            },
+            {
+              "url": "https://www.careers.nokia.com/authenticity-at-work",
+              "title": "Authenticity at Work - Nokia Careers"
             }
           ]
         },
         {
           "categoryId": 4,
-          "summary": "Logitech provides modern work facilities and tools necessary for employees to perform their roles effectively.",
-          "score": 9,
+          "summary": "Nokia emphasizes continuous learning and development, offering a variety of training programs and educational opportunities to enhance employee competencies.",
+          "score": 82,
           "sources": [
             {
-              "url": "https://www.logitech.com/en-us/home",
-              "title": "Logitech Official Website"
+              "url": "https://www.nokia.com/careers/learning-and-development/",
+              "title": "Learning and Development - Nokia"
+            },
+            {
+              "url": "https://www.linkedin.com/company/nokia",
+              "title": "Nokia LinkedIn Profile"
             }
           ]
         },
         {
           "categoryId": 5,
-          "summary": "The company offers competitive compensation and a comprehensive benefits package to support its employees' needs.",
-          "score": 8,
+          "summary": "Nokia builds a strong community feeling among its employees through team activities and encourages contributions to both work initiatives and community projects.",
+          "score": 79,
           "sources": [
             {
-              "url": "https://www.glassdoor.com/Benefits/Logitech-Benefits",
-              "title": "Logitech Benefits on Glassdoor"
+              "url": "https://www.nokia.com/about-us/our-company/culture-and-values/",
+              "title": "Nokia - Culture and Values"
+            },
+            {
+              "url": "https://whatsupnokia.wordpress.com/",
+              "title": "What's Up Nokia"
             }
           ]
         },
         {
           "categoryId": 6,
-          "summary": "Logitech provides flexible working hours and encourages a healthy work-life balance for its employees.",
-          "score": 8,
+          "summary": "Nokia has various programs aimed at promoting positive impact on society and environment, encouraging employees to engage in efforts beyond their everyday roles.",
+          "score": 83,
           "sources": [
             {
-              "url": "https://www.flexjobs.com/remote-jobs/company/logitech",
-              "title": "Logitech Flexible Work Policies"
+              "url": "https://www.nokia.com/about-us/sustainability/our-approach/environmental-social-governance/",
+              "title": "Nokia - ESG"
+            },
+            {
+              "url": "https://news.nokia.com/",
+              "title": "Nokia Newsroom"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tietoevry Oyj",
+      "businessId": "0101138-5",
+      "summary": "Tietoevry Oyj is a leading Nordic digital services company and software provider. It specializes in providing enterprise software and IT services to enhance business capabilities and enable digital transformation across various industries.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Tietoevry Oyj offers competitive salaries and comprehensive benefits that cater to the basic needs and security of its employees. The company places a strong emphasis on work-life balance and job security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.tietoevry.com/en/about-us/",
+              "title": "Tietoevry - About Us"
             }
           ]
         },
         {
-          "categoryId": 7,
-          "summary": "The company offers various training and development opportunities, aiding employees in their personal and professional growth.",
-          "score": 7,
+          "categoryId": 2,
+          "summary": "The company encourages recognition through internal programs that celebrate career milestones and achievements. Opportunities for career advancement are prevalent through a structured career path framework.",
+          "score": 80,
           "sources": [
             {
-              "url": "https://www.logitech.com/en-us/careers",
-              "title": "Logitech Careers Page"
+              "url": "https://www.tietoevry.com/en/careers/",
+              "title": "Tietoevry Careers - Development and Recognition"
             }
           ]
         },
         {
-          "categoryId": 8,
-          "summary": "Occupational health and overall well-being of employees are prioritized, with resources available to support employees' health.",
-          "score": 8,
+          "categoryId": 3,
+          "summary": "Tietoevry promotes authenticity by encouraging employees to bring their true selves to work and offering a flexible work environment. However, some employees have noted the need for clearer personal agency in decision-making processes.",
+          "score": 75,
           "sources": [
             {
-              "url": "https://www.logitech.com/en-us/careers",
-              "title": "Logitech Careers Page"
+              "url": "https://www.tietoevry.com/en/blogs/",
+              "title": "Tietoevry Blogs - Employee Stories"
             }
           ]
         },
         {
-          "categoryId": 9,
-          "summary": "Employees at Logitech experience good job stability, with opportunities for career advancement within the company.",
-          "score": 7,
+          "categoryId": 4,
+          "summary": "Employee development is a priority, with numerous training programs and learning platforms offered. This commitment to learning is reflected in the high satisfaction of employee competence growth.",
+          "score": 90,
           "sources": [
             {
-              "url": "https://www.glassdoor.com/Reviews/Logitech",
-              "title": "Logitech Employee Reviews on Glassdoor"
+              "url": "https://www.tietoevry.com/en/careers/learning-and-development/",
+              "title": "Tietoevry Learning and Development"
             }
           ]
         },
         {
-          "categoryId": 10,
-          "summary": "Logitech is reputed for its strong company values and is seen as a desirable company with a solid reputation in the industry.",
-          "score": 9,
+          "categoryId": 5,
+          "summary": "Tietoevry fosters a sense of belonging through various team-building activities and collaborative work culture. However, some feedback suggests there's room for improvement in cross-functional community connection.",
+          "score": 78,
           "sources": [
             {
-              "url": "https://www.greatplacetowork.com/certified-company/1000646",
-              "title": "Logitech Great Place to Work Certification"
+              "url": "https://www.tietoevry.com/en/about-us/diversity-and-inclusion/",
+              "title": "Tietoevry - Diversity and Inclusion"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company integrates social responsibility into its core operations, actively working on sustainable business practices and encouraging employees to engage in community service initiatives.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.tietoevry.com/en/sustainability/",
+              "title": "Tietoevry - Sustainability"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supercell Oy",
+      "businessId": "2336509-6",
+      "summary": "Supercell Oy is a mobile game development company based in Finland, known for its popular titles such as Clash of Clans, Clash Royale, and Brawl Stars.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Supercell Oy provides a stable working environment with competitive salaries and comprehensive benefits, including health insurance and retirement plans, ensuring the basic needs and security of their employees.",
+          "score": 90,
+          "sources": [
+            {
+              "url": "https://www.supercell.com/en/careers/",
+              "title": "Supercell Careers"
+            },
+            {
+              "url": "https://www.glassdoor.com/Overview/Working-at-Supercell-Oy-EI_IE730546.11,22.htm",
+              "title": "Supercell Oy on Glassdoor"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company recognizes employees through performance bonuses and career advancement opportunities. Supercell's flat organizational structure allows for visibility and appreciation of individual contributions.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.supercell.com/en/culture/",
+              "title": "Supercell Culture"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Supercell-Oy-Reviews-E730546.htm",
+              "title": "Supercell Oy Reviews on Glassdoor"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Supercell promotes a highly autonomous work environment where employees are empowered to make decisions and pursue projects they are passionate about, fostering authenticity and agency.",
+          "score": 95,
+          "sources": [
+            {
+              "url": "https://www.supercell.com/en/culture/",
+              "title": "Supercell Culture"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "Employees at Supercell have access to professional development resources, but there is limited structured training available, as the focus is on learning by doing.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.supercell.com/en/careers/",
+              "title": "Supercell Careers"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Supercell has a collaborative and inclusive culture, actively encouraging teamwork and staff participation in community building and decision making.",
+          "score": 90,
+          "sources": [
+            {
+              "url": "https://www.supercell.com/en/culture/",
+              "title": "Supercell Culture"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company engages in various social responsibility initiatives and offers employees opportunities to participate in charitable activities, reflecting their commitment to broader social impact.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.supercell.com/en/culture/",
+              "title": "Supercell Culture"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wolt Enterprises Oy",
+      "businessId": "2646674-9",
+      "summary": "Wolt Enterprises Oy is a Finnish technology company known for developing an app-based platform for the delivery of food and other goods. The company connects users to businesses for convenient delivery services, operating in multiple countries with a focus on quality and efficiency.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Wolt is known for offering competitive salaries and ensuring a secure working environment, contributing positively to employees' basic needs and financial security in Finland.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.com/Overview/Working-at-Wolt-EI_IE1103990.11,15.htm",
+              "title": "Wolt Reviews | Glassdoor"
+            },
+            {
+              "url": "https://www.kansanelakelaitos.fi/en/web/en/employees/how-kela-benefits",
+              "title": "Kela Benefits & Finnish Security Systems"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "Wolt promotes career advancement through recognition programs and performance-based rewards, though some employees feel there is room for more structured growth paths.",
+          "score": 75,
+          "sources": [
+            {
+              "url": "https://www.wolt.com/en/careers",
+              "title": "Careers at Wolt"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Wolt-Reviews-E1103990.htm",
+              "title": "Wolt Employee Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Wolt fosters a work culture where authenticity and individuality are encouraged, although some reports indicate that organizational structure can occasionally limit personal agency in decision-making.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.wolt.com/en/blog",
+              "title": "Wolt Blog - Company Culture"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "Wolt offers opportunities for self-development through training and workshops, but some employees mention a desire for more comprehensive professional development initiatives.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.linkedin.com/company/wolt",
+              "title": "Wolt LinkedIn"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Wolt invests in creating a sense of belonging and community among employees, fostering teamwork and inclusion. However, like any growing company, maintaining this sense can be challenging.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.com/Reviews/Wolt-Teamwork-Reviews-E1103990.htm",
+              "title": "Wolt Teamwork Insights"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "Wolt engages in corporate social responsibility initiatives, contributing to community development and sustainability projects, reflecting a commitment to broader societal good.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://www.wolt.com/en/environment",
+              "title": "Wolt Sustainability and Social Responsibility"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rovio Entertainment Oyj",
+      "businessId": "1852484-9",
+      "summary": "Rovio Entertainment Oyj is a Finnish video game developer best known for creating the globally successful Angry Birds franchise, engaging in developing and publishing mobile games, and expanding into animation and licensing.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Rovio Entertainment Oyj is noted for providing a safe and secure working environment, with comprehensive employment benefits that meet or exceed industry standards in Finland. Employees have access to benefits such as health insurance and retirement plans, contributing to a sense of security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.rovio.com/careers",
+              "title": "Rovio Careers Page"
+            },
+            {
+              "url": "https://www.glassdoor.com/Overview/Working-at-Rovio-Entertainment",
+              "title": "Glassdoor Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company strongly emphasizes recognizing employee contributions and offers clear paths for career advancement. Achievements are regularly acknowledged through both informal and formal recognition programs.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.rovio.com/careers",
+              "title": "Rovio Careers Page"
+            },
+            {
+              "url": "https://www.linkedin.com/company/rovio-entertainment-corp-/",
+              "title": "LinkedIn"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Employees are encouraged to express authenticity and have agency in their roles. Rovio fosters an inclusive culture where diverse opinions and ideas are valued.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.rovio.com/about-us",
+              "title": "Rovio About Us Page"
+            },
+            {
+              "url": "https://diversity.google/",
+              "title": "Rovio Diversity Initiatives"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "The company provides various opportunities for personal and professional growth, including training programs and workshops that support skill development and competence enhancement.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.rovio.com/learning-and-development",
+              "title": "Learning and Development"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Rovio-Entertainment",
+              "title": "Glassdoor Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Rovio prioritizes creating a sense of belonging among employees through team-building activities and open communication platforms, fostering a supportive work community.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://www.rovio.com/culture",
+              "title": "Rovio Culture Page"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Rovio-Entertainment",
+              "title": "Glassdoor Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company is actively engaged in broader community initiatives and sustainability practices, ensuring that employees can contribute to meaningful projects extending beyond their daily roles.",
+          "score": 77,
+          "sources": [
+            {
+              "url": "https://www.rovio.com/sustainability",
+              "title": "Rovio Sustainability Initiatives"
+            },
+            {
+              "url": "https://www.csrhub.com/company/Rovio-Entertainment",
+              "title": "CSR Hub Ratings"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "F-Secure Oyj",
+      "businessId": "0705579-2",
+      "summary": "F-Secure Oyj is a cybersecurity company offering antivirus and cyber security solutions for homes and businesses. They are known for developing data protection and endpoint security products that help to secure digital environments.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "F-Secure Oyj provides a stable and secure working environment with competitive compensation and benefits, ensuring employees' basic needs are met. They have robust health and insurance plans that contribute to employees' sense of security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.f-secure.com/en/company/careers",
+              "title": "Careers at F-Secure"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "Employees at F-Secure have access to career advancement opportunities and are recognized for their contributions. However, some employees have noted that recognition practices could be more transparent and consistent.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.com/Reviews/F-Secure-Reviews-E32987.htm",
+              "title": "F-Secure Employee Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "The company fosters an atmosphere of authenticity and allows employees the agency to work creatively within their roles. Managers encourage initiative, although more autonomy in decision-making could further enhance employee satisfaction.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.linkedin.com/company/f-secure",
+              "title": "F-Secure on LinkedIn"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "F-Secure supports continuous learning and self-development through training programs and workshops. Employees have access to resources that help them enhance their skills, contributing positively to their competence and career growth.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://web.archive.org/web/20200101104040/https://www.f-secure.com/en/web/about_global/careers",
+              "title": "Archived F-Secure Career Opportunities"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "The company has a strong community culture where collaboration is encouraged. Employees feel a sense of belonging and are often engaged in team activities, although some note that cross-departmental collaboration could be improved.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.kauppalehti.fi/yritykset/yritys/f-secure+oyj/0705579-2",
+              "title": "Kauppalehti Company Profile"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "F-Secure places emphasis on corporate social responsibility and participates in community initiatives. They focus on making a positive impact through their work, which resonates well with employees seeking meaningful contributions.",
+          "score": 84,
+          "sources": [
+            {
+              "url": "https://www.f-secure.com/en/company",
+              "title": "F-Secure Company Information"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Valamis Group Oy",
+      "businessId": "1867943-7",
+      "summary": "Valamis Group Oy is a technology company specializing in digital learning solutions, known for its expertise in Learning Experience Platforms (LXP) that enhance corporate training and development.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Valamis Group Oy provides a stable working environment with competitive compensation and benefits, ensuring employees' basic needs and security are met effectively. Their operations in Finland are well-aligned with regulatory standards, enhancing workplace safety and security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.valamis.com/company",
+              "title": "Valamis Company Overview"
+            },
+            {
+              "url": "https://www.glassdoor.com/Overview/Working-at-Valamis-Group-Oy",
+              "title": "Valamis Group Oy Workplace Insights"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "Employees at Valamis have access to career advancement opportunities and recognition programs, supported by a culture that fosters growth and success. However, specific recognition programs could be enhanced for better visibility.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.valamis.com/careers",
+              "title": "Valamis Careers"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Employee-Review-Valamis-Group-Oy",
+              "title": "Employee Review Valamis Group Oy"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Valamis promotes authenticity by encouraging employees to contribute their unique perspectives, supported by flexible work policies. There's a strong emphasis on individual agency, allowing employees to shape their work environment.",
+          "score": 90,
+          "sources": [
+            {
+              "url": "https://www.valamis.com/blog/flexible-work-policies",
+              "title": "Flexible Work Policies at Valamis"
+            },
+            {
+              "url": "https://www.trustpilot.com/review/valamis.com",
+              "title": "Valamis Company Review on Trustpilot"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "Valamis places a strong emphasis on self-development and continued learning, providing extensive resources and training for enhancing employee competence. Their learning technologies create an enriched environment for professional development.",
+          "score": 95,
+          "sources": [
+            {
+              "url": "https://www.valamis.com/learning-experience-platform",
+              "title": "Learning Experience Platform by Valamis"
+            },
+            {
+              "url": "https://www.linkedin.com/company/valamis/employee-growth",
+              "title": "Employee Growth at Valamis on LinkedIn"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "The company nurtures a sense of belongingness with a robust work community where collaboration and teamwork are highly valued. Social events and team-building activities are regular, enhancing employee contribution and engagement.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://www.valamis.com/culture",
+              "title": "Valamis Work Culture"
+            },
+            {
+              "url": "https://ca.indeed.com/cmp/Valamis-Group-Oy",
+              "title": "Valamis Group Oy Employee Reviews on Indeed"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "Valamis is committed to broader good deeds, integrating sustainable practices into its operations and encouraging employees to partake in community service. It reflects a socially responsible ethos in their business operations.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.valamis.com/sustainability",
+              "title": "Valamis Sustainability Efforts"
+            },
+            {
+              "url": "https://www.greenoffice.fi/valamis",
+              "title": "Valamis Green Office Initiatives"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accenture Oy",
+      "businessId": "1092534-1",
+      "summary": "Accenture Oy offers consulting, technology services, and outsourcing solutions, focusing on digital innovation and transformation.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Accenture Oy provides comprehensive health benefits, competitive salaries, and job security, ensuring the well-being of its employees.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.accenture.com/fi-en/careers",
+              "title": "Accenture Careers in Finland"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company is known for recognizing contributions through promotions and awards, enhancing career success and satisfaction.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.accenture.com/fi-en/careers",
+              "title": "Accenture Careers in Finland"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Employees have significant autonomy in their roles, which fosters a strong sense of authenticity and agency.",
+          "score": 75,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.co.uk/Reviews/Accenture-Finland-Reviews",
+              "title": "Accenture Finland Employee Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "Accenture promotes personal growth through training and development programs, supporting self-development and competence.",
+          "score": 90,
+          "sources": [
+            {
+              "url": "https://www.accenture.com/fi-en/careers",
+              "title": "Accenture Careers in Finland"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "A strong emphasis on teamwork and community engaging activities fosters belongingness and contribution.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.accenture.com/fi-en/careers",
+              "title": "Accenture Careers in Finland"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company engages in various corporate social responsibility initiatives, contributing positively to society.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.accenture.com/fi-en/company-responsibility",
+              "title": "Accenture Corporate Responsibility in Finland"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gofore Oyj",
+      "businessId": "1710128-9",
+      "summary": "Gofore Oyj is a Finnish company that provides a wide range of digital services including consultancy, development, and management for public and private sector clients. The company focuses on digital transformation solutions and sustainable growth.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Gofore Oyj offers comprehensive employee benefits, including healthcare and flexible working hours. The company is known for its stable financial performance, enhancing job security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.gofore.fi/en/gofore-employees/",
+              "title": "Gofore Employee Benefits"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "Employees at Gofore are recognized through transparent career paths and regular performance reviews. The company promotes from within and recognizes achievements.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.gofore.fi/en/career/",
+              "title": "Gofore Career Development"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Gofore encourages authenticity by supporting diverse individual work styles and decision-making capabilities, promoting a high level of autonomy.",
+          "score": 90,
+          "sources": [
+            {
+              "url": "https://www.gofore.fi/en/working-at-gofore/",
+              "title": "Working at Gofore"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "The company offers a variety of training and development programs aimed at maintaining and upgrading employee skills and competencies.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://www.gofore.fi/en/learning-and-development/",
+              "title": "Gofore Learning and Development"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Gofore has a strong organizational culture that fosters teamwork and inclusion, promoting a sense of belonging among employees.",
+          "score": 92,
+          "sources": [
+            {
+              "url": "https://www.gofore.fi/en/culture-and-values/",
+              "title": "Gofore Culture and Values"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company focuses on sustainability and ethical practices, allowing employees to contribute positively to society beyond their immediate work tasks.",
+          "score": 87,
+          "sources": [
+            {
+              "url": "https://www.gofore.fi/en/sustainability/",
+              "title": "Gofore Sustainability"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Digia Oyj",
+      "businessId": "0831312-4",
+      "summary": "Digia Oyj is a Finnish software and service company that specializes in developing and implementing software solutions for connected interfaces, offering services such as consulting, integration, and cloud solutions.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Digia Oyj provides a stable work environment with competitive salaries and a strong emphasis on job security, contributing to basic needs and security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.digia.com/en/company/",
+              "title": "Digia Oyj - About Us"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company offers clear career progression paths and recognizes employee achievements through various initiatives which are appreciated by the workforce.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.digia.com/en/careers/",
+              "title": "Careers at Digia"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Employees are encouraged to express themselves authentically and have a degree of autonomy in their roles, fostering a sense of agency.",
+          "score": 75,
+          "sources": [
+            {
+              "url": "https://www.digia.com/en/culture/",
+              "title": "Digia Culture"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "Digia supports continuous learning and development, providing resources and opportunities for employees to enhance their competencies.",
+          "score": 90,
+          "sources": [
+            {
+              "url": "https://www.digia.com/en/training/",
+              "title": "Training and Development at Digia"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "The company fosters a sense of belonging through supportive work environments and regular team-building activities that promote contribution within the community.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://www.digia.com/en/community/",
+              "title": "Community and Teams at Digia"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "Digia is involved in several corporate social responsibility initiatives, contributing positively to the broader society and environment.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.digia.com/en/sustainability/",
+              "title": "Sustainability Initiatives at Digia"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Siili Solutions Oyj",
+      "businessId": "2189312-5",
+      "summary": "Siili Solutions Oyj is a Nordic technology company providing digital consulting services. They focus on combining technology, engineering, and design to help businesses innovate and transform their digital presence.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Siili Solutions Oyj provides a stable work environment with competitive salaries and comprehensive health benefits, ensuring employees' basic needs and security.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.siili.com/en/careers",
+              "title": "Siili Solutions - Careers"
+            },
+            {
+              "url": "https://www.siili.com/en/about",
+              "title": "Siili Solutions - About Us"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company actively recognizes employee achievements and offers opportunities for career advancement through structured programs.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.siili.com/en/careers/growth-opportunities",
+              "title": "Siili Solutions - Growth Opportunities"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Siili-Solutions-Reviews-E1176431.htm",
+              "title": "Glassdoor - Siili Solutions Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Siili Solutions promotes an authentic work environment, encouraging employees to express their true selves and take ownership of their work.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.siili.com/en/values",
+              "title": "Siili Solutions - Our Values"
+            },
+            {
+              "url": "https://www.siili.com/en/blog",
+              "title": "Siili Solutions - Blog"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "The company provides ample resources for self-development, such as training sessions and skill workshops, fostering continuous learning and competence.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.siili.com/en/academy",
+              "title": "Siili Academy"
+            },
+            {
+              "url": "https://www.siili.com/en/careers/personal-development",
+              "title": "Siili Solutions - Personal Development"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Siili Solutions fosters a sense of belonging and encourages employee contributions within its cohesive work community through team-building activities.",
+          "score": 84,
+          "sources": [
+            {
+              "url": "https://www.siili.com/en/culture",
+              "title": "Siili Solutions - Culture"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Siili-Solutions-Reviews-E1176431.htm",
+              "title": "Glassdoor - Siili Solutions Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company participates in broader community initiatives and supports employees in engaging in good deeds through their work.",
+          "score": 79,
+          "sources": [
+            {
+              "url": "https://www.siili.com/en/social-responsibility",
+              "title": "Siili Solutions - Social Responsibility"
+            },
+            {
+              "url": "https://www.siili.com/en/impact",
+              "title": "Siili Solutions - Our Impact"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unikie Oy",
+      "businessId": "2637990-2",
+      "summary": "Unikie Oy is a technology company that specializes in software development, particularly focusing on embedded systems, software platforms, and AI solutions. They provide services across different industries, including automotive and telecommunications.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Unikie Oy is known for offering competitive salaries and comprehensive benefits that cover basic employee needs and ensure job security. However, detailed public data specifically quantifying these aspects is limited.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.com/Overview/Working-at-Unikie-EI_IE2345190.11,17.htm",
+              "title": "Unikie Employee Reviews on Glassdoor"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company is recognized for providing career advancement opportunities and recognition programs, although specific public data on these aspects is not thoroughly documented.",
+          "score": 75,
+          "sources": [
+            {
+              "url": "https://www.linkedin.com/company/unikie/posts/",
+              "title": "Unikie's LinkedIn Posts"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Unikie promotes an environment that allows employees to express their authentic selves and make independent decisions, aligning with Finnish work culture values. Data supporting these claims are inferred from employee testimonials.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.com/Reviews/Employee-Review-Unikie-RVW32075550.htm",
+              "title": "Employee Reviews on Glassdoor"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "The company supports employee self-development through training programs and skill workshops, although specific statistics or detailed information are not available.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.unikie.com/about-us/careers/",
+              "title": "Unikie Career Opportunities"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Unikie fosters a sense of belonging by encouraging team collaboration and participation in decision-making. While the involvement level and impact are not extensively documented, the company culture suggests these values are prioritized.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.com/Reviews/Employee-Review-Unikie-RVW3276554.htm",
+              "title": "Employee Reviews on Glassdoor"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "Unikie engages in sustainable practices and corporate social responsibility activities, although complete data detailing these efforts is not widely available.",
+          "score": 70,
+          "sources": [
+            {
+              "url": "https://www.unikie.com/news/",
+              "title": "Unikie News and Updates"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Elisa Oyj",
+      "businessId": "0116510-6",
+      "summary": "Elisa Oyj is a telecommunications company providing a wide range of digital services, telecommunications, ICT, and network services, operating mainly in Finland but also has business activities across the Baltics and Nordic countries.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Elisa Oyj offers competitive salaries and comprehensive benefits packages which ensure employees' basic needs and job security. The company is recognized for its stability and sustainable growth, providing a secure working environment.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.elisa.fi/",
+              "title": "Elisa Oyj - Careers"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Elisa-Oyj-Reviews-E10464.htm",
+              "title": "Elisa Oyj Employee Reviews"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "Employees at Elisa Oyj have access to career advancement opportunities and are recognized for their achievements. The company promotes based on performance and supports lateral moves within the organization.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.elisa.fi/",
+              "title": "Elisa Oyj - Career Opportunities"
+            },
+            {
+              "url": "https://www.glassdoor.com/Reviews/Elisa-Oyj-Career-Progression-Reviews-E10464_D_KO10,30.htm",
+              "title": "Elisa Oyj - Career and Recognition"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Elisa Oyj promotes an authentic and agency-focused work environment where employees are encouraged to be themselves. The company values diversity and inclusion, providing a space where employees can express their individuality.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.elisa.fi/",
+              "title": "Elisa Oyj - Diversity and Inclusion"
+            },
+            {
+              "url": "https://www.topemployersinstitute.com/en/company/elisa-oyj/",
+              "title": "Top Employers Institute - Elisa Oyj"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "Elisa Oyj invests in the personal and professional development of employees by offering training programs and learning opportunities. The company fosters an environment of continuous learning and skills enhancement.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.elisa.fi/",
+              "title": "Elisa Oyj - Self-Development Programs"
+            },
+            {
+              "url": "https://www.elisalehti.fi/topics/ura/",
+              "title": "Elisa Lehti - Career Growth"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "The company encourages a strong sense of community and belongingness among employees, supported by team-building activities and a collaborative culture. Elisa Oyj supports employee contributions within the work community.",
+          "score": 83,
+          "sources": [
+            {
+              "url": "https://www.elisa.fi/",
+              "title": "Elisa Oyj - Work Culture"
+            },
+            {
+              "url": "https://www.linkedin.com/company/elisa",
+              "title": "Elisa Oyj - LinkedIn Profile"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "Elisa Oyj is engaged in activities that aim to contribute positively to the community and environment, including sustainability initiatives and corporate social responsibility programs.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://corporate.elisa.com/corporate-responsibility/",
+              "title": "Elisa Corporate Responsibility"
+            },
+            {
+              "url": "https://www.sustainablebusiness.com/list/531/1287/5/2021-elisa",
+              "title": "Sustainable Business - Elisa Oyj"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DNA Oyj",
+      "businessId": "0592509-6",
+      "summary": "DNA Oyj is a Finnish telecommunications company providing mobile and fixed telecommunications services, including mobile voice, messaging, and data services to consumers and businesses.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "DNA Oyj offers a stable work environment with competitive salaries and comprehensive employee benefits, ensuring basic needs and security for its employees.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.dna.fi/working-at-dna",
+              "title": "DNA Working Environment"
+            },
+            {
+              "url": "https://www.dna.fi/benefits",
+              "title": "Employee Benefits at DNA"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company provides well-structured paths for career growth and recognizes employee contributions through awards and promotions, fostering recognition and career success.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.dna.fi/career",
+              "title": "Career Opportunities at DNA"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "DNA encourages employees to bring their authentic selves to work, promoting a culture of openness and personal agency.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.dna.fi/culture",
+              "title": "Company Culture at DNA"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "There are ample opportunities for professional development through training and educational programs at DNA, enhancing self-development and competence.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.dna.fi/training",
+              "title": "Training Programs at DNA"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "DNA fosters a strong sense of community through team-building activities and collaborative projects, enhancing belongingness and contribution.",
+          "score": 87,
+          "sources": [
+            {
+              "url": "https://www.dna.fi/teamwork",
+              "title": "Teamwork and Collaboration at DNA"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "The company participates in broader social good through various community initiatives and corporate responsibility efforts.",
+          "score": 84,
+          "sources": [
+            {
+              "url": "https://www.dna.fi/social-responsibility",
+              "title": "Corporate Responsibility at DNA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Telia Finland Oyj",
+      "businessId": "1475607-9",
+      "summary": "Telia Finland Oyj is a leading telecommunications company offering a wide range of services such as mobile and broadband connections, digital television, and IT solutions to consumers and businesses.",
+      "categories": [
+        {
+          "categoryId": 1,
+          "summary": "Telia Finland Oyj ensures basic needs and job security through comprehensive employment benefits and a stable working environment. They offer market-competitive salaries, health coverage, and a strong emphasis on workplace safety.",
+          "score": 85,
+          "sources": [
+            {
+              "url": "https://www.telia.fi",
+              "title": "Official Telia Finland Website"
+            },
+            {
+              "url": "https://www.yritystieto.fi/yritys/1475607-9",
+              "title": "Yritystieto - Telia Finland Oyj"
+            }
+          ]
+        },
+        {
+          "categoryId": 2,
+          "summary": "The company provides various opportunities for recognition and career advancement, including internal promotions, regular performance reviews, and rewarding innovative contributions. However, the competitiveness for advancement might be challenging.",
+          "score": 78,
+          "sources": [
+            {
+              "url": "https://www.glassdoor.fi/Arvostelut/Telia-Finland",
+              "title": "Glassdoor Reviews of Telia Finland"
+            }
+          ]
+        },
+        {
+          "categoryId": 3,
+          "summary": "Telia promotes authenticity and agency by encouraging employees to maintain a work-life balance and offering flexible working arrangements. Furthermore, the corporate culture supports diversity and inclusion.",
+          "score": 82,
+          "sources": [
+            {
+              "url": "https://www.telia.fi/telia-yrityksena/yhteiskuntavastuu",
+              "title": "Telia Finland - Corporate Responsibility"
+            }
+          ]
+        },
+        {
+          "categoryId": 4,
+          "summary": "The company invests significantly in self-development and skill enhancement programs, offering training sessions and educational incentives for their staff. This focus fosters a culture of continuous learning.",
+          "score": 88,
+          "sources": [
+            {
+              "url": "https://www.teliacompany.com/en/about-the-company/people-and-culture/",
+              "title": "Telia - People and Culture"
+            }
+          ]
+        },
+        {
+          "categoryId": 5,
+          "summary": "Telia Finland prioritizes creating a sense of belonging among employees by promoting teamwork and open communication. Regular team-building events and initiatives are organized to enhance community bonds.",
+          "score": 80,
+          "sources": [
+            {
+              "url": "https://www.telia.fi/telia-yrityksena",
+              "title": "Telia Finland - Company Culture"
+            }
+          ]
+        },
+        {
+          "categoryId": 6,
+          "summary": "Telia is dedicated to broader good deeds, including contributions to digital sustainability and ethical business practices. However, there is room for enhanced visibility in everyday good deeds.",
+          "score": 75,
+          "sources": [
+            {
+              "url": "https://www.teliacompany.com/en/sustainability/",
+              "title": "Telia Company - Sustainability"
             }
           ]
         }
