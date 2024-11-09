@@ -89,11 +89,6 @@ body {
   color: #6D6D6D;
 }
 
-.landing {
-  background: url('/images/landing.png') top center no-repeat;
-  background-size: contain;
-}
-
 .skeleton {
   * {
     pointer-events: none !important;
