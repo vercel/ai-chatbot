@@ -1,9 +1,43 @@
+import { z } from 'zod';
+
+import * as data from './data.json';
+
+const Source = z.object({
+  url: z.string(),
+  title: z.string(),
+});
+
+const Rating = z.object({
+  categoryId: z.number(),
+  summary: z.string(),
+  score: z.number(),
+  sources: z.array(Source),
+});
+
+export const Company = z.object({
+  name: z.string(),
+  businessId: z.string(),
+  summary: z.string(),
+  categories: z.array(Rating),
+});
+
+const CompanyData = z.object({
+  name: z.string(),
+  businessId: z.string(),
+  summary: z.string(),
+  categories: z.array(Company),
+});
+
+export const getCompanyData = () => {
+  return CompanyData.parse(data);
+};
+
 type RatingCategory = {
   id: number;
   title: string;
 };
 
-const ratingCategories: RatingCategory[] = [
+export const ratingCategories: RatingCategory[] = [
   {
     id: 1,
     title: 'Workplace Atmosphere and Community',

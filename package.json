@@ -36,6 +36,7 @@
     "lucide-react": "^0.446.0",
     "next": "15.0.3-canary.2",
     "next-themes": "^0.3.0",
+    "openai": "^4.71.1",
     "orderedmap": "^2.1.1",
     "prosemirror-example-setup": "^1.2.3",
     "prosemirror-inputrules": "^1.4.0",
