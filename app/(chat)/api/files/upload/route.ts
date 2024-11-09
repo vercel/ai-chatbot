@@ -20,7 +20,7 @@ const FileSchema = z.object({
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get('user')?.value ?? ''
+  const userId = cookieStore.get('user')?.value ?? '';
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -58,9 +58,11 @@ export async function POST(request: Request) {
 
       return NextResponse.json(data);
     } catch (error) {
+      console.error(error);
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: 'Failed to process request' },
       { status: 500 }
