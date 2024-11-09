@@ -96,7 +96,7 @@ export function convertToUIMessages(
     }
 
     let textContent = '';
-    let toolInvocations: Array<ToolInvocation> = [];
+    const toolInvocations: Array<ToolInvocation> = [];
 
     if (typeof message.content === 'string') {
       textContent = message.content;
@@ -129,7 +129,7 @@ export function convertToUIMessages(
 export function sanitizeResponseMessages(
   messages: Array<CoreToolMessage | CoreAssistantMessage>
 ): Array<CoreToolMessage | CoreAssistantMessage> {
-  let toolResultIds: Array<string> = [];
+  const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
     if (message.role === 'tool') {
@@ -171,7 +171,7 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
 
     if (!message.toolInvocations) return message;
 
-    let toolResultIds: Array<string> = [];
+    const toolResultIds: Array<string> = [];
 
     for (const toolInvocation of message.toolInvocations) {
       if (toolInvocation.state === 'result') {
