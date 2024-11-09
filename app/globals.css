@@ -22,7 +22,7 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 217 100% 45%;
+    --primary: 239 82% 65%;
     --primary-foreground: 0 0% 98%;
     --secondary: 213 100% 96%;
     --secondary-foreground: 240 5.9% 10%;
@@ -40,7 +40,7 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --radius: 0.8rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 10% 3.9%;
     --sidebar-primary: 240 5.9% 10%;
@@ -76,9 +76,17 @@
   }
 }
 
+h2 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #4A4A4A;
+}
+
 body {
+  font-family: 'Red Hat Display Variable', sans-serif;
   background: url('/images/bg.png') white;
   background-size: cover;
+  color: #6D6D6D;
 }
 
 .landing {

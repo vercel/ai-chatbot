@@ -11,6 +11,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^0.0.60
         version: 0.0.60(zod@3.23.8)
+      '@fontsource-variable/red-hat-display':
+        specifier: ^5.1.0
+        version: 5.1.0
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
@@ -779,6 +782,9 @@ packages:
 
   '@floating-ui/utils@0.2.8':
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
+
+  '@fontsource-variable/red-hat-display@5.1.0':
+    resolution: {integrity: sha512-2do/HfrrKjx6D6D9jYeoMY/0p71ZZOIlLPf+DfCBb0WlHt/q9Rlj/oYy3jTElhgB8mKA5Gqvjyd31GmPswYriQ==}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -4132,6 +4138,8 @@ snapshots:
       react-dom: 19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021)
 
   '@floating-ui/utils@0.2.8': {}
+
+  '@fontsource-variable/red-hat-display@5.1.0': {}
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
