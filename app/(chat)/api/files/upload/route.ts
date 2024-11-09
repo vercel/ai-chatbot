@@ -20,7 +20,7 @@ const FileSchema = z.object({
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get('user')?.value ?? '';
+  const userId = cookieStore.get('user')?.value ?? ''
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

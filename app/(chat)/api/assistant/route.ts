@@ -9,6 +9,7 @@ import {
   generateTitleFromUserMessage,
   saveChatId,
 } from '../../../chat/actions';
+import { MessageCreateParams } from 'openai/resources/beta/threads/messages.mjs';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -22,6 +23,9 @@ export async function POST(req: Request) {
   const input: {
     threadId: string | null;
     message: string;
+    data: {
+      attachments: string;
+    };
   } = await req.json();
   console.log(input, 'input');
 
@@ -30,11 +34,25 @@ export async function POST(req: Request) {
     ? input.threadId
     : (await openai.beta.threads.create({})).id;
 
-  // Add a message to the thread
-  const createdMessage = await openai.beta.threads.messages.create(threadId, {
+  const userMessage: MessageCreateParams = {
     role: 'user',
-    content: input.message,
-  });
+    content: [{ type: 'text', text: input.message }],
+  };
+
+  if (input.data.attachments && typeof userMessage.content !== 'string') {
+    userMessage.content.push({
+      type: 'image_url',
+      image_url: {
+        url: input.data.attachments,
+      },
+    });
+  }
+
+  // Add a message to the thread
+  const createdMessage = await openai.beta.threads.messages.create(
+    threadId,
+    userMessage
+  );
 
   await saveMessages({
     messages: [

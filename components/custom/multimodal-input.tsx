@@ -117,8 +117,11 @@ export function MultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
+    console.log(attachments);
     handleSubmit(undefined, {
-      // experimental_attachments: attachments,
+      data: {
+        attachments: attachments.map((attachment) => attachment.url).join(','),
+      },
     });
 
     setAttachments([]);
@@ -225,6 +228,7 @@ export function MultimodalInput({
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
+        accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
