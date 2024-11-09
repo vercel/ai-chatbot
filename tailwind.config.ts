@@ -12,6 +12,9 @@ const config: Config = {
       sans: ['geist'],
       mono: ['geist-mono'],
     },
+    screens: {
+      sm: '640px',
+    },
     extend: {
       borderRadius: {
         lg: 'var(--radius)',
