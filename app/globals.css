@@ -79,14 +79,19 @@
 h2 {
   font-weight: 700;
   font-size: 1.5rem;
-  color: #4A4A4A;
+  color: #4a4a4a;
+}
+
+h3 {
+  font-size: 1.3rem;
+  color: #4a4a4a;
 }
 
 body {
   font-family: 'Red Hat Display Variable', sans-serif;
   background: url('/images/bg.png') white;
   background-size: cover;
-  color: #6D6D6D;
+  color: #6d6d6d;
 }
 
 .skeleton {
@@ -114,4 +119,21 @@ body {
 
 .suggestion-highlight {
   @apply bg-blue-200 hover:bg-blue-300;
+}
+
+.rocket {
+  background-image: url('/images/rocket.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  aspect-ratio: 174 / 219;
+}
+
+.half-bg-gray-800 {
+  background-image: linear-gradient(
+    to bottom,
+    #212226,
+    #212226 50%,
+    transparent 50%,
+    transparent 100%
+  );
 }

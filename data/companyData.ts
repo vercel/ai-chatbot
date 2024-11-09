@@ -21,15 +21,14 @@ export const Company = z.object({
   categories: z.array(Rating),
 });
 
-const CompanyData = z.object({
-  name: z.string(),
-  businessId: z.string(),
-  summary: z.string(),
-  categories: z.array(Company),
-});
+export type Company = z.infer<typeof Company>;
+
+const CompanyData = z.object({ companies: z.array(Company) });
 
 export const getCompanyData = () => {
-  return CompanyData.parse(data);
+  console.log(data);
+
+  return CompanyData.parse(data).companies;
 };
 
 type RatingCategory = {

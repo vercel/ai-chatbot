@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 
@@ -21,7 +22,9 @@ export default async function Page() {
           Let us guide you in finding companies that match your values, work
           style, and well-being needs.
         </p>
-        <Button>Find Your Perfect Fit</Button>
+        <Button asChild>
+          <Link href="/explore">Find Your Perfect Fit</Link>
+        </Button>
       </div>
     </div>
   );
