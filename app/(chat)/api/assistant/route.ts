@@ -9,7 +9,10 @@ import {
   sanitizeResponseMessages,
 } from '@/lib/utils';
 
-import { generateTitleFromUserMessage, saveChatId } from '../../actions';
+import {
+  generateTitleFromUserMessage,
+  saveChatId,
+} from '../../../chat/actions';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
