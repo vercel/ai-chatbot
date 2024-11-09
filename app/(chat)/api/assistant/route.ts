@@ -1,6 +1,6 @@
 import { AssistantResponse } from 'ai';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
+import { default as OpenAI } from 'openai';
 
 import { saveChat, saveMessages } from '@/db/queries';
 import {

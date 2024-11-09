@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useState } from 'react';
 import { useWindowSize } from 'usehooks-ts';
+
+import { type UIBlock } from './block';
 import { PreviewMessage } from './message';
-import { UIBlock } from './block';
-import Image from 'next/image';
 
 const introMessages = [
   'Hey 👋 I’m Aura, your career coach.',
