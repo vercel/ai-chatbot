@@ -5,8 +5,6 @@ import CompanyCard from '@/components/custom/CompayCard';
 import { Button } from '@/components/ui/button';
 import { getCompanyData } from '@/data/companyData';
 
-import * as AuraImage from '../../public/images/aura.png';
-
 export default async function Page() {
   const companies = getCompanyData();
   const featuredCompanies = companies.slice(0, 2);
@@ -27,7 +25,13 @@ export default async function Page() {
           </h3>
           <div className="flex gap-4">
             <div className="shrink-0">
-              <Image src={AuraImage} alt="Aura" className="w-18" />
+              <Image
+                src="/images/aura.png"
+                alt="Aura"
+                width={60}
+                height={60}
+                className="w-14"
+              />
             </div>
             <p className="text-white">
               Create your profile to unlock matches with companies that share

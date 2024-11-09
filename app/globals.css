@@ -24,7 +24,7 @@
     --popover-foreground: 240 10% 3.9%;
     --primary: 239 82% 65%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 213 100% 96%;
+    --secondary: 0 0% 100%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
@@ -89,7 +89,7 @@ h3 {
 
 body {
   font-family: 'Red Hat Display Variable', sans-serif;
-  background: url('/images/bg.png') white;
+  background: url('/images/bg.png') #f8f8ff;
   background-size: cover;
   color: #6d6d6d;
 }
