@@ -2,9 +2,9 @@ import { config } from 'dotenv';
 import OpenAIClient from 'openai';
 import { z } from 'zod';
 
-import { Company } from '@/data/companyData';
+import { Company } from '../companyData';
 
-const companies = require('./importerConfig.json');
+const companies = require('./config.json');
 
 config(); // Load environment variables from .env.local file
 
