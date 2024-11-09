@@ -5,6 +5,15 @@ import { cookies } from 'next/headers';
 
 import { customModel } from '@/ai';
 
+export async function saveUserId() {
+  const cookieStore = await cookies();
+  cookieStore.set(
+    'user',
+    JSON.stringify({ id: String(Math.random() * 10_000) })
+  );
+  console.log('User id saved');
+}
+
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
   cookieStore.set('model-id', model);

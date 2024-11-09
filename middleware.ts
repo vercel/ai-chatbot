@@ -1,9 +1,21 @@
-import NextAuth from "next-auth";
+import { NextResponse, NextRequest } from 'next/server';
 
-import { authConfig } from "@/app/(auth)/auth.config";
+import { generateUUID } from '@/lib/utils';
 
-export default NextAuth(authConfig).auth;
+export function middleware(request: NextRequest) {
+  const user = request.cookies.get('user')?.value;
+
+  const response = NextResponse.next();
+
+  if (user) {
+    return response;
+  }
+
+  response.cookies.set('user', generateUUID());
+
+  return response;
+}
 
 export const config = {
-  matcher: ["/", "/:id", "/api/:path*", "/login", "/register"],
+  matcher: ['/', '/:id', '/api/:path*'],
 };

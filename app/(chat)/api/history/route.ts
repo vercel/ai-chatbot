@@ -1,13 +1,11 @@
-import { auth } from "@/app/(auth)/auth";
-import { getChatsByUserId } from "@/db/queries";
+import { cookies } from 'next/headers';
+
+import { getChatsByUserId } from '@/db/queries';
 
 export async function GET() {
-  const session = await auth();
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user')?.value ?? '';
 
-  if (!session || !session.user) {
-    return Response.json("Unauthorized!", { status: 401 });
-  }
-
-  const chats = await getChatsByUserId({ id: session.user.id! });
+  const chats = await getChatsByUserId({ id: userId });
   return Response.json(chats);
 }

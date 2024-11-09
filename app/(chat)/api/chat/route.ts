@@ -5,12 +5,12 @@ import {
   streamObject,
   streamText,
 } from 'ai';
+import { cookies } from 'next/headers';
 import { z } from 'zod';
 
 import { customModel } from '@/ai';
 import { models } from '@/ai/models';
 import { blocksPrompt, regularPrompt, systemPrompt } from '@/ai/prompts';
-import { auth } from '@/app/(auth)/auth';
 import {
   deleteChatById,
   getChatById,
@@ -55,12 +55,6 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
-  const session = await auth();
-
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const model = models.find((model) => model.id === modelId);
 
   if (!model) {
@@ -74,11 +68,14 @@ export async function POST(request: Request) {
     return new Response('No user message found', { status: 400 });
   }
 
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user')?.value ?? ''
+
   const chat = await getChatById({ id });
 
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
+    await saveChat({ id, userId: userId, title });
   }
 
   await saveMessages({
@@ -158,14 +155,12 @@ export async function POST(request: Request) {
 
           streamingData.append({ type: 'finish', content: '' });
 
-          if (session.user && session.user.id) {
-            await saveDocument({
-              id,
-              title,
-              content: draftText,
-              userId: session.user.id,
-            });
-          }
+          await saveDocument({
+            id,
+            title,
+            content: draftText,
+            userId: userId,
+          });
 
           return {
             id,
@@ -236,14 +231,12 @@ export async function POST(request: Request) {
 
           streamingData.append({ type: 'finish', content: '' });
 
-          if (session.user && session.user.id) {
-            await saveDocument({
-              id,
-              title: document.title,
-              content: draftText,
-              userId: session.user.id,
-            });
-          }
+          await saveDocument({
+            id,
+            title: document.title,
+            content: draftText,
+            userId: userId,
+          });
 
           return {
             id,
@@ -305,18 +298,14 @@ export async function POST(request: Request) {
             suggestions.push(suggestion);
           }
 
-          if (session.user && session.user.id) {
-            const userId = session.user.id;
-
-            await saveSuggestions({
-              suggestions: suggestions.map((suggestion) => ({
-                ...suggestion,
-                userId,
-                createdAt: new Date(),
-                documentCreatedAt: document.createdAt,
-              })),
-            });
-          }
+          await saveSuggestions({
+            suggestions: suggestions.map((suggestion) => ({
+              ...suggestion,
+              createdAt: new Date(),
+              userId: userId,
+              documentCreatedAt: document.createdAt,
+            })),
+          });
 
           return {
             id: documentId,
@@ -327,35 +316,33 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ responseMessages }) => {
-      if (session.user && session.user.id) {
-        try {
-          const responseMessagesWithoutIncompleteToolCalls =
-            sanitizeResponseMessages(responseMessages);
+      try {
+        const responseMessagesWithoutIncompleteToolCalls =
+          sanitizeResponseMessages(responseMessages);
 
-          await saveMessages({
-            messages: responseMessagesWithoutIncompleteToolCalls.map(
-              (message) => {
-                const messageId = generateUUID();
+        await saveMessages({
+          messages: responseMessagesWithoutIncompleteToolCalls.map(
+            (message) => {
+              const messageId = generateUUID();
 
-                if (message.role === 'assistant') {
-                  streamingData.appendMessageAnnotation({
-                    messageIdFromServer: messageId,
-                  });
-                }
-
-                return {
-                  id: messageId,
-                  chatId: id,
-                  role: message.role,
-                  content: message.content,
-                  createdAt: new Date(),
-                };
+              if (message.role === 'assistant') {
+                streamingData.appendMessageAnnotation({
+                  messageIdFromServer: messageId,
+                });
               }
-            ),
-          });
-        } catch (error) {
-          console.error('Failed to save chat');
-        }
+
+              return {
+                id: messageId,
+                chatId: id,
+                role: message.role,
+                content: message.content,
+                createdAt: new Date(),
+              };
+            }
+          ),
+        });
+      } catch (error) {
+        console.error('Failed to save chat');
       }
 
       streamingData.close();
@@ -379,18 +366,8 @@ export async function DELETE(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const session = await auth();
-
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   try {
     const chat = await getChatById({ id });
-
-    if (chat.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
-    }
 
     await deleteChatById({ id });
 

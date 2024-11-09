@@ -1,4 +1,5 @@
-import { auth } from '@/app/(auth)/auth';
+import { cookies } from 'next/headers';
+
 import { getVotesByChatId, voteMessage } from '@/db/queries';
 
 export async function GET(request: Request) {
@@ -9,9 +10,10 @@ export async function GET(request: Request) {
     return new Response('chatId is required', { status: 400 });
   }
 
-  const session = await auth();
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user')?.value ?? ''
 
-  if (!session || !session.user || !session.user.email) {
+  if (!userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -32,9 +34,10 @@ export async function PATCH(request: Request) {
     return new Response('messageId and type are required', { status: 400 });
   }
 
-  const session = await auth();
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user')?.value ?? ''
 
-  if (!session || !session.user || !session.user.email) {
+  if (!userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 

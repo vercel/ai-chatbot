@@ -1,4 +1,5 @@
-import { auth } from '@/app/(auth)/auth';
+import { cookies } from 'next/headers';
+
 import { getSuggestionsByDocumentId } from '@/db/queries';
 
 export async function GET(request: Request) {
@@ -8,10 +9,10 @@ export async function GET(request: Request) {
   if (!documentId) {
     return new Response('Not Found', { status: 404 });
   }
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user')?.value ?? '';
 
-  const session = await auth();
-
-  if (!session || !session.user) {
+  if (!userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
     return Response.json([], { status: 200 });
   }
 
-  if (suggestion.userId !== session.user.id) {
+  if (suggestion.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
