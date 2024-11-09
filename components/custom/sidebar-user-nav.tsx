@@ -1,7 +1,6 @@
 'use client';
 import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
-import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 
 import {
@@ -48,18 +47,6 @@ export function SidebarUserNav({ userId }: { userId: string }) {
               {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <button
-                className="w-full cursor-pointer"
-                onClick={() => {
-                  signOut({
-                    redirectTo: '/',
-                  });
-                }}
-              >
-                Sign out
-              </button>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
