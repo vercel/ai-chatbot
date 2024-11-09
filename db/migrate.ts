@@ -1,7 +1,7 @@
+import { sql } from '@vercel/postgres';
 import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
+import { drizzle } from 'drizzle-orm/vercel-postgres';
+import { migrate } from "drizzle-orm/vercel-postgres/migrator";
 
 config({
   path: ".env.local",
@@ -12,8 +12,7 @@ const runMigrate = async () => {
     throw new Error("POSTGRES_URL is not defined");
   }
 
-  const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
-  const db = drizzle(connection);
+  const db = drizzle(sql);
 
   console.log("⏳ Running migrations...");
 

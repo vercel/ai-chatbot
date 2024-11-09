@@ -1,8 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 
-import { generateUUID } from '@/lib/utils';
+import { createUser } from './db/queries';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const user = request.cookies.get('user')?.value;
 
   const response = NextResponse.next();
@@ -11,7 +11,8 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  response.cookies.set('user', generateUUID());
+  const createdUser = await createUser();
+  response.cookies.set('user', createdUser[0].id);
 
   return response;
 }
