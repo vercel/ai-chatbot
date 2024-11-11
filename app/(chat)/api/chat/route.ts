@@ -179,6 +179,13 @@ export async function POST(request: Request) {
               content: draftText,
               userId: session.user.id,
             });
+          } else {
+            await saveDocument({
+              id,
+              title,
+              content: draftText,
+              userId: process.env.ANON_USERID!,
+            });
           }
 
           return {
@@ -257,6 +264,13 @@ export async function POST(request: Request) {
               content: draftText,
               userId: session.user.id,
             });
+          } else {
+            await saveDocument({
+              id,
+              title: document.title,
+              content: draftText,
+              userId: process.env.ANON_USERID!,
+            });
           }
 
           return {
@@ -326,6 +340,15 @@ export async function POST(request: Request) {
               suggestions: suggestions.map((suggestion) => ({
                 ...suggestion,
                 userId,
+                createdAt: new Date(),
+                documentCreatedAt: document.createdAt,
+              })),
+            });
+          } else {
+            await saveSuggestions({
+              suggestions: suggestions.map((suggestion) => ({
+                ...suggestion,
+                userId: process.env.ANON_USERID!,
                 createdAt: new Date(),
                 documentCreatedAt: document.createdAt,
               })),

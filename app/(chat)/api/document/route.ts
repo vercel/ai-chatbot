@@ -15,16 +15,20 @@ export async function GET(request: Request) {
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
   if (!document) {
     return new Response('Not Found', { status: 404 });
+  }
+
+  if (!session || !session.user) {
+    if (document.userId === process.env.ANON_USERID) {
+      return Response.json(documents, { status: 200 });
+    }
+
+    return new Response('Unauthorized', { status: 401 });
   }
 
   if (document.userId !== session.user.id) {

@@ -11,10 +11,6 @@ export async function GET(request: Request) {
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const suggestions = await getSuggestionsByDocumentId({
     documentId,
   });
@@ -23,6 +19,14 @@ export async function GET(request: Request) {
 
   if (!suggestion) {
     return Response.json([], { status: 200 });
+  }
+
+  if (!session || !session.user) {
+    if (suggestion.userId === process.env.ANON_USERID) {
+      return Response.json(suggestions, { status: 200 });
+    }
+
+    return new Response('Unauthorized', { status: 401 });
   }
 
   if (suggestion.userId !== session.user.id) {
