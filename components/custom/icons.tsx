@@ -572,6 +572,27 @@ export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
+export const SpeechToTextIcon = ({
+  size = 16,
+  color = 'white',
+}: {
+  size?: number;
+  color?: string;
+}) => {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ color }}>
+      <path
+        d="M12 15c-1.104 0-2-.896-2-2V7c0-1.104.896-2 2-2s2 .896 2 2v6c0 1.104-.896 2-2 2zm4-2c0 2.209-1.791 4-4 4s-4-1.791-4-4h-2c0 3.313 2.687 6 6 6s6-2.687 6-6h-2zm-4-11C7.163 2 2 7.163 2 12c0 4.837 3.163 10 10 10s10-5.163 10-10C22 7.163 16.837 2 12 2zm0 18c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z"
+        fill="currentColor"
+      />
+      <path
+        d="M12 17c-.553 0-1 .447-1 1v2h2v-2c0-.553-.447-1-1-1z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
 export const MoreHorizontalIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg

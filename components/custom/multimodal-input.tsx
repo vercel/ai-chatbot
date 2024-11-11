@@ -1,26 +1,28 @@
 'use client';
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+
 import cx from 'classnames';
 import { motion } from 'framer-motion';
 import React, {
-  useRef,
-  useEffect,
-  useState,
-  useCallback,
+  ChangeEvent,
   Dispatch,
   SetStateAction,
-  ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import { sanitizeUIMessages } from '@/lib/utils';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
-import { PreviewAttachment } from './preview-attachment';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
+import { AudioTranscriberInput } from './audio-recorder-input';
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { PreviewAttachment } from './preview-attachment';
 
 const suggestedActions = [
   {
@@ -191,6 +193,14 @@ export function MultimodalInput({
     [setAttachments]
   );
 
+  const onTranscribedTextUpdated = useCallback((text: string) => {
+    setInput(text);
+  }, []);
+
+  const onStopTranscribe = useCallback(() => {
+    submitForm();
+  }, []);
+
   return (
     <div className="relative w-full flex flex-col gap-4">
       {messages.length === 0 &&
@@ -304,6 +314,12 @@ export function MultimodalInput({
           <ArrowUpIcon size={14} />
         </Button>
       )}
+
+      <AudioTranscriberInput
+        isLoading={isLoading}
+        onTextUpdated={onTranscribedTextUpdated}
+        onStopTranscribe={onStopTranscribe}
+      />
 
       <Button
         className="rounded-full p-1.5 h-fit absolute bottom-2 right-11 m-0.5 dark:border-zinc-700"
