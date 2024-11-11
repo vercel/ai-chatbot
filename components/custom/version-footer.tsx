@@ -9,19 +9,19 @@ import { useWindowSize } from 'usehooks-ts';
 import { Document } from '@/db/schema';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
 
-import { UICanvas } from './canvas';
+import { UIBlock } from './block';
 import { LoaderIcon } from './icons';
 import { Button } from '../ui/button';
 
 interface VersionFooterProps {
-  canvas: UICanvas;
+  block: UIBlock;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   documents: Array<Document> | undefined;
   currentVersionIndex: number;
 }
 
 export const VersionFooter = ({
-  canvas,
+  block,
   handleVersionChange,
   documents,
   currentVersionIndex,
@@ -56,8 +56,8 @@ export const VersionFooter = ({
             setIsMutating(true);
 
             mutate(
-              `/api/document?id=${canvas.documentId}`,
-              await fetch(`/api/document?id=${canvas.documentId}`, {
+              `/api/document?id=${block.documentId}`,
+              await fetch(`/api/document?id=${block.documentId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
                   timestamp: getDocumentTimestampByIndex(

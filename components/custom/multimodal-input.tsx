@@ -31,11 +31,12 @@ const suggestedActions = [
   {
     title: 'Help me draft an essay',
     label: 'about Silicon Valley',
-    action: 'Help me draft an essay about Silicon Valley',
+    action: 'Help me draft a short essay about Silicon Valley',
   },
 ];
 
 export function MultimodalInput({
+  chatId,
   input,
   setInput,
   isLoading,
@@ -48,6 +49,7 @@ export function MultimodalInput({
   handleSubmit,
   className,
 }: {
+  chatId: string;
   input: string;
   setInput: (value: string) => void;
   isLoading: boolean;
@@ -114,6 +116,8 @@ export function MultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
+    window.history.replaceState({}, '', `/chat/${chatId}`);
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
     });
@@ -124,7 +128,14 @@ export function MultimodalInput({
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput, width]);
+  }, [
+    attachments,
+    handleSubmit,
+    setAttachments,
+    setLocalStorageInput,
+    width,
+    chatId,
+  ]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -198,6 +209,8 @@ export function MultimodalInput({
                 <Button
                   variant="ghost"
                   onClick={async () => {
+                    window.history.replaceState({}, '', `/chat/${chatId}`);
+
                     append({
                       role: 'user',
                       content: suggestedAction.action,
@@ -225,7 +238,7 @@ export function MultimodalInput({
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll">
+        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
@@ -250,10 +263,11 @@ export function MultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] overflow-hidden resize-none rounded-xl text-base bg-muted',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl text-base bg-muted',
           className
         )}
         rows={3}
+        autoFocus
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -269,7 +283,7 @@ export function MultimodalInput({
 
       {isLoading ? (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
+          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
           onClick={(event) => {
             event.preventDefault();
             stop();
@@ -280,7 +294,7 @@ export function MultimodalInput({
         </Button>
       ) : (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
+          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
           onClick={(event) => {
             event.preventDefault();
             submitForm();
@@ -292,7 +306,7 @@ export function MultimodalInput({
       )}
 
       <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+        className="rounded-full p-1.5 h-fit absolute bottom-2 right-11 m-0.5 dark:border-zinc-700"
         onClick={(event) => {
           event.preventDefault();
           fileInputRef.current?.click();

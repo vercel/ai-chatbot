@@ -8,11 +8,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
-import {
-  InfoIcon,
-  MoreHorizontalIcon,
-  TrashIcon,
-} from '@/components/custom/icons';
+import { MoreHorizontalIcon, TrashIcon } from '@/components/custom/icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +28,6 @@ import {
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -40,7 +35,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Chat } from '@/db/schema';
-import { fetcher, getTitleFromChat } from '@/lib/utils';
+import { fetcher } from '@/lib/utils';
 
 type GroupedChats = {
   today: Chat[];
@@ -64,7 +59,7 @@ const ChatItem = ({
   <SidebarMenuItem>
     <SidebarMenuButton asChild isActive={isActive}>
       <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-        <span>{getTitleFromChat(chat)}</span>
+        <span>{chat.title}</span>
       </Link>
     </SidebarMenuButton>
     <DropdownMenu modal={true}>
@@ -128,6 +123,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     });
 
     setShowDeleteDialog(false);
+
     if (deleteId === id) {
       router.push('/');
     }
@@ -136,12 +132,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   if (!user) {
     return (
       <SidebarGroup>
-        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          Today
-        </div>
         <SidebarGroupContent>
-          <div className="text-zinc-500 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
-            <InfoIcon />
+          <div className="text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             <div>Login to save and revisit previous chats!</div>
           </div>
         </SidebarGroupContent>
@@ -181,18 +173,12 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   if (history?.length === 0) {
     return (
       <SidebarGroup>
-        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          Today
-        </div>
         <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <InfoIcon />
-                <span>No previous chats</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <div className="text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+            <div>
+              Your conversations will appear here once you start chatting!
+            </div>
+          </div>
         </SidebarGroupContent>
       </SidebarGroup>
     );

@@ -1,6 +1,5 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
 
 import { models } from '@/ai/models';
@@ -13,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+import { CheckCirclFillIcon, ChevronDownIcon } from './icons';
 
 export function ModelSelector({
   selectedModelId,
@@ -34,13 +35,13 @@ export function ModelSelector({
       <DropdownMenuTrigger
         asChild
         className={cn(
-          'px-2 w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground md:h-8 [&>svg]:!size-5 md:[&>svg]:!size-4',
+          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
           className
         )}
       >
-        <Button variant="ghost">
+        <Button variant="outline" className="md:px-2 md:h-[34px]">
           {selectModel?.label}
-          <ChevronDown className="text-muted-foreground" />
+          <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[300px]">
@@ -55,7 +56,7 @@ export function ModelSelector({
                 saveModelId(model.id);
               });
             }}
-            className="gap-4 group/item"
+            className="gap-4 group/item flex flex-row justify-between items-center"
             data-active={model.id === optimisticModelId}
           >
             <div className="flex flex-col gap-1 items-start">
@@ -66,7 +67,9 @@ export function ModelSelector({
                 </div>
               )}
             </div>
-            <Check className="size-4 ml-auto opacity-0 group-data-[active=true]/item:opacity-100" />
+            <div className="text-primary dark:text-primary-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+              <CheckCirclFillIcon />
+            </div>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

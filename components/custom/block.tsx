@@ -9,23 +9,29 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
-import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
+import {
+  useCopyToClipboard,
+  useDebounceCallback,
+  useWindowSize,
+} from 'usehooks-ts';
 
-import { Document, Suggestion } from '@/db/schema';
+import { Document, Suggestion, Vote } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
-import { CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
-import { Markdown } from './markdown';
-import { Message as PreviewMessage } from './message';
+import { CopyIcon, CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
+import { PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
-export interface UICanvas {
+import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+export interface UIBlock {
   title: string;
   documentId: string;
   content: string;
@@ -39,7 +45,8 @@ export interface UICanvas {
   };
 }
 
-export function Canvas({
+export function Block({
+  chatId,
   input,
   setInput,
   handleSubmit,
@@ -48,21 +55,24 @@ export function Canvas({
   attachments,
   setAttachments,
   append,
-  canvas,
-  setCanvas,
+  block,
+  setBlock,
   messages,
   setMessages,
+  votes,
 }: {
+  chatId: string;
   input: string;
   setInput: (input: string) => void;
   isLoading: boolean;
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  canvas: UICanvas;
-  setCanvas: Dispatch<SetStateAction<UICanvas>>;
+  block: UIBlock;
+  setBlock: Dispatch<SetStateAction<UIBlock>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
+  votes: Array<Vote> | undefined;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
@@ -82,15 +92,15 @@ export function Canvas({
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    canvas && canvas.status !== 'streaming'
-      ? `/api/document?id=${canvas.documentId}`
+    block && block.status !== 'streaming'
+      ? `/api/document?id=${block.documentId}`
       : null,
     fetcher
   );
 
   const { data: suggestions } = useSWR<Array<Suggestion>>(
-    documents && canvas && canvas.status !== 'streaming'
-      ? `/api/suggestions?documentId=${canvas.documentId}`
+    documents && block && block.status !== 'streaming'
+      ? `/api/suggestions?documentId=${block.documentId}`
       : null,
     fetcher,
     {
@@ -109,27 +119,27 @@ export function Canvas({
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
-        setCanvas((currentCanvas) => ({
-          ...currentCanvas,
+        setBlock((currentBlock) => ({
+          ...currentBlock,
           content: mostRecentDocument.content ?? '',
         }));
       }
     }
-  }, [documents, setCanvas]);
+  }, [documents, setBlock]);
 
   useEffect(() => {
     mutateDocuments();
-  }, [canvas.status, mutateDocuments]);
+  }, [block.status, mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
 
   const handleContentChange = useCallback(
     (updatedContent: string) => {
-      if (!canvas) return;
+      if (!block) return;
 
       mutate<Array<Document>>(
-        `/api/document?id=${canvas.documentId}`,
+        `/api/document?id=${block.documentId}`,
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
@@ -141,10 +151,10 @@ export function Canvas({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${canvas.documentId}`, {
+            await fetch(`/api/document?id=${block.documentId}`, {
               method: 'POST',
               body: JSON.stringify({
-                title: canvas.title,
+                title: block.title,
                 content: updatedContent,
               }),
             });
@@ -165,7 +175,7 @@ export function Canvas({
         { revalidate: false }
       );
     },
-    [canvas, mutate]
+    [block, mutate]
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
@@ -233,6 +243,8 @@ export function Canvas({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
+  const [_, copyToClipboard] = useCopyToClipboard();
+
   return (
     <motion.div
       className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-muted"
@@ -255,7 +267,12 @@ export function Canvas({
               damping: 30,
             },
           }}
-          exit={{ opacity: 0, x: 10, scale: 0.95, transition: { delay: 0 } }}
+          exit={{
+            opacity: 0,
+            x: 0,
+            scale: 0.95,
+            transition: { delay: 0 },
+          }}
         >
           <AnimatePresence>
             {!isCurrentVersion && (
@@ -273,15 +290,19 @@ export function Canvas({
               ref={messagesContainerRef}
               className="flex flex-col gap-4 h-full items-center overflow-y-scroll px-4 pt-20"
             >
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <PreviewMessage
+                  chatId={chatId}
                   key={message.id}
-                  role={message.role}
-                  content={message.content}
-                  attachments={message.experimental_attachments}
-                  toolInvocations={message.toolInvocations}
-                  canvas={canvas}
-                  setCanvas={setCanvas}
+                  message={message}
+                  block={block}
+                  setBlock={setBlock}
+                  isLoading={isLoading && index === messages.length - 1}
+                  vote={
+                    votes
+                      ? votes.find((vote) => vote.messageId === message.id)
+                      : undefined
+                  }
                 />
               ))}
 
@@ -293,6 +314,7 @@ export function Canvas({
 
             <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
               <MultimodalInput
+                chatId={chatId}
                 input={input}
                 setInput={setInput}
                 handleSubmit={handleSubmit}
@@ -324,10 +346,10 @@ export function Canvas({
               }
             : {
                 opacity: 0,
-                x: canvas.boundingBox.left,
-                y: canvas.boundingBox.top,
-                height: canvas.boundingBox.height,
-                width: canvas.boundingBox.width,
+                x: block.boundingBox.left,
+                y: block.boundingBox.top,
+                height: block.boundingBox.height,
+                width: block.boundingBox.width,
                 borderRadius: 50,
               }
         }
@@ -375,21 +397,22 @@ export function Canvas({
       >
         <div className="p-2 flex flex-row justify-between items-start">
           <div className="flex flex-row gap-4 items-start">
-            <div
-              className="cursor-pointer hover:bg-muted dark:hover:bg-zinc-700 p-2 rounded-lg text-muted-foreground"
+            <Button
+              variant="outline"
+              className="h-fit p-2 dark:hover:bg-zinc-700"
               onClick={() => {
-                setCanvas((currentCanvas) => ({
-                  ...currentCanvas,
+                setBlock((currentBlock) => ({
+                  ...currentBlock,
                   isVisible: false,
                 }));
               }}
             >
               <CrossIcon size={18} />
-            </div>
+            </Button>
 
-            <div className="flex flex-col pt-1">
+            <div className="flex flex-col">
               <div className="font-medium">
-                {document?.title ?? canvas.title}
+                {document?.title ?? block.title}
               </div>
 
               {isContentDirty ? (
@@ -406,55 +429,100 @@ export function Canvas({
                     }
                   )}`}
                 </div>
-              ) : null}
+              ) : (
+                <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
+              )}
             </div>
           </div>
 
           <div className="flex flex-row gap-1">
-            <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
-              onClick={() => {
-                handleVersionChange('prev');
-              }}
-            >
-              <UndoIcon size={18} />
-            </div>
-            <div
-              className="cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700"
-              onClick={() => {
-                handleVersionChange('next');
-              }}
-            >
-              <RedoIcon size={18} />
-            </div>
-            <div
-              className={cx(
-                'cursor-pointer hover:bg-muted p-2 rounded-lg text-muted-foreground dark:hover:bg-zinc-700',
-                { 'bg-muted dark:bg-zinc-700': mode === 'diff' }
-              )}
-              onClick={() => {
-                handleVersionChange('toggle');
-              }}
-            >
-              <DeltaIcon size={18} />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="p-2 h-fit dark:hover:bg-zinc-700"
+                  onClick={() => {
+                    copyToClipboard(block.content);
+                    toast.success('Copied to clipboard!');
+                  }}
+                  disabled={block.status === 'streaming'}
+                >
+                  <CopyIcon size={18} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy to clipboard</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
+                  onClick={() => {
+                    handleVersionChange('prev');
+                  }}
+                  disabled={
+                    currentVersionIndex === 0 || block.status === 'streaming'
+                  }
+                >
+                  <UndoIcon size={18} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View Previous version</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
+                  onClick={() => {
+                    handleVersionChange('next');
+                  }}
+                  disabled={isCurrentVersion || block.status === 'streaming'}
+                >
+                  <RedoIcon size={18} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View Next version</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cx(
+                    'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
+                    {
+                      'bg-muted': mode === 'diff',
+                    }
+                  )}
+                  onClick={() => {
+                    handleVersionChange('toggle');
+                  }}
+                  disabled={
+                    block.status === 'streaming' || currentVersionIndex === 0
+                  }
+                >
+                  <DeltaIcon size={18} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View changes</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
         <div className="prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll px-4 py-8 md:p-20 !max-w-full pb-40 items-center">
           <div className="flex flex-row max-w-[600px] mx-auto">
-            {isDocumentsFetching && !canvas.content ? (
+            {isDocumentsFetching && !block.content ? (
               <DocumentSkeleton />
             ) : mode === 'edit' ? (
               <Editor
                 content={
                   isCurrentVersion
-                    ? canvas.content
+                    ? block.content
                     : getDocumentContentById(currentVersionIndex)
                 }
                 isCurrentVersion={isCurrentVersion}
                 currentVersionIndex={currentVersionIndex}
-                status={canvas.status}
+                status={block.status}
                 saveContent={saveContent}
                 suggestions={isCurrentVersion ? (suggestions ?? []) : []}
               />
@@ -468,13 +536,26 @@ export function Canvas({
             {suggestions ? (
               <div className="md:hidden h-dvh w-12 shrink-0" />
             ) : null}
+
+            <AnimatePresence>
+              {isCurrentVersion && (
+                <Toolbar
+                  isToolbarVisible={isToolbarVisible}
+                  setIsToolbarVisible={setIsToolbarVisible}
+                  append={append}
+                  isLoading={isLoading}
+                  stop={stop}
+                  setMessages={setMessages}
+                />
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         <AnimatePresence>
           {!isCurrentVersion && (
             <VersionFooter
-              canvas={canvas}
+              block={block}
               currentVersionIndex={currentVersionIndex}
               documents={documents}
               handleVersionChange={handleVersionChange}
@@ -482,19 +563,6 @@ export function Canvas({
           )}
         </AnimatePresence>
       </motion.div>
-
-      <AnimatePresence>
-        {isCurrentVersion && (
-          <Toolbar
-            isToolbarVisible={isToolbarVisible}
-            setIsToolbarVisible={setIsToolbarVisible}
-            append={append}
-            isLoading={isLoading}
-            stop={stop}
-            setMessages={setMessages}
-          />
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
