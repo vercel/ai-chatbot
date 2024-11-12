@@ -4,6 +4,8 @@
 node_modules
 .pnp
 .pnp.js
+.pnp.*
+install-state.gz
 
 # testing
 coverage
