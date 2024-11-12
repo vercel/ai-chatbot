@@ -11,7 +11,6 @@ export const customModel = (apiIdentifier: string) => {
     model = anthropic(apiIdentifier);
   } else if (apiIdentifier.includes('llama')) {
     const perplexity = createOpenAI({
-      name: 'perplexity',
       apiKey: process.env.PERPLEXITY_API_KEY,
       baseURL: 'https://api.perplexity.ai/',
     });
