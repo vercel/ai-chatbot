@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { SpeechToTextIcon } from './icons';
+import { toast } from 'sonner';
 import {
   TranscribeStreamingClient,
   StartStreamTranscriptionCommand,
@@ -24,12 +25,36 @@ export function AudioTranscriberInput({
   const [isRecording, setIsRecording] = useState(false);
   let currentText = '';
 
-  const createTranscribeClient = () => {
+  const getAWSTranscribeCreds = async () => {
+    try {
+      const response = await fetch(`/api/access?app=AWSTranscribe`);
+
+      if (response.ok) {
+        const data = await response.json();
+        const { region, accessKeyId, secretAccessKey, sessionToken } = data;
+        return {
+          region,
+          accessKeyId,
+          secretAccessKey,
+          sessionToken,
+        };
+      } else {
+        const { error } = await response.json();
+        toast.error(error);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch the credentials for transcribing!');
+    }
+  };
+
+  const createTranscribeClient = async () => {
+    const data = await getAWSTranscribeCreds();
     transcribeClient = new TranscribeStreamingClient({
-      region: 'us-east-1',
+      region: data?.region,
       credentials: {
-        accessKeyId: 'YOUR_ACCESS_KEY_ID',
-        secretAccessKey: 'Your Secret',
+        accessKeyId: data?.accessKeyId,
+        secretAccessKey: data?.secretAccessKey,
+        sessionToken: data?.sessionToken,
       },
     });
   };
@@ -104,7 +129,7 @@ export function AudioTranscriberInput({
       stopRecording();
     }
     currentText = '';
-    createTranscribeClient();
+    await createTranscribeClient();
     createMicrophoneStream();
     await startStreaming(language, (text: string) => {
       currentText += ' ' + text;

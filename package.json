@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.60",
+    "@aws-sdk/client-sts": "^3.687.0",
     "@aws-sdk/client-transcribe-streaming": "^3.687.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.2",
