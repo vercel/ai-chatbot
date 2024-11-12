@@ -33,6 +33,10 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
+  if (process.env.SIGNUP_DISABLED === 'true') {
+    throw new Error('Signup is disabled');
+  }
+  
   let salt = genSaltSync(10);
   let hash = hashSync(password, salt);
 
