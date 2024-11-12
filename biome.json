@@ -38,7 +38,7 @@
 			}
 		}
 	},
-	
+
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
