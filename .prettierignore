@@ -1,7 +1,2 @@
-dist
-node_modules
-.next
-.vercel
-build
 pnpm-lock.yaml
 lib/drizzle
