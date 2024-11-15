@@ -1,5 +1,5 @@
 import type { Node } from 'prosemirror-model';
-import { PluginKey, Plugin } from 'prosemirror-state';
+import { Plugin, PluginKey } from 'prosemirror-state';
 import {
   type Decoration,
   DecorationSet,
