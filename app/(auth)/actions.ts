@@ -6,6 +6,8 @@ import { createUser, getUser } from '@/lib/db/queries';
 
 import { signIn } from './auth';
 
+
+
 const authFormSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -61,7 +63,7 @@ export const register = async (
       password: formData.get('password'),
     });
 
-    let [user] = await getUser(validatedData.email);
+    const [user] = await getUser(validatedData.email);
 
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
