@@ -3,7 +3,7 @@
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { type User } from 'next-auth';
+import type { User } from 'next-auth';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
@@ -34,7 +34,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Chat } from '@/lib/db/schema';
+import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
 type GroupedChats = {

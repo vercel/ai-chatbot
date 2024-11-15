@@ -1,10 +1,14 @@
-import { Node } from 'prosemirror-model';
-import { PluginKey, Plugin } from 'prosemirror-state';
-import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
+import type { Node } from 'prosemirror-model';
+import { Plugin, PluginKey } from 'prosemirror-state';
+import {
+  type Decoration,
+  DecorationSet,
+  type EditorView,
+} from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 
 export interface UISuggestion extends Suggestion {
   selectionStart: number;
@@ -77,7 +81,7 @@ export function createSuggestionWidget(
   const onApply = () => {
     const { state, dispatch } = view;
 
-    let decorationTransaction = state.tr;
+    const decorationTransaction = state.tr;
     const currentState = suggestionsPluginKey.getState(state);
     const currentDecorations = currentState?.decorations;
 

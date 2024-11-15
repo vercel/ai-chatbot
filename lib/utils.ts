@@ -1,14 +1,14 @@
-import {
+import type {
   CoreAssistantMessage,
   CoreMessage,
   CoreToolMessage,
   Message,
   ToolInvocation,
 } from 'ai';
-import { clsx, type ClassValue } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Message as DBMessage, Document } from '@/lib/db/schema';
+import type { Message as DBMessage, Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,7 +44,7 @@ export function getLocalStorage(key: string) {
 }
 
 export function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
@@ -96,7 +96,7 @@ export function convertToUIMessages(
     }
 
     let textContent = '';
-    let toolInvocations: Array<ToolInvocation> = [];
+    const toolInvocations: Array<ToolInvocation> = [];
 
     if (typeof message.content === 'string') {
       textContent = message.content;
@@ -129,7 +129,7 @@ export function convertToUIMessages(
 export function sanitizeResponseMessages(
   messages: Array<CoreToolMessage | CoreAssistantMessage>
 ): Array<CoreToolMessage | CoreAssistantMessage> {
-  let toolResultIds: Array<string> = [];
+  const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
     if (message.role === 'tool') {
@@ -171,7 +171,7 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
 
     if (!message.toolInvocations) return message;
 
-    let toolResultIds: Array<string> = [];
+    const toolResultIds: Array<string> = [];
 
     for (const toolInvocation of message.toolInvocations) {
       if (toolInvocation.state === 'result') {

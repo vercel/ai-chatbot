@@ -8,11 +8,11 @@ import postgres from 'postgres';
 import {
   user,
   chat,
-  User,
+  type User,
   document,
-  Suggestion,
+  type Suggestion,
   suggestion,
-  Message,
+  type Message,
   message,
   vote,
 } from './schema';
@@ -20,8 +20,8 @@ import {
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
-let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
-let db = drizzle(client);
+const client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
+const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
@@ -33,8 +33,8 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
-  let salt = genSaltSync(10);
-  let hash = hashSync(password, salt);
+  const salt = genSaltSync(10);
+  const hash = hashSync(password, salt);
 
   try {
     return await db.insert(user).values({ email, password: hash });
@@ -141,15 +141,14 @@ export async function voteMessage({
     if (existingVote) {
       return await db
         .update(vote)
-        .set({ isUpvoted: type === 'up' ? true : false })
+        .set({ isUpvoted: type === 'up' })
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
-    } else {
-      return await db.insert(vote).values({
-        chatId,
-        messageId,
-        isUpvoted: type === 'up' ? true : false,
-      });
     }
+    return await db.insert(vote).values({
+      chatId,
+      messageId,
+      isUpvoted: type === 'up',
+    });
   } catch (error) {
     console.error('Failed to upvote message in database', error);
     throw error;

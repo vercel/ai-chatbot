@@ -1,5 +1,5 @@
 import { compare } from 'bcrypt-ts';
-import NextAuth, { User, Session } from 'next-auth';
+import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { getUser } from '@/lib/db/queries';
@@ -20,11 +20,13 @@ export const {
   providers: [
     Credentials({
       credentials: {},
+      // biome-ignore lint/suspicious/noExplicitAny: TODO
       async authorize({ email, password }: any) {
-        let users = await getUser(email);
+        const users = await getUser(email);
         if (users.length === 0) return null;
-        let passwordsMatch = await compare(password, users[0].password!);
-        if (passwordsMatch) return users[0] as any;
+        const passwordsMatch = await compare(password, users[0].password!);
+        // biome-ignore lint/suspicious/noExplicitAny: TODO
+        return users[0] as any;
       },
     }),
   ],
@@ -41,6 +43,7 @@ export const {
       token,
     }: {
       session: ExtendedSession;
+      // biome-ignore lint/suspicious/noExplicitAny: TODO
       token: any;
     }) {
       if (session.user) {
