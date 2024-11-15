@@ -141,15 +141,14 @@ export async function voteMessage({
     if (existingVote) {
       return await db
         .update(vote)
-        .set({ isUpvoted: type === 'up' ? true : false })
+        .set({ isUpvoted: type === 'up' })
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
-    } else {
-      return await db.insert(vote).values({
-        chatId,
-        messageId,
-        isUpvoted: type === 'up' ? true : false,
-      });
     }
+    return await db.insert(vote).values({
+      chatId,
+      messageId,
+      isUpvoted: type === 'up',
+    });
   } catch (error) {
     console.error('Failed to upvote message in database', error);
     throw error;

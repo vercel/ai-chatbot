@@ -1,6 +1,11 @@
 'use client';
 
-import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import type {
+  Attachment,
+  ChatRequestOptions,
+  CreateMessage,
+  Message,
+} from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
 import type React from 'react';
@@ -8,11 +13,11 @@ import {
   useRef,
   useEffect,
   useState,
-  useCallback,type 
-  Dispatch,type 
-  SetStateAction,type 
-  ChangeEvent,
-} from 'react'
+  useCallback,
+  type Dispatch,
+  type SetStateAction,
+  type ChangeEvent,
+} from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
@@ -143,7 +148,7 @@ export function MultimodalInput({
     formData.append('file', file);
 
     try {
-      const response = await fetch(`/api/files/upload`, {
+      const response = await fetch('/api/files/upload', {
         method: 'POST',
         body: formData,
       });
@@ -157,10 +162,9 @@ export function MultimodalInput({
           name: pathname,
           contentType: contentType,
         };
-      } else {
-        const { error } = await response.json();
-        toast.error(error);
       }
+      const { error } = await response.json();
+      toast.error(error);
     } catch (error) {
       toast.error('Failed to upload file, please try again!');
     }

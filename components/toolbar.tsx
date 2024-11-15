@@ -8,7 +8,13 @@ import {
   useMotionValue,
   useTransform,
 } from 'framer-motion';
-import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from 'react';
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
 
 import {

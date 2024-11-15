@@ -158,7 +158,7 @@ export async function POST(request: Request) {
 
           streamingData.append({ type: 'finish', content: '' });
 
-          if (session.user && session.user.id) {
+          if (session.user?.id) {
             await saveDocument({
               id,
               title,
@@ -170,7 +170,7 @@ export async function POST(request: Request) {
           return {
             id,
             title,
-            content: `A document was created and is now visible to the user.`,
+            content: 'A document was created and is now visible to the user.',
           };
         },
       },
@@ -236,7 +236,7 @@ export async function POST(request: Request) {
 
           streamingData.append({ type: 'finish', content: '' });
 
-          if (session.user && session.user.id) {
+          if (session.user?.id) {
             await saveDocument({
               id,
               title: document.title,
@@ -305,7 +305,7 @@ export async function POST(request: Request) {
             suggestions.push(suggestion);
           }
 
-          if (session.user && session.user.id) {
+          if (session.user?.id) {
             const userId = session.user.id;
 
             await saveSuggestions({
@@ -327,7 +327,7 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ responseMessages }) => {
-      if (session.user && session.user.id) {
+      if (session.user?.id) {
         try {
           const responseMessagesWithoutIncompleteToolCalls =
             sanitizeResponseMessages(responseMessages);

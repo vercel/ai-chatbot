@@ -65,16 +65,15 @@ export const register = async (
 
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
-    } else {
-      await createUser(validatedData.email, validatedData.password);
-      await signIn('credentials', {
-        email: validatedData.email,
-        password: validatedData.password,
-        redirect: false,
-      });
-
-      return { status: 'success' };
     }
+    await createUser(validatedData.email, validatedData.password);
+    await signIn('credentials', {
+      email: validatedData.email,
+      password: validatedData.password,
+      redirect: false,
+    });
+
+    return { status: 'success' };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
