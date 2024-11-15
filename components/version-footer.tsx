@@ -11,7 +11,7 @@ import { getDocumentTimestampByIndex } from '@/lib/utils';
 
 import { UIBlock } from './block';
 import { LoaderIcon } from './icons';
-import { Button } from '../ui/button';
+import { Button } from './ui/button';
 
 interface VersionFooterProps {
   block: UIBlock;
