@@ -29,8 +29,8 @@ import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 export interface UIBlock {
   title: string;
   documentId: string;
