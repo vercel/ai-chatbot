@@ -30,7 +30,8 @@ export function DocumentToolResult({
   setBlock,
 }: DocumentToolResultProps) {
   return (
-    <div
+    <button
+      type="button"
       className="bg-background cursor-pointer border py-2 px-3 rounded-xl w-fit flex flex-row gap-3 items-start"
       onClick={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -64,7 +65,7 @@ export function DocumentToolResult({
       <div className="">
         {getActionText(type)} {result.title}
       </div>
-    </div>
+    </button>
   );
 }
 

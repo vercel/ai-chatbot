@@ -1,0 +1,129 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "files": {
+    "ignoreUnknown": false,
+    "ignore": [
+      "**/pnpm-lock.yaml",
+      "lib/db/migrations",
+      "lib/editor/react-renderer.tsx",
+      "node_modules",
+      ".next",
+      "public",
+      ".vercel"
+    ]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "defaultBranch": "main",
+    "useIgnoreFile": true
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80,
+    "attributePosition": "auto"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "useHtmlLang": "warn", 
+        "noHeaderScope": "warn", 
+        "useValidAriaRole": {
+          "level": "warn",
+          "options": {
+            "ignoreNonDom": false,
+            "allowInvalidRoles": ["none", "text"]
+          }
+        },
+        "useSemanticElements": "off", 
+        "noSvgWithoutTitle": "off", 
+        "useMediaCaption": "off", 
+        "noAutofocus": "off", 
+        "noBlankTarget": "off" 
+      },
+      "complexity": {
+        "noUselessStringConcat": "warn", 
+        "noForEach": "off", 
+        "noUselessSwitchCase": "off", 
+        "noUselessThisAlias": "off" 
+      },
+      "correctness": {
+        "noUnusedImports": "warn", 
+        "useArrayLiterals": "warn", 
+        "noNewSymbol": "warn", 
+        "useJsxKeyInIterable": "off", 
+        "useExhaustiveDependencies": "off", 
+        "noUnnecessaryContinue": "off" 
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off" 
+      },
+      "style": {
+        "useFragmentSyntax": "warn", 
+        "noYodaExpression": "warn", 
+        "useDefaultParameterLast": "warn", 
+        "useExponentiationOperator": "off", 
+        "noUnusedTemplateLiteral": "off", 
+        "noUselessElse": "off" 
+      },
+      "suspicious": {
+        "noExplicitAny": "off" 
+      },
+      "nursery": {
+        "noStaticElementInteractions": "warn",
+        "noHeadImportInDocument": "warn",
+        "noDocumentImportInPage": "warn",
+        "noDuplicateElseIf": "warn",
+        "noIrregularWhitespace": "warn",
+        "useValidAutocomplete": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "jsxRuntime": "reactClassic",
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "auto"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true,
+      "trailingCommas": "none"
+    },
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": false
+    }
+  },
+  "css": {
+    "formatter": { "enabled": false },
+    "linter": { "enabled": false }
+  },
+  "organizeImports": { "enabled": false },
+  "overrides": [
+    {
+      "include": ["playwright/**", "tooling/playwright/src/test/test.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noEmptyPattern": "off"
+          }
+        }
+      }
+    }
+  ]
+}
