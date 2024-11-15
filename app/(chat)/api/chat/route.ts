@@ -1,6 +1,6 @@
 import {
   convertToCoreMessages,
-  Message,
+  type Message,
   StreamData,
   streamObject,
   streamText,
@@ -20,7 +20,7 @@ import {
   saveMessages,
   saveSuggestions,
 } from '@/lib/db/queries';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 import {
   generateUUID,
   getMostRecentUserMessage,
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
         }),
         execute: async ({ title }) => {
           const id = generateUUID();
-          let draftText: string = '';
+          let draftText = '';
 
           streamingData.append({
             type: 'id',
@@ -192,7 +192,7 @@ export async function POST(request: Request) {
           }
 
           const { content: currentContent } = document;
-          let draftText: string = '';
+          let draftText = '';
 
           streamingData.append({
             type: 'clear',
@@ -268,7 +268,7 @@ export async function POST(request: Request) {
             };
           }
 
-          let suggestions: Array<
+          const suggestions: Array<
             Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
           > = [];
 

@@ -1,17 +1,18 @@
 'use client';
 
-import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
-import React, {
+import type React from 'react';
+import {
   useRef,
   useEffect,
   useState,
-  useCallback,
-  Dispatch,
-  SetStateAction,
+  useCallback,type 
+  Dispatch,type 
+  SetStateAction,type 
   ChangeEvent,
-} from 'react';
+} from 'react'
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 

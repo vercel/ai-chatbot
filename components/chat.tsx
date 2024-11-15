@@ -1,6 +1,6 @@
 'use client';
 
-import { Attachment, Message } from 'ai';
+import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
@@ -10,10 +10,10 @@ import { useWindowSize } from 'usehooks-ts';
 import { ChatHeader } from '@/components/chat-header';
 import { PreviewMessage, ThinkingMessage } from '@/components/message';
 import { useScrollToBottom } from '@/components/use-scroll-to-bottom';
-import { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
-import { Block, UIBlock } from './block';
+import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
@@ -129,7 +129,7 @@ export function Chat({
       </div>
 
       <AnimatePresence>
-        {block && block.isVisible && (
+        {block?.isVisible && (
           <Block
             chatId={id}
             input={input}

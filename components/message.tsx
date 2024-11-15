@@ -1,13 +1,13 @@
 'use client';
 
-import { Message } from 'ai';
+import type { Message } from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
-import { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
-import { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 
-import { UIBlock } from './block';
+import type { UIBlock } from './block';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { SparklesIcon } from './icons';
 import { Markdown } from './markdown';
@@ -93,29 +93,28 @@ export const PreviewMessage = ({
                       )}
                     </div>
                   );
-                } else {
-                  return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'getWeather' ? (
-                        <Weather />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentToolCall type="create" args={args} />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall type="update" args={args} />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          args={args}
-                        />
-                      ) : null}
-                    </div>
-                  );
                 }
+                return (
+                  <div
+                    key={toolCallId}
+                    className={cx({
+                      skeleton: ['getWeather'].includes(toolName),
+                    })}
+                  >
+                    {toolName === 'getWeather' ? (
+                      <Weather />
+                    ) : toolName === 'createDocument' ? (
+                      <DocumentToolCall type="create" args={args} />
+                    ) : toolName === 'updateDocument' ? (
+                      <DocumentToolCall type="update" args={args} />
+                    ) : toolName === 'requestSuggestions' ? (
+                      <DocumentToolCall
+                        type="request-suggestions"
+                        args={args}
+                      />
+                    ) : null}
+                  </div>
+                );
               })}
             </div>
           )}
