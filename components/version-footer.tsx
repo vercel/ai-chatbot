@@ -62,7 +62,7 @@ export const VersionFooter = ({
                 body: JSON.stringify({
                   timestamp: getDocumentTimestampByIndex(
                     documents,
-                    currentVersionIndex
+                    currentVersionIndex,
                   ),
                 }),
               }),
@@ -75,14 +75,14 @@ export const VersionFooter = ({
                           new Date(
                             getDocumentTimestampByIndex(
                               documents,
-                              currentVersionIndex
-                            )
-                          )
-                        )
+                              currentVersionIndex,
+                            ),
+                          ),
+                        ),
                       ),
                     ]
                   : [],
-              }
+              },
             );
           }}
         >

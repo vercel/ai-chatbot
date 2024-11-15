@@ -80,7 +80,7 @@ export function MessageActions({
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id
+                          (vote) => vote.messageId !== message.id,
                         );
 
                         return [
@@ -92,7 +92,7 @@ export function MessageActions({
                           },
                         ];
                       },
-                      { revalidate: false }
+                      { revalidate: false },
                     );
 
                     return 'Upvoted Response!';
@@ -134,7 +134,7 @@ export function MessageActions({
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id
+                          (vote) => vote.messageId !== message.id,
                         );
 
                         return [
@@ -146,7 +146,7 @@ export function MessageActions({
                           },
                         ];
                       },
-                      { revalidate: false }
+                      { revalidate: false },
                     );
 
                     return 'Downvoted Response!';

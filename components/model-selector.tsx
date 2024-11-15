@@ -27,7 +27,7 @@ export function ModelSelector({
 
   const selectModel = useMemo(
     () => models.find((model) => model.id === optimisticModelId),
-    [optimisticModelId]
+    [optimisticModelId],
   );
 
   return (
@@ -36,7 +36,7 @@ export function ModelSelector({
         asChild
         className={cn(
           'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className
+          className,
         )}
       >
         <Button variant="outline" className="md:px-2 md:h-[34px]">
