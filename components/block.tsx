@@ -17,7 +17,7 @@ import {
   useWindowSize,
 } from 'usehooks-ts';
 
-import { Document, Suggestion, Vote } from '@/db/schema';
+import { Document, Suggestion, Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';
@@ -27,10 +27,10 @@ import { CopyIcon, CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
 import { PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 export interface UIBlock {
   title: string;
   documentId: string;

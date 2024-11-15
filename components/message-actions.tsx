@@ -3,17 +3,17 @@ import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import { Vote } from '@/db/schema';
+import { Vote } from '@/lib/db/schema';
 import { getMessageIdFromAnnotations } from '@/lib/utils';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
-import { Button } from '../ui/button';
+import { Button } from './ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../ui/tooltip';
+} from './ui/tooltip';
 
 export function MessageActions({
   chatId,

@@ -6,12 +6,12 @@ import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import { Document } from '@/db/schema';
+import { Document } from '@/lib/db/schema';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
 
 import { UIBlock } from './block';
 import { LoaderIcon } from './icons';
-import { Button } from '../ui/button';
+import { Button } from './ui/button';
 
 interface VersionFooterProps {
   block: UIBlock;
