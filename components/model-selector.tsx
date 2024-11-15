@@ -2,7 +2,6 @@
 
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
 
-import { models } from '@/ai/models';
 import { saveModelId } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { models } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
 import { CheckCirclFillIcon, ChevronDownIcon } from './icons';

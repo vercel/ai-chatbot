@@ -3,7 +3,7 @@
 import { CoreMessage, type CoreUserMessage, generateText } from 'ai';
 import { cookies } from 'next/headers';
 
-import { customModel } from '@/ai';
+import { customModel } from '@/lib/ai';
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
