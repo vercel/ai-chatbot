@@ -2,7 +2,7 @@ import { compare } from 'bcrypt-ts';
 import NextAuth, { User, Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
-import { getUser } from '@/db/queries';
+import { getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 

@@ -19,8 +19,8 @@ import { sanitizeUIMessages } from '@/lib/utils';
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
 
 const suggestedActions = [
   {

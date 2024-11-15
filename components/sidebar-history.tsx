@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
-import { MoreHorizontalIcon, TrashIcon } from '@/components/custom/icons';
+import { MoreHorizontalIcon, TrashIcon } from '@/components/icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Chat } from '@/db/schema';
+import { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
 type GroupedChats = {
