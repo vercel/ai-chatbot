@@ -1,5 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { getSuggestionsByDocumentId } from '@/db/queries';
+import { getSuggestionsByDocumentId } from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

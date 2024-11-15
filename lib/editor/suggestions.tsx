@@ -4,7 +4,7 @@ import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/custom/suggestion';
-import { Suggestion } from '@/db/schema';
+import { Suggestion } from '@/lib/db/schema';
 
 export interface UISuggestion extends Suggestion {
   selectionStart: number;
