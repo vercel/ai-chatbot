@@ -1,16 +1,16 @@
 import {
-  convertToCoreMessages,
   type Message,
   StreamData,
+  convertToCoreMessages,
   streamObject,
   streamText,
 } from 'ai';
 import { z } from 'zod';
 
-import { customModel } from '@/ai';
-import { models } from '@/ai/models';
-import { systemPrompt } from '@/ai/prompts';
 import { auth } from '@/app/(auth)/auth';
+import { customModel } from '@/lib/ai';
+import { models } from '@/lib/ai/models';
+import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
