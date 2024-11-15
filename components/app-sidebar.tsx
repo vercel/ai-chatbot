@@ -58,11 +58,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="-mx-2">
           <SidebarHistory user={user} />
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="gap-0">
+      <SidebarFooter className="gap-0 -mx-2">
         {user && (
           <SidebarGroup>
             <SidebarGroupContent>
