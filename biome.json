@@ -1,11 +1,12 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": false },
+  "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": false,
     "ignore": [
       "**/pnpm-lock.yaml",
       "lib/db/migrations",
+      "lib/editor/react-renderer.tsx",
       "node_modules",
       ".next",
       "public",
@@ -24,8 +25,23 @@
     "bracketSpacing": true,
     "ignore": ["**/pnpm-lock.yaml", "lib/db/drizzle"]
   },
-  "organizeImports": { "enabled": false },
-  "linter": { "enabled": false },
+  "organizeImports": { "enabled": true },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useKeyWithClickEvents": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off"
+      }
+    }
+  },
   "javascript": {
     "formatter": {
       "jsxQuoteStyle": "double",
