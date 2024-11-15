@@ -51,6 +51,7 @@ export function SidebarUserNav({ user }: { user: User }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <button
+                type="button"
                 className="w-full cursor-pointer"
                 onClick={() => {
                   signOut({

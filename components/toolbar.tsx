@@ -16,7 +16,7 @@ import {
   useState,
 } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
-
+import { nanoid } from 'nanoid';
 import {
   Tooltip,
   TooltipContent,
@@ -148,6 +148,8 @@ const Tool = ({
   );
 };
 
+const randomArr = [...Array(6)].map((x) => nanoid(5));
+
 const ReadingLevelSelector = ({
   setSelectedTool,
   append,
@@ -188,9 +190,9 @@ const ReadingLevelSelector = ({
 
   return (
     <div className="relative flex flex-col justify-end items-center">
-      {[...Array(6)].map((_, index) => (
+      {randomArr.map((id) => (
         <motion.div
-          key={`dot-${index}`}
+          key={id}
           className="size-[40px] flex flex-row items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -342,7 +344,7 @@ export const Toolbar = ({
   setMessages: Dispatch<SetStateAction<Message[]>>;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);

@@ -18,7 +18,7 @@ const getActionText = (type: 'create' | 'update' | 'request-suggestions') => {
 
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
-  result: any;
+  result: { id: string; title: string };
   block: UIBlock;
   setBlock: (value: SetStateAction<UIBlock>) => void;
 }
@@ -70,7 +70,7 @@ export function DocumentToolResult({
 
 interface DocumentToolCallProps {
   type: 'create' | 'update' | 'request-suggestions';
-  args: any;
+  args: { title: string };
 }
 
 export function DocumentToolCall({ type, args }: DocumentToolCallProps) {
