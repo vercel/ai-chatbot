@@ -4,10 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx db/migrate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "npx tsx db/migrate.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@ai-sdk/openai": "1.0.0-canary.3",
@@ -64,7 +68,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/d3-scale": "^4.0.8",
-    "@types/node": "^20",
+    "@types/node": "^22.8.6",
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
