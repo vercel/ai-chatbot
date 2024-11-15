@@ -9,6 +9,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     code: ({ node, inline, className, children, ...props }) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
+        // @ts-expect-error
         <pre
           {...props}
           className={`${className} text-sm w-[80dvw] md:max-w-[500px] overflow-x-scroll bg-zinc-100 p-3 rounded-lg mt-2 dark:bg-zinc-800`}
