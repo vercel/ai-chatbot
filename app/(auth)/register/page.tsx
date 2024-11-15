@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 
-import { register, RegisterActionState } from '../actions';
+import { register, type RegisterActionState } from '../actions';
 
 export default function Page() {
   const router = useRouter();
