@@ -23,7 +23,7 @@ export function PureBlockStreamHandler({
 
 function areEqual(
   prevProps: BlockStreamHandlerProps,
-  nextProps: BlockStreamHandlerProps
+  nextProps: BlockStreamHandlerProps,
 ) {
   if (!prevProps.streamingData && !nextProps.streamingData) {
     return true;

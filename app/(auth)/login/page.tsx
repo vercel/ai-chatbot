@@ -20,7 +20,7 @@ export default function Page() {
     login,
     {
       status: 'idle',
-    }
+    },
   );
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use server';
 
-import { CoreMessage, type CoreUserMessage, generateText } from 'ai';
+import { type CoreUserMessage, generateText } from 'ai';
 import { cookies } from 'next/headers';
 
 import { customModel } from '@/lib/ai';

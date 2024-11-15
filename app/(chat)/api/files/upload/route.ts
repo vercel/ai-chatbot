@@ -16,7 +16,7 @@ const FileSchema = z.object({
         ['image/jpeg', 'image/png', 'application/pdf'].includes(file.type),
       {
         message: 'File type should be JPEG, PNG, or PDF',
-      }
+      },
     ),
 });
 
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to process request' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

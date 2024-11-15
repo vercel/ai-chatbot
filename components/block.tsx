@@ -80,13 +80,13 @@ export function Block({
   votes: Array<Vote> | undefined;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   handleSubmit: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions
+    chatRequestOptions?: ChatRequestOptions,
   ) => void;
 }) {
   const [messagesContainerRef, messagesEndRef] =
@@ -100,7 +100,7 @@ export function Block({
     block && block.status !== 'streaming'
       ? `/api/document?id=${block.documentId}`
       : null,
-    fetcher
+    fetcher,
   );
 
   const { data: suggestions } = useSWR<Array<Suggestion>>(
@@ -110,7 +110,7 @@ export function Block({
     fetcher,
     {
       dedupingInterval: 5000,
-    }
+    },
   );
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
@@ -176,15 +176,15 @@ export function Block({
           }
           return currentDocuments;
         },
-        { revalidate: false }
+        { revalidate: false },
       );
     },
-    [block, mutate]
+    [block, mutate],
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
     handleContentChange,
-    2000
+    2000,
   );
 
   const saveContent = useCallback(
@@ -199,7 +199,7 @@ export function Block({
         }
       }
     },
-    [document, debouncedHandleContentChange, handleContentChange]
+    [document, debouncedHandleContentChange, handleContentChange],
   );
 
   function getDocumentContentById(index: number) {
@@ -430,7 +430,7 @@ export function Block({
                     new Date(),
                     {
                       addSuffix: true,
-                    }
+                    },
                   )}`}
                 </div>
               ) : (
@@ -496,7 +496,7 @@ export function Block({
                     'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
                     {
                       'bg-muted': mode === 'diff',
-                    }
+                    },
                   )}
                   onClick={() => {
                     handleVersionChange('toggle');
