@@ -17,7 +17,7 @@ import {
   useWindowSize,
 } from 'usehooks-ts';
 
-import { Document, Suggestion, Vote } from '@/db/schema';
+import { Document, Suggestion, Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';

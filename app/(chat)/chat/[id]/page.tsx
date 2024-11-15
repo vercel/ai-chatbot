@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { DEFAULT_MODEL_NAME, models } from '@/ai/models';
 import { auth } from '@/app/(auth)/auth';
 import { Chat as PreviewChat } from '@/components/custom/chat';
-import { getChatById, getMessagesByChatId } from '@/db/queries';
+import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { convertToUIMessages } from '@/lib/utils';
 
 export default async function Page(props: { params: Promise<any> }) {

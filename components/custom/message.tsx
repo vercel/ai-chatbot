@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { motion } from 'framer-motion';
 import { Dispatch, SetStateAction } from 'react';
 
-import { Vote } from '@/db/schema';
+import { Vote } from '@/lib/db/schema';
 
 import { UIBlock } from './block';
 import { DocumentToolCall, DocumentToolResult } from './document';

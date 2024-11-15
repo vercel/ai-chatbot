@@ -6,7 +6,7 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { memo, useEffect, useRef } from 'react';
 
-import { Suggestion } from '@/db/schema';
+import { Suggestion } from '@/lib/db/schema';
 import {
   documentSchema,
   handleTransaction,

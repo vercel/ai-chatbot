@@ -10,7 +10,7 @@ import { useWindowSize } from 'usehooks-ts';
 import { ChatHeader } from '@/components/custom/chat-header';
 import { PreviewMessage, ThinkingMessage } from '@/components/custom/message';
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
-import { Vote } from '@/db/schema';
+import { Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
 import { Block, UIBlock } from './block';

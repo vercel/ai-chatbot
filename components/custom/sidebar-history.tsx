@@ -34,7 +34,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Chat } from '@/db/schema';
+import { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 
 type GroupedChats = {
