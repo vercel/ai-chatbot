@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   const { content, title }: { content: string; title: string } =
     await request.json();
 
-  if (session.user && session.user.id) {
+  if (session.user?.id) {
     const document = await saveDocument({
       id,
       content,
@@ -60,9 +60,8 @@ export async function POST(request: Request) {
     });
 
     return Response.json(document, { status: 200 });
-  } else {
-    return new Response('Unauthorized', { status: 401 });
   }
+  return new Response('Unauthorized', { status: 401 });
 }
 
 export async function PATCH(request: Request) {

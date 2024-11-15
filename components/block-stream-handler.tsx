@@ -1,7 +1,7 @@
-import { JSONValue } from 'ai';
-import { Dispatch, memo, SetStateAction } from 'react';
+import type { JSONValue } from 'ai';
+import { type Dispatch, memo, type SetStateAction } from 'react';
 
-import { UIBlock } from './block';
+import type { UIBlock } from './block';
 import { useBlockStream } from './use-block-stream';
 
 interface BlockStreamHandlerProps {

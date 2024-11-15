@@ -1,9 +1,9 @@
-import { Message } from 'ai';
+import type { Message } from 'ai';
 import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 import { getMessageIdFromAnnotations } from '@/lib/utils';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
@@ -57,7 +57,7 @@ export function MessageActions({
           <TooltipTrigger asChild>
             <Button
               className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
-              disabled={vote && vote.isUpvoted}
+              disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
                 const messageId = getMessageIdFromAnnotations(message);

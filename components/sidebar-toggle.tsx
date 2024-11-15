@@ -1,6 +1,6 @@
-import { ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { BetterTooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 

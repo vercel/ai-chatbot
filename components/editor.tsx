@@ -6,7 +6,7 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { memo, useEffect, useRef } from 'react';
 
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 import {
   documentSchema,
   handleTransaction,
@@ -122,7 +122,7 @@ function PureEditor({
   }, [content, status]);
 
   useEffect(() => {
-    if (editorRef.current && editorRef.current.state.doc && content) {
+    if (editorRef.current?.state.doc && content) {
       const projectedSuggestions = projectWithPositions(
         editorRef.current.state.doc,
         suggestions
@@ -147,24 +147,14 @@ function PureEditor({
 }
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
-  if (prevProps.suggestions !== nextProps.suggestions) {
-    return false;
-  } else if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) {
-    return false;
-  } else if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) {
-    return false;
-  } else if (
-    prevProps.status === 'streaming' &&
-    nextProps.status === 'streaming'
-  ) {
-    return false;
-  } else if (prevProps.content !== nextProps.content) {
-    return false;
-  } else if (prevProps.saveContent !== nextProps.saveContent) {
-    return false;
-  }
-
-  return true;
+  return (
+    prevProps.suggestions === nextProps.suggestions &&
+    prevProps.currentVersionIndex === nextProps.currentVersionIndex &&
+    prevProps.isCurrentVersion === nextProps.isCurrentVersion &&
+    !(prevProps.status === 'streaming' && nextProps.status === 'streaming') &&
+    prevProps.content === nextProps.content &&
+    prevProps.saveContent === nextProps.saveContent
+  );
 }
 
 export const Editor = memo(PureEditor, areEqual);

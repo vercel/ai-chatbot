@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
-import { type User } from 'next-auth';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
