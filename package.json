@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "1.0.0-canary.3",
+    "@google/generative-ai": "^0.21.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
