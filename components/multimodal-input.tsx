@@ -27,6 +27,7 @@ import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { revalidateTag } from 'next/cache';
 
 const suggestedActions = [
   {
@@ -130,7 +131,7 @@ export function MultimodalInput({
 
     setAttachments([]);
     setLocalStorageInput('');
-
+    revalidateTag('history');
     if (width && width > 768) {
       textareaRef.current?.focus();
     }

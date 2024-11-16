@@ -4,9 +4,7 @@ import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { User } from 'next-auth';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import useSWR from 'swr';
+import { useState } from 'react';
 
 import { MoreHorizontalIcon, TrashIcon } from '@/components/icons';
 import {
@@ -35,7 +33,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import type { Chat } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { revalidateTag } from 'next/cache';
 
 type GroupedChats = {
   today: Chat[];
@@ -85,21 +83,21 @@ const ChatItem = ({
   </SidebarMenuItem>
 );
 
-export function SidebarHistory({ user }: { user: User | undefined }) {
+export function SidebarHistory({
+  user,
+  history,
+}: {
+  user: User | undefined;
+  history: {
+    id: string;
+    createdAt: Date;
+    title: string;
+    userId: string;
+  }[];
+}) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
   const pathname = usePathname();
-  const {
-    data: history,
-    isLoading,
-    mutate,
-  } = useSWR<Array<Chat>>(user ? '/api/history' : null, fetcher, {
-    fallbackData: [],
-  });
-
-  useEffect(() => {
-    mutate();
-  }, [pathname, mutate]);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -112,11 +110,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     toast.promise(deletePromise, {
       loading: 'Deleting chat...',
       success: () => {
-        mutate((history) => {
-          if (history) {
-            return history.filter((h) => h.id !== id);
-          }
-        });
+        revalidateTag('history');
         return 'Chat deleted successfully';
       },
       error: 'Failed to delete chat',
@@ -135,35 +129,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
         <SidebarGroupContent>
           <div className="text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             <div>Login to save and revisit previous chats!</div>
-          </div>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <SidebarGroup>
-        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          Today
-        </div>
-        <SidebarGroupContent>
-          <div className="flex flex-col">
-            {[44, 32, 28, 64, 52].map((item) => (
-              <div
-                key={item}
-                className="rounded-md h-8 flex gap-2 px-2 items-center"
-              >
-                <div
-                  className="h-4 rounded-md flex-1 max-w-[--skeleton-width] bg-sidebar-accent-foreground/10"
-                  style={
-                    {
-                      '--skeleton-width': `${item}%`,
-                    } as React.CSSProperties
-                  }
-                />
-              </div>
-            ))}
           </div>
         </SidebarGroupContent>
       </SidebarGroup>

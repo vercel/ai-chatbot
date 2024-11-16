@@ -17,6 +17,7 @@ import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
+import { revalidateTag } from 'next/cache';
 
 export function Chat({
   id,
@@ -43,7 +44,8 @@ export function Chat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
-      mutate('/api/history');
+      revalidateTag('history');
+      // mutate('/api/history');
     },
   });
 

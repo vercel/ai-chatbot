@@ -4,7 +4,6 @@ import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
 
 import { PlusIcon } from '@/components/icons';
-import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +19,10 @@ import {
 import { BetterTooltip } from '@/components/ui/tooltip';
 import Link from 'next/link';
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export function AppSidebar({
+  user,
+  children,
+}: { user: User | undefined; children: React.ReactNode }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
@@ -58,9 +60,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="-mx-2">
-          <SidebarHistory user={user} />
-        </SidebarGroup>
+        <SidebarGroup className="-mx-2">{children}</SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="gap-0 -mx-2">
         {user && (
