@@ -39,10 +39,21 @@ export function Chat({
     isLoading,
     stop,
     data: streamingData,
+    error,
   } = useChat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
+      mutate('/api/history');
+    },
+    onError: (error) => {
+      const errorMessage = {
+        id: Date.now().toString(),
+        content: "I'm having trouble processing your request at the moment. Please try again.",
+        role: 'assistant',
+        createdAt: new Date(),
+      };
+      setMessages((messages) => [...messages, errorMessage as Message]);
       mutate('/api/history');
     },
   });
@@ -86,7 +97,7 @@ export function Chat({
 
           {messages.map((message, index) => (
             <PreviewMessage
-              key={message.id}
+              key={message.id || index}
               chatId={id}
               message={message}
               block={block}
