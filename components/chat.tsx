@@ -47,6 +47,8 @@ export function Chat({
       mutate('/api/history');
     },
     onError: (error) => {
+      console.log('error', error);
+
       const errorMessage = {
         id: Date.now().toString(),
         content: "I'm having trouble processing your request at the moment. Please try again.",
