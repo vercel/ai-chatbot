@@ -104,13 +104,22 @@ export const PreviewMessage = ({
                     {toolName === 'getWeather' ? (
                       <Weather />
                     ) : toolName === 'createDocument' ? (
-                      <DocumentToolCall type="create" args={args} />
+                      <DocumentToolCall
+                        type="create"
+                        args={args}
+                        setBlock={setBlock}
+                      />
                     ) : toolName === 'updateDocument' ? (
-                      <DocumentToolCall type="update" args={args} />
+                      <DocumentToolCall
+                        type="update"
+                        args={args}
+                        setBlock={setBlock}
+                      />
                     ) : toolName === 'requestSuggestions' ? (
                       <DocumentToolCall
                         type="request-suggestions"
                         args={args}
+                        setBlock={setBlock}
                       />
                     ) : null}
                   </div>
