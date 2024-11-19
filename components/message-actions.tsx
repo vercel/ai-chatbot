@@ -1,20 +1,20 @@
-import { Message } from "ai";
-import { User } from "next-auth";
-import { toast } from "sonner";
-import { useSWRConfig } from "swr";
-import { useCopyToClipboard } from "usehooks-ts";
+import { Message } from 'ai';
+import { User } from 'next-auth';
+import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
+import { useCopyToClipboard } from 'usehooks-ts';
 
-import type { Vote } from "@/lib/db/schema";
-import { getMessageIdFromAnnotations } from "@/lib/utils";
+import type { Vote } from '@/lib/db/schema';
+import { getMessageIdFromAnnotations } from '@/lib/utils';
 
-import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
-import { Button } from "./ui/button";
+import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
+import { Button } from './ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from './ui/tooltip';
 
 export function MessageActions({
   chatId,
@@ -33,7 +33,7 @@ export function MessageActions({
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
-  if (message.role === "user") return null;
+  if (message.role === 'user') return null;
   if (message.toolInvocations && message.toolInvocations.length > 0)
     return null;
 
@@ -47,7 +47,7 @@ export function MessageActions({
               variant="outline"
               onClick={async () => {
                 await copyToClipboard(message.content as string);
-                toast.success("Copied to clipboard!");
+                toast.success('Copied to clipboard!');
               }}
             >
               <CopyIcon />
@@ -64,23 +64,23 @@ export function MessageActions({
               variant="outline"
               onClick={async () => {
                 if (!user) {
-                  toast.error("You must be signed in to upvote a response!");
+                  toast.error('You must be signed in to upvote a response!');
                   return;
                 }
 
                 const messageId = getMessageIdFromAnnotations(message);
 
-                const upvote = fetch("/api/vote", {
-                  method: "PATCH",
+                const upvote = fetch('/api/vote', {
+                  method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
                     messageId,
-                    type: "up",
+                    type: 'up',
                   }),
                 });
 
                 toast.promise(upvote, {
-                  loading: "Upvoting Response...",
+                  loading: 'Upvoting Response...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -103,9 +103,9 @@ export function MessageActions({
                       { revalidate: false },
                     );
 
-                    return "Upvoted Response!";
+                    return 'Upvoted Response!';
                   },
-                  error: "Failed to upvote response.",
+                  error: 'Failed to upvote response.',
                 });
               }}
             >
@@ -123,23 +123,23 @@ export function MessageActions({
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
                 if (!user) {
-                  toast.error("You must be signed in to downvote a response!");
+                  toast.error('You must be signed in to downvote a response!');
                   return;
                 }
 
                 const messageId = getMessageIdFromAnnotations(message);
 
-                const downvote = fetch("/api/vote", {
-                  method: "PATCH",
+                const downvote = fetch('/api/vote', {
+                  method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
                     messageId,
-                    type: "down",
+                    type: 'down',
                   }),
                 });
 
                 toast.promise(downvote, {
-                  loading: "Downvoting Response...",
+                  loading: 'Downvoting Response...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -162,9 +162,9 @@ export function MessageActions({
                       { revalidate: false },
                     );
 
-                    return "Downvoted Response!";
+                    return 'Downvoted Response!';
                   },
-                  error: "Failed to downvote response.",
+                  error: 'Failed to downvote response.',
                 });
               }}
             >

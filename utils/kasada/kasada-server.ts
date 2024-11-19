@@ -2,7 +2,6 @@ import { track } from '@vercel/analytics/server';
 import { ipAddress } from '@vercel/functions';
 import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 
-
 // You can get this endpoint name from the application details on the Kasada Portal.
 const kasadaAPIHostname = 'vercel-endpoint.kasadapolyform.io';
 const kasadaAPIVersion = '2023-01-13-preview';
@@ -149,7 +148,7 @@ function addKasadaCORSHeaders(response: Response): void {
 
 export async function kasadaHandler(
   request: NextRequest,
-  ev: NextFetchEvent
+  ev: NextFetchEvent,
 ): Promise<Response> {
   // If the request is an OPTIONS request we don't send it to Kasada
   // but we do add the necessary CORS headers.
@@ -184,7 +183,7 @@ export async function kasadaHandler(
         classification: metadata.classification,
         mode: metadata.application.mode,
         ip: ipAddress(request) || 'unknown',
-      })
+      }),
     );
     const blockResponse = new Response('Too many requests', {
       status: 429,
@@ -204,7 +203,7 @@ export async function kasadaHandler(
           ip: ipAddress(request) || 'unknown',
           model: body.model || 'unknown',
           prompt: body.messages?.[0]?.content || 'unknown',
-        })
+        }),
       );
     } catch (e) {
       console.error('Error tracking good bot', e);

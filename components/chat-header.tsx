@@ -21,7 +21,7 @@ export function ChatHeader({
   selectedModelId: string;
   user: User | undefined;
   setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[])
+    messages: Message[] | ((messages: Message[]) => Message[]),
   ) => void;
 }) {
   const router = useRouter();

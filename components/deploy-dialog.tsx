@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Dispatch, SetStateAction } from "react";
+import Link from 'next/link';
+import { Dispatch, SetStateAction } from 'react';
 
 import {
   AlertDialog,
@@ -12,7 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./ui/alert-dialog";
+} from './ui/alert-dialog';
 
 export function DeployDialog({
   isOpen,

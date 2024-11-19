@@ -1,23 +1,23 @@
-import type { Metadata } from "next";
-import { Toaster } from "sonner";
+import type { Metadata } from 'next';
+import { Toaster } from 'sonner';
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { KasadaClient } from "@/utils/kasada/kasada-client";
+import { ThemeProvider } from '@/components/theme-provider';
+import { KasadaClient } from '@/utils/kasada/kasada-client';
 
-import "./globals.css";
+import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  metadataBase: new URL('https://chat.vercel.ai'),
+  title: 'Next.js Chatbot Template',
+  description: 'Next.js chatbot template using the AI SDK.',
 };
 
 export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
-const LIGHT_THEME_COLOR = "hsl(0 0% 100%)";
-const DARK_THEME_COLOR = "hsl(240deg 10% 3.92%)";
+const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
+const DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)';
 const THEME_COLOR_SCRIPT = `\
 (function() {
   var html = document.documentElement;

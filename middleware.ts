@@ -14,7 +14,7 @@ export const { auth } = NextAuth(authConfig);
 
 export async function botProtectionMiddleware(
   request: NextRequest,
-  event: NextFetchEvent
+  event: NextFetchEvent,
 ) {
   if (['POST', 'DELETE'].includes(request.method)) {
     /*
