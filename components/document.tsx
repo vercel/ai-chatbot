@@ -86,6 +86,7 @@ export function DocumentToolCall({
 }: DocumentToolCallProps) {
   return (
     <button
+      type="button"
       className="cursor pointer w-fit border py-2 px-3 rounded-xl flex flex-row items-start justify-between gap-3"
       onClick={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
