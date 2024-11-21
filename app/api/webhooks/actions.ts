@@ -3,125 +3,74 @@
 import { kv } from '@vercel/kv'
 import { getUser } from '@/app/login/actions'
 import { auth } from '@/auth'
-import { subscription, User, Session } from '@/lib/types'
+import { stripe } from '@/lib/stripe'
+//import { subscription, User, Session } from '@/lib/types'
+import { fromUnixTime } from 'date-fns'
+import { User } from '@/lib/types'
 
-export async function createSubscription(
-  email: string,
-  plan: string,
-  period: string
-) {
-    console.log('Creating subscription for user', email)
+export async function updateSubscription({
+    email,
+    customer,
+    period,
+    plan,
+}: User) {
+    console.log('Atualizando mensalidade: ', email)
 
     try {
         const user = await getUser(email as string)
-
-        // console.log('User', user)
-
-        // const subs = await kv.get(`subscription:${user.id}`)
-
-        const endDate = period === 'monthly' ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-
-        const subscription: subscription = {
-            id: crypto.randomUUID(),
-            userId: user.id,
-            plan,
-            period,
-            startDate: new Date(),
-            endDate: endDate
-        }
-
-        const newUser: User = {
+        const newUser = {
             ...user,
             plan,
             period,
-            subscriptionId: subscription.id
+            stripeId: customer,
+            startDate: new Date(),
+            chargeDate: period === 'month' ? fromUnixTime(Date.now() / 1000 + 30 * 24 * 60 * 60) : period === 'anual' ? fromUnixTime(Date.now() / 1000 + 365 * 24 * 60 * 60) : null,
         }
+        console.log('updating user', newUser)
 
-        // get by subscription userId
-        const isSubscribed = await kv.get(`subscription:${user.id}`)
-        console.log('Is subscribed', isSubscribed)
+        await kv.hmset(`user:${email}`, newUser)
 
-        if (isSubscribed) {
-            await kv.hmset(`subscription:${isSubscribed.id}`, subscription)
-            await kv.hmset(`user:${user.email}`, newUser)
-            return subscription
-        }
-
-        await kv.hmset(`subscription:${subscription.id}`, subscription)
-        await kv.hmset(`user:${user.email}`, newUser)
-
-        console.log(`Subscription created for user ${user.email}`)
-
-        return subscription
-    } catch (error) {
+    } catch(error) {
         console.log(error)
-        return {
-            error: 'Error creating subscription'
-        }
-    }
-
-}
-
-export async function getSubscription(id: string) {
-    const session = await auth()
-
-    if (!session || !session.user) {
-        return {
-            error: 'Unauthorized'
-        }
-    } else {
-        const user = await getUser(session.user?.email as string)
-
-        const subscriptions = await kv.get(`subscription:${user.id}`)
-
-        return subscriptions
+        throw new Error('Ocorreu um erro ao adicionar usuário ',error.message)
     }
 }
 
-export async function cancelSubscription(email: string) {
-    const session = await auth()
-
-    if (!session || !session.user) {
-        return {
-            error: 'Unauthorized'
-        }
-    } else {
-        const user = await getUser(session.user?.email as string)
-
-        await kv.delete(`subscription:${user.id}`)
-
-        return {
-            message: 'Subscription cancelled'
-        }
-    }
-}
-
-export async function changeSubscription(id: string, plan: string, period: string) {
-    const session = await auth()
-
-    if (!session || !session.user) {
-        return {
-            error: 'Unauthorized'
-        }
-    } else {
-        const user = await getUser(session.user?.email as string)
-
-        const subscription = await getSubscription(user.id)
-
-        if (subscription) {
-            const updatedSubscription = {
-                ...subscription,
-                plan,
-                period
+export async function cancelStripeSubscriptions(stripeId: string, filterId?: string) {
+    // filterId is the current id that will not be cancelled
+    try {
+        const subscriptions = await stripe.subscriptions.list({
+            customer: stripeId,
+        })
+            
+        subscriptions.data.forEach(async (subscription) => {
+            if (subscription.id !== filterId) {
+                await stripe.subscriptions.cancel(subscription.id)
             }
-
-            await kv.hmset(`subscription:${user.id}`, updatedSubscription)
-
-            return updatedSubscription
-        } else {
-            return {
-                error: 'Subscription not found'
-            }
-        }
+        })
+    } catch(error) {
+        console.log(error)
     }
+}
+
+export async function removeSubscription(email?: string, stripeId: string) {
+    let userEmail = email
+    
+    if (!email) {
+        const stripeUser = await stripe.customers.retrieve(stripeId)
+        userEmail = stripeUser.email
+    }
+    
+    console.log('Cancelando mensalidade: ', userEmail)
+
+    const subscription = {
+        email: userEmail,
+        customer: stripeId,
+        plan: 'free',
+        period: null,
+    }
+
+    await cancelStripeSubscriptions(stripeId);
+    await updateSubscription(subscription)
+
 }

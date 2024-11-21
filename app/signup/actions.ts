@@ -26,10 +26,17 @@ export async function createUser(
       password: hashedPassword,
       salt,
       plan: 'free',
-      period: 'monthly'
+      period: null,
+      stripeId: null,
+      startDate: new Date(),
     }
 
-    await kv.hmset(`user:${email}`, user)
+    // Store the new user in the database
+    await kv.hmset(`user:${email}`, user);
+
+    // Add the user key to the `all_users` set for tracking
+    await kv.sadd('all_users', `user:${email}`);
+    console.log(user, 'user created')
 
     return {
       type: 'success',

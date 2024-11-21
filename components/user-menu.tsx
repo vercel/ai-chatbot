@@ -33,17 +33,17 @@ export function UserMenu({ user }: UserMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent sideOffset={8} align="start" className="w-fit">
-          <DropdownMenuItem className="flex-col items-start">
-            <Link href="/">
+          <Link href="/">
+            <DropdownMenuItem className="flex-col cursor-pointer items-start">
               <div className="text-xs text-zinc-500">{user.email}</div>
-            </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex-col items-start">
-            <Link href="/checkout">
-              <button className="text-xs text-zinc-500">Minha assinatura</button>
-            </Link>
-          </DropdownMenuItem>
+          <Link href="/checkout">
+            <DropdownMenuItem className="flex-col cursor-pointer items-start">
+                <button className="text-xs text-zinc-500">Minha assinatura</button>
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuSeparator />
           <form
             action={async () => {

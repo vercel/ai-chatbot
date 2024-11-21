@@ -25,9 +25,11 @@ export interface Session {
   user: {
     id: string
     email: string
-    period: string
-    plan: string
-    subscriptionId: string
+    period: Period
+    plan: Plan
+    stripeId: string | null
+    startDate: Date | null
+    chargeDate: Date
   }
 }
 
@@ -42,13 +44,19 @@ export interface User extends Record<string, any> {
   password: string
   salt: string
   subscriptionId: string
+  plan: Plan
+  period: Period
 }
 
-export interface subscription {
-  id: string
-  userId: string
-  plan: string
-  period: string
-  startDate: Date
-  endDate: Date
-}
+export type Period = 'anual' | 'month';
+
+export type Plan = 'free' | 'basic' | 'premium';
+
+// export interface Subscription {
+//   id: string
+//   userId: string
+//   plan: 'free' | 'basic' | 'premium'
+//   period: 'anual' | 'month'
+//   startDate: Date
+//   endDate: Date
+// }

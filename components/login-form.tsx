@@ -30,7 +30,7 @@ export default function LoginForm() {
       className="flex flex-col items-center gap-4 space-y-3"
     >
       <div className="w-full flex-1 rounded-lg border bg-white px-6 pb-4 pt-8 shadow-md  md:w-96 dark:bg-zinc-950">
-        <h1 className="mb-3 text-2xl font-bold">Please log in to continue.</h1>
+        <h1 className="mb-3 text-2xl font-bold">Faça seu login para entrar</h1>
         <div className="w-full">
           <div>
             <label
@@ -77,7 +77,7 @@ export default function LoginForm() {
         href="/signup"
         className="flex flex-row gap-1 text-sm text-zinc-400"
       >
-        Não possui uma conta? <div className="font-semibold underline">Sign up</div>
+        Não possui uma conta? <div className="font-semibold underline">Cadastrar-se</div>
       </Link>
     </form>
   )

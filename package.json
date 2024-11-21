@@ -13,12 +13,9 @@
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
-    "@stripe/react-stripe-js": "2.4.0",
-    "@stripe/stripe-js": "2.2.2",
     "@ai-sdk/openai": "^0.0.9",
     "@ai-sdk/provider": "^0.0.12",
     "@ai-sdk/provider-utils": "^1.0.2",
-    "@headlessui/react": "^2.1.2",
     "@pinecone-database/pinecone": "^2.2.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -30,6 +27,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.7",
+    "@stripe/stripe-js": "^2.4.0",
     "@upstash/ratelimit": "^2.0.1",
     "@vercel/analytics": "^1.1.2",
     "@vercel/kv": "^1.0.1",
@@ -57,10 +55,10 @@
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
     "sonner": "^1.4.3",
+    "stripe": "14.8.0",
     "swr": "^2.2.5",
     "usehooks-ts": "^2.16.0",
-    "zod": "^3.22.4",
-    "stripe": "14.8.0"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
