@@ -35,6 +35,10 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
+  if (process.env.SIGNUP_DISABLED === 'true') {
+    throw new Error('Signup is disabled');
+  }
+
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
 
