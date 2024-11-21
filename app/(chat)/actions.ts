@@ -1,9 +1,9 @@
 'use server';
 
-import { CoreMessage, CoreUserMessage, generateText } from 'ai';
+import { type CoreUserMessage, generateText } from 'ai';
 import { cookies } from 'next/headers';
 
-import { customModel } from '@/ai';
+import { customModel } from '@/lib/ai';
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
@@ -16,7 +16,7 @@ export async function generateTitleFromUserMessage({
   message: CoreUserMessage;
 }) {
   const { text: title } = await generateText({
-    model: customModel('gpt-3.5-turbo'),
+    model: customModel('gpt-4o-mini'),
     system: `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long

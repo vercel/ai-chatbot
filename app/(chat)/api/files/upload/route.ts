@@ -1,41 +1,39 @@
-import { put } from "@vercel/blob";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { put } from '@vercel/blob';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
-import { auth } from "@/app/(auth)/auth";
+import { auth } from '@/app/(auth)/auth';
 
+// Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
   file: z
-    .instanceof(File)
+    .instanceof(Blob)
     .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "File size should be less than 5MB",
+      message: 'File size should be less than 5MB',
     })
-    .refine(
-      (file) =>
-        ["image/jpeg", "image/png", "application/pdf"].includes(file.type),
-      {
-        message: "File type should be JPEG, PNG, or PDF",
-      },
-    ),
+    // Update the file type based on the kind of files you want to accept
+    .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), {
+      message: 'File type should be JPEG or PNG',
+    }),
 });
 
 export async function POST(request: Request) {
   const session = await auth();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   if (request.body === null) {
-    return new Response("Request body is empty", { status: 400 });
+    return new Response('Request body is empty', { status: 400 });
   }
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get('file') as Blob;
 
     if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
     const validatedFile = FileSchema.safeParse({ file });
@@ -43,26 +41,27 @@ export async function POST(request: Request) {
     if (!validatedFile.success) {
       const errorMessage = validatedFile.error.errors
         .map((error) => error.message)
-        .join(", ");
+        .join(', ');
 
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    const filename = file.name;
+    // Get filename from formData since Blob doesn't have name property
+    const filename = (formData.get('file') as File).name;
     const fileBuffer = await file.arrayBuffer();
 
     try {
       const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
+        access: 'public',
       });
 
       return NextResponse.json(data);
     } catch (error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to process request" },
+      { error: 'Failed to process request' },
       { status: 500 },
     );
   }

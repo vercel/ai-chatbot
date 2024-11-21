@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { AuthForm } from '@/components/custom/auth-form';
-import { SubmitButton } from '@/components/custom/submit-button';
+import { AuthForm } from '@/components/auth-form';
+import { SubmitButton } from '@/components/submit-button';
 
-import { login, LoginActionState } from '../actions';
+import { login, type LoginActionState } from '../actions';
 
 export default function Page() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function Page() {
     login,
     {
       status: 'idle',
-    }
+    },
   );
 
   useEffect(() => {
