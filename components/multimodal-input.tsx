@@ -30,7 +30,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 
-export function PureMultimodalInput({
+function PureMultimodalInput({
   chatId,
   input,
   setInput,

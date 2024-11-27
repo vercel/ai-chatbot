@@ -8,7 +8,7 @@ interface BlockCloseButtonProps {
   setBlock: (value: SetStateAction<UIBlock>) => void;
 }
 
-export function PureBlockCloseButton({ setBlock }: BlockCloseButtonProps) {
+function PureBlockCloseButton({ setBlock }: BlockCloseButtonProps) {
   return (
     <Button
       variant="outline"

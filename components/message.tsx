@@ -16,7 +16,7 @@ import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
 
-export const PurePreviewMessage = ({
+const PurePreviewMessage = ({
   chatId,
   message,
   block,
@@ -158,6 +158,7 @@ export const PreviewMessage = memo(
   (prevProps, nextProps) => {
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (prevProps.isLoading && nextProps.isLoading) return false;
+    if (!equal(prevProps.vote, nextProps.vote)) return false;
     return true;
   },
 );

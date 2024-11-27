@@ -15,7 +15,8 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
-    "db:up": "drizzle-kit up"
+    "db:up": "drizzle-kit up",
+    "scan": "next dev & npx react-scan@latest localhost:3000"
   },
   "dependencies": {
     "@ai-sdk/openai": "1.0.0-canary.3",

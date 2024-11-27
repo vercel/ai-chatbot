@@ -13,10 +13,7 @@ interface SuggestedActionsProps {
   ) => Promise<string | null | undefined>;
 }
 
-export function PureSuggestedActions({
-  chatId,
-  append,
-}: SuggestedActionsProps) {
+function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
       title: 'What is the weather',

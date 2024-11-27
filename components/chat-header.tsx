@@ -12,11 +12,7 @@ import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 
-export function PureChatHeader({
-  selectedModelId,
-}: {
-  selectedModelId: string;
-}) {
+function PureChatHeader({ selectedModelId }: { selectedModelId: string }) {
   const router = useRouter();
   const { open } = useSidebar();
 

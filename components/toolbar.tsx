@@ -326,7 +326,7 @@ export const Tools = ({
   );
 };
 
-export const PureToolbar = ({
+const PureToolbar = ({
   isToolbarVisible,
   setIsToolbarVisible,
   append,

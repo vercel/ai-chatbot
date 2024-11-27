@@ -1,12 +1,11 @@
-import { Message } from 'ai';
-import { PreviewMessage, ThinkingMessage } from './message';
-import { useScrollToBottom } from './use-scroll-to-bottom';
-import { Overview } from './overview';
-import { UIBlock } from './block';
 import { Dispatch, memo, SetStateAction } from 'react';
+import { UIBlock } from './block';
+import { PreviewMessage } from './message';
+import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Vote } from '@/lib/db/schema';
+import { Message } from 'ai';
 
-interface MessagesProps {
+interface BlockMessagesProps {
   chatId: string;
   block: UIBlock;
   setBlock: Dispatch<SetStateAction<UIBlock>>;
@@ -15,32 +14,30 @@ interface MessagesProps {
   messages: Array<Message>;
 }
 
-function PureMessages({
+function PureBlockMessages({
   chatId,
   block,
   setBlock,
   isLoading,
   votes,
   messages,
-}: MessagesProps) {
+}: BlockMessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
   return (
     <div
       ref={messagesContainerRef}
-      className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
+      className="flex flex-col gap-4 h-full items-center overflow-y-scroll px-4 pt-20"
     >
-      {messages.length === 0 && <Overview />}
-
       {messages.map((message, index) => (
         <PreviewMessage
-          key={message.id}
           chatId={chatId}
+          key={message.id}
           message={message}
           block={block}
           setBlock={setBlock}
-          isLoading={isLoading && messages.length - 1 === index}
+          isLoading={isLoading && index === messages.length - 1}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -48,10 +45,6 @@ function PureMessages({
           }
         />
       ))}
-
-      {isLoading &&
-        messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}
@@ -61,7 +54,10 @@ function PureMessages({
   );
 }
 
-function areEqual(prevProps: MessagesProps, nextProps: MessagesProps) {
+function areEqual(
+  prevProps: BlockMessagesProps,
+  nextProps: BlockMessagesProps,
+) {
   if (
     prevProps.block.status === 'streaming' &&
     nextProps.block.status === 'streaming'
@@ -72,4 +68,4 @@ function areEqual(prevProps: MessagesProps, nextProps: MessagesProps) {
   return false;
 }
 
-export const Messages = memo(PureMessages, areEqual);
+export const BlockMessages = memo(PureBlockMessages, areEqual);

@@ -15,7 +15,7 @@ interface BlockActionsProps {
   mode: 'read-only' | 'edit' | 'diff';
 }
 
-export function PureBlockActions({
+function PureBlockActions({
   block,
   handleVersionChange,
   currentVersionIndex,
