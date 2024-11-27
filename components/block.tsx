@@ -9,6 +9,7 @@ import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
+  memo,
   type SetStateAction,
   useCallback,
   useEffect,
@@ -36,6 +37,9 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
+import { Markdown } from './markdown';
+import { BlockActions } from './block-actions';
+import { BlockCloseButton } from './block-close-button';
 export interface UIBlock {
   title: string;
   documentId: string;
@@ -50,7 +54,7 @@ export interface UIBlock {
   };
 }
 
-export function Block({
+export function PureBlock({
   chatId,
   input,
   setInput,
@@ -247,8 +251,6 @@ export function Block({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
-  const [_, copyToClipboard] = useCopyToClipboard();
-
   return (
     <motion.div
       className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-muted"
@@ -401,18 +403,7 @@ export function Block({
       >
         <div className="p-2 flex flex-row justify-between items-start">
           <div className="flex flex-row gap-4 items-start">
-            <Button
-              variant="outline"
-              className="h-fit p-2 dark:hover:bg-zinc-700"
-              onClick={() => {
-                setBlock((currentBlock) => ({
-                  ...currentBlock,
-                  isVisible: false,
-                }));
-              }}
-            >
-              <CrossIcon size={18} />
-            </Button>
+            <BlockCloseButton setBlock={setBlock} />
 
             <div className="flex flex-col">
               <div className="font-medium">
@@ -439,78 +430,13 @@ export function Block({
             </div>
           </div>
 
-          <div className="flex flex-row gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="p-2 h-fit dark:hover:bg-zinc-700"
-                  onClick={() => {
-                    copyToClipboard(block.content);
-                    toast.success('Copied to clipboard!');
-                  }}
-                  disabled={block.status === 'streaming'}
-                >
-                  <CopyIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Copy to clipboard</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
-                  onClick={() => {
-                    handleVersionChange('prev');
-                  }}
-                  disabled={
-                    currentVersionIndex === 0 || block.status === 'streaming'
-                  }
-                >
-                  <UndoIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View Previous version</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
-                  onClick={() => {
-                    handleVersionChange('next');
-                  }}
-                  disabled={isCurrentVersion || block.status === 'streaming'}
-                >
-                  <RedoIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View Next version</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cx(
-                    'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
-                    {
-                      'bg-muted': mode === 'diff',
-                    },
-                  )}
-                  onClick={() => {
-                    handleVersionChange('toggle');
-                  }}
-                  disabled={
-                    block.status === 'streaming' || currentVersionIndex === 0
-                  }
-                >
-                  <DeltaIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View changes</TooltipContent>
-            </Tooltip>
-          </div>
+          <BlockActions
+            block={block}
+            currentVersionIndex={currentVersionIndex}
+            handleVersionChange={handleVersionChange}
+            isCurrentVersion={isCurrentVersion}
+            mode={mode}
+          />
         </div>
 
         <div className="prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll px-4 py-8 md:p-20 !max-w-full pb-40 items-center">
@@ -570,3 +496,7 @@ export function Block({
     </motion.div>
   );
 }
+
+export const Block = memo(PureBlock, (prevProps, nextProps) => {
+  return false;
+});
