@@ -1,13 +1,26 @@
-import { pipeline, env, Pipeline } from '@huggingface/transformers';
+import { pipeline, env } from '@huggingface/transformers';
 import type { FeatureExtractionPipeline, ProgressCallback } from '@huggingface/transformers';
+import { mkdir } from 'fs/promises';
 
-// Configure caching to use /tmp directory in Lambda environment
-process.env.TRANSFORMERS_CACHE = '/tmp/cache';
+// Define cache directory in /tmp
+const CACHE_DIR = '/tmp/transformers-cache';
+
+// Create cache directory if it doesn't exist
+async function ensureCacheDir() {
+  try {
+    await mkdir(CACHE_DIR, { recursive: true });
+    process.env.TRANSFORMERS_CACHE = CACHE_DIR;
+  } catch (error) {
+    console.warn('Failed to create cache directory:', error);
+    // Fallback to no cache if directory creation fails
+    process.env.TRANSFORMERS_CACHE = 'NO_CACHE';
+  }
+}
 
 // Skip local model check
 env.allowLocalModels = false;
 
-// Use Singleton pattern to enable lazy construction of the pipeline
+// Modify the PipelineSingleton to ensure cache directory exists
 class PipelineSingleton {
   static task = 'feature-extraction' as const;
   static model = 'Xenova/all-MiniLM-L6-v2';
@@ -15,6 +28,7 @@ class PipelineSingleton {
 
   static async getInstance(progress_callback?: ProgressCallback) {
     if (this.instance === null) {
+      await ensureCacheDir();
       this.instance = await pipeline(this.task, this.model, { progress_callback });
     }
     return this.instance;
