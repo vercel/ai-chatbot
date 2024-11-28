@@ -28,7 +28,7 @@ import {
 } from "@/lib/utils";
 
 //import { generateTitleFromUserMessage } from "../../actions";
-import { getHuggingFaceEmbeddings } from "@/lib/ai/embeddings";
+//import { getHuggingFaceEmbeddings } from "@/lib/ai/embeddings";
 import { getPineconeClient } from "@/lib/ai/pinecone";
 
 export const maxDuration = 60;
@@ -59,6 +59,30 @@ const weatherTools: AllowedTools[] = ["getWeather"];
 
 const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
+const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
+const HF_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${MODEL_ID}`;
+
+async function getEmbeddings(text: string) {
+  const response = await fetch(HF_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+    },
+    body: JSON.stringify({
+      inputs: text,
+      options: { wait_for_model: true }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get embeddings: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  // HF returns array of arrays, we want the first embedding
+  return Array.isArray(result) ? result[0] : result;
+}
+
 export async function POST(request: Request) {
   try {
     console.log('🟦 Starting POST request');
@@ -86,8 +110,8 @@ export async function POST(request: Request) {
       return new Response("No user message found", { status: 400 });
     }
 
-    console.log('🔄 Getting embeddings for message');
-    const queryEmbedding = await getHuggingFaceEmbeddings(lastMessage.content);
+    console.log('🔄 Getting embeddings from Hugging Face');
+    const queryEmbedding = await getEmbeddings(lastMessage.content);
     console.log('✅ Embeddings generated');
 
     console.log('🔄 Connecting to Pinecone');
