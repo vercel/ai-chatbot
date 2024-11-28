@@ -198,7 +198,7 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   );
 }
 
-export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
+export function getMostRecentUserMessage(messages: Array<Message>) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }

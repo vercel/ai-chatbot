@@ -28,6 +28,7 @@ import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 
+// TODO: Edit to be more personal to my github
 const suggestedActions = [
   {
     title: 'What is the weather',

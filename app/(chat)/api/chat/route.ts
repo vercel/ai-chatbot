@@ -4,13 +4,13 @@ import {
   convertToCoreMessages,
   streamObject,
   streamText,
-} from 'ai';
-import { z } from 'zod';
+} from "ai";
+import { z } from "zod";
 
-import { auth } from '@/app/(auth)/auth';
-import { customModel } from '@/lib/ai';
-import { models } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
+import { auth } from "@/app/(auth)/auth";
+import { customModel } from "@/lib/ai";
+import { models } from "@/lib/ai/models";
+import { systemPrompt } from "@/lib/ai/prompts";
 import {
   deleteChatById,
   getChatById,
@@ -19,384 +19,251 @@ import {
   saveDocument,
   saveMessages,
   saveSuggestions,
-} from '@/lib/db/queries';
-import type { Suggestion } from '@/lib/db/schema';
+} from "@/lib/db/queries";
+import type { Suggestion } from "@/lib/db/schema";
 import {
   generateUUID,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
-} from '@/lib/utils';
+} from "@/lib/utils";
+import { OpenAI } from "openai";
 
-import { generateTitleFromUserMessage } from '../../actions';
+import { generateTitleFromUserMessage } from "../../actions";
+import { getHuggingFaceEmbeddings } from "@/lib/ai/embeddings";
+import { getPineconeClient } from "@/lib/ai/pinecone";
 
 export const maxDuration = 60;
 
-type AllowedTools =
-  | 'createDocument'
-  | 'updateDocument'
-  | 'requestSuggestions'
-  | 'getWeather';
-
-const blocksTools: AllowedTools[] = [
-  'createDocument',
-  'updateDocument',
-  'requestSuggestions',
+const namespaces = [
+  "https://github.com/Brianleach11/PetConnect",
+  "https://github.com/Brianleach11/SecureAgent",
+  "https://github.com/Brianleach11/ai-chatbot",
+  "https://github.com/Brianleach11/Brain_Tumor_Classification",
+  "https://github.com/Brianleach11/discord",
+  "https://github.com/Brianleach11/Churn_Predictor",
+  "https://github.com/Brianleach11/Client_Delivery",
 ];
 
-const weatherTools: AllowedTools[] = ['getWeather'];
+type AllowedTools =
+  | "createDocument"
+  | "updateDocument"
+  | "requestSuggestions"
+  | "getWeather";
+
+const blocksTools: AllowedTools[] = [
+  "createDocument",
+  "updateDocument",
+  "requestSuggestions",
+];
+
+const weatherTools: AllowedTools[] = ["getWeather"];
 
 const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
 export async function POST(request: Request) {
-  const {
-    id,
-    messages,
-    modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
-    await request.json();
+  try {
+    console.log('🟦 Starting POST request');
+    
+    const { messages, id }: { messages: Array<Message>; id: string } =
+      await request.json();
+    console.log('📨 Received request data:', { messageCount: messages.length, chatId: id });
 
-  const session = await auth();
+    const session = await auth();
+    console.log('🔐 Auth session:', { 
+      authenticated: !!session, 
+      userId: session?.user?.id 
+    });
 
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+    if (!session || !session.user || !session.user.id) {
+      console.log('❌ Authentication failed');
+      return new Response("Unauthorized", { status: 401 });
+    }
 
-  const model = models.find((model) => model.id === modelId);
+    const lastMessage = getMostRecentUserMessage(messages);
+    console.log('💭 Last user message:', lastMessage?.content);
 
-  if (!model) {
-    return new Response('Model not found', { status: 404 });
-  }
+    if (!lastMessage) {
+      console.log('❌ No user message found');
+      return new Response("No user message found", { status: 400 });
+    }
 
-  const coreMessages = convertToCoreMessages(messages);
-  const userMessage = getMostRecentUserMessage(coreMessages);
+    console.log('🔄 Getting embeddings for message');
+    const queryEmbedding = await getHuggingFaceEmbeddings(lastMessage.content);
+    console.log('✅ Embeddings generated');
 
-  if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
-  }
+    console.log('🔄 Connecting to Pinecone');
+    const pinecone = await getPineconeClient();
+    console.log('✅ Pinecone client ready');
 
-  const chat = await getChatById({ id });
+    console.log('🔄 Querying all namespaces');
+    const namespaceResults = await Promise.all(
+      namespaces.map(async (namespace) => {
+        console.log(`  📍 Querying namespace: ${namespace}`);
+        const testIndex = pinecone.Index("codebase-rag").namespace(namespace);
+        const queryResponse = await testIndex.query({
+          vector: queryEmbedding,
+          topK: 3,
+          includeMetadata: true,
+        });
 
-  if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
-  }
+        const averageScore =
+          queryResponse.matches.reduce(
+            (acc, match) => acc + (match.score || 0),
+            0
+          ) / queryResponse.matches.length;
 
-  await saveMessages({
-    messages: [
-      { ...userMessage, id: generateUUID(), createdAt: new Date(), chatId: id },
-    ],
-  });
+        console.log(`  📊 Average score for ${namespace}: ${averageScore}`);
+        return {
+          namespace,
+          score: averageScore,
+          matches: queryResponse.matches,
+        };
+      })
+    );
 
-  const streamingData = new StreamData();
+    const bestNamespaceResult = namespaceResults.reduce((best, current) =>
+      current.score > best.score ? current : best
+    );
+    console.log('🏆 Best matching namespace:', {
+      namespace: bestNamespaceResult.namespace,
+      score: bestNamespaceResult.score
+    });
 
-  const result = await streamText({
-    model: customModel(model.apiIdentifier),
-    system: systemPrompt,
-    messages: coreMessages,
-    maxSteps: 5,
-    experimental_activeTools: allTools,
-    tools: {
-      getWeather: {
-        description: 'Get the current weather at a location',
-        parameters: z.object({
-          latitude: z.number(),
-          longitude: z.number(),
-        }),
-        execute: async ({ latitude, longitude }) => {
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
-          );
+    const contexts = bestNamespaceResult.matches.map(
+      (match) => match.metadata?.text || ""
+    );
+    console.log('📚 Retrieved contexts:', {
+      count: contexts.length
+    });
 
-          const weatherData = await response.json();
-          return weatherData;
-        },
-      },
-      createDocument: {
-        description: 'Create a document for a writing activity',
-        parameters: z.object({
-          title: z.string(),
-        }),
-        execute: async ({ title }) => {
-          const id = generateUUID();
-          let draftText = '';
+    const augmentedQuery = `
+      <CONTEXT>
+      ${contexts.join("\n\n-------\n\n")}
+      </CONTEXT>
 
-          streamingData.append({
-            type: 'id',
-            content: id,
-          });
+      MY QUESTION:
+      ${lastMessage.content}`;
+    console.log('📝 Created augmented query');
 
-          streamingData.append({
-            type: 'title',
-            content: title,
-          });
+    const systemPrompt = `You are a Senior Software Engineer, specializing in codebase-specific questions.
+      Answer any questions about the codebase, based on the code provided in the context.
+      Always consider all of the context provided when forming a response.
+      If the context doesn't contain relevant information, say so.`;
 
-          streamingData.append({
-            type: 'clear',
-            content: '',
-          });
+    const llmMessages = [
+      { role: "system" as const, content: systemPrompt },
+      ...messages.slice(0, -1).map((msg) => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      })),
+      { role: "user" as const, content: augmentedQuery },
+    ];
 
-          const { fullStream } = await streamText({
-            model: customModel(model.apiIdentifier),
-            system:
-              'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
-            prompt: title,
-          });
+    const initialUserMessage = {
+      ...lastMessage,
+      id: generateUUID(),
+      createdAt: new Date(),
+      chatId: id,
+    };
 
-          for await (const delta of fullStream) {
-            const { type } = delta;
+    await saveMessages({
+      messages: [initialUserMessage],
+    });
 
-            if (type === 'text-delta') {
-              const { textDelta } = delta;
+    const streamingData = new StreamData();
 
-              draftText += textDelta;
-              streamingData.append({
-                type: 'text-delta',
-                content: textDelta,
-              });
-            }
-          }
+    console.log('🤖 Calling LLM with streamText');
+    const result = await streamText({
+      model: customModel("groq/llama-3.1-8b-instant"),
+      system: systemPrompt,
+      messages: llmMessages,
+      maxSteps: 5,
+      onFinish: async ({ responseMessages }) => {
+        console.log('✨ Stream finished, processing response messages');
+        if (session.user?.id) {
+          try {
+            console.log('🔄 Sanitizing response messages');
+            const responseMessagesWithoutIncompleteToolCalls =
+              sanitizeResponseMessages(responseMessages);
 
-          streamingData.append({ type: 'finish', content: '' });
+            console.log('💾 Saving messages to database');
+            await saveMessages({
+              messages: responseMessagesWithoutIncompleteToolCalls.map(
+                (message) => {
+                  const messageId = generateUUID();
+                  console.log(`  📝 Processing message: ${message.role}`);
 
-          if (session.user?.id) {
-            await saveDocument({
-              id,
-              title,
-              content: draftText,
-              userId: session.user.id,
-            });
-          }
+                  if (message.role === 'assistant') {
+                    console.log(`  🏷️ Appending message annotation: ${messageId}`);
+                    streamingData.appendMessageAnnotation({
+                      messageIdFromServer: messageId,
+                    });
+                  }
 
-          return {
-            id,
-            title,
-            content: 'A document was created and is now visible to the user.',
-          };
-        },
-      },
-      updateDocument: {
-        description: 'Update a document with the given description',
-        parameters: z.object({
-          id: z.string().describe('The ID of the document to update'),
-          description: z
-            .string()
-            .describe('The description of changes that need to be made'),
-        }),
-        execute: async ({ id, description }) => {
-          const document = await getDocumentById({ id });
-
-          if (!document) {
-            return {
-              error: 'Document not found',
-            };
-          }
-
-          const { content: currentContent } = document;
-          let draftText = '';
-
-          streamingData.append({
-            type: 'clear',
-            content: document.title,
-          });
-
-          const { fullStream } = await streamText({
-            model: customModel(model.apiIdentifier),
-            system:
-              'You are a helpful writing assistant. Based on the description, please update the piece of writing.',
-            experimental_providerMetadata: {
-              openai: {
-                prediction: {
-                  type: 'content',
-                  content: currentContent,
+                  return {
+                    id: messageId,
+                    chatId: id,
+                    role: message.role,
+                    content: message.content,
+                    createdAt: new Date(),
+                  };
                 },
-              },
-            },
-            messages: [
-              {
-                role: 'user',
-                content: description,
-              },
-              { role: 'user', content: currentContent },
-            ],
-          });
-
-          for await (const delta of fullStream) {
-            const { type } = delta;
-
-            if (type === 'text-delta') {
-              const { textDelta } = delta;
-
-              draftText += textDelta;
-              streamingData.append({
-                type: 'text-delta',
-                content: textDelta,
-              });
-            }
-          }
-
-          streamingData.append({ type: 'finish', content: '' });
-
-          if (session.user?.id) {
-            await saveDocument({
-              id,
-              title: document.title,
-              content: draftText,
-              userId: session.user.id,
+              ),
             });
+            console.log('✅ Messages saved successfully');
+          } catch (error) {
+            console.error('❌ Failed to save chat:', error);
           }
-
-          return {
-            id,
-            title: document.title,
-            content: 'The document has been updated successfully.',
-          };
-        },
-      },
-      requestSuggestions: {
-        description: 'Request suggestions for a document',
-        parameters: z.object({
-          documentId: z
-            .string()
-            .describe('The ID of the document to request edits'),
-        }),
-        execute: async ({ documentId }) => {
-          const document = await getDocumentById({ id: documentId });
-
-          if (!document || !document.content) {
-            return {
-              error: 'Document not found',
-            };
-          }
-
-          const suggestions: Array<
-            Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
-          > = [];
-
-          const { elementStream } = await streamObject({
-            model: customModel(model.apiIdentifier),
-            system:
-              'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
-            prompt: document.content,
-            output: 'array',
-            schema: z.object({
-              originalSentence: z.string().describe('The original sentence'),
-              suggestedSentence: z.string().describe('The suggested sentence'),
-              description: z
-                .string()
-                .describe('The description of the suggestion'),
-            }),
-          });
-
-          for await (const element of elementStream) {
-            const suggestion = {
-              originalText: element.originalSentence,
-              suggestedText: element.suggestedSentence,
-              description: element.description,
-              id: generateUUID(),
-              documentId: documentId,
-              isResolved: false,
-            };
-
-            streamingData.append({
-              type: 'suggestion',
-              content: suggestion,
-            });
-
-            suggestions.push(suggestion);
-          }
-
-          if (session.user?.id) {
-            const userId = session.user.id;
-
-            await saveSuggestions({
-              suggestions: suggestions.map((suggestion) => ({
-                ...suggestion,
-                userId,
-                createdAt: new Date(),
-                documentCreatedAt: document.createdAt,
-              })),
-            });
-          }
-
-          return {
-            id: documentId,
-            title: document.title,
-            message: 'Suggestions have been added to the document',
-          };
-        },
-      },
-    },
-    onFinish: async ({ responseMessages }) => {
-      if (session.user?.id) {
-        try {
-          const responseMessagesWithoutIncompleteToolCalls =
-            sanitizeResponseMessages(responseMessages);
-
-          await saveMessages({
-            messages: responseMessagesWithoutIncompleteToolCalls.map(
-              (message) => {
-                const messageId = generateUUID();
-
-                if (message.role === 'assistant') {
-                  streamingData.appendMessageAnnotation({
-                    messageIdFromServer: messageId,
-                  });
-                }
-
-                return {
-                  id: messageId,
-                  chatId: id,
-                  role: message.role,
-                  content: message.content,
-                  createdAt: new Date(),
-                };
-              },
-            ),
-          });
-        } catch (error) {
-          console.error('Failed to save chat');
         }
-      }
 
-      streamingData.close();
-    },
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: 'stream-text',
-    },
-  });
+        console.log('👋 Closing stream');
+        streamingData.close();
+      },
+    });
 
-  return result.toDataStreamResponse({
-    data: streamingData,
-  });
+    console.log('🔄 Converting to data stream response');
+    const response = result.toDataStreamResponse({
+      data: streamingData,
+    });
+    console.log('✅ Response ready to send');
+
+    return response;
+
+  } catch (error) {
+    console.error("❌ Error in chat route:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response("Not Found", { status: 404 });
   }
 
   const session = await auth();
 
   if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
     if (chat.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     await deleteChatById({ id });
 
-    return new Response('Chat deleted', { status: 200 });
+    return new Response("Chat deleted", { status: 200 });
   } catch (error) {
-    return new Response('An error occurred while processing your request', {
+    return new Response("An error occurred while processing your request", {
       status: 500,
     });
   }

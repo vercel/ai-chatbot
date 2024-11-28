@@ -29,6 +29,7 @@ export function Chat({
 }) {
   const { mutate } = useSWRConfig();
 
+  // TODO: Transition model to personal pinecone index
   const {
     messages,
     setMessages,
@@ -40,7 +41,9 @@ export function Chat({
     stop,
     data: streamingData,
   } = useChat({
-    body: { id, modelId: selectedModelId },
+    api: '/api/chat',
+    id,
+    body: { id },
     initialMessages,
     onFinish: () => {
       mutate('/api/history');
@@ -77,7 +80,8 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
+        {/* <ChatHeader selectedModelId={selectedModelId} /> */}
+        <ChatHeader />
         <div
           ref={messagesContainerRef}
           className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
