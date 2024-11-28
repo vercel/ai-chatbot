@@ -1,6 +1,9 @@
 import { pipeline, env, Pipeline } from '@huggingface/transformers';
 import type { FeatureExtractionPipeline, ProgressCallback } from '@huggingface/transformers';
 
+// Configure caching to use /tmp directory in Lambda environment
+process.env.TRANSFORMERS_CACHE = '/tmp/cache';
+
 // Skip local model check
 env.allowLocalModels = false;
 
