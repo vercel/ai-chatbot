@@ -1,34 +1,33 @@
 import {
   type Message,
   StreamData,
-  convertToCoreMessages,
-  streamObject,
+  //convertToCoreMessages,
+  //streamObject,
   streamText,
 } from "ai";
-import { z } from "zod";
+//import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
-import { models } from "@/lib/ai/models";
-import { systemPrompt } from "@/lib/ai/prompts";
+//import { models } from "@/lib/ai/models";
+//import { systemPrompt } from "@/lib/ai/prompts";
 import {
   deleteChatById,
   getChatById,
-  getDocumentById,
-  saveChat,
-  saveDocument,
+  //getDocumentById,
+  //saveChat,
+  //saveDocument,
   saveMessages,
-  saveSuggestions,
+  //saveSuggestions,
 } from "@/lib/db/queries";
-import type { Suggestion } from "@/lib/db/schema";
+//import type { Suggestion } from "@/lib/db/schema";
 import {
   generateUUID,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from "@/lib/utils";
-import { OpenAI } from "openai";
 
-import { generateTitleFromUserMessage } from "../../actions";
+//import { generateTitleFromUserMessage } from "../../actions";
 import { getHuggingFaceEmbeddings } from "@/lib/ai/embeddings";
 import { getPineconeClient } from "@/lib/ai/pinecone";
 
