@@ -172,7 +172,7 @@ export async function POST(request: Request) {
         const testIndex = pinecone.Index("codebase-rag").namespace(namespace);
         const queryResponse = await testIndex.query({
           vector: queryEmbedding,
-          topK: 3,
+          topK: 5,
           includeMetadata: true,
         });
 
