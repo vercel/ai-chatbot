@@ -6,6 +6,7 @@ import {
   streamText,
 } from "ai";
 //import { z } from "zod";
+import { groq } from '@ai-sdk/groq';
 
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
@@ -14,6 +15,7 @@ import { customModel } from "@/lib/ai";
 import {
   deleteChatById,
   getChatById,
+  saveChat,
   //getDocumentById,
   //saveChat,
   //saveDocument,
@@ -30,6 +32,7 @@ import {
 //import { generateTitleFromUserMessage } from "../../actions";
 //import { getHuggingFaceEmbeddings } from "@/lib/ai/embeddings";
 import { getPineconeClient } from "@/lib/ai/pinecone";
+import { generateTitleFromUserMessage } from "../../actions";
 
 export const maxDuration = 60;
 
@@ -63,62 +66,106 @@ const MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2";
 const HF_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${MODEL_ID}`;
 
 async function getEmbeddings(text: string) {
+  console.log("📤 Sending text to HF:", text.substring(0, 100) + "...");
+
+  const payload = {
+    inputs: text,
+    options: { wait_for_model: true },
+  };
+  console.log("📦 Request payload:", payload);
+
   const response = await fetch(HF_API_URL, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+      Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+      "Content-Type": "application/json", // Added this header explicitly
     },
-    body: JSON.stringify({
-      inputs: text,
-      options: { wait_for_model: true }
-    })
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get embeddings: ${response.statusText}`);
+    const errorText = await response.text();
+    console.error("🚫 HF API Error:", {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText,
+    });
+    throw new Error(
+      `Failed to get embeddings: ${response.statusText} - ${errorText}`
+    );
   }
 
   const result = await response.json();
-  // HF returns array of arrays, we want the first embedding
-  return Array.isArray(result) ? result[0] : result;
+  console.log(
+    "📥 Raw HF response:",
+    JSON.stringify(result).substring(0, 200) + "..."
+  );
+
+  return result;
 }
 
 export async function POST(request: Request) {
   try {
-    console.log('🟦 Starting POST request');
-    
+    console.log("🟦 Starting POST request");
+
     const { messages, id }: { messages: Array<Message>; id: string } =
       await request.json();
-    console.log('📨 Received request data:', { messageCount: messages.length, chatId: id });
+    console.log("📨 Received request data:", {
+      messageCount: messages.length,
+      chatId: id,
+    });
 
     const session = await auth();
-    console.log('🔐 Auth session:', { 
-      authenticated: !!session, 
-      userId: session?.user?.id 
+    console.log("🔐 Auth session:", {
+      authenticated: !!session,
+      userId: session?.user?.id,
     });
 
     if (!session || !session.user || !session.user.id) {
-      console.log('❌ Authentication failed');
+      console.log("❌ Authentication failed");
       return new Response("Unauthorized", { status: 401 });
     }
 
     const lastMessage = getMostRecentUserMessage(messages);
-    console.log('💭 Last user message:', lastMessage?.content);
+    console.log("💭 Last user message:", lastMessage?.content);
 
     if (!lastMessage) {
-      console.log('❌ No user message found');
+      console.log("❌ No user message found");
       return new Response("No user message found", { status: 400 });
     }
+    console.log("🔄 Getting chat from database");
+    const chat = await getChatById({ id });
 
-    console.log('🔄 Getting embeddings from Hugging Face');
+    if (!chat) {
+      console.log("🔄 Generating title from user message");
+      const title = await generateTitleFromUserMessage({
+        message: lastMessage,
+      });
+      console.log("🔄 Saving chat to database");
+      await saveChat({ id, userId: session.user.id, title });
+    }
+
+    console.log("🔄 Saving user message to database");
+    await saveMessages({
+      messages: [
+        {
+          ...lastMessage,
+          id: generateUUID(),
+          createdAt: new Date(),
+          chatId: id,
+        },
+      ],
+    });
+
+    console.log("🔄 Getting embeddings from Hugging Face");
     const queryEmbedding = await getEmbeddings(lastMessage.content);
-    console.log('✅ Embeddings generated');
+    console.log("✅ Embeddings generated\n", queryEmbedding);
 
-    console.log('🔄 Connecting to Pinecone');
+    console.log("🔄 Connecting to Pinecone");
     const pinecone = await getPineconeClient();
-    console.log('✅ Pinecone client ready');
+    console.log("✅ Pinecone client ready");
 
-    console.log('🔄 Querying all namespaces');
+    console.log("🔄 Querying all namespaces");
     const namespaceResults = await Promise.all(
       namespaces.map(async (namespace) => {
         console.log(`  📍 Querying namespace: ${namespace}`);
@@ -147,16 +194,16 @@ export async function POST(request: Request) {
     const bestNamespaceResult = namespaceResults.reduce((best, current) =>
       current.score > best.score ? current : best
     );
-    console.log('🏆 Best matching namespace:', {
+    console.log("🏆 Best matching namespace:", {
       namespace: bestNamespaceResult.namespace,
-      score: bestNamespaceResult.score
+      score: bestNamespaceResult.score,
     });
 
     const contexts = bestNamespaceResult.matches.map(
       (match) => match.metadata?.text || ""
     );
-    console.log('📚 Retrieved contexts:', {
-      count: contexts.length
+    console.log("📚 Retrieved contexts:", {
+      count: contexts.length,
     });
 
     const augmentedQuery = `
@@ -166,7 +213,7 @@ export async function POST(request: Request) {
 
       MY QUESTION:
       ${lastMessage.content}`;
-    console.log('📝 Created augmented query');
+    console.log("📝 Created augmented query");
 
     const systemPrompt = `You are a Senior Software Engineer, specializing in codebase-specific questions.
       Answer any questions about the codebase, based on the code provided in the context.
@@ -182,42 +229,33 @@ export async function POST(request: Request) {
       { role: "user" as const, content: augmentedQuery },
     ];
 
-    const initialUserMessage = {
-      ...lastMessage,
-      id: generateUUID(),
-      createdAt: new Date(),
-      chatId: id,
-    };
-
-    await saveMessages({
-      messages: [initialUserMessage],
-    });
-
     const streamingData = new StreamData();
 
-    console.log('🤖 Calling LLM with streamText');
+    console.log("🤖 Calling LLM with streamText");
     const result = await streamText({
-      model: customModel("groq/llama-3.1-8b-instant"),
+      model: groq('mixtral-8x7b-32768'),
       system: systemPrompt,
       messages: llmMessages,
       maxSteps: 5,
       onFinish: async ({ responseMessages }) => {
-        console.log('✨ Stream finished, processing response messages');
+        console.log("✨ Stream finished, processing response messages");
         if (session.user?.id) {
           try {
-            console.log('🔄 Sanitizing response messages');
+            console.log("🔄 Sanitizing response messages");
             const responseMessagesWithoutIncompleteToolCalls =
               sanitizeResponseMessages(responseMessages);
 
-            console.log('💾 Saving messages to database');
+            console.log("💾 Saving messages to database");
             await saveMessages({
               messages: responseMessagesWithoutIncompleteToolCalls.map(
                 (message) => {
                   const messageId = generateUUID();
                   console.log(`  📝 Processing message: ${message.role}`);
 
-                  if (message.role === 'assistant') {
-                    console.log(`  🏷️ Appending message annotation: ${messageId}`);
+                  if (message.role === "assistant") {
+                    console.log(
+                      `  🏷️ Appending message annotation: ${messageId}`
+                    );
                     streamingData.appendMessageAnnotation({
                       messageIdFromServer: messageId,
                     });
@@ -230,28 +268,27 @@ export async function POST(request: Request) {
                     content: message.content,
                     createdAt: new Date(),
                   };
-                },
+                }
               ),
             });
-            console.log('✅ Messages saved successfully');
+            console.log("✅ Messages saved successfully");
           } catch (error) {
-            console.error('❌ Failed to save chat:', error);
+            console.error("❌ Failed to save chat:", error);
           }
         }
 
-        console.log('👋 Closing stream');
+        console.log("👋 Closing stream");
         streamingData.close();
       },
     });
 
-    console.log('🔄 Converting to data stream response');
+    console.log("🔄 Converting to data stream response");
     const response = result.toDataStreamResponse({
       data: streamingData,
     });
-    console.log('✅ Response ready to send');
+    console.log("✅ Response ready to send");
 
     return response;
-
   } catch (error) {
     console.error("❌ Error in chat route:", error);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
