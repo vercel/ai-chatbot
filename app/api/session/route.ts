@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const session = await auth();
 
     // Fetch user details from Vercel KV
-    const user = await kv.hgetall<User>(`user:${session.user.email}`);
+    const user = await kv.hgetall<User>(`user:${session?.user?.email}`);
 
     if (!user) {
         return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
