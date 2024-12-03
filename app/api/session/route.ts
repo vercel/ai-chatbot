@@ -25,7 +25,14 @@ export async function POST(req: Request) {
     let stripeCustomer: Stripe.Customer | null = null;
     if (user.stripeId) {
         try {
-            stripeCustomer = await stripe.customers.retrieve(user.stripeId);
+            const customer = await stripe.customers.retrieve(user.stripeId);
+
+            // Type guard to handle both Customer and DeletedCustomer cases
+            if (!customer.deleted) {
+                stripeCustomer = customer; // `customer` is guaranteed to be a `Stripe.Customer` here
+            } else {
+                console.error('Customer is deleted:', customer);
+            }
         } catch (error) {
             console.error('Error fetching Stripe customer:', error);
         }
