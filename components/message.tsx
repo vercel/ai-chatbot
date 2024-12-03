@@ -3,7 +3,7 @@
 import type { Message } from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
-import type { Dispatch, SetStateAction } from 'react';
+import { memo, type Dispatch, type SetStateAction } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
@@ -14,8 +14,9 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
+import equal from 'fast-deep-equal';
 
-export const PreviewMessage = ({
+const PurePreviewMessage = ({
   chatId,
   message,
   block,
@@ -151,6 +152,16 @@ export const PreviewMessage = ({
     </motion.div>
   );
 };
+
+export const PreviewMessage = memo(
+  PurePreviewMessage,
+  (prevProps, nextProps) => {
+    if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (prevProps.isLoading && nextProps.isLoading) return false;
+    if (!equal(prevProps.vote, nextProps.vote)) return false;
+    return true;
+  },
+);
 
 export const ThinkingMessage = () => {
   const role = 'assistant';
