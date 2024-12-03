@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 
   const streamingData = new StreamData();
 
-  const result = await streamText({
+  const result = streamText({
     model: customModel(model.apiIdentifier),
     system: systemPrompt,
     messages: coreMessages,
@@ -326,7 +326,7 @@ export async function POST(request: Request) {
         },
       },
     },
-    onFinish: async ({ responseMessages }) => {
+    onFinish: async ({ response: { messages: responseMessages } }) => {
       if (session.user?.id) {
         try {
           const responseMessagesWithoutIncompleteToolCalls =
