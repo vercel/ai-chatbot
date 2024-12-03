@@ -15,8 +15,7 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
-    "db:up": "drizzle-kit up",
-    "scan": "next dev & npx react-scan@latest localhost:3000"
+    "db:up": "drizzle-kit up"
   },
   "dependencies": {
     "@ai-sdk/openai": "1.0.6",
