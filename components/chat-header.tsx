@@ -10,8 +10,9 @@ import { Button } from '@/components/ui/button';
 import { BetterTooltip } from '@/components/ui/tooltip';
 import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
+import { memo } from 'react';
 
-export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
+function PureChatHeader({ selectedModelId }: { selectedModelId: string }) {
   const router = useRouter();
   const { open } = useSidebar();
 
@@ -54,3 +55,7 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
     </header>
   );
 }
+
+export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
+  return prevProps.selectedModelId === nextProps.selectedModelId;
+});
