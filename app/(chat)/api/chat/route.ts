@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 
   const streamingData = new StreamData();
 
-  const result = await streamText({
+  const result = streamText({
     model: customModel(model.apiIdentifier),
     system: systemPrompt,
     messages: coreMessages,
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
             content: '',
           });
 
-          const { fullStream } = await streamText({
+          const { fullStream } = streamText({
             model: customModel(model.apiIdentifier),
             system:
               'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
             content: document.title,
           });
 
-          const { fullStream } = await streamText({
+          const { fullStream } = streamText({
             model: customModel(model.apiIdentifier),
             system:
               'You are a helpful writing assistant. Based on the description, please update the piece of writing.',
@@ -272,7 +272,7 @@ export async function POST(request: Request) {
             Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
           > = [];
 
-          const { elementStream } = await streamObject({
+          const { elementStream } = streamObject({
             model: customModel(model.apiIdentifier),
             system:
               'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
@@ -326,11 +326,11 @@ export async function POST(request: Request) {
         },
       },
     },
-    onFinish: async ({ responseMessages }) => {
+    onFinish: async ({ response }) => {
       if (session.user?.id) {
         try {
           const responseMessagesWithoutIncompleteToolCalls =
-            sanitizeResponseMessages(responseMessages);
+            sanitizeResponseMessages(response.messages);
 
           await saveMessages({
             messages: responseMessagesWithoutIncompleteToolCalls.map(

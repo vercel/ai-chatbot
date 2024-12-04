@@ -10,6 +10,7 @@ import {
 } from 'framer-motion';
 import {
   type Dispatch,
+  memo,
   type SetStateAction,
   useEffect,
   useRef,
@@ -32,6 +33,7 @@ import {
   StopIcon,
   SummarizeIcon,
 } from './icons';
+import equal from 'fast-deep-equal';
 
 type ToolProps = {
   type: 'final-polish' | 'request-suggestions' | 'adjust-reading-level';
@@ -324,7 +326,7 @@ export const Tools = ({
   );
 };
 
-export const Toolbar = ({
+const PureToolbar = ({
   isToolbarVisible,
   setIsToolbarVisible,
   append,
@@ -465,3 +467,7 @@ export const Toolbar = ({
     </TooltipProvider>
   );
 };
+
+export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
+  return equal(prevProps, nextProps);
+});
