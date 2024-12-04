@@ -62,7 +62,7 @@ Your app template should now be running on [localhost:3000](http://localhost:300
 
 ## PSQL Helper queries
 
-- Drop all tables & Drizzle schema
+- Drop all tables
   ```
   DO $$ 
   BEGIN 
@@ -71,6 +71,10 @@ Your app template should now be running on [localhost:3000](http://localhost:300
         FROM pg_tables
         WHERE schemaname = 'public'
     );
-  DROP SCHEMA drizzle CASCADE;    
   END $$;
+  ```
+
+- Drop Drizzle schema
+  ```
+  DROP SCHEMA drizzle CASCADE;
   ```
