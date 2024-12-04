@@ -7,7 +7,6 @@ import type {
   Message,
 } from 'ai';
 import cx from 'classnames';
-import { motion } from 'framer-motion';
 import type React from 'react';
 import {
   useRef,
@@ -29,6 +28,7 @@ import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
+import equal from 'fast-deep-equal';
 
 function PureMultimodalInput({
   chatId,
@@ -287,9 +287,10 @@ function PureMultimodalInput({
 
 export const MultimodalInput = memo(
   PureMultimodalInput,
-  (prevProps, currentProps) => {
-    if (prevProps.input !== currentProps.input) return false;
-    if (prevProps.isLoading !== currentProps.isLoading) return false;
+  (prevProps, nextProps) => {
+    if (prevProps.input !== nextProps.input) return false;
+    if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
 
     return true;
   },
