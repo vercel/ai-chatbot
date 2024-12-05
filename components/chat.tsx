@@ -15,15 +15,18 @@ import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
+import { VisibilityId } from './visibility-selector';
 
 export function Chat({
   id,
   initialMessages,
   selectedModelId,
+  selectedVisibilityId,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
+  selectedVisibilityId: VisibilityId;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -74,7 +77,11 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
+        <ChatHeader
+          chatId={id}
+          selectedModelId={selectedModelId}
+          selectedVisibilityId={selectedVisibilityId}
+        />
 
         <Messages
           chatId={id}

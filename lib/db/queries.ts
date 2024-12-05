@@ -16,6 +16,7 @@ import {
   message,
   vote,
 } from './schema';
+import { VisibilityId } from '@/components/visiblity-selector';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -306,6 +307,21 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     console.error(
       'Failed to delete messages by id after timestamp from database',
     );
+    throw error;
+  }
+}
+
+export async function updateChatVisiblityById({
+  chatId,
+  visibility,
+}: {
+  chatId: string;
+  visibility: VisibilityId;
+}) {
+  try {
+    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+  } catch (error) {
+    console.error('Failed to update chat visibility in database');
     throw error;
   }
 }
