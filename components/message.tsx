@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import type { ChatRequestOptions, Message } from "ai";
-import cx from "classnames";
-import { motion } from "framer-motion";
-import { memo, useState, type Dispatch, type SetStateAction } from "react";
+import type { ChatRequestOptions, Message } from 'ai';
+import cx from 'classnames';
+import { motion } from 'framer-motion';
+import { memo, useState, type Dispatch, type SetStateAction } from 'react';
 
-import type { Vote } from "@/lib/db/schema";
+import type { Vote } from '@/lib/db/schema';
 
-import type { UIBlock } from "./block";
-import { DocumentToolCall, DocumentToolResult } from "./document";
-import { PencilEditIcon, SparklesIcon } from "./icons";
-import { Markdown } from "./markdown";
-import { MessageActions } from "./message-actions";
-import { PreviewAttachment } from "./preview-attachment";
-import { Weather } from "./weather";
-import equal from "fast-deep-equal";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { MessageEditor } from "./message-editor";
+import type { UIBlock } from './block';
+import { DocumentToolCall, DocumentToolResult } from './document';
+import { PencilEditIcon, SparklesIcon } from './icons';
+import { Markdown } from './markdown';
+import { MessageActions } from './message-actions';
+import { PreviewAttachment } from './preview-attachment';
+import { Weather } from './weather';
+import equal from 'fast-deep-equal';
+import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { MessageEditor } from './message-editor';
 
 const PurePreviewMessage = ({
   chatId,
@@ -43,7 +43,7 @@ const PurePreviewMessage = ({
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
 }) => {
-  const [mode, setMode] = useState<"view" | "edit">("view");
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
 
   return (
     <motion.div
@@ -54,14 +54,14 @@ const PurePreviewMessage = ({
     >
       <div
         className={cn(
-          "flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
+          'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
           {
-            "w-full": mode === "edit",
-            "group-data-[role=user]/message:w-fit": mode !== "edit",
+            'w-full': mode === 'edit',
+            'group-data-[role=user]/message:w-fit': mode !== 'edit',
           },
         )}
       >
-        {message.role === "assistant" && (
+        {message.role === 'assistant' && (
           <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
             <SparklesIcon size={14} />
           </div>
@@ -79,16 +79,16 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          {message.content && mode === "view" && (
+          {message.content && mode === 'view' && (
             <div className="flex flex-row gap-2 items-start">
-              {message.role === "user" && (
+              {message.role === 'user' && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
                       onClick={() => {
-                        setMode("edit");
+                        setMode('edit');
                       }}
                     >
                       <PencilEditIcon />
@@ -99,9 +99,9 @@ const PurePreviewMessage = ({
               )}
 
               <div
-                className={cn("flex flex-col gap-4", {
-                  "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
-                    message.role === "user",
+                className={cn('flex flex-col gap-4', {
+                  'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                    message.role === 'user',
                 })}
               >
                 <Markdown>{message.content as string}</Markdown>
@@ -109,11 +109,12 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          {message.content && mode === "edit" && (
+          {message.content && mode === 'edit' && (
             <div className="flex flex-row gap-2 items-start">
               <div className="size-8" />
+
               <MessageEditor
-                chatId={chatId}
+                key={message.id}
                 message={message}
                 setMode={setMode}
                 setMessages={setMessages}
@@ -127,28 +128,28 @@ const PurePreviewMessage = ({
               {message.toolInvocations.map((toolInvocation) => {
                 const { toolName, toolCallId, state, args } = toolInvocation;
 
-                if (state === "result") {
+                if (state === 'result') {
                   const { result } = toolInvocation;
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === "getWeather" ? (
+                      {toolName === 'getWeather' ? (
                         <Weather weatherAtLocation={result} />
-                      ) : toolName === "createDocument" ? (
+                      ) : toolName === 'createDocument' ? (
                         <DocumentToolResult
                           type="create"
                           result={result}
                           block={block}
                           setBlock={setBlock}
                         />
-                      ) : toolName === "updateDocument" ? (
+                      ) : toolName === 'updateDocument' ? (
                         <DocumentToolResult
                           type="update"
                           result={result}
                           block={block}
                           setBlock={setBlock}
                         />
-                      ) : toolName === "requestSuggestions" ? (
+                      ) : toolName === 'requestSuggestions' ? (
                         <DocumentToolResult
                           type="request-suggestions"
                           result={result}
@@ -165,24 +166,24 @@ const PurePreviewMessage = ({
                   <div
                     key={toolCallId}
                     className={cx({
-                      skeleton: ["getWeather"].includes(toolName),
+                      skeleton: ['getWeather'].includes(toolName),
                     })}
                   >
-                    {toolName === "getWeather" ? (
+                    {toolName === 'getWeather' ? (
                       <Weather />
-                    ) : toolName === "createDocument" ? (
+                    ) : toolName === 'createDocument' ? (
                       <DocumentToolCall
                         type="create"
                         args={args}
                         setBlock={setBlock}
                       />
-                    ) : toolName === "updateDocument" ? (
+                    ) : toolName === 'updateDocument' ? (
                       <DocumentToolCall
                         type="update"
                         args={args}
                         setBlock={setBlock}
                       />
-                    ) : toolName === "requestSuggestions" ? (
+                    ) : toolName === 'requestSuggestions' ? (
                       <DocumentToolCall
                         type="request-suggestions"
                         args={args}
@@ -220,7 +221,7 @@ export const PreviewMessage = memo(
 );
 
 export const ThinkingMessage = () => {
-  const role = "assistant";
+  const role = 'assistant';
 
   return (
     <motion.div
@@ -231,9 +232,9 @@ export const ThinkingMessage = () => {
     >
       <div
         className={cx(
-          "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
+          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
           {
-            "group-data-[role=user]/message:bg-muted": true,
+            'group-data-[role=user]/message:bg-muted': true,
           },
         )}
       >

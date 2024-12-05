@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { ChatRequestOptions, Message } from "ai";
-import { Button } from "./ui/button";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { Textarea } from "./ui/textarea";
-import { deleteTrailingMessages } from "@/app/(chat)/actions";
+import { ChatRequestOptions, Message } from 'ai';
+import { Button } from './ui/button';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Textarea } from './ui/textarea';
+import { deleteTrailingMessages } from '@/app/(chat)/actions';
+import { toast } from 'sonner';
+import { useUserMessageId } from '@/hooks/use-user-message-id';
 
 export type MessageEditorProps = {
-  chatId: string;
   message: Message;
-  setMode: Dispatch<SetStateAction<"view" | "edit">>;
+  setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
   setMessages: (
     messages: Message[] | ((messages: Message[]) => Message[]),
   ) => void;
@@ -19,12 +20,13 @@ export type MessageEditorProps = {
 };
 
 export function MessageEditor({
-  chatId,
   message,
   setMode,
   setMessages,
   reload,
 }: MessageEditorProps) {
+  const { userMessageIdFromServer } = useUserMessageId();
+
   const [draftContent, setDraftContent] = useState<string>(message.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,7 +38,7 @@ export function MessageEditor({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   };
@@ -50,7 +52,7 @@ export function MessageEditor({
     <div className="flex flex-col gap-2 w-full">
       <Textarea
         ref={textareaRef}
-        className="bg-transparent outline-none overflow-hidden resize-none text-base rounded-xl w-full"
+        className="bg-transparent outline-none overflow-hidden resize-none !text-base rounded-xl w-full"
         value={draftContent}
         onChange={handleInput}
       />
@@ -60,7 +62,7 @@ export function MessageEditor({
           variant="outline"
           className="h-fit py-2 px-3"
           onClick={() => {
-            setMode("view");
+            setMode('view');
           }}
         >
           Cancel
@@ -69,8 +71,15 @@ export function MessageEditor({
           variant="default"
           className="h-fit py-2 px-3"
           onClick={async () => {
+            const messageId = userMessageIdFromServer ?? message.id;
+
+            if (!messageId) {
+              toast.error('Something went wrong, please try again!');
+              return;
+            }
+
             await deleteTrailingMessages({
-              id: message.id,
+              id: messageId,
             });
 
             setMessages((messages) => {
@@ -88,8 +97,7 @@ export function MessageEditor({
               return messages;
             });
 
-            setMode("view");
-
+            setMode('view');
             reload();
           }}
         >
