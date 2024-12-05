@@ -1,20 +1,24 @@
 'use client';
 
-import type { Message } from 'ai';
+import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { motion } from 'framer-motion';
-import { memo, type Dispatch, type SetStateAction } from 'react';
+import { memo, useState, type Dispatch, type SetStateAction } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
 import type { UIBlock } from './block';
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { SparklesIcon } from './icons';
+import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
+import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { MessageEditor } from './message-editor';
 
 const PurePreviewMessage = ({
   chatId,
@@ -23,6 +27,8 @@ const PurePreviewMessage = ({
   setBlock,
   vote,
   isLoading,
+  setMessages,
+  reload,
 }: {
   chatId: string;
   message: Message;
@@ -30,7 +36,15 @@ const PurePreviewMessage = ({
   setBlock: Dispatch<SetStateAction<UIBlock>>;
   vote: Vote | undefined;
   isLoading: boolean;
+  setMessages: (
+    messages: Message[] | ((messages: Message[]) => Message[]),
+  ) => void;
+  reload: (
+    chatRequestOptions?: ChatRequestOptions,
+  ) => Promise<string | null | undefined>;
 }) => {
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
+
   return (
     <motion.div
       className="w-full mx-auto max-w-3xl px-4 group/message"
@@ -39,8 +53,12 @@ const PurePreviewMessage = ({
       data-role={message.role}
     >
       <div
-        className={cx(
-          'group-data-[role=user]/message:bg-primary group-data-[role=user]/message:text-primary-foreground flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
+        className={cn(
+          'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+          {
+            'w-full': mode === 'edit',
+            'group-data-[role=user]/message:w-fit': mode !== 'edit',
+          },
         )}
       >
         {message.role === 'assistant' && (
@@ -50,9 +68,58 @@ const PurePreviewMessage = ({
         )}
 
         <div className="flex flex-col gap-2 w-full">
-          {message.content && (
-            <div className="flex flex-col gap-4">
-              <Markdown>{message.content as string}</Markdown>
+          {message.experimental_attachments && (
+            <div className="flex flex-row justify-end gap-2">
+              {message.experimental_attachments.map((attachment) => (
+                <PreviewAttachment
+                  key={attachment.url}
+                  attachment={attachment}
+                />
+              ))}
+            </div>
+          )}
+
+          {message.content && mode === 'view' && (
+            <div className="flex flex-row gap-2 items-start">
+              {message.role === 'user' && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                      onClick={() => {
+                        setMode('edit');
+                      }}
+                    >
+                      <PencilEditIcon />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit message</TooltipContent>
+                </Tooltip>
+              )}
+
+              <div
+                className={cn('flex flex-col gap-4', {
+                  'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                    message.role === 'user',
+                })}
+              >
+                <Markdown>{message.content as string}</Markdown>
+              </div>
+            </div>
+          )}
+
+          {message.content && mode === 'edit' && (
+            <div className="flex flex-row gap-2 items-start">
+              <div className="size-8" />
+
+              <MessageEditor
+                key={message.id}
+                message={message}
+                setMode={setMode}
+                setMessages={setMessages}
+                reload={reload}
+              />
             </div>
           )}
 
@@ -129,17 +196,6 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          {message.experimental_attachments && (
-            <div className="flex flex-row gap-2">
-              {message.experimental_attachments.map((attachment) => (
-                <PreviewAttachment
-                  key={attachment.url}
-                  attachment={attachment}
-                />
-              ))}
-            </div>
-          )}
-
           <MessageActions
             key={`action-${message.id}`}
             chatId={chatId}
@@ -158,6 +214,7 @@ export const PreviewMessage = memo(
   (prevProps, nextProps) => {
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (prevProps.isLoading && nextProps.isLoading) return false;
+    if (prevProps.message.content && nextProps.message.content) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
     return true;
   },
