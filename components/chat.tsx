@@ -120,6 +120,7 @@ export function Chat({
             setBlock={setBlock}
             messages={messages}
             setMessages={setMessages}
+            reload={reload}
             votes={votes}
           />
         )}

@@ -58,6 +58,7 @@ function PureBlock({
   setBlock,
   messages,
   setMessages,
+  reload,
   votes,
 }: {
   chatId: string;
@@ -82,6 +83,9 @@ function PureBlock({
     },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
+  reload: (
+    chatRequestOptions?: ChatRequestOptions,
+  ) => Promise<string | null | undefined>;
 }) {
   const {
     data: documents,
@@ -286,6 +290,8 @@ function PureBlock({
               setBlock={setBlock}
               votes={votes}
               messages={messages}
+              setMessages={setMessages}
+              reload={reload}
             />
 
             <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">

@@ -7,7 +7,6 @@ import { customModel } from '@/lib/ai';
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
-  updateMessageContentById,
 } from '@/lib/db/queries';
 
 export async function saveModelId(model: string) {
