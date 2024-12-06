@@ -18,7 +18,7 @@ const runMigrate = async () => {
   console.log('⏳ Running migrations...');
 
   const start = Date.now();
-  await migrate(db, { migrationsFolder: './lib/drizzle' });
+  await migrate(db, { migrationsFolder: './lib/db/migrations' });
   const end = Date.now();
 
   console.log('✅ Migrations completed in', end - start, 'ms');

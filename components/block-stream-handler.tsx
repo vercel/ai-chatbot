@@ -9,7 +9,7 @@ interface BlockStreamHandlerProps {
   streamingData: JSONValue[] | undefined;
 }
 
-export function PureBlockStreamHandler({
+function PureBlockStreamHandler({
   setBlock,
   streamingData,
 }: BlockStreamHandlerProps) {
