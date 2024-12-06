@@ -16,7 +16,6 @@ import {
   message,
   vote,
 } from './schema';
-import { VisibilityId } from '@/components/visiblity-selector';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -316,7 +315,7 @@ export async function updateChatVisiblityById({
   visibility,
 }: {
   chatId: string;
-  visibility: VisibilityId;
+  visibility: 'private' | 'public';
 }) {
   try {
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));

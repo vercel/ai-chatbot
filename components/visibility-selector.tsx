@@ -18,10 +18,10 @@ import {
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
-export type VisibilityId = 'private' | 'public';
+export type VisibilityType = 'private' | 'public';
 
 const visibilities: Array<{
-  id: VisibilityId;
+  id: VisibilityType;
   label: string;
   description: string;
   icon: ReactNode;
@@ -43,21 +43,21 @@ const visibilities: Array<{
 export function VisibilitySelector({
   chatId,
   className,
-  selectedVisibilityId,
+  selectedVisibilityType,
 }: {
   chatId: string;
-  selectedVisibilityId: VisibilityId;
+  selectedVisibilityType: VisibilityType;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
 
-  const { visibilityId, setVisibilityId } = useChatVisibility({
+  const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId,
-    initialVisibility: selectedVisibilityId,
+    initialVisibility: selectedVisibilityType,
   });
 
   const selectedVisibility = useMemo(
-    () => visibilities.find((visibility) => visibility.id === visibilityId),
-    [visibilityId],
+    () => visibilities.find((visibility) => visibility.id === visibilityType),
+    [visibilityType],
   );
 
   return (
@@ -84,11 +84,11 @@ export function VisibilitySelector({
           <DropdownMenuItem
             key={visibility.id}
             onSelect={() => {
-              setVisibilityId(visibility.id);
+              setVisibilityType(visibility.id);
               setOpen(false);
             }}
             className="gap-4 group/item flex flex-row justify-between items-center"
-            data-active={visibility.id === visibilityId}
+            data-active={visibility.id === visibilityType}
           >
             <div className="flex flex-col gap-1 items-start">
               {visibility.label}

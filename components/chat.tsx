@@ -15,19 +15,19 @@ import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { VisibilityId } from './visibility-selector';
+import { VisibilityType } from './visibility-selector';
 
 export function Chat({
   id,
   initialMessages,
   selectedModelId,
-  selectedVisibilityId,
+  selectedVisibilityType,
   isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
-  selectedVisibilityId: VisibilityId;
+  selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
@@ -82,7 +82,7 @@ export function Chat({
         <ChatHeader
           chatId={id}
           selectedModelId={selectedModelId}
-          selectedVisibilityId={selectedVisibilityId}
+          selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />
 
@@ -135,6 +135,7 @@ export function Chat({
             setMessages={setMessages}
             reload={reload}
             votes={votes}
+            isReadonly={isReadonly}
           />
         )}
       </AnimatePresence>
