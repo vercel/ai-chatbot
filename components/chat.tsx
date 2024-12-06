@@ -22,11 +22,13 @@ export function Chat({
   initialMessages,
   selectedModelId,
   selectedVisibilityId,
+  isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
   selectedVisibilityId: VisibilityId;
+  isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -81,6 +83,7 @@ export function Chat({
           chatId={id}
           selectedModelId={selectedModelId}
           selectedVisibilityId={selectedVisibilityId}
+          isReadonly={isReadonly}
         />
 
         <Messages
@@ -92,22 +95,25 @@ export function Chat({
           messages={messages}
           setMessages={setMessages}
           reload={reload}
+          isReadonly={isReadonly}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          <MultimodalInput
-            chatId={id}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            setMessages={setMessages}
-            append={append}
-          />
+          {!isReadonly && (
+            <MultimodalInput
+              chatId={id}
+              input={input}
+              setInput={setInput}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages}
+              setMessages={setMessages}
+              append={append}
+            />
+          )}
         </form>
       </div>
 

@@ -21,6 +21,7 @@ export default async function Page() {
       initialMessages={[]}
       selectedModelId={selectedModelId}
       selectedVisibilityId="private"
+      isReadonly={false}
     />
   );
 }
