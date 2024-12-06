@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { toast } from 'sonner';
-import { UIBlock } from './block';
+import type { UIBlock } from './block';
 import { memo } from 'react';
 
 interface BlockActionsProps {
