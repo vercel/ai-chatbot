@@ -837,7 +837,7 @@ export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const CheckCirclFillIcon = ({ size = 16 }: { size?: number }) => {
+export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
       height={size}

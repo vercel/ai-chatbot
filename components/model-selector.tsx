@@ -13,7 +13,7 @@ import {
 import { models } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
-import { CheckCirclFillIcon, ChevronDownIcon } from './icons';
+import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 
 export function ModelSelector({
   selectedModelId,
@@ -68,7 +68,7 @@ export function ModelSelector({
               )}
             </div>
             <div className="text-primary dark:text-primary-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-              <CheckCirclFillIcon />
+              <CheckCircleFillIcon />
             </div>
           </DropdownMenuItem>
         ))}
