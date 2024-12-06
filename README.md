@@ -59,3 +59,22 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
+
+## PSQL Helper queries
+
+- Drop all tables
+  ```
+  DO $$ 
+  BEGIN 
+    EXECUTE (
+        SELECT string_agg('DROP TABLE IF EXISTS "' || tablename || '" CASCADE;', ' ')
+        FROM pg_tables
+        WHERE schemaname = 'public'
+    );
+  END $$;
+  ```
+
+- Drop Drizzle schema
+  ```
+  DROP SCHEMA drizzle CASCADE;
+  ```
