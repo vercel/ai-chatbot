@@ -121,6 +121,7 @@ export function PromptForm({
           }
         }}
       />
+      <Button>Test</Button>
       { showActions &&
         <ul className="list-none m-0 p-0">
           <li className="cursor-pointer p-2 hover:bg-gray-200" onClick={e => setInput('/stj ')}>
