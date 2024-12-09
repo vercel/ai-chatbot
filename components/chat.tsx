@@ -1,7 +1,6 @@
 'use client';
 
 import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -15,6 +14,7 @@ import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
+import { useElasticAIAssist } from '@/hooks/useElasticAIAssist';
 
 export function Chat({
   id,
@@ -37,7 +37,7 @@ export function Chat({
     isLoading,
     stop,
     data: streamingData,
-  } = useChat({
+  } = useElasticAIAssist({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
