@@ -81,13 +81,20 @@ export async function POST(request: Request) {
     await saveChat({ id, userId: session.user.id, title });
   }
 
+  const userMessageId = generateUUID();
+
   await saveMessages({
     messages: [
-      { ...userMessage, id: generateUUID(), createdAt: new Date(), chatId: id },
+      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
     ],
   });
 
   const streamingData = new StreamData();
+
+  streamingData.append({
+    type: 'user-message-id',
+    content: userMessageId,
+  });
 
   const result = streamText({
     model: customModel(model.apiIdentifier),

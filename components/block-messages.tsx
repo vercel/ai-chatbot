@@ -3,7 +3,7 @@ import { UIBlock } from './block';
 import { PreviewMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Vote } from '@/lib/db/schema';
-import { Message } from 'ai';
+import { ChatRequestOptions, Message } from 'ai';
 
 interface BlockMessagesProps {
   chatId: string;
@@ -12,6 +12,13 @@ interface BlockMessagesProps {
   isLoading: boolean;
   votes: Array<Vote> | undefined;
   messages: Array<Message>;
+  setMessages: (
+    messages: Message[] | ((messages: Message[]) => Message[]),
+  ) => void;
+  reload: (
+    chatRequestOptions?: ChatRequestOptions,
+  ) => Promise<string | null | undefined>;
+  isReadonly: boolean;
 }
 
 function PureBlockMessages({
@@ -21,6 +28,9 @@ function PureBlockMessages({
   isLoading,
   votes,
   messages,
+  setMessages,
+  reload,
+  isReadonly,
 }: BlockMessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -43,6 +53,9 @@ function PureBlockMessages({
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }
+          setMessages={setMessages}
+          reload={reload}
+          isReadonly={isReadonly}
         />
       ))}
 

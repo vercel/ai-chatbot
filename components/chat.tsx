@@ -15,15 +15,20 @@ import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
+import { VisibilityType } from './visibility-selector';
 
 export function Chat({
   id,
   initialMessages,
   selectedModelId,
+  selectedVisibilityType,
+  isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
+  selectedVisibilityType: VisibilityType;
+  isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -36,8 +41,10 @@ export function Chat({
     append,
     isLoading,
     stop,
+    reload,
     data: streamingData,
   } = useChat({
+    id,
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
@@ -72,7 +79,12 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
+        <ChatHeader
+          chatId={id}
+          selectedModelId={selectedModelId}
+          selectedVisibilityType={selectedVisibilityType}
+          isReadonly={isReadonly}
+        />
 
         <Messages
           chatId={id}
@@ -81,22 +93,27 @@ export function Chat({
           isLoading={isLoading}
           votes={votes}
           messages={messages}
+          setMessages={setMessages}
+          reload={reload}
+          isReadonly={isReadonly}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          <MultimodalInput
-            chatId={id}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            setMessages={setMessages}
-            append={append}
-          />
+          {!isReadonly && (
+            <MultimodalInput
+              chatId={id}
+              input={input}
+              setInput={setInput}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages}
+              setMessages={setMessages}
+              append={append}
+            />
+          )}
         </form>
       </div>
 
@@ -116,7 +133,9 @@ export function Chat({
             setBlock={setBlock}
             messages={messages}
             setMessages={setMessages}
+            reload={reload}
             votes={votes}
+            isReadonly={isReadonly}
           />
         )}
       </AnimatePresence>

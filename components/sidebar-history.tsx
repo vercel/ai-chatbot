@@ -8,7 +8,14 @@ import { memo, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
-import { MoreHorizontalIcon, TrashIcon } from '@/components/icons';
+import {
+  CheckCircleFillIcon,
+  GlobeIcon,
+  LockIcon,
+  MoreHorizontalIcon,
+  ShareIcon,
+  TrashIcon,
+} from '@/components/icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +30,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -36,7 +48,7 @@ import {
 } from '@/components/ui/sidebar';
 import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
-import equal from 'fast-deep-equal';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
 type GroupedChats = {
   today: Chat[];
@@ -56,36 +68,81 @@ const PureChatItem = ({
   isActive: boolean;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
-}) => (
-  <SidebarMenuItem>
-    <SidebarMenuButton asChild isActive={isActive}>
-      <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-        <span>{chat.title}</span>
-      </Link>
-    </SidebarMenuButton>
+}) => {
+  const { visibilityType, setVisibilityType } = useChatVisibility({
+    chatId: chat.id,
+    initialVisibility: chat.visibility,
+  });
 
-    <DropdownMenu modal={true}>
-      <DropdownMenuTrigger asChild>
-        <SidebarMenuAction
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5"
-          showOnHover={!isActive}
-        >
-          <MoreHorizontalIcon />
-          <span className="sr-only">More</span>
-        </SidebarMenuAction>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="bottom" align="end">
-        <DropdownMenuItem
-          className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
-          onSelect={() => onDelete(chat.id)}
-        >
-          <TrashIcon />
-          <span>Delete</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  </SidebarMenuItem>
-);
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive}>
+        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+          <span>{chat.title}</span>
+        </Link>
+      </SidebarMenuButton>
+
+      <DropdownMenu modal={true}>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuAction
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5"
+            showOnHover={!isActive}
+          >
+            <MoreHorizontalIcon />
+            <span className="sr-only">More</span>
+          </SidebarMenuAction>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent side="bottom" align="end">
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="cursor-pointer">
+              <ShareIcon />
+              <span>Share</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  className="cursor-pointer flex-row justify-between"
+                  onClick={() => {
+                    setVisibilityType('private');
+                  }}
+                >
+                  <div className="flex flex-row gap-2 items-center">
+                    <LockIcon size={12} />
+                    <span>Private</span>
+                  </div>
+                  {visibilityType === 'private' ? (
+                    <CheckCircleFillIcon />
+                  ) : null}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer flex-row justify-between"
+                  onClick={() => {
+                    setVisibilityType('public');
+                  }}
+                >
+                  <div className="flex flex-row gap-2 items-center">
+                    <GlobeIcon />
+                    <span>Public</span>
+                  </div>
+                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+
+          <DropdownMenuItem
+            className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
+            onSelect={() => onDelete(chat.id)}
+          >
+            <TrashIcon />
+            <span>Delete</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+};
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) return false;
