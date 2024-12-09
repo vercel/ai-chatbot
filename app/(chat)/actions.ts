@@ -18,10 +18,10 @@ export async function generateTitleFromUserMessage({
 	const { text: title } = await generateText({
 		model: customModel("gpt-3.5-turbo"),
 		system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - do not use quotes or colons`,
+    - ユーザーが会話を始めた最初のメッセージに基づいて短いタイトルを生成します
+    - タイトルは80文字以内にしてください
+    - タイトルはユーザーのメッセージの要約である必要があります
+    - 引用符やコロンは使用しないでください`,
 		prompt: JSON.stringify(message),
 	});
 

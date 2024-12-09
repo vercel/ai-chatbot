@@ -2,8 +2,9 @@
 
 import { genSaltSync, hashSync } from "bcrypt-ts";
 import { and, asc, desc, eq, gt } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+import { randomUUID } from "node:crypto";
 
 import {
 	user,
@@ -17,11 +18,11 @@ import {
 	vote,
 } from "./schema";
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
-let client = postgres(process.env.POSTGRES_URL);
-let db = drizzle(client);
+const connection = mysql.createPool({
+	uri: process.env.DATABASE_URL,
+});
+
+const db = drizzle(connection);
 
 export async function getUser(email: string): Promise<Array<User>> {
 	try {
@@ -35,9 +36,10 @@ export async function getUser(email: string): Promise<Array<User>> {
 export async function createUser(email: string, password: string) {
 	let salt = genSaltSync(10);
 	let hash = hashSync(password, salt);
+	const id = randomUUID();
 
 	try {
-		return await db.insert(user).values({ email, password: hash });
+		return await db.insert(user).values({ id, email, password: hash });
 	} catch (error) {
 		console.error("Failed to create user in database");
 		throw error;
@@ -141,15 +143,15 @@ export async function voteMessage({
 		if (existingVote) {
 			return await db
 				.update(vote)
-				.set({ isUpvoted: type === "up" ? true : false })
+				.set({ isUpvoted: type === "up" })
 				.where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
-		} else {
-			return await db.insert(vote).values({
-				chatId,
-				messageId,
-				isUpvoted: type === "up" ? true : false,
-			});
 		}
+
+		return await db.insert(vote).values({
+			chatId,
+			messageId,
+			isUpvoted: type === "up",
+		});
 	} catch (error) {
 		console.error("Failed to upvote message in database", error);
 		throw error;
