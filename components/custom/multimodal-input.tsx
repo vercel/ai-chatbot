@@ -73,18 +73,12 @@ export function MultimodalInput({
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const { width } = useWindowSize();
 
-	useEffect(() => {
-		if (textareaRef.current) {
-			adjustHeight();
-		}
-	}, []);
-
-	const adjustHeight = () => {
+	const adjustHeight = useCallback(() => {
 		if (textareaRef.current) {
 			textareaRef.current.style.height = "auto";
 			textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
 		}
-	};
+	}, []);
 
 	const [localStorageInput, setLocalStorageInput] = useLocalStorage(
 		"input",
@@ -99,9 +93,7 @@ export function MultimodalInput({
 			setInput(finalValue);
 			adjustHeight();
 		}
-		// Only run once after hydration
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [adjustHeight, localStorageInput, setInput]);
 
 	useEffect(() => {
 		setLocalStorageInput(input);
@@ -142,7 +134,7 @@ export function MultimodalInput({
 		formData.append("file", file);
 
 		try {
-			const response = await fetch(`/api/files/upload`, {
+			const response = await fetch("/api/files/upload", {
 				method: "POST",
 				body: formData,
 			});
@@ -156,15 +148,15 @@ export function MultimodalInput({
 					name: pathname,
 					contentType: contentType,
 				};
-			} else {
-				const { error } = await response.json();
-				toast.error(error);
 			}
+			const { error } = await response.json();
+			toast.error(error);
 		} catch (error) {
 			toast.error("Failed to upload file, please try again!");
 		}
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const handleFileChange = useCallback(
 		async (event: ChangeEvent<HTMLInputElement>) => {
 			const files = Array.from(event.target.files || []);
@@ -197,14 +189,14 @@ export function MultimodalInput({
 				attachments.length === 0 &&
 				uploadQueue.length === 0 && (
 					<div className="grid sm:grid-cols-2 gap-2 w-full">
-						{suggestedActions.map((suggestedAction, index) => (
+						{suggestedActions.map((suggestedAction) => (
 							<motion.div
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: 20 }}
-								transition={{ delay: 0.05 * index }}
-								key={index}
-								className={index > 1 ? "hidden sm:block" : "block"}
+								transition={{ delay: 0.05 }}
+								key={suggestedAction.action}
+								className="block"
 							>
 								<Button
 									variant="ghost"
@@ -259,23 +251,27 @@ export function MultimodalInput({
 
 			<Textarea
 				ref={textareaRef}
-				placeholder="Send a message..."
+				placeholder="Send a message... (⌘ + Enter to send)"
 				value={input}
 				onChange={handleInput}
 				className={cx(
-					"min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl text-base bg-muted",
+					"min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl text-base bg-muted focus:outline-none",
 					className,
 				)}
 				rows={3}
 				autoFocus
 				onKeyDown={(event) => {
-					if (event.key === "Enter" && !event.shiftKey) {
-						event.preventDefault();
+					if (event.key === "Enter") {
+						if (event.metaKey || event.ctrlKey) {
+							event.preventDefault();
 
-						if (isLoading) {
-							toast.error("Please wait for the model to finish its response!");
-						} else {
-							submitForm();
+							if (isLoading) {
+								toast.error(
+									"Please wait for the model to finish its response!",
+								);
+							} else {
+								submitForm();
+							}
 						}
 					}
 				}}
