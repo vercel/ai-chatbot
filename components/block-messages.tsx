@@ -1,9 +1,10 @@
-import { Dispatch, memo, SetStateAction } from 'react';
-import { UIBlock } from './block';
-import { PreviewMessage } from './message';
-import { useScrollToBottom } from './use-scroll-to-bottom';
-import { Vote } from '@/lib/db/schema';
-import { ChatRequestOptions, Message } from 'ai';
+import { Dispatch, memo, SetStateAction } from "react";
+import { UIBlock } from "./block";
+import { PreviewMessage } from "./message";
+import { useScrollToBottom } from "./use-scroll-to-bottom";
+import { Vote } from "@/lib/db/schema";
+import { ChatRequestOptions, Message } from "ai";
+import { User } from "next-auth";
 
 interface BlockMessagesProps {
   chatId: string;
@@ -12,6 +13,7 @@ interface BlockMessagesProps {
   isLoading: boolean;
   votes: Array<Vote> | undefined;
   messages: Array<Message>;
+  user: User | undefined;
   setMessages: (
     messages: Message[] | ((messages: Message[]) => Message[]),
   ) => void;
@@ -28,6 +30,7 @@ function PureBlockMessages({
   isLoading,
   votes,
   messages,
+  user,
   setMessages,
   reload,
   isReadonly,
@@ -56,6 +59,7 @@ function PureBlockMessages({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          user={user}
         />
       ))}
 
@@ -72,8 +76,8 @@ function areEqual(
   nextProps: BlockMessagesProps,
 ) {
   if (
-    prevProps.block.status === 'streaming' &&
-    nextProps.block.status === 'streaming'
+    prevProps.block.status === "streaming" &&
+    nextProps.block.status === "streaming"
   ) {
     return true;
   }
