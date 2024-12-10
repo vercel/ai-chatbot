@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { Message } from 'ai';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { User } from 'next-auth';
-import { useWindowSize } from 'usehooks-ts';
+import { Message } from "ai";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { User } from "next-auth";
+import { useWindowSize } from "usehooks-ts";
 
-import { ModelSelector } from '@/components/model-selector';
-import { SidebarToggle } from '@/components/sidebar-toggle';
-import { Button } from '@/components/ui/button';
-import { PlusIcon, VercelIcon } from './icons';
-import { useSidebar } from './ui/sidebar';
-import { memo } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { ModelSelector } from "@/components/model-selector";
+import { SidebarToggle } from "@/components/sidebar-toggle";
+import { Button } from "@/components/ui/button";
+import { PlusIcon, VercelIcon } from "./icons";
+import { useSidebar } from "./ui/sidebar";
+import { memo } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { VisibilityType, VisibilitySelector } from "./visibility-selector";
 
 function PureChatHeader({
   chatId,
@@ -50,7 +50,7 @@ function PureChatHeader({
                 if (!user) {
                   setMessages([]);
                 } else {
-                  router.push('/');
+                  router.push("/");
                   router.refresh();
                 }
               }}
@@ -71,7 +71,7 @@ function PureChatHeader({
         />
       )}
 
-      {!isReadonly && (
+      {!isReadonly && user && (
         <VisibilitySelector
           chatId={chatId}
           selectedVisibilityType={selectedVisibilityType}
