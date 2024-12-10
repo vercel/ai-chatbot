@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
 import type {
   Attachment,
   ChatRequestOptions,
   CreateMessage,
   Message,
-} from "ai";
-import cx from "classnames";
-import type { User } from "next-auth";
-import type React from "react";
+} from 'ai';
+import cx from 'classnames';
+import type { User } from 'next-auth';
+import type React from 'react';
 import {
   useRef,
   useEffect,
@@ -18,18 +18,18 @@ import {
   type SetStateAction,
   type ChangeEvent,
   memo,
-} from "react";
-import { toast } from "sonner";
-import { useLocalStorage, useWindowSize } from "usehooks-ts";
+} from 'react';
+import { toast } from 'sonner';
+import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { sanitizeUIMessages } from "@/lib/utils";
+import { sanitizeUIMessages } from '@/lib/utils';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
-import { PreviewAttachment } from "./preview-attachment";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
-import { SuggestedActions } from "./suggested-actions";
-import equal from "fast-deep-equal";
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { PreviewAttachment } from './preview-attachment';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { SuggestedActions } from './suggested-actions';
+import equal from 'fast-deep-equal';
 
 function PureMultimodalInput({
   chatId,
@@ -81,21 +81,21 @@ function PureMultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   };
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    "input",
-    "",
+    'input',
+    '',
   );
 
   useEffect(() => {
     if (textareaRef.current) {
       const domValue = textareaRef.current.value;
       // Prefer DOM value over localStorage to handle hydration
-      const finalValue = domValue || localStorageInput || "";
+      const finalValue = domValue || localStorageInput || '';
       setInput(finalValue);
       adjustHeight();
     }
@@ -117,7 +117,7 @@ function PureMultimodalInput({
 
   const submitForm = useCallback(() => {
     if (user) {
-      window.history.replaceState({}, "", `/chat/${chatId}`);
+      window.history.replaceState({}, '', `/chat/${chatId}`);
     }
 
     handleSubmit(undefined, {
@@ -125,7 +125,7 @@ function PureMultimodalInput({
     });
 
     setAttachments([]);
-    setLocalStorageInput("");
+    setLocalStorageInput('');
 
     if (width && width > 768) {
       textareaRef.current?.focus();
@@ -142,11 +142,11 @@ function PureMultimodalInput({
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     try {
-      const response = await fetch("/api/files/upload", {
-        method: "POST",
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
         body: formData,
       });
 
@@ -163,7 +163,7 @@ function PureMultimodalInput({
       const { error } = await response.json();
       toast.error(error);
     } catch (error) {
-      toast.error("Failed to upload file, please try again!");
+      toast.error('Failed to upload file, please try again!');
     }
   };
 
@@ -185,7 +185,7 @@ function PureMultimodalInput({
           ...successfullyUploadedAttachments,
         ]);
       } catch (error) {
-        console.error("Error uploading files!", error);
+        console.error('Error uploading files!', error);
       } finally {
         setUploadQueue([]);
       }
@@ -220,9 +220,9 @@ function PureMultimodalInput({
             <PreviewAttachment
               key={filename}
               attachment={{
-                url: "",
+                url: '',
                 name: filename,
-                contentType: "",
+                contentType: '',
               }}
               isUploading={true}
             />
@@ -236,17 +236,17 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          "min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted",
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted',
           className,
         )}
         rows={3}
         autoFocus
         onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
+          if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
 
             if (isLoading) {
-              toast.error("Please wait for the model to finish its response!");
+              toast.error('Please wait for the model to finish its response!');
             } else {
               submitForm();
             }

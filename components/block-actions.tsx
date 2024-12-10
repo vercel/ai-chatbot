@@ -1,18 +1,18 @@
-import { cn } from "@/lib/utils";
-import { CopyIcon, DeltaIcon, RedoIcon, UndoIcon } from "./icons";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { useCopyToClipboard } from "usehooks-ts";
-import { toast } from "sonner";
-import { UIBlock } from "./block";
-import { memo } from "react";
+import { cn } from '@/lib/utils';
+import { CopyIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { useCopyToClipboard } from 'usehooks-ts';
+import { toast } from 'sonner';
+import { UIBlock } from './block';
+import { memo } from 'react';
 
 interface BlockActionsProps {
   block: UIBlock;
-  handleVersionChange: (type: "next" | "prev" | "toggle" | "latest") => void;
+  handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
-  mode: "read-only" | "edit" | "diff";
+  mode: 'read-only' | 'edit' | 'diff';
 }
 
 function PureBlockActions({
@@ -33,9 +33,9 @@ function PureBlockActions({
             className="p-2 h-fit dark:hover:bg-zinc-700"
             onClick={() => {
               copyToClipboard(block.content);
-              toast.success("Copied to clipboard!");
+              toast.success('Copied to clipboard!');
             }}
-            disabled={block.status === "streaming"}
+            disabled={block.status === 'streaming'}
           >
             <CopyIcon size={18} />
           </Button>
@@ -48,9 +48,9 @@ function PureBlockActions({
             variant="outline"
             className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
             onClick={() => {
-              handleVersionChange("prev");
+              handleVersionChange('prev');
             }}
-            disabled={currentVersionIndex === 0 || block.status === "streaming"}
+            disabled={currentVersionIndex === 0 || block.status === 'streaming'}
           >
             <UndoIcon size={18} />
           </Button>
@@ -63,9 +63,9 @@ function PureBlockActions({
             variant="outline"
             className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
             onClick={() => {
-              handleVersionChange("next");
+              handleVersionChange('next');
             }}
-            disabled={isCurrentVersion || block.status === "streaming"}
+            disabled={isCurrentVersion || block.status === 'streaming'}
           >
             <RedoIcon size={18} />
           </Button>
@@ -77,15 +77,15 @@ function PureBlockActions({
           <Button
             variant="outline"
             className={cn(
-              "p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700",
+              'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
               {
-                "bg-muted": mode === "diff",
+                'bg-muted': mode === 'diff',
               },
             )}
             onClick={() => {
-              handleVersionChange("toggle");
+              handleVersionChange('toggle');
             }}
-            disabled={block.status === "streaming" || currentVersionIndex === 0}
+            disabled={block.status === 'streaming' || currentVersionIndex === 0}
           >
             <DeltaIcon size={18} />
           </Button>
@@ -98,8 +98,8 @@ function PureBlockActions({
 
 export const BlockActions = memo(PureBlockActions, (prevProps, nextProps) => {
   if (
-    prevProps.block.status === "streaming" &&
-    nextProps.block.status === "streaming"
+    prevProps.block.status === 'streaming' &&
+    nextProps.block.status === 'streaming'
   ) {
     return true;
   }
