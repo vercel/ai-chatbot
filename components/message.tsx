@@ -48,10 +48,10 @@ const PurePreviewMessage = ({
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
   return (
-    <div
+    <motion.div
       className="w-full mx-auto max-w-3xl px-4 group/message"
-      // initial={{ y: 5, opacity: 0 }}
-      // animate={{ y: 0, opacity: 1 }}
+      initial={{ y: 5, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       data-role={message.role}
     >
       <div
@@ -215,7 +215,7 @@ const PurePreviewMessage = ({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
