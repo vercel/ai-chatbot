@@ -28,7 +28,7 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
-  const selectModel = useMemo(
+  const selectedModel = useMemo(
     () => models.find((model) => model.id === optimisticModelId),
     [optimisticModelId],
   );
@@ -43,7 +43,7 @@ export function ModelSelector({
         )}
       >
         <Button variant="outline" className="md:px-2 md:h-[34px]">
-          {selectModel?.label}
+          {selectedModel?.label}
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>

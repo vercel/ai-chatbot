@@ -1,7 +1,8 @@
-import type { SetStateAction } from 'react';
+import { memo, type SetStateAction } from 'react';
 
 import type { UIBlock } from './block';
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from './icons';
+import { toast } from 'sonner';
 
 const getActionText = (
   type: 'create' | 'update' | 'request-suggestions',
@@ -26,18 +27,27 @@ interface DocumentToolResultProps {
   result: { id: string; title: string };
   block: UIBlock;
   setBlock: (value: SetStateAction<UIBlock>) => void;
+  isReadonly: boolean;
 }
 
-export function DocumentToolResult({
+function PureDocumentToolResult({
   type,
   result,
   setBlock,
+  isReadonly,
 }: DocumentToolResultProps) {
   return (
     <button
       type="button"
       className="bg-background cursor-pointer border py-2 px-3 rounded-xl w-fit flex flex-row gap-3 items-start"
       onClick={(event) => {
+        if (isReadonly) {
+          toast.error(
+            'Viewing files in shared chats is currently not supported.',
+          );
+          return;
+        }
+
         const rect = event.currentTarget.getBoundingClientRect();
 
         const boundingBox = {
@@ -73,22 +83,33 @@ export function DocumentToolResult({
   );
 }
 
+export const DocumentToolResult = memo(PureDocumentToolResult, () => true);
+
 interface DocumentToolCallProps {
   type: 'create' | 'update' | 'request-suggestions';
   args: { title: string };
   setBlock: (value: SetStateAction<UIBlock>) => void;
+  isReadonly: boolean;
 }
 
-export function DocumentToolCall({
+function PureDocumentToolCall({
   type,
   args,
   setBlock,
+  isReadonly,
 }: DocumentToolCallProps) {
   return (
     <button
       type="button"
       className="cursor pointer w-fit border py-2 px-3 rounded-xl flex flex-row items-start justify-between gap-3"
       onClick={(event) => {
+        if (isReadonly) {
+          toast.error(
+            'Viewing files in shared chats is currently not supported.',
+          );
+          return;
+        }
+
         const rect = event.currentTarget.getBoundingClientRect();
 
         const boundingBox = {
@@ -125,3 +146,5 @@ export function DocumentToolCall({
     </button>
   );
 }
+
+export const DocumentToolCall = memo(PureDocumentToolCall, () => true);

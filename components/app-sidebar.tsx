@@ -1,30 +1,28 @@
-'use client';
+"use client";
 
-import { useChat } from 'ai/react';
-import type { User } from 'next-auth';
-import { useRouter } from 'next/navigation';
+import { useChat } from "ai/react";
+import type { User } from "next-auth";
+import { useRouter } from "next/navigation";
 
-import { PlusIcon } from '@/components/icons';
-import { SidebarHistory } from '@/components/sidebar-history';
-import { SidebarUserNav } from '@/components/sidebar-user-nav';
-import { Button } from '@/components/ui/button';
+import { PlusIcon } from "@/components/icons";
+import { SidebarHistory } from "@/components/sidebar-history";
+import { SidebarUserNav } from "@/components/sidebar-user-nav";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   useSidebar,
-} from '@/components/ui/sidebar';
-import { BetterTooltip } from '@/components/ui/tooltip';
-import Link from 'next/link';
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
-  const { setMessages } = useChat({ id: 'guest' });
+  const { setMessages } = useChat({ id: "guest" });
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0">
@@ -39,7 +37,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 if (!user) {
                   setMessages([]);
                 } else {
-                  router.push('/');
+                  router.push("/");
                   router.refresh();
                 }
               }}
@@ -49,43 +47,35 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 Chatbot
               </span>
             </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="p-2 h-fit"
+                  onClick={() => {
+                    setOpenMobile(false);
 
-            <BetterTooltip content="New Chat" align="start">
-              <Button
-                variant="ghost"
-                type="button"
-                className="p-2 h-fit"
-                onClick={() => {
-                  setOpenMobile(false);
-
-                  if (!user) {
-                    setMessages([]);
-                  } else {
-                    router.push('/');
-                    router.refresh();
-                  }
-                }}
-              >
-                <PlusIcon />
-              </Button>
-            </BetterTooltip>
+                    if (!user) {
+                      setMessages([]);
+                    } else {
+                      router.push("/");
+                      router.refresh();
+                    }
+                  }}
+                >
+                  <PlusIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent align="end">New Chat</TooltipContent>
+            </Tooltip>
           </div>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="-mx-2">
-          <SidebarHistory user={user} />
-        </SidebarGroup>
+        <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter className="gap-0 -mx-2">
-        {user && (
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarUserNav user={user} />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-      </SidebarFooter>
+      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
     </Sidebar>
   );
 }
