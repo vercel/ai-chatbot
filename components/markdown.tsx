@@ -1,8 +1,8 @@
-import Link from "next/link";
-import React, { memo, useEffect, useState } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { ExecutableCodeBlock } from "./executable-code-block";
+import Link from 'next/link';
+import React, { memo, useEffect, useState } from 'react';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { ExecutableCodeBlock } from './executable-code-block';
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   const components: Partial<Components> = {
