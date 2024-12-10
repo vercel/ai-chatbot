@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
-import { AnimatePresence } from 'framer-motion';
-import { User } from 'next-auth';
-import { useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
-import { useWindowSize } from 'usehooks-ts';
+import type { Attachment, Message } from "ai";
+import { useChat } from "ai/react";
+import { AnimatePresence } from "framer-motion";
+import { User } from "next-auth";
+import { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { useWindowSize } from "usehooks-ts";
 
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { ChatHeader } from "@/components/chat-header";
+import type { Vote } from "@/lib/db/schema";
+import { fetcher } from "@/lib/utils";
 
-import { Block, type UIBlock } from './block';
-import { BlockStreamHandler } from './block-stream-handler';
-import { DeployDialog } from './deploy-dialog';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
+import { Block, type UIBlock } from "./block";
+import { BlockStreamHandler } from "./block-stream-handler";
+import { DeployDialog } from "./deploy-dialog";
+import { MultimodalInput } from "./multimodal-input";
+import { Messages } from "./messages";
+import { VisibilityType } from "./visibility-selector";
 
 export function Chat({
   id,
@@ -52,10 +52,10 @@ export function Chat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
-      mutate('/api/history');
+      mutate("/api/history");
     },
     onError: (error) => {
-      if (error.message.startsWith('Too many requests')) {
+      if (error.message.startsWith("Too many requests")) {
         setIsDeployDialogOpen(true);
       }
     },
@@ -65,10 +65,10 @@ export function Chat({
     useWindowSize();
 
   const [block, setBlock] = useState<UIBlock>({
-    documentId: 'init',
-    content: '',
-    title: '',
-    status: 'idle',
+    documentId: "init",
+    content: "",
+    title: "",
+    status: "idle",
     isVisible: false,
     boundingBox: {
       top: windowHeight / 4,
@@ -79,7 +79,7 @@ export function Chat({
   });
 
   const { data: votes } = useSWR<Array<Vote>>(
-    id !== 'guest' ? `/api/vote?chatId=${id}` : null,
+    id !== "guest" ? `/api/vote?chatId=${id}` : null,
     fetcher,
   );
 

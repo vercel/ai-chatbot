@@ -1,10 +1,10 @@
-import { Dispatch, memo, SetStateAction } from 'react';
-import { UIBlock } from './block';
-import { PreviewMessage } from './message';
-import { useScrollToBottom } from './use-scroll-to-bottom';
-import { Vote } from '@/lib/db/schema';
-import { ChatRequestOptions, Message } from 'ai';
-import { User } from 'next-auth';
+import { Dispatch, memo, SetStateAction } from "react";
+import { UIBlock } from "./block";
+import { PreviewMessage } from "./message";
+import { useScrollToBottom } from "./use-scroll-to-bottom";
+import { Vote } from "@/lib/db/schema";
+import { ChatRequestOptions, Message } from "ai";
+import { User } from "next-auth";
 
 interface BlockMessagesProps {
   chatId: string;
@@ -76,8 +76,8 @@ function areEqual(
   nextProps: BlockMessagesProps,
 ) {
   if (
-    prevProps.block.status === 'streaming' &&
-    nextProps.block.status === 'streaming'
+    prevProps.block.status === "streaming" &&
+    nextProps.block.status === "streaming"
   ) {
     return true;
   }
