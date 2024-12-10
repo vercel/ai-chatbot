@@ -32,6 +32,8 @@ export default async function Page() {
       initialMessages={[]}
       selectedModelId={selectedModelId}
       user={session?.user}
+      selectedVisibilityType="private"
+      isReadonly={false}
     />
   );
 }

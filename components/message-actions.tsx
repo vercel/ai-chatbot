@@ -15,8 +15,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
+import { memo } from 'react';
+import equal from 'fast-deep-equal';
 
-export function MessageActions({
+export function PureMessageActions({
   chatId,
   message,
   vote,
@@ -177,3 +179,13 @@ export function MessageActions({
     </TooltipProvider>
   );
 }
+
+export const MessageActions = memo(
+  PureMessageActions,
+  (prevProps, nextProps) => {
+    if (!equal(prevProps.vote, nextProps.vote)) return false;
+    if (prevProps.isLoading !== nextProps.isLoading) return false;
+
+    return true;
+  },
+);

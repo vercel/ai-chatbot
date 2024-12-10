@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { auth } from '@/app/(auth)/auth';
-import { Chat as PreviewChat } from '@/components/chat';
+import { Chat } from '@/components/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { convertToUIMessages } from '@/lib/utils';
@@ -18,12 +18,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return notFound();
-  }
+  if (chat.visibility === 'private') {
+    if (!session || !session.user) {
+      return notFound();
+    }
 
-  if (session.user.id !== chat.userId) {
-    return notFound();
+    if (session.user.id !== chat.userId) {
+      return notFound();
+    }
   }
 
   let selectedModelId: string = DEFAULT_MODEL_NAME;
@@ -46,11 +48,13 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <PreviewChat
+    <Chat
       id={chat.id}
       initialMessages={convertToUIMessages(messagesFromDb)}
       selectedModelId={selectedModelId}
       user={session?.user}
+      selectedVisibilityType={chat.visibility}
+      isReadonly={session?.user?.id !== chat.userId}
     />
   );
 }

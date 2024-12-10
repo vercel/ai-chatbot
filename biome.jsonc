@@ -59,7 +59,7 @@
         "noNewSymbol": "warn", // Not in recommended ruleset, turning on manually
         "useJsxKeyInIterable": "off", // Rule is buggy, revisit later
         "useExhaustiveDependencies": "off", // Community feedback on this rule has been poor, we will continue with ESLint
-        "noUnnecessaryContinue": "off" // Turned off due to developer preferences
+        "noUnnecessaryContinue": "off" // Turned off due to developer preferences,
       },
       "security": {
         "noDangerouslySetInnerHtml": "off" // Covered by Conformance
@@ -70,7 +70,8 @@
         "useDefaultParameterLast": "warn", // Not in recommended ruleset, turning on manually
         "useExponentiationOperator": "off", // Obscure and arguably not easily readable
         "noUnusedTemplateLiteral": "off", // Stylistic opinion
-        "noUselessElse": "off" // Stylistic opinion
+        "noUselessElse": "off", // Stylistic opinion
+        "noNonNullAssertion": "off"
       },
       "suspicious": {
         "noExplicitAny": "off" // We trust Vercelians to use any only when necessary
