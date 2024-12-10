@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type { ChatRequestOptions, CreateMessage, Message } from "ai";
-import cx from "classnames";
+import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
+import cx from 'classnames';
 import {
   AnimatePresence,
   motion,
   useMotionValue,
   useTransform,
-} from "framer-motion";
+} from 'framer-motion';
 import {
   type Dispatch,
   memo,
@@ -15,16 +15,16 @@ import {
   useEffect,
   useRef,
   useState,
-} from "react";
-import { useOnClickOutside } from "usehooks-ts";
-import { nanoid } from "nanoid";
+} from 'react';
+import { useOnClickOutside } from 'usehooks-ts';
+import { nanoid } from 'nanoid';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { sanitizeUIMessages } from "@/lib/utils";
+} from '@/components/ui/tooltip';
+import { sanitizeUIMessages } from '@/lib/utils';
 
 import {
   ArrowUpIcon,
@@ -32,11 +32,11 @@ import {
   PenIcon,
   StopIcon,
   SummarizeIcon,
-} from "./icons";
-import equal from "fast-deep-equal";
+} from './icons';
+import equal from 'fast-deep-equal';
 
 type ToolProps = {
-  type: "final-polish" | "request-suggestions" | "adjust-reading-level";
+  type: 'final-polish' | 'request-suggestions' | 'adjust-reading-level';
   description: string;
   icon: JSX.Element;
   selectedTool: string | null;
@@ -84,19 +84,19 @@ const Tool = ({
     if (selectedTool !== type) {
       setSelectedTool(type);
     } else {
-      if (type === "final-polish") {
+      if (type === 'final-polish') {
         append({
-          role: "user",
+          role: 'user',
           content:
-            "Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.",
+            'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
         });
 
         setSelectedTool(null);
-      } else if (type === "request-suggestions") {
+      } else if (type === 'request-suggestions') {
         append({
-          role: "user",
+          role: 'user',
           content:
-            "Please add suggestions you have that could improve the writing.",
+            'Please add suggestions you have that could improve the writing.',
         });
 
         setSelectedTool(null);
@@ -108,8 +108,8 @@ const Tool = ({
     <Tooltip open={isHovered && !isAnimating}>
       <TooltipTrigger asChild>
         <motion.div
-          className={cx("p-3 rounded-full", {
-            "bg-primary !text-primary-foreground": selectedTool === type,
+          className={cx('p-3 rounded-full', {
+            'bg-primary !text-primary-foreground': selectedTool === type,
           })}
           onHoverStart={() => {
             setIsHovered(true);
@@ -118,7 +118,7 @@ const Tool = ({
             if (selectedTool !== type) setIsHovered(false);
           }}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            if (event.key === 'Enter') {
               handleSelect();
             }
           }}
@@ -164,12 +164,12 @@ const ReadingLevelSelector = ({
   ) => Promise<string | null | undefined>;
 }) => {
   const LEVELS = [
-    "Elementary",
-    "Middle School",
-    "Keep current level",
-    "High School",
-    "College",
-    "Graduate",
+    'Elementary',
+    'Middle School',
+    'Keep current level',
+    'High School',
+    'College',
+    'Graduate',
   ];
 
   const y = useMotionValue(-40 * 2);
@@ -181,7 +181,7 @@ const ReadingLevelSelector = ({
     useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = yToLevel.on("change", (latest) => {
+    const unsubscribe = yToLevel.on('change', (latest) => {
       const level = Math.min(5, Math.max(0, Math.round(Math.abs(latest))));
       setCurrentLevel(level);
     });
@@ -209,10 +209,10 @@ const ReadingLevelSelector = ({
           <TooltipTrigger asChild>
             <motion.div
               className={cx(
-                "absolute bg-background p-3 border rounded-full flex flex-row items-center",
+                'absolute bg-background p-3 border rounded-full flex flex-row items-center',
                 {
-                  "bg-primary text-primary-foreground": currentLevel !== 2,
-                  "bg-background text-foreground": currentLevel === 2,
+                  'bg-primary text-primary-foreground': currentLevel !== 2,
+                  'bg-background text-foreground': currentLevel === 2,
                 },
               )}
               style={{ y }}
@@ -236,7 +236,7 @@ const ReadingLevelSelector = ({
               onClick={() => {
                 if (currentLevel !== 2 && hasUserSelectedLevel) {
                   append({
-                    role: "user",
+                    role: 'user',
                     content: `Please adjust the reading level to ${LEVELS[currentLevel]} level.`,
                   });
 
@@ -393,7 +393,7 @@ const PureToolbar = ({
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible
-            ? selectedTool === "adjust-reading-level"
+            ? selectedTool === 'adjust-reading-level'
               ? {
                   opacity: 1,
                   y: 0,
@@ -411,7 +411,7 @@ const PureToolbar = ({
             : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
         }
         exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         onHoverStart={() => {
           if (isLoading) return;
 
@@ -445,7 +445,7 @@ const PureToolbar = ({
           >
             <StopIcon />
           </motion.div>
-        ) : selectedTool === "adjust-reading-level" ? (
+        ) : selectedTool === 'adjust-reading-level' ? (
           <ReadingLevelSelector
             key="reading-level-selector"
             append={append}
