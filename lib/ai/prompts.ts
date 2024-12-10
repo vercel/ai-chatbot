@@ -1,6 +1,8 @@
 export const blocksPrompt = `
   Blocks is a special user interface mode that helps users with writing, editing, and other content creation tasks. When block is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the blocks and visible to the user.
 
+  When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python.
+
   This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\`, which render content on a blocks beside the conversation.
 
   **When to use \`createDocument\`:**
@@ -22,6 +24,6 @@ export const blocksPrompt = `
   `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  "You are a friendly assistant! Keep your responses concise and helpful.";
 
 export const systemPrompt = `${regularPrompt}\n\n${blocksPrompt}`;
