@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
+import { toast } from 'sonner';
 
 const PurePreviewMessage = ({
   chatId,
@@ -93,6 +94,14 @@ const PurePreviewMessage = ({
                       variant="ghost"
                       className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
                       onClick={() => {
+                        if (!user) {
+                          toast.error(
+                            'You must be signed in to edit messages!',
+                          );
+
+                          return;
+                        }
+
                         setMode('edit');
                       }}
                     >
