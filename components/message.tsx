@@ -223,9 +223,16 @@ export const PreviewMessage = memo(
   PurePreviewMessage,
   (prevProps, nextProps) => {
     if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (prevProps.isLoading && nextProps.isLoading) return false;
-    if (prevProps.message.content && nextProps.message.content) return false;
+    if (prevProps.message.content !== nextProps.message.content) return false;
+    if (
+      !equal(
+        prevProps.message.toolInvocations,
+        nextProps.message.toolInvocations,
+      )
+    )
+      return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
+
     return true;
   },
 );

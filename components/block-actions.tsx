@@ -97,12 +97,10 @@ function PureBlockActions({
 }
 
 export const BlockActions = memo(PureBlockActions, (prevProps, nextProps) => {
-  if (
-    prevProps.block.status === 'streaming' &&
-    nextProps.block.status === 'streaming'
-  ) {
-    return true;
-  }
+  if (prevProps.block.status !== nextProps.block.status) return false;
+  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
+    return false;
+  if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
 
-  return false;
+  return true;
 });
