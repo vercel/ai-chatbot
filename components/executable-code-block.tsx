@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { CodeIcon, LoaderIcon, PlayIcon, PythonIcon } from './icons';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { cn } from '@/lib/utils';
+import { useCallback, useEffect, useState } from "react";
+import { CodeIcon, LoaderIcon, PlayIcon, PythonIcon } from "./icons";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface ExecutableCodeBlockProps {
   node: any;
@@ -22,10 +22,10 @@ export function ExecutableCodeBlock({
 }: ExecutableCodeBlockProps) {
   const [output, setOutput] = useState<string | null>(null);
   const [pyodide, setPyodide] = useState<any>(null);
-  const match = /language-(\w+)/.exec(className || '');
-  const isPython = match && match[1] === 'python';
-  const codeContent = String(children).replace(/\n$/, '');
-  const [tab, setTab] = useState<'code' | 'run'>('code');
+  const match = /language-(\w+)/.exec(className || "");
+  const isPython = match && match[1] === "python";
+  const codeContent = String(children).replace(/\n$/, "");
+  const [tab, setTab] = useState<"code" | "run">("code");
 
   const loadAndRunPython = useCallback(async () => {
     let currentPyodideInstance = pyodide;
@@ -34,7 +34,7 @@ export function ExecutableCodeBlock({
       if (!currentPyodideInstance) {
         // @ts-ignore
         const newPyodideInstance = await loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
         });
 
         setPyodide(newPyodideInstance);
@@ -67,16 +67,18 @@ export function ExecutableCodeBlock({
         <div className="not-prose flex flex-col">
           <div
             className={cn(
-              'flex flex-row justify-between w-full p-2 border border-zinc-200 dark:border-zinc-700 rounded-t-xl',
+              "flex flex-row justify-between w-full p-2 border border-zinc-200 dark:border-zinc-700 rounded-t-xl bg-background",
               {
-                'rounded-xl': tab === 'run' && !output,
+                "rounded-xl": tab === "run" && !output,
               },
             )}
           >
             <div className="flex flex-row gap-3 items-center pl-1.5">
-              <PythonIcon />
+              <div className="text-muted-foreground">
+                <PythonIcon />
+              </div>
               <div className="text-sm">Python</div>
-              {tab === 'run' && !output && (
+              {tab === "run" && !output && (
                 <div className="animate-spin">
                   <LoaderIcon />
                 </div>
@@ -88,11 +90,11 @@ export function ExecutableCodeBlock({
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    className={cn('h-fit px-2 dark:hover:bg-zinc-700', {
-                      'bg-zinc-200 dark:bg-zinc-700': tab === 'code',
+                    className={cn("h-fit px-2 dark:hover:bg-zinc-700", {
+                      "bg-zinc-200 dark:bg-zinc-700": tab === "code",
                     })}
                     onClick={() => {
-                      setTab('code');
+                      setTab("code");
                     }}
                   >
                     <CodeIcon />
@@ -105,11 +107,11 @@ export function ExecutableCodeBlock({
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    className={cn('h-fit px-2 dark:hover:bg-zinc-700', {
-                      'bg-zinc-200 dark:bg-zinc-700': tab === 'run',
+                    className={cn("h-fit px-2 dark:hover:bg-zinc-700", {
+                      "bg-zinc-200 dark:bg-zinc-700": tab === "run",
                     })}
                     onClick={() => {
-                      setTab('run');
+                      setTab("run");
                       loadAndRunPython();
                     }}
                   >
@@ -121,10 +123,10 @@ export function ExecutableCodeBlock({
             </div>
           </div>
 
-          {tab === 'code' && (
+          {tab === "code" && (
             <pre
               {...props}
-              className={`text-sm w-full overflow-x-auto bg-zinc-100 dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-700 border-t-0 rounded-b-xl`}
+              className={`text-sm w-full overflow-x-auto bg-zinc-800 dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-700 border-t-0 rounded-b-xl text-zinc-50`}
             >
               <code className="whitespace-pre-wrap break-words">
                 {children}
@@ -132,8 +134,8 @@ export function ExecutableCodeBlock({
             </pre>
           )}
 
-          {tab === 'run' && output && (
-            <div className="text-sm w-full overflow-x-auto bg-zinc-100 dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-700 border-t-0 rounded-b-xl">
+          {tab === "run" && output && (
+            <div className="text-sm w-full overflow-x-auto bg-zinc-800 dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-700 border-t-0 rounded-b-xl text-zinc-50">
               <code>{output}</code>
             </div>
           )}
