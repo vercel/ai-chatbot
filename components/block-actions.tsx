@@ -1,12 +1,5 @@
 import { cn, generateUUID } from '@/lib/utils';
-import {
-  CopyIcon,
-  DeltaIcon,
-  PlayIcon,
-  RedoIcon,
-  TerminalIcon,
-  UndoIcon,
-} from './icons';
+import { CopyIcon, DeltaIcon, PlayIcon, RedoIcon, UndoIcon } from './icons';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
