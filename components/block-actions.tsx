@@ -5,7 +5,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { toast } from 'sonner';
 import { ConsoleOutput, UIBlock } from './block';
-import { Dispatch, memo, SetStateAction, useCallback, useState } from 'react';
+import {
+  Dispatch,
+  memo,
+  SetStateAction,
+  startTransition,
+  useCallback,
+  useState,
+} from 'react';
 
 interface BlockActionsProps {
   block: UIBlock;
@@ -73,19 +80,21 @@ export function RunCodeButton({
       }
 
       try {
-        await currentPyodideInstance.runPythonAsync(`
+        setTimeout(async () => {
+          await currentPyodideInstance.runPythonAsync(`
             import sys
             import io
             sys.stdout = io.StringIO()
           `);
 
-        await currentPyodideInstance.runPythonAsync(codeContent);
+          await currentPyodideInstance.runPythonAsync(codeContent);
 
-        const output: string = await currentPyodideInstance.runPythonAsync(
-          `sys.stdout.getvalue()`,
-        );
+          const output: string = await currentPyodideInstance.runPythonAsync(
+            `sys.stdout.getvalue()`,
+          );
 
-        updateConsoleOutput(runId, output, 'completed');
+          updateConsoleOutput(runId, output, 'completed');
+        }, 1000);
       } catch (error: any) {
         updateConsoleOutput(runId, error.message, 'failed');
       }
@@ -97,7 +106,9 @@ export function RunCodeButton({
       variant="outline"
       className="py-1.5 px-2 h-fit dark:hover:bg-zinc-700"
       onClick={() => {
-        loadAndRunPython();
+        startTransition(() => {
+          loadAndRunPython();
+        });
       }}
       disabled={block.status === 'streaming'}
     >

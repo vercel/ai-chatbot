@@ -11,18 +11,12 @@ importers:
       '@ai-sdk/openai':
         specifier: 1.0.6
         version: 1.0.6(zod@3.23.8)
-      '@codemirror/basic-setup':
-        specifier: ^0.20.0
-        version: 0.20.0
       '@codemirror/lang-javascript':
         specifier: ^6.2.2
         version: 6.2.2
       '@codemirror/lang-python':
         specifier: ^6.1.6
         version: 6.1.6(@codemirror/view@6.35.3)
-      '@codemirror/language':
-        specifier: ^6.10.6
-        version: 6.10.6
       '@codemirror/state':
         specifier: ^6.5.0
         version: 6.5.0
@@ -32,9 +26,6 @@ importers:
       '@codemirror/view':
         specifier: ^6.35.3
         version: 6.35.3
-      '@lezer/highlight':
-        specifier: ^1.2.1
-        version: 1.2.1
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
@@ -134,24 +125,12 @@ importers:
       postgres:
         specifier: ^3.4.4
         version: 3.4.5
-      prismjs:
-        specifier: ^1.29.0
-        version: 1.29.0
-      prosemirror-commands:
-        specifier: ^1.6.2
-        version: 1.6.2
       prosemirror-example-setup:
         specifier: ^1.2.3
         version: 1.2.3
-      prosemirror-history:
-        specifier: ^1.4.1
-        version: 1.4.1
       prosemirror-inputrules:
         specifier: ^1.4.0
         version: 1.4.0
-      prosemirror-keymap:
-        specifier: ^1.2.2
-        version: 1.2.2
       prosemirror-markdown:
         specifier: ^1.13.1
         version: 1.13.1
@@ -179,6 +158,9 @@ importers:
       react-markdown:
         specifier: ^9.0.1
         version: 9.0.1(@types/react@18.3.12)(react@19.0.0-rc-45804af1-20241021)
+      react-resizable-panels:
+        specifier: ^2.1.7
+        version: 2.1.7(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
       remark-gfm:
         specifier: ^4.0.0
         version: 4.0.0
@@ -219,9 +201,6 @@ importers:
       '@types/pdf-parse':
         specifier: ^1.1.4
         version: 1.1.4
-      '@types/prismjs':
-        specifier: ^1.26.5
-        version: 1.26.5
       '@types/react':
         specifier: ^18
         version: 18.3.12
@@ -372,9 +351,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@codemirror/autocomplete@0.20.3':
-    resolution: {integrity: sha512-lYB+NPGP+LEzAudkWhLfMxhTrxtLILGl938w+RcFrGdrIc54A+UgmCoz+McE3IYRFp4xyQcL4uFJwo+93YdgHw==}
-
   '@codemirror/autocomplete@6.18.3':
     resolution: {integrity: sha512-1dNIOmiM0z4BIBwxmxEfA1yoxh1MF/6KPBbh20a5vphGV0ictKlgQsbJs6D6SkR6iJpGbpwRsa6PFMNlg9T9pQ==}
     peerDependencies:
@@ -382,13 +358,6 @@ packages:
       '@codemirror/state': ^6.0.0
       '@codemirror/view': ^6.0.0
       '@lezer/common': ^1.0.0
-
-  '@codemirror/basic-setup@0.20.0':
-    resolution: {integrity: sha512-W/ERKMLErWkrVLyP5I8Yh8PXl4r+WFNkdYVSzkXYPQv2RMPSkWpr2BgggiSJ8AHF/q3GuApncDD8I4BZz65fyg==}
-    deprecated: In version 6.0, this package has been renamed to just 'codemirror'
-
-  '@codemirror/commands@0.20.0':
-    resolution: {integrity: sha512-v9L5NNVA+A9R6zaFvaTbxs30kc69F6BkOoiEbeFw4m4I0exmDEKBILN6mK+GksJtvTzGBxvhAPlVFTdQW8GB7Q==}
 
   '@codemirror/commands@6.7.1':
     resolution: {integrity: sha512-llTrboQYw5H4THfhN4U3qCnSZ1SOJ60ohhz+SzU0ADGtwlc533DtklQP0vSFaQuCPDn3BPpOd1GbbnUtwNjsrw==}
@@ -399,35 +368,20 @@ packages:
   '@codemirror/lang-python@6.1.6':
     resolution: {integrity: sha512-ai+01WfZhWqM92UqjnvorkxosZ2aq2u28kHvr+N3gu012XqY2CThD67JPMHnGceRfXPDBmn1HnyqowdpF57bNg==}
 
-  '@codemirror/language@0.20.2':
-    resolution: {integrity: sha512-WB3Bnuusw0xhVvhBocieYKwJm04SOk5bPoOEYksVHKHcGHFOaYaw+eZVxR4gIqMMcGzOIUil0FsCmFk8yrhHpw==}
-
   '@codemirror/language@6.10.6':
     resolution: {integrity: sha512-KrsbdCnxEztLVbB5PycWXFxas4EOyk/fPAfruSOnDDppevQgid2XZ+KbJ9u+fDikP/e7MW7HPBTvTb8JlZK9vA==}
-
-  '@codemirror/lint@0.20.3':
-    resolution: {integrity: sha512-06xUScbbspZ8mKoODQCEx6hz1bjaq9m8W8DxdycWARMiiX1wMtfCh/MoHpaL7ws/KUMwlsFFfp2qhm32oaCvVA==}
 
   '@codemirror/lint@6.8.4':
     resolution: {integrity: sha512-u4q7PnZlJUojeRe8FJa/njJcMctISGgPQ4PnWsd9268R4ZTtU+tfFYmwkBvgcrK2+QQ8tYFVALVb5fVJykKc5A==}
 
-  '@codemirror/search@0.20.1':
-    resolution: {integrity: sha512-ROe6gRboQU5E4z6GAkNa2kxhXqsGNbeLEisbvzbOeB7nuDYXUZ70vGIgmqPu0tB+1M3F9yWk6W8k2vrFpJaD4Q==}
-
   '@codemirror/search@6.5.8':
     resolution: {integrity: sha512-PoWtZvo7c1XFeZWmmyaOp2G0XVbOnm+fJzvghqGAktBW3cufwJUWvSCcNG0ppXiBEM05mZu6RhMtXPv2hpllig==}
-
-  '@codemirror/state@0.20.1':
-    resolution: {integrity: sha512-ms0tlV5A02OK0pFvTtSUGMLkoarzh1F8mr6jy1cD7ucSC2X/VLHtQCxfhdSEGqTYlQF2hoZtmLv+amqhdgbwjQ==}
 
   '@codemirror/state@6.5.0':
     resolution: {integrity: sha512-MwBHVK60IiIHDcoMet78lxt6iw5gJOGSbNbOIVBHWVXIH4/Nq1+GQgLLGgI1KlnN86WDXsPudVaqYHKBIx7Eyw==}
 
   '@codemirror/theme-one-dark@6.1.2':
     resolution: {integrity: sha512-F+sH0X16j/qFLMAfbciKTxVOwkdAS336b7AXTKOZhy8BR3eH/RelsnLgLFINrpST63mmN2OuwUt0W2ndUgYwUA==}
-
-  '@codemirror/view@0.20.7':
-    resolution: {integrity: sha512-pqEPCb9QFTOtHgAH5XU/oVy9UR/Anj6r+tG5CRmkNVcqSKEPmBU05WtN/jxJCFZBXf6HumzWC9ydE4qstO3TxQ==}
 
   '@codemirror/view@6.35.3':
     resolution: {integrity: sha512-ScY7L8+EGdPl4QtoBiOzE4FELp7JmNUsBvgBcCakXWM2uiv/K89VAzU3BMDscf0DsACLvTKePbd5+cFDTcei6g==}
@@ -1037,23 +991,14 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@lezer/common@0.16.1':
-    resolution: {integrity: sha512-qPmG7YTZ6lATyTOAWf8vXE+iRrt1NJd4cm2nJHK+v7X9TsOF6+HtuU/ctaZy2RCrluxDb89hI6KWQ5LfQGQWuA==}
-
   '@lezer/common@1.2.3':
     resolution: {integrity: sha512-w7ojc8ejBqr2REPsWxJjrMFsA/ysDCFICn8zEOR9mrqzOu2amhITYuLD8ag6XZf0CFXDrhKqw7+tW8cX66NaDA==}
-
-  '@lezer/highlight@0.16.0':
-    resolution: {integrity: sha512-iE5f4flHlJ1g1clOStvXNLbORJoiW4Kytso6ubfYzHnaNo/eo5SKhxs4wv/rtvwZQeZrK3we8S9SyA7OGOoRKQ==}
 
   '@lezer/highlight@1.2.1':
     resolution: {integrity: sha512-Z5duk4RN/3zuVO7Jq0pGLJ3qynpxUVsh7IbUbGj88+uV2ApSAn6kWg2au3iJb+0Zi7kKtqffIESgNcRXWZWmSA==}
 
   '@lezer/javascript@1.4.21':
     resolution: {integrity: sha512-lL+1fcuxWYPURMM/oFZLEDm0XuLN128QPV+VuGtKpeaOGdcl9F2LYC3nh1S9LkPqx9M0mndZFdXCipNAZpzIkQ==}
-
-  '@lezer/lr@0.16.3':
-    resolution: {integrity: sha512-pau7um4eAw94BEuuShUIeQDTf3k4Wt6oIUOYxMmkZgDHdqtIcxWND4LRxi8nI9KuT4I1bXQv67BCapkxt7Ywqw==}
 
   '@lezer/lr@1.4.2':
     resolution: {integrity: sha512-pu0K1jCIdnQ12aWNaAVU5bzi7Bd1w54J3ECgANPmYLtQKP0HBj2cE/5coBD66MT10xbtIuUr7tg0Shbsvk0mDA==}
@@ -1589,9 +1534,6 @@ packages:
 
   '@types/pg@8.11.6':
     resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
-
-  '@types/prismjs@1.26.5':
-    resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
 
   '@types/prop-types@15.7.13':
     resolution: {integrity: sha512-hCZTSvwbzWGvhqxp/RqVqwU999pBf2vp7hzIjiYOsl8wqOmUxkQ6ddw1cV3l8811+kdUFus/q4d1Y3E3SyEifA==}
@@ -3207,10 +3149,6 @@ packages:
   pretty-format@3.8.0:
     resolution: {integrity: sha512-WuxUnVtlWL1OfZFQFuqvnvs6MiAGk9UNsBostyBOB0Is9wb5uRESevA6rnl/rkksXaGX3GzZhPup5d6Vp1nFew==}
 
-  prismjs@1.29.0:
-    resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}
-    engines: {node: '>=6'}
-
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
@@ -3306,6 +3244,12 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-resizable-panels@2.1.7:
+    resolution: {integrity: sha512-JtT6gI+nURzhMYQYsx8DKkx6bSoOGFp7A3CwMrOb8y5jFHFyqwo9m68UhmXRw57fRVJksFn1TSlm3ywEQ9vMgA==}
+    peerDependencies:
+      react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
 
   react-style-singleton@2.2.1:
     resolution: {integrity: sha512-ZWj0fHEMyWkHzKYUr2Bs/4zU6XLmq9HsgBURm7g5pAVfyn49DgUiNgY2d4lXRlYSiCif9YBGpQleewkcqddc7g==}
@@ -3873,36 +3817,12 @@ snapshots:
   '@biomejs/cli-win32-x64@1.9.4':
     optional: true
 
-  '@codemirror/autocomplete@0.20.3':
-    dependencies:
-      '@codemirror/language': 0.20.2
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-      '@lezer/common': 0.16.1
-
   '@codemirror/autocomplete@6.18.3(@codemirror/language@6.10.6)(@codemirror/state@6.5.0)(@codemirror/view@6.35.3)(@lezer/common@1.2.3)':
     dependencies:
       '@codemirror/language': 6.10.6
       '@codemirror/state': 6.5.0
       '@codemirror/view': 6.35.3
       '@lezer/common': 1.2.3
-
-  '@codemirror/basic-setup@0.20.0':
-    dependencies:
-      '@codemirror/autocomplete': 0.20.3
-      '@codemirror/commands': 0.20.0
-      '@codemirror/language': 0.20.2
-      '@codemirror/lint': 0.20.3
-      '@codemirror/search': 0.20.1
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-
-  '@codemirror/commands@0.20.0':
-    dependencies:
-      '@codemirror/language': 0.20.2
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-      '@lezer/common': 0.16.1
 
   '@codemirror/commands@6.7.1':
     dependencies:
@@ -3931,15 +3851,6 @@ snapshots:
     transitivePeerDependencies:
       - '@codemirror/view'
 
-  '@codemirror/language@0.20.2':
-    dependencies:
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-      '@lezer/common': 0.16.1
-      '@lezer/highlight': 0.16.0
-      '@lezer/lr': 0.16.3
-      style-mod: 4.1.2
-
   '@codemirror/language@6.10.6':
     dependencies:
       '@codemirror/state': 6.5.0
@@ -3949,22 +3860,10 @@ snapshots:
       '@lezer/lr': 1.4.2
       style-mod: 4.1.2
 
-  '@codemirror/lint@0.20.3':
-    dependencies:
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
-      crelt: 1.0.6
-
   '@codemirror/lint@6.8.4':
     dependencies:
       '@codemirror/state': 6.5.0
       '@codemirror/view': 6.35.3
-      crelt: 1.0.6
-
-  '@codemirror/search@0.20.1':
-    dependencies:
-      '@codemirror/state': 0.20.1
-      '@codemirror/view': 0.20.7
       crelt: 1.0.6
 
   '@codemirror/search@6.5.8':
@@ -3972,8 +3871,6 @@ snapshots:
       '@codemirror/state': 6.5.0
       '@codemirror/view': 6.35.3
       crelt: 1.0.6
-
-  '@codemirror/state@0.20.1': {}
 
   '@codemirror/state@6.5.0':
     dependencies:
@@ -3985,12 +3882,6 @@ snapshots:
       '@codemirror/state': 6.5.0
       '@codemirror/view': 6.35.3
       '@lezer/highlight': 1.2.1
-
-  '@codemirror/view@0.20.7':
-    dependencies:
-      '@codemirror/state': 0.20.1
-      style-mod: 4.1.2
-      w3c-keyname: 2.2.8
 
   '@codemirror/view@6.35.3':
     dependencies:
@@ -4377,13 +4268,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@lezer/common@0.16.1': {}
-
   '@lezer/common@1.2.3': {}
-
-  '@lezer/highlight@0.16.0':
-    dependencies:
-      '@lezer/common': 0.16.1
 
   '@lezer/highlight@1.2.1':
     dependencies:
@@ -4394,10 +4279,6 @@ snapshots:
       '@lezer/common': 1.2.3
       '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.2
-
-  '@lezer/lr@0.16.3':
-    dependencies:
-      '@lezer/common': 0.16.1
 
   '@lezer/lr@1.4.2':
     dependencies:
@@ -4898,8 +4779,6 @@ snapshots:
       '@types/node': 22.9.0
       pg-protocol: 1.7.0
       pg-types: 4.0.2
-
-  '@types/prismjs@1.26.5': {}
 
   '@types/prop-types@15.7.13': {}
 
@@ -6848,8 +6727,6 @@ snapshots:
 
   pretty-format@3.8.0: {}
 
-  prismjs@1.29.0: {}
-
   prop-types@15.8.1:
     dependencies:
       loose-envify: 1.4.0
@@ -6997,6 +6874,11 @@ snapshots:
       use-sidecar: 1.1.2(@types/react@18.3.12)(react@19.0.0-rc-45804af1-20241021)
     optionalDependencies:
       '@types/react': 18.3.12
+
+  react-resizable-panels@2.1.7(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021):
+    dependencies:
+      react: 19.0.0-rc-45804af1-20241021
+      react-dom: 19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021)
 
   react-style-singleton@2.2.1(@types/react@18.3.12)(react@19.0.0-rc-45804af1-20241021):
     dependencies:
