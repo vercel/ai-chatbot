@@ -3,9 +3,9 @@ import type {
   ChatRequestOptions,
   CreateMessage,
   Message,
-} from "ai";
-import { formatDistance } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+} from 'ai';
+import { formatDistance } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
   memo,
@@ -13,33 +13,33 @@ import {
   useCallback,
   useEffect,
   useState,
-} from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { useDebounceCallback, useWindowSize } from "usehooks-ts";
+} from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
-import type { Document, Suggestion, Vote } from "@/lib/db/schema";
-import { cn, fetcher } from "@/lib/utils";
+import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import { cn, fetcher } from '@/lib/utils';
 
-import { DiffView } from "./diffview";
-import { DocumentSkeleton } from "./document-skeleton";
-import { Editor } from "./editor";
-import { MultimodalInput } from "./multimodal-input";
-import { Toolbar } from "./toolbar";
-import { VersionFooter } from "./version-footer";
-import { BlockActions } from "./block-actions";
-import { BlockCloseButton } from "./block-close-button";
-import { BlockMessages } from "./block-messages";
-import { CrossIcon } from "./icons";
-import { Button } from "./ui/button";
-import { CodeEditor } from "./code-editor";
+import { DiffView } from './diffview';
+import { DocumentSkeleton } from './document-skeleton';
+import { Editor } from './editor';
+import { MultimodalInput } from './multimodal-input';
+import { Toolbar } from './toolbar';
+import { VersionFooter } from './version-footer';
+import { BlockActions } from './block-actions';
+import { BlockCloseButton } from './block-close-button';
+import { BlockMessages } from './block-messages';
+import { CrossIcon } from './icons';
+import { Button } from './ui/button';
+import { CodeEditor } from './code-editor';
 
 export interface UIBlock {
   title: string;
   documentId: string;
-  kind: "text" | "code";
+  kind: 'text' | 'code';
   content: string;
   isVisible: boolean;
-  status: "streaming" | "idle";
+  status: 'streaming' | 'idle';
   boundingBox: {
     top: number;
     left: number;
@@ -98,14 +98,14 @@ function PureBlock({
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    block && block.status !== "streaming"
+    block && block.status !== 'streaming'
       ? `/api/document?id=${block.documentId}`
       : null,
     fetcher,
   );
 
   const { data: suggestions } = useSWR<Array<Suggestion>>(
-    documents && block && block.status !== "streaming"
+    documents && block && block.status !== 'streaming'
       ? `/api/suggestions?documentId=${block.documentId}`
       : null,
     fetcher,
@@ -114,7 +114,7 @@ function PureBlock({
     },
   );
 
-  const [mode, setMode] = useState<"edit" | "diff">("edit");
+  const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
   const [consoleOutputs, setConsoleOutputs] = useState<Array<string>>([]);
@@ -128,7 +128,7 @@ function PureBlock({
         setCurrentVersionIndex(documents.length - 1);
         setBlock((currentBlock) => ({
           ...currentBlock,
-          content: mostRecentDocument.content ?? "",
+          content: mostRecentDocument.content ?? '',
         }));
       }
     }
@@ -159,7 +159,7 @@ function PureBlock({
 
           if (currentDocument.content !== updatedContent) {
             await fetch(`/api/document?id=${block.documentId}`, {
-              method: "POST",
+              method: 'POST',
               body: JSON.stringify({
                 title: block.title,
                 content: updatedContent,
@@ -205,28 +205,28 @@ function PureBlock({
   );
 
   function getDocumentContentById(index: number) {
-    if (!documents) return "";
-    if (!documents[index]) return "";
-    return documents[index].content ?? "";
+    if (!documents) return '';
+    if (!documents[index]) return '';
+    return documents[index].content ?? '';
   }
 
-  const handleVersionChange = (type: "next" | "prev" | "toggle" | "latest") => {
+  const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
     if (!documents) return;
 
-    if (type === "latest") {
+    if (type === 'latest') {
       setCurrentVersionIndex(documents.length - 1);
-      setMode("edit");
+      setMode('edit');
     }
 
-    if (type === "toggle") {
-      setMode((mode) => (mode === "edit" ? "diff" : "edit"));
+    if (type === 'toggle') {
+      setMode((mode) => (mode === 'edit' ? 'diff' : 'edit'));
     }
 
-    if (type === "prev") {
+    if (type === 'prev') {
       if (currentVersionIndex > 0) {
         setCurrentVersionIndex((index) => index - 1);
       }
-    } else if (type === "next") {
+    } else if (type === 'next') {
       if (currentVersionIndex < documents.length - 1) {
         setCurrentVersionIndex((index) => index + 1);
       }
@@ -266,7 +266,7 @@ function PureBlock({
             scale: 1,
             transition: {
               delay: 0.2,
-              type: "spring",
+              type: 'spring',
               stiffness: 200,
               damping: 30,
             },
@@ -350,11 +350,11 @@ function PureBlock({
                 x: 0,
                 y: 0,
                 width: windowWidth,
-                height: "100dvh",
+                height: '100dvh',
                 borderRadius: 0,
                 transition: {
                   delay: 0,
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 200,
                   damping: 30,
                 },
@@ -364,11 +364,11 @@ function PureBlock({
                 x: 400,
                 y: 0,
                 height: windowHeight,
-                width: windowWidth ? windowWidth - 400 : "calc(100dvw-400px)",
+                width: windowWidth ? windowWidth - 400 : 'calc(100dvw-400px)',
                 borderRadius: 0,
                 transition: {
                   delay: 0,
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 200,
                   damping: 30,
                 },
@@ -379,7 +379,7 @@ function PureBlock({
           scale: 0.5,
           transition: {
             delay: 0.1,
-            type: "spring",
+            type: 'spring',
             stiffness: 600,
             damping: 30,
           },
@@ -426,22 +426,22 @@ function PureBlock({
 
         <div
           className={cn(
-            "prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center",
+            'prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
             {
-              "py-2 px-2": block.kind === "code",
-              "py-8 md:p-20 px-4": block.kind === "text",
+              'py-2 px-2': block.kind === 'code',
+              'py-8 md:p-20 px-4': block.kind === 'text',
             },
           )}
         >
           <div
-            className={cn("flex flex-row", {
-              "": block.kind === "code",
-              "mx-auto max-w-[600px]": block.kind === "text",
+            className={cn('flex flex-row', {
+              '': block.kind === 'code',
+              'mx-auto max-w-[600px]': block.kind === 'text',
             })}
           >
             {isDocumentsFetching && !block.content ? (
               <DocumentSkeleton />
-            ) : block.kind === "code" ? (
+            ) : block.kind === 'code' ? (
               <CodeEditor
                 content={
                   isCurrentVersion
@@ -454,8 +454,8 @@ function PureBlock({
                 status={block.status}
                 saveContent={saveContent}
               />
-            ) : block.kind === "text" ? (
-              mode === "edit" ? (
+            ) : block.kind === 'text' ? (
+              mode === 'edit' ? (
                 <Editor
                   content={
                     isCurrentVersion
@@ -513,7 +513,7 @@ function PureBlock({
               initial={{ y: 224 }}
               animate={{ y: 0 }}
               exit={{ y: 224 }}
-              transition={{ type: "spring", stiffness: 140, damping: 20 }}
+              transition={{ type: 'spring', stiffness: 140, damping: 20 }}
             >
               <div className="flex flex-row justify-between items-center w-full h-fit border-b border-zinc-700 p-2 sticky top-0 z-50 bg-zinc-800">
                 <div className="text-sm pl-2 text-zinc-50">Console</div>

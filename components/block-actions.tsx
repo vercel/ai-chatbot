@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import {
   CopyIcon,
   DeltaIcon,
@@ -6,20 +6,20 @@ import {
   RedoIcon,
   TerminalIcon,
   UndoIcon,
-} from "./icons";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { useCopyToClipboard } from "usehooks-ts";
-import { toast } from "sonner";
-import { UIBlock } from "./block";
-import { Dispatch, memo, SetStateAction, useCallback, useState } from "react";
+} from './icons';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { useCopyToClipboard } from 'usehooks-ts';
+import { toast } from 'sonner';
+import { UIBlock } from './block';
+import { Dispatch, memo, SetStateAction, useCallback, useState } from 'react';
 
 interface BlockActionsProps {
   block: UIBlock;
-  handleVersionChange: (type: "next" | "prev" | "toggle" | "latest") => void;
+  handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
-  mode: "read-only" | "edit" | "diff";
+  mode: 'read-only' | 'edit' | 'diff';
   setConsoleOutputs: Dispatch<SetStateAction<Array<string>>>;
 }
 
@@ -41,7 +41,7 @@ export function RunCodeButton({
       if (!currentPyodideInstance) {
         // @ts-expect-error - pyodide is not defined
         const newPyodideInstance = await loadPyodide({
-          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
         });
 
         setPyodide(newPyodideInstance);
@@ -78,7 +78,7 @@ export function RunCodeButton({
       onClick={() => {
         loadAndRunPython();
       }}
-      disabled={block.status === "streaming"}
+      disabled={block.status === 'streaming'}
     >
       <PlayIcon size={18} /> Run
     </Button>
@@ -97,7 +97,7 @@ function PureBlockActions({
 
   return (
     <div className="flex flex-row gap-1">
-      {block.kind === "code" && (
+      {block.kind === 'code' && (
         <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
       )}
 
@@ -108,9 +108,9 @@ function PureBlockActions({
             className="p-2 h-fit dark:hover:bg-zinc-700"
             onClick={() => {
               copyToClipboard(block.content);
-              toast.success("Copied to clipboard!");
+              toast.success('Copied to clipboard!');
             }}
-            disabled={block.status === "streaming"}
+            disabled={block.status === 'streaming'}
           >
             <CopyIcon size={18} />
           </Button>
@@ -123,9 +123,9 @@ function PureBlockActions({
             variant="outline"
             className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
             onClick={() => {
-              handleVersionChange("prev");
+              handleVersionChange('prev');
             }}
-            disabled={currentVersionIndex === 0 || block.status === "streaming"}
+            disabled={currentVersionIndex === 0 || block.status === 'streaming'}
           >
             <UndoIcon size={18} />
           </Button>
@@ -138,9 +138,9 @@ function PureBlockActions({
             variant="outline"
             className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
             onClick={() => {
-              handleVersionChange("next");
+              handleVersionChange('next');
             }}
-            disabled={isCurrentVersion || block.status === "streaming"}
+            disabled={isCurrentVersion || block.status === 'streaming'}
           >
             <RedoIcon size={18} />
           </Button>
@@ -152,15 +152,15 @@ function PureBlockActions({
           <Button
             variant="outline"
             className={cn(
-              "p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700",
+              'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
               {
-                "bg-muted": mode === "diff",
+                'bg-muted': mode === 'diff',
               },
             )}
             onClick={() => {
-              handleVersionChange("toggle");
+              handleVersionChange('toggle');
             }}
-            disabled={block.status === "streaming" || currentVersionIndex === 0}
+            disabled={block.status === 'streaming' || currentVersionIndex === 0}
           >
             <DeltaIcon size={18} />
           </Button>
