@@ -1,4 +1,5 @@
 import type {
+  Attachment,
   CoreAssistantMessage,
   CoreMessage,
   CoreToolMessage,
@@ -97,6 +98,7 @@ export function convertToUIMessages(
 
     let textContent = '';
     const toolInvocations: Array<ToolInvocation> = [];
+    const experimental_attachments: Array<Attachment> = [];
 
     if (typeof message.content === 'string') {
       textContent = message.content;
@@ -111,6 +113,12 @@ export function convertToUIMessages(
             toolName: content.toolName,
             args: content.args,
           });
+        } else if (content.type === 'image') {
+          experimental_attachments.push({
+            url: content.image,
+            name: content.name || '',
+            contentType: content.contentType || 'image',
+          });
         }
       }
     }
@@ -120,6 +128,7 @@ export function convertToUIMessages(
       role: message.role as Message['role'],
       content: textContent,
       toolInvocations,
+      experimental_attachments,
     });
 
     return chatMessages;
