@@ -29,7 +29,7 @@ import { VersionFooter } from './version-footer';
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
-import { CrossIcon } from './icons';
+import { CrossIcon, LoaderIcon, TerminalIcon } from './icons';
 import { Button } from './ui/button';
 import { CodeEditor } from './code-editor';
 
@@ -46,6 +46,12 @@ export interface UIBlock {
     width: number;
     height: number;
   };
+}
+
+export interface ConsoleOutput {
+  id: string;
+  status: 'in_progress' | 'completed' | 'failed';
+  content: string | null;
 }
 
 function PureBlock({
@@ -117,7 +123,9 @@ function PureBlock({
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
-  const [consoleOutputs, setConsoleOutputs] = useState<Array<string>>([]);
+  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
+    [],
+  );
 
   useEffect(() => {
     if (documents && documents.length > 0) {
@@ -517,7 +525,10 @@ function PureBlock({
               transition={{ type: 'spring', stiffness: 140, damping: 20 }}
             >
               <div className="flex flex-row justify-between items-center w-full h-fit border-b border-zinc-700 p-2 sticky top-0 z-50 bg-zinc-800">
-                <div className="text-sm pl-2 text-zinc-50">Console</div>
+                <div className="text-sm pl-2 text-zinc-50 flex flex-row gap-4 items-center">
+                  <TerminalIcon />
+                  Console
+                </div>
                 <Button
                   variant="ghost"
                   className="h-fit px-2 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50"
@@ -531,11 +542,17 @@ function PureBlock({
 
               {consoleOutputs.map((consoleOutput, index) => (
                 <div
-                  key={`output-${index}`}
+                  key={consoleOutput.id}
                   className="p-4 flex flex-row gap-2 text-sm border-b border-zinc-700 bg-zinc-900 font-mono"
                 >
                   <div className="text-emerald-500">[{index + 1}]</div>
-                  <div className="text-zinc-50">{consoleOutput}</div>
+                  {consoleOutput.status === 'in_progress' ? (
+                    <div className="animate-spin">
+                      <LoaderIcon />
+                    </div>
+                  ) : (
+                    <div className="text-zinc-50">{consoleOutput.content}</div>
+                  )}
                 </div>
               ))}
             </motion.div>

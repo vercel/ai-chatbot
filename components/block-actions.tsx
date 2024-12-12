@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, generateUUID } from '@/lib/utils';
 import {
   CopyIcon,
   DeltaIcon,
@@ -11,7 +11,7 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { toast } from 'sonner';
-import { UIBlock } from './block';
+import { ConsoleOutput, UIBlock } from './block';
 import { Dispatch, memo, SetStateAction, useCallback, useState } from 'react';
 
 interface BlockActionsProps {
@@ -20,7 +20,7 @@ interface BlockActionsProps {
   currentVersionIndex: number;
   isCurrentVersion: boolean;
   mode: 'read-only' | 'edit' | 'diff';
-  setConsoleOutputs: Dispatch<SetStateAction<Array<string>>>;
+  setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }
 
 export function RunCodeButton({
@@ -28,13 +28,44 @@ export function RunCodeButton({
   setConsoleOutputs,
 }: {
   block: UIBlock;
-  setConsoleOutputs: Dispatch<SetStateAction<Array<string>>>;
+  setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }) {
   const [pyodide, setPyodide] = useState<any>(null);
   const isPython = true;
   const codeContent = block.content;
 
+  const updateConsoleOutput = useCallback(
+    (runId: string, content: string | null, status: 'completed' | 'failed') => {
+      setConsoleOutputs((consoleOutputs) => {
+        const index = consoleOutputs.findIndex((output) => output.id === runId);
+
+        if (index === -1) return consoleOutputs;
+
+        const updatedOutputs = [...consoleOutputs];
+        updatedOutputs[index] = {
+          id: runId,
+          content,
+          status,
+        };
+
+        return updatedOutputs;
+      });
+    },
+    [setConsoleOutputs],
+  );
+
   const loadAndRunPython = useCallback(async () => {
+    const runId = generateUUID();
+
+    setConsoleOutputs((consoleOutputs) => [
+      ...consoleOutputs,
+      {
+        id: runId,
+        content: null,
+        status: 'in_progress',
+      },
+    ]);
+
     let currentPyodideInstance = pyodide;
 
     if (isPython) {
@@ -57,19 +88,16 @@ export function RunCodeButton({
 
         await currentPyodideInstance.runPythonAsync(codeContent);
 
-        const output = await currentPyodideInstance.runPythonAsync(
+        const output: string = await currentPyodideInstance.runPythonAsync(
           `sys.stdout.getvalue()`,
         );
 
-        setConsoleOutputs((consoleOutputs) => [...consoleOutputs, output]);
+        updateConsoleOutput(runId, output, 'completed');
       } catch (error: any) {
-        setConsoleOutputs((consoleOutputs) => [
-          ...consoleOutputs,
-          error.message,
-        ]);
+        updateConsoleOutput(runId, error.message, 'failed');
       }
     }
-  }, [pyodide, codeContent, isPython, setConsoleOutputs]);
+  }, [pyodide, codeContent, isPython, setConsoleOutputs, updateConsoleOutput]);
 
   return (
     <Button
