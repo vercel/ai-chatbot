@@ -169,11 +169,13 @@ export async function getVotesByChatId({ id }: { id: string }) {
 export async function saveDocument({
   id,
   title,
+  kind,
   content,
   userId,
 }: {
   id: string;
   title: string;
+  kind: 'text' | 'code';
   content: string;
   userId: string;
 }) {
@@ -181,6 +183,7 @@ export async function saveDocument({
     return await db.insert(document).values({
       id,
       title,
+      kind,
       content,
       userId,
       createdAt: new Date(),

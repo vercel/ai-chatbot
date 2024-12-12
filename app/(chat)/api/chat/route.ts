@@ -2,6 +2,7 @@ import {
   type Message,
   StreamData,
   convertToCoreMessages,
+  generateObject,
   streamObject,
   streamText,
 } from 'ai';
@@ -10,7 +11,7 @@ import { z } from 'zod';
 import { auth } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
+import { codePrompt, systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
@@ -119,11 +120,12 @@ export async function POST(request: Request) {
         },
       },
       createDocument: {
-        description: 'Create a document for a writing activity',
+        description: 'Create a document for a writing activity.',
         parameters: z.object({
           title: z.string(),
+          kind: z.enum(['text', 'code']),
         }),
-        execute: async ({ title }) => {
+        execute: async ({ title, kind }) => {
           const id = generateUUID();
           let draftText = '';
 
@@ -138,37 +140,77 @@ export async function POST(request: Request) {
           });
 
           streamingData.append({
+            type: 'kind',
+            content: kind,
+          });
+
+          streamingData.append({
             type: 'clear',
             content: '',
           });
 
-          const { fullStream } = streamText({
-            model: customModel(model.apiIdentifier),
-            system:
-              'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
-            prompt: title,
-          });
+          if (kind === 'text') {
+            const { fullStream } = streamText({
+              model: customModel(model.apiIdentifier),
+              system:
+                'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+              prompt: title,
+            });
 
-          for await (const delta of fullStream) {
-            const { type } = delta;
+            for await (const delta of fullStream) {
+              const { type } = delta;
 
-            if (type === 'text-delta') {
-              const { textDelta } = delta;
+              if (type === 'text-delta') {
+                const { textDelta } = delta;
 
-              draftText += textDelta;
-              streamingData.append({
-                type: 'text-delta',
-                content: textDelta,
-              });
+                draftText += textDelta;
+                streamingData.append({
+                  type: 'text-delta',
+                  content: textDelta,
+                });
+              }
             }
-          }
+          } else if (kind === 'code') {
+            const { object } = await generateObject({
+              model: customModel(model.apiIdentifier),
+              system: codePrompt,
+              prompt: title,
+              schema: z.object({
+                code: z.string(),
+              }),
+            });
 
-          streamingData.append({ type: 'finish', content: '' });
+            streamingData.append({
+              type: 'text-delta',
+              content: object.code,
+            });
+
+            draftText = object.code;
+
+            console.log(draftText);
+
+            streamingData.append({ type: 'finish', content: '' });
+
+            // for await (const delta of partialObjectStream) {
+            //   const { type } = delta;
+
+            //   if (type === "text-delta") {
+            //     const { textDelta } = delta;
+
+            //     draftText += textDelta;
+            //     streamingData.append({
+            //       type: "text-delta",
+            //       content: textDelta,
+            //     });
+            //   }
+            // }
+          }
 
           if (session.user?.id) {
             await saveDocument({
               id,
               title,
+              kind,
               content: draftText,
               userId: session.user.id,
             });
@@ -177,6 +219,7 @@ export async function POST(request: Request) {
           return {
             id,
             title,
+            kind,
             content: 'A document was created and is now visible to the user.',
           };
         },
@@ -248,6 +291,7 @@ export async function POST(request: Request) {
               id,
               title: document.title,
               content: draftText,
+              kind: document.kind,
               userId: session.user.id,
             });
           }

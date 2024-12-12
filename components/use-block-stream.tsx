@@ -15,7 +15,8 @@ type StreamingDelta = {
     | 'suggestion'
     | 'clear'
     | 'finish'
-    | 'user-message-id';
+    | 'user-message-id'
+    | 'kind';
 
   content: string | Suggestion;
 };
@@ -67,6 +68,12 @@ export function useBlockStream({
             title: delta.content as string,
           };
 
+        case 'kind':
+          return {
+            ...draftBlock,
+            kind: delta.content as 'text' | 'code',
+          };
+
         case 'text-delta':
           return {
             ...draftBlock,
@@ -107,5 +114,5 @@ export function useBlockStream({
           return draftBlock;
       }
     });
-  }, [streamingData, setBlock]);
+  }, [streamingData, setBlock, setUserMessageIdFromServer]);
 }

@@ -24,7 +24,7 @@ const getActionText = (
 
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
-  result: { id: string; title: string };
+  result: { id: string; title: string; kind: 'text' | 'code' };
   block: UIBlock;
   setBlock: (value: SetStateAction<UIBlock>) => void;
   isReadonly: boolean;
@@ -59,6 +59,7 @@ function PureDocumentToolResult({
 
         setBlock({
           documentId: result.id,
+          kind: result.kind,
           content: '',
           title: result.title,
           isVisible: true,
