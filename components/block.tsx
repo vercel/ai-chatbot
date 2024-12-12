@@ -163,6 +163,7 @@ function PureBlock({
               body: JSON.stringify({
                 title: block.title,
                 content: updatedContent,
+                kind: block.kind,
               }),
             });
 
@@ -530,7 +531,7 @@ function PureBlock({
 
               {consoleOutputs.map((consoleOutput, index) => (
                 <div
-                  key={index}
+                  key={`output-${index}`}
                   className="p-4 flex flex-row gap-2 text-sm border-b border-zinc-700 bg-zinc-900 font-mono"
                 >
                   <div className="text-emerald-500">[{index + 1}]</div>

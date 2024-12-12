@@ -291,6 +291,7 @@ export async function POST(request: Request) {
               id,
               title: document.title,
               content: draftText,
+              kind: document.kind,
               userId: session.user.id,
             });
           }
