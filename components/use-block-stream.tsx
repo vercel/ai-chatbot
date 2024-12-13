@@ -10,6 +10,7 @@ import { useUserMessageId } from '@/hooks/use-user-message-id';
 type StreamingDelta = {
   type:
     | 'text-delta'
+    | 'code-delta'
     | 'title'
     | 'id'
     | 'suggestion'
@@ -82,6 +83,20 @@ export function useBlockStream({
               draftBlock.status === 'streaming' &&
               draftBlock.content.length > 200 &&
               draftBlock.content.length < 250
+                ? true
+                : draftBlock.isVisible,
+            status: 'streaming',
+          };
+
+        case 'code-delta':
+          console.log(delta);
+          return {
+            ...draftBlock,
+            content: delta.content as string,
+            isVisible:
+              draftBlock.status === 'streaming' &&
+              draftBlock.content.length > 20 &&
+              draftBlock.content.length < 30
                 ? true
                 : draftBlock.isVisible,
             status: 'streaming',

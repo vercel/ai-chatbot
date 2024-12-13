@@ -6,6 +6,7 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { ConsoleOutput } from './block';
@@ -19,6 +20,7 @@ interface ConsoleProps {
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(224);
   const [isResizing, setIsResizing] = useState(false);
+  const consoleEndRef = useRef<HTMLDivElement>(null);
 
   const minHeight = 100;
   const maxHeight = 800;
@@ -52,6 +54,10 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
     };
   }, [resize, stopResizing]);
 
+  useEffect(() => {
+    consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [consoleOutputs]);
+
   return consoleOutputs.length > 0 ? (
     <motion.div
       initial={{ y: height }}
@@ -84,21 +90,25 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
           <CrossIcon />
         </Button>
       </div>
-      {consoleOutputs.map((consoleOutput, index) => (
-        <div
-          key={consoleOutput.id}
-          className="p-4 flex flex-row gap-2 text-sm border-b border-zinc-700 bg-zinc-900 font-mono"
-        >
-          <div className="text-emerald-500">[{index + 1}]</div>
-          {consoleOutput.status === 'in_progress' ? (
-            <div className="animate-spin size-fit self-center">
-              <LoaderIcon />
-            </div>
-          ) : (
-            <div className="text-zinc-50">{consoleOutput.content}</div>
-          )}
-        </div>
-      ))}
+
+      <div>
+        {consoleOutputs.map((consoleOutput, index) => (
+          <div
+            key={consoleOutput.id}
+            className="p-4 flex flex-row text-sm border-b border-zinc-700 bg-zinc-900 font-mono last-of-type:bg-red-500"
+          >
+            <div className="text-emerald-500 w-12">[{index + 1}]</div>
+            {consoleOutput.status === 'in_progress' ? (
+              <div className="animate-spin size-fit self-center">
+                <LoaderIcon />
+              </div>
+            ) : (
+              <div className="text-zinc-50">{consoleOutput.content}</div>
+            )}
+          </div>
+        ))}
+        <div ref={consoleEndRef} />
+      </div>
     </motion.div>
   ) : null;
 }

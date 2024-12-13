@@ -170,8 +170,10 @@ export async function POST(request: Request) {
                 });
               }
             }
+
+            streamingData.append({ type: 'finish', content: '' });
           } else if (kind === 'code') {
-            const { object } = await generateObject({
+            const { fullStream } = streamObject({
               model: customModel(model.apiIdentifier),
               system: codePrompt,
               prompt: title,
@@ -180,30 +182,25 @@ export async function POST(request: Request) {
               }),
             });
 
-            streamingData.append({
-              type: 'text-delta',
-              content: object.code,
-            });
+            for await (const delta of fullStream) {
+              const { type } = delta;
 
-            draftText = object.code;
+              if (type === 'object') {
+                const { object } = delta;
+                const { code } = object;
 
-            console.log(draftText);
+                if (code) {
+                  streamingData.append({
+                    type: 'code-delta',
+                    content: code ?? '',
+                  });
+
+                  draftText = code;
+                }
+              }
+            }
 
             streamingData.append({ type: 'finish', content: '' });
-
-            // for await (const delta of partialObjectStream) {
-            //   const { type } = delta;
-
-            //   if (type === "text-delta") {
-            //     const { textDelta } = delta;
-
-            //     draftText += textDelta;
-            //     streamingData.append({
-            //       type: "text-delta",
-            //       content: textDelta,
-            //     });
-            //   }
-            // }
           }
 
           if (session.user?.id) {

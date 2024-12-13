@@ -80,21 +80,19 @@ export function RunCodeButton({
       }
 
       try {
-        setTimeout(async () => {
-          await currentPyodideInstance.runPythonAsync(`
+        await currentPyodideInstance.runPythonAsync(`
             import sys
             import io
             sys.stdout = io.StringIO()
           `);
 
-          await currentPyodideInstance.runPythonAsync(codeContent);
+        await currentPyodideInstance.runPythonAsync(codeContent);
 
-          const output: string = await currentPyodideInstance.runPythonAsync(
-            `sys.stdout.getvalue()`,
-          );
+        const output: string = await currentPyodideInstance.runPythonAsync(
+          `sys.stdout.getvalue()`,
+        );
 
-          updateConsoleOutput(runId, output, 'completed');
-        }, 1000);
+        updateConsoleOutput(runId, output, 'completed');
       } catch (error: any) {
         updateConsoleOutput(runId, error.message, 'failed');
       }
