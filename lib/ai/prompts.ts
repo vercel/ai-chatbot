@@ -56,3 +56,9 @@ def factorial(n):
 print(f"Factorial of 5 is: {factorial(5)}")
 \`\`\`
 `;
+
+export const updateDocumentPrompt = (currentContent: string | null) => `\
+Update the following contents of the document based on the given prompt.
+
+${currentContent}
+`;

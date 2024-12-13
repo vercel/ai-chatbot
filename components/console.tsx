@@ -18,7 +18,7 @@ interface ConsoleProps {
 }
 
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
-  const [height, setHeight] = useState<number>(224);
+  const [height, setHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState(false);
   const consoleEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,56 +59,55 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   }, [consoleOutputs]);
 
   return consoleOutputs.length > 0 ? (
-    <motion.div
-      initial={{ y: height }}
-      animate={{ y: 0 }}
-      exit={{ y: height }}
-      transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-      className={cn(
-        'absolute flex flex-col bottom-0 bg-zinc-900 w-full border-t z-50 overflow-y-scroll border-zinc-700',
-        {
-          'select-none': isResizing,
-        },
-      )}
-      style={{ height }}
-    >
+    <>
       <div
-        className="w-full h-2 bg-zinc-800 cursor-ns-resize"
+        className="h-2 w-full fixed cursor-ns-resize z-50"
         onMouseDown={startResizing}
+        style={{ bottom: height - 4 }}
       />
 
-      <div className="flex flex-row justify-between items-center w-full h-fit border-b border-zinc-700 p-2 pt-0 sticky top-0 z-50 bg-zinc-800">
-        <div className="text-sm pl-2 text-zinc-50 flex flex-row gap-4 items-center">
-          <TerminalIcon />
-          Console
-        </div>
-        <Button
-          variant="ghost"
-          className="h-fit px-2 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50"
-          onClick={() => setConsoleOutputs([])}
-        >
-          <CrossIcon />
-        </Button>
-      </div>
-
-      <div>
-        {consoleOutputs.map((consoleOutput, index) => (
-          <div
-            key={consoleOutput.id}
-            className="p-4 flex flex-row text-sm border-b border-zinc-700 bg-zinc-900 font-mono last-of-type:bg-red-500"
-          >
-            <div className="text-emerald-500 w-12">[{index + 1}]</div>
-            {consoleOutput.status === 'in_progress' ? (
-              <div className="animate-spin size-fit self-center">
-                <LoaderIcon />
-              </div>
-            ) : (
-              <div className="text-zinc-50">{consoleOutput.content}</div>
-            )}
+      <div
+        className={cn(
+          'fixed flex flex-col bottom-0 bg-zinc-900 w-full border-t z-40 overflow-y-scroll border-zinc-700',
+          {
+            'select-none': isResizing,
+          },
+        )}
+        style={{ height }}
+      >
+        <div className="flex flex-row justify-between items-center w-full h-fit border-b border-zinc-700 p-2 sticky top-0 z-50 bg-zinc-800">
+          <div className="text-sm pl-2 text-zinc-50 flex flex-row gap-4 items-center">
+            <TerminalIcon />
+            Console
           </div>
-        ))}
-        <div ref={consoleEndRef} />
+          <Button
+            variant="ghost"
+            className="h-fit px-2 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50"
+            onClick={() => setConsoleOutputs([])}
+          >
+            <CrossIcon />
+          </Button>
+        </div>
+
+        <div>
+          {consoleOutputs.map((consoleOutput, index) => (
+            <div
+              key={consoleOutput.id}
+              className="p-4 flex flex-row text-sm border-b border-zinc-700 bg-zinc-900 font-mono last-of-type:bg-red-500"
+            >
+              <div className="text-emerald-500 w-12">[{index + 1}]</div>
+              {consoleOutput.status === 'in_progress' ? (
+                <div className="animate-spin size-fit self-center">
+                  <LoaderIcon />
+                </div>
+              ) : (
+                <div className="text-zinc-50">{consoleOutput.content}</div>
+              )}
+            </div>
+          ))}
+          <div ref={consoleEndRef} />
+        </div>
       </div>
-    </motion.div>
+    </>
   ) : null;
 }
