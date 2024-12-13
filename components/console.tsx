@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TerminalIcon, CrossIcon, LoaderIcon } from './icons';
+import { TerminalIcon, CrossIcon, LoaderIcon, CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
 import {
   Dispatch,
@@ -68,24 +68,27 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
 
       <div
         className={cn(
-          'fixed flex flex-col bottom-0 bg-zinc-900 w-full border-t z-40 overflow-y-scroll border-zinc-700',
+          'fixed flex flex-col bottom-0 dark:bg-zinc-900 bg-zinc-50 w-full border-t z-40 overflow-y-scroll dark:border-zinc-700 border-zinc-200',
           {
             'select-none': isResizing,
           },
         )}
         style={{ height }}
       >
-        <div className="flex flex-row justify-between items-center w-full h-fit border-b border-zinc-700 p-2 sticky top-0 z-50 bg-zinc-800">
-          <div className="text-sm pl-2 text-zinc-50 flex flex-row gap-4 items-center">
-            <TerminalIcon />
-            Console
+        <div className="flex flex-row justify-between items-center w-full h-fit border-b dark:border-zinc-700 border-zinc-200 px-2 py-1 sticky top-0 z-50 bg-muted">
+          <div className="text-sm pl-2 dark:text-zinc-50 text-zinc-800 flex flex-row gap-3 items-center">
+            <div className="text-muted-foreground">
+              <TerminalIcon />
+            </div>
+            <div>Console</div>
           </div>
           <Button
             variant="ghost"
-            className="h-fit px-2 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50"
+            className="size-fit p-1 hover:dark:bg-zinc-700 hover:bg-zinc-200"
+            size="icon"
             onClick={() => setConsoleOutputs([])}
           >
-            <CrossIcon />
+            <CrossSmallIcon />
           </Button>
         </div>
 
@@ -93,15 +96,26 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
           {consoleOutputs.map((consoleOutput, index) => (
             <div
               key={consoleOutput.id}
-              className="p-4 flex flex-row text-sm border-b border-zinc-700 bg-zinc-900 font-mono last-of-type:bg-red-500"
+              className="px-4 py-2 flex flex-row text-sm border-b dark:border-zinc-700 border-zinc-200 dark:bg-zinc-900 bg-zinc-50 font-mono"
             >
-              <div className="text-emerald-500 w-12">[{index + 1}]</div>
+              <div
+                className={cn('w-12 shrink-0', {
+                  'text-muted-foreground':
+                    consoleOutput.status === 'in_progress',
+                  'text-emerald-500': consoleOutput.status === 'completed',
+                  'text-red-400': consoleOutput.status === 'failed',
+                })}
+              >
+                [{index + 1}]
+              </div>
               {consoleOutput.status === 'in_progress' ? (
                 <div className="animate-spin size-fit self-center">
                   <LoaderIcon />
                 </div>
               ) : (
-                <div className="text-zinc-50">{consoleOutput.content}</div>
+                <div className="dark:text-zinc-50 text-zinc-900">
+                  {consoleOutput.content}
+                </div>
               )}
             </div>
           ))}
