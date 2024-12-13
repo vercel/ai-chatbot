@@ -1,5 +1,12 @@
 import { cn, generateUUID } from '@/lib/utils';
-import { CopyIcon, DeltaIcon, PlayIcon, RedoIcon, UndoIcon } from './icons';
+import {
+  ClockRewind,
+  CopyIcon,
+  DeltaIcon,
+  PlayIcon,
+  RedoIcon,
+  UndoIcon,
+} from './icons';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
@@ -135,18 +142,23 @@ function PureBlockActions({
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            className="p-2 h-fit dark:hover:bg-zinc-700"
+            className={cn(
+              'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
+              {
+                'bg-muted': mode === 'diff',
+              },
+            )}
             onClick={() => {
-              copyToClipboard(block.content);
-              toast.success('Copied to clipboard!');
+              handleVersionChange('toggle');
             }}
-            disabled={block.status === 'streaming'}
+            disabled={block.status === 'streaming' || currentVersionIndex === 0}
           >
-            <CopyIcon size={18} />
+            <ClockRewind size={18} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Copy to clipboard</TooltipContent>
+        <TooltipContent>View changes</TooltipContent>
       </Tooltip>
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -162,6 +174,7 @@ function PureBlockActions({
         </TooltipTrigger>
         <TooltipContent>View Previous version</TooltipContent>
       </Tooltip>
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -177,25 +190,22 @@ function PureBlockActions({
         </TooltipTrigger>
         <TooltipContent>View Next version</TooltipContent>
       </Tooltip>
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            className={cn(
-              'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
-              {
-                'bg-muted': mode === 'diff',
-              },
-            )}
+            className="p-2 h-fit dark:hover:bg-zinc-700"
             onClick={() => {
-              handleVersionChange('toggle');
+              copyToClipboard(block.content);
+              toast.success('Copied to clipboard!');
             }}
-            disabled={block.status === 'streaming' || currentVersionIndex === 0}
+            disabled={block.status === 'streaming'}
           >
-            <DeltaIcon size={18} />
+            <CopyIcon size={18} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>View changes</TooltipContent>
+        <TooltipContent>Copy to clipboard</TooltipContent>
       </Tooltip>
     </div>
   );
