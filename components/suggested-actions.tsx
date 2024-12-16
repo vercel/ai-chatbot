@@ -21,9 +21,9 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
       action: 'What is the weather in San Francisco?',
     },
     {
-      title: 'Help me draft an essay',
-      label: 'about Silicon Valley',
-      action: 'Help me draft a short essay about Silicon Valley',
+      title: 'Help me write code to',
+      label: 'demonstrate the djikstra algorithm!',
+      action: 'Help me write code to demonstrate the djikstra algorithm!',
     },
   ];
 
