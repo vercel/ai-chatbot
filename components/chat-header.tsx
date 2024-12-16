@@ -53,8 +53,6 @@ function PureChatHeader({
                   router.push('/');
                   router.refresh();
                 }
-                router.push('/');
-                router.refresh();
               }}
             >
               <PlusIcon />

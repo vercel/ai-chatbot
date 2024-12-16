@@ -67,6 +67,7 @@ export function Chat({
   const [block, setBlock] = useState<UIBlock>({
     documentId: 'init',
     content: '',
+    kind: 'text',
     title: '',
     status: 'idle',
     isVisible: false,
