@@ -1,10 +1,10 @@
-import { ChatRequestOptions, Message } from 'ai';
+import type { ChatRequestOptions, Message } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Overview } from './overview';
-import { UIBlock } from './block';
-import { Dispatch, memo, SetStateAction } from 'react';
-import { Vote } from '@/lib/db/schema';
+import type { UIBlock } from './block';
+import { type Dispatch, memo, type SetStateAction } from 'react';
+import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 
 interface MessagesProps {

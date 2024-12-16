@@ -1,14 +1,14 @@
 import { TerminalWindowIcon, LoaderIcon, CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
 import {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from 'react';
-import { ConsoleOutput } from './block';
+import type { ConsoleOutput } from './block';
 import { cn } from '@/lib/utils';
 
 interface ConsoleProps {
@@ -60,6 +60,9 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   return consoleOutputs.length > 0 ? (
     <>
       <div
+        role="separator"
+        aria-orientation="horizontal"
+        tabIndex={0}
         className="h-2 w-full fixed cursor-ns-resize z-50"
         onMouseDown={startResizing}
         style={{ bottom: height - 4 }}

@@ -4,11 +4,11 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { toast } from 'sonner';
-import { ConsoleOutput, UIBlock } from './block';
+import type { ConsoleOutput, UIBlock } from './block';
 import {
-  Dispatch,
+  type Dispatch,
   memo,
-  SetStateAction,
+  type SetStateAction,
   startTransition,
   useCallback,
   useState,

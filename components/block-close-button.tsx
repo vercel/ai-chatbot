@@ -1,8 +1,7 @@
-import { memo, SetStateAction } from 'react';
+import { memo, type SetStateAction } from 'react';
 import { CrossIcon } from './icons';
 import { Button } from './ui/button';
-import { UIBlock } from './block';
-import equal from 'fast-deep-equal';
+import type { UIBlock } from './block';
 
 interface BlockCloseButtonProps {
   setBlock: (value: SetStateAction<UIBlock>) => void;
