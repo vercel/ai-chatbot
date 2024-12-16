@@ -94,14 +94,15 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
 }
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
-  return (
-    prevProps.suggestions === nextProps.suggestions &&
-    prevProps.currentVersionIndex === nextProps.currentVersionIndex &&
-    prevProps.isCurrentVersion === nextProps.isCurrentVersion &&
-    !(prevProps.status === 'streaming' && nextProps.status === 'streaming') &&
-    prevProps.content === nextProps.content &&
-    prevProps.saveContent === nextProps.saveContent
-  );
+  if (prevProps.suggestions !== nextProps.suggestions) return false;
+  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
+    return false;
+  if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
+  if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
+    return false;
+  if (prevProps.content !== nextProps.content) return false;
+
+  return true;
 }
 
 export const CodeEditor = memo(PureCodeEditor, areEqual);

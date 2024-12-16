@@ -4,7 +4,7 @@ import { useSWRConfig } from 'swr';
 
 import type { Suggestion } from '@/lib/db/schema';
 
-import type { UIBlock } from './block';
+import type { BlockKind, UIBlock } from './block';
 import { useUserMessageId } from '@/hooks/use-user-message-id';
 
 type StreamingDelta = {
@@ -72,7 +72,7 @@ export function useBlockStream({
         case 'kind':
           return {
             ...draftBlock,
-            kind: delta.content as 'text' | 'code',
+            kind: delta.content as BlockKind,
           };
 
         case 'text-delta':

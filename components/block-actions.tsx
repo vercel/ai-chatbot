@@ -1,12 +1,5 @@
 import { cn, generateUUID } from '@/lib/utils';
-import {
-  ClockRewind,
-  CopyIcon,
-  DeltaIcon,
-  PlayIcon,
-  RedoIcon,
-  UndoIcon,
-} from './icons';
+import { ClockRewind, CopyIcon, PlayIcon, RedoIcon, UndoIcon } from './icons';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
@@ -138,26 +131,30 @@ function PureBlockActions({
         <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
       )}
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
-              {
-                'bg-muted': mode === 'diff',
-              },
-            )}
-            onClick={() => {
-              handleVersionChange('toggle');
-            }}
-            disabled={block.status === 'streaming' || currentVersionIndex === 0}
-          >
-            <ClockRewind size={18} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>View changes</TooltipContent>
-      </Tooltip>
+      {block.kind === 'text' && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
+                {
+                  'bg-muted': mode === 'diff',
+                },
+              )}
+              onClick={() => {
+                handleVersionChange('toggle');
+              }}
+              disabled={
+                block.status === 'streaming' || currentVersionIndex === 0
+              }
+            >
+              <ClockRewind size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>View changes</TooltipContent>
+        </Tooltip>
+      )}
 
       <Tooltip>
         <TooltipTrigger asChild>

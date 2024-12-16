@@ -32,10 +32,12 @@ import { BlockMessages } from './block-messages';
 import { CodeEditor } from './code-editor';
 import { Console } from './console';
 
+export type BlockKind = 'text' | 'code';
+
 export interface UIBlock {
   title: string;
   documentId: string;
-  kind: 'text' | 'code';
+  kind: BlockKind;
   content: string;
   isVisible: boolean;
   status: 'streaming' | 'idle';

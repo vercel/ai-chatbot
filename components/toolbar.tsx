@@ -37,6 +37,7 @@ import {
   SummarizeIcon,
   TerminalIcon,
 } from './icons';
+import { BlockKind } from './block';
 
 type ToolProps = {
   type:
@@ -284,7 +285,7 @@ const ReadingLevelSelector = ({
 };
 
 const toolsByBlockKind: Record<
-  'text' | 'code',
+  BlockKind,
   Array<{
     type:
       | 'final-polish'

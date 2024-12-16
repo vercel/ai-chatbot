@@ -9,6 +9,7 @@ import type { UISuggestion } from '@/lib/editor/suggestions';
 import { CrossIcon, MessageIcon } from './icons';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { BlockKind } from './block';
 
 export const Suggestion = ({
   suggestion,
@@ -17,7 +18,7 @@ export const Suggestion = ({
 }: {
   suggestion: UISuggestion;
   onApply: () => void;
-  blockKind: 'text' | 'code';
+  blockKind: BlockKind;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { width: windowWidth } = useWindowSize();

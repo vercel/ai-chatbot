@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ExecutableCodeBlock } from './executable-code-block';
+import { CodeBlock } from './code-block';
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   const components: Partial<Components> = {
     // @ts-expect-error
-    code: ExecutableCodeBlock,
+    code: CodeBlock,
     pre: ({ children }) => <>{children}</>,
     ol: ({ node, children, ...props }) => {
       return (
