@@ -143,12 +143,18 @@
 
 .cm-editor,
 .cm-gutters {
-    @apply bg-background dark:bg-zinc-800 outline-none !important;
+    @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
+}
+
+.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.ͼo.cm-selectionBackground,
+.ͼo.cm-content::selection {
+    @apply bg-zinc-200 dark:bg-zinc-900 !important;
 }
 
 .cm-activeLine,
 .cm-activeLineGutter {
-    @apply bg-zinc-100 dark:bg-zinc-900/50 !important;
+    @apply bg-transparent !important;
 }
 
 .cm-activeLine {
