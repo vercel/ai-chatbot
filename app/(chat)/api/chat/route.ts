@@ -255,6 +255,14 @@ export async function POST(request: Request) {
               model: customModel(model.apiIdentifier),
               system: updateDocumentPrompt(currentContent),
               prompt: description,
+              experimental_providerMetadata: {
+                openai: {
+                  prediction: {
+                    type: 'content',
+                    content: currentContent,
+                  },
+                },
+              },
             });
 
             for await (const delta of fullStream) {
@@ -390,6 +398,7 @@ export async function POST(request: Request) {
           return {
             id: documentId,
             title: document.title,
+            kind: document.kind,
             message: 'Suggestions have been added to the document',
           };
         },

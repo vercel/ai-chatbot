@@ -69,6 +69,7 @@ export function projectWithPositions(
 export function createSuggestionWidget(
   suggestion: UISuggestion,
   view: EditorView,
+  blockKind: 'text' | 'code' = 'text',
 ): { dom: HTMLElement; destroy: () => void } {
   const dom = document.createElement('span');
   const root = createRoot(dom);
@@ -111,7 +112,13 @@ export function createSuggestionWidget(
     dispatch(textTransaction);
   };
 
-  root.render(<PreviewSuggestion suggestion={suggestion} onApply={onApply} />);
+  root.render(
+    <PreviewSuggestion
+      suggestion={suggestion}
+      onApply={onApply}
+      blockKind={blockKind}
+    />,
+  );
 
   return {
     dom,

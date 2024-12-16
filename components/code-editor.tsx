@@ -1,7 +1,7 @@
 'use client';
 
 import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Transaction } from '@codemirror/state';
 import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { basicSetup } from 'codemirror';
@@ -25,17 +25,7 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
     if (containerRef.current && !editorRef.current) {
       const startState = EditorState.create({
         doc: content,
-        extensions: [
-          basicSetup,
-          python(),
-          oneDark,
-          EditorView.updateListener.of((update) => {
-            if (update.docChanged) {
-              const newContent = update.state.doc.toString();
-              saveContent(newContent, true);
-            }
-          }),
-        ],
+        extensions: [basicSetup, python(), oneDark],
       });
 
       editorRef.current = new EditorView({
@@ -50,9 +40,31 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
         editorRef.current = null;
       }
     };
-    // NOTE: we only want to run this effect once
-    // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const updateListener = EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          const transaction = update.transactions.find(
+            (tr) => !tr.annotation(Transaction.remote),
+          );
+
+          if (transaction) {
+            const newContent = update.state.doc.toString();
+            saveContent(newContent, true);
+          }
+        }
+      });
+
+      const newState = EditorState.create({
+        doc: editorRef.current.state.doc,
+        extensions: [basicSetup, python(), oneDark, updateListener],
+      });
+
+      editorRef.current.setState(newState);
+    }
+  }, [saveContent]);
 
   useEffect(() => {
     if (editorRef.current && content) {
@@ -65,7 +77,9 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
             to: currentContent.length,
             insert: content,
           },
+          annotations: [Transaction.remote.of(true)],
         });
+
         editorRef.current.dispatch(transaction);
       }
     }

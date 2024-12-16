@@ -89,7 +89,6 @@ export function useBlockStream({
           };
 
         case 'code-delta':
-          console.log(delta);
           return {
             ...draftBlock,
             content: delta.content as string,

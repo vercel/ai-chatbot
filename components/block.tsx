@@ -29,8 +29,6 @@ import { VersionFooter } from './version-footer';
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
-import { CrossIcon, LoaderIcon, TerminalIcon } from './icons';
-import { Button } from './ui/button';
 import { CodeEditor } from './code-editor';
 import { Console } from './console';
 
@@ -499,6 +497,7 @@ function PureBlock({
                   isLoading={isLoading}
                   stop={stop}
                   setMessages={setMessages}
+                  blockKind={block.kind}
                 />
               )}
             </AnimatePresence>

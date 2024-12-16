@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { TerminalIcon, CrossIcon, LoaderIcon, CrossSmallIcon } from './icons';
+import { TerminalWindowIcon, LoaderIcon, CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
 import {
   Dispatch,
@@ -78,7 +77,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         <div className="flex flex-row justify-between items-center w-full h-fit border-b dark:border-zinc-700 border-zinc-200 px-2 py-1 sticky top-0 z-50 bg-muted">
           <div className="text-sm pl-2 dark:text-zinc-50 text-zinc-800 flex flex-row gap-3 items-center">
             <div className="text-muted-foreground">
-              <TerminalIcon />
+              <TerminalWindowIcon />
             </div>
             <div>Console</div>
           </div>
@@ -113,7 +112,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   <LoaderIcon />
                 </div>
               ) : (
-                <div className="dark:text-zinc-50 text-zinc-900">
+                <div className="dark:text-zinc-50 text-zinc-900 whitespace-pre-line">
                   {consoleOutput.content}
                 </div>
               )}

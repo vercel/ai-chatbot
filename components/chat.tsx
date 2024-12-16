@@ -70,8 +70,6 @@ export function Chat({
     },
   });
 
-  console.log(block);
-
   const { data: votes } = useSWR<Array<Vote>>(
     `/api/vote?chatId=${id}`,
     fetcher,
