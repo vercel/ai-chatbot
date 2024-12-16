@@ -2,6 +2,7 @@ import {
   type Message,
   StreamData,
   convertToCoreMessages,
+  generateObject,
   streamObject,
   streamText,
 } from 'ai';
@@ -10,7 +11,11 @@ import { z } from 'zod';
 import { auth } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
+import {
+  codePrompt,
+  systemPrompt,
+  updateDocumentPrompt,
+} from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
@@ -119,11 +124,12 @@ export async function POST(request: Request) {
         },
       },
       createDocument: {
-        description: 'Create a document for a writing activity',
+        description: 'Create a document for a writing activity.',
         parameters: z.object({
           title: z.string(),
+          kind: z.enum(['text', 'code']),
         }),
-        execute: async ({ title }) => {
+        execute: async ({ title, kind }) => {
           const id = generateUUID();
           let draftText = '';
 
@@ -138,37 +144,74 @@ export async function POST(request: Request) {
           });
 
           streamingData.append({
+            type: 'kind',
+            content: kind,
+          });
+
+          streamingData.append({
             type: 'clear',
             content: '',
           });
 
-          const { fullStream } = streamText({
-            model: customModel(model.apiIdentifier),
-            system:
-              'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
-            prompt: title,
-          });
+          if (kind === 'text') {
+            const { fullStream } = streamText({
+              model: customModel(model.apiIdentifier),
+              system:
+                'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+              prompt: title,
+            });
 
-          for await (const delta of fullStream) {
-            const { type } = delta;
+            for await (const delta of fullStream) {
+              const { type } = delta;
 
-            if (type === 'text-delta') {
-              const { textDelta } = delta;
+              if (type === 'text-delta') {
+                const { textDelta } = delta;
 
-              draftText += textDelta;
-              streamingData.append({
-                type: 'text-delta',
-                content: textDelta,
-              });
+                draftText += textDelta;
+                streamingData.append({
+                  type: 'text-delta',
+                  content: textDelta,
+                });
+              }
             }
-          }
 
-          streamingData.append({ type: 'finish', content: '' });
+            streamingData.append({ type: 'finish', content: '' });
+          } else if (kind === 'code') {
+            const { fullStream } = streamObject({
+              model: customModel(model.apiIdentifier),
+              system: codePrompt,
+              prompt: title,
+              schema: z.object({
+                code: z.string(),
+              }),
+            });
+
+            for await (const delta of fullStream) {
+              const { type } = delta;
+
+              if (type === 'object') {
+                const { object } = delta;
+                const { code } = object;
+
+                if (code) {
+                  streamingData.append({
+                    type: 'code-delta',
+                    content: code ?? '',
+                  });
+
+                  draftText = code;
+                }
+              }
+            }
+
+            streamingData.append({ type: 'finish', content: '' });
+          }
 
           if (session.user?.id) {
             await saveDocument({
               id,
               title,
+              kind,
               content: draftText,
               userId: session.user.id,
             });
@@ -177,6 +220,7 @@ export async function POST(request: Request) {
           return {
             id,
             title,
+            kind,
             content: 'A document was created and is now visible to the user.',
           };
         },
@@ -206,48 +250,73 @@ export async function POST(request: Request) {
             content: document.title,
           });
 
-          const { fullStream } = streamText({
-            model: customModel(model.apiIdentifier),
-            system:
-              'You are a helpful writing assistant. Based on the description, please update the piece of writing.',
-            experimental_providerMetadata: {
-              openai: {
-                prediction: {
-                  type: 'content',
-                  content: currentContent,
+          if (document.kind === 'text') {
+            const { fullStream } = streamText({
+              model: customModel(model.apiIdentifier),
+              system: updateDocumentPrompt(currentContent),
+              prompt: description,
+              experimental_providerMetadata: {
+                openai: {
+                  prediction: {
+                    type: 'content',
+                    content: currentContent,
+                  },
                 },
               },
-            },
-            messages: [
-              {
-                role: 'user',
-                content: description,
-              },
-              { role: 'user', content: currentContent },
-            ],
-          });
+            });
 
-          for await (const delta of fullStream) {
-            const { type } = delta;
+            for await (const delta of fullStream) {
+              const { type } = delta;
 
-            if (type === 'text-delta') {
-              const { textDelta } = delta;
+              if (type === 'text-delta') {
+                const { textDelta } = delta;
 
-              draftText += textDelta;
-              streamingData.append({
-                type: 'text-delta',
-                content: textDelta,
-              });
+                draftText += textDelta;
+                streamingData.append({
+                  type: 'text-delta',
+                  content: textDelta,
+                });
+              }
             }
-          }
 
-          streamingData.append({ type: 'finish', content: '' });
+            streamingData.append({ type: 'finish', content: '' });
+          } else if (document.kind === 'code') {
+            const { fullStream } = streamObject({
+              model: customModel(model.apiIdentifier),
+              system: updateDocumentPrompt(currentContent),
+              prompt: description,
+              schema: z.object({
+                code: z.string(),
+              }),
+            });
+
+            for await (const delta of fullStream) {
+              const { type } = delta;
+
+              if (type === 'object') {
+                const { object } = delta;
+                const { code } = object;
+
+                if (code) {
+                  streamingData.append({
+                    type: 'code-delta',
+                    content: code ?? '',
+                  });
+
+                  draftText = code;
+                }
+              }
+            }
+
+            streamingData.append({ type: 'finish', content: '' });
+          }
 
           if (session.user?.id) {
             await saveDocument({
               id,
               title: document.title,
               content: draftText,
+              kind: document.kind,
               userId: session.user.id,
             });
           }
@@ -255,6 +324,7 @@ export async function POST(request: Request) {
           return {
             id,
             title: document.title,
+            kind: document.kind,
             content: 'The document has been updated successfully.',
           };
         },
@@ -328,6 +398,7 @@ export async function POST(request: Request) {
           return {
             id: documentId,
             title: document.title,
+            kind: document.kind,
             message: 'Suggestions have been added to the document',
           };
         },

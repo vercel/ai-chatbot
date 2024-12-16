@@ -8,13 +8,17 @@ import type { UISuggestion } from '@/lib/editor/suggestions';
 
 import { CrossIcon, MessageIcon } from './icons';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
+import { BlockKind } from './block';
 
 export const Suggestion = ({
   suggestion,
   onApply,
+  blockKind,
 }: {
   suggestion: UISuggestion;
   onApply: () => void;
+  blockKind: BlockKind;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { width: windowWidth } = useWindowSize();
@@ -23,7 +27,10 @@ export const Suggestion = ({
     <AnimatePresence>
       {!isExpanded ? (
         <motion.div
-          className="absolute cursor-pointer text-muted-foreground -right-8 p-1"
+          className={cn('cursor-pointer text-muted-foreground p-1', {
+            'absolute -right-8': blockKind === 'text',
+            'sticky top-0 right-4': blockKind === 'code',
+          })}
           onClick={() => {
             setIsExpanded(true);
           }}
@@ -34,7 +41,7 @@ export const Suggestion = ({
       ) : (
         <motion.div
           key={suggestion.id}
-          className="absolute bg-background p-3 flex flex-col gap-3 rounded-2xl border text-sm w-56 shadow-xl z-50 -right-12 md:-right-16"
+          className="absolute bg-background p-3 flex flex-col gap-3 rounded-2xl border text-sm w-56 shadow-xl z-50 -right-12 md:-right-16 font-sans"
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: -20 }}

@@ -28,15 +28,25 @@ import { sanitizeUIMessages } from '@/lib/utils';
 
 import {
   ArrowUpIcon,
+  CodeIcon,
+  FileIcon,
+  LogsIcon,
   MessageIcon,
   PenIcon,
   StopIcon,
   SummarizeIcon,
+  TerminalIcon,
 } from './icons';
-import equal from 'fast-deep-equal';
+import { BlockKind } from './block';
 
 type ToolProps = {
-  type: 'final-polish' | 'request-suggestions' | 'adjust-reading-level';
+  type:
+    | 'final-polish'
+    | 'request-suggestions'
+    | 'adjust-reading-level'
+    | 'code-review'
+    | 'add-comments'
+    | 'add-logs';
   description: string;
   icon: JSX.Element;
   selectedTool: string | null;
@@ -97,6 +107,20 @@ const Tool = ({
           role: 'user',
           content:
             'Please add suggestions you have that could improve the writing.',
+        });
+
+        setSelectedTool(null);
+      } else if (type === 'add-comments') {
+        append({
+          role: 'user',
+          content: 'Please add comments to explain the code.',
+        });
+
+        setSelectedTool(null);
+      } else if (type === 'add-logs') {
+        append({
+          role: 'user',
+          content: 'Please add logs to help debug the code.',
         });
 
         setSelectedTool(null);
@@ -260,6 +284,51 @@ const ReadingLevelSelector = ({
   );
 };
 
+const toolsByBlockKind: Record<
+  BlockKind,
+  Array<{
+    type:
+      | 'final-polish'
+      | 'request-suggestions'
+      | 'adjust-reading-level'
+      | 'code-review'
+      | 'add-comments'
+      | 'add-logs';
+    description: string;
+    icon: JSX.Element;
+  }>
+> = {
+  text: [
+    {
+      type: 'final-polish',
+      description: 'Add final polish',
+      icon: <PenIcon />,
+    },
+    {
+      type: 'adjust-reading-level',
+      description: 'Adjust reading level',
+      icon: <SummarizeIcon />,
+    },
+    {
+      type: 'request-suggestions',
+      description: 'Request suggestions',
+      icon: <MessageIcon />,
+    },
+  ],
+  code: [
+    {
+      type: 'add-comments',
+      description: 'Add comments',
+      icon: <CodeIcon />,
+    },
+    {
+      type: 'add-logs',
+      description: 'Add logs',
+      icon: <LogsIcon />,
+    },
+  ],
+};
+
 export const Tools = ({
   isToolbarVisible,
   selectedTool,
@@ -267,6 +336,7 @@ export const Tools = ({
   append,
   isAnimating,
   setIsToolbarVisible,
+  blockKind,
 }: {
   isToolbarVisible: boolean;
   selectedTool: string | null;
@@ -277,7 +347,10 @@ export const Tools = ({
   ) => Promise<string | null | undefined>;
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
+  blockKind: 'text' | 'code';
 }) => {
+  const [primaryTool, ...secondaryTools] = toolsByBlockKind[blockKind];
+
   return (
     <motion.div
       className="flex flex-col"
@@ -286,35 +359,25 @@ export const Tools = ({
       exit={{ opacity: 0, scale: 0.95 }}
     >
       <AnimatePresence>
-        {isToolbarVisible && (
-          <>
+        {isToolbarVisible &&
+          secondaryTools.map((secondaryTool) => (
             <Tool
-              type="adjust-reading-level"
-              description="Adjust reading level"
-              icon={<SummarizeIcon />}
+              key={secondaryTool.type}
+              type={secondaryTool.type}
+              description={secondaryTool.description}
+              icon={secondaryTool.icon}
               selectedTool={selectedTool}
               setSelectedTool={setSelectedTool}
               append={append}
               isAnimating={isAnimating}
             />
-
-            <Tool
-              type="request-suggestions"
-              description="Request suggestions"
-              icon={<MessageIcon />}
-              selectedTool={selectedTool}
-              setSelectedTool={setSelectedTool}
-              append={append}
-              isAnimating={isAnimating}
-            />
-          </>
-        )}
+          ))}
       </AnimatePresence>
 
       <Tool
-        type="final-polish"
-        description="Add final polish"
-        icon={<PenIcon />}
+        type={primaryTool.type}
+        description={primaryTool.description}
+        icon={primaryTool.icon}
         selectedTool={selectedTool}
         setSelectedTool={setSelectedTool}
         isToolbarVisible={isToolbarVisible}
@@ -333,6 +396,7 @@ const PureToolbar = ({
   isLoading,
   stop,
   setMessages,
+  blockKind,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
@@ -343,6 +407,7 @@ const PureToolbar = ({
   ) => Promise<string | null | undefined>;
   stop: () => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
+  blockKind: 'text' | 'code';
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -404,7 +469,7 @@ const PureToolbar = ({
               : {
                   opacity: 1,
                   y: 0,
-                  height: 3 * 45,
+                  height: toolsByBlockKind[blockKind].length * 47,
                   transition: { delay: 0 },
                   scale: 1,
                 }
@@ -461,6 +526,7 @@ const PureToolbar = ({
             selectedTool={selectedTool}
             setIsToolbarVisible={setIsToolbarVisible}
             setSelectedTool={setSelectedTool}
+            blockKind={blockKind}
           />
         )}
       </motion.div>
@@ -471,6 +537,7 @@ const PureToolbar = ({
 export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
   if (prevProps.isLoading !== nextProps.isLoading) return false;
   if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
+  if (prevProps.blockKind !== nextProps.blockKind) return false;
 
   return true;
 });
