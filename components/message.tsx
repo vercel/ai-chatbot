@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
+import { DocumentPreview } from './document-preview';
 
 const PurePreviewMessage = ({
   chatId,
@@ -138,12 +139,11 @@ const PurePreviewMessage = ({
                       {toolName === 'getWeather' ? (
                         <Weather weatherAtLocation={result} />
                       ) : toolName === 'createDocument' ? (
-                        <DocumentToolResult
-                          type="create"
-                          result={result}
+                        <DocumentPreview
                           block={block}
                           setBlock={setBlock}
                           isReadonly={isReadonly}
+                          result={result}
                         />
                       ) : toolName === 'updateDocument' ? (
                         <DocumentToolResult
@@ -177,11 +177,11 @@ const PurePreviewMessage = ({
                     {toolName === 'getWeather' ? (
                       <Weather />
                     ) : toolName === 'createDocument' ? (
-                      <DocumentToolCall
-                        type="create"
-                        args={args}
+                      <DocumentPreview
+                        block={block}
                         setBlock={setBlock}
                         isReadonly={isReadonly}
+                        args={args}
                       />
                     ) : toolName === 'updateDocument' ? (
                       <DocumentToolCall
@@ -232,6 +232,7 @@ export const PreviewMessage = memo(
     )
       return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
+    if (!equal(prevProps.block, nextProps.block)) return false;
 
     return true;
   },

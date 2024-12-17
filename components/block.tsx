@@ -31,6 +31,7 @@ import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
 import { CodeEditor } from './code-editor';
 import { Console } from './console';
+import { useSidebar } from './ui/sidebar';
 
 export type BlockKind = 'text' | 'code';
 
@@ -127,6 +128,8 @@ function PureBlock({
   const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
     [],
   );
+
+  const { open: isSidebarOpen } = useSidebar();
 
   useEffect(() => {
     if (documents && documents.length > 0) {
@@ -261,11 +264,26 @@ function PureBlock({
 
   return (
     <motion.div
-      className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-muted"
+      className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { delay: 0.4 } }}
     >
+      {!isMobile && (
+        <motion.div
+          className="fixed bg-background h-dvh"
+          initial={{
+            width: isSidebarOpen ? windowWidth - 256 : windowWidth,
+            right: 0,
+          }}
+          animate={{ width: windowWidth, right: 0 }}
+          exit={{
+            width: isSidebarOpen ? windowWidth - 256 : windowWidth,
+            right: 0,
+          }}
+        />
+      )}
+
       {!isMobile && (
         <motion.div
           className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
@@ -273,7 +291,6 @@ function PureBlock({
           animate={{
             opacity: 1,
             x: 0,
-            scale: 1,
             transition: {
               delay: 0.2,
               type: 'spring',
@@ -283,8 +300,7 @@ function PureBlock({
           }}
           exit={{
             opacity: 0,
-            x: 0,
-            scale: 0.95,
+            x: 10,
             transition: { delay: 0 },
           }}
         >
@@ -333,7 +349,7 @@ function PureBlock({
       )}
 
       <motion.div
-        className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll"
+        className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll border-l dark:border-zinc-700 border-zinc-200"
         initial={
           isMobile
             ? {
@@ -345,7 +361,7 @@ function PureBlock({
                 borderRadius: 50,
               }
             : {
-                opacity: 0,
+                opacity: 1,
                 x: block.boundingBox.left,
                 y: block.boundingBox.top,
                 height: block.boundingBox.height,
@@ -381,6 +397,7 @@ function PureBlock({
                   type: 'spring',
                   stiffness: 200,
                   damping: 30,
+                  duration: 5000,
                 },
               }
         }
