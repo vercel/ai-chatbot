@@ -1,10 +1,10 @@
 <a href="https://chat.vercel.ai/">
   <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Next.js AI Chatbot</h1>
+  <h1 align="center">AUEL LogBot</h1>
 </a>
 
 <p align="center">
-  An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.
+  This is a fork of the Next.js AI Chatbot Template by Vercel. It's purpose is to get answers about logs stored in Elasticsearch. It is using Vercel's AI SDK. 
 </p>
 
 <p align="center">
