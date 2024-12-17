@@ -94,8 +94,8 @@ export function useBlockStream({
             content: delta.content as string,
             isVisible:
               draftBlock.status === 'streaming' &&
-              draftBlock.content.length > 20 &&
-              draftBlock.content.length < 30
+              draftBlock.content.length > 50 &&
+              draftBlock.content.length < 60
                 ? true
                 : draftBlock.isVisible,
             status: 'streaming',
