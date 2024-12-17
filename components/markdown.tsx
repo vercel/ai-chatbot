@@ -17,10 +17,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
           <code className={match[1]}>{children}</code>
         </pre>
       ) : (
-        <code
-          className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
-          {...props}
-        >
+        <code className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`} {...props}>
           {children}
         </code>
       );
@@ -56,12 +53,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     a: ({ node, children, ...props }) => {
       return (
         // @ts-expect-error
-        <Link
-          className="text-blue-500 hover:underline"
-          target="_blank"
-          rel="noreferrer"
-          {...props}
-        >
+        <Link className="text-primary hover:underline" target="_blank" rel="noreferrer" {...props}>
           {children}
         </Link>
       );
@@ -117,7 +109,4 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   );
 };
 
-export const Markdown = memo(
-  NonMemoizedMarkdown,
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
-);
+export const Markdown = memo(NonMemoizedMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children);
