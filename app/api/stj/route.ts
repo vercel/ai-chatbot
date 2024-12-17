@@ -19,6 +19,7 @@
 //     })
 // }
 
+import { storeDocumentsInPinecone } from "@/lib/chat/embeddingsProviders";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ search: 'dolo improbidade' })
+      body: JSON.stringify(body)
     });
     
     if (!response.ok) {
@@ -39,10 +40,9 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
+    await storeDocumentsInPinecone(data.slice(0,10));
 
-    console.log(data);
-
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data:'data' });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message },

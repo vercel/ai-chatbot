@@ -52,6 +52,16 @@ export type Period = 'anual' | 'month';
 
 export type Plan = 'free' | 'basic' | 'premium';
 
+export interface DocumentoSTJ {
+  process: string
+  relator: string
+  classe: string
+  ementa: string
+  acordao: string
+  misc: string
+  link: string
+}
+
 // export interface Subscription {
 //   id: string
 //   userId: string

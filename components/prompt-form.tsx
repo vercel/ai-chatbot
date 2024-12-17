@@ -6,7 +6,7 @@ import Textarea from 'react-textarea-autosize'
 
 import { useActions, useUIState } from 'ai/rsc'
 
-import { UserMessage } from './stocks/message'
+import { BotMessage, UserMessage } from './stocks/message'
 import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
@@ -74,16 +74,62 @@ export function PromptForm({
           }
         ])
 
+        // Check for `/stj` command
+        const isSTJCommand = value.startsWith('/stj ');
+        if (isSTJCommand) {
+          const searchQuery = value.replace('/stj ', '').trim();
+
+          // Enforce 5-word limit
+          const wordCount = searchQuery.split(/\s+/).length;
+          if (wordCount > 5) {
+            toast.error('O comando /stj não pode ter mais de 5 palavras.');
+            return;
+          }
+
+          try {
+            // Call your scrape API to fetch data
+            const response = await fetch('/api/stj', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ search: searchQuery }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to fetch data for ${searchQuery}`);
+            }
+
+            const data = await response.json();
+
+            // Switch context to Pinecone and append it to the conversation
+            setMessages((currentMessages) => [
+              ...currentMessages,
+              {
+                id: nanoid(),
+                display: <BotMessage content={`Contexto mudado para STJ com resultados para: ${searchQuery}`} />,
+              },
+            ]);
+
+            // Use the fetched data in your chat state
+            const pineconeContext = data.success ? data.data : 'Sem resultados encontrados.';
+            await submitUserMessage(`/stj-context [${searchQuery}]`, chats, pineconeContext);
+          } catch (error) {
+            console.error(error);
+            toast.error(`Erro ao utilizar comando /stj: ${error.message}`);
+          }
+
+          return;
+        }
+
         // Submit and get response message
         try {
           const responseMessage = await submitUserMessage(value, chats)
           setMessages(currentMessages => [...currentMessages, responseMessage])
         } catch {
-          toast(
-            <div className="text-red-600">
-              Você atingiu o limite de mensagens. Aguarde um momento e tente novemente.
-            </div>
-          )
+          toast.error(
+            'Você atingiu o limite de mensagens. Aguarde um momento e tente novamente.'
+          );
         }
       }}
     >
@@ -121,7 +167,6 @@ export function PromptForm({
           }
         }}
       />
-      <Button>Test</Button>
       { showActions &&
         <ul className="list-none m-0 p-0">
           <li className="cursor-pointer p-2 hover:bg-gray-200" onClick={e => setInput('/stj ')}>
