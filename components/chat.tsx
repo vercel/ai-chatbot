@@ -14,7 +14,7 @@ import { Block, type UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { useElasticAIAssist } from '@/hooks/useElasticAIAssist';
+import { useChat } from 'ai/react';
 
 export function Chat({
   id,
@@ -37,7 +37,7 @@ export function Chat({
     isLoading,
     stop,
     data: streamingData,
-  } = useElasticAIAssist({
+  } = useChat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
@@ -45,8 +45,7 @@ export function Chat({
     },
   });
 
-  const { width: windowWidth = 1920, height: windowHeight = 1080 } =
-    useWindowSize();
+  const { width: windowWidth = 1920, height: windowHeight = 1080 } = useWindowSize();
 
   const [block, setBlock] = useState<UIBlock>({
     documentId: 'init',
@@ -62,10 +61,7 @@ export function Chat({
     },
   });
 
-  const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
-    fetcher,
-  );
+  const { data: votes } = useSWR<Array<Vote>>(`/api/vote?chatId=${id}`, fetcher);
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
