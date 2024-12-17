@@ -90,7 +90,7 @@ export async function POST(request: Request) {
   });
 
   return createDataStreamResponse({
-    execute: dataStream => {
+    execute: (dataStream) => {
       dataStream.writeData({
         type: 'user-message-id',
         content: userMessageId,
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
               const response = await fetch(
                 `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
               );
-    
+
               const weatherData = await response.json();
               return weatherData;
             },
@@ -126,35 +126,35 @@ export async function POST(request: Request) {
             execute: async ({ title }) => {
               const id = generateUUID();
               let draftText = '';
-    
+
               dataStream.writeData({
                 type: 'id',
                 content: id,
               });
-    
+
               dataStream.writeData({
                 type: 'title',
                 content: title,
               });
-    
+
               dataStream.writeData({
                 type: 'clear',
                 content: '',
               });
-    
+
               const { fullStream } = streamText({
                 model: customModel(model.apiIdentifier),
                 system:
                   'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
                 prompt: title,
               });
-    
+
               for await (const delta of fullStream) {
                 const { type } = delta;
-    
+
                 if (type === 'text-delta') {
                   const { textDelta } = delta;
-    
+
                   draftText += textDelta;
                   dataStream.writeData({
                     type: 'text-delta',
@@ -162,9 +162,9 @@ export async function POST(request: Request) {
                   });
                 }
               }
-    
+
               dataStream.writeData({ type: 'finish', content: '' });
-    
+
               if (session.user?.id) {
                 await saveDocument({
                   id,
@@ -173,11 +173,12 @@ export async function POST(request: Request) {
                   userId: session.user.id,
                 });
               }
-    
+
               return {
                 id,
                 title,
-                content: 'A document was created and is now visible to the user.',
+                content:
+                  'A document was created and is now visible to the user.',
               };
             },
           },
@@ -191,21 +192,21 @@ export async function POST(request: Request) {
             }),
             execute: async ({ id, description }) => {
               const document = await getDocumentById({ id });
-    
+
               if (!document) {
                 return {
                   error: 'Document not found',
                 };
               }
-    
+
               const { content: currentContent } = document;
               let draftText = '';
-    
+
               dataStream.writeData({
                 type: 'clear',
                 content: document.title,
               });
-    
+
               const { fullStream } = streamText({
                 model: customModel(model.apiIdentifier),
                 system:
@@ -226,13 +227,13 @@ export async function POST(request: Request) {
                   { role: 'user', content: currentContent },
                 ],
               });
-    
+
               for await (const delta of fullStream) {
                 const { type } = delta;
-    
+
                 if (type === 'text-delta') {
                   const { textDelta } = delta;
-    
+
                   draftText += textDelta;
                   dataStream.writeData({
                     type: 'text-delta',
@@ -240,9 +241,9 @@ export async function POST(request: Request) {
                   });
                 }
               }
-    
+
               dataStream.writeData({ type: 'finish', content: '' });
-    
+
               if (session.user?.id) {
                 await saveDocument({
                   id,
@@ -251,7 +252,7 @@ export async function POST(request: Request) {
                   userId: session.user.id,
                 });
               }
-    
+
               return {
                 id,
                 title: document.title,
@@ -268,17 +269,17 @@ export async function POST(request: Request) {
             }),
             execute: async ({ documentId }) => {
               const document = await getDocumentById({ id: documentId });
-    
+
               if (!document || !document.content) {
                 return {
                   error: 'Document not found',
                 };
               }
-    
+
               const suggestions: Array<
                 Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
               > = [];
-    
+
               const { elementStream } = streamObject({
                 model: customModel(model.apiIdentifier),
                 system:
@@ -286,14 +287,18 @@ export async function POST(request: Request) {
                 prompt: document.content,
                 output: 'array',
                 schema: z.object({
-                  originalSentence: z.string().describe('The original sentence'),
-                  suggestedSentence: z.string().describe('The suggested sentence'),
+                  originalSentence: z
+                    .string()
+                    .describe('The original sentence'),
+                  suggestedSentence: z
+                    .string()
+                    .describe('The suggested sentence'),
                   description: z
                     .string()
                     .describe('The description of the suggestion'),
                 }),
               });
-    
+
               for await (const element of elementStream) {
                 const suggestion = {
                   originalText: element.originalSentence,
@@ -303,18 +308,18 @@ export async function POST(request: Request) {
                   documentId: documentId,
                   isResolved: false,
                 };
-    
+
                 dataStream.writeData({
                   type: 'suggestion',
                   content: suggestion,
                 });
-    
+
                 suggestions.push(suggestion);
               }
-    
+
               if (session.user?.id) {
                 const userId = session.user.id;
-    
+
                 await saveSuggestions({
                   suggestions: suggestions.map((suggestion) => ({
                     ...suggestion,
@@ -324,7 +329,7 @@ export async function POST(request: Request) {
                   })),
                 });
               }
-    
+
               return {
                 id: documentId,
                 title: document.title,
@@ -338,18 +343,18 @@ export async function POST(request: Request) {
             try {
               const responseMessagesWithoutIncompleteToolCalls =
                 sanitizeResponseMessages(response.messages);
-    
+
               await saveMessages({
                 messages: responseMessagesWithoutIncompleteToolCalls.map(
                   (message) => {
                     const messageId = generateUUID();
-    
+
                     if (message.role === 'assistant') {
                       dataStream.writeMessageAnnotation({
                         messageIdFromServer: messageId,
                       });
                     }
-    
+
                     return {
                       id: messageId,
                       chatId: id,
@@ -364,8 +369,6 @@ export async function POST(request: Request) {
               console.error('Failed to save chat');
             }
           }
-    
-          streamingData.close();
         },
         experimental_telemetry: {
           isEnabled: true,
