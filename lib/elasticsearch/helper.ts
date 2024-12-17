@@ -1,11 +1,14 @@
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
-export const createUserElasticSearchPrompt = (elasticsearchResults: string) => `
+export const createUserElasticSearchPrompt = (elasticsearchResults: string, dbResults: string) => `
   You are a conversational assistant. Construct a clear and informative response to the user message.
   
-  Use the following Elasticsearch results as your source:
+  Use the following Elasticsearch results as your primary source:
   "${elasticsearchResults}"
+
+  Use the following results from the database as another source:
+  "${dbResults}"
   
   Your response should:
   1. Directly address the user's query.
