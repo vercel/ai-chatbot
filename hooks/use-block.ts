@@ -52,10 +52,10 @@ export function useBlock() {
   const setBlock = useCallback(
     (updaterFn: UIBlock | ((currentBlock: UIBlock) => UIBlock)) => {
       setLocalBlock((currentBlock) => {
-        if (!currentBlock) currentBlock = initialBlockData;
+        const blockToUpdate = currentBlock || initialBlockData;
 
         if (typeof updaterFn === 'function') {
-          return updaterFn(currentBlock);
+          return updaterFn(blockToUpdate);
         }
 
         return updaterFn;

@@ -165,6 +165,8 @@ const PureHitboxLayer = ({
       className="size-full absolute top-0 left-0 rounded-xl z-10"
       ref={hitboxRef}
       onClick={handleClick}
+      role="presentation"
+      aria-hidden="true"
     />
   );
 };
