@@ -2,15 +2,12 @@ import { ChatRequestOptions, Message } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Overview } from './overview';
-import { UIBlock } from './block';
-import { Dispatch, memo, SetStateAction } from 'react';
+import { memo } from 'react';
 import { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 
 interface MessagesProps {
   chatId: string;
-  block: UIBlock;
-  setBlock: Dispatch<SetStateAction<UIBlock>>;
   isLoading: boolean;
   votes: Array<Vote> | undefined;
   messages: Array<Message>;
@@ -21,12 +18,11 @@ interface MessagesProps {
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
+  isBlockVisible: boolean;
 }
 
 function PureMessages({
   chatId,
-  block,
-  setBlock,
   isLoading,
   votes,
   messages,
@@ -49,8 +45,6 @@ function PureMessages({
           key={message.id}
           chatId={chatId}
           message={message}
-          block={block}
-          setBlock={setBlock}
           isLoading={isLoading && messages.length - 1 === index}
           vote={
             votes
@@ -76,11 +70,12 @@ function PureMessages({
 }
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
+  if (prevProps.isBlockVisible && nextProps.isBlockVisible) return true;
+
   if (prevProps.isLoading !== nextProps.isLoading) return false;
   if (prevProps.isLoading && nextProps.isLoading) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
-  if (!equal(prevProps.block, nextProps.block)) return false;
 
   return true;
 });
