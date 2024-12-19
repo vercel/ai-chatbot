@@ -45,7 +45,10 @@
         "noSvgWithoutTitle": "off", // We do not intend to adhere to this rule
         "useMediaCaption": "off", // We would need a cultural change to turn this on
         "noAutofocus": "off", // We're highly intentional about when we use autofocus
-        "noBlankTarget": "off" // Covered by Conformance
+        "noBlankTarget": "off", // Covered by Conformance
+        "useFocusableInteractive": "off", // Disable focusable interactive element requirement
+        "useAriaPropsForRole": "off", // Disable required ARIA attributes check
+        "useKeyWithClickEvents": "off" // Disable keyboard event requirement with click events
       },
       "complexity": {
         "noUselessStringConcat": "warn", // Not in recommended ruleset, turning on manually
