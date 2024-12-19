@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   if (!model) {
     return new Response('Model not found', { status: 404 });
   }
-    // TODO: Access knowledgebase here.
+  // TODO: Access knowledgebase here and enhance the user message.
   const coreMessages = convertToCoreMessages(messages);
   const userMessage = getMostRecentUserMessage(coreMessages);
 
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
   }
 
   const userMessageId = generateUUID();
-
+  // TODO: Save original user message here.
   await saveMessages({
     messages: [
       { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
             }),
             execute: async ({ latitude, longitude }) => {
               const response = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`
               );
 
               const weatherData = await response.json();
@@ -432,7 +432,7 @@ export async function POST(request: Request) {
                       content: message.content,
                       createdAt: new Date(),
                     };
-                  },
+                  }
                 ),
               });
             } catch (error) {
