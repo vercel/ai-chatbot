@@ -346,9 +346,4 @@ function PureSendButton({
   );
 }
 
-const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
-  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
-    return false;
-  if (!prevProps.input !== !nextProps.input) return false;
-  return true;
-});
+const SendButton = PureSendButton;
