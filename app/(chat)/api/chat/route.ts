@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   if (!model) {
     return new Response('Model not found', { status: 404 });
   }
-
+    // TODO: Access knowledgebase here.
   const coreMessages = convertToCoreMessages(messages);
   const userMessage = getMostRecentUserMessage(coreMessages);
 
