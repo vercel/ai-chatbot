@@ -459,7 +459,7 @@ function PureBlock({
 
             <div
               className={cn(
-                'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
+                'prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
                 {
                   'py-2 px-2': block.kind === 'code',
                   'py-8 md:p-20 px-4': block.kind === 'text',
