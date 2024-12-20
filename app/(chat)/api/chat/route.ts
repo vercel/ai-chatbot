@@ -4,17 +4,17 @@ import {
   createDataStreamResponse,
   streamObject,
   streamText,
-} from "ai";
-import { z } from "zod";
+} from 'ai';
+import { z } from 'zod';
 
-import { auth } from "@/app/(auth)/auth";
-import { customModel } from "@/lib/ai";
-import { models } from "@/lib/ai/models";
+import { auth } from '@/app/(auth)/auth';
+import { customModel } from '@/lib/ai';
+import { models } from '@/lib/ai/models';
 import {
   codePrompt,
   systemPrompt,
   updateDocumentPrompt,
-} from "@/lib/ai/prompts";
+} from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
@@ -23,31 +23,31 @@ import {
   saveDocument,
   saveMessages,
   saveSuggestions,
-} from "@/lib/db/queries";
-import type { Suggestion } from "@/lib/db/schema";
+} from '@/lib/db/queries';
+import type { Suggestion } from '@/lib/db/schema';
 import {
   generateUUID,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
-} from "@/lib/utils";
+} from '@/lib/utils';
 
-import { generateTitleFromUserMessage } from "../../actions";
+import { generateTitleFromUserMessage } from '../../actions';
 
 export const maxDuration = 60;
 
 type AllowedTools =
-  | "createDocument"
-  | "updateDocument"
-  | "requestSuggestions"
-  | "getWeather";
+  | 'createDocument'
+  | 'updateDocument'
+  | 'requestSuggestions'
+  | 'getWeather';
 
 const blocksTools: AllowedTools[] = [
-  "createDocument",
-  "updateDocument",
-  "requestSuggestions",
+  'createDocument',
+  'updateDocument',
+  'requestSuggestions',
 ];
 
-const weatherTools: AllowedTools[] = ["getWeather"];
+const weatherTools: AllowedTools[] = ['getWeather'];
 
 const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
@@ -73,14 +73,14 @@ export async function POST(request: Request) {
   const model = models.find((model) => model.id === modelId);
 
   if (!model) {
-    return new Response("Model not found", { status: 404 });
+    return new Response('Model not found', { status: 404 });
   }
 
   const coreMessages = convertToCoreMessages(messages);
   const userMessage = getMostRecentUserMessage(coreMessages);
 
   if (!userMessage) {
-    return new Response("No user message found", { status: 400 });
+    return new Response('No user message found', { status: 400 });
   }
 
   const userMessageId = generateUUID();
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       dataStream.writeData({
-        type: "user-message-id",
+        type: 'user-message-id',
         content: userMessageId,
       });
 
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
         experimental_activeTools: allTools,
         tools: {
           getWeather: {
-            description: "Get the current weather at a location",
+            description: 'Get the current weather at a location',
             parameters: z.object({
               latitude: z.number(),
               longitude: z.number(),
@@ -139,59 +139,59 @@ export async function POST(request: Request) {
           },
           createDocument: {
             description:
-              "Create a document for a writing activity. This tool will call other functions that will generate the contents of the document based on the title and kind.",
+              'Create a document for a writing activity. This tool will call other functions that will generate the contents of the document based on the title and kind.',
             parameters: z.object({
               title: z.string(),
-              kind: z.enum(["text", "code"]),
+              kind: z.enum(['text', 'code']),
             }),
             execute: async ({ title, kind }) => {
               const id = generateUUID();
-              let draftText = "";
+              let draftText = '';
 
               dataStream.writeData({
-                type: "id",
+                type: 'id',
                 content: id,
               });
 
               dataStream.writeData({
-                type: "title",
+                type: 'title',
                 content: title,
               });
 
               dataStream.writeData({
-                type: "kind",
+                type: 'kind',
                 content: kind,
               });
 
               dataStream.writeData({
-                type: "clear",
-                content: "",
+                type: 'clear',
+                content: '',
               });
 
-              if (kind === "text") {
+              if (kind === 'text') {
                 const { fullStream } = streamText({
                   model: customModel(model.apiIdentifier),
                   system:
-                    "Write about the given topic. Markdown is supported. Use headings wherever appropriate.",
+                    'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
                   prompt: title,
                 });
 
                 for await (const delta of fullStream) {
                   const { type } = delta;
 
-                  if (type === "text-delta") {
+                  if (type === 'text-delta') {
                     const { textDelta } = delta;
 
                     draftText += textDelta;
                     dataStream.writeData({
-                      type: "text-delta",
+                      type: 'text-delta',
                       content: textDelta,
                     });
                   }
                 }
 
-                dataStream.writeData({ type: "finish", content: "" });
-              } else if (kind === "code") {
+                dataStream.writeData({ type: 'finish', content: '' });
+              } else if (kind === 'code') {
                 const { fullStream } = streamObject({
                   model: customModel(model.apiIdentifier),
                   system: codePrompt,
@@ -204,14 +204,14 @@ export async function POST(request: Request) {
                 for await (const delta of fullStream) {
                   const { type } = delta;
 
-                  if (type === "object") {
+                  if (type === 'object') {
                     const { object } = delta;
                     const { code } = object;
 
                     if (code) {
                       dataStream.writeData({
-                        type: "code-delta",
-                        content: code ?? "",
+                        type: 'code-delta',
+                        content: code ?? '',
                       });
 
                       draftText = code;
@@ -219,7 +219,7 @@ export async function POST(request: Request) {
                   }
                 }
 
-                dataStream.writeData({ type: "finish", content: "" });
+                dataStream.writeData({ type: 'finish', content: '' });
               }
 
               if (session && session.user && session.user.id) {
@@ -245,36 +245,36 @@ export async function POST(request: Request) {
                 title,
                 kind,
                 content:
-                  "A document was created and is now visible to the user.",
+                  'A document was created and is now visible to the user.',
               };
             },
           },
           updateDocument: {
-            description: "Update a document with the given description.",
+            description: 'Update a document with the given description.',
             parameters: z.object({
-              id: z.string().describe("The ID of the document to update"),
+              id: z.string().describe('The ID of the document to update'),
               description: z
                 .string()
-                .describe("The description of changes that need to be made"),
+                .describe('The description of changes that need to be made'),
             }),
             execute: async ({ id, description }) => {
               const document = await getDocumentById({ id });
 
               if (!document) {
                 return {
-                  error: "Document not found",
+                  error: 'Document not found',
                 };
               }
 
               const { content: currentContent } = document;
-              let draftText = "";
+              let draftText = '';
 
               dataStream.writeData({
-                type: "clear",
+                type: 'clear',
                 content: document.title,
               });
 
-              if (document.kind === "text") {
+              if (document.kind === 'text') {
                 const { fullStream } = streamText({
                   model: customModel(model.apiIdentifier),
                   system: updateDocumentPrompt(currentContent),
@@ -282,7 +282,7 @@ export async function POST(request: Request) {
                   experimental_providerMetadata: {
                     openai: {
                       prediction: {
-                        type: "content",
+                        type: 'content',
                         content: currentContent,
                       },
                     },
@@ -292,19 +292,19 @@ export async function POST(request: Request) {
                 for await (const delta of fullStream) {
                   const { type } = delta;
 
-                  if (type === "text-delta") {
+                  if (type === 'text-delta') {
                     const { textDelta } = delta;
 
                     draftText += textDelta;
                     dataStream.writeData({
-                      type: "text-delta",
+                      type: 'text-delta',
                       content: textDelta,
                     });
                   }
                 }
 
-                dataStream.writeData({ type: "finish", content: "" });
-              } else if (document.kind === "code") {
+                dataStream.writeData({ type: 'finish', content: '' });
+              } else if (document.kind === 'code') {
                 const { fullStream } = streamObject({
                   model: customModel(model.apiIdentifier),
                   system: updateDocumentPrompt(currentContent),
@@ -317,14 +317,14 @@ export async function POST(request: Request) {
                 for await (const delta of fullStream) {
                   const { type } = delta;
 
-                  if (type === "object") {
+                  if (type === 'object') {
                     const { object } = delta;
                     const { code } = object;
 
                     if (code) {
                       dataStream.writeData({
-                        type: "code-delta",
-                        content: code ?? "",
+                        type: 'code-delta',
+                        content: code ?? '',
                       });
 
                       draftText = code;
@@ -332,7 +332,7 @@ export async function POST(request: Request) {
                   }
                 }
 
-                dataStream.writeData({ type: "finish", content: "" });
+                dataStream.writeData({ type: 'finish', content: '' });
               }
 
               if (session && session.user && session.user.id) {
@@ -357,46 +357,46 @@ export async function POST(request: Request) {
                 id,
                 title: document.title,
                 kind: document.kind,
-                content: "The document has been updated successfully.",
+                content: 'The document has been updated successfully.',
               };
             },
           },
           requestSuggestions: {
-            description: "Request suggestions for a document",
+            description: 'Request suggestions for a document',
             parameters: z.object({
               documentId: z
                 .string()
-                .describe("The ID of the document to request edits"),
+                .describe('The ID of the document to request edits'),
             }),
             execute: async ({ documentId }) => {
               const document = await getDocumentById({ id: documentId });
 
               if (!document || !document.content) {
                 return {
-                  error: "Document not found",
+                  error: 'Document not found',
                 };
               }
 
               const suggestions: Array<
-                Omit<Suggestion, "userId" | "createdAt" | "documentCreatedAt">
+                Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
               > = [];
 
               const { elementStream } = streamObject({
                 model: customModel(model.apiIdentifier),
                 system:
-                  "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.",
+                  'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
                 prompt: document.content,
-                output: "array",
+                output: 'array',
                 schema: z.object({
                   originalSentence: z
                     .string()
-                    .describe("The original sentence"),
+                    .describe('The original sentence'),
                   suggestedSentence: z
                     .string()
-                    .describe("The suggested sentence"),
+                    .describe('The suggested sentence'),
                   description: z
                     .string()
-                    .describe("The description of the suggestion"),
+                    .describe('The description of the suggestion'),
                 }),
               });
 
@@ -411,7 +411,7 @@ export async function POST(request: Request) {
                 };
 
                 dataStream.writeData({
-                  type: "suggestion",
+                  type: 'suggestion',
                   content: suggestion,
                 });
 
@@ -444,7 +444,7 @@ export async function POST(request: Request) {
                 id: documentId,
                 title: document.title,
                 kind: document.kind,
-                message: "Suggestions have been added to the document",
+                message: 'Suggestions have been added to the document',
               };
             },
           },
@@ -460,7 +460,7 @@ export async function POST(request: Request) {
                   (message) => {
                     const messageId = generateUUID();
 
-                    if (message.role === "assistant") {
+                    if (message.role === 'assistant') {
                       dataStream.writeMessageAnnotation({
                         messageIdFromServer: messageId,
                       });
@@ -477,13 +477,13 @@ export async function POST(request: Request) {
                 ),
               });
             } catch (error) {
-              console.error("Failed to save chat");
+              console.error('Failed to save chat');
             }
           }
         },
         experimental_telemetry: {
           isEnabled: true,
-          functionId: "stream-text",
+          functionId: 'stream-text',
         },
       });
 
@@ -494,30 +494,30 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+  const id = searchParams.get('id');
 
   if (!id) {
-    return new Response("Not Found", { status: 404 });
+    return new Response('Not Found', { status: 404 });
   }
 
   const session = await auth();
 
   if (!session || !session.user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response('Unauthorized', { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
     if (chat.userId !== session.user.id) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     await deleteChatById({ id });
 
-    return new Response("Chat deleted", { status: 200 });
+    return new Response('Chat deleted', { status: 200 });
   } catch (error) {
-    return new Response("An error occurred while processing your request", {
+    return new Response('An error occurred while processing your request', {
       status: 500,
     });
   }

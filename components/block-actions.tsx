@@ -1,10 +1,10 @@
-import { cn, generateUUID } from "@/lib/utils";
-import { ClockRewind, CopyIcon, PlayIcon, RedoIcon, UndoIcon } from "./icons";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { useCopyToClipboard } from "usehooks-ts";
-import { toast } from "sonner";
-import { ConsoleOutput, UIBlock } from "./block";
+import { cn, generateUUID } from '@/lib/utils';
+import { ClockRewind, CopyIcon, PlayIcon, RedoIcon, UndoIcon } from './icons';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { useCopyToClipboard } from 'usehooks-ts';
+import { toast } from 'sonner';
+import { ConsoleOutput, UIBlock } from './block';
 import {
   Dispatch,
   memo,
@@ -12,14 +12,14 @@ import {
   startTransition,
   useCallback,
   useState,
-} from "react";
+} from 'react';
 
 interface BlockActionsProps {
   block: UIBlock;
-  handleVersionChange: (type: "next" | "prev" | "toggle" | "latest") => void;
+  handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
-  mode: "read-only" | "edit" | "diff";
+  mode: 'read-only' | 'edit' | 'diff';
   setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }
 
@@ -35,7 +35,7 @@ export function RunCodeButton({
   const codeContent = block.content;
 
   const updateConsoleOutput = useCallback(
-    (runId: string, content: string | null, status: "completed" | "failed") => {
+    (runId: string, content: string | null, status: 'completed' | 'failed') => {
       setConsoleOutputs((consoleOutputs) => {
         const index = consoleOutputs.findIndex((output) => output.id === runId);
 
@@ -62,7 +62,7 @@ export function RunCodeButton({
       {
         id: runId,
         content: null,
-        status: "in_progress",
+        status: 'in_progress',
       },
     ]);
 
@@ -72,7 +72,7 @@ export function RunCodeButton({
       if (!currentPyodideInstance) {
         // @ts-expect-error - pyodide is not defined
         const newPyodideInstance = await loadPyodide({
-          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
         });
 
         setPyodide(newPyodideInstance);
@@ -92,9 +92,9 @@ export function RunCodeButton({
           `sys.stdout.getvalue()`,
         );
 
-        updateConsoleOutput(runId, output, "completed");
+        updateConsoleOutput(runId, output, 'completed');
       } catch (error: any) {
-        updateConsoleOutput(runId, error.message, "failed");
+        updateConsoleOutput(runId, error.message, 'failed');
       }
     }
   }, [pyodide, codeContent, isPython, setConsoleOutputs, updateConsoleOutput]);
@@ -108,7 +108,7 @@ export function RunCodeButton({
           loadAndRunPython();
         });
       }}
-      disabled={block.status === "streaming"}
+      disabled={block.status === 'streaming'}
     >
       <PlayIcon size={18} /> Run
     </Button>
@@ -127,26 +127,26 @@ function PureBlockActions({
 
   return (
     <div className="flex flex-row gap-1">
-      {block.kind === "code" && (
+      {block.kind === 'code' && (
         <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
       )}
 
-      {block.kind === "text" && (
+      {block.kind === 'text' && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
               className={cn(
-                "p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700",
+                'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
                 {
-                  "bg-muted": mode === "diff",
+                  'bg-muted': mode === 'diff',
                 },
               )}
               onClick={() => {
-                handleVersionChange("toggle");
+                handleVersionChange('toggle');
               }}
               disabled={
-                block.status === "streaming" || currentVersionIndex === 0
+                block.status === 'streaming' || currentVersionIndex === 0
               }
             >
               <ClockRewind size={18} />
@@ -162,9 +162,9 @@ function PureBlockActions({
             variant="outline"
             className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
             onClick={() => {
-              handleVersionChange("prev");
+              handleVersionChange('prev');
             }}
-            disabled={currentVersionIndex === 0 || block.status === "streaming"}
+            disabled={currentVersionIndex === 0 || block.status === 'streaming'}
           >
             <UndoIcon size={18} />
           </Button>
@@ -178,9 +178,9 @@ function PureBlockActions({
             variant="outline"
             className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
             onClick={() => {
-              handleVersionChange("next");
+              handleVersionChange('next');
             }}
-            disabled={isCurrentVersion || block.status === "streaming"}
+            disabled={isCurrentVersion || block.status === 'streaming'}
           >
             <RedoIcon size={18} />
           </Button>
@@ -195,9 +195,9 @@ function PureBlockActions({
             className="p-2 h-fit dark:hover:bg-zinc-700"
             onClick={() => {
               copyToClipboard(block.content);
-              toast.success("Copied to clipboard!");
+              toast.success('Copied to clipboard!');
             }}
-            disabled={block.status === "streaming"}
+            disabled={block.status === 'streaming'}
           >
             <CopyIcon size={18} />
           </Button>

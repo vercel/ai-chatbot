@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Button } from "./ui/button";
-import { ChatRequestOptions, CreateMessage, Message } from "ai";
-import { memo } from "react";
-import { User } from "next-auth";
+import { motion } from 'framer-motion';
+import { Button } from './ui/button';
+import { ChatRequestOptions, CreateMessage, Message } from 'ai';
+import { memo } from 'react';
+import { User } from 'next-auth';
 
 interface SuggestedActionsProps {
   chatId: string;
@@ -18,24 +18,24 @@ interface SuggestedActionsProps {
 function PureSuggestedActions({ chatId, append, user }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: "What are the advantages",
-      label: "of using Next.js?",
-      action: "What are the advantages of using Next.js?",
+      title: 'What are the advantages',
+      label: 'of using Next.js?',
+      action: 'What are the advantages of using Next.js?',
     },
     {
-      title: "Write code that",
+      title: 'Write code that',
       label: `demonstrates djikstra's algorithm`,
       action: `Write code that demonstrates djikstra's algorithm`,
     },
     {
-      title: "Help me write an essay",
+      title: 'Help me write an essay',
       label: `about silicon valley`,
       action: `Help me write an essay about silicon valley`,
     },
     {
-      title: "What is the weather",
-      label: "in San Francisco?",
-      action: "What is the weather in San Francisco?",
+      title: 'What is the weather',
+      label: 'in San Francisco?',
+      action: 'What is the weather in San Francisco?',
     },
   ];
 
@@ -48,7 +48,7 @@ function PureSuggestedActions({ chatId, append, user }: SuggestedActionsProps) {
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.05 * index }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? "hidden sm:block" : "block"}
+          className={index > 1 ? 'hidden sm:block' : 'block'}
         >
           <Button
             variant="ghost"
@@ -56,11 +56,11 @@ function PureSuggestedActions({ chatId, append, user }: SuggestedActionsProps) {
               event.preventDefault();
 
               if (user) {
-                window.history.replaceState({}, "", `/chat/${chatId}`);
+                window.history.replaceState({}, '', `/chat/${chatId}`);
               }
 
               append({
-                role: "user",
+                role: 'user',
                 content: suggestedAction.action,
               });
             }}

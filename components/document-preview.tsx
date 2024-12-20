@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   memo,
@@ -7,18 +7,18 @@ import {
   useEffect,
   useMemo,
   useRef,
-} from "react";
-import { UIBlock } from "./block";
-import { FileIcon, FullscreenIcon, LoaderIcon } from "./icons";
-import { cn, fetcher } from "@/lib/utils";
-import { Document } from "@/lib/db/schema";
-import { InlineDocumentSkeleton } from "./document-skeleton";
-import useSWR from "swr";
-import { Editor } from "./editor";
-import { DocumentToolCall, DocumentToolResult } from "./document";
-import { CodeEditor } from "./code-editor";
-import { useBlock } from "@/hooks/use-block";
-import equal from "fast-deep-equal";
+} from 'react';
+import { UIBlock } from './block';
+import { FileIcon, FullscreenIcon, LoaderIcon } from './icons';
+import { cn, fetcher } from '@/lib/utils';
+import { Document } from '@/lib/db/schema';
+import { InlineDocumentSkeleton } from './document-skeleton';
+import useSWR from 'swr';
+import { Editor } from './editor';
+import { DocumentToolCall, DocumentToolResult } from './document';
+import { CodeEditor } from './code-editor';
+import { useBlock } from '@/hooks/use-block';
+import equal from 'fast-deep-equal';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -83,14 +83,14 @@ export function DocumentPreview({
 
   const document: Document | null = previewDocument
     ? previewDocument
-    : block.status === "streaming"
+    : block.status === 'streaming'
       ? {
           title: block.title,
           kind: block.kind,
           content: block.content,
           id: block.documentId,
           createdAt: new Date(),
-          userId: "noop",
+          userId: 'noop',
         }
       : null;
 
@@ -101,7 +101,7 @@ export function DocumentPreview({
       <HitboxLayer hitboxRef={hitboxRef} result={result} setBlock={setBlock} />
       <DocumentHeader
         title={document.title}
-        isStreaming={block.status === "streaming"}
+        isStreaming={block.status === 'streaming'}
       />
       <DocumentContent document={document} />
     </div>
@@ -141,7 +141,7 @@ const PureHitboxLayer = ({
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
       setBlock((block) =>
-        block.status === "streaming"
+        block.status === 'streaming'
           ? { ...block, isVisible: true }
           : {
               ...block,
@@ -217,15 +217,15 @@ const DocumentContent = ({ document }: { document: Document }) => {
   const { block } = useBlock();
 
   const containerClassName = cn(
-    "h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700",
+    'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
-      "p-4 sm:px-14 sm:py-16": document.kind === "text",
-      "p-0": document.kind === "code",
+      'p-4 sm:px-14 sm:py-16': document.kind === 'text',
+      'p-0': document.kind === 'code',
     },
   );
 
   const commonProps = {
-    content: document.content ?? "",
+    content: document.content ?? '',
     isCurrentVersion: true,
     currentVersionIndex: 0,
     status: block.status,
@@ -235,9 +235,9 @@ const DocumentContent = ({ document }: { document: Document }) => {
 
   return (
     <div className={containerClassName}>
-      {document.kind === "text" ? (
+      {document.kind === 'text' ? (
         <Editor {...commonProps} />
-      ) : document.kind === "code" ? (
+      ) : document.kind === 'code' ? (
         <div className="flex flex-1 relative w-full">
           <div className="absolute inset-0">
             <CodeEditor {...commonProps} />
