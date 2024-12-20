@@ -279,6 +279,7 @@ export const MultimodalInput = memo(
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
+    if (prevProps.messages.length !== nextProps.messages.length) return false;
 
     return true;
   },
