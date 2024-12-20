@@ -19,7 +19,6 @@ import { DocumentToolCall, DocumentToolResult } from './document';
 import { CodeEditor } from './code-editor';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
