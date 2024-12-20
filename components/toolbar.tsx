@@ -29,15 +29,12 @@ import { sanitizeUIMessages } from '@/lib/utils';
 import {
   ArrowUpIcon,
   CodeIcon,
-  FileIcon,
   LogsIcon,
   MessageIcon,
   PenIcon,
   StopIcon,
   SummarizeIcon,
-  TerminalIcon,
 } from './icons';
-import equal from 'fast-deep-equal';
 import { BlockKind } from './block';
 
 type ToolProps = {
