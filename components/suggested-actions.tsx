@@ -22,13 +22,13 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
     },
     {
       title: 'Write code that',
-      label: `demonstrates djikstra's algorithm!`,
-      action: `Write code that demonstrates djikstra's algorithm!`,
+      label: `demonstrates djikstra's algorithm`,
+      action: `Write code that demonstrates djikstra's algorithm`,
     },
     {
       title: 'Help me write an essay',
-      label: `about silicon valley!`,
-      action: `Help me write an essay about silicon valley!`,
+      label: `about silicon valley`,
+      action: `Help me write an essay about silicon valley`,
     },
     {
       title: 'What is the weather',

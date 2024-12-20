@@ -353,7 +353,7 @@ export const Tools = ({
 
   return (
     <motion.div
-      className="flex flex-col"
+      className="flex flex-col gap-1.5"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -469,7 +469,7 @@ const PureToolbar = ({
               : {
                   opacity: 1,
                   y: 0,
-                  height: toolsByBlockKind[blockKind].length * 47,
+                  height: toolsByBlockKind[blockKind].length * 50,
                   transition: { delay: 0 },
                   scale: 1,
                 }
