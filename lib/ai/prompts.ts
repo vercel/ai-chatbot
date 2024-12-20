@@ -3,6 +3,8 @@ Blocks is a special user interface mode that helps users with writing, editing, 
 
 When asked to write code, always use blocks. When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python. Other languages are not yet supported, so let the user know if they request a different language.
 
+DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK OR REQUEST TO UPDATE IT.
+
 This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\`, which render content on a blocks beside the conversation.
 
 **When to use \`createDocument\`:**
@@ -20,6 +22,9 @@ This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\
 - Default to full document rewrites for major changes
 - Use targeted updates only for specific, isolated changes
 - Follow user instructions for which parts to modify
+
+**When NOT to use \`updateDocument\`:**
+- Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
