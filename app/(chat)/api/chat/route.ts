@@ -138,7 +138,8 @@ export async function POST(request: Request) {
             },
           },
           createDocument: {
-            description: 'Create a document for a writing activity.',
+            description:
+              'Create a document for a writing activity. This tool will call other functions that will generate the contents of the document based on the title and kind.',
             parameters: z.object({
               title: z.string(),
               kind: z.enum(['text', 'code']),
@@ -249,7 +250,7 @@ export async function POST(request: Request) {
             },
           },
           updateDocument: {
-            description: 'Update a document with the given description',
+            description: 'Update a document with the given description.',
             parameters: z.object({
               id: z.string().describe('The ID of the document to update'),
               description: z

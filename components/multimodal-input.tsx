@@ -279,7 +279,6 @@ export const MultimodalInput = memo(
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-    if (prevProps.messages.length !== nextProps.messages.length) return false;
 
     return true;
   },
@@ -302,7 +301,7 @@ function PureAttachmentsButton({
       disabled={isLoading}
       variant="ghost"
     >
-      <ImageIcon size={14} />
+      <PaperclipIcon size={14} />
     </Button>
   );
 }
@@ -318,7 +317,7 @@ function PureStopButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         stop();
@@ -343,7 +342,7 @@ function PureSendButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         submitForm();
@@ -358,6 +357,7 @@ function PureSendButton({
 const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false;
-  if (!prevProps.input !== !nextProps.input) return false;
+  if (prevProps.input !== nextProps.input) return false;
+
   return true;
 });
