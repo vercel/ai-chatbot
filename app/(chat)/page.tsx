@@ -37,7 +37,7 @@ export default async function Page() {
         selectedVisibilityType="private"
         isReadonly={false}
       />
-      <DataStreamHandler id={id} />
+      <DataStreamHandler id={session ? id : 'guest'} />
     </>
   );
 }
