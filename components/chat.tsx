@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
-import { User } from 'next-auth';
-import { useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
+import type { Attachment, Message } from "ai";
+import { useChat } from "ai/react";
+import { User } from "next-auth";
+import { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { ChatHeader } from "@/components/chat-header";
+import type { Vote } from "@/lib/db/schema";
+import { fetcher } from "@/lib/utils";
 
-import { Block } from './block';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
-import { useBlockSelector } from '@/hooks/use-block';
-import { DeployDialog } from './deploy-dialog';
+import { Block } from "./block";
+import { MultimodalInput } from "./multimodal-input";
+import { Messages } from "./messages";
+import { VisibilityType } from "./visibility-selector";
+import { useBlockSelector } from "@/hooks/use-block";
+import { DeployDialog } from "./deploy-dialog";
 
 export function Chat({
   id,
@@ -50,17 +50,17 @@ export function Chat({
     initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
-      mutate('/api/history');
+      mutate("/api/history");
     },
     onError: (error) => {
-      if (error.message.startsWith('Too many requests')) {
+      if (error.message.startsWith("Too many requests")) {
         setIsDeployDialogOpen(true);
       }
     },
   });
 
   const { data: votes } = useSWR<Array<Vote>>(
-    id !== 'guest' ? `/api/vote?chatId=${id}` : null,
+    id !== "guest" ? `/api/vote?chatId=${id}` : null,
     fetcher,
   );
 
