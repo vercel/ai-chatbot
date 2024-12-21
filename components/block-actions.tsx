@@ -80,8 +80,8 @@ export function RunCodeButton({
           currentPyodideInstance = newPyodideInstance;
         }
 
-        // Load matplotlib package first
-        await currentPyodideInstance.loadPackage('matplotlib');
+        // Load required packages
+        await currentPyodideInstance.loadPackage(['matplotlib', 'pandas']);
 
         // Setup matplotlib with our custom show function that supports both formats
         await currentPyodideInstance.runPythonAsync(`
