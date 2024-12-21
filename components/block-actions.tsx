@@ -12,6 +12,7 @@ import {
   startTransition,
   useCallback,
   useState,
+  useEffect,
 } from 'react';
 
 interface BlockActionsProps {
@@ -34,70 +35,208 @@ export function RunCodeButton({
   const isPython = true;
   const codeContent = block.content;
 
-  const updateConsoleOutput = useCallback(
-    (runId: string, content: string | null, status: 'completed' | 'failed') => {
-      setConsoleOutputs((consoleOutputs) => {
-        const index = consoleOutputs.findIndex((output) => output.id === runId);
-
-        if (index === -1) return consoleOutputs;
-
-        const updatedOutputs = [...consoleOutputs];
-        updatedOutputs[index] = {
-          id: runId,
-          content,
-          status,
-        };
-
-        return updatedOutputs;
-      });
-    },
-    [setConsoleOutputs],
-  );
-
   const loadAndRunPython = useCallback(async () => {
     const runId = generateUUID();
 
-    setConsoleOutputs((consoleOutputs) => [
-      ...consoleOutputs,
+    setConsoleOutputs([
       {
         id: runId,
         content: null,
         status: 'in_progress',
+        type: 'text',
       },
     ]);
 
     let currentPyodideInstance = pyodide;
 
     if (isPython) {
-      if (!currentPyodideInstance) {
-        // @ts-expect-error - pyodide is not defined
-        const newPyodideInstance = await loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
-        });
-
-        setPyodide(newPyodideInstance);
-        currentPyodideInstance = newPyodideInstance;
-      }
-
       try {
-        await currentPyodideInstance.runPythonAsync(`
-            import sys
-            import io
-            sys.stdout = io.StringIO()
-          `);
+        if (!currentPyodideInstance) {
+          // @ts-expect-error - pyodide is not defined
+          const newPyodideInstance = await loadPyodide({
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
+          });
 
+          setPyodide(newPyodideInstance);
+          currentPyodideInstance = newPyodideInstance;
+        }
+
+        // Load matplotlib package first, then pandas
+        await currentPyodideInstance.loadPackage('matplotlib');
+        await currentPyodideInstance.loadPackage('pandas');
+
+        // Setup matplotlib with our custom show function that supports both formats
+        await currentPyodideInstance.runPythonAsync(`
+          import sys, io, gc
+          import base64
+          from matplotlib import pyplot as plt
+          
+          # Clear any existing plots
+          plt.clf()
+          plt.close('all')
+          
+          # Switch to agg backend
+          plt.switch_backend('agg')
+          
+          # Capture standard output
+          sys.stdout = io.StringIO()
+          
+          # Override plt.show() to automatically save to both formats
+          def custom_show():
+              # Add size checks
+              if plt.gcf().get_size_inches().prod() * plt.gcf().dpi ** 2 > 25_000_000:  # ~25MB
+                  print("Warning: Plot size too large, reducing quality")
+                  plt.gcf().set_dpi(100)  # Reduce quality
+              
+              # Save as PNG
+              png_buf = io.BytesIO()
+              plt.savefig(png_buf, format='png')
+              png_buf.seek(0)
+              png_base64 = base64.b64encode(png_buf.read()).decode('utf-8')
+              print(f'Base64 encoded PNG: {png_base64}')
+              png_buf.close()
+              
+              # Save as SVG
+              svg_buf = io.BytesIO()
+              plt.savefig(svg_buf, format='svg')
+              svg_buf.seek(0)
+              svg_base64 = base64.b64encode(svg_buf.read()).decode('utf-8')
+              print(f'Base64 encoded SVG: {svg_base64}')
+              svg_buf.close()
+              
+              plt.clf()
+              plt.close('all')
+          
+          plt.show = custom_show
+        `);
+
+        // Run the actual code
         await currentPyodideInstance.runPythonAsync(codeContent);
 
-        const output: string = await currentPyodideInstance.runPythonAsync(
-          `sys.stdout.getvalue()`,
+        // Get the output
+        const output = await currentPyodideInstance.runPythonAsync(
+          `sys.stdout.getvalue()`
         );
 
-        updateConsoleOutput(runId, output, 'completed');
+        // Process output
+        const lines = output.split('\n');
+        let currentTextContent = '';
+
+        for (const line of lines) {
+          if (
+            line.includes('Base64 encoded PNG:') ||
+            line.includes('Base64 encoded SVG:') ||
+            line.includes('Base64 encoded image:')
+          ) {
+            // Output accumulated text first
+            if (currentTextContent.trim()) {
+              setConsoleOutputs((prev) => [
+                ...prev.filter((o) => o.id !== runId),
+                {
+                  id: generateUUID(),
+                  content: currentTextContent.trim(),
+                  status: 'completed',
+                  type: 'text',
+                },
+              ]);
+              currentTextContent = '';
+            }
+
+            // Extract data based on the format
+            let pngData = null;
+            let svgData = null;
+
+            if (line.includes('Base64 encoded image:')) {
+              pngData = line.split('Base64 encoded image:')[1]?.trim();
+            } else {
+              // Original PNG/SVG handling
+              const pngMatch = lines.find((l: string) =>
+                l.includes('Base64 encoded PNG:')
+              );
+              const svgMatch = lines.find((l: string) =>
+                l.includes('Base64 encoded SVG:')
+              );
+
+              pngData = pngMatch?.split('Base64 encoded PNG:')[1]?.trim();
+              svgData = svgMatch?.split('Base64 encoded SVG:')[1]?.trim();
+
+              // Skip the next few lines if they contain the SVG data we just processed
+              const currentIndex = lines.indexOf(line);
+              if (svgMatch && currentIndex < lines.indexOf(svgMatch)) {
+                continue;
+              }
+            }
+
+            if (pngData || svgData) {
+              setConsoleOutputs((prev) => [
+                ...prev.filter((o) => o.id !== runId),
+                {
+                  id: generateUUID(),
+                  content: {
+                    png: pngData || null,
+                    svg: svgData || null,
+                  },
+                  status: 'completed',
+                  type: 'plot-output',
+                },
+              ]);
+            }
+
+            // Skip this line and potentially the next SVG line
+            continue;
+          } else if (line.trim() && !line.includes('Base64 encoded')) {
+            // Only add non-base64 lines to text content
+            currentTextContent += line + '\n';
+          }
+        }
+
+        // Output any remaining text
+        if (currentTextContent.trim()) {
+          setConsoleOutputs((prev) => [
+            ...prev.filter((o) => o.id !== runId),
+            {
+              id: runId,
+              content: currentTextContent.trim(),
+              status: 'completed',
+              type: 'text',
+            },
+          ]);
+        }
+
+        // Final cleanup
+        await currentPyodideInstance.runPythonAsync(`
+          plt.clf()
+          plt.close('all')
+        `);
       } catch (error: any) {
-        updateConsoleOutput(runId, error.message, 'failed');
+        setConsoleOutputs((prev) => [
+          {
+            id: runId,
+            content: error.message,
+            status: 'failed',
+            type: 'text',
+          },
+        ]);
       }
     }
-  }, [pyodide, codeContent, isPython, setConsoleOutputs, updateConsoleOutput]);
+  }, [pyodide, codeContent, isPython, setConsoleOutputs]);
+
+  useEffect(() => {
+    // Cleanup when component unmounts
+    return () => {
+      if (pyodide) {
+        try {
+          pyodide.runPythonAsync(`
+            plt.clf()
+            plt.close('all')
+            gc.collect()
+          `);
+        } catch (e) {
+          console.warn('Cleanup failed:', e);
+        }
+      }
+    };
+  }, [pyodide]);
 
   return (
     <Button
@@ -140,7 +279,7 @@ function PureBlockActions({
                 'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
                 {
                   'bg-muted': mode === 'diff',
-                },
+                }
               )}
               onClick={() => {
                 handleVersionChange('toggle');
