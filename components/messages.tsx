@@ -2,14 +2,12 @@ import { ChatRequestOptions, Message } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Overview } from './overview';
-import { UIBlock } from './block';
-import { Dispatch, memo, SetStateAction } from 'react';
+import { memo } from 'react';
 import { Vote } from '@/lib/db/schema';
+import equal from 'fast-deep-equal';
 
 interface MessagesProps {
   chatId: string;
-  block: UIBlock;
-  setBlock: Dispatch<SetStateAction<UIBlock>>;
   isLoading: boolean;
   votes: Array<Vote> | undefined;
   messages: Array<Message>;
@@ -20,12 +18,11 @@ interface MessagesProps {
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
+  isBlockVisible: boolean;
 }
 
 function PureMessages({
   chatId,
-  block,
-  setBlock,
   isLoading,
   votes,
   messages,
@@ -41,15 +38,13 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {messages.length === 0 && <Overview />}
+      {/* {messages.length === 0 && <Overview />} */}
 
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
           chatId={chatId}
           message={message}
-          block={block}
-          setBlock={setBlock}
           isLoading={isLoading && messages.length - 1 === index}
           vote={
             votes
@@ -74,15 +69,13 @@ function PureMessages({
   );
 }
 
-function areEqual(prevProps: MessagesProps, nextProps: MessagesProps) {
-  if (
-    prevProps.block.status === 'streaming' &&
-    nextProps.block.status === 'streaming'
-  ) {
-    return true;
-  }
+export const Messages = memo(PureMessages, (prevProps, nextProps) => {
+  if (prevProps.isBlockVisible && nextProps.isBlockVisible) return true;
 
-  return false;
-}
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (prevProps.isLoading && nextProps.isLoading) return false;
+  if (prevProps.messages.length !== nextProps.messages.length) return false;
+  if (!equal(prevProps.votes, nextProps.votes)) return false;
 
-export const Messages = memo(PureMessages, areEqual);
+  return true;
+});

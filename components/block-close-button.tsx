@@ -1,23 +1,24 @@
-import { memo, SetStateAction } from 'react';
+import { memo } from 'react';
 import { CrossIcon } from './icons';
 import { Button } from './ui/button';
-import { UIBlock } from './block';
-import equal from 'fast-deep-equal';
+import { initialBlockData, useBlock } from '@/hooks/use-block';
 
-interface BlockCloseButtonProps {
-  setBlock: (value: SetStateAction<UIBlock>) => void;
-}
+function PureBlockCloseButton() {
+  const { setBlock } = useBlock();
 
-function PureBlockCloseButton({ setBlock }: BlockCloseButtonProps) {
   return (
     <Button
       variant="outline"
       className="h-fit p-2 dark:hover:bg-zinc-700"
       onClick={() => {
-        setBlock((currentBlock) => ({
-          ...currentBlock,
-          isVisible: false,
-        }));
+        setBlock((currentBlock) =>
+          currentBlock.status === 'streaming'
+            ? {
+                ...currentBlock,
+                isVisible: false,
+              }
+            : { ...initialBlockData, status: 'idle' },
+        );
       }}
     >
       <CrossIcon size={18} />
