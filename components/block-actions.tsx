@@ -62,8 +62,7 @@ export function RunCodeButton({
         }
 
         // Load matplotlib package first, then pandas
-        await currentPyodideInstance.loadPackage('matplotlib');
-        await currentPyodideInstance.loadPackage('pandas');
+        await currentPyodideInstance.loadPackage(['matplotlib', 'pandas']);
 
         // Setup matplotlib with our custom show function that supports both formats
         await currentPyodideInstance.runPythonAsync(`
