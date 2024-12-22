@@ -35,27 +35,6 @@ export function RunCodeButton({
   const isPython = true;
   const codeContent = block.content;
 
-  const updateConsoleOutput = useCallback(
-    (runId: string, content: string | null, status: 'completed' | 'failed', type: 'text' | 'plot-output' = 'text') => {
-      setConsoleOutputs((consoleOutputs) => {
-        const index = consoleOutputs.findIndex((output) => output.id === runId);
-
-        if (index === -1) return consoleOutputs;
-
-        const updatedOutputs = [...consoleOutputs];
-        updatedOutputs[index] = {
-          id: runId,
-          content,
-          status,
-          type,
-        };
-
-        return updatedOutputs;
-      });
-    },
-    [setConsoleOutputs],
-  );
-
   const loadAndRunPython = useCallback(async () => {
     const runId = generateUUID();
 

@@ -17,17 +17,6 @@ interface ConsoleProps {
   setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }
 
-// Helper function to detect base64 images
-function isBase64Image(str: string): boolean {
-  try {
-    // Remove any whitespace and check if it's a base64 string
-    const trimmed = str.trim();
-    return /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(trimmed);
-  } catch {
-    return false;
-  }
-}
-
 // Add basic SVG sanitization
 const sanitizeSVG = (svg: string) => {
   try {
