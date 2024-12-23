@@ -1,106 +1,124 @@
 import { Pinecone } from "@pinecone-database/pinecone"
 import { DocumentoSTJ } from "../types";
-import { kv } from '@vercel/kv';
+import { encoding_for_model, TiktokenModel } from 'tiktoken';
 
-export const createEmbeddings = async (text: string, provider: string) => {    
-  console.log("Creating embeddings for: ", text)
-  console.log("Provider: ", provider)
+async function splitTextIntoChunks(text: string, model: TiktokenModel, maxTokens: number): Promise<string[]> {
+  const encoder = encoding_for_model(model); // Inicializa o codificador
+  const tokens = encoder.encode(text); // Codifica o texto
+  const chunks: string[] = [];
+
+  for (let i = 0; i < tokens.length; i += maxTokens) {
+    const chunk = tokens.slice(i, i + maxTokens); // Divide o texto em chunks
+    const decodedChunk = new TextDecoder().decode(encoder.decode(chunk)); // Decodifica o chunk para texto
+    chunks.push(decodedChunk);
+  }
+
+  console.log(chunks.length, "chunks created.");
+
+  encoder.free();
+  return chunks;
+}
+
+export const createEmbeddings = async (text: string, provider: string) => {
+  console.log("Creating embeddings for: ", text.slice(0, 13));
+  console.log("Provider: ", provider);
+
   try {
+    const model = provider === "weviate" ? 'text-embedding-3-large' as TiktokenModel : 'text-embedding-ada-002' as TiktokenModel;
+    const maxTokens = 8191;
+    const chunks = await splitTextIntoChunks(text, model, maxTokens);
+
+    const embeddings = await Promise.all(chunks.map(async (chunk) => {
       const response = await fetch('https://api.openai.com/v1/embeddings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: provider == "weviate" ? 'text-embedding-3-large' : 'text-embedding-ada-002',
-          input: text.replace(/\n/g, ' ')
-        })
+          model,
+          input: chunk,
+        }),
       });
-    
+
       const result = await response.json();
       if (!result.data) {
-        console.error('Error creating embedding:', text);
-        console.error("Error creating embedding: ", result)
-        return
+        console.error('Error creating embedding for chunk:', chunk);
+        throw new Error('Failed to create embedding.');
       }
-      console.log("Embedding created: ", result.data[0].embedding)
-      return result.data[0].embedding as number[]
+
+      return result.data[0].embedding as number[];
+    }));
+
+    const combinedEmbedding = embeddings[0].map((_, i) =>
+      embeddings.reduce((sum, embedding) => sum + embedding[i], 0) / embeddings.length
+    );
+
+    return combinedEmbedding;
+
   } catch (error) {
-      console.log("Error getting embedding ",error)
-      throw error
+    console.error("Error creating embedding: ", error);
+    throw error;
   }
+};
+
+function getMetadataSize(metadata: any) {;
+  return new TextEncoder().encode(JSON.stringify(metadata)).length;
 }
 
-export async function storeDocumentsInPinecone(documents: DocumentoSTJ[]) {
+export async function storeDocumentsInPinecone(documents: DocumentoSTJ[], namespaceId: string) {
   try {
     const pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY || '',
     });
 
     const index = await pinecone.index('lexgpt');
-    const namespace = index.namespace('stj');
-
-    console.log(`Fetching existing document IDs`);
-
-    let cachedIds = await kv.get<string[]>('pinecone_existing_ids');
-
-    if (!cachedIds) {
-      console.log(`No cached IDs found, fetching from Pinecone.`);
-
-      // Fetch all IDs from Pinecone with pagination
-      let fetchedIds: string[] = [];
-      let paginationToken: string | undefined = undefined;
-
-      do {
-        console.log(`Fetching IDs with pagination token: ${paginationToken}`);
-        const response = await index.listPaginated({ paginationToken });
-        fetchedIds.push(...response.vectors.map((vector) => vector.id));
-        paginationToken = response.pagination?.next;
-      } while (paginationToken);
-
-      // Cache fetched IDs in KV
-      console.log(`Fetched ${fetchedIds.length} IDs from Pinecone.`);
-      await kv.set('pinecone_existing_ids', fetchedIds);
-      cachedIds = fetchedIds;
-    }
-
-    const cachedIdSet = new Set(cachedIds);
+    const namespace = index.namespace(namespaceId);
 
     for (const doc of documents) {
       const documentId = doc.process.trim(); // Unique ID for the document
 
-      if (cachedIdSet.has(documentId)) {
-        console.log(`Document with ID ${documentId} already exists in cache. Skipping.`);
-        continue;
-      }
-
       // Combine fields into a single searchable content
-      const content = `${doc.process} ${doc.relator} ${doc.classe} ${doc.ementa} ${doc.acordao}`.trim();
+      let content = `${doc.process} ${doc.relator} ${doc.classe} ${doc.ementa} ${doc.acordao}`.trim();
 
       // Create embedding for the document
       const embedding = await createEmbeddings(content, 'pinecone') as number[];
+
+      let metadata = {
+        process: doc.process,
+        relator: doc.relator,
+        classe: doc.classe,
+        ementa: doc.ementa,
+        acordao: doc.acordao,
+        link: doc.link,
+        document: content, // Full content for context
+      };
+
+      // Check and reduce metadata size dynamically
+
+      // TODO marcos - paginação conteudo
+      const maxSize = 40960; // 40 KB limit
+      while (getMetadataSize(metadata) > maxSize) {
+        console.log(`Metadata size (${getMetadataSize(metadata)} bytes) exceeds the limit. Reducing size...`);
+
+        // Dynamically truncate the document field to reduce metadata size
+        if (metadata.document) {
+          metadata.document = metadata.document.slice(0, metadata.document.length - 1000);
+        }
+      }
+
+      console.log(`Final metadata size: ${getMetadataSize(metadata)} bytes`);
 
       // Upsert the document into Pinecone
       await namespace.upsert([
         {
           id: documentId,
           values: embedding,
-          metadata: {
-            process: doc.process,
-            relator: doc.relator,
-            classe: doc.classe,
-            ementa: doc.ementa,
-            acordao: doc.acordao,
-            link: doc.link,
-            document: content, // Store full content for context
-          },
+          metadata,
         },
-      ]); console.log(`Document with ID ${documentId} stored successfully in Pinecone.`);
+      ]);
 
-      // Update the cache with the new ID
-      cachedIdSet.add(documentId);
-      await kv.set('pinecone_existing_ids', Array.from(cachedIdSet)); // Persist the updated cache
+      console.log(`Document with ID ${documentId} stored successfully in Pinecone namespace ${namespaceId}.`);
     }
 
     console.log('All documents processed successfully.');
@@ -110,15 +128,15 @@ export async function storeDocumentsInPinecone(documents: DocumentoSTJ[]) {
   }
 }
 
-
-export const getEmbeddingsFromPinecone = async (vectors: number[]) => {
+// Namespace dinamico
+export const getEmbeddingsFromPinecone = async (vectors: number[], namespaceId: string) => {
   try {
     const pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY || '',
     })
 
     const index = await pinecone.index('lexgpt')
-    const namespace = index.namespace('stj')
+    const namespace = index.namespace(namespaceId)
     const response = await namespace.query({
       vector: vectors,
       topK: 4,

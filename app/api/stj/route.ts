@@ -1,30 +1,28 @@
-// function catchErrorTyped<T, E extends new (message?: string) => Error>(
-//   promise: Promise<T>,
-//   errorsToCatch?: E[]
-// ): Promise<[undefined,T] | [InstanceType<E>]> {
-//   return promise
-//     .then(data => {
-//       return [undefined, data] as [undefined,T];
-//     })
-//     .catch(error => {
-//       if (errorsToCatch == undefined) {
-//         return [error]
-//       }
-//
-//       if (errorsToCatch.some(e => error instanceof e)) {
-//         return [error]
-//       }
-//
-//       throw error
-//     })
-// }
-
 import { storeDocumentsInPinecone } from "@/lib/chat/embeddingsProviders";
 import { NextResponse } from "next/server";
+import slugify from 'slugify';
+import { Pinecone } from "@pinecone-database/pinecone"
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const namespace = slugify(body.search, { lower: true, strict: false, trim: true });
+
+    const pinecone = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY || '',
+    });
+
+    const index = pinecone.index('lexgpt');
+    const indexStats = await index.describeIndexStats();
+    const namespaces = indexStats.namespaces || {};
+
+    // Checar se o namespace existe
+    if (namespaces.hasOwnProperty(namespace)) {
+      console.log(`Namespace "${namespace}" already exists.`);
+
+      // TODO Puxar dados do pinecone ou retornar erro
+      return NextResponse.json({ success: true, data: 'data' });
+    } else {
 
     const response = await fetch('https://lextgpt-puppeteer.onrender.com/scrape', {
       method: 'POST',
@@ -40,16 +38,18 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    await storeDocumentsInPinecone(data.slice(0,10));
+    await storeDocumentsInPinecone(data, namespace);
 
-    return NextResponse.json({ success: true, data:'data' });
+    return NextResponse.json({ success: true, data: 'data' });
+    }
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 500 }
     );
   }
 }
+
 
 // [
 //   {

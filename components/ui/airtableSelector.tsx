@@ -42,7 +42,6 @@ export default function AirtableSelector({ session }: Session) {
 
    useEffect(() => {
     if (session?.user) {
-      console.log(session)
       getUser(session.user.email).then(userInfo => {
         setUser(userInfo as unknown as Session)
       })

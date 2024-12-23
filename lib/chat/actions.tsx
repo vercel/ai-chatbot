@@ -229,7 +229,7 @@ async function submitUserMessage(content: string, chat?: any) {
       "System prompt": null,
     }
 
-  // console.log("Chat: ", chat)
+  console.log("Chat: ", chat)
   
   const aiState = getMutableAIState<typeof AI>()
 
@@ -258,8 +258,8 @@ async function submitUserMessage(content: string, chat?: any) {
 
       // Mapping vectors to the correct service
       
-      if (vectorName == 'pinecone') 
-        CONTEXT = await getEmbeddingsFromPinecone(embeddings)
+      if (vectorName == 'pinecone')
+        CONTEXT = await getEmbeddingsFromPinecone(embeddings, chat["Query"]) // CHANGE
       else if (vectorName == 'qdrant')
         CONTEXT = await getEmbeddingsFromQdrant(embeddings, chat["Name"])
       else if (vectorName == 'weviate') 

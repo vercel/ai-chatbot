@@ -54,9 +54,11 @@
     "react-textarea-autosize": "^8.5.3",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
+    "slugify": "^1.6.6",
     "sonner": "^1.4.3",
     "stripe": "14.8.0",
     "swr": "^2.2.5",
+    "tiktoken": "^1.0.18",
     "usehooks-ts": "^2.16.0",
     "zod": "^3.22.4"
   },
