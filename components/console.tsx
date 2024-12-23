@@ -10,11 +10,29 @@ import {
 } from 'react';
 import { ConsoleOutput } from './block';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface ConsoleProps {
   consoleOutputs: Array<ConsoleOutput>;
   setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }
+
+// Add basic SVG sanitization
+const sanitizeSVG = (svg: string) => {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svg, 'image/svg+xml');
+    // Remove potentially dangerous elements/attributes
+    const scripts = doc.getElementsByTagName('script');
+    for (const script of scripts) {
+      script.remove();
+    }
+    return doc.documentElement.outerHTML;
+  } catch (e) {
+    console.error('SVG sanitization failed:', e);
+    return '<div>Invalid SVG content</div>';
+  }
+};
 
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
@@ -23,6 +41,8 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
 
   const minHeight = 100;
   const maxHeight = 800;
+
+  const [expandedImages, setExpandedImages] = useState<Set<string>>(new Set());
 
   const startResizing = useCallback(() => {
     setIsResizing(true);
@@ -41,7 +61,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         }
       }
     },
-    [isResizing],
+    [isResizing]
   );
 
   useEffect(() => {
@@ -56,6 +76,84 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   useEffect(() => {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [consoleOutputs]);
+
+  const toggleImage = (outputId: string) => {
+    setExpandedImages((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(outputId)) {
+        newSet.delete(outputId);
+      } else {
+        newSet.add(outputId);
+      }
+      return newSet;
+    });
+  };
+
+  const renderConsoleContent = (output: ConsoleOutput) => {
+    if (!output.content) return null;
+
+    if (output.type === 'plot-output') {
+      const content = output.content as {
+        png: string | null;
+        svg: string | null;
+      };
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="text-sm text-muted-foreground">
+            Plot output detected.
+          </div>
+          <div className="flex flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => toggleImage(`${output.id}-png`)}
+              className="w-fit"
+              disabled={!content.png}
+            >
+              {expandedImages.has(`${output.id}-png`) ? 'Hide PNG' : 'Show PNG'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => toggleImage(`${output.id}-svg`)}
+              className="w-fit"
+              disabled={!content.svg}
+            >
+              {expandedImages.has(`${output.id}-svg`) ? 'Hide SVG' : 'Show SVG'}
+            </Button>
+          </div>
+          {expandedImages.has(`${output.id}-png`) && content.png && (
+            <Image
+              src={`data:image/png;base64,${content.png}`}
+              alt="PNG visualization"
+              width={500}
+              height={300}
+              className="rounded-md"
+              style={{ objectFit: 'contain' }}
+              unoptimized
+            />
+          )}
+          {expandedImages.has(`${output.id}-svg`) && content.svg && (
+            <div
+              className="rounded-md"
+              dangerouslySetInnerHTML={{
+                __html: (() => {
+                  try {
+                    return sanitizeSVG(atob(content.svg));
+                  } catch (e) {
+                    console.error('SVG decode failed:', e);
+                    return '<div>Failed to decode SVG</div>';
+                  }
+                })(),
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="whitespace-pre-line">{output.content as string}</div>
+    );
+  };
 
   return consoleOutputs.length > 0 ? (
     <>
@@ -72,7 +170,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
           'fixed flex flex-col bottom-0 dark:bg-zinc-900 bg-zinc-50 w-full border-t z-40 overflow-y-scroll dark:border-zinc-700 border-zinc-200',
           {
             'select-none': isResizing,
-          },
+          }
         )}
         style={{ height }}
       >
@@ -114,8 +212,8 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   <LoaderIcon />
                 </div>
               ) : (
-                <div className="dark:text-zinc-50 text-zinc-900 whitespace-pre-line">
-                  {consoleOutput.content}
+                <div className="dark:text-zinc-50 text-zinc-900 w-full">
+                  {renderConsoleContent(consoleOutput)}
                 </div>
               )}
             </div>

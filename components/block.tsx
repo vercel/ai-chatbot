@@ -55,7 +55,8 @@ export interface UIBlock {
 export interface ConsoleOutput {
   id: string;
   status: 'in_progress' | 'completed' | 'failed';
-  content: string | null;
+  content: string | null | { png: string | null; svg: string | null };
+  type?: 'text' | 'plot-output';
 }
 
 function PureBlock({
