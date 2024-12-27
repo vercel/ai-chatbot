@@ -1,7 +1,7 @@
 'use client';
 
 import { updateChatVisibility } from '@/app/(chat)/actions';
-import { VisibilityType } from '@/components/visibility-selector';
+import type { VisibilityType } from '@/components/visibility-selector';
 import { Chat } from '@/lib/db/schema';
 import { useMemo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -14,7 +14,7 @@ export function useChatVisibility({
   initialVisibility: VisibilityType;
 }) {
   const { mutate, cache } = useSWRConfig();
-  const history: Array<Chat> = cache.get('/api/history')?.data;
+  const history: Array<Chat> | undefined = cache.get('/api/history')?.data;
 
   const { data: localVisibility, mutate: setLocalVisibility } = useSWR(
     `${chatId}-visibility`,
@@ -24,15 +24,23 @@ export function useChatVisibility({
     },
   );
 
+  const chat = useMemo(() => {
+    if (!history) return undefined;
+    return history.find((chat) => chat.id === chatId);
+  }, [history, chatId]);
+
   const visibilityType = useMemo(() => {
-    if (!history) return localVisibility;
-    const chat = history.find((chat) => chat.id === chatId);
-    if (!chat) return 'private';
+    if (!chat) return localVisibility;
     return chat.visibility;
-  }, [history, chatId, localVisibility]);
+  }, [chat, localVisibility]);
 
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
+
+    if (chat) {
+      mutate(`${chatId}-visibility`, updatedVisibilityType, { revalidate: true });
+      return;
+    }
 
     mutate<Array<Chat>>(
       '/api/history',
