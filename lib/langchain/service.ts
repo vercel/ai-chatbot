@@ -1,6 +1,5 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { PineconeStore } from "@langchain/pinecone";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 export class LangChainService {
@@ -25,26 +24,37 @@ export class LangChainService {
   async ingestDocument(text: string, metadata: Record<string, any> = {}) {
     console.log("📥 Starting document ingestion");
     try {
-      const embedding = await this.embeddings.embedQuery(text);
-      console.log("🔤 Generated embedding for document");
+      const textSplitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200,
+      });
+
+      const docs = await textSplitter.createDocuments([text]);
+      console.log(`📄 Split document into ${docs.length} chunks`);
 
       const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
       const timestamp = Date.now();
 
-      await index.upsert([
-        {
-          id: timestamp.toString(),
-          values: embedding,
-          metadata: {
-            text: text,
-            userId: metadata.userId,
-            timestamp: timestamp,
-          },
-        },
-      ]);
+      // Process each chunk
+      const upsertRequests = await Promise.all(
+        docs.map(async (doc, i) => {
+          const embedding = await this.embeddings.embedQuery(doc.pageContent);
+          return {
+            id: `${timestamp}-${i}`,
+            values: embedding,
+            metadata: {
+              text: doc.pageContent,
+              userId: metadata.userId,
+              timestamp: timestamp,
+            },
+          };
+        })
+      );
+
+      await index.upsert(upsertRequests);
 
       console.log("✅ Document successfully ingested");
-      return 1;
+      return docs.length;
     } catch (error) {
       console.error("❌ Error in document ingestion:", error);
       throw error;

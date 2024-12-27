@@ -16,24 +16,24 @@ interface SuggestedActionsProps {
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Recommend resources',
+      label: 'that help with communication.',
+      action: 'Recommend resources that help with communication.',
     },
     {
-      title: 'Write code that',
-      label: `demonstrates djikstra's algorithm`,
-      action: `Write code that demonstrates djikstra's algorithm`,
+      title: 'Recap my meeting',
+      label: `with my coach.`,
+      action: `Recap my meeting with my coach.`,
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Help me be accountable',
+      label: `about my goals.`,
+      action: `Help me be accountable about my goals.`,
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Help me make a decision',
+      label: 'about a team member.',
+      action: 'Help me make a decision about a team member.',
     },
   ];
 
