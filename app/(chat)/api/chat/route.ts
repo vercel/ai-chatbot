@@ -81,24 +81,26 @@ export async function POST(request: Request) {
 
       const result = streamText({
         model: customModel(model.apiIdentifier),
-        system: systemPrompt,
+        system: `${systemPrompt}\n\nIMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question.`,
         messages: coreMessages,
         maxSteps: 5,
         experimental_activeTools: ["searchKnowledgeBase"],
         tools: {
           searchKnowledgeBase: {
-            description: "Search the knowledge base. This tool MUST be used for every user query.",
+            description: "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
             parameters: z.object({
-              query: z.string().describe("Create a search query using the most relevant terms from the user's question"),
+              query: z.string().describe("the exact question from the user"),
             }),
             execute: async ({ query }) => {
+              console.log('🔍 Searching knowledge base for:', query);
               const results = await langchainService.similaritySearch(query);
+              
+              // Only return the essential information
               return {
-                relevantContent: results.map((doc) => ({
+                relevantContent: results.map(doc => ({
                   content: doc.pageContent,
-                  metadata: doc.metadata,
-                  score: doc.metadata.score || null,
-                })),
+                  source: doc.metadata?.source || 'unknown'
+                }))
               };
             },
           },

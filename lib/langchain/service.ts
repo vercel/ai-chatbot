@@ -23,31 +23,65 @@ export class LangChainService {
   }
 
   async ingestDocument(text: string, metadata: Record<string, any> = {}) {
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
-    });
+    console.log('📥 Starting document ingestion');
+    try {
+      // Generate embedding directly
+      const embedding = await this.embeddings.embedQuery(text);
+      console.log('🔤 Generated embedding for document');
 
-    const docs = await splitter.createDocuments([text], [metadata]);
+      const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
+      
+      // Insert directly into Pinecone
+      await index.upsert([{
+        id: Date.now().toString(),
+        values: embedding,
+        metadata: {
+          ...metadata,
+          text: text, // Store the text in metadata
+        },
+      }]);
 
-    const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
-
-    await PineconeStore.fromDocuments(docs, this.embeddings, {
-      pineconeIndex: index,
-      namespace: process.env.PINECONE_NAMESPACE,
-    });
-
-    return docs.length;
+      console.log('✅ Document successfully ingested');
+      return 1;
+    } catch (error) {
+      console.error('❌ Error in document ingestion:', error);
+      throw error;
+    }
   }
 
   async similaritySearch(query: string, k: number = 4) {
-    const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
-    const vectorStore = await PineconeStore.fromExistingIndex(this.embeddings, {
-      pineconeIndex: index,
-    });
+    console.log('📝 Starting similarity search for:', query);
+    try {
+      const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
+      console.log('📊 Connected to Pinecone index:', process.env.PINECONE_INDEX_NAME);
 
-    const results = await vectorStore.similaritySearch(query, k);
-    return results;
+      // Generate embedding for the query
+      const queryEmbedding = await this.embeddings.embedQuery(query);
+      console.log('🔤 Generated query embedding');
+
+      // Direct Pinecone query for more control
+      const queryResponse = await index.query({
+        vector: queryEmbedding,
+        topK: k,
+        includeMetadata: true,
+        includeValues: true,
+      });
+      
+      console.log('🔍 Raw Pinecone results:', JSON.stringify(queryResponse, null, 2));
+
+      // Transform results into expected format
+      const results = queryResponse.matches.map(match => ({
+        pageContent: match.metadata?.text || '',
+        metadata: match.metadata || {},
+        score: match.score,
+      }));
+
+      console.log('✨ Processed search results:', JSON.stringify(results, null, 2));
+      return results;
+    } catch (error) {
+      console.error('❌ Error in similarity search:', error);
+      throw error;
+    }
   }
 }
 
