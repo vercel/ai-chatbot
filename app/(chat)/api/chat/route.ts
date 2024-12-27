@@ -87,9 +87,9 @@ export async function POST(request: Request) {
         experimental_activeTools: ["searchKnowledgeBase"],
         tools: {
           searchKnowledgeBase: {
-            description: "Search the knowledge base for relevant information",
+            description: "Search the knowledge base. This tool MUST be used for every user query.",
             parameters: z.object({
-              query: z.string().describe("the search query"),
+              query: z.string().describe("Create a search query using the most relevant terms from the user's question"),
             }),
             execute: async ({ query }) => {
               const results = await langchainService.similaritySearch(query);
@@ -97,6 +97,7 @@ export async function POST(request: Request) {
                 relevantContent: results.map((doc) => ({
                   content: doc.pageContent,
                   metadata: doc.metadata,
+                  score: doc.metadata.score || null,
                 })),
               };
             },
