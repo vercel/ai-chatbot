@@ -67,7 +67,7 @@ const PurePreviewMessage = ({
           )}
 
           <div className="flex flex-col gap-2 w-full">
-            {message.experimental_attachments && (
+            {message.experimental_attachments && message.experimental_attachments.length > 0 && (
               <div className="flex flex-row justify-end gap-2">
                 {message.experimental_attachments.map((attachment) => (
                   <PreviewAttachment
