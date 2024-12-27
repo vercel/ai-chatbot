@@ -81,26 +81,27 @@ export async function POST(request: Request) {
 
       const result = streamText({
         model: customModel(model.apiIdentifier),
-        system: `${systemPrompt}\n\nIMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question.`,
+        system: `${systemPrompt}\n\nIMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question. If the search returns relevant information, you MUST use that information in your response. If the search returns no relevant information, you should indicate that.`,
         messages: coreMessages,
         maxSteps: 5,
         experimental_activeTools: ["searchKnowledgeBase"],
         tools: {
           searchKnowledgeBase: {
-            description: "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
+            description:
+              "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
             parameters: z.object({
               query: z.string().describe("the exact question from the user"),
             }),
             execute: async ({ query }) => {
-              console.log('🔍 Searching knowledge base for:', query);
-              const results = await langchainService.similaritySearch(query);
-              
-              // Only return the essential information
+              console.log("🔍 Searching knowledge base for:", query);
+              const results = await langchainService.similaritySearch(
+                query,
+                session.user!.bubbleUserId
+              );
               return {
-                relevantContent: results.map(doc => ({
-                  content: doc.pageContent,
-                  source: doc.metadata?.source || 'unknown'
-                }))
+                relevantContent: results.map((doc) => ({
+                  text: doc.metadata?.text,
+                })),
               };
             },
           },

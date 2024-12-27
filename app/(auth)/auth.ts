@@ -68,7 +68,7 @@ export const {
           return {
             id: user.id,
             email: user.email,
-            bubbleUserId: bubbleUserId,
+            bubbleUserId: bubbleUserId as string,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -81,12 +81,14 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.bubbleUserId = user.bubbleUserId;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.bubbleUserId = token.bubbleUserId as string;
       }
       return session;
     },

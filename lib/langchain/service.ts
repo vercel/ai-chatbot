@@ -23,63 +23,73 @@ export class LangChainService {
   }
 
   async ingestDocument(text: string, metadata: Record<string, any> = {}) {
-    console.log('📥 Starting document ingestion');
+    console.log("📥 Starting document ingestion");
     try {
-      // Generate embedding directly
       const embedding = await this.embeddings.embedQuery(text);
-      console.log('🔤 Generated embedding for document');
+      console.log("🔤 Generated embedding for document");
 
       const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
-      
-      // Insert directly into Pinecone
-      await index.upsert([{
-        id: Date.now().toString(),
-        values: embedding,
-        metadata: {
-          ...metadata,
-          text: text, // Store the text in metadata
-        },
-      }]);
+      const timestamp = Date.now();
 
-      console.log('✅ Document successfully ingested');
+      await index.upsert([
+        {
+          id: timestamp.toString(),
+          values: embedding,
+          metadata: {
+            text: text,
+            userId: metadata.userId,
+            timestamp: timestamp,
+          },
+        },
+      ]);
+
+      console.log("✅ Document successfully ingested");
       return 1;
     } catch (error) {
-      console.error('❌ Error in document ingestion:', error);
+      console.error("❌ Error in document ingestion:", error);
       throw error;
     }
   }
-
-  async similaritySearch(query: string, k: number = 4) {
-    console.log('📝 Starting similarity search for:', query);
+  async similaritySearch(query: string, userId: string, k: number = 4) {
+    console.log("📝 Starting similarity search for:", query);
+    console.log("🔑 Filtering for userId:", userId);
     try {
       const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
-      console.log('📊 Connected to Pinecone index:', process.env.PINECONE_INDEX_NAME);
 
-      // Generate embedding for the query
       const queryEmbedding = await this.embeddings.embedQuery(query);
-      console.log('🔤 Generated query embedding');
 
-      // Direct Pinecone query for more control
       const queryResponse = await index.query({
         vector: queryEmbedding,
         topK: k,
         includeMetadata: true,
         includeValues: true,
+        filter: {
+          userId: userId,
+        },
       });
-      
-      console.log('🔍 Raw Pinecone results:', JSON.stringify(queryResponse, null, 2));
 
-      // Transform results into expected format
-      const results = queryResponse.matches.map(match => ({
-        pageContent: match.metadata?.text || '',
+      console.log(
+        "🔍 Query filter:",
+        JSON.stringify({ userId: userId }, null, 2)
+      );
+      console.log(
+        "🔍 Results with scores:",
+        queryResponse.matches.map((match) => ({
+          text: match.metadata?.text,
+          score: match.score,
+          timestamp: match.metadata?.timestamp,
+        }))
+      );
+
+      const results = queryResponse.matches.map((match) => ({
+        pageContent: match.metadata?.text || "",
         metadata: match.metadata || {},
         score: match.score,
       }));
 
-      console.log('✨ Processed search results:', JSON.stringify(results, null, 2));
       return results;
     } catch (error) {
-      console.error('❌ Error in similarity search:', error);
+      console.error("❌ Error in similarity search:", error);
       throw error;
     }
   }

@@ -1,5 +1,11 @@
 import type { NextAuthConfig } from "next-auth";
 
+declare module "next-auth" {
+  interface User {
+    bubbleUserId: string;
+  }
+}
+
 export const authConfig = {
   pages: {
     signIn: "/login",
