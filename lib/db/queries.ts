@@ -26,6 +26,41 @@ import { BlockKind } from '@/components/block';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
+export async function getUserByBubbleId(bubbleUserId: string): Promise<User | null> {
+  try {
+    const [foundUser] = await db
+      .select()
+      .from(user)
+      .where(eq(user.bubbleUserId, bubbleUserId));
+
+    return foundUser ?? null;
+  } catch (error) {
+    console.error('Failed to retrieve user by bubbleUserId:', error);
+    throw error;
+  }
+}
+
+export async function createUserWithBubbleId(bubbleUserId: string, email?: string): Promise<User> {
+  try {
+    // Optionally build an email or fallback
+    const userEmail = email ?? `${bubbleUserId}@bubbleuser`;
+
+    // Insert into DB, returning new user
+    const [newUser] = await db
+      .insert(user)
+      .values({
+        bubbleUserId,
+        email: userEmail,
+      })
+      .returning();
+
+    return newUser;
+  } catch (error) {
+    console.error('Failed to create user with bubbleUserId:', error);
+    throw error;
+  }
+}
+
 export async function getUser(email: string): Promise<Array<User>> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
