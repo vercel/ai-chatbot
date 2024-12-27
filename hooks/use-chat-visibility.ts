@@ -37,7 +37,7 @@ export function useChatVisibility({
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
 
-    if (chat) {
+    if (!chat) {
       mutate(`${chatId}-visibility`, updatedVisibilityType, { revalidate: true });
       return;
     }
