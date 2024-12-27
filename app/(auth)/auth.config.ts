@@ -35,9 +35,15 @@ export const authConfig = {
     },
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
+    authorized({ auth, request: { nextUrl, headers } }) {
       const isLoggedIn = !!auth?.user;
       const path = nextUrl.pathname;
+
+      // Check API key for ingest endpoint
+      if (path.startsWith("/api/ingest")) {
+        const authHeader = headers.get("authorization");
+        return authHeader === `Bearer ${process.env.API_KEY}`;
+      }
 
       // If user is logged in and tries to access /autologin, redirect to home
       if (path.startsWith("/autologin") && isLoggedIn) {
