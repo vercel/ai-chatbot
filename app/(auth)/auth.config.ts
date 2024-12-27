@@ -1,8 +1,9 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: {
-    signIn: '/login',
+    signIn: "/login",
+    error: "/autologin",
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -36,28 +37,39 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
-      const isOnLogin = nextUrl.pathname.startsWith('/autologin');
+      const path = nextUrl.pathname;
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+      // If user is logged in and tries to access /autologin, redirect to home
+      if (path.startsWith("/autologin") && isLoggedIn) {
+        return Response.redirect(new URL("/", nextUrl));
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      // Always allow these paths
+      if (
+        path.startsWith("/autologin") ||
+        path.startsWith("/api/auth") ||
+        path.startsWith("/login")
+      ) {
+        return true;
       }
 
-      if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      }
-
-      if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+      if (path.startsWith("/")) {
+        return isLoggedIn;
       }
 
       return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
     },
   },
 } satisfies NextAuthConfig;
