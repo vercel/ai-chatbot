@@ -1,10 +1,20 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { PineconeStore } from "@langchain/pinecone";
+import { Document } from "@langchain/core/documents";
+import { MultiQueryRetriever } from "langchain/retrievers/multi_query";
+import { PromptTemplate } from "@langchain/core/prompts";
 
 export class LangChainService {
   private pineconeClient: Pinecone;
   private embeddings: OpenAIEmbeddings;
+  private vectorStore!: PineconeStore;
+  private retriever!: MultiQueryRetriever;
+  private llm = new OpenAI({
+    openAIApiKey: process.env.OPENAI_API_KEY,
+    modelName: "gpt-4o",
+  });
 
   constructor() {
     this.pineconeClient = new Pinecone({
@@ -17,85 +27,112 @@ export class LangChainService {
     });
   }
 
-  async initialize() {
-    // No need for init anymore as it's done in constructor
+  async initialize(userId: string) {
+    if (this.vectorStore) return;
+
+    const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
+
+    // Initialize basic vector store
+    this.vectorStore = await PineconeStore.fromExistingIndex(this.embeddings, {
+      pineconeIndex: index,
+      textKey: "text",
+    });
+
+    // Create retriever with MMR search
+    const baseRetriever = this.vectorStore.asRetriever({
+      searchType: "mmr",
+      filter: { userId: userId },
+      searchKwargs: {
+        fetchK: 100,
+        lambda: 0.7,
+      },
+    });
+
+    // Create MultiQueryRetriever using the baseRetriever
+    const queryGenerationPrompt = PromptTemplate.fromTemplate(
+      `Rosedale is a company that provides a 360 coaching service for executives and founders. Our customers that go through this service are looking for leadership advice and guidance.
+
+      Original question: {question}
+
+      Alternative questions:
+      Consider:
+      - Direct quotes from 360 feedback and self-reflections as evidence
+      - Specific examples with supporting quotes
+      - Verbatim feedback that supports key points
+      - Exact phrases and statements that demonstrate impact
+      - Clear examples backed by participant quotes
+      - Patterns in feedback with supporting evidence
+
+      For each insight, find relevant quotes. Clean up any grammar or formatting issues in the quotes while preserving their meaning.`
+    );
+
+    this.retriever = await MultiQueryRetriever.fromLLM({
+      llm: this.llm,
+      retriever: baseRetriever,
+      queryCount: 3,
+      prompt: queryGenerationPrompt,
+      verbose: true,
+    });
   }
 
   async ingestDocument(text: string, metadata: Record<string, any> = {}) {
     console.log("📥 Starting document ingestion");
     try {
       const textSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
-        chunkOverlap: 200,
+        chunkSize: 500, // Smaller chunks for more precise matching
+        chunkOverlap: 100, // Decent overlap to maintain context
+        separators: ["\n\n", "\n", ".", "!", "?", ",", " ", ""], // Custom separators
+        keepSeparator: true,
       });
 
       const docs = await textSplitter.createDocuments([text]);
-      console.log(`📄 Split document into ${docs.length} chunks`);
 
-      const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
-      const timestamp = Date.now();
+      // Enhance documents with metadata
+      const enhancedDocs = docs.map((doc, index) => {
+        return new Document({
+          pageContent: doc.pageContent,
+          metadata: {
+            ...doc.metadata,
+            userId: metadata.userId,
+            timestamp: Date.now(),
+            chunkIndex: index,
+            documentId: metadata.documentId || `doc-${Date.now()}`,
+            title: metadata.title,
+            source: metadata.source,
+          },
+        });
+      });
 
-      // Process each chunk
-      const upsertRequests = await Promise.all(
-        docs.map(async (doc, i) => {
-          const embedding = await this.embeddings.embedQuery(doc.pageContent);
-          return {
-            id: `${timestamp}-${i}`,
-            values: embedding,
-            metadata: {
-              text: doc.pageContent,
-              userId: metadata.userId,
-              timestamp: timestamp,
-            },
-          };
-        })
-      );
+      await this.vectorStore.addDocuments(enhancedDocs);
 
-      await index.upsert(upsertRequests);
-
-      console.log("✅ Document successfully ingested");
+      console.log(`✅ Document successfully ingested (${docs.length} chunks)`);
       return docs.length;
     } catch (error) {
       console.error("❌ Error in document ingestion:", error);
       throw error;
     }
   }
-  async similaritySearch(query: string, userId: string, k: number = 4) {
-    console.log("📝 Starting similarity search for:", query);
-    console.log("🔑 Filtering for userId:", userId);
+
+  async similaritySearch(query: string) {
+    console.log("📝 Starting enhanced similarity search for:", query);
     try {
-      const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
+      const retrievedDocs = await this.retriever.invoke(query);
 
-      const queryEmbedding = await this.embeddings.embedQuery(query);
-
-      const queryResponse = await index.query({
-        vector: queryEmbedding,
-        topK: k,
-        includeMetadata: true,
-        includeValues: true,
-        filter: {
-          userId: userId,
+      // Convert position to score (earlier = higher score)
+      const results = retrievedDocs.map((doc, index) => ({
+        pageContent: doc.pageContent,
+        metadata: {
+          ...doc.metadata,
+          text: doc.pageContent,
         },
-      });
-
-      console.log(
-        "🔍 Query filter:",
-        JSON.stringify({ userId: userId }, null, 2)
-      );
-      console.log(
-        "🔍 Results with scores:",
-        queryResponse.matches.map((match) => ({
-          text: match.metadata?.text,
-          score: match.score,
-          timestamp: match.metadata?.timestamp,
-        }))
-      );
-
-      const results = queryResponse.matches.map((match) => ({
-        pageContent: match.metadata?.text || "",
-        metadata: match.metadata || {},
-        score: match.score,
+        score: 1 - index / retrievedDocs.length, // Convert position to 0-1 score
       }));
+
+      if (results.length > 0) {
+        console.log(
+          `📊 Retrieved ${results.length} results, ranked from most to least relevant`
+        );
+      }
 
       return results;
     } catch (error) {

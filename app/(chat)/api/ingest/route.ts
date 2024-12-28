@@ -10,9 +10,9 @@ const ingestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { text, metadata } = ingestSchema.parse(body);
+    const { text, metadata = {} } = ingestSchema.parse(body);
 
-    await langchainService.initialize();
+    await langchainService.initialize(metadata.userId);
     const chunkCount = await langchainService.ingestDocument(text, {
       ...metadata,
       timestamp: new Date().toISOString(),

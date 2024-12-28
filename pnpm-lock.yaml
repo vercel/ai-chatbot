@@ -26,6 +26,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.35.3
         version: 6.35.3
+      '@langchain/core':
+        specifier: ^0.3.26
+        version: 0.3.26(openai@4.77.0(encoding@0.1.13)(zod@3.23.8))
       '@langchain/openai':
         specifier: ^0.3.16
         version: 0.3.16(@langchain/core@0.3.26(openai@4.77.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)

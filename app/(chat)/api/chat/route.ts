@@ -77,7 +77,7 @@ export async function POST(request: Request) {
         content: userMessageId,
       });
 
-      await langchainService.initialize();
+      await langchainService.initialize(session.user!.bubbleUserId);
 
       const result = streamText({
         model: customModel(model.apiIdentifier),
@@ -94,10 +94,7 @@ export async function POST(request: Request) {
             }),
             execute: async ({ query }) => {
               console.log("🔍 Searching knowledge base for:", query);
-              const results = await langchainService.similaritySearch(
-                query,
-                session.user!.bubbleUserId
-              );
+              const results = await langchainService.similaritySearch(query);
               return {
                 relevantContent: results.map((doc) => ({
                   text: doc.metadata?.text,
