@@ -11,6 +11,7 @@ import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
 import { models } from "@/lib/ai/models";
 import { langchainService } from "@/lib/langchain/service";
+import { AISDKExporter } from "langsmith/vercel";
 import { systemPrompt } from "@/lib/ai/prompts";
 import {
   deleteChatById,
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
         messages: coreMessages,
         maxSteps: 5,
         experimental_activeTools: ["searchKnowledgeBase"],
+        experimental_telemetry: AISDKExporter.getSettings(),
         tools: {
           searchKnowledgeBase: {
             description:
@@ -134,10 +136,6 @@ export async function POST(request: Request) {
               console.error("Failed to save chat");
             }
           }
-        },
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: "stream-text",
         },
       });
 
