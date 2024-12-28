@@ -191,11 +191,20 @@ const PurePreviewMessage = ({
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ["getWeather"].includes(toolName),
+                        skeleton: [
+                          "getWeather",
+                          "searchKnowledgeBase",
+                        ].includes(toolName),
                       })}
                     >
                       {toolName === "getWeather" ? (
                         <Weather />
+                      ) : toolName === "searchKnowledgeBase" ? (
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 mb-3">
+                          <div className="font-medium">
+                            Searching knowledge base...
+                          </div>
+                        </div>
                       ) : toolName === "createDocument" ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
                       ) : toolName === "updateDocument" ? (
