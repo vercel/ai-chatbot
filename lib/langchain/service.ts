@@ -1,5 +1,5 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import { OpenAI, OpenAIEmbeddings } from "@langchain/openai";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { PineconeStore } from "@langchain/pinecone";
 import { Document } from "@langchain/core/documents";
@@ -11,7 +11,7 @@ export class LangChainService {
   private embeddings: OpenAIEmbeddings;
   private vectorStore!: PineconeStore;
   private retriever!: MultiQueryRetriever;
-  private llm = new OpenAI({
+  private llm = new ChatOpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
     modelName: "gpt-4o",
   });

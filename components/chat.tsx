@@ -100,8 +100,6 @@ export function Chat({
                   handleSubmit={handleSubmit}
                   isLoading={isLoading}
                   stop={stop}
-                  attachments={attachments}
-                  setAttachments={setAttachments}
                   messages={messages}
                   setMessages={setMessages}
                   append={append}
@@ -121,8 +119,6 @@ export function Chat({
                 handleSubmit={handleSubmit}
                 isLoading={isLoading}
                 stop={stop}
-                attachments={attachments}
-                setAttachments={setAttachments}
                 messages={messages}
                 setMessages={setMessages}
                 append={append}
