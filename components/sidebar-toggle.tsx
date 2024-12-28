@@ -1,14 +1,14 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps } from "react";
 
-import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { type SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
 
-import { HistoryIcon } from './icons';
-import { Button } from './ui/button';
+import { HistoryIcon } from "./icons";
+import { Button } from "./ui/button";
 
 export function SidebarToggle({
   className,
@@ -19,7 +19,10 @@ export function SidebarToggle({
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
-          onClick={toggleSidebar}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSidebar();
+          }}
           variant="outline"
           className="md:px-2 md:h-fit"
         >

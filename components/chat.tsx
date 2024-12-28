@@ -14,6 +14,7 @@ import { MultimodalInput } from "./multimodal-input";
 import { Messages } from "./messages";
 import { VisibilityType } from "./visibility-selector";
 import { useBlockSelector } from "@/hooks/use-block";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export function Chat({
   id,
@@ -29,6 +30,7 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const { setOpen } = useSidebar();
 
   const {
     messages,
@@ -58,9 +60,16 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isBlockVisible = useBlockSelector((state) => state.isVisible);
 
+  const handleMainClick = () => {
+    setOpen(false);
+  };
+
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
+      <div
+        className="flex flex-col min-w-0 h-dvh bg-background"
+        onClick={handleMainClick}
+      >
         <ChatHeader
           chatId={id}
           selectedModelId={selectedModelId}
