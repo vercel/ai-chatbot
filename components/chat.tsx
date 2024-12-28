@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
-import { useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
+import type { Attachment, Message } from "ai";
+import { useChat } from "ai/react";
+import { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { ChatHeader } from "@/components/chat-header";
+import type { Vote } from "@/lib/db/schema";
+import { fetcher } from "@/lib/utils";
 
-import { Block } from './block';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
-import { useBlockSelector } from '@/hooks/use-block';
+import { Block } from "./block";
+import { MultimodalInput } from "./multimodal-input";
+import { Messages } from "./messages";
+import { VisibilityType } from "./visibility-selector";
+import { useBlockSelector } from "@/hooks/use-block";
 
 export function Chat({
   id,
@@ -46,13 +46,13 @@ export function Chat({
     initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
-      mutate('/api/history');
+      mutate("/api/history");
     },
   });
 
   const { data: votes } = useSWR<Array<Vote>>(
     `/api/vote?chatId=${id}`,
-    fetcher,
+    fetcher
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
@@ -68,34 +68,58 @@ export function Chat({
           isReadonly={isReadonly}
         />
 
-        <Messages
-          chatId={id}
-          isLoading={isLoading}
-          votes={votes}
-          messages={messages}
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-          isBlockVisible={isBlockVisible}
-        />
+        <div className="flex-1 relative">
+          <Messages
+            chatId={id}
+            isLoading={isLoading}
+            votes={votes}
+            messages={messages}
+            setMessages={setMessages}
+            reload={reload}
+            isReadonly={isReadonly}
+            isBlockVisible={isBlockVisible}
+          />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          {!isReadonly && (
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
-            />
+          {!isReadonly && messages.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full max-w-3xl px-4">
+                <MultimodalInput
+                  chatId={id}
+                  input={input}
+                  setInput={setInput}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                  stop={stop}
+                  attachments={attachments}
+                  setAttachments={setAttachments}
+                  messages={messages}
+                  setMessages={setMessages}
+                  append={append}
+                />
+              </div>
+            </div>
           )}
-        </form>
+        </div>
+
+        {!isReadonly && messages.length > 0 && (
+          <div className="sticky bottom-0 bg-background/80 backdrop-blur-md">
+            <div className="flex mx-auto px-4 pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+              <MultimodalInput
+                chatId={id}
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                setMessages={setMessages}
+                append={append}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <Block

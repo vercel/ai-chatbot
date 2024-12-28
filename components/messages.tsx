@@ -1,10 +1,10 @@
-import { ChatRequestOptions, Message } from 'ai';
-import { PreviewMessage, ThinkingMessage } from './message';
-import { useScrollToBottom } from './use-scroll-to-bottom';
-import { Overview } from './overview';
-import { memo } from 'react';
-import { Vote } from '@/lib/db/schema';
-import equal from 'fast-deep-equal';
+import { ChatRequestOptions, Message } from "ai";
+import { PreviewMessage, ThinkingMessage } from "./message";
+import { useScrollToBottom } from "./use-scroll-to-bottom";
+import { Overview } from "./overview";
+import { memo } from "react";
+import { Vote } from "@/lib/db/schema";
+import equal from "fast-deep-equal";
 
 interface MessagesProps {
   chatId: string;
@@ -12,10 +12,10 @@ interface MessagesProps {
   votes: Array<Vote> | undefined;
   messages: Array<Message>;
   setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
+    messages: Message[] | ((messages: Message[]) => Message[])
   ) => void;
   reload: (
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
   isBlockVisible: boolean;
@@ -33,13 +33,15 @@ function PureMessages({
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
+  if (messages.length === 0) {
+    return null;
+  }
+
   return (
     <div
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {/* {messages.length === 0 && <Overview />} */}
-
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
@@ -59,7 +61,7 @@ function PureMessages({
 
       {isLoading &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages[messages.length - 1].role === "user" && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}

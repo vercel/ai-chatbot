@@ -51,13 +51,6 @@ function PureChatHeader({
           <TooltipContent>New Chat</TooltipContent>
         </Tooltip>
       )}
-
-      {!isReadonly && (
-        <ModelSelector
-          selectedModelId={selectedModelId}
-          className="order-1 md:order-2"
-        />
-      )}
     </header>
   );
 }

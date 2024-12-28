@@ -1,44 +1,44 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from './ui/button';
-import { ChatRequestOptions, CreateMessage, Message } from 'ai';
-import { memo } from 'react';
+import { motion } from "framer-motion";
+import { Button } from "./ui/button";
+import { ChatRequestOptions, CreateMessage, Message } from "ai";
+import { memo } from "react";
 
 interface SuggestedActionsProps {
   chatId: string;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
 }
 
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'Recommend resources',
-      label: 'that help with communication.',
-      action: 'Recommend resources that help with communication.',
+      title: "Recommend resources",
+      label: "that help with communication.",
+      action: "Recommend resources that help with communication.",
     },
     {
-      title: 'Recap my meeting',
+      title: "Recap my meeting",
       label: `with my coach.`,
       action: `Recap my meeting with my coach.`,
     },
     {
-      title: 'Help me be accountable',
+      title: "Help me be accountable",
       label: `about my goals.`,
       action: `Help me be accountable about my goals.`,
     },
     {
-      title: 'Help me make a decision',
-      label: 'about a team member.',
-      action: 'Help me make a decision about a team member.',
+      title: "Help me make a decision",
+      label: "about a team member.",
+      action: "Help me make a decision about a team member.",
     },
   ];
 
   return (
-    <div className="grid sm:grid-cols-2 gap-2 w-full">
+    <div className="grid sm:grid-cols-2 gap-2 w-full mt-0">
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -46,15 +46,14 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.05 * index }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
         >
           <Button
             variant="ghost"
             onClick={async () => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
+              window.history.replaceState({}, "", `/chat/${chatId}`);
 
               append({
-                role: 'user',
+                role: "user",
                 content: suggestedAction.action,
               });
             }}
