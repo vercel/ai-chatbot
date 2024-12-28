@@ -133,6 +133,17 @@ function PureMultimodalInput({
         },
       }}
     >
+      {isInitialState && (
+        <motion.div
+          className="text-4xl font-bold text-white mb-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          Arden
+        </motion.div>
+      )}
+
       <div
         className={cn(
           "w-full max-w-3xl flex flex-col gap-4 relative",
@@ -179,7 +190,7 @@ function PureMultimodalInput({
 
       {isInitialState && (
         <motion.div
-          className="w-full max-w-3xl mt-2"
+          className="w-full max-w-3xl px-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

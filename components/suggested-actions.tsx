@@ -38,7 +38,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   ];
 
   return (
-    <div className="grid sm:grid-cols-2 gap-2 w-full mt-0">
+    <div className="grid sm:grid-cols-2 gap-2 w-full max-w-3xl mt-2">
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
