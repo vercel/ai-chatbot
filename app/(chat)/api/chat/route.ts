@@ -26,6 +26,10 @@ import {
 } from "@/lib/utils";
 
 import { generateTitleFromUserMessage } from "../../actions";
+import { Client } from "langsmith";
+
+// Initialize LangSmith client
+const langsmith = new Client();
 
 export const maxDuration = 60;
 
@@ -86,9 +90,16 @@ export async function POST(request: Request) {
         messages: coreMessages,
         maxSteps: 5,
         experimental_activeTools: ["searchKnowledgeBase"],
-        experimental_telemetry: AISDKExporter.getSettings({
-          runId: id,
-        }),
+        experimental_streamData: true,
+        metadata: {
+          userId: session.user!.id,
+          chatId: id,
+        },
+        experimental_telemetry: {
+          ...AISDKExporter.getSettings({
+            runId: id,
+          }),
+        },
         tools: {
           searchKnowledgeBase: {
             description:
@@ -110,6 +121,17 @@ export async function POST(request: Request) {
         onFinish: async ({ response }) => {
           if (session.user?.id) {
             try {
+              // Create a new run in LangSmith for the final response
+              await langsmith.createRun({
+                id,
+                name: "chat_completion",
+                run_type: "chain",
+                inputs: { messages: coreMessages },
+                outputs: { response: response.messages },
+                start_time: new Date().getTime(),
+                end_time: new Date().getTime(),
+              });
+
               const responseMessagesWithoutIncompleteToolCalls =
                 sanitizeResponseMessages(response.messages);
 
@@ -135,7 +157,10 @@ export async function POST(request: Request) {
                 ),
               });
             } catch (error) {
-              console.error("Failed to save chat");
+              console.error(
+                "Failed to save chat or create LangSmith run:",
+                error
+              );
             }
           }
         },
