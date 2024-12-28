@@ -86,7 +86,9 @@ export async function POST(request: Request) {
         messages: coreMessages,
         maxSteps: 5,
         experimental_activeTools: ["searchKnowledgeBase"],
-        experimental_telemetry: AISDKExporter.getSettings(),
+        experimental_telemetry: AISDKExporter.getSettings({
+          runId: id,
+        }),
         tools: {
           searchKnowledgeBase: {
             description:
