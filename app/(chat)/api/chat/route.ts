@@ -27,7 +27,6 @@ import {
 
 import { generateTitleFromUserMessage } from "../../actions";
 import { traceable, getCurrentRunTree } from "langsmith/traceable";
-
 import { Client as LangSmithClient } from "langsmith";
 
 export const maxDuration = 60;
@@ -87,9 +86,6 @@ export async function POST(request: Request) {
       id: string;
       session: any;
     }) => {
-      let finalResponse: any = null;
-      let streamResponse: Response | null = null;
-
       const stream = createDataStreamResponse({
         execute: async (dataStream: DataStreamWriter) => {
           try {
@@ -152,8 +148,6 @@ Remember: Every response should be grounded in the search results when available
                     const responseMessagesWithoutIncompleteToolCalls =
                       sanitizeResponseMessages(response.messages);
 
-                    finalResponse = responseMessagesWithoutIncompleteToolCalls;
-
                     await saveMessages({
                       messages: responseMessagesWithoutIncompleteToolCalls.map(
                         (message) => {
@@ -188,31 +182,32 @@ Remember: Every response should be grounded in the search results when available
         },
       });
 
-      // Clone the stream before consuming it
-      const clonedResponse = stream.clone();
+      // Clone and process in background using the current run
+      const clonedStream = stream.clone();
+      const currentRun = await getCurrentRunTree();
 
-      // Wait for the stream to complete
-      if (stream.body) {
-        await stream.body.pipeTo(new WritableStream());
-      }
+      (async () => {
+        if (clonedStream.body) {
+          await clonedStream.body.pipeTo(new WritableStream());
+          if (currentRun) {
+            await langsmith.updateRun(currentRun.id, {
+              end_time: Date.now(),
+            });
+          }
+        }
+      })();
 
-      // Return the cloned stream response
-      return {
-        response: clonedResponse,
-        output: finalResponse,
-      };
+      return stream;
     },
     { name: `chat-${id}` }
   );
 
-  const { response } = await handleChatOperation({
+  return await handleChatOperation({
     messages: coreMessages,
     model,
     id,
     session,
   });
-
-  return response;
 }
 
 export async function DELETE(request: Request) {
