@@ -86,7 +86,10 @@ export async function POST(request: Request) {
       model: any;
       id: string;
       session: any;
-    }): Promise<Response> => {
+    }) => {
+      let finalResponse: any = null;
+      let streamResponse: Response | null = null;
+
       const stream = createDataStreamResponse({
         execute: async (dataStream: DataStreamWriter) => {
           try {
@@ -149,14 +152,7 @@ Remember: Every response should be grounded in the search results when available
                     const responseMessagesWithoutIncompleteToolCalls =
                       sanitizeResponseMessages(response.messages);
 
-                    const currentRun = await getCurrentRunTree();
-                    if (currentRun) {
-                      await langsmith.updateRun(currentRun.id, {
-                        outputs: {
-                          messages: responseMessagesWithoutIncompleteToolCalls,
-                        },
-                      });
-                    }
+                    finalResponse = responseMessagesWithoutIncompleteToolCalls;
 
                     await saveMessages({
                       messages: responseMessagesWithoutIncompleteToolCalls.map(
@@ -192,17 +188,31 @@ Remember: Every response should be grounded in the search results when available
         },
       });
 
-      return stream;
+      // Clone the stream before consuming it
+      const clonedResponse = stream.clone();
+
+      // Wait for the stream to complete
+      if (stream.body) {
+        await stream.body.pipeTo(new WritableStream());
+      }
+
+      // Return the cloned stream response
+      return {
+        response: clonedResponse,
+        output: finalResponse,
+      };
     },
     { name: `chat-${id}` }
   );
 
-  return await handleChatOperation({
+  const { response } = await handleChatOperation({
     messages: coreMessages,
     model,
     id,
     session,
   });
+
+  return response;
 }
 
 export async function DELETE(request: Request) {
