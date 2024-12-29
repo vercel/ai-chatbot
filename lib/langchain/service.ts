@@ -54,20 +54,17 @@ export class LangChainService {
       textKey: "text",
     });
 
-    // Create base retriever with MMR search
-    const baseRetriever = this.vectorStore.asRetriever({
-      searchType: "mmr",
-      filter: { userId: userId },
-      searchKwargs: {
-        fetchK: 100,
-        lambda: 0.7,
-      },
-    });
-
     // Create MultiQueryRetriever
     this.retriever = await MultiQueryRetriever.fromLLM({
       llm: this.llm,
-      retriever: baseRetriever,
+      retriever: this.vectorStore.asRetriever({
+        searchType: "mmr",
+        filter: { userId: userId },
+        searchKwargs: {
+          fetchK: 100,
+          lambda: 0.7,
+        },
+      }),
       queryCount: 3,
       prompt: this.queryGenerationPrompt,
       verbose: true,

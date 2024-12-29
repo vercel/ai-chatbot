@@ -2,7 +2,6 @@ import {
   type Message,
   convertToCoreMessages,
   createDataStreamResponse,
-  streamObject,
   streamText,
   type DataStreamWriter,
 } from "ai";
@@ -27,18 +26,12 @@ import {
 } from "@/lib/utils";
 
 import { generateTitleFromUserMessage } from "../../actions";
-import { Client } from "langsmith";
-import { traceable } from "langsmith/traceable";
+import { traceable, getCurrentRunTree } from "langsmith/traceable";
 
-// Initialize LangSmith client
-const langsmith = new Client({
-  apiKey: process.env.LANGCHAIN_API_KEY,
-});
-
-console.log("🔥 LangSmith API Key:", process.env.LANGCHAIN_API_KEY);
-console.log("🔥 LangSmith Project:", process.env.LANGCHAIN_PROJECT);
+import { Client as LangSmithClient } from "langsmith";
 
 export const maxDuration = 60;
+const langsmith = new LangSmithClient();
 
 export async function POST(request: Request) {
   const {
@@ -82,80 +75,133 @@ export async function POST(request: Request) {
     ],
   });
 
-  return createDataStreamResponse({
-    execute: traceable(
-      async (dataStream: DataStreamWriter) => {
-        try {
-          await langchainService.initialize(session.user!.bubbleUserId);
-          const result = streamText({
-            model: customModel(model.apiIdentifier),
-            system: `${systemPrompt}\n\nIMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question. If the search returns relevant information, you MUST use that information in your response. If the search returns no relevant information, you should indicate that.`,
-            messages: coreMessages,
-            maxSteps: 5,
-            experimental_activeTools: ["searchKnowledgeBase"],
-            experimental_telemetry: AISDKExporter.getSettings(),
-            tools: {
-              searchKnowledgeBase: {
-                description:
-                  "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
-                parameters: z.object({
-                  query: z
-                    .string()
-                    .describe("the exact question from the user"),
-                }),
-                execute: traceable(async ({ query }) => {
-                  console.log("🔍 Searching knowledge base for:", query);
-                  const results = await langchainService.similaritySearch(
-                    query
-                  );
-                  return {
-                    relevantContent: results.map((doc) => ({
-                      text: doc.metadata?.text,
-                    })),
-                  };
-                }),
-              },
-            },
-            onFinish: async ({ response }) => {
-              if (session.user?.id) {
-                try {
-                  const responseMessagesWithoutIncompleteToolCalls =
-                    sanitizeResponseMessages(response.messages);
+  const handleChatOperation = traceable(
+    async ({
+      messages,
+      model,
+      id,
+      session,
+    }: {
+      messages: any[];
+      model: any;
+      id: string;
+      session: any;
+    }): Promise<Response> => {
+      const stream = createDataStreamResponse({
+        execute: async (dataStream: DataStreamWriter) => {
+          try {
+            await langchainService.initialize(session.user!.bubbleUserId);
+            const result = streamText({
+              model: customModel(model.apiIdentifier),
+              system: `${systemPrompt}\n\n
+IMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question.
 
-                  await saveMessages({
-                    messages: responseMessagesWithoutIncompleteToolCalls.map(
-                      (message) => {
-                        const messageId = generateUUID();
+When using search results:
+1. First analyze the relevance scores of the returned content
+2. Incorporate the most relevant quotes and insights into your response
+3. If the search returns no relevant information, acknowledge this explicitly
+4. Always maintain a natural conversational tone while weaving in the evidence
+5. Cite specific quotes when they support your points
 
-                        if (message.role === "assistant") {
-                          dataStream.writeMessageAnnotation({
-                            messageIdFromServer: messageId,
-                          });
-                        }
+Remember: Every response should be grounded in the search results when available.`,
+              messages: messages,
+              maxSteps: 5,
+              experimental_activeTools: ["searchKnowledgeBase"],
+              experimental_telemetry: AISDKExporter.getSettings(),
+              tools: {
+                searchKnowledgeBase: {
+                  description:
+                    "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
+                  parameters: z.object({
+                    query: z
+                      .string()
+                      .describe("the exact question from the user"),
+                  }),
+                  execute: traceable(
+                    async ({ query }) => {
+                      const searchOperation = async () => {
+                        console.log("🔍 Searching knowledge base for:", query);
+                        const results = await langchainService.similaritySearch(
+                          query
+                        );
 
                         return {
-                          id: messageId,
-                          chatId: id,
-                          role: message.role,
-                          content: message.content,
-                          createdAt: new Date(),
+                          results: results.map((doc) => ({
+                            content: doc.metadata?.text || doc.pageContent,
+                            score: Math.round(doc.score * 100),
+                          })),
+                          sourceCount: results.length,
+                          hasResults: results.length > 0,
                         };
-                      }
-                    ),
-                  });
-                } catch (error) {
-                  console.error("Failed to save chat:", error);
+                      };
+
+                      return await searchOperation();
+                    },
+                    {
+                      name: "searchKnowledgeBase",
+                    }
+                  ),
+                },
+              },
+              onFinish: async ({ response }) => {
+                if (session.user?.id) {
+                  try {
+                    const responseMessagesWithoutIncompleteToolCalls =
+                      sanitizeResponseMessages(response.messages);
+
+                    const currentRun = await getCurrentRunTree();
+                    if (currentRun) {
+                      await langsmith.updateRun(currentRun.id, {
+                        outputs: {
+                          messages: responseMessagesWithoutIncompleteToolCalls,
+                        },
+                      });
+                    }
+
+                    await saveMessages({
+                      messages: responseMessagesWithoutIncompleteToolCalls.map(
+                        (message) => {
+                          const messageId = generateUUID();
+
+                          if (message.role === "assistant") {
+                            dataStream.writeMessageAnnotation({
+                              messageIdFromServer: messageId,
+                            });
+                          }
+
+                          return {
+                            id: messageId,
+                            chatId: id,
+                            role: message.role,
+                            content: message.content,
+                            createdAt: new Date(),
+                          };
+                        }
+                      ),
+                    });
+                  } catch (error) {
+                    console.error("Failed to save chat:", error);
+                  }
                 }
-              }
-            },
-          });
-          result.mergeIntoDataStream(dataStream);
-        } catch (error) {
-          throw error;
-        }
-      },
-      { name: "chat" }
-    ) as (dataStream: DataStreamWriter) => Promise<void>,
+              },
+            });
+            await result.mergeIntoDataStream(dataStream);
+          } catch (error) {
+            throw error;
+          }
+        },
+      });
+
+      return stream;
+    },
+    { name: `chat-${id}` }
+  );
+
+  return await handleChatOperation({
+    messages: coreMessages,
+    model,
+    id,
+    session,
   });
 }
 
