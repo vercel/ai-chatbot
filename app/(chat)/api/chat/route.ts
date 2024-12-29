@@ -4,6 +4,7 @@ import {
   createDataStreamResponse,
   streamObject,
   streamText,
+  type DataStreamWriter,
 } from "ai";
 import { z } from "zod";
 
@@ -27,9 +28,15 @@ import {
 
 import { generateTitleFromUserMessage } from "../../actions";
 import { Client } from "langsmith";
+import { traceable } from "langsmith/traceable";
 
 // Initialize LangSmith client
-const langsmith = new Client();
+const langsmith = new Client({
+  apiKey: process.env.LANGCHAIN_API_KEY,
+});
+
+console.log("🔥 LangSmith API Key:", process.env.LANGCHAIN_API_KEY);
+console.log("🔥 LangSmith Project:", process.env.LANGCHAIN_PROJECT);
 
 export const maxDuration = 60;
 
@@ -76,98 +83,79 @@ export async function POST(request: Request) {
   });
 
   return createDataStreamResponse({
-    execute: async (dataStream) => {
-      dataStream.writeData({
-        type: "user-message-id",
-        content: userMessageId,
-      });
-
-      await langchainService.initialize(session.user!.bubbleUserId);
-
-      const result = streamText({
-        model: customModel(model.apiIdentifier),
-        system: `${systemPrompt}\n\nIMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question. If the search returns relevant information, you MUST use that information in your response. If the search returns no relevant information, you should indicate that.`,
-        messages: coreMessages,
-        maxSteps: 5,
-        experimental_activeTools: ["searchKnowledgeBase"],
-        experimental_streamData: true,
-        metadata: {
-          userId: session.user!.id,
-          chatId: id,
-        },
-        experimental_telemetry: {
-          ...AISDKExporter.getSettings({
-            runId: id,
-          }),
-        },
-        tools: {
-          searchKnowledgeBase: {
-            description:
-              "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
-            parameters: z.object({
-              query: z.string().describe("the exact question from the user"),
-            }),
-            execute: async ({ query }) => {
-              console.log("🔍 Searching knowledge base for:", query);
-              const results = await langchainService.similaritySearch(query);
-              return {
-                relevantContent: results.map((doc) => ({
-                  text: doc.metadata?.text,
-                })),
-              };
+    execute: traceable(
+      async (dataStream: DataStreamWriter) => {
+        try {
+          await langchainService.initialize(session.user!.bubbleUserId);
+          const result = streamText({
+            model: customModel(model.apiIdentifier),
+            system: `${systemPrompt}\n\nIMPORTANT: You MUST use the searchKnowledgeBase tool before providing ANY response. This is a requirement for EVERY question. If the search returns relevant information, you MUST use that information in your response. If the search returns no relevant information, you should indicate that.`,
+            messages: coreMessages,
+            maxSteps: 5,
+            experimental_activeTools: ["searchKnowledgeBase"],
+            experimental_telemetry: AISDKExporter.getSettings(),
+            tools: {
+              searchKnowledgeBase: {
+                description:
+                  "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
+                parameters: z.object({
+                  query: z
+                    .string()
+                    .describe("the exact question from the user"),
+                }),
+                execute: traceable(async ({ query }) => {
+                  console.log("🔍 Searching knowledge base for:", query);
+                  const results = await langchainService.similaritySearch(
+                    query
+                  );
+                  return {
+                    relevantContent: results.map((doc) => ({
+                      text: doc.metadata?.text,
+                    })),
+                  };
+                }),
+              },
             },
-          },
-        },
-        onFinish: async ({ response }) => {
-          if (session.user?.id) {
-            try {
-              // Create a new run in LangSmith for the final response
-              await langsmith.createRun({
-                id,
-                name: "chat_completion",
-                run_type: "chain",
-                inputs: { messages: coreMessages },
-                outputs: { response: response.messages },
-                start_time: new Date().getTime(),
-                end_time: new Date().getTime(),
-              });
+            onFinish: async ({ response }) => {
+              if (session.user?.id) {
+                try {
+                  const responseMessagesWithoutIncompleteToolCalls =
+                    sanitizeResponseMessages(response.messages);
 
-              const responseMessagesWithoutIncompleteToolCalls =
-                sanitizeResponseMessages(response.messages);
+                  await saveMessages({
+                    messages: responseMessagesWithoutIncompleteToolCalls.map(
+                      (message) => {
+                        const messageId = generateUUID();
 
-              await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
-                  (message) => {
-                    const messageId = generateUUID();
+                        if (message.role === "assistant") {
+                          dataStream.writeMessageAnnotation({
+                            messageIdFromServer: messageId,
+                          });
+                        }
 
-                    if (message.role === "assistant") {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
-
-                    return {
-                      id: messageId,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  }
-                ),
-              });
-            } catch (error) {
-              console.error(
-                "Failed to save chat or create LangSmith run:",
-                error
-              );
-            }
-          }
-        },
-      });
-
-      result.mergeIntoDataStream(dataStream);
-    },
+                        return {
+                          id: messageId,
+                          chatId: id,
+                          role: message.role,
+                          content: message.content,
+                          createdAt: new Date(),
+                        };
+                      }
+                    ),
+                  });
+                } catch (error) {
+                  console.error("Failed to save chat:", error);
+                }
+              }
+            },
+          });
+          result.mergeIntoDataStream(dataStream);
+        } catch (error) {
+          throw error;
+        }
+      },
+      { name: "chat" }
+    ) as (dataStream: DataStreamWriter) => Promise<void>,
   });
 }
 

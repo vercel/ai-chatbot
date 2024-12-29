@@ -11,9 +11,26 @@ export class LangChainService {
   private embeddings: OpenAIEmbeddings;
   private vectorStore!: PineconeStore;
   private retriever!: MultiQueryRetriever;
+  private userId!: string;
   private llm = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
   });
+  private queryGenerationPrompt = PromptTemplate.fromTemplate(
+    `Rosedale is a company that provides a 360 coaching service for executives and founders. Our customers that go through this service are looking for leadership advice and guidance.
+
+    Original question: {question}
+
+    Alternative questions:
+    Consider:
+    - Direct quotes from 360 feedback and self-reflections as evidence
+    - Specific examples with supporting quotes
+    - Verbatim feedback that supports key points
+    - Exact phrases and statements that demonstrate impact
+    - Clear examples backed by participant quotes
+    - Patterns in feedback with supporting evidence
+
+    For each insight, find relevant quotes. Clean up any grammar or formatting issues in the quotes while preserving their meaning.`
+  );
 
   constructor() {
     this.pineconeClient = new Pinecone({
@@ -27,17 +44,17 @@ export class LangChainService {
   }
 
   async initialize(userId: string) {
+    this.userId = userId;
     if (this.vectorStore) return;
 
     const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
 
-    // Initialize basic vector store
     this.vectorStore = await PineconeStore.fromExistingIndex(this.embeddings, {
       pineconeIndex: index,
       textKey: "text",
     });
 
-    // Create retriever with MMR search
+    // Create base retriever with MMR search
     const baseRetriever = this.vectorStore.asRetriever({
       searchType: "mmr",
       filter: { userId: userId },
@@ -47,29 +64,12 @@ export class LangChainService {
       },
     });
 
-    // Create MultiQueryRetriever using the baseRetriever
-    const queryGenerationPrompt = PromptTemplate.fromTemplate(
-      `Rosedale is a company that provides a 360 coaching service for executives and founders. Our customers that go through this service are looking for leadership advice and guidance.
-
-      Original question: {question}
-
-      Alternative questions:
-      Consider:
-      - Direct quotes from 360 feedback and self-reflections as evidence
-      - Specific examples with supporting quotes
-      - Verbatim feedback that supports key points
-      - Exact phrases and statements that demonstrate impact
-      - Clear examples backed by participant quotes
-      - Patterns in feedback with supporting evidence
-
-      For each insight, find relevant quotes. Clean up any grammar or formatting issues in the quotes while preserving their meaning.`
-    );
-
+    // Create MultiQueryRetriever
     this.retriever = await MultiQueryRetriever.fromLLM({
       llm: this.llm,
       retriever: baseRetriever,
       queryCount: 3,
-      prompt: queryGenerationPrompt,
+      prompt: this.queryGenerationPrompt,
       verbose: true,
     });
   }
@@ -113,7 +113,6 @@ export class LangChainService {
   }
 
   async similaritySearch(query: string) {
-    console.log("📝 Starting enhanced similarity search for:", query);
     try {
       const retrievedDocs = await this.retriever.invoke(query);
 
