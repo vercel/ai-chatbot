@@ -1,5 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 
+const publicRoutes = ['/api/document'];
+
 export const authConfig = {
   pages: {
     signIn: '/login',
@@ -15,18 +17,20 @@ export const authConfig = {
       const isOnChat = nextUrl.pathname.startsWith('/');
       const isOnRegister = nextUrl.pathname.startsWith('/register');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
+      const isPublicRoute = publicRoutes.some((route) =>
+        nextUrl.pathname.startsWith(route),
+      );
 
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
         return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      if (isOnRegister || isOnLogin || isPublicRoute) {
+        return true; // Always allow access to register and login pages or public routes
       }
 
       if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return isLoggedIn; // Redirect unauthenticated users to login page
       }
 
       if (isLoggedIn) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { UIBlock } from '@/components/block';
+import type { UIBlock } from '@/components/block';
 import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 
@@ -11,6 +11,7 @@ export const initialBlockData: UIBlock = {
   title: '',
   status: 'idle',
   isVisible: false,
+  chatId: 'init',
   boundingBox: {
     top: 0,
     left: 0,

@@ -3,7 +3,7 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { memo, useState } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
@@ -138,20 +138,20 @@ const PurePreviewMessage = ({
                           <Weather weatherAtLocation={result} />
                         ) : toolName === 'createDocument' ? (
                           <DocumentPreview
-                            isReadonly={isReadonly}
+                            chatId={chatId}
                             result={result}
                           />
                         ) : toolName === 'updateDocument' ? (
                           <DocumentToolResult
                             type="update"
                             result={result}
-                            isReadonly={isReadonly}
+                            chatId={chatId}
                           />
                         ) : toolName === 'requestSuggestions' ? (
                           <DocumentToolResult
                             type="request-suggestions"
                             result={result}
-                            isReadonly={isReadonly}
+                            chatId={chatId}
                           />
                         ) : (
                           <pre>{JSON.stringify(result, null, 2)}</pre>
@@ -169,18 +169,18 @@ const PurePreviewMessage = ({
                       {toolName === 'getWeather' ? (
                         <Weather />
                       ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args} />
+                        <DocumentPreview chatId={chatId} args={args} />
                       ) : toolName === 'updateDocument' ? (
                         <DocumentToolCall
                           type="update"
                           args={args}
-                          isReadonly={isReadonly}
+                          chatId={chatId}
                         />
                       ) : toolName === 'requestSuggestions' ? (
                         <DocumentToolCall
                           type="request-suggestions"
                           args={args}
-                          isReadonly={isReadonly}
+                          chatId={chatId}
                         />
                       ) : null}
                     </div>

@@ -130,12 +130,12 @@ export async function POST(request: Request) {
               kind: z.enum(['text', 'code']),
             }),
             execute: async ({ title, kind }) => {
-              const id = generateUUID();
+              const documentId = generateUUID();
               let draftText = '';
 
               dataStream.writeData({
                 type: 'id',
-                content: id,
+                content: documentId,
               });
 
               dataStream.writeData({
@@ -209,16 +209,17 @@ export async function POST(request: Request) {
 
               if (session.user?.id) {
                 await saveDocument({
-                  id,
+                  id: documentId,
                   title,
                   kind,
                   content: draftText,
                   userId: session.user.id,
+                  chatId: id,
                 });
               }
 
               return {
-                id,
+                id: documentId,
                 title,
                 kind,
                 content:
@@ -234,8 +235,8 @@ export async function POST(request: Request) {
                 .string()
                 .describe('The description of changes that need to be made'),
             }),
-            execute: async ({ id, description }) => {
-              const document = await getDocumentById({ id });
+            execute: async ({ id: documentId, description }) => {
+              const document = await getDocumentById({ id: documentId });
 
               if (!document) {
                 return {
@@ -314,16 +315,17 @@ export async function POST(request: Request) {
 
               if (session.user?.id) {
                 await saveDocument({
-                  id,
+                  id: documentId,
                   title: document.title,
                   content: draftText,
                   kind: document.kind,
                   userId: session.user.id,
+                  chatId: id,
                 });
               }
 
               return {
-                id,
+                id: documentId,
                 title: document.title,
                 kind: document.kind,
                 content: 'The document has been updated successfully.',

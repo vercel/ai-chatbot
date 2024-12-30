@@ -26,7 +26,7 @@ import { Editor } from './editor';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { VersionFooter } from './version-footer';
-import { BlockActions } from './block-actions';
+import { BlockActions, type BlockActionsMode } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
 import { CodeEditor } from './code-editor';
@@ -41,6 +41,7 @@ export interface UIBlock {
   title: string;
   documentId: string;
   kind: BlockKind;
+  chatId: string;
   content: string;
   isVisible: boolean;
   status: 'streaming' | 'idle';
@@ -122,7 +123,9 @@ function PureBlock({
     },
   );
 
-  const [mode, setMode] = useState<'edit' | 'diff'>('edit');
+  const [mode, setMode] = useState<BlockActionsMode>(() =>
+    isReadonly ? 'read-only' : 'edit',
+  );
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
   const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
@@ -176,6 +179,7 @@ function PureBlock({
                 title: block.title,
                 content: updatedContent,
                 kind: block.kind,
+                chatId: block.chatId,
               }),
             });
 
@@ -224,7 +228,7 @@ function PureBlock({
   }
 
   const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
-    if (!documents) return;
+    if (!documents || isReadonly) return;
 
     if (type === 'latest') {
       setCurrentVersionIndex(documents.length - 1);
@@ -486,9 +490,17 @@ function PureBlock({
                     suggestions={suggestions ?? []}
                     status={block.status}
                     saveContent={saveContent}
+                    isReadonly={isReadonly}
                   />
                 ) : block.kind === 'text' ? (
-                  mode === 'edit' ? (
+                  mode === 'diff' ? (
+                    <DiffView
+                      oldContent={getDocumentContentById(
+                        currentVersionIndex - 1,
+                      )}
+                      newContent={getDocumentContentById(currentVersionIndex)}
+                    />
+                  ) : (
                     <Editor
                       content={
                         isCurrentVersion
@@ -500,13 +512,7 @@ function PureBlock({
                       status={block.status}
                       saveContent={saveContent}
                       suggestions={isCurrentVersion ? (suggestions ?? []) : []}
-                    />
-                  ) : (
-                    <DiffView
-                      oldContent={getDocumentContentById(
-                        currentVersionIndex - 1,
-                      )}
-                      newContent={getDocumentContentById(currentVersionIndex)}
+                      isReadonly={isReadonly}
                     />
                   )
                 ) : null}
@@ -515,19 +521,21 @@ function PureBlock({
                   <div className="md:hidden h-dvh w-12 shrink-0" />
                 ) : null}
 
-                <AnimatePresence>
-                  {isCurrentVersion && (
-                    <Toolbar
-                      isToolbarVisible={isToolbarVisible}
-                      setIsToolbarVisible={setIsToolbarVisible}
-                      append={append}
-                      isLoading={isLoading}
-                      stop={stop}
-                      setMessages={setMessages}
-                      blockKind={block.kind}
-                    />
-                  )}
-                </AnimatePresence>
+                {!isReadonly && (
+                  <AnimatePresence>
+                    {isCurrentVersion && (
+                      <Toolbar
+                        isToolbarVisible={isToolbarVisible}
+                        setIsToolbarVisible={setIsToolbarVisible}
+                        append={append}
+                        isLoading={isLoading}
+                        stop={stop}
+                        setMessages={setMessages}
+                        blockKind={block.kind}
+                      />
+                    )}
+                  </AnimatePresence>
+                )}
               </div>
             </div>
 
@@ -559,6 +567,7 @@ export const Block = memo(PureBlock, (prevProps, nextProps) => {
   if (!equal(prevProps.votes, nextProps.votes)) return false;
   if (prevProps.input !== nextProps.input) return false;
   if (!equal(prevProps.messages, nextProps.messages.length)) return false;
+  if (prevProps.isReadonly !== nextProps.isReadonly) return false;
 
   return true;
 });

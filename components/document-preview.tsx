@@ -2,16 +2,16 @@
 
 import {
   memo,
-  MouseEvent,
+  type MouseEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
 } from 'react';
-import { UIBlock } from './block';
+import type { UIBlock } from './block';
 import { FileIcon, FullscreenIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
-import { Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/db/schema';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import useSWR from 'swr';
 import { Editor } from './editor';
@@ -21,15 +21,15 @@ import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
 
 interface DocumentPreviewProps {
-  isReadonly: boolean;
   result?: any;
   args?: any;
+  chatId: string;
 }
 
 export function DocumentPreview({
-  isReadonly,
   result,
   args,
+  chatId,
 }: DocumentPreviewProps) {
   const { block, setBlock } = useBlock();
 
@@ -61,7 +61,7 @@ export function DocumentPreview({
         <DocumentToolResult
           type="create"
           result={{ id: result.id, title: result.title, kind: result.kind }}
-          isReadonly={isReadonly}
+          chatId={chatId}
         />
       );
     }
@@ -71,7 +71,7 @@ export function DocumentPreview({
         <DocumentToolCall
           type="create"
           args={{ title: args.title }}
-          isReadonly={isReadonly}
+          chatId={chatId}
         />
       );
     }
@@ -91,6 +91,7 @@ export function DocumentPreview({
           id: block.documentId,
           createdAt: new Date(),
           userId: 'noop',
+          chatId: block.chatId,
         }
       : null;
 
@@ -98,7 +99,12 @@ export function DocumentPreview({
 
   return (
     <div className="relative w-full cursor-pointer">
-      <HitboxLayer hitboxRef={hitboxRef} result={result} setBlock={setBlock} />
+      <HitboxLayer
+        hitboxRef={hitboxRef}
+        result={result}
+        setBlock={setBlock}
+        chatId={chatId}
+      />
       <DocumentHeader
         title={document.title}
         isStreaming={block.status === 'streaming'}
@@ -131,10 +137,12 @@ const PureHitboxLayer = ({
   hitboxRef,
   result,
   setBlock,
+  chatId,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
   result: any;
   setBlock: (updaterFn: UIBlock | ((currentBlock: UIBlock) => UIBlock)) => void;
+  chatId: string;
 }) => {
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
@@ -148,6 +156,7 @@ const PureHitboxLayer = ({
               documentId: result.id,
               kind: result.kind,
               isVisible: true,
+              chatId,
               boundingBox: {
                 left: boundingBox.x,
                 top: boundingBox.y,
@@ -157,7 +166,7 @@ const PureHitboxLayer = ({
             },
       );
     },
-    [setBlock, result],
+    [setBlock, result, chatId],
   );
 
   return (
