@@ -24,7 +24,7 @@ import {
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from "@/lib/utils";
-
+import { traceable } from "langsmith/traceable";
 import { generateTitleFromUserMessage } from "../../actions";
 
 export const maxDuration = 60;
@@ -71,33 +71,18 @@ export async function POST(request: Request) {
     ],
   });
 
-  const handleChatOperation = async ({
-    messages,
-    model,
-    id,
-    session,
-  }: {
-    messages: any[];
-    model: any;
-    id: string;
-    session: any;
-  }) => {
-    const stream = createDataStreamResponse({
-      execute: async (dataStream: DataStreamWriter) => {
-        try {
+  return traceable(
+    () =>
+      createDataStreamResponse({
+        execute: async (dataStream: DataStreamWriter) => {
           await langchainService.initialize(session.user!.bubbleUserId);
-          const metadata = {
-            chatId: id,
-          };
           const result = streamText({
             model: customModel(model.apiIdentifier),
             system: systemPrompt,
-            messages: messages,
+            messages: coreMessages,
             maxSteps: 5,
             experimental_activeTools: ["searchKnowledgeBase"],
-            experimental_telemetry: AISDKExporter.getSettings({
-              metadata: metadata,
-            }),
+            experimental_telemetry: AISDKExporter.getSettings({}),
             tools: {
               searchKnowledgeBase: {
                 description:
@@ -111,8 +96,7 @@ export async function POST(request: Request) {
                   const searchOperation = async () => {
                     console.log("🔍 Searching knowledge base for:", query);
                     const results = await langchainService.similaritySearch(
-                      query,
-                      metadata
+                      query
                     );
 
                     return {
@@ -139,13 +123,11 @@ export async function POST(request: Request) {
                     messages: responseMessagesWithoutIncompleteToolCalls.map(
                       (message) => {
                         const messageId = generateUUID();
-
                         if (message.role === "assistant") {
                           dataStream.writeMessageAnnotation({
                             messageIdFromServer: messageId,
                           });
                         }
-
                         return {
                           id: messageId,
                           chatId: id,
@@ -163,21 +145,21 @@ export async function POST(request: Request) {
             },
           });
           await result.mergeIntoDataStream(dataStream);
-        } catch (error) {
-          throw error;
-        }
+        },
+      }),
+    {
+      name: `chat-${id}`,
+      inputs: {
+        messages: coreMessages,
       },
-    });
-
-    return stream;
-  };
-
-  return await handleChatOperation({
-    messages: coreMessages,
-    model,
-    id,
-    session,
-  });
+      metadata: {
+        chatId: id,
+        userId: session.user.id,
+        email: session.user.email,
+        model: model.apiIdentifier,
+      },
+    }
+  )();
 }
 
 export async function DELETE(request: Request) {
