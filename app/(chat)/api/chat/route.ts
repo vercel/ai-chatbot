@@ -86,6 +86,9 @@ export async function POST(request: Request) {
       execute: async (dataStream: DataStreamWriter) => {
         try {
           await langchainService.initialize(session.user!.bubbleUserId);
+          const metadata = {
+            chatId: id,
+          };
           const result = streamText({
             model: customModel(model.apiIdentifier),
             system: systemPrompt,
@@ -93,7 +96,7 @@ export async function POST(request: Request) {
             maxSteps: 5,
             experimental_activeTools: ["searchKnowledgeBase"],
             experimental_telemetry: AISDKExporter.getSettings({
-              runName: `chat-${id}`
+              metadata: metadata,
             }),
             tools: {
               searchKnowledgeBase: {
@@ -108,7 +111,8 @@ export async function POST(request: Request) {
                   const searchOperation = async () => {
                     console.log("🔍 Searching knowledge base for:", query);
                     const results = await langchainService.similaritySearch(
-                      query
+                      query,
+                      metadata
                     );
 
                     return {

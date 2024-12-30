@@ -109,9 +109,11 @@ export class LangChainService {
     }
   }
 
-  async similaritySearch(query: string) {
+  async similaritySearch(query: string, metadata: Record<string, any>) {
     try {
-      const retrievedDocs = await this.retriever.invoke(query);
+      const retrievedDocs = await this.retriever.invoke(query, {
+        metadata,
+      });
 
       // Convert position to score (earlier = higher score)
       const results = retrievedDocs.map((doc, index) => ({
