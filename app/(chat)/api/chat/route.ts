@@ -3,7 +3,6 @@ import {
   convertToCoreMessages,
   createDataStreamResponse,
   streamText,
-  type DataStreamWriter,
 } from "ai";
 import { z } from "zod";
 
@@ -71,10 +70,18 @@ export async function POST(request: Request) {
     ],
   });
 
-  return traceable(
-    () =>
-      createDataStreamResponse({
-        execute: async (dataStream: DataStreamWriter) => {
+  // TODO: Traceable works to nest all the runs together, but it doesnt get the inputs and outputs as well as the latency on the parent run.
+  // The reason is becuase we are streaming the response and langsmith doesnt work with traceable streaming.
+  // I can just use the experimental_telemetry but then it breaks it into multiple runs which is harder to see.
+  // It works by making steps manually but then you miss details.
+  // Tried sentry logging but that didnt work either.
+  // Will need to wait and see if langsmith supports streaming with traceable.
+  // Opened issue here: https://github.com/vercel/ai/issues/4223
+
+  const chatOperation = traceable(
+    async () => {
+      const stream = createDataStreamResponse({
+        execute: async (dataStream) => {
           await langchainService.initialize(session.user!.bubbleUserId);
           const result = streamText({
             model: customModel(model.apiIdentifier),
@@ -93,23 +100,26 @@ export async function POST(request: Request) {
                     .describe("the exact question from the user"),
                 }),
                 execute: async ({ query }) => {
-                  const searchOperation = async () => {
-                    console.log("🔍 Searching knowledge base for:", query);
-                    const results = await langchainService.similaritySearch(
-                      query
-                    );
+                  const searchOperation = traceable(
+                    async () => {
+                      console.log("🔍 Searching knowledge base for:", query);
+                      const results = await langchainService.similaritySearch(
+                        query
+                      );
 
-                    return {
-                      results: results.map((doc) => ({
-                        content: doc.metadata?.text || doc.pageContent,
-                        score: Math.round(doc.score * 100),
-                      })),
-                      sourceCount: results.length,
-                      hasResults: results.length > 0,
-                    };
-                  };
+                      return {
+                        results: results.map((doc) => ({
+                          content: doc.metadata?.text || doc.pageContent,
+                          score: Math.round(doc.score * 100),
+                        })),
+                        sourceCount: results.length,
+                        hasResults: results.length > 0,
+                      };
+                    },
+                    { name: "search-knowledge-base" }
+                  )();
 
-                  return await searchOperation();
+                  return await searchOperation;
                 },
               },
             },
@@ -146,7 +156,9 @@ export async function POST(request: Request) {
           });
           await result.mergeIntoDataStream(dataStream);
         },
-      }),
+      });
+      return stream;
+    },
     {
       name: `chat-${id}`,
       inputs: {
@@ -159,7 +171,9 @@ export async function POST(request: Request) {
         model: model.apiIdentifier,
       },
     }
-  )();
+  );
+
+  return await chatOperation();
 }
 
 export async function DELETE(request: Request) {
