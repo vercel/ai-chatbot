@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
   const chatOperation = traceable(
     async () => {
-      const stream = createDataStreamResponse({
+      return createDataStreamResponse({
         execute: async (dataStream) => {
           await langchainService.initialize(session.user!.bubbleUserId);
           const result = streamText({
@@ -157,7 +157,6 @@ export async function POST(request: Request) {
           await result.mergeIntoDataStream(dataStream);
         },
       });
-      return stream;
     },
     {
       name: `chat-${id}`,
