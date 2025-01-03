@@ -29,6 +29,8 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
+import GoogleDriveFiles from './GoogleDriveFiles';
+
 
 function PureMultimodalInput({
   chatId,
@@ -132,6 +134,9 @@ function PureMultimodalInput({
     chatId,
   ]);
 
+ 
+  
+
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -222,6 +227,7 @@ function PureMultimodalInput({
         </div>
       )}
 
+      <GoogleDriveFiles/>
       <Textarea
         ref={textareaRef}
         placeholder="Send a message..."
