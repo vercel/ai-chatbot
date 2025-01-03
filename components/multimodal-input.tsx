@@ -29,8 +29,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
-import GoogleDriveFiles from './GoogleDriveFiles';
-
+import DriverPicker from "./DrivePicker"
 
 function PureMultimodalInput({
   chatId,
@@ -226,8 +225,7 @@ function PureMultimodalInput({
           ))}
         </div>
       )}
-
-      <GoogleDriveFiles/>
+      <DriverPicker/>
       <Textarea
         ref={textareaRef}
         placeholder="Send a message..."
