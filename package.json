@@ -69,6 +69,7 @@
     "prosemirror-view": "^1.34.3",
     "react": "19.0.0-rc-45804af1-20241021",
     "react-dom": "19.0.0-rc-45804af1-20241021",
+    "react-dropbox-chooser": "^0.0.5",
     "react-google-drive-picker": "^1.2.2",
     "react-markdown": "^9.0.1",
     "react-resizable-panels": "^2.1.7",
