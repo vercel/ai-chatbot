@@ -18,17 +18,26 @@ import {
   type ChangeEvent,
   memo,
 } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import { sanitizeUIMessages } from '@/lib/utils';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, StopIcon, DropBox} from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
+import DriverPicker from "./DrivePicker"
+import DropboxChooser from "react-dropbox-chooser"
 
 function PureMultimodalInput({
   chatId,
@@ -67,6 +76,7 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -132,6 +142,9 @@ function PureMultimodalInput({
     chatId,
   ]);
 
+ 
+  
+
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -185,6 +198,21 @@ function PureMultimodalInput({
     [setAttachments],
   );
 
+  const onSelect=(files: File[])=>{
+    setUploadQueue(files.map((file) => file.name));
+      try {
+        setAttachments((currentAttachments) => [
+          ...currentAttachments,
+          ...files.map(file=>({ ...file, contentType: "image", url: "https://www.dropbox.com/scl/fi/w4hmgop01d5j4r1cjxwqs/download.png?rlkey=lpjigbz0run7tv23luu0x8pt4&dl=0"})),
+        ]);
+      } catch (error) {
+        console.error('Error uploading files!', error);
+      } finally {
+        setUploadQueue([]);
+      }
+  }
+
+ 
   return (
     <div className="relative w-full flex flex-col gap-4">
       {messages.length === 0 &&
@@ -221,7 +249,6 @@ function PureMultimodalInput({
           ))}
         </div>
       )}
-
       <Textarea
         ref={textareaRef}
         placeholder="Send a message..."
@@ -247,7 +274,61 @@ function PureMultimodalInput({
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+
+
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+              <DropdownMenuTrigger
+                asChild
+                className={cn(
+                  'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+                  className,
+                )}
+              >
+                <Button
+                  variant="outline"
+                  className="hidden md:flex md:px-2 md:h-[34px]"
+                >
+                  <PaperclipIcon size={14} />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="start" className="min-w-[200px]">
+                  <DriverPicker setUploadQueue={setUploadQueue} setAttachments={setAttachments} uploadFile={uploadFile} setOpen={setOpen}/>
+                 
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setOpen(false);
+                    }}
+                    className="gap-2 group/item flex flex-row justify-between items-center"
+                  >
+                    <DropboxChooser 
+                      appKey={'APP_KEY'}
+                      success={onSelect}
+                      cancel={() => console.log("close")}
+                      multiselect={true}
+                      className="w-full"
+                      >
+                      <div className='flex flex-row justify-between items-center  w-full'>
+                        <div className="flex flex-col gap-1 items-start mr-8">
+                          Connect to DropBox
+                        </div>
+                        <div className="text-foreground dark:text-foreground group-data-[active=true]/item:opacity-100">
+                          <img src='/images/dropbox.svg' className='h-4 bg-slate-200'/>
+                        </div>
+                        </div>
+                    </DropboxChooser>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setOpen(false);
+                    }}
+                    className="gap-2 group/item flex flex-row justify-between items-center"
+                  >
+                    <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+                  </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -284,8 +365,8 @@ function PureAttachmentsButton({
   isLoading: boolean;
 }) {
   return (
-    <Button
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+    <div
+      className="rounded-md flex p-0 flex-row justify-between items-center w-full"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -293,8 +374,13 @@ function PureAttachmentsButton({
       disabled={isLoading}
       variant="ghost"
     >
-      <PaperclipIcon size={14} />
-    </Button>
+      <div className="flex flex-col gap-1 items-start mr-4">
+          Local Computer
+      </div>
+      <div className="text-foreground dark:text-foreground group-data-[active=true]/item:opacity-100">
+        <img src='/images/computer.png' className='h-4 bg-slate-200'/>
+      </div>
+    </div>
   );
 }
 
