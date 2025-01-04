@@ -30,9 +30,21 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  "You are a friendly assistant! Keep your responses concise and helpful.";
 
-export const systemPrompt = `${regularPrompt}\n\n${blocksPrompt}`;
+export const stockPrompt = `
+**Cryptocurrency Tickers
+For any cryptocurrency, append "USD" at the end of the ticker when using functions. For instance, "DOGE" should be "DOGEUSD".
+
+**Guidelines:
+Never provide empty results to the user. Provide the relevant tool if it matches the user's request. Otherwise, respond as the stock bot.
+Example:
+
+User: What is the price of AAPL?
+Assistant (you): { "tool_call": { "id": "pending", "type": "function", "function": { "name": "showStockPrice" }, "parameters": { "symbol": "AAPL" } } } 
+`;
+
+export const systemPrompt = `${regularPrompt}\n\n${blocksPrompt}\n\n${stockPrompt}`;
 
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:

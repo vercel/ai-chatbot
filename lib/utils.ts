@@ -4,11 +4,11 @@ import type {
   CoreToolMessage,
   Message,
   ToolInvocation,
-} from 'ai';
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+} from "ai";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
+import type { Message as DBMessage, Document } from "@/lib/db/schema";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,7 +24,7 @@ export const fetcher = async (url: string) => {
 
   if (!res.ok) {
     const error = new Error(
-      'An error occurred while fetching the data.',
+      "An error occurred while fetching the data."
     ) as ApplicationError;
 
     error.info = await res.json();
@@ -37,16 +37,16 @@ export const fetcher = async (url: string) => {
 };
 
 export function getLocalStorage(key: string) {
-  if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem(key) || '[]');
+  if (typeof window !== "undefined") {
+    return JSON.parse(localStorage.getItem(key) || "[]");
   }
   return [];
 }
 
 export function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -64,13 +64,13 @@ function addToolMessageToChat({
         ...message,
         toolInvocations: message.toolInvocations.map((toolInvocation) => {
           const toolResult = toolMessage.content.find(
-            (tool) => tool.toolCallId === toolInvocation.toolCallId,
+            (tool) => tool.toolCallId === toolInvocation.toolCallId
           );
 
           if (toolResult) {
             return {
               ...toolInvocation,
-              state: 'result',
+              state: "result",
               result: toolResult.result,
             };
           }
@@ -85,28 +85,28 @@ function addToolMessageToChat({
 }
 
 export function convertToUIMessages(
-  messages: Array<DBMessage>,
+  messages: Array<DBMessage>
 ): Array<Message> {
   return messages.reduce((chatMessages: Array<Message>, message) => {
-    if (message.role === 'tool') {
+    if (message.role === "tool") {
       return addToolMessageToChat({
         toolMessage: message as CoreToolMessage,
         messages: chatMessages,
       });
     }
 
-    let textContent = '';
+    let textContent = "";
     const toolInvocations: Array<ToolInvocation> = [];
 
-    if (typeof message.content === 'string') {
+    if (typeof message.content === "string") {
       textContent = message.content;
     } else if (Array.isArray(message.content)) {
       for (const content of message.content) {
-        if (content.type === 'text') {
+        if (content.type === "text") {
           textContent += content.text;
-        } else if (content.type === 'tool-call') {
+        } else if (content.type === "tool-call") {
           toolInvocations.push({
-            state: 'call',
+            state: "call",
             toolCallId: content.toolCallId,
             toolName: content.toolName,
             args: content.args,
@@ -117,7 +117,7 @@ export function convertToUIMessages(
 
     chatMessages.push({
       id: message.id,
-      role: message.role as Message['role'],
+      role: message.role as Message["role"],
       content: textContent,
       toolInvocations,
     });
@@ -127,14 +127,14 @@ export function convertToUIMessages(
 }
 
 export function sanitizeResponseMessages(
-  messages: Array<CoreToolMessage | CoreAssistantMessage>,
+  messages: Array<CoreToolMessage | CoreAssistantMessage>
 ): Array<CoreToolMessage | CoreAssistantMessage> {
   const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
-    if (message.role === 'tool') {
+    if (message.role === "tool") {
       for (const content of message.content) {
-        if (content.type === 'tool-result') {
+        if (content.type === "tool-result") {
           toolResultIds.push(content.toolCallId);
         }
       }
@@ -142,16 +142,16 @@ export function sanitizeResponseMessages(
   }
 
   const messagesBySanitizedContent = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+    if (message.role !== "assistant") return message;
 
-    if (typeof message.content === 'string') return message;
+    if (typeof message.content === "string") return message;
 
     const sanitizedContent = message.content.filter((content) =>
-      content.type === 'tool-call'
+      content.type === "tool-call"
         ? toolResultIds.includes(content.toolCallId)
-        : content.type === 'text'
-          ? content.text.length > 0
-          : true,
+        : content.type === "text"
+        ? content.text.length > 0
+        : true
     );
 
     return {
@@ -161,28 +161,28 @@ export function sanitizeResponseMessages(
   });
 
   return messagesBySanitizedContent.filter(
-    (message) => message.content.length > 0,
+    (message) => message.content.length > 0
   );
 }
 
 export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   const messagesBySanitizedToolInvocations = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+    if (message.role !== "assistant") return message;
 
     if (!message.toolInvocations) return message;
 
     const toolResultIds: Array<string> = [];
 
     for (const toolInvocation of message.toolInvocations) {
-      if (toolInvocation.state === 'result') {
+      if (toolInvocation.state === "result") {
         toolResultIds.push(toolInvocation.toolCallId);
       }
     }
 
     const sanitizedToolInvocations = message.toolInvocations.filter(
       (toolInvocation) =>
-        toolInvocation.state === 'result' ||
-        toolResultIds.includes(toolInvocation.toolCallId),
+        toolInvocation.state === "result" ||
+        toolResultIds.includes(toolInvocation.toolCallId)
     );
 
     return {
@@ -194,18 +194,18 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   return messagesBySanitizedToolInvocations.filter(
     (message) =>
       message.content.length > 0 ||
-      (message.toolInvocations && message.toolInvocations.length > 0),
+      (message.toolInvocations && message.toolInvocations.length > 0)
   );
 }
 
 export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
-  const userMessages = messages.filter((message) => message.role === 'user');
+  const userMessages = messages.filter((message) => message.role === "user");
   return userMessages.at(-1);
 }
 
 export function getDocumentTimestampByIndex(
   documents: Array<Document>,
-  index: number,
+  index: number
 ) {
   if (!documents) return new Date();
   if (index > documents.length) return new Date();
