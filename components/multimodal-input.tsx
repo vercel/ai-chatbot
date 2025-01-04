@@ -302,7 +302,7 @@ function PureMultimodalInput({
                     className="gap-2 group/item flex flex-row justify-between items-center"
                   >
                     <DropboxChooser 
-                      appKey={'78h6syrefg32yd6'}
+                      appKey={'APP_KEY'}
                       success={onSelect}
                       cancel={() => console.log("close")}
                       multiselect={true}

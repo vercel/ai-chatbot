@@ -9,8 +9,8 @@ function App({ setUploadQueue, setAttachments, uploadFile, setOpen}) {
   // const customViewsArray = [new google.picker.DocsView()]; // custom view
   const handleOpenPicker = () => {
     openPicker({
-      clientId: "3873881820-5l4vi6jcloffatnr9shr8l2hji23v99k.apps.googleusercontent.com",
-      developerKey: "AIzaSyAa4sLIvA6YZLaAiOMObKBjW7aDdjMkhwA",
+      clientId: CLIENT_ID,
+      developerKey: DEVELOPER_KEY,
       viewId: "DOCS",
       // token: token, // pass oauth token in case you already have one
       showUploadView: true,

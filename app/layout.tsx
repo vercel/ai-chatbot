@@ -46,10 +46,6 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Add the Google API script here */}
-        <script src="https://apis.google.com/js/api.js"></script>
-
-        {/* Existing script for theme color */}
         <script
           dangerouslySetInnerHTML={{
             __html: THEME_COLOR_SCRIPT,
