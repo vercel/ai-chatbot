@@ -20,12 +20,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { MessageEditor } from "./message-editor";
 import { DocumentPreview } from "./document-preview";
 import { StockChart } from "./tradingview/stock-chart";
-import StockPrice from "./tradingview/stock-price";
-import MarketTrending from "./tradingview/market-trending";
-import StockNews from "./tradingview/stock-news";
-import StockScreener from "./tradingview/stock-screener";
-import MarketHeatmap from "./tradingview/market-heatmap";
-import StockFinancials from "./tradingview/stock-financials";
+import { StockPrice } from "./tradingview/stock-price";
+import { MarketTrending } from "./tradingview/market-trending";
+import { StockNews } from "./tradingview/stock-news";
+import { StockScreener } from "./tradingview/stock-screener";
+import { MarketHeatmap } from "./tradingview/market-heatmap";
+import { StockFinancials } from "./tradingview/stock-financials";
 
 const PurePreviewMessage = ({
   chatId,
