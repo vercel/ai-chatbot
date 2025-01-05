@@ -90,6 +90,7 @@ export class LangChainService {
           metadata: {
             ...doc.metadata,
             userId: metadata.userId,
+            question: metadata.question,
             timestamp: Date.now(),
             chunkIndex: index,
             documentId: metadata.documentId || `doc-${Date.now()}`,
