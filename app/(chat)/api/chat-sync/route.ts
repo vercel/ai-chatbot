@@ -5,8 +5,8 @@ import { customModel } from "@/lib/ai";
 import { models } from "@/lib/ai/models";
 import { AISDKExporter } from "langsmith/vercel";
 import { systemPrompt } from "@/lib/ai/prompts";
-import { sanitizeResponseMessages } from "@/lib/utils";
 import { traceable } from "langsmith/traceable";
+import { generateText } from "ai";
 
 const requestSchema = z.object({
   userId: z.string(),
@@ -15,7 +15,6 @@ const requestSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  // Check API key using Bearer token
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.API_KEY}`) {
     return new Response("Unauthorized", { status: 401 });
@@ -33,8 +32,9 @@ export async function POST(request: NextRequest) {
     const chatOperation = traceable(
       async () => {
         await langchainService.initialize(userId);
-        
-        const response = await customModel(model.apiIdentifier).invoke({
+
+        const { text } = await generateText({
+          model: customModel(model.apiIdentifier),
           system: systemPrompt,
           messages: [{ role: "user", content: message }],
           maxSteps: 5,
@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
           experimental_telemetry: AISDKExporter.getSettings({}),
           tools: {
             searchKnowledgeBase: {
-              description: "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
+              description:
+                "REQUIRED: You MUST use this tool FIRST for EVERY question, no exceptions.",
               parameters: z.object({
                 query: z.string().describe("the exact question from the user"),
               }),
@@ -50,7 +51,9 @@ export async function POST(request: NextRequest) {
                 const searchOperation = traceable(
                   async () => {
                     console.log("🔍 Searching knowledge base for:", query);
-                    const results = await langchainService.similaritySearch(query);
+                    const results = await langchainService.similaritySearch(
+                      query
+                    );
                     return {
                       results: results.map((doc) => ({
                         content: doc.metadata?.text || doc.pageContent,
@@ -69,8 +72,7 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const cleanedMessages = sanitizeResponseMessages(response.messages);
-        return cleanedMessages;
+        return text;
       },
       {
         name: `chat-sync`,
@@ -85,8 +87,7 @@ export async function POST(request: NextRequest) {
     );
 
     const result = await chatOperation();
-    return Response.json({ messages: result });
-
+    return Response.json({ text: result });
   } catch (error) {
     console.error("Error in chat sync:", error);
     if (error instanceof z.ZodError) {
