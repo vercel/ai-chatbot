@@ -57,6 +57,8 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [consoleOutputs]);
 
+  console.log(consoleOutputs);
+
   return consoleOutputs.length > 0 ? (
     <>
       <div
