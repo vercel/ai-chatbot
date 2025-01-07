@@ -9,7 +9,7 @@ import type { UISuggestion } from '@/lib/editor/suggestions';
 import { CrossIcon, MessageIcon } from './icons';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { BlockKind } from './block';
+import type { BlockKind } from './block';
 
 export const Suggestion = ({
   suggestion,
