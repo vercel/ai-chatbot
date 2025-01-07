@@ -52,11 +52,15 @@ export interface UIBlock {
   };
 }
 
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
 export interface ConsoleOutput {
   id: string;
-  status: 'in_progress' | 'completed' | 'failed';
-  content: string | null | { png: string | null; svg: string | null };
-  type?: 'text' | 'plot-output';
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
 }
 
 function PureBlock({
