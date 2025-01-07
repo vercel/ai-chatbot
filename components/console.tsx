@@ -133,7 +133,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                       <picture key={`${consoleOutput.id}-${index}`}>
                         <img
                           src={content.value}
-                          alt="image output"
+                          alt="output"
                           className="rounded-md max-w-[600px] w-full"
                         />
                       </picture>

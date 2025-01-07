@@ -1,13 +1,13 @@
 import { generateUUID } from '@/lib/utils';
 import {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   startTransition,
   useCallback,
   useState,
   useEffect,
 } from 'react';
-import { ConsoleOutput, UIBlock } from './block';
+import type { ConsoleOutput, UIBlock } from './block';
 import { Button } from './ui/button';
 import { PlayIcon } from './icons';
 
@@ -21,8 +21,12 @@ function detectPythonImports(code: string, pyodide: any): Set<string> {
   ];
 
   for (const pattern of importPatterns) {
-    let match;
-    while ((match = pattern.exec(code)) !== null) {
+    let match: RegExpExecArray | null;
+
+    while (true) {
+      match = pattern.exec(code);
+      if (match === null) break;
+
       const rootPackage = match[1].split('.')[0];
       if (rootPackage) {
         imports.add(rootPackage);
