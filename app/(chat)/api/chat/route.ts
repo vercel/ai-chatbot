@@ -254,7 +254,7 @@ export async function POST(request: Request) {
               if (document.kind === 'text') {
                 const { fullStream } = streamText({
                   model: customModel(model.apiIdentifier),
-                  system: updateDocumentPrompt(currentContent),
+                  system: updateDocumentPrompt(currentContent, 'text'),
                   prompt: description,
                   experimental_providerMetadata: {
                     openai: {
@@ -284,7 +284,7 @@ export async function POST(request: Request) {
               } else if (document.kind === 'code') {
                 const { fullStream } = streamObject({
                   model: customModel(model.apiIdentifier),
-                  system: updateDocumentPrompt(currentContent),
+                  system: updateDocumentPrompt(currentContent, 'code'),
                   prompt: description,
                   schema: z.object({
                     code: z.string(),
