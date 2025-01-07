@@ -28,3 +28,15 @@ When using search results:
 5. Cite specific quotes when they support your points
 
 Remember: Every response should be grounded in the search results when available.`;
+
+
+export const apiPrompt = `
+When using search results:
+1. First analyze the relevance scores of the returned content
+2. Incorporate the most relevant quotes and insights into your response but do not repeat the same quotes that are in the prompt. Find other ones.
+3. When sharing quotes, always put it in this format: [quote]"the quote"[/quote].
+3. Do not repeat the same information that is in the prompt.
+4. Use all the quotes to support your text from the prompt.
+5. If the search returns no relevant information, acknowledge this explicitly
+6. Your conversational tone should be natural and not overly formal.
+`;

@@ -4,13 +4,14 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { PineconeStore } from "@langchain/pinecone";
 import { Document } from "@langchain/core/documents";
 import { MultiQueryRetriever } from "langchain/retrievers/multi_query";
+import { VectorStoreRetriever } from "@langchain/core/vectorstores";
 import { PromptTemplate } from "@langchain/core/prompts";
 
 export class LangChainService {
   private pineconeClient: Pinecone;
   private embeddings: OpenAIEmbeddings;
   private vectorStore!: PineconeStore;
-  private retriever!: MultiQueryRetriever;
+  private retriever!: VectorStoreRetriever;
   private userId!: string;
   private llm = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
@@ -54,22 +55,30 @@ export class LangChainService {
       textKey: "text",
     });
 
-    // Create MultiQueryRetriever
-    this.retriever = await MultiQueryRetriever.fromLLM({
-      llm: this.llm,
-      retriever: this.vectorStore.asRetriever({
-        searchType: "mmr",
-        filter: { userId: userId },
-        searchKwargs: {
-          fetchK: 100,
-          lambda: 0.7,
-        },
-      }),
-      queryCount: 3,
-      prompt: this.queryGenerationPrompt,
-      verbose: true,
+    // // Create MultiQueryRetriever
+    // this.retriever = await MultiQueryRetriever.fromLLM({
+    //   llm: this.llm,
+    //   retriever: this.vectorStore.asRetriever({
+    //     searchType: "mmr",
+    //     filter: { userId: userId },
+    //     searchKwargs: {
+    //       fetchK: 100,
+    //       lambda: 0.1,
+    //     },
+    //   }),
+    //   queryCount: 10,
+    //   prompt: this.queryGenerationPrompt,
+    //   verbose: true,
+    // });
+
+    this.retriever = this.vectorStore.asRetriever({
+      filter: { userId: userId },
+      k: 30, // Number of results to return
     });
+
   }
+
+
 
   async ingestDocument(text: string, metadata: Record<string, any> = {}) {
     console.log("📥 Starting document ingestion");

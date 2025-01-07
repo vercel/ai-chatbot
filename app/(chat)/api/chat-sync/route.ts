@@ -3,15 +3,16 @@ import { z } from "zod";
 import { langchainService } from "@/lib/langchain/service";
 import { customModel } from "@/lib/ai";
 import { models } from "@/lib/ai/models";
+import { openai } from "@ai-sdk/openai";
 import { AISDKExporter } from "langsmith/vercel";
-import { systemPrompt } from "@/lib/ai/prompts";
+import { apiPrompt, systemPrompt } from "@/lib/ai/prompts";
 import { traceable } from "langsmith/traceable";
 import { generateText } from "ai";
 
 const requestSchema = z.object({
   userId: z.string(),
   message: z.string(),
-  modelId: z.string().optional().default("gpt-4-turbo-preview"),
+  modelId: z.string().optional().default("o1-preview"),
 });
 
 export async function POST(request: NextRequest) {
@@ -19,6 +20,8 @@ export async function POST(request: NextRequest) {
   if (authHeader !== `Bearer ${process.env.API_KEY}`) {
     return new Response("Unauthorized", { status: 401 });
   }
+
+  console.log("🚀 ~ POST ~ request:", request);
 
   try {
     const body = await request.json();
@@ -34,8 +37,8 @@ export async function POST(request: NextRequest) {
         await langchainService.initialize(userId);
 
         const { text } = await generateText({
-          model: customModel(model.apiIdentifier),
-          system: systemPrompt,
+          model: openai("gpt-4o"),
+          system: apiPrompt,
           messages: [{ role: "user", content: message }],
           maxSteps: 5,
           experimental_activeTools: ["searchKnowledgeBase"],
@@ -58,6 +61,12 @@ export async function POST(request: NextRequest) {
                       results: results.map((doc) => ({
                         content: doc.metadata?.text || doc.pageContent,
                         score: Math.round(doc.score * 100),
+                        relevance:
+                          doc.score >= 0.8
+                            ? "highly relevant"
+                            : doc.score >= 0.5
+                            ? "moderately relevant"
+                            : "somewhat relevant",
                       })),
                       sourceCount: results.length,
                       hasResults: results.length > 0,

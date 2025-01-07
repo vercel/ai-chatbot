@@ -172,6 +172,8 @@ export async function POST(request: Request) {
     }
   );
 
+  console.log("Using model:", model.apiIdentifier);
+
   return await chatOperation();
 }
 
