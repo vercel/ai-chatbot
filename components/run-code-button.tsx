@@ -196,10 +196,10 @@ export function RunCodeButton({
         ]);
       } catch (error: any) {
         setConsoleOutputs((outputs) => [
-          ...outputs,
+          ...outputs.filter((output) => output.id !== runId),
           {
             id: runId,
-            contents: error.message,
+            contents: [{ type: 'text', value: error.message }],
             status: 'failed',
           },
         ]);

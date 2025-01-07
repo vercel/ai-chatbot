@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ConsoleOutput, ConsoleOutputContent } from './block';
+import { ConsoleOutput } from './block';
 import { cn } from '@/lib/utils';
 
 interface ConsoleProps {
@@ -56,8 +56,6 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   useEffect(() => {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [consoleOutputs]);
-
-  console.log(consoleOutputs);
 
   return consoleOutputs.length > 0 ? (
     <>
