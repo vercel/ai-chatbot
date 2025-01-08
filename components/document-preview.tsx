@@ -145,6 +145,7 @@ const PureHitboxLayer = ({
           ? { ...block, isVisible: true }
           : {
               ...block,
+              title: result.title,
               documentId: result.id,
               kind: result.kind,
               isVisible: true,

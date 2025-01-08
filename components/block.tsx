@@ -52,11 +52,15 @@ export interface UIBlock {
   };
 }
 
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
 export interface ConsoleOutput {
   id: string;
-  status: 'in_progress' | 'completed' | 'failed';
-  content: string | null | { png: string | null; svg: string | null };
-  type?: 'text' | 'plot-output';
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
 }
 
 function PureBlock({
@@ -87,16 +91,16 @@ function PureBlock({
   votes: Array<Vote> | undefined;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   handleSubmit: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   reload: (
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
 }) {
@@ -110,7 +114,7 @@ function PureBlock({
     block.documentId !== 'init' && block.status !== 'streaming'
       ? `/api/document?id=${block.documentId}`
       : null,
-    fetcher,
+    fetcher
   );
 
   const { data: suggestions } = useSWR<Array<Suggestion>>(
@@ -120,14 +124,14 @@ function PureBlock({
     fetcher,
     {
       dedupingInterval: 5000,
-    },
+    }
   );
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
   const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
-    [],
+    []
   );
 
   const { open: isSidebarOpen } = useSidebar();
@@ -192,15 +196,15 @@ function PureBlock({
           }
           return currentDocuments;
         },
-        { revalidate: false },
+        { revalidate: false }
       );
     },
-    [block, mutate],
+    [block, mutate]
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
     handleContentChange,
-    2000,
+    2000
   );
 
   const saveContent = useCallback(
@@ -215,7 +219,7 @@ function PureBlock({
         }
       }
     },
-    [document, debouncedHandleContentChange, handleContentChange],
+    [document, debouncedHandleContentChange, handleContentChange]
   );
 
   function getDocumentContentById(index: number) {
@@ -424,9 +428,7 @@ function PureBlock({
                 <BlockCloseButton />
 
                 <div className="flex flex-col">
-                  <div className="font-medium">
-                    {document?.title ?? block.title}
-                  </div>
+                  <div className="font-medium">{block.title}</div>
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
@@ -439,7 +441,7 @@ function PureBlock({
                         new Date(),
                         {
                           addSuffix: true,
-                        },
+                        }
                       )}`}
                     </div>
                   ) : (
@@ -464,7 +466,7 @@ function PureBlock({
                 {
                   'py-2 px-2': block.kind === 'code',
                   'py-8 md:p-20 px-4': block.kind === 'text',
-                },
+                }
               )}
             >
               <div
@@ -500,12 +502,12 @@ function PureBlock({
                       currentVersionIndex={currentVersionIndex}
                       status={block.status}
                       saveContent={saveContent}
-                      suggestions={isCurrentVersion ? (suggestions ?? []) : []}
+                      suggestions={isCurrentVersion ? suggestions ?? [] : []}
                     />
                   ) : (
                     <DiffView
                       oldContent={getDocumentContentById(
-                        currentVersionIndex - 1,
+                        currentVersionIndex - 1
                       )}
                       newContent={getDocumentContentById(currentVersionIndex)}
                     />
