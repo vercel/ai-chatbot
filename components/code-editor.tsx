@@ -59,9 +59,12 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
         }
       });
 
+      const currentSelection = editorRef.current.state.selection;
+
       const newState = EditorState.create({
         doc: editorRef.current.state.doc,
         extensions: [basicSetup, python(), oneDark, updateListener],
+        selection: currentSelection,
       });
 
       editorRef.current.setState(newState);
