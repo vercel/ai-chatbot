@@ -138,7 +138,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   </div>
                 </div>
               ) : (
-                <div className="dark:text-zinc-50 text-zinc-900 w-full flex flex-col gap-2">
+                <div className="dark:text-zinc-50 text-zinc-900 w-full flex flex-col gap-2 overflow-x-scroll">
                   {consoleOutput.contents.map((content, index) =>
                     content.type === 'image' ? (
                       <picture key={`${consoleOutput.id}-${index}`}>
