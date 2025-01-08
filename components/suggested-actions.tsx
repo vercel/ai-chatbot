@@ -21,9 +21,9 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
       action: 'What are the advantages of using Next.js?',
     },
     {
-      title: 'Write code that',
-      label: `demonstrates djikstra's algorithm`,
-      action: `Write code that demonstrates djikstra's algorithm`,
+      title: 'Write code to',
+      label: `demonstrate djikstra's algorithm`,
+      action: `Write code to demonstrate djikstra's algorithm`,
     },
     {
       title: 'Help me write an essay',
