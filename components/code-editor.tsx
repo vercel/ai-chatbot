@@ -75,10 +75,7 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
     if (editorRef.current && content) {
       const currentContent = editorRef.current.state.doc.toString();
 
-      if (
-        status === 'streaming' ||
-        (currentContent.length == 0 && content.length > 0)
-      ) {
+      if (status === 'streaming' || currentContent !== content) {
         const transaction = editorRef.current.state.update({
           changes: {
             from: 0,
