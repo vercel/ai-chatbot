@@ -16,7 +16,8 @@ import {
   message,
   vote,
 } from './schema';
-import { BlockKind } from '@/components/block';
+import type { BlockKind } from '@/components/block';
+import type { VisibilityType } from '@/components/visibility-selector';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -51,10 +52,12 @@ export async function saveChat({
   id,
   userId,
   title,
+  visibility,
 }: {
   id: string;
   userId: string;
   title: string;
+  visibility: VisibilityType;
 }) {
   try {
     return await db.insert(chat).values({
@@ -62,6 +65,7 @@ export async function saveChat({
       createdAt: new Date(),
       userId,
       title,
+      visibility,
     });
   } catch (error) {
     console.error('Failed to save chat in database');

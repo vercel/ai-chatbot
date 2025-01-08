@@ -12,7 +12,7 @@ import { fetcher } from '@/lib/utils';
 import { Block } from './block';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
+import type { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
 
 export function Chat({
@@ -28,7 +28,8 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { mutate } = useSWRConfig();
+  const { mutate, cache } = useSWRConfig();
+  const localVisibility = cache.get(`${id}-visibility`)?.data;
 
   const {
     messages,
@@ -42,7 +43,7 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id, modelId: selectedModelId, visibility: localVisibility },
     initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
