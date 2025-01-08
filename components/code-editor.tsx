@@ -59,9 +59,12 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
         }
       });
 
+      const currentSelection = editorRef.current.state.selection;
+
       const newState = EditorState.create({
         doc: editorRef.current.state.doc,
         extensions: [basicSetup, python(), oneDark, updateListener],
+        selection: currentSelection,
       });
 
       editorRef.current.setState(newState);
@@ -72,7 +75,10 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
     if (editorRef.current && content) {
       const currentContent = editorRef.current.state.doc.toString();
 
-      if (status === 'streaming' || currentContent !== content) {
+      if (
+        status === 'streaming' ||
+        (currentContent.length == 0 && content.length > 0)
+      ) {
         const transaction = editorRef.current.state.update({
           changes: {
             from: 0,
