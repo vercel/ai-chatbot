@@ -124,14 +124,16 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                 consoleOutput.status,
               ) ? (
                 <div className="flex flex-row gap-2">
-                  <div className="animate-spin size-fit self-center">
+                  <div className="animate-spin size-fit self-center mb-auto mt-0.5">
                     <LoaderIcon />
                   </div>
                   <div className="text-muted-foreground">
                     {consoleOutput.status === 'in_progress'
                       ? 'Initializing...'
                       : consoleOutput.status === 'loading_packages'
-                        ? 'Loading Packages...'
+                        ? consoleOutput.contents.map((content) =>
+                            content.type === 'text' ? content.value : null,
+                          )
                         : null}
                   </div>
                 </div>
