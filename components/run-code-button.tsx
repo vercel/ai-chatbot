@@ -6,49 +6,17 @@ import {
   useCallback,
   useState,
   useEffect,
+  memo,
 } from 'react';
-import type { ConsoleOutput, UIBlock } from './block';
+import type { ConsoleOutput, ConsoleOutputContent, UIBlock } from './block';
 import { Button } from './ui/button';
 import { PlayIcon } from './icons';
-
-function detectPythonImports(code: string, pyodide: any): Set<string> {
-  const imports = new Set<string>();
-
-  const importPatterns = [
-    /import\s+(\w+)(?:\s+as\s+\w+)?/g,
-    /from\s+(\w+(?:\.\w+)*)\s+import/g,
-    /import\s+(\w+(?:\.\w+)*)/g,
-  ];
-
-  for (const pattern of importPatterns) {
-    let match: RegExpExecArray | null;
-
-    while (true) {
-      match = pattern.exec(code);
-      if (match === null) break;
-
-      const rootPackage = match[1].split('.')[0];
-      if (rootPackage) {
-        imports.add(rootPackage);
-      }
-    }
-  }
-
-  // Get standard libraries dynamically when initializing Pyodide
-  let standardLibs = new Set<string>();
-  if (pyodide) {
-    const stdLibModules = pyodide.runPython(`
-      import sys
-      list(sys.stdlib_module_names)
-    `);
-    standardLibs = new Set(stdLibModules);
-  }
-
-  return new Set(Array.from(imports).filter((pkg) => !standardLibs.has(pkg)));
-}
+import { useBlockSelector } from '@/hooks/use-block';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `
+    import io
+    import base64
     from matplotlib import pyplot as plt
 
     # Clear any existing plots
@@ -91,19 +59,23 @@ function detectRequiredHandlers(code: string): string[] {
   return handlers;
 }
 
-export function RunCodeButton({
-  block,
+export function PureRunCodeButton({
   setConsoleOutputs,
 }: {
   block: UIBlock;
   setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }) {
-  const [pyodide, setPyodide] = useState<any>(null);
   const isPython = true;
-  const codeContent = block.content;
+  const [pyodide, setPyodide] = useState<any>(null);
+
+  const codeContent = useBlockSelector((state) => state.content);
+  const isBlockStreaming = useBlockSelector(
+    (state) => state.status === 'streaming',
+  );
 
   const loadAndRunPython = useCallback(async () => {
     const runId = generateUUID();
+    const stdOutputs: Array<ConsoleOutputContent> = [];
 
     setConsoleOutputs((outputs) => [
       ...outputs,
@@ -120,41 +92,38 @@ export function RunCodeButton({
       try {
         if (!currentPyodideInstance) {
           // @ts-expect-error - loadPyodide is not defined
-          const newPyodideInstance = await loadPyodide({
+          const newPyodideInstance = await globalThis.loadPyodide({
             indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
           });
 
+          setPyodide(null);
           setPyodide(newPyodideInstance);
           currentPyodideInstance = newPyodideInstance;
         }
 
-        await currentPyodideInstance.runPythonAsync(`
-          import sys, io, gc
-          import base64
+        currentPyodideInstance.setStdout({
+          batched: (output: string) => {
+            stdOutputs.push({
+              type: output.startsWith('data:image/png;base64')
+                ? 'image'
+                : 'text',
+              value: output,
+            });
+          },
+        });
 
-          sys.stdout = io.StringIO()
-        `);
-
-        // Detect and load required packages
-        const requiredPackages = detectPythonImports(
-          codeContent,
-          currentPyodideInstance,
-        );
-
-        if (requiredPackages.size > 0) {
-          setConsoleOutputs((outputs) => [
-            ...outputs.filter((output) => output.id !== runId),
-            {
-              id: runId,
-              contents: [],
-              status: 'loading_packages',
-            },
-          ]);
-
-          await currentPyodideInstance.loadPackage(
-            Array.from(requiredPackages),
-          );
-        }
+        await currentPyodideInstance.loadPackagesFromImports(codeContent, {
+          messageCallback: (message: string) => {
+            setConsoleOutputs((outputs) => [
+              ...outputs.filter((output) => output.id !== runId),
+              {
+                id: runId,
+                contents: [{ type: 'text', value: message }],
+                status: 'loading_packages',
+              },
+            ]);
+          },
+        });
 
         const requiredHandlers = detectRequiredHandlers(codeContent);
         for (const handler of requiredHandlers) {
@@ -173,24 +142,11 @@ export function RunCodeButton({
 
         await currentPyodideInstance.runPythonAsync(codeContent);
 
-        const runOutput = await currentPyodideInstance.runPythonAsync(
-          `sys.stdout.getvalue()`,
-        );
-
-        const runOutputByLines: string[] = runOutput.split('\n');
-
         setConsoleOutputs((outputs) => [
           ...outputs.filter((output) => output.id !== runId),
           {
             id: generateUUID(),
-            contents: runOutputByLines
-              .filter((line) => line.trim().length)
-              .map((line) => ({
-                type: line.startsWith('data:image/png;base64')
-                  ? 'image'
-                  : 'text',
-                value: line,
-              })),
+            contents: stdOutputs.filter((output) => output.value.trim().length),
             status: 'completed',
           },
         ]);
@@ -213,6 +169,8 @@ export function RunCodeButton({
         try {
           pyodide.runPythonAsync(`
             import sys
+            import gc
+
             has_plt = 'matplotlib.pyplot' in sys.modules
 
             if has_plt:
@@ -238,9 +196,15 @@ export function RunCodeButton({
           loadAndRunPython();
         });
       }}
-      disabled={block.status === 'streaming'}
+      disabled={isBlockStreaming}
     >
       <PlayIcon size={18} /> Run
     </Button>
   );
 }
+
+export const RunCodeButton = memo(PureRunCodeButton, (prevProps, nextProps) => {
+  if (prevProps.block.status !== nextProps.block.status) return false;
+
+  return true;
+});
