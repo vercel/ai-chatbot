@@ -53,10 +53,15 @@ export interface UIBlock {
   };
 }
 
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
 export interface ConsoleOutput {
   id: string;
-  status: 'in_progress' | 'completed' | 'failed';
-  content: string | null;
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
 }
 
 function PureBlock({
@@ -431,9 +436,7 @@ function PureBlock({
                 <BlockCloseButton />
 
                 <div className="flex flex-col">
-                  <div className="font-medium">
-                    {document?.title ?? block.title}
-                  </div>
+                  <div className="font-medium">{block.title}</div>
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
