@@ -428,9 +428,7 @@ function PureBlock({
                 <BlockCloseButton />
 
                 <div className="flex flex-col">
-                  <div className="font-medium">
-                    {document?.title ?? block.title}
-                  </div>
+                  <div className="font-medium">{block.title}</div>
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
