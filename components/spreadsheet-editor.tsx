@@ -9,7 +9,16 @@ import React, {
   memo,
 } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDownIcon, PlusIcon, UploadIcon } from './icons';
+import { ChevronDownIcon, PlusIcon } from './icons';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface SpreadsheetData {
   headers: string[];
@@ -56,8 +65,27 @@ const PureSpreadsheetEditor = ({
     }
   });
 
+  // Track if we're currently processing a content update
+  const isProcessingUpdate = useRef(false);
+  // Track if we need to reprocess after current update
+  const needsReprocess = useRef(false);
+  // Debounce timer for saves
+  const saveTimer = useRef<NodeJS.Timeout>();
+  // Last saved content
+  const lastSavedContent = useRef<string>(content);
+  // Pending save
+  const pendingSave = useRef<SpreadsheetData | null>(null);
+
   // Memoize content update handler
   const handleContentUpdate = useCallback((newContent: string) => {
+    if (newContent === lastSavedContent.current) return;
+
+    if (isProcessingUpdate.current) {
+      needsReprocess.current = true;
+      return;
+    }
+
+    isProcessingUpdate.current = true;
     try {
       const parsed = JSON.parse(newContent);
       if (parsed && typeof parsed === 'object') {
@@ -84,13 +112,49 @@ const PureSpreadsheetEditor = ({
             }
             return normalizedRow.slice(0, newData.headers.length);
           });
+          lastSavedContent.current = JSON.stringify(newData);
           return newData;
         });
       }
     } catch (error) {
       console.error('Failed to parse updated content:', error);
+    } finally {
+      isProcessingUpdate.current = false;
+      if (needsReprocess.current) {
+        needsReprocess.current = false;
+        handleContentUpdate(newContent);
+      }
     }
-  }, []); // No dependencies needed as we use functional updates
+  }, []);
+
+  // Debounced save handler with queue
+  const debouncedSave = useCallback(
+    (newData: SpreadsheetData, shouldDebounce: boolean) => {
+      pendingSave.current = newData;
+
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+      }
+
+      const save = () => {
+        if (!pendingSave.current) return;
+
+        const contentToSave = JSON.stringify(pendingSave.current);
+        if (contentToSave === lastSavedContent.current) return;
+
+        lastSavedContent.current = contentToSave;
+        saveContent(contentToSave, shouldDebounce);
+        pendingSave.current = null;
+      };
+
+      if (shouldDebounce) {
+        saveTimer.current = setTimeout(save, 5000);
+      } else {
+        save();
+      }
+    },
+    [saveContent],
+  );
 
   useEffect(() => {
     const currentContent = JSON.stringify({
@@ -98,10 +162,30 @@ const PureSpreadsheetEditor = ({
       rows: data.rows,
     });
 
-    if (content && content !== currentContent) {
+    if (
+      content &&
+      content !== currentContent &&
+      content !== lastSavedContent.current &&
+      !isProcessingUpdate.current
+    ) {
       handleContentUpdate(content);
     }
   }, [content, handleContentUpdate]);
+
+  useEffect(() => {
+    // Cleanup save timer and perform final save on unmount
+    return () => {
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+      }
+      if (pendingSave.current) {
+        const contentToSave = JSON.stringify(pendingSave.current);
+        if (contentToSave !== lastSavedContent.current) {
+          saveContent(contentToSave, false);
+        }
+      }
+    };
+  }, [saveContent]);
 
   const [editingCell, setEditingCell] = useState<{
     row: number;
@@ -116,8 +200,6 @@ const PureSpreadsheetEditor = ({
 
   const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
-  const [showColumnMenu, setShowColumnMenu] = useState<number | null>(null);
-  const [showRowMenu, setShowRowMenu] = useState<number | null>(null);
 
   const editorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -131,11 +213,11 @@ const PureSpreadsheetEditor = ({
           rows: [...prevData.rows],
         };
         newData.headers[index] = value;
-        saveContent(JSON.stringify(newData), true);
+        debouncedSave(newData, true);
         return newData;
       });
     },
-    [saveContent],
+    [debouncedSave],
   );
 
   const handleCellChange = useCallback(
@@ -149,53 +231,119 @@ const PureSpreadsheetEditor = ({
           newData.rows[rowIndex] = [];
         }
         newData.rows[rowIndex][colIndex] = value;
-        saveContent(JSON.stringify(newData), true);
+        debouncedSave(newData, true);
         return newData;
       });
     },
-    [saveContent],
+    [debouncedSave],
   );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
-      if (!selectedCell) return;
+      if (!selectedCell && !editingCell) return;
 
-      const { row, col } = selectedCell;
-      let newRow = row;
-      let newCol = col;
+      const currentRow = editingCell?.row ?? selectedCell?.row ?? 0;
+      const currentCol = editingCell?.col ?? selectedCell?.col ?? 0;
+      let newRow = currentRow;
+      let newCol = currentCol;
 
       switch (e.key) {
         case 'ArrowUp':
-          newRow = Math.max(0, row - 1);
+          if (editingCell) return; // Don't navigate while editing
+          e.preventDefault();
+          newRow = Math.max(0, currentRow - 1);
           break;
         case 'ArrowDown':
-          newRow = Math.min(data.rows.length - 1, row + 1);
+          if (editingCell) return; // Don't navigate while editing
+          e.preventDefault();
+          newRow = Math.min(data.rows.length - 1, currentRow + 1);
           break;
         case 'ArrowLeft':
-          newCol = Math.max(0, col - 1);
+          if (editingCell) return; // Don't navigate while editing
+          e.preventDefault();
+          newCol = Math.max(0, currentCol - 1);
           break;
         case 'ArrowRight':
-          newCol = Math.min(data.headers.length - 1, col + 1);
+          if (editingCell) return; // Don't navigate while editing
+          e.preventDefault();
+          newCol = Math.min(data.headers.length - 1, currentCol + 1);
           break;
         case 'Enter':
-          if (!editingCell) {
-            setEditingCell({ row, col, value: data.rows[row][col] });
+          e.preventDefault();
+          if (editingCell) {
+            // If editing, save and move down
+            handleCellChange(currentRow, currentCol, editingCell.value);
+            setEditingCell(null);
+            newRow = Math.min(data.rows.length - 1, currentRow + 1);
+          } else {
+            // If not editing, start editing current cell
+            setEditingCell({
+              row: currentRow,
+              col: currentCol,
+              value: data.rows[currentRow][currentCol],
+            });
+            return;
+          }
+          break;
+        case 'Tab':
+          e.preventDefault();
+          if (editingCell) {
+            handleCellChange(currentRow, currentCol, editingCell.value);
+            setEditingCell(null);
+          }
+          if (e.shiftKey) {
+            if (currentCol > 0) {
+              newCol = currentCol - 1;
+            } else if (currentRow > 0) {
+              newRow = currentRow - 1;
+              newCol = data.headers.length - 1;
+            }
+          } else {
+            if (currentCol < data.headers.length - 1) {
+              newCol = currentCol + 1;
+            } else if (currentRow < data.rows.length - 1) {
+              newRow = currentRow + 1;
+              newCol = 0;
+            }
           }
           break;
         case 'Escape':
-          setEditingCell(null);
-          break;
+          if (editingCell) {
+            e.preventDefault();
+            setEditingCell(null);
+          }
+          return;
         default:
+          if (
+            !editingCell &&
+            e.key.length === 1 &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+          ) {
+            // Start editing with the pressed key
+            e.preventDefault();
+            setEditingCell({
+              row: currentRow,
+              col: currentCol,
+              value: e.key,
+            });
+            return;
+          }
           return;
       }
 
-      if (newRow !== row || newCol !== col) {
-        e.preventDefault();
+      if (newRow !== currentRow || newCol !== currentCol) {
         setSelectedCell({ row: newRow, col: newCol });
-        setEditingCell(null);
       }
     },
-    [selectedCell, data.rows.length, data.headers.length, editingCell],
+    [
+      selectedCell,
+      editingCell,
+      data.rows.length,
+      data.headers.length,
+      handleCellChange,
+    ],
   );
 
   const addColumn = useCallback(
@@ -225,11 +373,11 @@ const PureSpreadsheetEditor = ({
         );
         newData.rows.forEach((row) => row.splice(insertAt, 0, ''));
 
-        saveContent(JSON.stringify(newData), true);
+        debouncedSave(newData, true);
         return newData;
       });
     },
-    [saveContent],
+    [debouncedSave],
   );
 
   const deleteColumn = useCallback(
@@ -245,11 +393,11 @@ const PureSpreadsheetEditor = ({
         newData.headers.splice(index, 1);
         newData.rows.forEach((row) => row.splice(index, 1));
 
-        saveContent(JSON.stringify(newData), true);
+        debouncedSave(newData, true);
         return newData;
       });
     },
-    [saveContent],
+    [debouncedSave],
   );
 
   const addRow = useCallback(
@@ -267,11 +415,11 @@ const PureSpreadsheetEditor = ({
           newData.rows.push(newRow);
         }
 
-        saveContent(JSON.stringify(newData), true);
+        debouncedSave(newData, true);
         return newData;
       });
     },
-    [saveContent],
+    [debouncedSave],
   );
 
   const deleteRow = useCallback(
@@ -285,11 +433,11 @@ const PureSpreadsheetEditor = ({
         };
         newData.rows.splice(index, 1);
 
-        saveContent(JSON.stringify(newData), true);
+        debouncedSave(newData, true);
         return newData;
       });
     },
-    [saveContent],
+    [debouncedSave],
   );
 
   if (!isCurrentVersion || status === 'streaming') {
@@ -348,7 +496,7 @@ const PureSpreadsheetEditor = ({
                 onMouseLeave={() => setHoveredColumn(null)}
               >
                 <div className="flex items-center justify-between">
-                  <input
+                  <Input
                     type="text"
                     value={header}
                     onChange={(e) => {
@@ -362,59 +510,60 @@ const PureSpreadsheetEditor = ({
                       e.stopPropagation();
                       e.target.select();
                     }}
-                    className="w-full bg-transparent focus:outline-none text-center"
+                    className={cn(
+                      'w-full text-center',
+                      'h-auto px-0 py-0',
+                      'border-0 rounded-none',
+                      'bg-transparent',
+                      'focus-visible:ring-0 focus-visible:ring-offset-0',
+                      'placeholder:text-muted-foreground',
+                      'transition-none animate-none',
+                      'text-sm leading-none font-medium',
+                    )}
                   />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowColumnMenu(showColumnMenu === i ? null : i);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ChevronDownIcon size={16} />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 h-6 w-6"
+                      >
+                        <ChevronDownIcon size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => addColumn(i)}>
+                        Insert column left
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => addColumn(i + 1)}>
+                        Insert column right
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => deleteColumn(i)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        Delete column
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                {showColumnMenu === i && (
-                  <div className="absolute top-full left-0 mt-1 w-40 bg-popover border rounded-md shadow-md z-10">
-                    <button
-                      onClick={() => {
-                        addColumn(i);
-                        setShowColumnMenu(null);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted"
-                    >
-                      Insert column left
-                    </button>
-                    <button
-                      onClick={() => {
-                        addColumn(i + 1);
-                        setShowColumnMenu(null);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted"
-                    >
-                      Insert column right
-                    </button>
-                    <button
-                      onClick={() => {
-                        deleteColumn(i);
-                        setShowColumnMenu(null);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted text-destructive"
-                    >
-                      Delete column
-                    </button>
-                  </div>
-                )}
               </th>
             ))}
             <th className="w-10 bg-muted border p-2">
-              <button
-                onClick={() => addColumn()}
-                className="w-6 h-6 flex items-center justify-center hover:bg-primary/10 rounded transition-colors"
-                title="Add column"
-              >
-                <PlusIcon size={16} />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => addColumn()}
+                    className="w-6 h-6"
+                  >
+                    <PlusIcon size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Add column</TooltipContent>
+              </Tooltip>
             </th>
           </tr>
         </thead>
@@ -429,46 +578,33 @@ const PureSpreadsheetEditor = ({
               <td className="border p-2 bg-muted text-center text-sm text-muted-foreground relative group">
                 <div className="flex items-center justify-between">
                   <span>{rowIndex + 1}</span>
-                  <button
-                    onClick={() =>
-                      setShowRowMenu(showRowMenu === rowIndex ? null : rowIndex)
-                    }
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ChevronDownIcon size={16} />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 h-6 w-6"
+                      >
+                        <ChevronDownIcon size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem onClick={() => addRow(rowIndex)}>
+                        Insert row above
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => addRow(rowIndex + 1)}>
+                        Insert row below
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => deleteRow(rowIndex)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        Delete row
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                {showRowMenu === rowIndex && (
-                  <div className="absolute top-0 left-full ml-1 w-40 bg-popover border rounded-md shadow-md z-10">
-                    <button
-                      onClick={() => {
-                        addRow(rowIndex);
-                        setShowRowMenu(null);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted"
-                    >
-                      Insert row above
-                    </button>
-                    <button
-                      onClick={() => {
-                        addRow(rowIndex + 1);
-                        setShowRowMenu(null);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted"
-                    >
-                      Insert row below
-                    </button>
-                    <button
-                      onClick={() => {
-                        deleteRow(rowIndex);
-                        setShowRowMenu(null);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted text-destructive"
-                    >
-                      Delete row
-                    </button>
-                  </div>
-                )}
               </td>
               {row.map((cell, colIndex) => (
                 <td
@@ -478,6 +614,7 @@ const PureSpreadsheetEditor = ({
                     hoveredColumn === colIndex && 'bg-muted/5',
                     selectedCell?.row === rowIndex &&
                       selectedCell?.col === colIndex && [
+                        // This needs some work to get it to animate properly
                         'before:absolute before:inset-[-1px] before:pointer-events-none',
                         'before:border-2 before:border-primary before:rounded-sm',
                         'before:origin-center before:transition-all before:duration-200',
@@ -500,7 +637,7 @@ const PureSpreadsheetEditor = ({
                 >
                   {editingCell?.row === rowIndex &&
                   editingCell?.col === colIndex ? (
-                    <input
+                    <Input
                       ref={inputRef}
                       type="text"
                       value={editingCell.value}
@@ -542,11 +679,23 @@ const PureSpreadsheetEditor = ({
                           });
                         }
                       }}
-                      className="w-full bg-transparent focus:outline-none"
+                      className={cn(
+                        'w-full',
+                        'h-[1.5rem] px-0',
+                        'border-0 rounded-none',
+                        'bg-transparent',
+                        'focus-visible:ring-0 focus-visible:ring-offset-0',
+                        'placeholder:text-muted-foreground',
+                        'transition-none animate-none',
+                        'text-sm leading-none',
+                        'flex items-center',
+                      )}
                       autoFocus
                     />
                   ) : (
-                    <div className="min-h-[1.5rem]">{cell}</div>
+                    <div className="h-[1.5rem] text-sm leading-none flex items-center">
+                      {cell}
+                    </div>
                   )}
                 </td>
               ))}
