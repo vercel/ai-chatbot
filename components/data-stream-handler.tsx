@@ -12,6 +12,7 @@ type DataStreamDelta = {
   type:
     | 'text-delta'
     | 'code-delta'
+    | 'spreadsheet-delta'
     | 'title'
     | 'id'
     | 'suggestion'
@@ -90,6 +91,13 @@ export function DataStreamHandler({ id }: { id: string }) {
                 draftBlock.content.length < 310
                   ? true
                   : draftBlock.isVisible,
+              status: 'streaming',
+            };
+          case 'spreadsheet-delta':
+            return {
+              ...draftBlock,
+              content: delta.content as string,
+              isVisible: true,
               status: 'streaming',
             };
 
