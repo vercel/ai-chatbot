@@ -33,6 +33,7 @@ import {
   LogsIcon,
   MessageIcon,
   PenIcon,
+  SparklesIcon,
   StopIcon,
   SummarizeIcon,
   TerminalIcon,
@@ -327,6 +328,18 @@ const toolsByBlockKind: Record<
       icon: <LogsIcon />,
     },
   ],
+  spreadsheet: [
+    {
+      type: 'final-polish',
+      description: 'Format and clean data',
+      icon: <SparklesIcon />,
+    },
+    {
+      type: 'request-suggestions',
+      description: 'Analyze and visualize data',
+      icon: <MessageIcon />,
+    },
+  ],
 };
 
 export const Tools = ({
@@ -347,7 +360,7 @@ export const Tools = ({
   ) => Promise<string | null | undefined>;
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  blockKind: 'text' | 'code';
+  blockKind: BlockKind;
 }) => {
   const [primaryTool, ...secondaryTools] = toolsByBlockKind[blockKind];
 
@@ -407,7 +420,7 @@ const PureToolbar = ({
   ) => Promise<string | null | undefined>;
   stop: () => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
-  blockKind: 'text' | 'code';
+  blockKind: BlockKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();

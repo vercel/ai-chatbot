@@ -127,7 +127,7 @@ export async function POST(request: Request) {
               'Create a document for a writing activity. This tool will call other functions that will generate the contents of the document based on the title and kind.',
             parameters: z.object({
               title: z.string(),
-              kind: z.enum(['text', 'code']),
+              kind: z.enum(['text', 'code', 'spreadsheet']),
             }),
             execute: async ({ title, kind }) => {
               const id = generateUUID();
@@ -203,6 +203,57 @@ export async function POST(request: Request) {
                     }
                   }
                 }
+
+                dataStream.writeData({ type: 'finish', content: '' });
+              } else if (kind === 'spreadsheet') {
+                const { fullStream } = streamObject({
+                  model: customModel(model.apiIdentifier),
+                  system: `You are a spreadsheet initialization assistant. Create a spreadsheet structure based on the title/description and the chat history.
+                    - Create meaningful column headers based on the context and chat history
+                    - Keep data types consistent within columns
+                    - If the title doesn't suggest specific columns, create a general-purpose structure`,
+                  prompt: title,
+                  schema: z.object({
+                    headers: z.array(z.string()).describe('Column headers for the spreadsheet'),
+                    rows: z.array(z.array(z.string())).describe('Data rows'),
+                  }),
+                });
+
+
+                let spreadsheetData: { headers: string[]; rows: string[][] } = {
+                  headers: [],
+                  rows: [
+                    [],
+                    [],
+                  ],
+                };
+
+                for await (const delta of fullStream) {
+                  const { type } = delta;
+
+                  if (type === 'object') {
+                    const { object } = delta;
+                    if (object && Array.isArray(object.headers) && Array.isArray(object.rows)) {
+                      // Validate and normalize the data
+                      const headers = object.headers.map(h => String(h || ''));
+                      const rows = object.rows.map((row) => {
+                        // Handle undefined row by creating empty array
+                        const safeRow = (row || []).map(cell => String(cell || ''));
+                        // Ensure row length matches headers
+                        while (safeRow.length < headers.length) safeRow.push('');
+                        return safeRow.slice(0, headers.length);
+                      });
+
+                      spreadsheetData = { headers, rows };
+                    }
+                  }
+                }
+                
+                draftText = JSON.stringify(spreadsheetData);
+                dataStream.writeData({
+                  type: 'spreadsheet-delta',
+                  content: draftText,
+                });
 
                 dataStream.writeData({ type: 'finish', content: '' });
               }
@@ -305,6 +356,70 @@ export async function POST(request: Request) {
                       });
 
                       draftText = code;
+                    }
+                  }
+                }
+
+                dataStream.writeData({ type: 'finish', content: '' });
+              } else if (document.kind === 'spreadsheet') {
+                // Parse the current content as spreadsheet data
+                let currentSpreadsheetData = { headers: [], rows: [] };
+                try {
+                  if (currentContent) {
+                    currentSpreadsheetData = JSON.parse(currentContent);
+                  }
+                } catch {
+                  // Keep default empty structure
+                }
+
+                const { fullStream } = streamObject({
+                  model: customModel(model.apiIdentifier),
+                  system: `You are a spreadsheet manipulation assistant. The current spreadsheet has the following structure:
+                    Headers: ${JSON.stringify(currentSpreadsheetData.headers)}
+                    Current rows: ${JSON.stringify(currentSpreadsheetData.rows)}
+                    
+                    When modifying the spreadsheet:
+                    1. You can add, remove, or modify columns (headers)
+                    2. When adding columns, add empty values to existing rows for the new columns
+                    3. When removing columns, remove the corresponding values from all rows
+                    4. Return the COMPLETE spreadsheet data including ALL headers and rows
+                    5. Format response as valid JSON with 'headers' and 'rows' arrays
+                    
+                    Example response format:
+                    {"headers":["Name","Email","Phone"],"rows":[["John","john@example.com","123-456-7890"],["Jane","jane@example.com","098-765-4321"]]}`,
+                  prompt: `${description}\n\nChat History:\n${coreMessages.map(msg => msg.content).join('\n')}`,
+                  schema: z.object({
+                    headers: z.array(z.string()).describe('Column headers for the spreadsheet'),
+                    rows: z.array(z.array(z.string())).describe('Sample data rows'),
+                  }),
+                });
+
+                let updatedContent = '';
+                draftText = JSON.stringify(currentSpreadsheetData);
+
+                for await (const delta of fullStream) {
+                  const { type } = delta;
+
+                  if (type === 'object') {
+                    const { object } = delta;
+                    if (object && Array.isArray(object.headers) && Array.isArray(object.rows)) {
+                      // Validate and normalize the data
+                      const headers = object.headers.map((h: any) => String(h || ''));
+                      const rows = object.rows.map((row: (string | undefined)[] | undefined) => {
+                        const normalizedRow = (row || []).map((cell: any) => String(cell || ''));
+                        // Ensure row length matches new headers length
+                        while (normalizedRow.length < headers.length) {
+                          normalizedRow.push('');
+                        }
+                        return normalizedRow.slice(0, headers.length);
+                      });
+                      
+                      const newData = { headers, rows };
+                      draftText = JSON.stringify(newData);
+                      dataStream.writeData({
+                        type: 'spreadsheet-delta',
+                        content: draftText,
+                      });
                     }
                   }
                 }
