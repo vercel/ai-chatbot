@@ -238,113 +238,48 @@ const PureSpreadsheetEditor = ({
     [debouncedSave],
   );
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLDivElement>) => {
-      if (!selectedCell && !editingCell) return;
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!selectedCell) return;
 
-      const currentRow = editingCell?.row ?? selectedCell?.row ?? 0;
-      const currentCol = editingCell?.col ?? selectedCell?.col ?? 0;
-      let newRow = currentRow;
-      let newCol = currentCol;
+    const { row, col } = selectedCell;
+    let newRow = row;
+    let newCol = col;
 
-      switch (e.key) {
-        case 'ArrowUp':
-          if (editingCell) return; // Don't navigate while editing
+    switch (e.key) {
+      case 'ArrowUp':
+        newRow = Math.max(0, row - 1);
+        break;
+      case 'ArrowDown':
+        newRow = Math.min(data.rows.length - 1, row + 1);
+        break;
+      case 'ArrowLeft':
+        newCol = Math.max(0, col - 1);
+        break;
+      case 'ArrowRight':
+        newCol = Math.min(data.headers.length - 1, col + 1);
+        break;
+      case 'Enter':
+        if (!editingCell) {
+          setEditingCell({ row, col, value: data.rows[row][col] });
           e.preventDefault();
-          newRow = Math.max(0, currentRow - 1);
-          break;
-        case 'ArrowDown':
-          if (editingCell) return; // Don't navigate while editing
-          e.preventDefault();
-          newRow = Math.min(data.rows.length - 1, currentRow + 1);
-          break;
-        case 'ArrowLeft':
-          if (editingCell) return; // Don't navigate while editing
-          e.preventDefault();
-          newCol = Math.max(0, currentCol - 1);
-          break;
-        case 'ArrowRight':
-          if (editingCell) return; // Don't navigate while editing
-          e.preventDefault();
-          newCol = Math.min(data.headers.length - 1, currentCol + 1);
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (editingCell) {
-            // If editing, save and move down
-            handleCellChange(currentRow, currentCol, editingCell.value);
-            setEditingCell(null);
-            newRow = Math.min(data.rows.length - 1, currentRow + 1);
-          } else {
-            // If not editing, start editing current cell
-            setEditingCell({
-              row: currentRow,
-              col: currentCol,
-              value: data.rows[currentRow][currentCol],
-            });
-            return;
-          }
-          break;
-        case 'Tab':
-          e.preventDefault();
-          if (editingCell) {
-            handleCellChange(currentRow, currentCol, editingCell.value);
-            setEditingCell(null);
-          }
-          if (e.shiftKey) {
-            if (currentCol > 0) {
-              newCol = currentCol - 1;
-            } else if (currentRow > 0) {
-              newRow = currentRow - 1;
-              newCol = data.headers.length - 1;
-            }
-          } else {
-            if (currentCol < data.headers.length - 1) {
-              newCol = currentCol + 1;
-            } else if (currentRow < data.rows.length - 1) {
-              newRow = currentRow + 1;
-              newCol = 0;
-            }
-          }
-          break;
-        case 'Escape':
-          if (editingCell) {
-            e.preventDefault();
-            setEditingCell(null);
-          }
-          return;
-        default:
-          if (
-            !editingCell &&
-            e.key.length === 1 &&
-            !e.ctrlKey &&
-            !e.metaKey &&
-            !e.altKey
-          ) {
-            // Start editing with the pressed key
-            e.preventDefault();
-            setEditingCell({
-              row: currentRow,
-              col: currentCol,
-              value: e.key,
-            });
-            return;
-          }
-          return;
-      }
+        }
+        break;
+      case 'Tab':
+        e.preventDefault();
+        newCol = (col + 1) % data.headers.length;
+        if (newCol === 0) {
+          newRow = Math.min(data.rows.length - 1, row + 1);
+        }
+        break;
+      default:
+        if (!editingCell && e.key.length === 1) {
+          setEditingCell({ row, col, value: '' });
+        }
+        return;
+    }
 
-      if (newRow !== currentRow || newCol !== currentCol) {
-        setSelectedCell({ row: newRow, col: newCol });
-      }
-    },
-    [
-      selectedCell,
-      editingCell,
-      data.rows.length,
-      data.headers.length,
-      handleCellChange,
-    ],
-  );
+    setSelectedCell({ row: newRow, col: newCol });
+  };
 
   const addColumn = useCallback(
     (index?: number) => {
@@ -505,10 +440,21 @@ const PureSpreadsheetEditor = ({
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      setSelectedCell(null);
+                      setEditingCell(null);
                     }}
                     onFocus={(e) => {
                       e.stopPropagation();
+                      setSelectedCell(null);
+                      setEditingCell(null);
                       e.target.select();
+                    }}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === 'Enter' || e.key === 'Escape') {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
                     }}
                     className={cn(
                       'w-full text-center',

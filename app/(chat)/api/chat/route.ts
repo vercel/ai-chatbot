@@ -212,7 +212,10 @@ export async function POST(request: Request) {
                     - Create meaningful column headers based on the context and chat history
                     - Keep data types consistent within columns
                     - If the title doesn't suggest specific columns, create a general-purpose structure`,
-                  prompt: title,
+                  prompt:
+                    title +
+                    '\n\nChat History:\n' +
+                    coreMessages.map((msg) => msg.content).join('\n'),
                   schema: z.object({
                     headers: z
                       .array(z.string())
