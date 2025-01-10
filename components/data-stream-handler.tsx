@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useChat } from "ai/react";
-import { useEffect, useRef } from "react";
-import { BlockKind } from "./block";
-import { Suggestion } from "@/lib/db/schema";
-import { initialBlockData, useBlock } from "@/hooks/use-block";
-import { useUserMessageId } from "@/hooks/use-user-message-id";
-import { cx } from "class-variance-authority";
+import { useChat } from 'ai/react';
+import { useEffect, useRef } from 'react';
+import { BlockKind } from './block';
+import { Suggestion } from '@/lib/db/schema';
+import { initialBlockData, useBlock } from '@/hooks/use-block';
+import { useUserMessageId } from '@/hooks/use-user-message-id';
+import { cx } from 'class-variance-authority';
 
 type DataStreamDelta = {
   type:
-    | "text-delta"
-    | "code-delta"
-    | "spreadsheet-delta"
-    | "title"
-    | "id"
-    | "suggestion"
-    | "clear"
-    | "finish"
-    | "user-message-id"
-    | "kind";
+    | 'text-delta'
+    | 'code-delta'
+    | 'spreadsheet-delta'
+    | 'title'
+    | 'id'
+    | 'suggestion'
+    | 'clear'
+    | 'finish'
+    | 'user-message-id'
+    | 'kind';
   content: string | Suggestion;
 };
 
@@ -36,82 +36,82 @@ export function DataStreamHandler({ id }: { id: string }) {
     lastProcessedIndex.current = dataStream.length - 1;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
-      if (delta.type === "user-message-id") {
+      if (delta.type === 'user-message-id') {
         setUserMessageIdFromServer(delta.content as string);
         return;
       }
 
       setBlock((draftBlock) => {
         if (!draftBlock) {
-          return { ...initialBlockData, status: "streaming" };
+          return { ...initialBlockData, status: 'streaming' };
         }
 
         switch (delta.type) {
-          case "id":
+          case 'id':
             return {
               ...draftBlock,
               documentId: delta.content as string,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "title":
+          case 'title':
             return {
               ...draftBlock,
               title: delta.content as string,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "kind":
+          case 'kind':
             return {
               ...draftBlock,
               kind: delta.content as BlockKind,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "text-delta":
+          case 'text-delta':
             return {
               ...draftBlock,
               content: draftBlock.content + (delta.content as string),
               isVisible:
-                draftBlock.status === "streaming" &&
+                draftBlock.status === 'streaming' &&
                 draftBlock.content.length > 400 &&
                 draftBlock.content.length < 450
                   ? true
                   : draftBlock.isVisible,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "code-delta":
+          case 'code-delta':
             return {
               ...draftBlock,
               content: delta.content as string,
               isVisible:
-                draftBlock.status === "streaming" &&
+                draftBlock.status === 'streaming' &&
                 draftBlock.content.length > 300 &&
                 draftBlock.content.length < 310
                   ? true
                   : draftBlock.isVisible,
-              status: "streaming",
+              status: 'streaming',
             };
-          case "spreadsheet-delta":
+          case 'spreadsheet-delta':
             return {
               ...draftBlock,
               content: delta.content as string,
               isVisible: true,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "clear":
+          case 'clear':
             return {
               ...draftBlock,
-              content: "",
-              status: "streaming",
+              content: '',
+              status: 'streaming',
             };
 
-          case "finish":
+          case 'finish':
             return {
               ...draftBlock,
-              status: "idle",
+              status: 'idle',
             };
 
           default:

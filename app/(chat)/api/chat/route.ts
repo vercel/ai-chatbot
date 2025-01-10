@@ -214,18 +214,16 @@ export async function POST(request: Request) {
                     - If the title doesn't suggest specific columns, create a general-purpose structure`,
                   prompt: title,
                   schema: z.object({
-                    headers: z.array(z.string()).describe('Column headers for the spreadsheet'),
+                    headers: z
+                      .array(z.string())
+                      .describe('Column headers for the spreadsheet'),
                     rows: z.array(z.array(z.string())).describe('Data rows'),
                   }),
                 });
 
-
                 let spreadsheetData: { headers: string[]; rows: string[][] } = {
                   headers: [],
-                  rows: [
-                    [],
-                    [],
-                  ],
+                  rows: [[], []],
                 };
 
                 for await (const delta of fullStream) {
@@ -233,14 +231,23 @@ export async function POST(request: Request) {
 
                   if (type === 'object') {
                     const { object } = delta;
-                    if (object && Array.isArray(object.headers) && Array.isArray(object.rows)) {
+                    if (
+                      object &&
+                      Array.isArray(object.headers) &&
+                      Array.isArray(object.rows)
+                    ) {
                       // Validate and normalize the data
-                      const headers = object.headers.map(h => String(h || ''));
+                      const headers = object.headers.map((h) =>
+                        String(h || ''),
+                      );
                       const rows = object.rows.map((row) => {
                         // Handle undefined row by creating empty array
-                        const safeRow = (row || []).map(cell => String(cell || ''));
+                        const safeRow = (row || []).map((cell) =>
+                          String(cell || ''),
+                        );
                         // Ensure row length matches headers
-                        while (safeRow.length < headers.length) safeRow.push('');
+                        while (safeRow.length < headers.length)
+                          safeRow.push('');
                         return safeRow.slice(0, headers.length);
                       });
 
@@ -248,7 +255,7 @@ export async function POST(request: Request) {
                     }
                   }
                 }
-                
+
                 draftText = JSON.stringify(spreadsheetData);
                 dataStream.writeData({
                   type: 'spreadsheet-delta',
@@ -387,10 +394,14 @@ export async function POST(request: Request) {
                     
                     Example response format:
                     {"headers":["Name","Email","Phone"],"rows":[["John","john@example.com","123-456-7890"],["Jane","jane@example.com","098-765-4321"]]}`,
-                  prompt: `${description}\n\nChat History:\n${coreMessages.map(msg => msg.content).join('\n')}`,
+                  prompt: `${description}\n\nChat History:\n${coreMessages.map((msg) => msg.content).join('\n')}`,
                   schema: z.object({
-                    headers: z.array(z.string()).describe('Column headers for the spreadsheet'),
-                    rows: z.array(z.array(z.string())).describe('Sample data rows'),
+                    headers: z
+                      .array(z.string())
+                      .describe('Column headers for the spreadsheet'),
+                    rows: z
+                      .array(z.array(z.string()))
+                      .describe('Sample data rows'),
                   }),
                 });
 
@@ -402,18 +413,28 @@ export async function POST(request: Request) {
 
                   if (type === 'object') {
                     const { object } = delta;
-                    if (object && Array.isArray(object.headers) && Array.isArray(object.rows)) {
+                    if (
+                      object &&
+                      Array.isArray(object.headers) &&
+                      Array.isArray(object.rows)
+                    ) {
                       // Validate and normalize the data
-                      const headers = object.headers.map((h: any) => String(h || ''));
-                      const rows = object.rows.map((row: (string | undefined)[] | undefined) => {
-                        const normalizedRow = (row || []).map((cell: any) => String(cell || ''));
-                        // Ensure row length matches new headers length
-                        while (normalizedRow.length < headers.length) {
-                          normalizedRow.push('');
-                        }
-                        return normalizedRow.slice(0, headers.length);
-                      });
-                      
+                      const headers = object.headers.map((h: any) =>
+                        String(h || ''),
+                      );
+                      const rows = object.rows.map(
+                        (row: (string | undefined)[] | undefined) => {
+                          const normalizedRow = (row || []).map((cell: any) =>
+                            String(cell || ''),
+                          );
+                          // Ensure row length matches new headers length
+                          while (normalizedRow.length < headers.length) {
+                            normalizedRow.push('');
+                          }
+                          return normalizedRow.slice(0, headers.length);
+                        },
+                      );
+
                       const newData = { headers, rows };
                       draftText = JSON.stringify(newData);
                       dataStream.writeData({
