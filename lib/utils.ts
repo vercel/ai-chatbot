@@ -120,6 +120,7 @@ export function convertToUIMessages(
       role: message.role as Message['role'],
       content: textContent,
       toolInvocations,
+      createdAt: message.createdAt ? new Date(message.createdAt) : undefined,
     });
 
     return chatMessages;
