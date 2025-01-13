@@ -75,10 +75,7 @@ export class LangChainService {
       filter: { userId: userId },
       k: 30, // Number of results to return
     });
-
   }
-
-
 
   async ingestDocument(text: string, metadata: Record<string, any> = {}) {
     console.log("📥 Starting document ingestion");
@@ -142,6 +139,23 @@ export class LangChainService {
       return results;
     } catch (error) {
       console.error("❌ Error in similarity search:", error);
+      throw error;
+    }
+  }
+
+  async deleteUserDocuments(userId: string) {
+    try {
+      console.log(`🗑️ Deleting documents for user: ${userId}`);
+      const index = this.pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
+
+      await index.deleteMany({
+        filter: { userId: userId },
+      });
+
+      console.log(`✅ Successfully deleted documents for user: ${userId}`);
+      return true;
+    } catch (error) {
+      console.error("❌ Error deleting user documents:", error);
       throw error;
     }
   }
