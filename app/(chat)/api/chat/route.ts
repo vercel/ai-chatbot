@@ -25,6 +25,7 @@ import {
 } from "@/lib/utils";
 import { traceable } from "langsmith/traceable";
 import { generateTitleFromUserMessage } from "../../actions";
+import { openai } from "@ai-sdk/openai";
 
 export const maxDuration = 60;
 
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
         execute: async (dataStream) => {
           await langchainService.initialize(session.user!.bubbleUserId);
           const result = streamText({
-            model: customModel(model.apiIdentifier),
+            model: openai("gpt-4o"),
             system: systemPrompt,
             messages: coreMessages,
             maxSteps: 5,
@@ -167,12 +168,9 @@ export async function POST(request: Request) {
         chatId: id,
         userId: session.user.id,
         email: session.user.email,
-        model: model.apiIdentifier,
       },
     }
   );
-
-  console.log("Using model:", model.apiIdentifier);
 
   return await chatOperation();
 }
