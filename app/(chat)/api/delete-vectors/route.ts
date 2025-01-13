@@ -7,6 +7,11 @@ const deleteSchema = z.object({
 });
 
 export async function DELETE(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.API_KEY}`) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { userId } = deleteSchema.parse(body);
