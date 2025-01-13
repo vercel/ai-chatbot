@@ -1,5 +1,12 @@
 import { cn } from '@/lib/utils';
-import { ClockRewind, CopyIcon, RedoIcon, UndoIcon } from './icons';
+import {
+  ClockRewind,
+  CopyIcon,
+  RedoIcon,
+  UndoIcon,
+  ArrowUpIcon,
+  DownloadIcon,
+} from './icons';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useCopyToClipboard } from 'usehooks-ts';
@@ -7,6 +14,7 @@ import { toast } from 'sonner';
 import { ConsoleOutput, UIBlock } from './block';
 import { Dispatch, memo, SetStateAction } from 'react';
 import { RunCodeButton } from './run-code-button';
+import { exportToCSV } from '@/lib/spreadsheet';
 
 interface BlockActionsProps {
   block: UIBlock;
@@ -27,10 +35,36 @@ function PureBlockActions({
 }: BlockActionsProps) {
   const [_, copyToClipboard] = useCopyToClipboard();
 
+  const handleExportCSV = () => {
+    try {
+      exportToCSV(block.content);
+      toast.success('CSV file downloaded!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to export CSV');
+    }
+  };
+
   return (
     <div className="flex flex-row gap-1">
       {block.kind === 'code' && (
         <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
+      )}
+
+      {block.kind === 'spreadsheet' && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
+              onClick={handleExportCSV}
+              disabled={block.status === 'streaming'}
+            >
+              <DownloadIcon size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Download as CSV</TooltipContent>
+        </Tooltip>
       )}
 
       {block.kind === 'text' && (

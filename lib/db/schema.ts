@@ -1,3 +1,4 @@
+import { BLOCK_KINDS } from '@/components/block';
 import type { InferSelectModel } from 'drizzle-orm';
 import {
   pgTable,
@@ -72,7 +73,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code'] })
+    kind: varchar('kind', { enum: ['text', 'code', 'spreadsheet'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')

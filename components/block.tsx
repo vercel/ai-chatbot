@@ -34,8 +34,12 @@ import { Console } from './console';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
+import { SpreadsheetEditor } from './spreadsheet-editor';
 
-export type BlockKind = 'text' | 'code';
+/** Type representing the possible block kinds: 'text' | 'code' | 'spreadsheet' */
+export type BlockKind = 'text' | 'code' | 'spreadsheet';
+
+export const BLOCK_KINDS: BlockKind[] = ['text', 'code', 'spreadsheet'];
 
 export interface UIBlock {
   title: string;
@@ -466,6 +470,7 @@ function PureBlock({
                 {
                   'py-2 px-2': block.kind === 'code',
                   'py-8 md:p-20 px-4': block.kind === 'text',
+                  'w-full': block.kind === 'spreadsheet',
                 },
               )}
             >
@@ -512,8 +517,19 @@ function PureBlock({
                       newContent={getDocumentContentById(currentVersionIndex)}
                     />
                   )
+                ) : block.kind === 'spreadsheet' ? (
+                  <SpreadsheetEditor
+                    content={
+                      isCurrentVersion
+                        ? block.content
+                        : getDocumentContentById(currentVersionIndex)
+                    }
+                    isCurrentVersion={isCurrentVersion}
+                    currentVersionIndex={currentVersionIndex}
+                    status={block.status}
+                    saveContent={saveContent}
+                  />
                 ) : null}
-
                 {suggestions ? (
                   <div className="md:hidden h-dvh w-12 shrink-0" />
                 ) : null}
