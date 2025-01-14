@@ -34,8 +34,9 @@ import { Console } from './console';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
+import { ImageEditor } from './image-editor';
 
-export type BlockKind = 'text' | 'code';
+export type BlockKind = 'text' | 'code' | 'image';
 
 export interface UIBlock {
   title: string;
@@ -512,6 +513,19 @@ function PureBlock({
                       newContent={getDocumentContentById(currentVersionIndex)}
                     />
                   )
+                ) : block.kind === 'image' ? (
+                  <ImageEditor
+                    title={block.title}
+                    content={
+                      isCurrentVersion
+                        ? block.content
+                        : getDocumentContentById(currentVersionIndex)
+                    }
+                    isCurrentVersion={isCurrentVersion}
+                    currentVersionIndex={currentVersionIndex}
+                    status={block.status}
+                    isInline={false}
+                  />
                 ) : null}
 
                 {suggestions ? (
