@@ -34,8 +34,9 @@ import { Console } from './console';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
+import { ImageEditor } from './image-editor';
 
-export type BlockKind = 'text' | 'code';
+export type BlockKind = 'text' | 'code' | 'image';
 
 export interface UIBlock {
   title: string;
@@ -357,7 +358,7 @@ function PureBlock({
           )}
 
           <motion.div
-            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll border-l dark:border-zinc-700 border-zinc-200"
+            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
             initial={
               isMobile
                 ? {
@@ -476,7 +477,7 @@ function PureBlock({
                 })}
               >
                 {isDocumentsFetching && !block.content ? (
-                  <DocumentSkeleton />
+                  <DocumentSkeleton blockKind={block.kind} />
                 ) : block.kind === 'code' ? (
                   <CodeEditor
                     content={
@@ -512,9 +513,22 @@ function PureBlock({
                       newContent={getDocumentContentById(currentVersionIndex)}
                     />
                   )
+                ) : block.kind === 'image' ? (
+                  <ImageEditor
+                    title={block.title}
+                    content={
+                      isCurrentVersion
+                        ? block.content
+                        : getDocumentContentById(currentVersionIndex)
+                    }
+                    isCurrentVersion={isCurrentVersion}
+                    currentVersionIndex={currentVersionIndex}
+                    status={block.status}
+                    isInline={false}
+                  />
                 ) : null}
 
-                {suggestions ? (
+                {suggestions && suggestions.length > 0 ? (
                   <div className="md:hidden h-dvh w-12 shrink-0" />
                 ) : null}
 

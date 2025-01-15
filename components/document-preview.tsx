@@ -8,8 +8,8 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { UIBlock } from './block';
-import { FileIcon, FullscreenIcon, LoaderIcon } from './icons';
+import { BlockKind, UIBlock } from './block';
+import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
 import { Document } from '@/lib/db/schema';
 import { InlineDocumentSkeleton } from './document-skeleton';
@@ -19,6 +19,7 @@ import { DocumentToolCall, DocumentToolResult } from './document';
 import { CodeEditor } from './code-editor';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
+import { ImageEditor } from './image-editor';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -78,7 +79,7 @@ export function DocumentPreview({
   }
 
   if (isDocumentsFetching) {
-    return <LoadingSkeleton />;
+    return <LoadingSkeleton blockKind={result.kind ?? args.kind} />;
   }
 
   const document: Document | null = previewDocument
@@ -94,13 +95,14 @@ export function DocumentPreview({
         }
       : null;
 
-  if (!document) return <LoadingSkeleton />;
+  if (!document) return <LoadingSkeleton blockKind={block.kind} />;
 
   return (
     <div className="relative w-full cursor-pointer">
       <HitboxLayer hitboxRef={hitboxRef} result={result} setBlock={setBlock} />
       <DocumentHeader
         title={document.title}
+        kind={document.kind}
         isStreaming={block.status === 'streaming'}
       />
       <DocumentContent document={document} />
@@ -108,7 +110,7 @@ export function DocumentPreview({
   );
 }
 
-const LoadingSkeleton = () => (
+const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
   <div className="w-full">
     <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-center justify-between dark:bg-muted h-[57px] dark:border-zinc-700 border-b-0">
       <div className="flex flex-row items-center gap-3">
@@ -121,9 +123,15 @@ const LoadingSkeleton = () => (
         <FullscreenIcon />
       </div>
     </div>
-    <div className="overflow-y-scroll border rounded-b-2xl p-8 pt-4 bg-muted border-t-0 dark:border-zinc-700">
-      <InlineDocumentSkeleton />
-    </div>
+    {blockKind === 'image' ? (
+      <div className="overflow-y-scroll border rounded-b-2xl bg-muted border-t-0 dark:border-zinc-700">
+        <div className="animate-pulse h-[257px] bg-muted-foreground/20 w-full" />
+      </div>
+    ) : (
+      <div className="overflow-y-scroll border rounded-b-2xl p-8 pt-4 bg-muted border-t-0 dark:border-zinc-700">
+        <InlineDocumentSkeleton />
+      </div>
+    )}
   </div>
 );
 
@@ -185,9 +193,11 @@ const HitboxLayer = memo(PureHitboxLayer, (prevProps, nextProps) => {
 
 const PureDocumentHeader = ({
   title,
+  kind,
   isStreaming,
 }: {
   title: string;
+  kind: BlockKind;
   isStreaming: boolean;
 }) => (
   <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
@@ -197,6 +207,8 @@ const PureDocumentHeader = ({
           <div className="animate-spin">
             <LoaderIcon />
           </div>
+        ) : kind === 'image' ? (
+          <ImageIcon />
         ) : (
           <FileIcon />
         )}
@@ -244,6 +256,15 @@ const DocumentContent = ({ document }: { document: Document }) => {
             <CodeEditor {...commonProps} />
           </div>
         </div>
+      ) : document.kind === 'image' ? (
+        <ImageEditor
+          title={document.title}
+          content={document.content ?? ''}
+          isCurrentVersion={true}
+          currentVersionIndex={0}
+          status={block.status}
+          isInline={true}
+        />
       ) : null}
     </div>
   );
