@@ -76,8 +76,10 @@ function PureMultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
+      // Reset height before calculating new height
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
+      const newHeight = Math.min(textareaRef.current.scrollHeight + 2, window.innerHeight * 0.75);
+      textareaRef.current.style.height = `${newHeight}px`;
     }
   };
 
@@ -127,6 +129,11 @@ function PureMultimodalInput({
     setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
+
+    // Reset textarea height after submission
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
 
     if (width && width > 768) {
       textareaRef.current?.focus();
@@ -236,7 +243,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          'min-h-[24px] max-h-[75vh] overflow-y-auto resize-none rounded-xl !text-base bg-muted',
           className,
         )}
         rows={2}
