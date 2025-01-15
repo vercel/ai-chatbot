@@ -125,7 +125,7 @@ export async function POST(request: Request) {
           },
           createDocument: {
             description:
-              'Create a document for a writing or content creation activities like image creation for instance. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+              'Create a document for a writing or content creation activities like image generation. This tool will call other functions that will generate the contents of the document based on the title and kind.',
             parameters: z.object({
               title: z.string(),
               kind: z.enum(['text', 'code', 'image']),
