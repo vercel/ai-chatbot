@@ -6,13 +6,13 @@ import { BlockKind } from './block';
 import { Suggestion } from '@/lib/db/schema';
 import { initialBlockData, useBlock } from '@/hooks/use-block';
 import { useUserMessageId } from '@/hooks/use-user-message-id';
-import { cx } from 'class-variance-authority';
 import { useSWRConfig } from 'swr';
 
 type DataStreamDelta = {
   type:
     | 'text-delta'
     | 'code-delta'
+    | 'image-delta'
     | 'title'
     | 'id'
     | 'suggestion'
@@ -104,6 +104,14 @@ export function DataStreamHandler({ id }: { id: string }) {
                 draftBlock.content.length < 310
                   ? true
                   : draftBlock.isVisible,
+              status: 'streaming',
+            };
+
+          case 'image-delta':
+            return {
+              ...draftBlock,
+              content: delta.content as string,
+              isVisible: true,
               status: 'streaming',
             };
 

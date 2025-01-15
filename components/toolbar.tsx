@@ -29,13 +29,12 @@ import { sanitizeUIMessages } from '@/lib/utils';
 import {
   ArrowUpIcon,
   CodeIcon,
-  FileIcon,
   LogsIcon,
   MessageIcon,
   PenIcon,
+  SparklesIcon,
   StopIcon,
   SummarizeIcon,
-  TerminalIcon,
 } from './icons';
 import { BlockKind } from './block';
 
@@ -327,6 +326,7 @@ const toolsByBlockKind: Record<
       icon: <LogsIcon />,
     },
   ],
+  image: [],
 };
 
 export const Tools = ({
@@ -347,7 +347,7 @@ export const Tools = ({
   ) => Promise<string | null | undefined>;
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  blockKind: 'text' | 'code';
+  blockKind: BlockKind;
 }) => {
   const [primaryTool, ...secondaryTools] = toolsByBlockKind[blockKind];
 
@@ -407,7 +407,7 @@ const PureToolbar = ({
   ) => Promise<string | null | undefined>;
   stop: () => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
-  blockKind: 'text' | 'code';
+  blockKind: BlockKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -450,6 +450,10 @@ const PureToolbar = ({
       setIsToolbarVisible(false);
     }
   }, [isLoading, setIsToolbarVisible]);
+
+  if (toolsByBlockKind[blockKind].length === 0) {
+    return null;
+  }
 
   return (
     <TooltipProvider delayDuration={0}>

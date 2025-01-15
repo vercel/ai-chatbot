@@ -2,13 +2,14 @@ import {
   type Message,
   convertToCoreMessages,
   createDataStreamResponse,
+  experimental_generateImage,
   streamObject,
   streamText,
 } from 'ai';
 import { z } from 'zod';
 
 import { auth } from '@/app/(auth)/auth';
-import { customModel } from '@/lib/ai';
+import { customModel, imageGenerationModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
 import {
   codePrompt,
@@ -124,10 +125,10 @@ export async function POST(request: Request) {
           },
           createDocument: {
             description:
-              'Create a document for a writing activity. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+              'Create a document for a writing or content creation activities like image generation. This tool will call other functions that will generate the contents of the document based on the title and kind.',
             parameters: z.object({
               title: z.string(),
-              kind: z.enum(['text', 'code']),
+              kind: z.enum(['text', 'code', 'image']),
             }),
             execute: async ({ title, kind }) => {
               const id = generateUUID();
@@ -203,6 +204,21 @@ export async function POST(request: Request) {
                     }
                   }
                 }
+
+                dataStream.writeData({ type: 'finish', content: '' });
+              } else if (kind === 'image') {
+                const { image } = await experimental_generateImage({
+                  model: imageGenerationModel,
+                  prompt: title,
+                  n: 1,
+                });
+
+                draftText = image.base64;
+
+                dataStream.writeData({
+                  type: 'image-delta',
+                  content: image.base64,
+                });
 
                 dataStream.writeData({ type: 'finish', content: '' });
               }
@@ -308,6 +324,21 @@ export async function POST(request: Request) {
                     }
                   }
                 }
+
+                dataStream.writeData({ type: 'finish', content: '' });
+              } else if (document.kind === 'image') {
+                const { image } = await experimental_generateImage({
+                  model: imageGenerationModel,
+                  prompt: description,
+                  n: 1,
+                });
+
+                draftText = image.base64;
+
+                dataStream.writeData({
+                  type: 'image-delta',
+                  content: image.base64,
+                });
 
                 dataStream.writeData({ type: 'finish', content: '' });
               }
