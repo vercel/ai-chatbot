@@ -252,6 +252,7 @@ function PureMultimodalInput({
             }
           }
         }}
+        data-testid="multimodal-input"
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
@@ -323,6 +324,7 @@ function PureStopButton({
         stop();
         setMessages((messages) => sanitizeUIMessages(messages));
       }}
+      data-testid="stop-button"
     >
       <StopIcon size={14} />
     </Button>
@@ -348,6 +350,7 @@ function PureSendButton({
         submitForm();
       }}
       disabled={input.length === 0 || uploadQueue.length > 0}
+      data-testid="send-button"
     >
       <ArrowUpIcon size={14} />
     </Button>

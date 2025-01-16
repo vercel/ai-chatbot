@@ -28,6 +28,7 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
+  index,
 }: {
   chatId: string;
   message: Message;
@@ -40,6 +41,7 @@ const PurePreviewMessage = ({
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
+  index: number;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -50,6 +52,7 @@ const PurePreviewMessage = ({
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
+        data-testid={`message-${message.role}-${index}`}
       >
         <div
           className={cn(
@@ -87,10 +90,11 @@ const PurePreviewMessage = ({
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                        className="edit px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
                         onClick={() => {
                           setMode('edit');
                         }}
+                        data-testid={`edit-${message.role}-${index}`}
                       >
                         <PencilEditIcon />
                       </Button>
