@@ -78,18 +78,22 @@ export async function POST(request: Request) {
   }
   const elasticsearchResults = await fetchFromElasticsearch(optimizedQuery);
 
-  // create a sql query based on prompt from user
-  // get results from atlas db
-  const atlasQuery = await createAtlasDBQuery(userMessage.content.toString());
-  if (!atlasQuery) {
-    return new Response('Failed to generate AtlasDB query', { status: 500 });
-  }
+  const databaseSearchEnabled = process.env.ENABLE_DATABASE_SEARCH === 'true';
 
   let databaseResults = null;
-  try {
-    databaseResults = await atlasdb.execute(sql.raw(atlasQuery)); // FIXME: sql.raw is potentially dangerous
-  } catch (error) {
-    console.error('Error executing AtlasDB query: ', error);
+  if (databaseSearchEnabled) {
+    // create a sql query based on prompt from user
+    // get results from atlas db
+    const atlasQuery = await createAtlasDBQuery(userMessage.content.toString());
+    if (!atlasQuery) {
+      return new Response('Failed to generate AtlasDB query', { status: 500 });
+    }
+
+    try {
+      databaseResults = await atlasdb.execute(sql.raw(atlasQuery)); // FIXME: sql.raw is potentially dangerous
+    } catch (error) {
+      console.error('Error executing AtlasDB query: ', error);
+    }
   }
 
   const systemPrompt = createUserElasticSearchPrompt(
