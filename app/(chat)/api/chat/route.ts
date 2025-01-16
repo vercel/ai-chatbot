@@ -22,6 +22,9 @@ import {
   fetchFromElasticsearch,
   generateElasticsearchPrompt,
 } from '@/lib/elasticsearch/helper';
+import { atlasdb } from '@/lib/atlasdb/queries';
+import { sql } from 'drizzle-orm';
+import { createAtlasDBQuery } from '@/lib/atlasdb/helper';
 
 export const maxDuration = 60;
 
@@ -74,7 +77,25 @@ export async function POST(request: Request) {
     return new Response('Failed to generate Elasticsearch prompt', { status: 500 });
   }
   const elasticsearchResults = await fetchFromElasticsearch(optimizedQuery);
-  const systemPrompt = createUserElasticSearchPrompt(JSON.stringify(elasticsearchResults));
+
+  // create a sql query based on prompt from user
+  // get results from atlas db
+  const atlasQuery = await createAtlasDBQuery(userMessage.content.toString());
+  if (!atlasQuery) {
+    return new Response('Failed to generate AtlasDB query', { status: 500 });
+  }
+
+  let databaseResults = null;
+  try {
+    databaseResults = await atlasdb.execute(sql.raw(atlasQuery)); // FIXME: sql.raw is potentially dangerous
+  } catch (error) {
+    console.error('Error executing AtlasDB query: ', error);
+  }
+
+  const systemPrompt = createUserElasticSearchPrompt(
+    JSON.stringify(elasticsearchResults),
+    JSON.stringify(databaseResults)
+  );
 
   const streamingData = new StreamData();
 
