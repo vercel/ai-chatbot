@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-
-import { MessageIcon, VercelIcon } from './icons';
+import Image from 'next/image';
 
 export const Overview = () => {
   return (
@@ -13,39 +11,35 @@ export const Overview = () => {
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ delay: 0.5 }}
     >
-      <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
-        <p className="flex flex-row justify-center gap-4 items-center">
-          <VercelIcon size={32} />
-          <span>+</span>
-          <MessageIcon size={32} />
-        </p>
-        <p>
-          This is an{' '}
-          <Link
-            className="font-medium underline underline-offset-4"
-            href="https://github.com/vercel/ai-chatbot"
-            target="_blank"
-          >
-            open source
-          </Link>{' '}
-          chatbot template built with Next.js and the AI SDK by Vercel. It uses
-          the{' '}
-          <code className="rounded-md bg-muted px-1 py-0.5">streamText</code>{' '}
-          function in the server and the{' '}
-          <code className="rounded-md bg-muted px-1 py-0.5">useChat</code> hook
-          on the client to create a seamless chat experience.
-        </p>
-        <p>
-          You can learn more about the AI SDK by visiting the{' '}
-          <Link
-            className="font-medium underline underline-offset-4"
-            href="https://sdk.vercel.ai/docs"
-            target="_blank"
-          >
-            docs
-          </Link>
-          .
-        </p>
+      <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-xl">
+        {/* Left Section: Image */}
+        <div className="shrink-0">
+          <Image
+            src="/images/lemme.png" // Replace with your actual image path
+            alt="Lemme Robot"
+            width={130}
+            height={130}
+          />
+        </div>
+
+        {/* Right Section: Text */}
+        <div className="flex flex-col gap-4 text-left max-w-lg">
+          <h1 className="font-bold text-xl p-1 rounded-md">Welcome to Lemme</h1>
+          <p>
+            I&apos;m your AI assistant at HumanGood, here to help you navigate
+            our organization. Need info on company policies, IT support, HR
+            guidelines, or departmental procedures?
+          </p>
+          <p>
+            Just ask! I&apos;ll provide quick, accurate answers from our
+            employee handbook and internal processes.
+          </p>
+          <p>
+            While I can&apos;t access personal data like paystubs, I&apos;m here
+            to make your workday easier with instant HumanGood knowledge.
+          </p>
+          <p>How can I assist you today?</p>
+        </div>
       </div>
     </motion.div>
   );

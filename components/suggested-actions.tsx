@@ -9,31 +9,31 @@ interface SuggestedActionsProps {
   chatId: string;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
 }
 
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
-    },
-    {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
-    },
-    {
       title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      label: `about software engineering`,
+      action: `Help me write an essay about software engineering`,
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Write some code',
+      label: 'to generate random values and chart them',
+      action: 'Generate random values and chart them using code',
+    },
+    {
+      title: 'Teach me how to',
+      label: "solve a Rubik's Cube",
+      action: "Provide a step-by-step guide on how to solve a Rubik's Cube",
+    },
+    {
+      title: 'Recommend a recipe',
+      label: 'for dinner tonight',
+      action: 'Suggest an easy and delicious recipe for dinner tonight',
     },
   ];
 
