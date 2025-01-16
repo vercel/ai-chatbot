@@ -1,7 +1,4 @@
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-
-import { MessageIcon, VercelIcon } from './icons';
 import Image from 'next/image';
 
 export const Overview = () => {
@@ -16,13 +13,9 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
-          <Image src="./images/elasticsearch-logo.svg" alt="Elasticsearch" width="40" height="40"/>
-          <span>+</span>
-          <MessageIcon size={32} />
+          <Image src="./images/logbot-logo.svg" alt="Auel" width="256" height="256" />
         </p>
-        <p>
-          Stelle Fragen zu Log-Daten und erhalte Antworten in Echtzeit.
-        </p>
+        <p>Stelle Fragen zu Log-Daten und erhalte Antworten in Echtzeit.</p>
       </div>
     </motion.div>
   );
