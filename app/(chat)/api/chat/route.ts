@@ -158,7 +158,7 @@ export async function POST(request: Request) {
                 const { fullStream } = streamText({
                   model: customModel(model.apiIdentifier),
                   system:
-                    'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+                    'Write about the given topic. Markdown is supported. Use headings wherever appropriate. Remember you are named MondayAI and are made by Theo Mirzakhanian.',
                   prompt: title,
                 });
 
@@ -384,7 +384,7 @@ export async function POST(request: Request) {
               const { elementStream } = streamObject({
                 model: customModel(model.apiIdentifier),
                 system:
-                  'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
+                  'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions. Remember you are named MondayAI and are made by Theo Mirzakhanian.',
                 prompt: document.content,
                 output: 'array',
                 schema: z.object({
