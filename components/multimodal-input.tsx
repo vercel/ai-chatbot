@@ -208,10 +208,14 @@ function PureMultimodalInput({
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
+        data-testid="attachments-input"
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+        <div
+          className="flex flex-row gap-2 overflow-x-scroll items-end"
+          data-testid="attachments-preview"
+        >
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
@@ -301,6 +305,7 @@ function PureAttachmentsButton({
       }}
       disabled={isLoading}
       variant="ghost"
+      data-testid="attachments-button"
     >
       <PaperclipIcon size={14} />
     </Button>

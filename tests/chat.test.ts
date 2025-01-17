@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import { test as baseTest, expect, Page } from '@playwright/test';
 
 type Fixtures = {
@@ -87,7 +89,7 @@ test.describe('chat', () => {
     await expect(authenticatedPage.getByTestId('send-button')).toBeVisible();
   });
 
-  test('edit user message', async ({ authenticatedPage }) => {
+  test('edit user message and resubmit', async ({ authenticatedPage }) => {
     await authenticatedPage.getByTestId('multimodal-input').click();
     await authenticatedPage
       .getByTestId('multimodal-input')
@@ -116,5 +118,83 @@ test.describe('chat', () => {
     await expect(
       authenticatedPage.getByTestId('message-assistant-1'),
     ).toContainText('edited test');
+  });
+
+  test('hide suggested actions after sending message', async ({
+    authenticatedPage,
+  }) => {
+    await expect(
+      authenticatedPage.getByTestId('suggested-actions'),
+    ).toBeVisible();
+
+    await authenticatedPage
+      .getByRole('button', { name: 'What are the advantages of' })
+      .click();
+    await expect(
+      authenticatedPage.getByText('What are the advantages of'),
+    ).toBeVisible();
+
+    await authenticatedPage.getByPlaceholder('Send a message...').click();
+    await authenticatedPage
+      .getByPlaceholder('Send a message...')
+      .fill('this is a test message, respond with "test"');
+    await authenticatedPage.keyboard.press('Enter');
+
+    await expect(
+      authenticatedPage.getByTestId('suggested-actions'),
+    ).not.toBeVisible();
+  });
+
+  test('show file selector on clicking attachments button', async ({
+    authenticatedPage,
+  }) => {
+    const fileChooserPromise = authenticatedPage.waitForEvent('filechooser');
+    await authenticatedPage.getByTestId('attachments-button').click();
+    await fileChooserPromise;
+  });
+
+  test('handle file upload and send image attachment with message', async ({
+    authenticatedPage,
+  }) => {
+    authenticatedPage.on('filechooser', async (fileChooser) => {
+      const filePath = path.join(
+        process.cwd(),
+        'public',
+        'images',
+        'mouth of the seine, monet.jpg',
+      );
+      const imageBuffer = fs.readFileSync(filePath);
+
+      await fileChooser.setFiles({
+        name: 'mouth of the seine, monet.jpg',
+        mimeType: 'image/jpeg',
+        buffer: imageBuffer,
+      });
+    });
+
+    await authenticatedPage.getByTestId('attachments-button').click();
+
+    await expect(
+      authenticatedPage.getByTestId('attachments-preview'),
+    ).toBeVisible();
+
+    await expect(
+      authenticatedPage.getByTestId('input-attachment-loader'),
+    ).toBeVisible();
+
+    await authenticatedPage.getByTestId('multimodal-input').click();
+    await authenticatedPage
+      .getByTestId('multimodal-input')
+      .fill('this is a test message, respond with "test"');
+
+    await expect(authenticatedPage.getByTestId('send-button')).toBeVisible();
+    await authenticatedPage.getByTestId('send-button').click();
+
+    await expect(
+      authenticatedPage.getByTestId('message-attachments-0'),
+    ).toBeVisible();
+    await expect(
+      authenticatedPage.getByTestId('message-assistant-1'),
+    ).toBeVisible();
   });
 });
