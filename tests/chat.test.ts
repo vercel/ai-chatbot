@@ -5,7 +5,7 @@ type Fixtures = {
 };
 
 const testEmail = `chat@playwright.com`;
-const testPassword = process.env.TEST_USER_PASSWORD!;
+const testPassword = process.env.TEST_USER_PASSWORD ?? '';
 
 const test = baseTest.extend<Fixtures>({
   authenticatedPage: async ({ page }, use) => {

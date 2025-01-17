@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { getUnixTime } from 'date-fns';
 
 const testEmail = `auth-${getUnixTime(new Date())}@playwright.com`;
-const testPassword = process.env.TEST_USER_PASSWORD!;
+const testPassword = process.env.TEST_USER_PASSWORD ?? '';
 
 test.describe('authentication', () => {
   test('redirect to login page when unauthenticated', async ({ page }) => {
