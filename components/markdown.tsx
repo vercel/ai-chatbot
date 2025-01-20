@@ -1,3 +1,4 @@
+import 'katex/dist/katex.min.css';
 import Link from 'next/link';
 import React, { memo, useMemo, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
@@ -106,7 +107,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
-      rehypePlugins={[[rehypeKatex, { output: 'markdown' }]]}
+      rehypePlugins={[[rehypeKatex, { output: 'html' }]]}
       components={components}
     >
       {processedText}
