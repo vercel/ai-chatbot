@@ -16,27 +16,24 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-
 import type { Document, Suggestion, Vote } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
-
-import { DiffView } from './diffview';
-import { DocumentSkeleton } from './document-skeleton';
-import { Editor } from './editor';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { VersionFooter } from './version-footer';
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
-import { CodeEditor } from './code-editor';
 import { Console } from './console';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
-import { ImageEditor } from './image-editor';
+import { textBlock } from '@/blocks/text';
+import { imageBlock } from '@/blocks/image';
+import { codeBlock } from '@/blocks/code';
 
-export type BlockKind = 'text' | 'code' | 'image';
+export const blockDefinitions = [textBlock, codeBlock, imageBlock] as const;
+export type BlockKind = (typeof blockDefinitions)[number]['kind'];
 
 export interface UIBlock {
   title: string;
@@ -268,6 +265,14 @@ function PureBlock({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
+  const blockDefinition = blockDefinitions.find(
+    (definition) => definition.kind === block.kind,
+  );
+
+  if (!blockDefinition) {
+    throw new Error('Block definition not found!');
+  }
+
   return (
     <AnimatePresence>
       {block.isVisible && (
@@ -476,57 +481,23 @@ function PureBlock({
                   'mx-auto max-w-[600px]': block.kind === 'text',
                 })}
               >
-                {isDocumentsFetching && !block.content ? (
-                  <DocumentSkeleton blockKind={block.kind} />
-                ) : block.kind === 'code' ? (
-                  <CodeEditor
-                    content={
-                      isCurrentVersion
-                        ? block.content
-                        : getDocumentContentById(currentVersionIndex)
-                    }
-                    isCurrentVersion={isCurrentVersion}
-                    currentVersionIndex={currentVersionIndex}
-                    suggestions={suggestions ?? []}
-                    status={block.status}
-                    saveContent={saveContent}
-                  />
-                ) : block.kind === 'text' ? (
-                  mode === 'edit' ? (
-                    <Editor
-                      content={
-                        isCurrentVersion
-                          ? block.content
-                          : getDocumentContentById(currentVersionIndex)
-                      }
-                      isCurrentVersion={isCurrentVersion}
-                      currentVersionIndex={currentVersionIndex}
-                      status={block.status}
-                      saveContent={saveContent}
-                      suggestions={isCurrentVersion ? (suggestions ?? []) : []}
-                    />
-                  ) : (
-                    <DiffView
-                      oldContent={getDocumentContentById(
-                        currentVersionIndex - 1,
-                      )}
-                      newContent={getDocumentContentById(currentVersionIndex)}
-                    />
-                  )
-                ) : block.kind === 'image' ? (
-                  <ImageEditor
-                    title={block.title}
-                    content={
-                      isCurrentVersion
-                        ? block.content
-                        : getDocumentContentById(currentVersionIndex)
-                    }
-                    isCurrentVersion={isCurrentVersion}
-                    currentVersionIndex={currentVersionIndex}
-                    status={block.status}
-                    isInline={false}
-                  />
-                ) : null}
+                <blockDefinition.content
+                  title={block.title}
+                  content={
+                    isCurrentVersion
+                      ? block.content
+                      : getDocumentContentById(currentVersionIndex)
+                  }
+                  mode={mode}
+                  status={block.status}
+                  currentVersionIndex={currentVersionIndex}
+                  suggestions={suggestions ?? []}
+                  onSaveContent={saveContent}
+                  isInline={false}
+                  isCurrentVersion={isCurrentVersion}
+                  getDocumentContentById={getDocumentContentById}
+                  isLoading={isDocumentsFetching && !block.content}
+                />
 
                 {suggestions && suggestions.length > 0 ? (
                   <div className="md:hidden h-dvh w-12 shrink-0" />
