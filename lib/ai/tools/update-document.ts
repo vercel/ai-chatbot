@@ -1,6 +1,7 @@
 import {
   DataStreamWriter,
   experimental_generateImage,
+  smoothStream,
   streamObject,
   streamText,
   tool,
@@ -52,6 +53,7 @@ export const updateDocument = ({
         const { fullStream } = streamText({
           model: customModel(model.apiIdentifier),
           system: updateDocumentPrompt(currentContent, 'text'),
+          experimental_transform: smoothStream({ chunking: 'word' }),
           prompt: description,
           experimental_providerMetadata: {
             openai: {
