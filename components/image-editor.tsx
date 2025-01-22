@@ -13,8 +13,6 @@ interface ImageEditorProps {
 export function ImageEditor({
   title,
   content,
-  isCurrentVersion,
-  currentVersionIndex,
   status,
   isInline,
 }: ImageEditorProps) {
