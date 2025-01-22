@@ -1,4 +1,5 @@
 import type {
+  Attachment,
   CoreAssistantMessage,
   CoreMessage,
   CoreToolMessage,
@@ -97,6 +98,7 @@ export function convertToUIMessages(
 
     let textContent = '';
     const toolInvocations: Array<ToolInvocation> = [];
+    const experimental_attachments: Array<Attachment> = [];
 
     if (typeof message.content === 'string') {
       textContent = message.content;
@@ -111,6 +113,14 @@ export function convertToUIMessages(
             toolName: content.toolName,
             args: content.args,
           });
+        } else if (content.type === 'image') {
+          experimental_attachments.push({
+            url: content.image,
+            name: content.name || '',
+            contentType:
+              content.contentType ||
+              getContentTypeFromExtension(content.image),
+          });
         }
       }
     }
@@ -120,6 +130,7 @@ export function convertToUIMessages(
       role: message.role as Message['role'],
       content: textContent,
       toolInvocations,
+      experimental_attachments,
     });
 
     return chatMessages;
@@ -221,4 +232,38 @@ export function getMessageIdFromAnnotations(message: Message) {
 
   // @ts-expect-error messageIdFromServer is not defined in MessageAnnotation
   return annotation.messageIdFromServer;
+}
+
+export function getContentTypeFromExtension(url: string): string {
+  // Remove query parameters and hash fragments
+  const cleanUrl = url.split(/[?#]/)[0];
+
+  // Get the file extension from cleaned url
+  const extension = cleanUrl.split('.').pop()?.toLowerCase() || '';
+
+  // Common MIME type mapping
+  const mimeTypes: Record<string, string> = {
+    // Images
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'svg': 'image/svg+xml',
+    // Documents
+    'pdf': 'application/pdf',
+    'doc': 'application/msword',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    // Audio
+    'mp3': 'audio/mpeg',
+    'wav': 'audio/wav',
+    // Video
+    'mp4': 'video/mp4',
+    'webm': 'video/webm',
+    // Other
+    'json': 'application/json',
+    'txt': 'text/plain',
+  };
+
+  return mimeTypes[extension] || 'application/octet-stream';
 }
