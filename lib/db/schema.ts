@@ -26,6 +26,9 @@ export const chat = pgTable('Chat', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
+  visibility: varchar('visibility', { enum: ['public', 'private'] })
+    .notNull()
+    .default('private'),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
@@ -69,6 +72,9 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
+    kind: varchar('text', { enum: ['text', 'code', 'image'] })
+      .notNull()
+      .default('text'),
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),

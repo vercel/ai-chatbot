@@ -4,41 +4,44 @@ import type {
   CreateMessage,
   Message,
 } from 'ai';
-import cx from 'classnames';
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
+  memo,
   type SetStateAction,
   useCallback,
   useEffect,
   useState,
 } from 'react';
-import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
-import {
-  useCopyToClipboard,
-  useDebounceCallback,
-  useWindowSize,
-} from 'usehooks-ts';
+import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
 import type { Document, Suggestion, Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { cn, fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
-import { CopyIcon, CrossIcon, DeltaIcon, RedoIcon, UndoIcon } from './icons';
-import { PreviewMessage } from './message';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { useScrollToBottom } from './use-scroll-to-bottom';
 import { VersionFooter } from './version-footer';
+import { BlockActions } from './block-actions';
+import { BlockCloseButton } from './block-close-button';
+import { BlockMessages } from './block-messages';
+import { CodeEditor } from './code-editor';
+import { Console } from './console';
+import { useSidebar } from './ui/sidebar';
+import { useBlock } from '@/hooks/use-block';
+import equal from 'fast-deep-equal';
+import { ImageEditor } from './image-editor';
+
+export type BlockKind = 'text' | 'code' | 'image';
+
 export interface UIBlock {
   title: string;
   documentId: string;
+  kind: BlockKind;
   content: string;
   isVisible: boolean;
   status: 'streaming' | 'idle';
@@ -50,7 +53,18 @@ export interface UIBlock {
   };
 }
 
-export function Block({
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
+export interface ConsoleOutput {
+  id: string;
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
+}
+
+function PureBlock({
   chatId,
   input,
   setInput,
@@ -60,11 +74,11 @@ export function Block({
   attachments,
   setAttachments,
   append,
-  block,
-  setBlock,
   messages,
   setMessages,
+  reload,
   votes,
+  isReadonly,
 }: {
   chatId: string;
   input: string;
@@ -73,8 +87,6 @@ export function Block({
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  block: UIBlock;
-  setBlock: Dispatch<SetStateAction<UIBlock>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   votes: Array<Vote> | undefined;
@@ -88,16 +100,19 @@ export function Block({
     },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
+  reload: (
+    chatRequestOptions?: ChatRequestOptions,
+  ) => Promise<string | null | undefined>;
+  isReadonly: boolean;
 }) {
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  const { block, setBlock } = useBlock();
 
   const {
     data: documents,
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    block && block.status !== 'streaming'
+    block.documentId !== 'init' && block.status !== 'streaming'
       ? `/api/document?id=${block.documentId}`
       : null,
     fetcher,
@@ -116,6 +131,11 @@ export function Block({
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
+  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
+    [],
+  );
+
+  const { open: isSidebarOpen } = useSidebar();
 
   useEffect(() => {
     if (documents && documents.length > 0) {
@@ -161,6 +181,7 @@ export function Block({
               body: JSON.stringify({
                 title: block.title,
                 content: updatedContent,
+                kind: block.kind,
               }),
             });
 
@@ -247,326 +268,314 @@ export function Block({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
-  const [_, copyToClipboard] = useCopyToClipboard();
-
   return (
-    <motion.div
-      className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-muted"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { delay: 0.4 } }}
-    >
-      {!isMobile && (
+    <AnimatePresence>
+      {block.isVisible && (
         <motion.div
-          className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
-          initial={{ opacity: 0, x: 10, scale: 1 }}
-          animate={{
-            opacity: 1,
-            x: 0,
-            scale: 1,
-            transition: {
-              delay: 0.2,
-              type: 'spring',
-              stiffness: 200,
-              damping: 30,
-            },
-          }}
-          exit={{
-            opacity: 0,
-            x: 0,
-            scale: 0.95,
-            transition: { delay: 0 },
-          }}
+          className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { delay: 0.4 } }}
         >
-          <AnimatePresence>
-            {!isCurrentVersion && (
-              <motion.div
-                className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              />
-            )}
-          </AnimatePresence>
+          {!isMobile && (
+            <motion.div
+              className="fixed bg-background h-dvh"
+              initial={{
+                width: isSidebarOpen ? windowWidth - 256 : windowWidth,
+                right: 0,
+              }}
+              animate={{ width: windowWidth, right: 0 }}
+              exit={{
+                width: isSidebarOpen ? windowWidth - 256 : windowWidth,
+                right: 0,
+              }}
+            />
+          )}
 
-          <div className="flex flex-col h-full justify-between items-center gap-4">
-            <div
-              ref={messagesContainerRef}
-              className="flex flex-col gap-4 h-full items-center overflow-y-scroll px-4 pt-20"
-            >
-              {messages.map((message, index) => (
-                <PreviewMessage
-                  chatId={chatId}
-                  key={message.id}
-                  message={message}
-                  block={block}
-                  setBlock={setBlock}
-                  isLoading={isLoading && index === messages.length - 1}
-                  vote={
-                    votes
-                      ? votes.find((vote) => vote.messageId === message.id)
-                      : undefined
-                  }
-                />
-              ))}
-
-              <div
-                ref={messagesEndRef}
-                className="shrink-0 min-w-[24px] min-h-[24px]"
-              />
-            </div>
-
-            <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
-              <MultimodalInput
-                chatId={chatId}
-                input={input}
-                setInput={setInput}
-                handleSubmit={handleSubmit}
-                isLoading={isLoading}
-                stop={stop}
-                attachments={attachments}
-                setAttachments={setAttachments}
-                messages={messages}
-                append={append}
-                className="bg-background dark:bg-muted"
-                setMessages={setMessages}
-              />
-            </form>
-          </div>
-        </motion.div>
-      )}
-
-      <motion.div
-        className="fixed dark:bg-muted bg-background h-dvh flex flex-col shadow-xl overflow-y-scroll"
-        initial={
-          isMobile
-            ? {
-                opacity: 0,
-                x: 0,
-                y: 0,
-                width: windowWidth,
-                height: windowHeight,
-                borderRadius: 50,
-              }
-            : {
-                opacity: 0,
-                x: block.boundingBox.left,
-                y: block.boundingBox.top,
-                height: block.boundingBox.height,
-                width: block.boundingBox.width,
-                borderRadius: 50,
-              }
-        }
-        animate={
-          isMobile
-            ? {
+          {!isMobile && (
+            <motion.div
+              className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
+              initial={{ opacity: 0, x: 10, scale: 1 }}
+              animate={{
                 opacity: 1,
                 x: 0,
-                y: 0,
-                width: windowWidth,
-                height: '100dvh',
-                borderRadius: 0,
+                scale: 1,
                 transition: {
-                  delay: 0,
+                  delay: 0.2,
                   type: 'spring',
                   stiffness: 200,
                   damping: 30,
                 },
-              }
-            : {
-                opacity: 1,
-                x: 400,
-                y: 0,
-                height: windowHeight,
-                width: windowWidth ? windowWidth - 400 : 'calc(100dvw-400px)',
-                borderRadius: 0,
-                transition: {
-                  delay: 0,
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 30,
-                },
-              }
-        }
-        exit={{
-          opacity: 0,
-          scale: 0.5,
-          transition: {
-            delay: 0.1,
-            type: 'spring',
-            stiffness: 600,
-            damping: 30,
-          },
-        }}
-      >
-        <div className="p-2 flex flex-row justify-between items-start">
-          <div className="flex flex-row gap-4 items-start">
-            <Button
-              variant="outline"
-              className="h-fit p-2 dark:hover:bg-zinc-700"
-              onClick={() => {
-                setBlock((currentBlock) => ({
-                  ...currentBlock,
-                  isVisible: false,
-                }));
+              }}
+              exit={{
+                opacity: 0,
+                x: 0,
+                scale: 1,
+                transition: { duration: 0 },
               }}
             >
-              <CrossIcon size={18} />
-            </Button>
+              <AnimatePresence>
+                {!isCurrentVersion && (
+                  <motion.div
+                    className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  />
+                )}
+              </AnimatePresence>
 
-            <div className="flex flex-col">
-              <div className="font-medium">
-                {document?.title ?? block.title}
+              <div className="flex flex-col h-full justify-between items-center gap-4">
+                <BlockMessages
+                  chatId={chatId}
+                  isLoading={isLoading}
+                  votes={votes}
+                  messages={messages}
+                  setMessages={setMessages}
+                  reload={reload}
+                  isReadonly={isReadonly}
+                  blockStatus={block.status}
+                />
+
+                <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
+                  <MultimodalInput
+                    chatId={chatId}
+                    input={input}
+                    setInput={setInput}
+                    handleSubmit={handleSubmit}
+                    isLoading={isLoading}
+                    stop={stop}
+                    attachments={attachments}
+                    setAttachments={setAttachments}
+                    messages={messages}
+                    append={append}
+                    className="bg-background dark:bg-muted"
+                    setMessages={setMessages}
+                  />
+                </form>
+              </div>
+            </motion.div>
+          )}
+
+          <motion.div
+            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
+            initial={
+              isMobile
+                ? {
+                    opacity: 1,
+                    x: block.boundingBox.left,
+                    y: block.boundingBox.top,
+                    height: block.boundingBox.height,
+                    width: block.boundingBox.width,
+                    borderRadius: 50,
+                  }
+                : {
+                    opacity: 1,
+                    x: block.boundingBox.left,
+                    y: block.boundingBox.top,
+                    height: block.boundingBox.height,
+                    width: block.boundingBox.width,
+                    borderRadius: 50,
+                  }
+            }
+            animate={
+              isMobile
+                ? {
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    height: windowHeight,
+                    width: windowWidth ? windowWidth : 'calc(100dvw)',
+                    borderRadius: 0,
+                    transition: {
+                      delay: 0,
+                      type: 'spring',
+                      stiffness: 200,
+                      damping: 30,
+                      duration: 5000,
+                    },
+                  }
+                : {
+                    opacity: 1,
+                    x: 400,
+                    y: 0,
+                    height: windowHeight,
+                    width: windowWidth
+                      ? windowWidth - 400
+                      : 'calc(100dvw-400px)',
+                    borderRadius: 0,
+                    transition: {
+                      delay: 0,
+                      type: 'spring',
+                      stiffness: 200,
+                      damping: 30,
+                      duration: 5000,
+                    },
+                  }
+            }
+            exit={{
+              opacity: 0,
+              scale: 0.5,
+              transition: {
+                delay: 0.1,
+                type: 'spring',
+                stiffness: 600,
+                damping: 30,
+              },
+            }}
+          >
+            <div className="p-2 flex flex-row justify-between items-start">
+              <div className="flex flex-row gap-4 items-start">
+                <BlockCloseButton />
+
+                <div className="flex flex-col">
+                  <div className="font-medium">{block.title}</div>
+
+                  {isContentDirty ? (
+                    <div className="text-sm text-muted-foreground">
+                      Saving changes...
+                    </div>
+                  ) : document ? (
+                    <div className="text-sm text-muted-foreground">
+                      {`Updated ${formatDistance(
+                        new Date(document.createdAt),
+                        new Date(),
+                        {
+                          addSuffix: true,
+                        },
+                      )}`}
+                    </div>
+                  ) : (
+                    <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
+                  )}
+                </div>
               </div>
 
-              {isContentDirty ? (
-                <div className="text-sm text-muted-foreground">
-                  Saving changes...
-                </div>
-              ) : document ? (
-                <div className="text-sm text-muted-foreground">
-                  {`Updated ${formatDistance(
-                    new Date(document.createdAt),
-                    new Date(),
-                    {
-                      addSuffix: true,
-                    },
-                  )}`}
-                </div>
-              ) : (
-                <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-row gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="p-2 h-fit dark:hover:bg-zinc-700"
-                  onClick={() => {
-                    copyToClipboard(block.content);
-                    toast.success('Copied to clipboard!');
-                  }}
-                  disabled={block.status === 'streaming'}
-                >
-                  <CopyIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Copy to clipboard</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
-                  onClick={() => {
-                    handleVersionChange('prev');
-                  }}
-                  disabled={
-                    currentVersionIndex === 0 || block.status === 'streaming'
-                  }
-                >
-                  <UndoIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View Previous version</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
-                  onClick={() => {
-                    handleVersionChange('next');
-                  }}
-                  disabled={isCurrentVersion || block.status === 'streaming'}
-                >
-                  <RedoIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View Next version</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cx(
-                    'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
-                    {
-                      'bg-muted': mode === 'diff',
-                    },
-                  )}
-                  onClick={() => {
-                    handleVersionChange('toggle');
-                  }}
-                  disabled={
-                    block.status === 'streaming' || currentVersionIndex === 0
-                  }
-                >
-                  <DeltaIcon size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View changes</TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-
-        <div className="prose dark:prose-invert dark:bg-muted bg-background h-full overflow-y-scroll px-4 py-8 md:p-20 !max-w-full pb-40 items-center">
-          <div className="flex flex-row max-w-[600px] mx-auto">
-            {isDocumentsFetching && !block.content ? (
-              <DocumentSkeleton />
-            ) : mode === 'edit' ? (
-              <Editor
-                content={
-                  isCurrentVersion
-                    ? block.content
-                    : getDocumentContentById(currentVersionIndex)
-                }
-                isCurrentVersion={isCurrentVersion}
+              <BlockActions
+                block={block}
                 currentVersionIndex={currentVersionIndex}
-                status={block.status}
-                saveContent={saveContent}
-                suggestions={isCurrentVersion ? (suggestions ?? []) : []}
+                handleVersionChange={handleVersionChange}
+                isCurrentVersion={isCurrentVersion}
+                mode={mode}
+                setConsoleOutputs={setConsoleOutputs}
               />
-            ) : (
-              <DiffView
-                oldContent={getDocumentContentById(currentVersionIndex - 1)}
-                newContent={getDocumentContentById(currentVersionIndex)}
-              />
-            )}
+            </div>
 
-            {suggestions ? (
-              <div className="md:hidden h-dvh w-12 shrink-0" />
-            ) : null}
+            <div
+              className={cn(
+                'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
+                {
+                  'py-2 px-2': block.kind === 'code',
+                  'py-8 md:p-20 px-4': block.kind === 'text',
+                },
+              )}
+            >
+              <div
+                className={cn('flex flex-row', {
+                  '': block.kind === 'code',
+                  'mx-auto max-w-[600px]': block.kind === 'text',
+                })}
+              >
+                {isDocumentsFetching && !block.content ? (
+                  <DocumentSkeleton blockKind={block.kind} />
+                ) : block.kind === 'code' ? (
+                  <CodeEditor
+                    content={
+                      isCurrentVersion
+                        ? block.content
+                        : getDocumentContentById(currentVersionIndex)
+                    }
+                    isCurrentVersion={isCurrentVersion}
+                    currentVersionIndex={currentVersionIndex}
+                    suggestions={suggestions ?? []}
+                    status={block.status}
+                    saveContent={saveContent}
+                  />
+                ) : block.kind === 'text' ? (
+                  mode === 'edit' ? (
+                    <Editor
+                      content={
+                        isCurrentVersion
+                          ? block.content
+                          : getDocumentContentById(currentVersionIndex)
+                      }
+                      isCurrentVersion={isCurrentVersion}
+                      currentVersionIndex={currentVersionIndex}
+                      status={block.status}
+                      saveContent={saveContent}
+                      suggestions={isCurrentVersion ? (suggestions ?? []) : []}
+                    />
+                  ) : (
+                    <DiffView
+                      oldContent={getDocumentContentById(
+                        currentVersionIndex - 1,
+                      )}
+                      newContent={getDocumentContentById(currentVersionIndex)}
+                    />
+                  )
+                ) : block.kind === 'image' ? (
+                  <ImageEditor
+                    title={block.title}
+                    content={
+                      isCurrentVersion
+                        ? block.content
+                        : getDocumentContentById(currentVersionIndex)
+                    }
+                    isCurrentVersion={isCurrentVersion}
+                    currentVersionIndex={currentVersionIndex}
+                    status={block.status}
+                    isInline={false}
+                  />
+                ) : null}
+
+                {suggestions && suggestions.length > 0 ? (
+                  <div className="md:hidden h-dvh w-12 shrink-0" />
+                ) : null}
+
+                <AnimatePresence>
+                  {isCurrentVersion && (
+                    <Toolbar
+                      isToolbarVisible={isToolbarVisible}
+                      setIsToolbarVisible={setIsToolbarVisible}
+                      append={append}
+                      isLoading={isLoading}
+                      stop={stop}
+                      setMessages={setMessages}
+                      blockKind={block.kind}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
 
             <AnimatePresence>
-              {isCurrentVersion && (
-                <Toolbar
-                  isToolbarVisible={isToolbarVisible}
-                  setIsToolbarVisible={setIsToolbarVisible}
-                  append={append}
-                  isLoading={isLoading}
-                  stop={stop}
-                  setMessages={setMessages}
+              {!isCurrentVersion && (
+                <VersionFooter
+                  currentVersionIndex={currentVersionIndex}
+                  documents={documents}
+                  handleVersionChange={handleVersionChange}
                 />
               )}
             </AnimatePresence>
-          </div>
-        </div>
 
-        <AnimatePresence>
-          {!isCurrentVersion && (
-            <VersionFooter
-              block={block}
-              currentVersionIndex={currentVersionIndex}
-              documents={documents}
-              handleVersionChange={handleVersionChange}
-            />
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </motion.div>
+            <AnimatePresence>
+              <Console
+                consoleOutputs={consoleOutputs}
+                setConsoleOutputs={setConsoleOutputs}
+              />
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
+
+export const Block = memo(PureBlock, (prevProps, nextProps) => {
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (!equal(prevProps.votes, nextProps.votes)) return false;
+  if (prevProps.input !== nextProps.input) return false;
+  if (!equal(prevProps.messages, nextProps.messages.length)) return false;
+
+  return true;
+});

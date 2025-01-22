@@ -22,6 +22,20 @@
       "when": 1730725226313,
       "tag": "0002_wandering_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1733403031014,
+      "tag": "0003_cloudy_glorian",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1733945232355,
+      "tag": "0004_odd_slayback",
+      "breakpoints": true
     }
   ]
 }
