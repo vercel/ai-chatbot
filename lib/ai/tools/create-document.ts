@@ -2,6 +2,7 @@ import { generateUUID } from '@/lib/utils';
 import {
   DataStreamWriter,
   experimental_generateImage,
+  smoothStream,
   streamObject,
   streamText,
   tool,
@@ -60,6 +61,7 @@ export const createDocument = ({
           model: customModel(model.apiIdentifier),
           system:
             'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+          experimental_transform: smoothStream({ chunking: 'word' }),
           prompt: title,
         });
 
