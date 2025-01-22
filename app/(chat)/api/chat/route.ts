@@ -2,6 +2,7 @@ import {
   type Message,
   convertToCoreMessages,
   createDataStreamResponse,
+  smoothStream,
   streamText,
 } from 'ai';
 
@@ -99,6 +100,7 @@ export async function POST(request: Request) {
         messages: coreMessages,
         maxSteps: 5,
         experimental_activeTools: allTools,
+        experimental_transform: smoothStream({ chunking: 'word' }),
         tools: {
           getWeather,
           createDocument: createDocument({ session, dataStream, model }),
