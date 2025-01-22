@@ -273,6 +273,8 @@ function PureBlock({
     throw new Error('Block definition not found!');
   }
 
+  const toolsByBlockKind = blockDefinition.toolbar;
+
   return (
     <AnimatePresence>
       {block.isVisible && (

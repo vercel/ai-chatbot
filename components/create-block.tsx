@@ -1,23 +1,33 @@
 import { Suggestion } from '@/lib/db/schema';
+import { UseChatHelpers } from 'ai/react';
 import { ComponentType, ReactNode } from 'react';
 
 export type BlockActionContext = {
   content: string;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
+  currentVersionIndex: number;
+  isCurrentVersion: boolean;
+  mode: 'edit' | 'diff';
 };
 
 type BlockAction = {
-  name: string;
-  description?: string;
   icon: ReactNode;
+  label?: string;
+  description: string;
   onClick: (context: BlockActionContext) => void;
+  isDisabled?: (context: BlockActionContext) => boolean;
 };
 
-type BlockToolbarItem = {
-  name: string;
+export type BlockToolbarContext = {
+  appendMessage: UseChatHelpers['append'];
 };
 
-/** Content props for block components */
+export type BlockToolbarItem = {
+  description: string;
+  icon: ReactNode;
+  onClick: (context: BlockToolbarContext) => void;
+};
+
 type BlockContent = {
   title: string;
   content: string;

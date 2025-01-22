@@ -1,13 +1,9 @@
-import { cn } from '@/lib/utils';
-import { ClockRewind, CopyIcon, RedoIcon, UndoIcon } from './icons';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { toast } from 'sonner';
 import { blockDefinitions, ConsoleOutput, UIBlock } from './block';
 import { Dispatch, memo, SetStateAction } from 'react';
-import { RunCodeButton } from './run-code-button';
-import { useMultimodalCopyToClipboard } from '@/hooks/use-multimodal-copy-to-clipboard';
 import { BlockActionContext } from './create-block';
+import { cn } from '@/lib/utils';
 
 interface BlockActionsProps {
   block: UIBlock;
@@ -26,9 +22,6 @@ function PureBlockActions({
   mode,
   setConsoleOutputs,
 }: BlockActionsProps) {
-  const { copyTextToClipboard, copyImageToClipboard } =
-    useMultimodalCopyToClipboard();
-
   const blockDefinition = blockDefinitions.find(
     (definition) => definition.kind === block.kind,
   );
@@ -40,29 +33,34 @@ function PureBlockActions({
   const actionContext: BlockActionContext = {
     content: block.content,
     handleVersionChange,
+    currentVersionIndex,
+    isCurrentVersion,
+    mode,
   };
 
   return (
     <div className="flex flex-row gap-1">
       {blockDefinition.actions.map((action) => (
-        <Tooltip key={action.name}>
+        <Tooltip key={action.description}>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              className="p-2 h-fit dark:hover:bg-zinc-700"
+              className={cn('h-fit dark:hover:bg-zinc-700', {
+                'p-2': !action.label,
+                'py-1.5 px-2': action.label,
+              })}
               onClick={() => action.onClick(actionContext)}
-              disabled={block.status === 'streaming'}
+              disabled={
+                action.isDisabled ? action.isDisabled(actionContext) : false
+              }
             >
               {action.icon}
+              {action.label}
             </Button>
           </TooltipTrigger>
           <TooltipContent>{action.description}</TooltipContent>
         </Tooltip>
       ))}
-
-      {/* {block.kind === "code" && (
-        <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
-      )} */}
     </div>
   );
 }
