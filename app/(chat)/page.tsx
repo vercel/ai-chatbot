@@ -12,7 +12,7 @@ export default async function Page() {
       <Chat
         key={id}
         id={id}
-        initialMessages={[]}
+        initialMessages={[{ id: generateUUID(), content: "Please state your squawk, pilot.", role: "assistant" }]}
         selectedVisibilityType="private"
         isReadonly={false}
       />
