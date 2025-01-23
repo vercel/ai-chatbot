@@ -18,13 +18,11 @@ import { useBlockSelector } from '@/hooks/use-block';
 export function Chat({
   id,
   initialMessages,
-  selectedModelId,
   selectedVisibilityType,
   isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
-  selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
@@ -42,7 +40,7 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id },
     initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
@@ -63,7 +61,6 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={selectedModelId}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />

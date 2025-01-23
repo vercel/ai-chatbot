@@ -8,7 +8,7 @@ import {
 
 import { auth } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
-import { models } from '@/lib/ai/models';
+import { models, DEFAULT_MODEL_NAME } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -27,6 +27,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+
 
 export const maxDuration = 60;
 
@@ -49,8 +50,7 @@ export async function POST(request: Request) {
   const {
     id,
     messages,
-    modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
+  }: { id: string; messages: Array<Message> } =
     await request.json();
 
   const session = await auth();
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const model = models.find((model) => model.id === modelId);
+  const model = models.find((model) => model.id === DEFAULT_MODEL_NAME);
 
   if (!model) {
     return new Response('Model not found', { status: 404 });
