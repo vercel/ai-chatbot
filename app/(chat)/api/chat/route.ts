@@ -99,18 +99,18 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: allTools,
+        // experimental_activeTools: allTools,
         experimental_transform: smoothStream({ chunking: 'word' }),
-        tools: {
-          getWeather,
-          createDocument: createDocument({ session, dataStream, model }),
-          updateDocument: updateDocument({ session, dataStream, model }),
-          requestSuggestions: requestSuggestions({
-            session,
-            dataStream,
-            model,
-          }),
-        },
+        // tools: {
+        //   getWeather,
+        //   createDocument: createDocument({ session, dataStream, model }),
+        //   updateDocument: updateDocument({ session, dataStream, model }),
+        //   requestSuggestions: requestSuggestions({
+        //     session,
+        //     dataStream,
+        //     model,
+        //   }),
+        // },
         onFinish: async ({ response }) => {
           if (session.user?.id) {
             try {

@@ -6,6 +6,12 @@ import {
   saveDocument,
 } from '@/lib/db/queries';
 
+/**
+ * Handles GET requests for retrieving a document by its ID.
+ * 
+ * @param {Request} request - The incoming request object.
+ * @returns {Response} - A response object containing the document or an error message.
+ */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');

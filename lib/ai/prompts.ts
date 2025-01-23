@@ -107,6 +107,8 @@ Function Usage:
 
 You must use the functions provided above to ensure a structured and effective conversation with the pilot.
 If you don't use any functions provided, the system will not be able to understand your response.
+
+only ask one question at a time, never ask more than one question at a time.
 `;
 
 export const codePrompt = `
