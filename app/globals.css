@@ -49,6 +49,14 @@
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
         --radius: 0.5rem;
+        --sidebar-background: 0 0% 98%;
+        --sidebar-foreground: 240 5.3% 26.1%;
+        --sidebar-primary: 240 5.9% 10%;
+        --sidebar-primary-foreground: 0 0% 98%;
+        --sidebar-accent: 240 4.8% 95.9%;
+        --sidebar-accent-foreground: 240 5.9% 10%;
+        --sidebar-border: 220 13% 91%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
     }
     .dark {
         --background: 240 10% 3.9%;
@@ -75,6 +83,14 @@
         --chart-3: 30 80% 55%;
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
+        --sidebar-background: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
     }
 }
 
@@ -103,8 +119,60 @@
 }
 
 .skeleton {
+    * {
+        pointer-events: none !important;
+    }
+
     *[class^="text-"] {
         color: transparent;
-        @apply rounded-md bg-foreground/20 select-none;
+        @apply rounded-md bg-foreground/20 select-none animate-pulse;
     }
+
+    .skeleton-bg {
+        @apply bg-foreground/10;
+    }
+
+    .skeleton-div {
+        @apply bg-foreground/20 animate-pulse;
+    }
+}
+
+.ProseMirror {
+    outline: none;
+}
+
+.cm-editor,
+.cm-gutters {
+    @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
+}
+
+.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.ͼo.cm-selectionBackground,
+.ͼo.cm-content::selection {
+    @apply bg-zinc-200 dark:bg-zinc-900 !important;
+}
+
+.cm-activeLine,
+.cm-activeLineGutter {
+    @apply bg-transparent !important;
+}
+
+.cm-activeLine {
+    @apply rounded-r-sm !important;
+}
+
+.cm-lineNumbers {
+    @apply min-w-7;
+}
+
+.cm-foldGutter {
+    @apply min-w-3;
+}
+
+.cm-lineNumbers .cm-activeLineGutter {
+    @apply rounded-l-sm !important;
+}
+
+.suggestion-highlight {
+    @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
 }
