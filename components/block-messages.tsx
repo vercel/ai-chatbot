@@ -52,6 +52,7 @@ function PureBlockMessages({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          index={index}
         />
       ))}
 

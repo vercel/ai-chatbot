@@ -208,10 +208,14 @@ function PureMultimodalInput({
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
+        data-testid="attachments-input"
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+        <div
+          className="flex flex-row gap-2 overflow-x-scroll items-end"
+          data-testid="attachments-preview"
+        >
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
@@ -252,6 +256,7 @@ function PureMultimodalInput({
             }
           }
         }}
+        data-testid="multimodal-input"
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
@@ -300,6 +305,7 @@ function PureAttachmentsButton({
       }}
       disabled={isLoading}
       variant="ghost"
+      data-testid="attachments-button"
     >
       <PaperclipIcon size={14} />
     </Button>
@@ -323,6 +329,7 @@ function PureStopButton({
         stop();
         setMessages((messages) => sanitizeUIMessages(messages));
       }}
+      data-testid="stop-button"
     >
       <StopIcon size={14} />
     </Button>
@@ -348,6 +355,7 @@ function PureSendButton({
         submitForm();
       }}
       disabled={input.length === 0 || uploadQueue.length > 0}
+      data-testid="send-button"
     >
       <ArrowUpIcon size={14} />
     </Button>
