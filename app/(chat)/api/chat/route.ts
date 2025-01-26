@@ -102,10 +102,10 @@ export async function POST(request: Request) {
         // experimental_activeTools: allTools,
         experimental_transform: smoothStream({ chunking: 'word' }),
         tools: {
-          endConversation: endConversation({ session, dataStream, model }),
-          lookupFlightManual: lookupFlightManual({ session, dataStream, model }),
+          // endConversation: endConversation({ dataStream }),
+          // lookupFlightManual: lookupFlightManual({ session, dataStream, model }),
         //   getWeather,
-        //   createDocument: createDocument({ session, dataStream, model }),
+          createDocument: createDocument({ session, dataStream, model }),
         //   updateDocument: updateDocument({ session, dataStream, model }),
         //   requestSuggestions: requestSuggestions({
         //     session,
@@ -114,6 +114,7 @@ export async function POST(request: Request) {
         //   }),
         },
         onFinish: async ({ response }) => {
+          console.log('onFinish called', response);
           if (session.user?.id) {
             try {
               const responseMessagesWithoutIncompleteToolCalls =

@@ -22,6 +22,7 @@ export const lookupFlightManual = ({ session, dataStream }: LookupFlightManualPr
       question: z.string().describe('The specific question or topic to search for'),
     }),
     execute: async ({ aircraft_type, question }) => {
+      console.log('lookupFlightManual tool called');
       try {
         // First, notify the stream that we're starting the search
         dataStream.writeData({

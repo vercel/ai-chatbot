@@ -1,17 +1,12 @@
 import { DataStreamWriter, tool } from 'ai';
 import { z } from 'zod';
-import { Session } from 'next-auth';
-import { Model } from '../models';
+
 
 interface EndConversationProps {
-  model: Model;
-  session: Session;
   dataStream: DataStreamWriter;
 }
 
 export const endConversation = ({
-  model,
-  session,
   dataStream,
 }: EndConversationProps) =>
   tool({
@@ -22,36 +17,34 @@ export const endConversation = ({
       conversation_summary: z.string().describe('Summary of the conversation and troubleshooting steps'),
     }),
     execute: async ({ aircraft_type, squawk_details, conversation_summary }) => {
-      const markdown = `
-        # Aircraft Maintenance Report
+      try {
+        console.log('endConversation tool called');
+        const markdown = `
+# Aircraft Maintenance Report
 
-        ## Aircraft Type
-        ${aircraft_type}
+## Aircraft Type
+${aircraft_type}
 
-        ## Squawk Details
-        ${squawk_details}
+## Squawk Details
+${squawk_details}
 
-        ## Conversation Summary
-        ${conversation_summary}
+## Conversation Summary
+${conversation_summary}
 
-        ---
-        Report generated on ${new Date().toLocaleString()}`;
-
-      // Stream the markdown content
-      dataStream.writeData({
-        type: 'text-delta',
-        content: markdown,
-      });
-
-      dataStream.writeData({
-        type: 'finish',
-        content: '',
-      });
-
-      return {
-        content: 'Maintenance report has been generated.',
-        markdown: markdown
-      };
+---
+Report generated on ${new Date().toLocaleString()}`;
+// dataStream.writeData({
+//   type: 'text-delta',
+//   content: markdown,
+// });
+        // Return the content without writing to dataStream directly
+        return {
+          content: markdown
+        };
+      } catch (error) {
+        console.error('Error in endConversation tool:', error);
+        throw error;
+      }
     },
   });
 
