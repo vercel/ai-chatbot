@@ -9,6 +9,9 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  serial,
+  vector,
+  index,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -113,3 +116,22 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+
+export const dataFlightKnowledge = pgTable(
+  'data_flight_knowledge',
+  {
+    id: serial('id').notNull(),
+    text: varchar('text').notNull(),
+    metadata_: json('metadata_'),
+    node_id: varchar('node_id'),
+    embedding: vector('embedding', { dimensions: 1536 }),
+    aircraft_type: varchar('aircraft_type', { length: 20 }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id] }),
+    embeddingIdx: index('data_flight_knowledge_embedding_idx').on(table.embedding),
+  }),
+);
+
+export type DataFlightKnowledge = InferSelectModel<typeof dataFlightKnowledge>;

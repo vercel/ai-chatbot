@@ -37,14 +37,14 @@ type AllowedTools =
   | 'requestSuggestions'
   | 'getWeather';
 
-const blocksTools: AllowedTools[] = [
-  'createDocument',
-  'updateDocument',
-  'requestSuggestions',
-];
+// const blocksTools: AllowedTools[] = [
+//   'createDocument',
+//   'updateDocument',
+//   'requestSuggestions',
+// ];
 
-const weatherTools: AllowedTools[] = ['getWeather'];
-const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
+// const weatherTools: AllowedTools[] = ['getWeather'];
+// const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
 export async function POST(request: Request) {
   const {
@@ -101,7 +101,9 @@ export async function POST(request: Request) {
         maxSteps: 5,
         // experimental_activeTools: allTools,
         experimental_transform: smoothStream({ chunking: 'word' }),
-        // tools: {
+        tools: {
+          endConversation: endConversation({ session, dataStream, model }),
+          lookupFlightManual: lookupFlightManual({ session, dataStream, model }),
         //   getWeather,
         //   createDocument: createDocument({ session, dataStream, model }),
         //   updateDocument: updateDocument({ session, dataStream, model }),
@@ -110,7 +112,7 @@ export async function POST(request: Request) {
         //     dataStream,
         //     model,
         //   }),
-        // },
+        },
         onFinish: async ({ response }) => {
           if (session.user?.id) {
             try {
