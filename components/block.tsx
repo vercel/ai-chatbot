@@ -455,7 +455,7 @@ function PureBlock({
               className={cn(
                 'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
                 {
-                  'py-2 px-2': block.kind === 'code',
+                  '': block.kind === 'code',
                   'py-8 md:p-20 px-4': block.kind === 'text',
                 },
               )}
@@ -485,10 +485,6 @@ function PureBlock({
                   metadata={metadata}
                   setMetadata={setMetadata}
                 />
-
-                {/* {suggestions && suggestions.length > 0 ? (
-                  <div className="md:hidden h-dvh w-12 shrink-0" />
-                ) : null} */}
 
                 <AnimatePresence>
                   {isCurrentVersion && (

@@ -40,7 +40,7 @@ export const codeBlock = new Block<'code', Metadata>({
   },
   content: ({ metadata, setMetadata, ...props }) => {
     return (
-      <div className="flex flex-col gap-4 bg-red-500">
+      <>
         <CodeEditor {...props} />
 
         {metadata?.outputs && (
@@ -54,7 +54,7 @@ export const codeBlock = new Block<'code', Metadata>({
             }}
           />
         )}
-      </div>
+      </>
     );
   },
   actions: [
