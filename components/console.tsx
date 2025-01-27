@@ -8,9 +8,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ConsoleOutput } from './block';
 import { cn } from '@/lib/utils';
 import { useBlockSelector } from '@/hooks/use-block';
+
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
+export interface ConsoleOutput {
+  id: string;
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
+}
 
 interface ConsoleProps {
   consoleOutputs: Array<ConsoleOutput>;
