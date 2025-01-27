@@ -9,11 +9,10 @@ import { generateEmbedding } from '../embedding';
 
 
 interface LookupFlightManualProps {
-    session: Session;
     dataStream: DataStreamWriter;
 }
 
-export const lookupFlightManual = ({ session, dataStream }: LookupFlightManualProps) =>
+export const lookupFlightManual = ({ dataStream }: LookupFlightManualProps) =>
   tool({
     description:
       'Search the flight manual database for relevant information about specific aircraft types and questions. Returns the most relevant documentation sections based on vector similarity search.',

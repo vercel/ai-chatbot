@@ -18,6 +18,7 @@ import {
 } from '@/lib/db/queries';
 import {
   generateUUID,
+  getAllButLastUserMessage,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from '@/lib/utils';
@@ -27,6 +28,8 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { endConversation } from '@/lib/ai/tools/end-conversation';
+import { lookupFlightManual } from '@/lib/ai/tools/lookup-flight-manual';
 
 
 export const maxDuration = 60;
@@ -67,7 +70,7 @@ export async function POST(request: Request) {
 
   const coreMessages = convertToCoreMessages(messages);
   const userMessage = getMostRecentUserMessage(coreMessages);
-
+  const allButLastUserMessage = getAllButLastUserMessage(coreMessages);
   if (!userMessage) {
     return new Response('No user message found', { status: 400 });
   }
@@ -77,6 +80,16 @@ export async function POST(request: Request) {
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
     await saveChat({ id, userId: session.user.id, title });
+    await saveMessages({
+      messages: [
+        ...allButLastUserMessage.map(message => ({
+          ...message,
+          id: generateUUID(),
+          createdAt: new Date(),
+          chatId: id
+        })),
+      ],
+    });
   }
 
   const userMessageId = generateUUID();
@@ -102,10 +115,10 @@ export async function POST(request: Request) {
         // experimental_activeTools: allTools,
         experimental_transform: smoothStream({ chunking: 'word' }),
         tools: {
-          // endConversation: endConversation({ dataStream }),
-          // lookupFlightManual: lookupFlightManual({ session, dataStream, model }),
+          endConversation: endConversation({ dataStream }),
+          lookupFlightManual: lookupFlightManual({ dataStream }),
         //   getWeather,
-          createDocument: createDocument({ session, dataStream, model }),
+          // createDocument: createDocument({ session, dataStream, model }),
         //   updateDocument: updateDocument({ session, dataStream, model }),
         //   requestSuggestions: requestSuggestions({
         //     session,

@@ -203,6 +203,11 @@ export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
   return userMessages.at(-1);
 }
 
+export function getAllButLastUserMessage(messages: Array<CoreMessage>) {
+  const lastMessage = messages[messages.length - 1];
+  return lastMessage?.role === 'user' ? messages.slice(0, -1) : messages;
+}
+
 export function getDocumentTimestampByIndex(
   documents: Array<Document>,
   index: number,
