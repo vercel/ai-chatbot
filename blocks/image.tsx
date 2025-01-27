@@ -1,6 +1,7 @@
 import { Block } from '@/components/create-block';
 import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { ImageEditor } from '@/components/image-editor';
+import { toast } from 'sonner';
 
 export const imageBlock = new Block({
   kind: 'image',
@@ -23,12 +24,26 @@ export const imageBlock = new Block({
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('prev');
       },
+      isDisabled: ({ currentVersionIndex }) => {
+        if (currentVersionIndex === 0) {
+          return true;
+        }
+
+        return false;
+      },
     },
     {
       icon: <RedoIcon size={18} />,
       description: 'View Next version',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('next');
+      },
+      isDisabled: ({ isCurrentVersion }) => {
+        if (isCurrentVersion) {
+          return true;
+        }
+
+        return false;
       },
     },
     {
@@ -52,6 +67,8 @@ export const imageBlock = new Block({
             }
           }, 'image/png');
         };
+
+        toast.success('Copied image to clipboard!');
       },
     },
   ],
