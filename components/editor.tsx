@@ -25,7 +25,7 @@ import {
 
 type EditorProps = {
   content: string;
-  saveContent: (updatedContent: string, debounce: boolean) => void;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
@@ -34,7 +34,7 @@ type EditorProps = {
 
 function PureEditor({
   content,
-  saveContent,
+  onSaveContent,
   suggestions,
   status,
 }: EditorProps) {
@@ -80,11 +80,15 @@ function PureEditor({
     if (editorRef.current) {
       editorRef.current.setProps({
         dispatchTransaction: (transaction) => {
-          handleTransaction({ transaction, editorRef, saveContent });
+          handleTransaction({
+            transaction,
+            editorRef,
+            onSaveContent,
+          });
         },
       });
     }
-  }, [saveContent]);
+  }, [onSaveContent]);
 
   useEffect(() => {
     if (editorRef.current && content) {
@@ -153,7 +157,7 @@ function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
     prevProps.isCurrentVersion === nextProps.isCurrentVersion &&
     !(prevProps.status === 'streaming' && nextProps.status === 'streaming') &&
     prevProps.content === nextProps.content &&
-    prevProps.saveContent === nextProps.saveContent
+    prevProps.onSaveContent === nextProps.onSaveContent
   );
 }
 

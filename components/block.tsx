@@ -16,27 +16,23 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-
-import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import type { Document, Vote } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
-
-import { DiffView } from './diffview';
-import { DocumentSkeleton } from './document-skeleton';
-import { Editor } from './editor';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { VersionFooter } from './version-footer';
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
-import { CodeEditor } from './code-editor';
-import { Console } from './console';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
-import { ImageEditor } from './image-editor';
+import { textBlock } from '@/blocks/text';
+import { imageBlock } from '@/blocks/image';
+import { codeBlock } from '@/blocks/code';
 
-export type BlockKind = 'text' | 'code' | 'image';
+export const blockDefinitions = [textBlock, codeBlock, imageBlock] as const;
+export type BlockKind = (typeof blockDefinitions)[number]['kind'];
 
 export interface UIBlock {
   title: string;
@@ -51,17 +47,6 @@ export interface UIBlock {
     width: number;
     height: number;
   };
-}
-
-export interface ConsoleOutputContent {
-  type: 'text' | 'image';
-  value: string;
-}
-
-export interface ConsoleOutput {
-  id: string;
-  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
-  contents: Array<ConsoleOutputContent>;
 }
 
 function PureBlock({
@@ -105,7 +90,7 @@ function PureBlock({
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
 }) {
-  const { block, setBlock } = useBlock();
+  const { block, setBlock, metadata, setMetadata } = useBlock();
 
   const {
     data: documents,
@@ -118,22 +103,9 @@ function PureBlock({
     fetcher,
   );
 
-  const { data: suggestions } = useSWR<Array<Suggestion>>(
-    documents && block && block.status !== 'streaming'
-      ? `/api/suggestions?documentId=${block.documentId}`
-      : null,
-    fetcher,
-    {
-      dedupingInterval: 5000,
-    },
-  );
-
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
-  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
-    [],
-  );
 
   const { open: isSidebarOpen } = useSidebar();
 
@@ -267,6 +239,23 @@ function PureBlock({
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
+
+  const blockDefinition = blockDefinitions.find(
+    (definition) => definition.kind === block.kind,
+  );
+
+  if (!blockDefinition) {
+    throw new Error('Block definition not found!');
+  }
+
+  useEffect(() => {
+    if (block && block.documentId !== 'init') {
+      blockDefinition.initialize({
+        documentId: block.documentId,
+        setMetadata,
+      });
+    }
+  }, [block, blockDefinition, setMetadata]);
 
   return (
     <AnimatePresence>
@@ -457,7 +446,8 @@ function PureBlock({
                 handleVersionChange={handleVersionChange}
                 isCurrentVersion={isCurrentVersion}
                 mode={mode}
-                setConsoleOutputs={setConsoleOutputs}
+                metadata={metadata}
+                setMetadata={setMetadata}
               />
             </div>
 
@@ -465,7 +455,7 @@ function PureBlock({
               className={cn(
                 'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
                 {
-                  'py-2 px-2': block.kind === 'code',
+                  '': block.kind === 'code',
                   'py-8 md:p-20 px-4': block.kind === 'text',
                 },
               )}
@@ -476,61 +466,25 @@ function PureBlock({
                   'mx-auto max-w-[600px]': block.kind === 'text',
                 })}
               >
-                {isDocumentsFetching && !block.content ? (
-                  <DocumentSkeleton blockKind={block.kind} />
-                ) : block.kind === 'code' ? (
-                  <CodeEditor
-                    content={
-                      isCurrentVersion
-                        ? block.content
-                        : getDocumentContentById(currentVersionIndex)
-                    }
-                    isCurrentVersion={isCurrentVersion}
-                    currentVersionIndex={currentVersionIndex}
-                    suggestions={suggestions ?? []}
-                    status={block.status}
-                    saveContent={saveContent}
-                  />
-                ) : block.kind === 'text' ? (
-                  mode === 'edit' ? (
-                    <Editor
-                      content={
-                        isCurrentVersion
-                          ? block.content
-                          : getDocumentContentById(currentVersionIndex)
-                      }
-                      isCurrentVersion={isCurrentVersion}
-                      currentVersionIndex={currentVersionIndex}
-                      status={block.status}
-                      saveContent={saveContent}
-                      suggestions={isCurrentVersion ? (suggestions ?? []) : []}
-                    />
-                  ) : (
-                    <DiffView
-                      oldContent={getDocumentContentById(
-                        currentVersionIndex - 1,
-                      )}
-                      newContent={getDocumentContentById(currentVersionIndex)}
-                    />
-                  )
-                ) : block.kind === 'image' ? (
-                  <ImageEditor
-                    title={block.title}
-                    content={
-                      isCurrentVersion
-                        ? block.content
-                        : getDocumentContentById(currentVersionIndex)
-                    }
-                    isCurrentVersion={isCurrentVersion}
-                    currentVersionIndex={currentVersionIndex}
-                    status={block.status}
-                    isInline={false}
-                  />
-                ) : null}
-
-                {suggestions && suggestions.length > 0 ? (
-                  <div className="md:hidden h-dvh w-12 shrink-0" />
-                ) : null}
+                <blockDefinition.content
+                  title={block.title}
+                  content={
+                    isCurrentVersion
+                      ? block.content
+                      : getDocumentContentById(currentVersionIndex)
+                  }
+                  mode={mode}
+                  status={block.status}
+                  currentVersionIndex={currentVersionIndex}
+                  suggestions={[]}
+                  onSaveContent={saveContent}
+                  isInline={false}
+                  isCurrentVersion={isCurrentVersion}
+                  getDocumentContentById={getDocumentContentById}
+                  isLoading={isDocumentsFetching && !block.content}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
+                />
 
                 <AnimatePresence>
                   {isCurrentVersion && (
@@ -556,13 +510,6 @@ function PureBlock({
                   handleVersionChange={handleVersionChange}
                 />
               )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-              <Console
-                consoleOutputs={consoleOutputs}
-                setConsoleOutputs={setConsoleOutputs}
-              />
             </AnimatePresence>
           </motion.div>
         </motion.div>
