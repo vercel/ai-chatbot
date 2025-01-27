@@ -250,10 +250,12 @@ function PureBlock({
 
   useEffect(() => {
     if (block && block.documentId !== 'init') {
-      blockDefinition.initialize({
-        documentId: block.documentId,
-        setMetadata,
-      });
+      if (blockDefinition.initialize) {
+        blockDefinition.initialize({
+          documentId: block.documentId,
+          setMetadata,
+        });
+      }
     }
   }, [block, blockDefinition, setMetadata]);
 

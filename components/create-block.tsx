@@ -59,7 +59,7 @@ type BlockConfig<T extends string, M = any> = {
   content: ComponentType<BlockContent<M>>;
   actions: Array<BlockAction<M>>;
   toolbar: BlockToolbarItem[];
-  initialize: (parameters: InitializeParameters<M>) => void;
+  initialize?: (parameters: InitializeParameters<M>) => void;
   onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setBlock: Dispatch<SetStateAction<UIBlock>>;
@@ -73,7 +73,7 @@ export class Block<T extends string, M = any> {
   readonly content: ComponentType<BlockContent<M>>;
   readonly actions: Array<BlockAction<M>>;
   readonly toolbar: BlockToolbarItem[];
-  readonly initialize: (parameters: InitializeParameters) => void;
+  readonly initialize?: (parameters: InitializeParameters) => void;
   readonly onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setBlock: Dispatch<SetStateAction<UIBlock>>;
