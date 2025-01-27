@@ -80,18 +80,22 @@ export const textBlock = new Block<'text', TextBlockMetadata>({
 
     return (
       <>
-        <Editor
-          content={content}
-          suggestions={metadata ? metadata.suggestions : []}
-          isCurrentVersion={isCurrentVersion}
-          currentVersionIndex={currentVersionIndex}
-          status={status}
-          onSaveContent={onSaveContent}
-        />
+        <div className="flex flex-row py-8 md:p-20 px-4">
+          <Editor
+            content={content}
+            suggestions={metadata ? metadata.suggestions : []}
+            isCurrentVersion={isCurrentVersion}
+            currentVersionIndex={currentVersionIndex}
+            status={status}
+            onSaveContent={onSaveContent}
+          />
 
-        {metadata && metadata.suggestions && metadata.suggestions.length > 0 ? (
-          <div className="md:hidden h-dvh w-12 shrink-0" />
-        ) : null}
+          {metadata &&
+          metadata.suggestions &&
+          metadata.suggestions.length > 0 ? (
+            <div className="md:hidden h-dvh w-12 shrink-0" />
+          ) : null}
+        </div>
       </>
     );
   },
