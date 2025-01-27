@@ -40,14 +40,6 @@ type AllowedTools =
   | 'requestSuggestions'
   | 'getWeather';
 
-// const blocksTools: AllowedTools[] = [
-//   'createDocument',
-//   'updateDocument',
-//   'requestSuggestions',
-// ];
-
-// const weatherTools: AllowedTools[] = ['getWeather'];
-// const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
 export async function POST(request: Request) {
   const {
@@ -117,14 +109,6 @@ export async function POST(request: Request) {
         tools: {
           endConversation: endConversation({ dataStream }),
           lookupFlightManual: lookupFlightManual({ dataStream }),
-        //   getWeather,
-          // createDocument: createDocument({ session, dataStream, model }),
-        //   updateDocument: updateDocument({ session, dataStream, model }),
-        //   requestSuggestions: requestSuggestions({
-        //     session,
-        //     dataStream,
-        //     model,
-        //   }),
         },
         onFinish: async ({ response }) => {
           console.log('onFinish called', response);
