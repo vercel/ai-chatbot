@@ -1,9 +1,10 @@
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { blockDefinitions, UIBlock } from './block';
-import { Dispatch, memo, SetStateAction } from 'react';
+import { Dispatch, memo, SetStateAction, useState } from 'react';
 import { BlockActionContext } from './create-block';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface BlockActionsProps {
   block: UIBlock;
@@ -24,6 +25,8 @@ function PureBlockActions({
   metadata,
   setMetadata,
 }: BlockActionsProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
   const blockDefinition = blockDefinitions.find(
     (definition) => definition.kind === block.kind,
   );
@@ -53,9 +56,23 @@ function PureBlockActions({
                 'p-2': !action.label,
                 'py-1.5 px-2': action.label,
               })}
-              onClick={() => action.onClick(actionContext)}
+              onClick={async () => {
+                setIsLoading(true);
+
+                try {
+                  await Promise.resolve(action.onClick(actionContext));
+                } catch (error) {
+                  toast.error('Failed to execute action');
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
               disabled={
-                action.isDisabled ? action.isDisabled(actionContext) : false
+                isLoading || block.status === 'streaming'
+                  ? true
+                  : action.isDisabled
+                    ? action.isDisabled(actionContext)
+                    : false
               }
             >
               {action.icon}
