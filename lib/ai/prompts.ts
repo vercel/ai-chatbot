@@ -59,7 +59,9 @@ you have a list of tools and here's when you might use them:
     It formats the aircraft issue details in markdown, including aircraft type, squawk details, and a conversation summary. 
     This should be used when wrapping up the troubleshooting session to document the findings.
 
-only ask one question at a time, never ask more than one question at a time.
+
+Really important!!
+    During conversation, you can only ask one question at a time, never ask more than one question at a time!!!
 `;
 
 

@@ -24,10 +24,6 @@ import {
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
 import { endConversation } from '@/lib/ai/tools/end-conversation';
 import { lookupFlightManual } from '@/lib/ai/tools/lookup-flight-manual';
 
