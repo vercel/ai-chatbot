@@ -249,11 +249,11 @@ const DocumentContent = ({ document }: { document: Document }) => {
   return (
     <div className={containerClassName}>
       {document.kind === 'text' ? (
-        <Editor {...commonProps} />
+        <Editor {...commonProps} onSaveContent={() => {}} />
       ) : document.kind === 'code' ? (
         <div className="flex flex-1 relative w-full">
           <div className="absolute inset-0">
-            <CodeEditor {...commonProps} />
+            <CodeEditor {...commonProps} onSaveContent={() => {}} />
           </div>
         </div>
       ) : document.kind === 'image' ? (
