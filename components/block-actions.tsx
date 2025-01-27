@@ -1,6 +1,6 @@
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { blockDefinitions, ConsoleOutput, UIBlock } from './block';
+import { blockDefinitions, UIBlock } from './block';
 import { Dispatch, memo, SetStateAction } from 'react';
 import { BlockActionContext } from './create-block';
 import { cn } from '@/lib/utils';
