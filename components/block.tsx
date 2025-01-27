@@ -17,7 +17,7 @@ import {
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 import type { Document, Vote } from '@/lib/db/schema';
-import { cn, fetcher } from '@/lib/utils';
+import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { VersionFooter } from './version-footer';
@@ -26,10 +26,10 @@ import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
-import equal from 'fast-deep-equal';
 import { textBlock } from '@/blocks/text';
 import { imageBlock } from '@/blocks/image';
 import { codeBlock } from '@/blocks/code';
+import equal from 'fast-deep-equal';
 
 export const blockDefinitions = [textBlock, codeBlock, imageBlock] as const;
 export type BlockKind = (typeof blockDefinitions)[number]['kind'];
@@ -250,10 +250,12 @@ function PureBlock({
 
   useEffect(() => {
     if (block && block.documentId !== 'init') {
-      blockDefinition.initialize({
-        documentId: block.documentId,
-        setMetadata,
-      });
+      if (blockDefinition.initialize) {
+        blockDefinition.initialize({
+          documentId: block.documentId,
+          setMetadata,
+        });
+      }
     }
   }, [block, blockDefinition, setMetadata]);
 
@@ -451,55 +453,40 @@ function PureBlock({
               />
             </div>
 
-            <div
-              className={cn(
-                'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
-                {
-                  '': block.kind === 'code',
-                  'py-8 md:p-20 px-4': block.kind === 'text',
-                },
-              )}
-            >
-              <div
-                className={cn('flex flex-row', {
-                  '': block.kind === 'code',
-                  'mx-auto max-w-[600px]': block.kind === 'text',
-                })}
-              >
-                <blockDefinition.content
-                  title={block.title}
-                  content={
-                    isCurrentVersion
-                      ? block.content
-                      : getDocumentContentById(currentVersionIndex)
-                  }
-                  mode={mode}
-                  status={block.status}
-                  currentVersionIndex={currentVersionIndex}
-                  suggestions={[]}
-                  onSaveContent={saveContent}
-                  isInline={false}
-                  isCurrentVersion={isCurrentVersion}
-                  getDocumentContentById={getDocumentContentById}
-                  isLoading={isDocumentsFetching && !block.content}
-                  metadata={metadata}
-                  setMetadata={setMetadata}
-                />
+            <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
+              <blockDefinition.content
+                title={block.title}
+                content={
+                  isCurrentVersion
+                    ? block.content
+                    : getDocumentContentById(currentVersionIndex)
+                }
+                mode={mode}
+                status={block.status}
+                currentVersionIndex={currentVersionIndex}
+                suggestions={[]}
+                onSaveContent={saveContent}
+                isInline={false}
+                isCurrentVersion={isCurrentVersion}
+                getDocumentContentById={getDocumentContentById}
+                isLoading={isDocumentsFetching && !block.content}
+                metadata={metadata}
+                setMetadata={setMetadata}
+              />
 
-                <AnimatePresence>
-                  {isCurrentVersion && (
-                    <Toolbar
-                      isToolbarVisible={isToolbarVisible}
-                      setIsToolbarVisible={setIsToolbarVisible}
-                      append={append}
-                      isLoading={isLoading}
-                      stop={stop}
-                      setMessages={setMessages}
-                      blockKind={block.kind}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
+              <AnimatePresence>
+                {isCurrentVersion && (
+                  <Toolbar
+                    isToolbarVisible={isToolbarVisible}
+                    setIsToolbarVisible={setIsToolbarVisible}
+                    append={append}
+                    isLoading={isLoading}
+                    stop={stop}
+                    setMessages={setMessages}
+                    blockKind={block.kind}
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
             <AnimatePresence>
