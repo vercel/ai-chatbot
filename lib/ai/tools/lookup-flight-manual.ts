@@ -44,12 +44,11 @@ export const lookupFlightManual = ({ dataStream }: LookupFlightManualProps) =>
           .where(
             and(
               eq(dataFlightKnowledge.aircraft_type, aircraft_type),
-              gt(similarityScore, 0.7)
             )
           )
           .orderBy(desc(similarityScore))
           .limit(3);
-
+        console.log(`results:${JSON.stringify(results)}`);
         if (!results.length) {
           dataStream.writeData({
             type: 'warning',
