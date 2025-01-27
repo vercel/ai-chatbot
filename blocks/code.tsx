@@ -9,23 +9,101 @@ import {
   UndoIcon,
 } from '@/components/icons';
 import { toast } from 'sonner';
+import { generateUUID } from '@/lib/utils';
+import { Console, ConsoleOutput } from '@/components/console';
 
-export const codeBlock = new Block({
+interface Metadata {
+  outputs: Array<ConsoleOutput>;
+}
+
+export const codeBlock = new Block<'code', Metadata>({
   kind: 'code',
   description:
     'Useful for code generation; Code execution is only available for python code.',
-  content: ({ ...props }) => <CodeEditor {...props} />,
+  initialize: () => ({
+    outputs: [],
+  }),
+  onStreamPart: ({ streamPart, setBlock }) => {
+    if (streamPart.type === 'code-delta') {
+      setBlock((draftBlock) => ({
+        ...draftBlock,
+        content: streamPart.content as string,
+        isVisible:
+          draftBlock.status === 'streaming' &&
+          draftBlock.content.length > 300 &&
+          draftBlock.content.length < 310
+            ? true
+            : draftBlock.isVisible,
+        status: 'streaming',
+      }));
+    }
+  },
+  content: ({ metadata, setMetadata, ...props }) => {
+    return (
+      <div className="flex flex-col gap-4 bg-red-500">
+        <CodeEditor {...props} />
+
+        {metadata?.outputs && (
+          <Console
+            consoleOutputs={metadata.outputs}
+            setConsoleOutputs={() => {
+              setMetadata({
+                ...metadata,
+                outputs: [],
+              });
+            }}
+          />
+        )}
+      </div>
+    );
+  },
   actions: [
     {
       icon: <PlayIcon size={18} />,
       label: 'Run',
       description: 'Execute code',
-      onClick: ({ content }) => {
-        // TODO
-        // 1. Initialize pyodide
-        // 2. Run code
-        // 3. Loading third party packages
-        // 4. Display output
+      onClick: async ({ content, setMetadata }) => {
+        const runId = generateUUID();
+        const outputs: any[] = [];
+
+        // @ts-expect-error - loadPyodide is not defined
+        const currentPyodideInstance = await globalThis.loadPyodide({
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
+        });
+
+        currentPyodideInstance.setStdout({
+          batched: (output: string) => {
+            outputs.push({
+              id: runId,
+              contents: [
+                {
+                  type: output.startsWith('data:image/png;base64')
+                    ? 'image'
+                    : 'text',
+                  value: output,
+                },
+              ],
+              status: 'completed',
+            });
+          },
+        });
+
+        await currentPyodideInstance.loadPackagesFromImports(content, {
+          messageCallback: (message: string) => {
+            outputs.push({
+              id: runId,
+              contents: [{ type: 'text', value: message }],
+              status: 'loading_packages',
+            });
+          },
+        });
+
+        await currentPyodideInstance.runPythonAsync(content);
+
+        setMetadata((metadata: any) => ({
+          ...metadata,
+          outputs,
+        }));
       },
     },
     {

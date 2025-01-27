@@ -11,7 +11,8 @@ interface BlockActionsProps {
   currentVersionIndex: number;
   isCurrentVersion: boolean;
   mode: 'edit' | 'diff';
-  setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
+  metadata: any;
+  setMetadata: Dispatch<SetStateAction<any>>;
 }
 
 function PureBlockActions({
@@ -20,7 +21,8 @@ function PureBlockActions({
   currentVersionIndex,
   isCurrentVersion,
   mode,
-  setConsoleOutputs,
+  metadata,
+  setMetadata,
 }: BlockActionsProps) {
   const blockDefinition = blockDefinitions.find(
     (definition) => definition.kind === block.kind,
@@ -36,6 +38,8 @@ function PureBlockActions({
     currentVersionIndex,
     isCurrentVersion,
     mode,
+    metadata,
+    setMetadata,
   };
 
   return (

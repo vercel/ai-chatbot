@@ -5,6 +5,16 @@ import { ImageEditor } from '@/components/image-editor';
 export const imageBlock = new Block({
   kind: 'image',
   description: 'Useful for image generation',
+  onStreamPart: ({ streamPart, setBlock }) => {
+    if (streamPart.type === 'image-delta') {
+      setBlock((draftBlock) => ({
+        ...draftBlock,
+        content: streamPart.content as string,
+        isVisible: true,
+        status: 'streaming',
+      }));
+    }
+  },
   content: ImageEditor,
   actions: [
     {

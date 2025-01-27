@@ -10,11 +10,52 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
+import { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
+import { getSuggestions } from './actions';
 
-export const textBlock = new Block({
+interface TextBlockMetadata {
+  suggestions: Array<Suggestion>;
+}
+
+export const textBlock = new Block<'text', TextBlockMetadata>({
   kind: 'text',
   description: 'Useful for text content, like drafting essays and emails.',
+  initialize: async ({ documentId, setMetadata }) => {
+    const suggestions = await getSuggestions({ documentId });
+
+    setMetadata({
+      suggestions,
+    });
+  },
+  onStreamPart: ({ streamPart, setMetadata, setBlock }) => {
+    if (streamPart.type === 'suggestion') {
+      setMetadata((metadata) => {
+        return {
+          suggestions: [
+            ...metadata.suggestions,
+            streamPart.content as Suggestion,
+          ],
+        };
+      });
+    }
+
+    if (streamPart.type === 'text-delta') {
+      setBlock((draftBlock) => {
+        return {
+          ...draftBlock,
+          content: draftBlock.content + (streamPart.content as string),
+          isVisible:
+            draftBlock.status === 'streaming' &&
+            draftBlock.content.length > 400 &&
+            draftBlock.content.length < 450
+              ? true
+              : draftBlock.isVisible,
+          status: 'streaming',
+        };
+      });
+    }
+  },
   content: ({
     mode,
     status,
@@ -22,12 +63,12 @@ export const textBlock = new Block({
     isCurrentVersion,
     currentVersionIndex,
     onSaveContent,
-    suggestions,
     getDocumentContentById,
     isLoading,
+    metadata,
   }) => {
     if (isLoading) {
-      <DocumentSkeleton blockKind="text" />;
+      return <DocumentSkeleton blockKind="text" />;
     }
 
     if (mode === 'diff') {
@@ -40,7 +81,7 @@ export const textBlock = new Block({
     return (
       <Editor
         content={content}
-        suggestions={suggestions}
+        suggestions={metadata ? metadata.suggestions : []}
         isCurrentVersion={isCurrentVersion}
         currentVersionIndex={currentVersionIndex}
         status={status}
@@ -55,7 +96,7 @@ export const textBlock = new Block({
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('toggle');
       },
-      isDisabled: ({ currentVersionIndex }) => {
+      isDisabled: ({ currentVersionIndex, setMetadata }) => {
         if (currentVersionIndex === 0) {
           return true;
         }

@@ -16,7 +16,7 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import type { Document, Vote } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
@@ -24,7 +24,6 @@ import { VersionFooter } from './version-footer';
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
-import { Console } from './console';
 import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
@@ -48,17 +47,6 @@ export interface UIBlock {
     width: number;
     height: number;
   };
-}
-
-export interface ConsoleOutputContent {
-  type: 'text' | 'image';
-  value: string;
-}
-
-export interface ConsoleOutput {
-  id: string;
-  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
-  contents: Array<ConsoleOutputContent>;
 }
 
 function PureBlock({
@@ -102,7 +90,7 @@ function PureBlock({
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
 }) {
-  const { block, setBlock } = useBlock();
+  const { block, setBlock, metadata, setMetadata } = useBlock();
 
   const {
     data: documents,
@@ -115,22 +103,9 @@ function PureBlock({
     fetcher,
   );
 
-  const { data: suggestions } = useSWR<Array<Suggestion>>(
-    documents && block && block.status !== 'streaming'
-      ? `/api/suggestions?documentId=${block.documentId}`
-      : null,
-    fetcher,
-    {
-      dedupingInterval: 5000,
-    },
-  );
-
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
-  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
-    [],
-  );
 
   const { open: isSidebarOpen } = useSidebar();
 
@@ -273,7 +248,14 @@ function PureBlock({
     throw new Error('Block definition not found!');
   }
 
-  const toolsByBlockKind = blockDefinition.toolbar;
+  useEffect(() => {
+    if (block && block.documentId !== 'init') {
+      blockDefinition.initialize({
+        documentId: block.documentId,
+        setMetadata,
+      });
+    }
+  }, [block, blockDefinition, setMetadata]);
 
   return (
     <AnimatePresence>
@@ -464,7 +446,8 @@ function PureBlock({
                 handleVersionChange={handleVersionChange}
                 isCurrentVersion={isCurrentVersion}
                 mode={mode}
-                setConsoleOutputs={setConsoleOutputs}
+                metadata={metadata}
+                setMetadata={setMetadata}
               />
             </div>
 
@@ -493,17 +476,19 @@ function PureBlock({
                   mode={mode}
                   status={block.status}
                   currentVersionIndex={currentVersionIndex}
-                  suggestions={suggestions ?? []}
+                  suggestions={[]}
                   onSaveContent={saveContent}
                   isInline={false}
                   isCurrentVersion={isCurrentVersion}
                   getDocumentContentById={getDocumentContentById}
                   isLoading={isDocumentsFetching && !block.content}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
                 />
 
-                {suggestions && suggestions.length > 0 ? (
+                {/* {suggestions && suggestions.length > 0 ? (
                   <div className="md:hidden h-dvh w-12 shrink-0" />
-                ) : null}
+                ) : null} */}
 
                 <AnimatePresence>
                   {isCurrentVersion && (
@@ -529,13 +514,6 @@ function PureBlock({
                   handleVersionChange={handleVersionChange}
                 />
               )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-              <Console
-                consoleOutputs={consoleOutputs}
-                setConsoleOutputs={setConsoleOutputs}
-              />
             </AnimatePresence>
           </motion.div>
         </motion.div>
