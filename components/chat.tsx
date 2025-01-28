@@ -7,7 +7,7 @@ import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 
 import { Block } from './block';
 import { MultimodalInput } from './multimodal-input';
@@ -45,6 +45,8 @@ export function Chat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     experimental_throttle: 100,
+    sendExtraMessageFields: true,
+    generateId: generateUUID,
     onFinish: () => {
       mutate('/api/history');
     },
