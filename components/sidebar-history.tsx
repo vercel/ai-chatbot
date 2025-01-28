@@ -151,8 +151,9 @@ export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
 
 export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
-  const { id } = useParams();
   const pathname = usePathname();
+  const params = useParams();
+  const id = params.id ?? pathname.split('/').pop();
   const {
     data: history,
     isLoading,
