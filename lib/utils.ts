@@ -126,9 +126,12 @@ export function convertToUIMessages(
   }, []);
 }
 
+type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
+type ResponseMessage = ResponseMessageWithoutId & { id: string };
+
 export function sanitizeResponseMessages(
-  messages: Array<CoreToolMessage | CoreAssistantMessage>,
-): Array<CoreToolMessage | CoreAssistantMessage> {
+  messages: Array<ResponseMessage>,
+): Array<ResponseMessage> {
   const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
@@ -198,7 +201,7 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   );
 }
 
-export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
+export function getMostRecentUserMessage(messages: Array<Message>) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
@@ -211,14 +214,4 @@ export function getDocumentTimestampByIndex(
   if (index > documents.length) return new Date();
 
   return documents[index].createdAt;
-}
-
-export function getMessageIdFromAnnotations(message: Message) {
-  if (!message.annotations) return message.id;
-
-  const [annotation] = message.annotations;
-  if (!annotation) return message.id;
-
-  // @ts-expect-error messageIdFromServer is not defined in MessageAnnotation
-  return annotation.messageIdFromServer;
 }
