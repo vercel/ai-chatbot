@@ -1,6 +1,5 @@
 import {
   type Message,
-  convertToCoreMessages,
   createDataStreamResponse,
   smoothStream,
   streamText,
@@ -65,8 +64,7 @@ export async function POST(request: Request) {
     return new Response('Model not found', { status: 404 });
   }
 
-  const coreMessages = convertToCoreMessages(messages);
-  const userMessage = getMostRecentUserMessage(coreMessages);
+  const userMessage = getMostRecentUserMessage(messages);
 
   if (!userMessage) {
     return new Response('No user message found', { status: 400 });
@@ -79,28 +77,20 @@ export async function POST(request: Request) {
     await saveChat({ id, userId: session.user.id, title });
   }
 
-  const userMessageId = generateUUID();
-
   await saveMessages({
-    messages: [
-      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
-    ],
+    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
   });
 
   return createDataStreamResponse({
     execute: (dataStream) => {
-      dataStream.writeData({
-        type: 'user-message-id',
-        content: userMessageId,
-      });
-
       const result = streamText({
         model: customModel(model.apiIdentifier),
         system: systemPrompt,
-        messages: coreMessages,
+        messages,
         maxSteps: 5,
         experimental_activeTools: allTools,
         experimental_transform: smoothStream({ chunking: 'word' }),
+        experimental_generateMessageId: generateUUID,
         tools: {
           getWeather,
           createDocument: createDocument({ session, dataStream, model }),
@@ -120,16 +110,8 @@ export async function POST(request: Request) {
               await saveMessages({
                 messages: responseMessagesWithoutIncompleteToolCalls.map(
                   (message) => {
-                    const messageId = generateUUID();
-
-                    if (message.role === 'assistant') {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
-
                     return {
-                      id: messageId,
+                      id: message.id,
                       chatId: id,
                       role: message.role,
                       content: message.content,
