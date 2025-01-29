@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { memo } from "react";
-import "handsontable/styles/handsontable.min.css";
-import "handsontable/styles/ht-theme-main.min.css";
-import { registerAllModules } from "handsontable/registry";
+import React, { memo } from 'react';
+import 'handsontable/styles/handsontable.min.css';
+import 'handsontable/styles/ht-theme-main.min.css';
+import { registerAllModules } from 'handsontable/registry';
 
 registerAllModules();
 
-import { HotTable } from "@handsontable/react-wrapper";
+import { HotTable } from '@handsontable/react-wrapper';
 
 interface SpreadsheetData {
   headers: string[];
@@ -17,7 +17,7 @@ interface SpreadsheetData {
 interface SpreadsheetEditorProps {
   content: string;
   saveContent: (updatedContent: string, debounce: boolean) => void;
-  status: "streaming" | "idle";
+  status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
 }
@@ -41,7 +41,7 @@ const PureSpreadsheetEditor = ({
       themeName="ht-theme-main-dark-auto"
       licenseKey="non-commercial-and-evaluation"
       afterChange={() => {
-        console.log("save changes");
+        console.log('save changes');
       }}
     />
   ) : null;
@@ -54,7 +54,7 @@ function areEqual(
   return (
     prevProps.currentVersionIndex === nextProps.currentVersionIndex &&
     prevProps.isCurrentVersion === nextProps.isCurrentVersion &&
-    !(prevProps.status === "streaming" && nextProps.status === "streaming") &&
+    !(prevProps.status === 'streaming' && nextProps.status === 'streaming') &&
     prevProps.content === nextProps.content &&
     prevProps.saveContent === nextProps.saveContent
   );

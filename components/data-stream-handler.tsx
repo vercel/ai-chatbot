@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useChat } from "ai/react";
-import { useEffect, useRef } from "react";
-import { blockDefinitions, BlockKind } from "./block";
-import { Suggestion } from "@/lib/db/schema";
-import { initialBlockData, useBlock } from "@/hooks/use-block";
+import { useChat } from 'ai/react';
+import { useEffect, useRef } from 'react';
+import { blockDefinitions, BlockKind } from './block';
+import { Suggestion } from '@/lib/db/schema';
+import { initialBlockData, useBlock } from '@/hooks/use-block';
 
 export type DataStreamDelta = {
   type:
-    | "text-delta"
-    | "code-delta"
-    | "spreadsheet-delta"
-    | "image-delta"
-    | "title"
-    | "id"
-    | "suggestion"
-    | "clear"
-    | "finish"
-    | "kind";
+    | 'text-delta'
+    | 'code-delta'
+    | 'spreadsheet-delta'
+    | 'image-delta'
+    | 'title'
+    | 'id'
+    | 'suggestion'
+    | 'clear'
+    | 'finish'
+    | 'kind';
   content: string | Suggestion;
 };
 
@@ -47,42 +47,42 @@ export function DataStreamHandler({ id }: { id: string }) {
 
       setBlock((draftBlock) => {
         if (!draftBlock) {
-          return { ...initialBlockData, status: "streaming" };
+          return { ...initialBlockData, status: 'streaming' };
         }
 
         switch (delta.type) {
-          case "id":
+          case 'id':
             return {
               ...draftBlock,
               documentId: delta.content as string,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "title":
+          case 'title':
             return {
               ...draftBlock,
               title: delta.content as string,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "kind":
+          case 'kind':
             return {
               ...draftBlock,
               kind: delta.content as BlockKind,
-              status: "streaming",
+              status: 'streaming',
             };
 
-          case "clear":
+          case 'clear':
             return {
               ...draftBlock,
-              content: "",
-              status: "streaming",
+              content: '',
+              status: 'streaming',
             };
 
-          case "finish":
+          case 'finish':
             return {
               ...draftBlock,
-              status: "idle",
+              status: 'idle',
             };
 
           default:

@@ -1,22 +1,22 @@
-import { Block } from "@/components/create-block";
-import { MessageIcon, SparklesIcon } from "@/components/icons";
-import { SpreadsheetEditor } from "@/components/sheet-editor";
-import { exportToCSV } from "@/lib/spreadsheet";
-import { toast } from "sonner";
+import { Block } from '@/components/create-block';
+import { MessageIcon, SparklesIcon } from '@/components/icons';
+import { SpreadsheetEditor } from '@/components/sheet-editor';
+import { exportToCSV } from '@/lib/spreadsheet';
+import { toast } from 'sonner';
 
 interface Metadata {}
 
-export const sheetBlock = new Block<"sheet", Metadata>({
-  kind: "sheet",
-  description: "Useful for working with spreadsheets",
+export const sheetBlock = new Block<'sheet', Metadata>({
+  kind: 'sheet',
+  description: 'Useful for working with spreadsheets',
   initialize: async () => {},
   onStreamPart: ({ setBlock, streamPart }) => {
-    if (streamPart.type === "suggestion") {
+    if (streamPart.type === 'suggestion') {
       setBlock((draftBlock) => ({
         ...draftBlock,
         content: streamPart.content as string,
         isVisible: true,
-        status: "streaming",
+        status: 'streaming',
       }));
     }
   },
@@ -40,14 +40,14 @@ export const sheetBlock = new Block<"sheet", Metadata>({
   actions: [
     {
       icon: <SparklesIcon />,
-      description: "Export",
+      description: 'Export',
       onClick: ({ content }) => {
         try {
           exportToCSV(content);
-          toast.success("CSV file downloaded!");
+          toast.success('CSV file downloaded!');
         } catch (error) {
           console.error(error);
-          toast.error("Failed to export CSV");
+          toast.error('Failed to export CSV');
         }
       },
     },
@@ -55,12 +55,12 @@ export const sheetBlock = new Block<"sheet", Metadata>({
   toolbar: [
     {
       onClick: () => {},
-      description: "Format and clean data",
+      description: 'Format and clean data',
       icon: <SparklesIcon />,
     },
     {
       onClick: () => {},
-      description: "Analyze and visualize data",
+      description: 'Analyze and visualize data',
       icon: <MessageIcon />,
     },
   ],
