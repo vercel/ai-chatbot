@@ -1,5 +1,6 @@
 import { Block } from '@/components/create-block';
 import {
+  DownloadIcon,
   MessageIcon,
   RedoIcon,
   SparklesIcon,
@@ -72,7 +73,7 @@ export const sheetBlock = new Block<'sheet', Metadata>({
       },
     },
     {
-      icon: <SparklesIcon />,
+      icon: <DownloadIcon />,
       description: 'Export',
       onClick: ({ content }) => {
         try {
