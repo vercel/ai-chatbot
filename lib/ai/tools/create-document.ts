@@ -9,7 +9,7 @@ import {
 } from 'ai';
 import { z } from 'zod';
 import { customModel, imageGenerationModel } from '..';
-import { codePrompt } from '../prompts';
+import { codePrompt, sheetPrompt } from '../prompts';
 import { saveDocument } from '@/lib/db/queries';
 import { Session } from 'next-auth';
 import { Model } from '../models';
@@ -127,52 +127,33 @@ export const createDocument = ({
       } else if (kind === 'sheet') {
         const { fullStream } = streamObject({
           model: customModel(model.apiIdentifier),
-          system: `You are a spreadsheet initialization assistant. Create a spreadsheet structure based on the title/description and the chat history.
-            - Create meaningful column headers based on the context and chat history
-            - Keep data types consistent within columns
-            - If the title doesn't suggest specific columns, create a general-purpose structure`,
+          system: sheetPrompt,
           prompt: title,
           schema: z.object({
-            headers: z
-              .array(z.string())
-              .describe('Column headers for the spreadsheet'),
-            rows: z.array(z.array(z.string())).describe('Data rows'),
+            csv: z.string().describe('CSV data'),
           }),
         });
-
-        let spreadsheetData: { headers: string[]; rows: string[][] } = {
-          headers: [],
-          rows: [[], []],
-        };
 
         for await (const delta of fullStream) {
           const { type } = delta;
 
           if (type === 'object') {
             const { object } = delta;
-            if (
-              object &&
-              Array.isArray(object.headers) &&
-              Array.isArray(object.rows)
-            ) {
-              // Validate and normalize the data
-              const headers = object.headers.map((h) => String(h || ''));
-              const rows = object.rows.map((row) => {
-                // Handle undefined row by creating empty array
-                const safeRow = (row || []).map((cell) => String(cell || ''));
-                // Ensure row length matches headers
-                while (safeRow.length < headers.length) safeRow.push('');
-                return safeRow.slice(0, headers.length);
+            const { csv } = object;
+
+            if (csv) {
+              dataStream.writeData({
+                type: 'sheet-delta',
+                content: csv,
               });
 
-              spreadsheetData = { headers, rows };
+              draftText = csv;
             }
           }
         }
 
-        draftText = JSON.stringify(spreadsheetData);
         dataStream.writeData({
-          type: 'spreadsheet-delta',
+          type: 'sheet-delta',
           content: draftText,
         });
 

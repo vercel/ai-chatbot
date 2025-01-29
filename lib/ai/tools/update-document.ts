@@ -189,7 +189,7 @@ export const updateDocument = ({
               const newData = { headers, rows };
               draftText = JSON.stringify(newData);
               dataStream.writeData({
-                type: 'spreadsheet-delta',
+                type: 'sheet-delta',
                 content: draftText,
               });
             }

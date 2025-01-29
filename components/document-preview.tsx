@@ -44,6 +44,7 @@ export function DocumentPreview({
 
   useEffect(() => {
     const boundingBox = hitboxRef.current?.getBoundingClientRect();
+
     if (block.documentId && boundingBox) {
       setBlock((block) => ({
         ...block,
@@ -154,6 +155,7 @@ const PureHitboxLayer = ({
           ? { ...block, isVisible: true }
           : {
               ...block,
+              title: result.title,
               documentId: result.id,
               kind: result.kind,
               isVisible: true,

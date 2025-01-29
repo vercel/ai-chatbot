@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import 'handsontable/styles/handsontable.min.css';
 import 'handsontable/styles/ht-theme-main.min.css';
 import { registerAllModules } from 'handsontable/registry';
+import { parse, unparse } from 'papaparse';
 
 registerAllModules();
 
@@ -28,11 +29,22 @@ const PureSpreadsheetEditor = ({
   status,
   isCurrentVersion,
 }: SpreadsheetEditorProps) => {
-  const data: SpreadsheetData = content ? JSON.parse(content) : null;
+  const parseData = (csvContent: string): string[][] | null => {
+    if (!csvContent) return null;
+
+    const result = parse<string[]>(csvContent, { skipEmptyLines: true });
+    return result.data;
+  };
+
+  const generateCsv = (data: string[][]) => {
+    return unparse(data);
+  };
+
+  const data = parseData(content);
 
   return data ? (
     <HotTable
-      data={[data.headers, ...data.rows]}
+      data={data}
       rowHeaders={true}
       colHeaders={true}
       height="auto"
@@ -40,8 +52,20 @@ const PureSpreadsheetEditor = ({
       autoWrapCol={true}
       themeName="ht-theme-main-dark-auto"
       licenseKey="non-commercial-and-evaluation"
-      afterChange={() => {
-        console.log('save changes');
+      customBorders={false}
+      afterChange={(changes) => {
+        if (changes && isCurrentVersion) {
+          const newData: string[][] = data.map((row) => [...row]);
+
+          changes.forEach(([row, prop, _, newValue]) => {
+            if (typeof row === 'number' && typeof prop === 'number') {
+              newData[row][prop] = String(newValue);
+            }
+          });
+
+          const updatedCsv = generateCsv(newData);
+          saveContent(updatedCsv, true);
+        }
       }}
     />
   ) : null;

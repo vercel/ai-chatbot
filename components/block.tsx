@@ -30,7 +30,6 @@ import { textBlock } from '@/blocks/text';
 import { imageBlock } from '@/blocks/image';
 import { codeBlock } from '@/blocks/code';
 import equal from 'fast-deep-equal';
-import { SpreadsheetEditor } from './spreadsheet-editor';
 import { sheetBlock } from '@/blocks/sheet';
 
 export const blockDefinitions = [textBlock, codeBlock, imageBlock, sheetBlock];

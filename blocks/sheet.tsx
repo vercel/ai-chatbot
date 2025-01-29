@@ -1,5 +1,10 @@
 import { Block } from '@/components/create-block';
-import { MessageIcon, SparklesIcon } from '@/components/icons';
+import {
+  MessageIcon,
+  RedoIcon,
+  SparklesIcon,
+  UndoIcon,
+} from '@/components/icons';
 import { SpreadsheetEditor } from '@/components/sheet-editor';
 import { exportToCSV } from '@/lib/spreadsheet';
 import { toast } from 'sonner';
@@ -11,7 +16,7 @@ export const sheetBlock = new Block<'sheet', Metadata>({
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},
   onStreamPart: ({ setBlock, streamPart }) => {
-    if (streamPart.type === 'suggestion') {
+    if (streamPart.type === 'sheet-delta') {
       setBlock((draftBlock) => ({
         ...draftBlock,
         content: streamPart.content as string,
@@ -38,6 +43,34 @@ export const sheetBlock = new Block<'sheet', Metadata>({
     );
   },
   actions: [
+    {
+      icon: <UndoIcon size={18} />,
+      description: 'View Previous version',
+      onClick: ({ handleVersionChange }) => {
+        handleVersionChange('prev');
+      },
+      isDisabled: ({ currentVersionIndex }) => {
+        if (currentVersionIndex === 0) {
+          return true;
+        }
+
+        return false;
+      },
+    },
+    {
+      icon: <RedoIcon size={18} />,
+      description: 'View Next version',
+      onClick: ({ handleVersionChange }) => {
+        handleVersionChange('next');
+      },
+      isDisabled: ({ isCurrentVersion }) => {
+        if (isCurrentVersion) {
+          return true;
+        }
+
+        return false;
+      },
+    },
     {
       icon: <SparklesIcon />,
       description: 'Export',
