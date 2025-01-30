@@ -233,7 +233,7 @@ export async function POST(request: Request) {
 
     console.log("🤖 Calling LLM with streamText");
     const result = await streamText({
-      model: groq('mixtral-8x7b-32768'),
+      model: customModel,
       system: systemPrompt,
       messages: llmMessages,
       maxSteps: 5,
