@@ -255,7 +255,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
           </div>
         </div>
       ) : document.kind === 'sheet' ? (
-        <div className="flex flex-1 relative w-full p-4">
+        <div className="flex flex-1 relative size-full p-4">
           <div className="absolute inset-0">
             <SpreadsheetEditor {...commonProps} />
           </div>

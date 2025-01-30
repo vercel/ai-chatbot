@@ -1,4 +1,3 @@
-import { BLOCK_KINDS } from '@/components/block';
 import type { InferSelectModel } from 'drizzle-orm';
 import {
   pgTable,

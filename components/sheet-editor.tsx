@@ -1,17 +1,22 @@
 'use client';
 
-import React, { memo, useMemo } from 'react';
-import DataGrid from 'react-data-grid';
+import React, { memo, useEffect, useMemo, useState } from 'react';
+import DataGrid, { textEditor } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import { parse, unparse } from 'papaparse';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
 
-interface SheetEditorProps {
+type SheetEditorProps = {
   content: string;
-  saveContent: (updatedContent: string, debounce: boolean) => void;
-  status: 'streaming' | 'idle';
+  saveContent: (content: string, isCurrentVersion: boolean) => void;
+  status: string;
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-}
+};
+
+const MIN_ROWS = 50;
+const MIN_COLS = 26;
 
 const PureSpreadsheetEditor = ({
   content,
@@ -19,77 +24,103 @@ const PureSpreadsheetEditor = ({
   status,
   isCurrentVersion,
 }: SheetEditorProps) => {
-  const parseData = (csvContent: string) => {
-    if (!csvContent) return null;
-    const result = parse<string[]>(csvContent, { skipEmptyLines: true });
-    return result.data;
-  };
+  const { theme } = useTheme();
 
-  const generateCsv = (data: any[][]) => {
-    return unparse(data);
-  };
+  const parseData = useMemo(() => {
+    if (!content) return Array(MIN_ROWS).fill(Array(MIN_COLS).fill(''));
+    const result = parse<string[]>(content, { skipEmptyLines: true });
 
-  const rawData = parseData(content);
+    const paddedData = result.data.map((row) => {
+      const paddedRow = [...row];
+      while (paddedRow.length < MIN_COLS) {
+        paddedRow.push('');
+      }
+      return paddedRow;
+    });
+
+    while (paddedData.length < MIN_ROWS) {
+      paddedData.push(Array(MIN_COLS).fill(''));
+    }
+
+    return paddedData;
+  }, [content]);
 
   const columns = useMemo(() => {
-    if (!rawData || rawData.length === 0) return [];
+    const rowNumberColumn = {
+      key: 'rowNumber',
+      name: '',
+      frozen: true,
+      width: 50,
+      renderCell: ({ rowIdx }: { rowIdx: number }) => rowIdx + 1,
+      cellClass: 'border-t border-r dark:bg-zinc-950 dark:text-zinc-50',
+      headerCellClass: 'border-t border-r dark:bg-zinc-900 dark:text-zinc-50',
+    };
 
-    const columnCount = Math.max(...rawData.map((row) => row.length));
-    return Array.from({ length: columnCount }, (_, i) => ({
+    const dataColumns = Array.from({ length: MIN_COLS }, (_, i) => ({
       key: i.toString(),
       name: String.fromCharCode(65 + i),
-      editor: 'textEditor',
-      editable: true,
+      renderEditCell: textEditor,
+      width: 120,
+      cellClass: cn(`border-t dark:bg-zinc-950 dark:text-zinc-50`, {
+        'border-l': i !== 0,
+      }),
+      headerCellClass: cn(`border-t dark:bg-zinc-900 dark:text-zinc-50`, {
+        'border-l': i !== 0,
+      }),
     }));
-  }, [rawData]);
 
-  const rows = useMemo(() => {
-    if (!rawData) return [];
+    return [rowNumberColumn, ...dataColumns];
+  }, []);
 
-    return rawData.map((row, rowIndex) => {
-      const rowData: any = { id: rowIndex };
+  const initialRows = useMemo(() => {
+    return parseData.map((row, rowIndex) => {
+      const rowData: any = {
+        id: rowIndex,
+        rowNumber: rowIndex + 1,
+      };
 
-      columns.forEach((col, colIndex) => {
+      columns.slice(1).forEach((col, colIndex) => {
         rowData[col.key] = row[colIndex] || '';
       });
 
       return rowData;
     });
-  }, [rawData, columns]);
+  }, [parseData, columns]);
 
-  function onCellEdit(rowIndex: number, columnKey: string, newValue: string) {
-    if (!isCurrentVersion) return;
+  const [localRows, setLocalRows] = useState(initialRows);
 
-    const newRows = [...rows];
-    newRows[rowIndex] = { ...newRows[rowIndex], [columnKey]: newValue };
+  useEffect(() => {
+    setLocalRows(initialRows);
+  }, [initialRows]);
 
-    // Convert the rows back to 2D array format
-    const newData = newRows.map((row) =>
-      columns.map((col) => row[col.key] || ''),
-    );
+  const generateCsv = (data: any[][]) => {
+    return unparse(data);
+  };
 
-    const updatedCsv = generateCsv(newData);
-    saveContent(updatedCsv, true);
-  }
+  const handleRowsChange = (newRows: any[]) => {
+    // Immediately update local state
+    setLocalRows(newRows);
 
-  return rawData ? (
+    // Still trigger the save operation
+    const updatedData = newRows.map((row) => {
+      return columns.slice(1).map((col) => row[col.key] || '');
+    });
+
+    const newCsvContent = generateCsv(updatedData);
+    saveContent(newCsvContent, true);
+  };
+
+  return (
     <div style={{ height: '100%', width: '100%' }}>
       <DataGrid
+        className={theme === 'dark' ? 'rdg-dark' : 'rdg-light'}
         columns={columns}
-        rows={rows}
+        rows={localRows}
+        enableVirtualization
+        onRowsChange={handleRowsChange}
         onCellClick={(args) => {
-          args.selectCell();
-        }}
-        onCellKeyDown={(args) => {
-          if (args.mode !== 'EDIT' && args.row.id !== undefined) {
-            args.enableEditMode();
-          }
-        }}
-        onRowsChange={(newRows, { indexes, column }) => {
-          if (indexes.length === 1) {
-            const rowIndex = indexes[0];
-            const newValue = newRows[rowIndex][column.key];
-            onCellEdit(rowIndex, column.key, newValue);
+          if (args.column.key !== 'rowNumber') {
+            args.selectCell(true);
           }
         }}
         style={{ height: '100%' }}
@@ -97,9 +128,11 @@ const PureSpreadsheetEditor = ({
           resizable: true,
           sortable: true,
         }}
+        rowHeight={35}
+        headerRowHeight={35}
       />
     </div>
-  ) : null;
+  );
 };
 
 function areEqual(prevProps: SheetEditorProps, nextProps: SheetEditorProps) {

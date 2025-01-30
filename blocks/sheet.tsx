@@ -1,13 +1,13 @@
 import { Block } from '@/components/create-block';
 import {
-  DownloadIcon,
-  MessageIcon,
+  CopyIcon,
+  LineChartIcon,
   RedoIcon,
   SparklesIcon,
   UndoIcon,
 } from '@/components/icons';
 import { SpreadsheetEditor } from '@/components/sheet-editor';
-import { exportToCSV } from '@/lib/spreadsheet';
+import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
 
 interface Metadata {}
@@ -73,29 +73,43 @@ export const sheetBlock = new Block<'sheet', Metadata>({
       },
     },
     {
-      icon: <DownloadIcon />,
-      description: 'Export',
+      icon: <CopyIcon />,
+      description: 'Copy as .csv',
       onClick: ({ content }) => {
-        try {
-          exportToCSV(content);
-          toast.success('CSV file downloaded!');
-        } catch (error) {
-          console.error(error);
-          toast.error('Failed to export CSV');
-        }
+        const parsed = parse<string[]>(content, { skipEmptyLines: true });
+
+        const nonEmptyRows = parsed.data.filter((row) =>
+          row.some((cell) => cell.trim() !== ''),
+        );
+
+        const cleanedCsv = unparse(nonEmptyRows);
+
+        navigator.clipboard.writeText(cleanedCsv);
+        toast.success('Copied csv to clipboard!');
       },
     },
   ],
   toolbar: [
     {
-      onClick: () => {},
       description: 'Format and clean data',
       icon: <SparklesIcon />,
+      onClick: ({ appendMessage }) => {
+        appendMessage({
+          role: 'user',
+          content: 'Can you please format and clean the data?',
+        });
+      },
     },
     {
-      onClick: () => {},
       description: 'Analyze and visualize data',
-      icon: <MessageIcon />,
+      icon: <LineChartIcon />,
+      onClick: ({ appendMessage }) => {
+        appendMessage({
+          role: 'user',
+          content:
+            'Can you please analyze and visualize the data by creating a new code block in python?',
+        });
+      },
     },
   ],
 });
