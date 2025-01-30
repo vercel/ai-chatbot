@@ -18,7 +18,7 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
-    "@ai-sdk/groq": "^1.0.4",
+    "@ai-sdk/groq": "1.0.0-canary.3",
     "@ai-sdk/openai": "1.0.0-canary.3",
     "@huggingface/transformers": "^3.1.0",
     "@pinecone-database/pinecone": "^4.0.0",
