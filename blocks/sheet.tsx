@@ -10,7 +10,7 @@ import { SpreadsheetEditor } from '@/components/sheet-editor';
 import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
 
-interface Metadata {}
+type Metadata = any;
 
 export const sheetBlock = new Block<'sheet', Metadata>({
   kind: 'sheet',
