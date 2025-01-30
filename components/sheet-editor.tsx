@@ -2,10 +2,11 @@
 
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import DataGrid, { textEditor } from 'react-data-grid';
-import 'react-data-grid/lib/styles.css';
 import { parse, unparse } from 'papaparse';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+
+import 'react-data-grid/lib/styles.css';
 
 type SheetEditorProps = {
   content: string;
@@ -98,10 +99,8 @@ const PureSpreadsheetEditor = ({
   };
 
   const handleRowsChange = (newRows: any[]) => {
-    // Immediately update local state
     setLocalRows(newRows);
 
-    // Still trigger the save operation
     const updatedData = newRows.map((row) => {
       return columns.slice(1).map((col) => row[col.key] || '');
     });
@@ -111,7 +110,21 @@ const PureSpreadsheetEditor = ({
   };
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
+    <>
+      <style>
+        {/* {`
+        .r1y6ywlx7-0-0-beta-47 {
+          @layer rdg.HeaderCell {
+            cursor: col-resize;
+            position: absolute;
+            inset-block-start: 0;
+            inset-inline-end: initial;
+            inset-block-end: initial;
+            inline-size: initial;
+          }
+        }
+      `} */}
+      </style>
       <DataGrid
         className={theme === 'dark' ? 'rdg-dark' : 'rdg-light'}
         columns={columns}
@@ -128,10 +141,8 @@ const PureSpreadsheetEditor = ({
           resizable: true,
           sortable: true,
         }}
-        rowHeight={35}
-        headerRowHeight={35}
       />
-    </div>
+    </>
   );
 };
 
