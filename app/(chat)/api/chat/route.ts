@@ -6,7 +6,7 @@ import {
   streamText,
 } from "ai";
 //import { z } from "zod";
-import { groq } from '@ai-sdk/groq';
+import { groq } from "@ai-sdk/groq";
 
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
@@ -68,6 +68,14 @@ const HF_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extrac
 async function getEmbeddings(text: string) {
   console.log("📤 Sending text to HF:", text.substring(0, 100) + "...");
 
+  // Add debug logging for API key
+  console.log("🔑 HF API Key exists:", !!process.env.HUGGINGFACE_API_KEY);
+  console.log("🔑 HF API Key length:", process.env.HUGGINGFACE_API_KEY?.length);
+  console.log(
+    "🔑 HF API Key first 4 chars:",
+    process.env.HUGGINGFACE_API_KEY?.substring(0, 4)
+  );
+
   const payload = {
     inputs: text,
     options: { wait_for_model: true },
@@ -78,17 +86,19 @@ async function getEmbeddings(text: string) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-      "Content-Type": "application/json", // Added this header explicitly
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("🚫 HF API Error:", {
+    console.error("🚫 HF API Error Details:", {
       status: response.status,
       statusText: response.statusText,
       error: errorText,
+      url: HF_API_URL,
+      headers: Object.fromEntries(response.headers.entries()),
     });
     throw new Error(
       `Failed to get embeddings: ${response.statusText} - ${errorText}`
