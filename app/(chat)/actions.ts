@@ -1,19 +1,19 @@
-"use server";
+'use server';
 
-import { generateText, type Message } from "ai";
-import { cookies } from "next/headers";
+import { generateText, type Message } from 'ai';
+import { cookies } from 'next/headers';
 
-import { customModel } from "@/lib/ai";
+import { customModel } from '@/lib/ai';
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
   updateChatVisiblityById,
-} from "@/lib/db/queries";
-import type { VisibilityType } from "@/components/visibility-selector";
+} from '@/lib/db/queries';
+import type { VisibilityType } from '@/components/visibility-selector';
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
-  cookieStore.set("model-id", model);
+  cookieStore.set('model-id', model);
 }
 
 export async function generateTitleFromUserMessage({
@@ -22,7 +22,7 @@ export async function generateTitleFromUserMessage({
   message: Message;
 }) {
   const { text: title } = await generateText({
-    model: customModel("gpt-4o-mini", "openai"),
+    model: customModel('gpt-4o-mini', 'openai'),
     system: `\n
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long

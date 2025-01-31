@@ -1,4 +1,4 @@
-import { generateUUID } from "@/lib/utils";
+import { generateUUID } from '@/lib/utils';
 import {
   type DataStreamWriter,
   experimental_generateImage,
@@ -6,13 +6,13 @@ import {
   streamObject,
   streamText,
   tool,
-} from "ai";
-import { z } from "zod";
-import { customModel, imageGenerationModel } from "..";
-import { codePrompt } from "../prompts";
-import { saveDocument } from "@/lib/db/queries";
-import type { Session } from "next-auth";
-import type { Model } from "../models";
+} from 'ai';
+import { z } from 'zod';
+import { customModel, imageGenerationModel } from '..';
+import { codePrompt } from '../prompts';
+import { saveDocument } from '@/lib/db/queries';
+import type { Session } from 'next-auth';
+import type { Model } from '../models';
 
 interface CreateDocumentProps {
   model: Model;
@@ -27,41 +27,41 @@ export const createDocument = ({
 }: CreateDocumentProps) =>
   tool({
     description:
-      "Create a document for a writing or content creation activities like image generation. This tool will call other functions that will generate the contents of the document based on the title and kind.",
+      'Create a document for a writing or content creation activities like image generation. This tool will call other functions that will generate the contents of the document based on the title and kind.',
     parameters: z.object({
       title: z.string(),
-      kind: z.enum(["text", "code", "image"]),
+      kind: z.enum(['text', 'code', 'image']),
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();
-      let draftText = "";
+      let draftText = '';
 
       dataStream.writeData({
-        type: "id",
+        type: 'id',
         content: id,
       });
 
       dataStream.writeData({
-        type: "title",
+        type: 'title',
         content: title,
       });
 
       dataStream.writeData({
-        type: "kind",
+        type: 'kind',
         content: kind,
       });
 
       dataStream.writeData({
-        type: "clear",
-        content: "",
+        type: 'clear',
+        content: '',
       });
 
-      if (kind === "text") {
+      if (kind === 'text') {
         const result = streamText({
           model: customModel(model.apiIdentifier, model.provider),
           system:
-            "Write about the given topic. Markdown is supported. Use headings wherever appropriate.",
-          experimental_transform: smoothStream({ chunking: "word" }),
+            'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+          experimental_transform: smoothStream({ chunking: 'word' }),
           prompt: title,
         });
 
@@ -70,8 +70,8 @@ export const createDocument = ({
         });
 
         // TODO is this still needed?
-        dataStream.writeData({ type: "finish", content: "" });
-      } else if (kind === "code") {
+        dataStream.writeData({ type: 'finish', content: '' });
+      } else if (kind === 'code') {
         const { fullStream } = streamObject({
           model: customModel(model.apiIdentifier, model.provider),
           system: codePrompt,
@@ -85,14 +85,14 @@ export const createDocument = ({
         for await (const delta of fullStream) {
           const { type } = delta;
 
-          if (type === "object") {
+          if (type === 'object') {
             const { object } = delta;
             const { code } = object;
 
             if (code) {
               dataStream.writeData({
-                type: "code-delta",
-                content: code ?? "",
+                type: 'code-delta',
+                content: code ?? '',
               });
 
               draftText = code;
@@ -100,8 +100,8 @@ export const createDocument = ({
           }
         }
 
-        dataStream.writeData({ type: "finish", content: "" });
-      } else if (kind === "image") {
+        dataStream.writeData({ type: 'finish', content: '' });
+      } else if (kind === 'image') {
         const { image } = await experimental_generateImage({
           model: imageGenerationModel,
           prompt: title,
@@ -111,11 +111,11 @@ export const createDocument = ({
         draftText = image.base64;
 
         dataStream.writeData({
-          type: "image-delta",
+          type: 'image-delta',
           content: image.base64,
         });
 
-        dataStream.writeData({ type: "finish", content: "" });
+        dataStream.writeData({ type: 'finish', content: '' });
       }
 
       if (session.user?.id) {
@@ -132,7 +132,7 @@ export const createDocument = ({
         id,
         title,
         kind,
-        content: "A document was created and is now visible to the user.",
+        content: 'A document was created and is now visible to the user.',
       };
     },
   });

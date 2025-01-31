@@ -27,11 +27,7 @@ import {
 } from '@/components/ui/tooltip';
 import { sanitizeUIMessages } from '@/lib/utils';
 
-import {
-  ArrowUpIcon,
-  StopIcon,
-  SummarizeIcon,
-} from './icons';
+import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
 import { blockDefinitions, type BlockKind } from './block';
 import type { BlockToolbarItem } from './create-block';
 import type { UseChatHelpers } from 'ai/react';
