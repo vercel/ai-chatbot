@@ -8,8 +8,6 @@ import { useWindowSize } from 'usehooks-ts';
 
 import type { Document } from '@/lib/db/schema';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
-
-import type { UIBlock } from './block';
 import { LoaderIcon } from './icons';
 import { Button } from './ui/button';
 import { useBlock } from '@/hooks/use-block';

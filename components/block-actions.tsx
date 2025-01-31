@@ -1,8 +1,8 @@
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { blockDefinitions, UIBlock } from './block';
-import { Dispatch, memo, SetStateAction, useState } from 'react';
-import { BlockActionContext } from './create-block';
+import { blockDefinitions, type UIBlock } from './block';
+import { type Dispatch, memo, type SetStateAction, useState } from 'react';
+import type { BlockActionContext } from './create-block';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 

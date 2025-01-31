@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { UIBlock } from '@/components/block';
+import type { UIBlock } from '@/components/block';
 import { useCallback, useMemo } from 'react';
 
 export const initialBlockData: UIBlock = {

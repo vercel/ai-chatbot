@@ -11,7 +11,7 @@ import {
 import {
   type Dispatch,
   memo,
-  ReactNode,
+  type ReactNode,
   type SetStateAction,
   useEffect,
   useRef,
@@ -29,16 +29,12 @@ import { sanitizeUIMessages } from '@/lib/utils';
 
 import {
   ArrowUpIcon,
-  CodeIcon,
-  LogsIcon,
-  MessageIcon,
-  PenIcon,
   StopIcon,
   SummarizeIcon,
 } from './icons';
-import { blockDefinitions, BlockKind } from './block';
-import { BlockToolbarItem } from './create-block';
-import { UseChatHelpers } from 'ai/react';
+import { blockDefinitions, type BlockKind } from './block';
+import type { BlockToolbarItem } from './create-block';
+import type { UseChatHelpers } from 'ai/react';
 
 type ToolProps = {
   description: string;

@@ -1,8 +1,8 @@
-import { Suggestion } from '@/lib/db/schema';
-import { UseChatHelpers } from 'ai/react';
-import { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
-import { DataStreamDelta } from './data-stream-handler';
-import { UIBlock } from './block';
+import type { Suggestion } from '@/lib/db/schema';
+import type { UseChatHelpers } from 'ai/react';
+import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
+import type { DataStreamDelta } from './data-stream-handler';
+import type { UIBlock } from './block';
 
 export type BlockActionContext<M = any> = {
   content: string;

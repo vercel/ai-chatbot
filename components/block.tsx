@@ -249,7 +249,7 @@ function PureBlock({
   }
 
   useEffect(() => {
-    if (block.documentId !== 'init') {
+    if (block && block.documentId !== 'init') {
       if (blockDefinition.initialize) {
         blockDefinition.initialize({
           documentId: block.documentId,
@@ -257,7 +257,7 @@ function PureBlock({
         });
       }
     }
-  }, [block.documentId, blockDefinition, setMetadata]);
+  }, [block, blockDefinition, setMetadata]);
 
   return (
     <AnimatePresence>
