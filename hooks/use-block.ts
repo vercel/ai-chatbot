@@ -1,8 +1,8 @@
 'use client';
 
+import useSWR from 'swr';
 import { UIBlock } from '@/components/block';
 import { useCallback, useMemo } from 'react';
-import useSWR from 'swr';
 
 export const initialBlockData: UIBlock = {
   documentId: 'init',
@@ -19,7 +19,6 @@ export const initialBlockData: UIBlock = {
   },
 };
 
-// Add type for selector function
 type Selector<T> = (state: UIBlock) => T;
 
 export function useBlockSelector<Selected>(selector: Selector<Selected>) {
@@ -64,5 +63,22 @@ export function useBlock() {
     [setLocalBlock],
   );
 
-  return useMemo(() => ({ block, setBlock }), [block, setBlock]);
+  const { data: localBlockMetadata, mutate: setLocalBlockMetadata } =
+    useSWR<any>(
+      () => (block.documentId ? `block-metadata-${block.documentId}` : null),
+      null,
+      {
+        fallbackData: null,
+      },
+    );
+
+  return useMemo(
+    () => ({
+      block,
+      setBlock,
+      metadata: localBlockMetadata,
+      setMetadata: setLocalBlockMetadata,
+    }),
+    [block, setBlock, localBlockMetadata, setLocalBlockMetadata],
+  );
 }
