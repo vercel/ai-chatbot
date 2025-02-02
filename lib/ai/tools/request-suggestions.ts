@@ -1,20 +1,17 @@
 import { z } from 'zod';
-import { Model } from '../models';
+import { registry } from '../models';
 import { Session } from 'next-auth';
 import { DataStreamWriter, streamObject, tool } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
 import { Suggestion } from '@/lib/db/schema';
-import { customModel } from '..';
 import { generateUUID } from '@/lib/utils';
 
 interface RequestSuggestionsProps {
-  model: Model;
   session: Session;
   dataStream: DataStreamWriter;
 }
 
 export const requestSuggestions = ({
-  model,
   session,
   dataStream,
 }: RequestSuggestionsProps) =>
@@ -39,7 +36,7 @@ export const requestSuggestions = ({
       > = [];
 
       const { elementStream } = streamObject({
-        model: customModel(model.apiIdentifier),
+        model: registry.languageModel('openai:gpt-4o-mini'),
         system:
           'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
         prompt: document.content,

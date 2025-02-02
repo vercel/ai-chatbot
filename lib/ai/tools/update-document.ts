@@ -6,24 +6,18 @@ import {
   streamText,
   tool,
 } from 'ai';
-import { Model } from '../models';
 import { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
-import { customModel, imageGenerationModel } from '..';
 import { updateDocumentPrompt } from '../prompts';
+import { imageGenerationModel, registry } from '../models';
 
 interface UpdateDocumentProps {
-  model: Model;
   session: Session;
   dataStream: DataStreamWriter;
 }
 
-export const updateDocument = ({
-  model,
-  session,
-  dataStream,
-}: UpdateDocumentProps) =>
+export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
     parameters: z.object({
@@ -51,7 +45,7 @@ export const updateDocument = ({
 
       if (document.kind === 'text') {
         const { fullStream } = streamText({
-          model: customModel(model.apiIdentifier),
+          model: registry.languageModel('openai:gpt-4o-mini'),
           system: updateDocumentPrompt(currentContent, 'text'),
           experimental_transform: smoothStream({ chunking: 'word' }),
           prompt: description,
@@ -82,7 +76,7 @@ export const updateDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'code') {
         const { fullStream } = streamObject({
-          model: customModel(model.apiIdentifier),
+          model: registry.languageModel('openai:gpt-4o-mini'),
           system: updateDocumentPrompt(currentContent, 'code'),
           prompt: description,
           schema: z.object({

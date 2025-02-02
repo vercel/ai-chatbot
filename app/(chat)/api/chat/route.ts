@@ -6,8 +6,7 @@ import {
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
-import { customModel } from '@/lib/ai';
-import { models } from '@/lib/ai/models';
+import { chatModels, registry } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -48,8 +47,8 @@ export async function POST(request: Request) {
   const {
     id,
     messages,
-    modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
+    selectedChatModel,
+  }: { id: string; messages: Array<Message>; selectedChatModel: string } =
     await request.json();
 
   const session = await auth();
@@ -58,10 +57,12 @@ export async function POST(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const model = models.find((model) => model.id === modelId);
+  const chatModel = chatModels.find(
+    (chatModel) => chatModel.id === selectedChatModel,
+  );
 
-  if (!model) {
-    return new Response('Model not found', { status: 404 });
+  if (!chatModel) {
+    return new Response('Chat model not found', { status: 404 });
   }
 
   const userMessage = getMostRecentUserMessage(messages);
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: customModel(model.apiIdentifier),
+        model: registry.languageModel(chatModel.modelByProvider),
         system: systemPrompt,
         messages,
         maxSteps: 5,
@@ -93,12 +94,11 @@ export async function POST(request: Request) {
         experimental_generateMessageId: generateUUID,
         tools: {
           getWeather,
-          createDocument: createDocument({ session, dataStream, model }),
-          updateDocument: updateDocument({ session, dataStream, model }),
+          createDocument: createDocument({ session, dataStream }),
+          updateDocument: updateDocument({ session, dataStream }),
           requestSuggestions: requestSuggestions({
             session,
             dataStream,
-            model,
           }),
         },
         onFinish: async ({ response }) => {
