@@ -3,6 +3,7 @@ import {
   createDataStreamResponse,
   smoothStream,
   streamText,
+  wrapLanguageModel,
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
@@ -25,6 +26,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { middlewareByModelId } from '@/lib/ai/middlewares';
 
 export const maxDuration = 60;
 
@@ -65,6 +67,12 @@ export async function POST(request: Request) {
     return new Response('Chat model not found', { status: 404 });
   }
 
+  const selectedMiddleware = middlewareByModelId[selectedChatModel];
+
+  if (!selectedMiddleware) {
+    return new Response('Middleware not found', { status: 404 });
+  }
+
   const userMessage = getMostRecentUserMessage(messages);
 
   if (!userMessage) {
@@ -85,7 +93,10 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: registry.languageModel(chatModel.modelByProvider),
+        model: wrapLanguageModel({
+          model: registry.languageModel(chatModel.modelByProvider),
+          middleware: selectedMiddleware,
+        }),
         system: systemPrompt,
         messages,
         maxSteps: 5,
@@ -131,7 +142,9 @@ export async function POST(request: Request) {
         },
       });
 
-      result.mergeIntoDataStream(dataStream);
+      result.mergeIntoDataStream(dataStream, {
+        sendReasoning: true,
+      });
     },
   });
 }
