@@ -124,6 +124,35 @@ export const updateDocument = ({
         });
 
         dataStream.writeData({ type: 'finish', content: '' });
+      } else if (document.kind === 'sheet') {
+        const { fullStream } = streamObject({
+          model: customModel(model.apiIdentifier),
+          system: updateDocumentPrompt(currentContent, 'sheet'),
+          prompt: description,
+          schema: z.object({
+            csv: z.string(),
+          }),
+        });
+
+        for await (const delta of fullStream) {
+          const { type } = delta;
+
+          if (type === 'object') {
+            const { object } = delta;
+            const { csv } = object;
+
+            if (csv) {
+              dataStream.writeData({
+                type: 'sheet-delta',
+                content: csv,
+              });
+
+              draftText = csv;
+            }
+          }
+        }
+
+        dataStream.writeData({ type: 'finish', content: '' });
       }
 
       if (session.user?.id) {
