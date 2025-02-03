@@ -1,40 +1,49 @@
 import { openai } from '@ai-sdk/openai';
 import { fireworks } from '@ai-sdk/fireworks';
-import { experimental_createProviderRegistry } from 'ai';
+import {
+  customProvider,
+  extractReasoningMiddleware,
+  wrapLanguageModel,
+} from 'ai';
 
-export const registry = experimental_createProviderRegistry({
-  openai,
-  fireworks,
+export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
+
+export const myProvider = customProvider({
+  languageModels: {
+    'title-model': openai('gpt-4-turbo'),
+    'block-model': openai('gpt-4o-mini'),
+    'chat-model-large': openai('gpt-4o-mini'),
+    'chat-model-small': openai('gpt-4o'),
+    'chat-model-reasoning': wrapLanguageModel({
+      model: fireworks('accounts/fireworks/models/deepseek-r1'),
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    }),
+  },
+  imageModels: {
+    'small-model': openai.image('dall-e-3'),
+  },
 });
 
 interface ChatModel {
   id: string;
-  modelByProvider: string;
   name: string;
   description: string;
 }
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'small-model',
-    modelByProvider: 'openai:gpt-4o-mini',
+    id: 'chat-model-small',
     name: 'Small model',
     description: 'Small model for fast, lightweight tasks',
   },
   {
-    id: 'large-model',
-    modelByProvider: 'openai:gpt-4o',
+    id: 'chat-model–large',
     name: 'Large model',
     description: 'Large model for complex, multi-step tasks',
   },
   {
-    id: 'reasoning-model',
-    modelByProvider: 'fireworks:accounts/fireworks/models/deepseek-r1',
+    id: 'chat-model-reasoning',
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
   },
 ];
-
-export const DEFAULT_CHAT_MODEL: string = 'small-model';
-
-export const imageGenerationModel = openai.image('dall-e-3');

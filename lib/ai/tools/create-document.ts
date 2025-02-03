@@ -11,8 +11,7 @@ import { z } from 'zod';
 import { codePrompt, sheetPrompt } from '../prompts';
 import { saveDocument } from '@/lib/db/queries';
 import { Session } from 'next-auth';
-import { imageGenerationModel, registry } from '../models';
-import { openai } from '@ai-sdk/openai';
+import { myProvider } from '../models';
 
 interface CreateDocumentProps {
   session: Session;
@@ -53,7 +52,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
 
       if (kind === 'text') {
         const { fullStream } = streamText({
-          model: registry.languageModel('openai:gpt-4o-mini'),
+          model: myProvider.languageModel('block-model'),
           system:
             'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -77,7 +76,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (kind === 'code') {
         const { fullStream } = streamObject({
-          model: registry.languageModel('openai:gpt-4o-mini'),
+          model: myProvider.languageModel('block-model'),
           system: codePrompt,
           prompt: title,
           schema: z.object({
@@ -106,7 +105,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (kind === 'image') {
         const { image } = await experimental_generateImage({
-          model: imageGenerationModel,
+          model: myProvider.imageModel('small-model'),
           prompt: title,
           n: 1,
         });
@@ -121,7 +120,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (kind === 'sheet') {
         const { fullStream } = streamObject({
-          model: registry.languageModel('openai:gpt-4o-mini'),
+          model: myProvider.languageModel('block-model'),
           system: sheetPrompt,
           prompt: title,
           schema: z.object({

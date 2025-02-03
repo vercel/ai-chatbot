@@ -7,7 +7,7 @@ import {
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
-import { chatModels, registry } from '@/lib/ai/models';
+import { myProvider } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -26,7 +26,6 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { middlewareByModelId } from '@/lib/ai/middlewares';
 
 export const maxDuration = 60;
 
@@ -59,20 +58,6 @@ export async function POST(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const chatModel = chatModels.find(
-    (chatModel) => chatModel.id === selectedChatModel,
-  );
-
-  if (!chatModel) {
-    return new Response('Chat model not found', { status: 404 });
-  }
-
-  const selectedMiddleware = middlewareByModelId[selectedChatModel];
-
-  if (!selectedMiddleware) {
-    return new Response('Middleware not found', { status: 404 });
-  }
-
   const userMessage = getMostRecentUserMessage(messages);
 
   if (!userMessage) {
@@ -93,10 +78,7 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: wrapLanguageModel({
-          model: registry.languageModel(chatModel.modelByProvider),
-          middleware: selectedMiddleware,
-        }),
+        model: myProvider.languageModel(selectedChatModel),
         system: systemPrompt,
         messages,
         maxSteps: 5,

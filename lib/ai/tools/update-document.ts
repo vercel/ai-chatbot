@@ -10,7 +10,7 @@ import { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
 import { updateDocumentPrompt } from '../prompts';
-import { imageGenerationModel, registry } from '../models';
+import { myProvider } from '../models';
 
 interface UpdateDocumentProps {
   session: Session;
@@ -45,7 +45,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
 
       if (document.kind === 'text') {
         const { fullStream } = streamText({
-          model: registry.languageModel('openai:gpt-4o-mini'),
+          model: myProvider.languageModel('block-model'),
           system: updateDocumentPrompt(currentContent, 'text'),
           experimental_transform: smoothStream({ chunking: 'word' }),
           prompt: description,
@@ -76,7 +76,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'code') {
         const { fullStream } = streamObject({
-          model: registry.languageModel('openai:gpt-4o-mini'),
+          model: myProvider.languageModel('block-model'),
           system: updateDocumentPrompt(currentContent, 'code'),
           prompt: description,
           schema: z.object({
@@ -105,7 +105,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'image') {
         const { image } = await experimental_generateImage({
-          model: imageGenerationModel,
+          model: myProvider.imageModel('image-model'),
           prompt: description,
           n: 1,
         });
@@ -120,7 +120,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'sheet') {
         const { fullStream } = streamObject({
-          model: registry.languageModel('openai:gpt-4o-mini'),
+          model: myProvider.languageModel('block-model'),
           system: updateDocumentPrompt(currentContent, 'sheet'),
           prompt: description,
           schema: z.object({
