@@ -6,24 +6,18 @@ import {
   streamText,
   tool,
 } from 'ai';
-import { Model } from '../models';
 import { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
-import { customModel, imageGenerationModel } from '..';
 import { updateDocumentPrompt } from '../prompts';
+import { myProvider } from '../models';
 
 interface UpdateDocumentProps {
-  model: Model;
   session: Session;
   dataStream: DataStreamWriter;
 }
 
-export const updateDocument = ({
-  model,
-  session,
-  dataStream,
-}: UpdateDocumentProps) =>
+export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
     parameters: z.object({
@@ -51,7 +45,7 @@ export const updateDocument = ({
 
       if (document.kind === 'text') {
         const { fullStream } = streamText({
-          model: customModel(model.apiIdentifier),
+          model: myProvider.languageModel('block-model'),
           system: updateDocumentPrompt(currentContent, 'text'),
           experimental_transform: smoothStream({ chunking: 'word' }),
           prompt: description,
@@ -82,7 +76,7 @@ export const updateDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'code') {
         const { fullStream } = streamObject({
-          model: customModel(model.apiIdentifier),
+          model: myProvider.languageModel('block-model'),
           system: updateDocumentPrompt(currentContent, 'code'),
           prompt: description,
           schema: z.object({
@@ -111,7 +105,7 @@ export const updateDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'image') {
         const { image } = await experimental_generateImage({
-          model: imageGenerationModel,
+          model: myProvider.imageModel('image-model'),
           prompt: description,
           n: 1,
         });
@@ -126,7 +120,7 @@ export const updateDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (document.kind === 'sheet') {
         const { fullStream } = streamObject({
-          model: customModel(model.apiIdentifier),
+          model: myProvider.languageModel('block-model'),
           system: updateDocumentPrompt(currentContent, 'sheet'),
           prompt: description,
           schema: z.object({

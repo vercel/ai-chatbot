@@ -8,23 +8,17 @@ import {
   tool,
 } from 'ai';
 import { z } from 'zod';
-import { customModel, imageGenerationModel } from '..';
 import { codePrompt, sheetPrompt } from '../prompts';
 import { saveDocument } from '@/lib/db/queries';
 import { Session } from 'next-auth';
-import { Model } from '../models';
+import { myProvider } from '../models';
 
 interface CreateDocumentProps {
-  model: Model;
   session: Session;
   dataStream: DataStreamWriter;
 }
 
-export const createDocument = ({
-  model,
-  session,
-  dataStream,
-}: CreateDocumentProps) =>
+export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({
     description:
       'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
@@ -58,7 +52,7 @@ export const createDocument = ({
 
       if (kind === 'text') {
         const { fullStream } = streamText({
-          model: customModel(model.apiIdentifier),
+          model: myProvider.languageModel('block-model'),
           system:
             'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -82,7 +76,7 @@ export const createDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (kind === 'code') {
         const { fullStream } = streamObject({
-          model: customModel(model.apiIdentifier),
+          model: myProvider.languageModel('block-model'),
           system: codePrompt,
           prompt: title,
           schema: z.object({
@@ -111,7 +105,7 @@ export const createDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (kind === 'image') {
         const { image } = await experimental_generateImage({
-          model: imageGenerationModel,
+          model: myProvider.imageModel('small-model'),
           prompt: title,
           n: 1,
         });
@@ -126,7 +120,7 @@ export const createDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       } else if (kind === 'sheet') {
         const { fullStream } = streamObject({
-          model: customModel(model.apiIdentifier),
+          model: myProvider.languageModel('block-model'),
           system: sheetPrompt,
           prompt: title,
           schema: z.object({
