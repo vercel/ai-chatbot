@@ -3,7 +3,6 @@ import {
   createDataStreamResponse,
   smoothStream,
   streamText,
-  wrapLanguageModel,
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
@@ -26,7 +25,6 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { getTools } from '@/lib/ai/tools';
 
 export const maxDuration = 60;
 
