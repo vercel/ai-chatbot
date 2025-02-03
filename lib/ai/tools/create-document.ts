@@ -12,6 +12,7 @@ import { codePrompt, sheetPrompt } from '../prompts';
 import { saveDocument } from '@/lib/db/queries';
 import { Session } from 'next-auth';
 import { imageGenerationModel, registry } from '../models';
+import { openai } from '@ai-sdk/openai';
 
 interface CreateDocumentProps {
   session: Session;
