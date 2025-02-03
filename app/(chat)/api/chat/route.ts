@@ -112,24 +112,24 @@ export async function POST(request: Request) {
             dataStream,
           }),
         },
-        onFinish: async ({ response }) => {
+        onFinish: async ({ response, reasoning }) => {
           if (session.user?.id) {
             try {
-              const responseMessagesWithoutIncompleteToolCalls =
-                sanitizeResponseMessages(response.messages);
+              const sanitizedResponseMessages = sanitizeResponseMessages({
+                messages: response.messages,
+                reasoning,
+              });
 
               await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
-                  (message) => {
-                    return {
-                      id: message.id,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  },
-                ),
+                messages: sanitizedResponseMessages.map((message) => {
+                  return {
+                    id: message.id,
+                    chatId: id,
+                    role: message.role,
+                    content: message.content,
+                    createdAt: new Date(),
+                  };
+                }),
               });
             } catch (error) {
               console.error('Failed to save chat');

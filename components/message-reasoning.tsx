@@ -62,7 +62,7 @@ export function MessageReasoning({
             animate="expanded"
             exit="collapsed"
             variants={variants}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
