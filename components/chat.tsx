@@ -14,6 +14,7 @@ import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
+import { toast } from 'sonner';
 
 export function Chat({
   id,
@@ -49,6 +50,10 @@ export function Chat({
     generateId: generateUUID,
     onFinish: () => {
       mutate('/api/history');
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error('An error occured, please try again!');
     },
   });
 

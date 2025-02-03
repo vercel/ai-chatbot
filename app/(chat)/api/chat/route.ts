@@ -128,6 +128,10 @@ export async function POST(request: Request) {
         sendReasoning: true,
       });
     },
+    onError: (error) => {
+      console.log(error);
+      return 'Oops, an error occured!';
+    },
   });
 }
 
