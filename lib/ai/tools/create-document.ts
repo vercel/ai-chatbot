@@ -9,7 +9,7 @@ import {
 } from 'ai';
 import { z } from 'zod';
 import { customModel, imageGenerationModel } from '..';
-import { codePrompt } from '../prompts';
+import { codePrompt, sheetPrompt } from '../prompts';
 import { saveDocument } from '@/lib/db/queries';
 import { Session } from 'next-auth';
 import { Model } from '../models';
@@ -27,10 +27,10 @@ export const createDocument = ({
 }: CreateDocumentProps) =>
   tool({
     description:
-      'Create a document for a writing or content creation activities like image generation. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+      'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
     parameters: z.object({
       title: z.string(),
-      kind: z.enum(['text', 'code', 'image']),
+      kind: z.enum(['text', 'code', 'image', 'sheet']),
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();
@@ -121,6 +121,40 @@ export const createDocument = ({
         dataStream.writeData({
           type: 'image-delta',
           content: image.base64,
+        });
+
+        dataStream.writeData({ type: 'finish', content: '' });
+      } else if (kind === 'sheet') {
+        const { fullStream } = streamObject({
+          model: customModel(model.apiIdentifier),
+          system: sheetPrompt,
+          prompt: title,
+          schema: z.object({
+            csv: z.string().describe('CSV data'),
+          }),
+        });
+
+        for await (const delta of fullStream) {
+          const { type } = delta;
+
+          if (type === 'object') {
+            const { object } = delta;
+            const { csv } = object;
+
+            if (csv) {
+              dataStream.writeData({
+                type: 'sheet-delta',
+                content: csv,
+              });
+
+              draftText = csv;
+            }
+          }
+        }
+
+        dataStream.writeData({
+          type: 'sheet-delta',
+          content: draftText,
         });
 
         dataStream.writeData({ type: 'finish', content: '' });
