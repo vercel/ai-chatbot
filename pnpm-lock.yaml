@@ -122,6 +122,9 @@ importers:
       orderedmap:
         specifier: ^2.1.1
         version: 2.1.1
+      papaparse:
+        specifier: ^5.5.2
+        version: 5.5.2
       postgres:
         specifier: ^3.4.4
         version: 3.4.5
@@ -152,6 +155,9 @@ importers:
       react:
         specifier: 19.0.0-rc-45804af1-20241021
         version: 19.0.0-rc-45804af1-20241021
+      react-data-grid:
+        specifier: 7.0.0-beta.47
+        version: 7.0.0-beta.47(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
       react-dom:
         specifier: 19.0.0-rc-45804af1-20241021
         version: 19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021)
@@ -198,6 +204,9 @@ importers:
       '@types/node':
         specifier: ^22.8.6
         version: 22.9.0
+      '@types/papaparse':
+        specifier: ^5.3.15
+        version: 5.3.15
       '@types/pdf-parse':
         specifier: ^1.1.4
         version: 1.1.4
@@ -1541,6 +1550,9 @@ packages:
 
   '@types/node@22.9.0':
     resolution: {integrity: sha512-vuyHg81vvWA1Z1ELfvLko2c8f34gyA0zaic0+Rllc5lbCnbSyuvb2Oxpm6TAUAC/2xZN3QGqxBNggD1nNR2AfQ==}
+
+  '@types/papaparse@5.3.15':
+    resolution: {integrity: sha512-JHe6vF6x/8Z85nCX4yFdDslN11d+1pr12E526X8WAfhadOeaOTx5AuIkvDKIBopfvlzpzkdMx4YyvSKCM9oqtw==}
 
   '@types/pdf-parse@1.1.4':
     resolution: {integrity: sha512-+gbBHbNCVGGYw1S9lAIIvrHW47UYOhMIFUsJcMkMrzy1Jf0vulBN3XQIjPgnoOXveMuHnF3b57fXROnY/Or7eg==}
@@ -3016,6 +3028,9 @@ packages:
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
+  papaparse@5.5.2:
+    resolution: {integrity: sha512-PZXg8UuAc4PcVwLosEEDYjPyfWnTEhOrUfdv+3Bx+NuAb+5NhDmXzg5fHWmdCh1mP5p7JAZfFr3IMQfcntNAdA==}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -3228,6 +3243,12 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+
+  react-data-grid@7.0.0-beta.47:
+    resolution: {integrity: sha512-28kjsmwQGD/9RXYC50zn5Zv/SQMhBBoSvG5seq0fM8XXi9TZ0zr9Z5T3YJqLwcEtoNzTOq3y0njkmdujGkIwQQ==}
+    peerDependencies:
+      react: ^18.0 || ^19.0
+      react-dom: ^18.0 || ^19.0
 
   react-dom@19.0.0-rc-45804af1-20241021:
     resolution: {integrity: sha512-8hOckEFO7Vxo+nH/EEddIGdencOFT0/3iJqF3mKrqv71n1xxhYcp0595JbT/DP31G8bHfDcBSMWVhIvyCGWy/A==}
@@ -4802,6 +4823,10 @@ snapshots:
   '@types/node@22.9.0':
     dependencies:
       undici-types: 6.19.8
+
+  '@types/papaparse@5.3.15':
+    dependencies:
+      '@types/node': 22.9.0
 
   '@types/pdf-parse@1.1.4': {}
 
@@ -6630,6 +6655,8 @@ snapshots:
 
   package-json-from-dist@1.0.1: {}
 
+  papaparse@5.5.2: {}
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -6863,6 +6890,12 @@ snapshots:
   punycode@2.3.1: {}
 
   queue-microtask@1.2.3: {}
+
+  react-data-grid@7.0.0-beta.47(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021):
+    dependencies:
+      clsx: 2.1.1
+      react: 19.0.0-rc-45804af1-20241021
+      react-dom: 19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021)
 
   react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021):
     dependencies:
