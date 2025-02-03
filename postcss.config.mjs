@@ -2,7 +2,7 @@
 const config = {
   plugins: {
     tailwindcss: {},
-    "tailwindcss/nesting": {},
+    'tailwindcss/nesting': {},
   },
 };
 
