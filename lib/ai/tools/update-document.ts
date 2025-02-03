@@ -118,6 +118,35 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         });
 
         dataStream.writeData({ type: 'finish', content: '' });
+      } else if (document.kind === 'sheet') {
+        const { fullStream } = streamObject({
+          model: registry.languageModel('openai:gpt-4o-mini'),
+          system: updateDocumentPrompt(currentContent, 'sheet'),
+          prompt: description,
+          schema: z.object({
+            csv: z.string(),
+          }),
+        });
+
+        for await (const delta of fullStream) {
+          const { type } = delta;
+
+          if (type === 'object') {
+            const { object } = delta;
+            const { csv } = object;
+
+            if (csv) {
+              dataStream.writeData({
+                type: 'sheet-delta',
+                content: csv,
+              });
+
+              draftText = csv;
+            }
+          }
+        }
+
+        dataStream.writeData({ type: 'finish', content: '' });
       }
 
       if (session.user?.id) {
