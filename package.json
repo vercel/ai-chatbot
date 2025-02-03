@@ -6,7 +6,7 @@
     "dev": "next dev --turbo",
     "build": "tsx lib/db/migrate && next build",
     "start": "next start",
-    "lint": "next lint && biome lint --write --unsafe",
+    "lint": "next lint && biome lint --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
     "format": "biome format --write",
     "db:generate": "drizzle-kit generate",
