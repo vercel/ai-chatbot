@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Textarea } from './ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export type MessageEditorProps = {
   message: Message;
@@ -29,6 +29,8 @@ export function MessageEditor({
   const [draftContent, setDraftContent] = useState<string>(message.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const { mutate: mutateGlobalCache } = useSWRConfig();
+
   useEffect(() => {
     if (textareaRef.current) {
       adjustHeight();
@@ -38,7 +40,9 @@ export function MessageEditor({
   const adjustHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
+      textareaRef.current.style.height = `${
+        textareaRef.current.scrollHeight + 2
+      }px`;
     }
   };
 
@@ -77,8 +81,8 @@ export function MessageEditor({
               id: message.id,
             });
 
-            setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
+            setMessages((prevMessages) => {
+              const index = prevMessages.findIndex((m) => m.id === message.id);
 
               if (index !== -1) {
                 const updatedMessage = {
@@ -86,14 +90,17 @@ export function MessageEditor({
                   content: draftContent,
                 };
 
-                return [...messages.slice(0, index), updatedMessage];
+                return [...prevMessages.slice(0, index), updatedMessage];
               }
 
-              return messages;
+              return prevMessages;
             });
 
             setMode('view');
             reload();
+
+            // Invalidate the history cache so that the new chat title refreshes in the sidebar
+            mutateGlobalCache('/api/history');
           }}
         >
           {isSubmitting ? 'Sending...' : 'Send'}

@@ -13,6 +13,7 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  updateChatTitleById,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -20,7 +21,7 @@ import {
   sanitizeResponseMessages,
 } from '@/lib/utils';
 
-import { generateTitleFromUserMessage } from '../../actions';
+import { generateTitleFromUserMessage } from '@/app/(chat)/actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
@@ -50,9 +51,18 @@ export async function POST(request: Request) {
 
   const chat = await getChatById({ id });
 
+  // If the chat does not yet exist, generate a title from the user message
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
     await saveChat({ id, userId: session.user.id, title });
+  }
+  // If the chat exists and there is only one message, generate a new title
+  else if (messages.length === 1) {
+    const newTitle = await generateTitleFromUserMessage({
+      message: userMessage,
+    });
+
+    await updateChatTitleById({ id: chat.id, title: newTitle });
   }
 
   await saveMessages({

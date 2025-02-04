@@ -345,3 +345,18 @@ export async function updateChatVisiblityById({
     throw error;
   }
 }
+
+export async function updateChatTitleById({
+  id,
+  title,
+}: {
+  id: string;
+  title: string;
+}): Promise<void> {
+  try {
+    await db.update(chat).set({ title }).where(eq(chat.id, id));
+  } catch (error) {
+    console.error('Failed to update chat title in database');
+    throw error;
+  }
+}
