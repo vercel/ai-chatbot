@@ -6,7 +6,7 @@ import { createDocumentHandler } from '@/lib/blocks/server';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
-  onCreateDocument: async ({ id, title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({

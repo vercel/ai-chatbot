@@ -21,6 +21,11 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       const id = generateUUID();
 
       dataStream.writeData({
+        type: 'kind',
+        content: kind,
+      });
+
+      dataStream.writeData({
         type: 'id',
         content: id,
       });
@@ -28,11 +33,6 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       dataStream.writeData({
         type: 'title',
         content: title,
-      });
-
-      dataStream.writeData({
-        type: 'kind',
-        content: kind,
       });
 
       dataStream.writeData({
