@@ -2,15 +2,11 @@
 
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { AnimatePresence, motion, HTMLMotionProps } from 'framer-motion';
+import { memo, useState } from 'react';
 
-import type { Vote } from '@/lib/db/schema';
-
-import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import { PencilEditIcon, SparklesIcon, UserIcon, ChevronDownIcon, ChevronRightIcon } from './icons';
 import { Markdown } from './markdown';
-import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
@@ -18,12 +14,13 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
+
+type MotionDivProps = HTMLMotionProps<"div">;
+const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 const PurePreviewMessage = ({
   chatId,
   message,
-  vote,
   isLoading,
   setMessages,
   reload,
@@ -31,7 +28,6 @@ const PurePreviewMessage = ({
 }: {
   chatId: string;
   message: Message;
-  vote: Vote | undefined;
   isLoading: boolean;
   setMessages: (
     messages: Message[] | ((messages: Message[]) => Message[]),
@@ -45,7 +41,7 @@ const PurePreviewMessage = ({
 
   return (
     <AnimatePresence>
-      <motion.div
+      <MotionDiv
         className="w-full mx-auto max-w-3xl px-4 group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -100,13 +96,18 @@ const PurePreviewMessage = ({
                 )}
 
                 <div
-                  className={cn('flex flex-col gap-4', {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                      message.role === 'user',
-                  })}
+                  className={cn('flex flex-col gap-4')}
                 >
                   <Markdown>{message.content as string}</Markdown>
                 </div>
+
+                {message.role === 'user' && (
+                  <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background ml-2">
+                    <div className="translate-y-px">
+                      <UserIcon />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -125,82 +126,18 @@ const PurePreviewMessage = ({
             )}
 
             {message.toolInvocations && message.toolInvocations.length > 0 && (
-              <div className="flex flex-col gap-4">
-                {message.toolInvocations.map((toolInvocation) => {
-                  const { toolName, toolCallId, state, args } = toolInvocation;
-
-                  if (state === 'result') {
-                    const { result } = toolInvocation;
-
-                    return (
-                      <div key={toolCallId}>
-                        {toolName === 'getWeather' ? (
-                          <Weather weatherAtLocation={result} />
-                        ) : toolName === 'createDocument' ? (
-                          <DocumentPreview
-                            isReadonly={isReadonly}
-                            result={result}
-                          />
-                        ) : toolName === 'updateDocument' ? (
-                          <DocumentToolResult
-                            type="update"
-                            result={result}
-                            isReadonly={isReadonly}
-                          />
-                        ) : toolName === 'requestSuggestions' ? (
-                          <DocumentToolResult
-                            type="request-suggestions"
-                            result={result}
-                            isReadonly={isReadonly}
-                          />
-                        ) : (
-                          <pre>{JSON.stringify(result, null, 2)}</pre>
-                        )}
-                      </div>
-                    );
-                  }
-                  return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'getWeather' ? (
-                        <Weather />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args} />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall
-                          type="update"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : null}
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col gap-2">
+                {message.toolInvocations.map((toolInvocation) => (
+                  <FunctionCallResult 
+                    key={toolInvocation.toolCallId} 
+                    toolInvocation={toolInvocation} 
+                  />
+                ))}
               </div>
-            )}
-
-            {!isReadonly && (
-              <MessageActions
-                key={`action-${message.id}`}
-                chatId={chatId}
-                message={message}
-                vote={vote}
-                isLoading={isLoading}
-              />
             )}
           </div>
         </div>
-      </motion.div>
+      </MotionDiv>
     </AnimatePresence>
   );
 };
@@ -217,7 +154,6 @@ export const PreviewMessage = memo(
       )
     )
       return false;
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
 
     return true;
   },
@@ -227,8 +163,8 @@ export const ThinkingMessage = () => {
   const role = 'assistant';
 
   return (
-    <motion.div
-      className="w-full mx-auto max-w-3xl px-4 group/message "
+    <MotionDiv
+      className="w-full mx-auto max-w-3xl px-4 group/message"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
@@ -251,6 +187,55 @@ export const ThinkingMessage = () => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
+};
+
+const FunctionCallResult = ({ toolInvocation }: { toolInvocation: any }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  if (toolInvocation.state === 'result') {
+    const { toolName, result } = toolInvocation;
+    
+    // Handle endConversation results differently
+    if (toolName === 'endConversation' && result.content) {
+      return (
+        <div className="rounded-lg border bg-muted/50 p-2">
+          <Markdown>{result.content}</Markdown>
+        </div>
+      );
+    }
+    
+    // Create a summary of the result
+    let summary = '';
+    if (result.found !== undefined) {
+      summary = result.message || 'Function completed successfully';
+    } else if (typeof result === 'object') {
+      summary = 'Function call completed';
+    }
+
+    return (
+      <div className="rounded-lg border bg-muted/50 p-2">
+        <div 
+          className="flex items-center gap-2 cursor-pointer" 
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? (
+            <ChevronDownIcon size={16} />
+          ) : (
+            <ChevronRightIcon size={16} />
+          )}
+          <span className="font-medium">{toolName}</span>
+          <span className="text-sm text-muted-foreground">{summary}</span>
+        </div>
+        
+        {isExpanded && (
+          <div className="mt-2 pl-6">
+            <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
 };

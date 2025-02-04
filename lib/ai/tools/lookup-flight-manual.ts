@@ -34,7 +34,7 @@ export const lookupFlightManual = ({ dataStream }: LookupFlightManualProps) =>
         const similarityScore = sql<number>`1-(${cosineDistance(dataFlightKnowledge.embedding, userQueryEmbedded)})`;
 
         
-        const results = await db
+        const query = db
           .select({
             content: dataFlightKnowledge.text,
             aircraft_type: dataFlightKnowledge.aircraft_type,
@@ -48,6 +48,8 @@ export const lookupFlightManual = ({ dataStream }: LookupFlightManualProps) =>
           )
           .orderBy(desc(similarityScore))
           .limit(3);
+        console.log('query:', JSON.stringify(query.toSQL(), null, 2));
+        const results = await query;
         console.log(`results:${JSON.stringify(results)}`);
         if (!results.length) {
           dataStream.writeData({
