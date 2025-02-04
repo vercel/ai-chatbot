@@ -106,6 +106,7 @@ export async function POST(request: Request) {
                 }),
               });
             } catch (error) {
+              console.log('errrrorrr', error);
               console.error('Failed to save chat');
             }
           }

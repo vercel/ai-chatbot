@@ -1,17 +1,8 @@
 import { generateUUID } from '@/lib/utils';
-import {
-  DataStreamWriter,
-  experimental_generateImage,
-  smoothStream,
-  streamObject,
-  streamText,
-  tool,
-} from 'ai';
+import { DataStreamWriter, tool } from 'ai';
 import { z } from 'zod';
-import { codePrompt, sheetPrompt } from '../prompts';
-import { saveDocument } from '@/lib/db/queries';
 import { Session } from 'next-auth';
-import { myProvider } from '../models';
+import { documentHandlersByBlockKind } from '@/lib/blocks/server';
 
 interface CreateDocumentProps {
   session: Session;
@@ -28,7 +19,6 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();
-      let draftText = '';
 
       dataStream.writeData({
         type: 'id',
@@ -50,119 +40,23 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         content: '',
       });
 
-      if (kind === 'text') {
-        const { fullStream } = streamText({
-          model: myProvider.languageModel('block-model'),
-          system:
-            'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          prompt: title,
-        });
+      const documentHandler = documentHandlersByBlockKind.find(
+        (documentHandlerByBlockKind) =>
+          documentHandlerByBlockKind.kind === kind,
+      );
 
-        for await (const delta of fullStream) {
-          const { type } = delta;
-
-          if (type === 'text-delta') {
-            const { textDelta } = delta;
-
-            draftText += textDelta;
-            dataStream.writeData({
-              type: 'text-delta',
-              content: textDelta,
-            });
-          }
-        }
-
-        dataStream.writeData({ type: 'finish', content: '' });
-      } else if (kind === 'code') {
-        const { fullStream } = streamObject({
-          model: myProvider.languageModel('block-model'),
-          system: codePrompt,
-          prompt: title,
-          schema: z.object({
-            code: z.string(),
-          }),
-        });
-
-        for await (const delta of fullStream) {
-          const { type } = delta;
-
-          if (type === 'object') {
-            const { object } = delta;
-            const { code } = object;
-
-            if (code) {
-              dataStream.writeData({
-                type: 'code-delta',
-                content: code ?? '',
-              });
-
-              draftText = code;
-            }
-          }
-        }
-
-        dataStream.writeData({ type: 'finish', content: '' });
-      } else if (kind === 'image') {
-        const { image } = await experimental_generateImage({
-          model: myProvider.imageModel('small-model'),
-          prompt: title,
-          n: 1,
-        });
-
-        draftText = image.base64;
-
-        dataStream.writeData({
-          type: 'image-delta',
-          content: image.base64,
-        });
-
-        dataStream.writeData({ type: 'finish', content: '' });
-      } else if (kind === 'sheet') {
-        const { fullStream } = streamObject({
-          model: myProvider.languageModel('block-model'),
-          system: sheetPrompt,
-          prompt: title,
-          schema: z.object({
-            csv: z.string().describe('CSV data'),
-          }),
-        });
-
-        for await (const delta of fullStream) {
-          const { type } = delta;
-
-          if (type === 'object') {
-            const { object } = delta;
-            const { csv } = object;
-
-            if (csv) {
-              dataStream.writeData({
-                type: 'sheet-delta',
-                content: csv,
-              });
-
-              draftText = csv;
-            }
-          }
-        }
-
-        dataStream.writeData({
-          type: 'sheet-delta',
-          content: draftText,
-        });
-
-        dataStream.writeData({ type: 'finish', content: '' });
+      if (!documentHandler) {
+        throw new Error(`No document handler found for kind: ${kind}`);
       }
 
-      if (session.user?.id) {
-        await saveDocument({
-          id,
-          title,
-          kind,
-          content: draftText,
-          userId: session.user.id,
-        });
-      }
+      await documentHandler.onCreateDocument({
+        id,
+        title,
+        dataStream,
+        session,
+      });
+
+      dataStream.writeData({ type: 'finish', content: '' });
 
       return {
         id,

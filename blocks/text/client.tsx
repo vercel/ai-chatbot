@@ -12,7 +12,7 @@ import {
 } from '@/components/icons';
 import { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
-import { getSuggestions } from './actions';
+import { getSuggestions } from '../actions';
 
 interface TextBlockMetadata {
   suggestions: Array<Suggestion>;
