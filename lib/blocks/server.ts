@@ -95,3 +95,5 @@ export const documentHandlersByBlockKind: Array<DocumentHandler> = [
   imageDocumentHandler,
   sheetDocumentHandler,
 ];
+
+export const blockKinds = ['text', 'code', 'image', 'sheet'] as const;

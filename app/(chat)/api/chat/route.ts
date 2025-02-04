@@ -106,7 +106,6 @@ export async function POST(request: Request) {
                 }),
               });
             } catch (error) {
-              console.log('errrrorrr', error);
               console.error('Failed to save chat');
             }
           }
@@ -121,7 +120,7 @@ export async function POST(request: Request) {
         sendReasoning: true,
       });
     },
-    onError: (error) => {
+    onError: () => {
       return 'Oops, an error occured!';
     },
   });
