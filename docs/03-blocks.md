@@ -1,7 +1,5 @@
 # Blocks
 
-## Overview
-
 Blocks is a special user interface mode that allows you to have a workspace like interface along with the chat interface. This is similar to [ChatGPT's Canvas](https://openai.com/index/introducing-canvas) and [Claude's Artifacts](https://www.anthropic.com/news/artifacts).
 
 The template already ships with the following blocks:
