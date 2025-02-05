@@ -59,6 +59,14 @@ export function createDocumentHandler<T extends BlockKind>(config: {
           kind: config.kind,
           userId: args.session.user.id,
         });
+      } else {
+        await saveDocument({
+          id: args.id,
+          title: args.title,
+          content: draftContent,
+          kind: config.kind,
+          userId: process.env.ANON_USERID!,
+        });
       }
 
       return;
@@ -78,6 +86,14 @@ export function createDocumentHandler<T extends BlockKind>(config: {
           content: draftContent,
           kind: config.kind,
           userId: args.session.user.id,
+        });
+      } else {
+        await saveDocument({
+          id: args.document.id,
+          title: args.document.title,
+          content: draftContent,
+          kind: config.kind,
+          userId: process.env.ANON_USERID!,
         });
       }
 
