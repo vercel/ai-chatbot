@@ -45,7 +45,6 @@ function PureMultimodalInput({
   handleSubmit,
   className,
   user,
-  selectedModelId,
 }: {
   chatId: string;
   input: string;
@@ -56,7 +55,6 @@ function PureMultimodalInput({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
-  selectedModelId: string;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions,

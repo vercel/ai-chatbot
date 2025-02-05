@@ -8,7 +8,7 @@ import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 
 import { Block } from './block';
 import { MultimodalInput } from './multimodal-input';
@@ -16,19 +16,20 @@ import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
 import { DeployDialog } from './deploy-dialog';
+import { toast } from 'sonner';
 
 export function Chat({
   id,
   initialMessages,
-  selectedModelId,
   user,
+  selectedChatModelId,
   selectedVisibilityType,
   isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
-  selectedModelId: string;
   user: User | undefined;
+  selectedChatModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
@@ -46,15 +47,19 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id, selectedChatModelId: selectedChatModelId },
     initialMessages,
     experimental_throttle: 100,
+    sendExtraMessageFields: true,
+    generateId: generateUUID,
     onFinish: () => {
       mutate('/api/history');
     },
     onError: (error) => {
       if (error.message.startsWith('Too many requests')) {
         setIsDeployDialogOpen(true);
+      } else {
+        toast.error('An error occured, please try again!');
       }
     },
   });
@@ -73,11 +78,11 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={selectedModelId}
-          selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
           user={user}
           setMessages={setMessages}
+          selectedChatModelId={selectedChatModelId}
+          selectedVisibilityType={selectedVisibilityType}
         />
 
         <Messages
@@ -107,7 +112,6 @@ export function Chat({
               setMessages={setMessages}
               append={append}
               user={user}
-              selectedModelId={selectedModelId}
             />
           )}
         </form>
@@ -128,7 +132,7 @@ export function Chat({
         reload={reload}
         votes={votes}
         user={user}
-        selectedModelId={selectedModelId}
+        selectedChatModelId={selectedChatModelId}
         isReadonly={isReadonly}
       />
 
