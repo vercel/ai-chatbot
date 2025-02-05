@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { Chat } from '@/components/chat';
-import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
+import { chatModels, DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 
@@ -11,18 +11,21 @@ export default async function Page() {
   const id = generateUUID();
   const session = await auth();
 
-  let selectedModelId: string = DEFAULT_MODEL_NAME;
+  let selectedChatModelId: string = DEFAULT_CHAT_MODEL;
 
   const cookieStore = await cookies();
-  const modelIdFromCookie = cookieStore.get('model-id')?.value;
-  const selectedModel = models.find((model) => model.id === modelIdFromCookie);
+  const chatModelIdFromCookie = cookieStore.get('chat-model')?.value;
+  const selectedChatModel = chatModels.find(
+    (chatModel) => chatModel.id === chatModelIdFromCookie,
+  );
 
-  if (selectedModel) {
+  if (selectedChatModel) {
     const canUseModel =
-      !selectedModel.requiresAuth || (selectedModel.requiresAuth && session);
+      !selectedChatModel.requiresAuth ||
+      (selectedChatModel.requiresAuth && session);
 
     if (canUseModel) {
-      selectedModelId = selectedModel.id;
+      selectedChatModelId = selectedChatModel.id;
     }
   }
 
@@ -32,7 +35,7 @@ export default async function Page() {
         key={id}
         id={session ? id : 'guest'}
         initialMessages={[]}
-        selectedModelId={selectedModelId}
+        selectedChatModelId={selectedChatModelId}
         user={session?.user}
         selectedVisibilityType="private"
         isReadonly={false}

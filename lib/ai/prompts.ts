@@ -34,7 +34,17 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
-export const systemPrompt = `${regularPrompt}\n\n${blocksPrompt}`;
+export const systemPrompt = ({
+  selectedChatModelId,
+}: {
+  selectedChatModelId: string;
+}) => {
+  if (selectedChatModelId === 'chat-model-reasoning') {
+    return regularPrompt;
+  } else {
+    return `${regularPrompt}\n\n${blocksPrompt}`;
+  }
+};
 
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:
@@ -64,6 +74,10 @@ print(f"Factorial of 5 is: {factorial(5)}")
 \`\`\`
 `;
 
+export const sheetPrompt = `
+You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
+`;
+
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: BlockKind,
@@ -80,4 +94,10 @@ Improve the following code snippet based on the given prompt.
 
 ${currentContent}
 `
-      : '';
+      : type === 'sheet'
+        ? `\
+Improve the following spreadsheet based on the given prompt.
+
+${currentContent}
+`
+        : '';
