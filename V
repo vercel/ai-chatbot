@@ -1,0 +1,92 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Heart, Share2 } from "lucide-react"
+import confetti from "canvas-confetti"
+
+export default function ValentinePage() {
+  const [showMessage, setShowMessage] = useState(false)
+  const [answer, setAnswer] = useState<string | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowMessage(true), 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleAnswer = (response: "yes" | "no") => {
+    setAnswer(response)
+    if (response === "yes") {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      })
+    }
+  }
+
+  const shareLink = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: "¿Quieres ser mi San Valentín?",
+          url: window.location.href,
+        })
+        .then(() => {
+          console.log("Gracias por compartir!")
+        })
+        .catch(console.error)
+    } else {
+      // Fallback para navegadores que no soportan Web Share API
+      navigator.clipboard.writeText(window.location.href).then(
+        () => {
+          alert("Enlace copiado al portapapeles!")
+        },
+        (err) => {
+          console.error("No se pudo copiar el texto: ", err)
+        },
+      )
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-200 to-red-100 flex flex-col items-center justify-center p-4 text-center">
+      <div className={`transition-opacity duration-1000 ${showMessage ? "opacity-100" : "opacity-0"}`}>
+        <h1 className="text-4xl font-bold text-red-600 mb-6">Mi princesa  hermosa Amarantha Perez</h1>
+        <div className="text-3xl font-semibold text-pink-700 mb-8 animate-pulse">¿Quieres ser mi San Valentín?</div>
+        <div className="flex justify-center space-x-4 mb-8">
+          <Heart className="text-red-500 w-16 h-16 animate-bounce" />
+          <Heart className="text-pink-500 w-16 h-16 animate-bounce delay-100" />
+          <Heart className="text-red-500 w-16 h-16 animate-bounce delay-200" />
+        </div>
+        {answer === null ? (
+          <div className="space-x-4">
+            <button
+              onClick={() => handleAnswer("yes")}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition duration-300"
+            >
+              ¡Sí, quiero!
+            </button>
+            <button
+              onClick={() => handleAnswer("no")}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300"
+            >
+              No, gracias
+            </button>
+          </div>
+        ) : (
+          <div className="text-2xl font-bold mt-4">
+            {answer === "yes" ? "¡Qué felicidad! ¡Te amo! ❤️" : "Oh, está bien. Quizás la próxima vez. 😢"}
+          </div>
+        )}
+      </div>
+      <button
+        onClick={shareLink}
+        className="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 flex items-center"
+      >
+        <Share2 className="mr-2" /> Compartir
+      </button>
+    </div>
+  )
+}
+
+
