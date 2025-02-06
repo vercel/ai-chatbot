@@ -222,6 +222,31 @@ export const documentHandlersByBlockKind: Array<DocumentHandler> = [
 export const blockKinds = [..., "custom"] as const;
 ```
 
+Specify it in document schema at `lib/db/schema.ts`.
+
+```ts
+export const document = pgTable(
+  "Document",
+  {
+    id: uuid("id").notNull().defaultRandom(),
+    createdAt: timestamp("createdAt").notNull(),
+    title: text("title").notNull(),
+    content: text("content"),
+    kind: varchar("text", { enum: [..., "custom"] }) // Add the custom block kind here
+      .notNull()
+      .default("text"),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.id, table.createdAt] }),
+    };
+  },
+);
+```
+
 And also add the client-side block to the `blockDefinitions` array in the `components/block.tsx` file.
 
 ```ts
