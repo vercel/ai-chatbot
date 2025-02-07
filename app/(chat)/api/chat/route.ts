@@ -53,8 +53,6 @@ export async function POST(request: Request) {
     return new Response('No user message found', { status: 400 });
   }
 
-  const userMessageId = generateUUID();
-
   if (session?.user?.id) {
     const chat = await getChatById({ id });
 
@@ -65,17 +63,6 @@ export async function POST(request: Request) {
 
       await saveChat({ id, userId: session.user.id, title });
     }
-
-    await saveMessages({
-      messages: [
-        {
-          ...userMessage,
-          id: userMessageId,
-          createdAt: new Date(),
-          chatId: id,
-        },
-      ],
-    });
 
     await saveMessages({
       messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
