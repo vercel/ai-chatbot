@@ -188,10 +188,17 @@ function PureMultimodalInput({
         console.error('Error uploading files!', error);
       } finally {
         setUploadQueue([]);
+        // Clear the file input to allow to select the same file again
+        event.target.value = '';
       }
     },
     [setAttachments],
   );
+
+  const handleDeleteAttachmentClick = (attachment: Attachment) =>
+    setAttachments((currentAttachments) =>
+      currentAttachments.filter((a) => a.url !== attachment.url),
+    );
 
   return (
     <div className="relative w-full flex flex-col gap-4">
@@ -203,17 +210,22 @@ function PureMultimodalInput({
 
       <input
         type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+        className="hidden"
         ref={fileInputRef}
+        accept="image/png, image/jpeg"
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+        <div className="flex flex-row gap-2 items-end">
           {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+            <PreviewAttachment
+              onDelete={handleDeleteAttachmentClick}
+              key={attachment.url}
+              attachment={attachment}
+            />
           ))}
 
           {uploadQueue.map((filename) => (

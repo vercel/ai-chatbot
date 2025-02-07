@@ -1,13 +1,17 @@
 import type { Attachment } from 'ai';
+import { X } from 'lucide-react';
 
 import { LoaderIcon } from './icons';
+import { Button } from './ui/button';
 
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
+  onDelete,
 }: {
   attachment: Attachment;
   isUploading?: boolean;
+  onDelete?: (attachment: Attachment) => void;
 }) => {
   const { name, url, contentType } = attachment;
 
@@ -36,8 +40,23 @@ export const PreviewAttachment = ({
             <LoaderIcon />
           </div>
         )}
+
+        {onDelete && (
+          <Button
+            variant="outline"
+            onClick={() => onDelete(attachment)}
+            className="absolute -right-2 -top-2 rounded-full bg-background border p-0.5 hover:bg-muted size-6"
+          >
+            <X size={24} />
+          </Button>
+        )}
       </div>
-      <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
+      <div
+        title={name}
+        className="text-sm texs text-zinc-500 max-w-16 truncate"
+      >
+        {name}
+      </div>
     </div>
   );
 };
