@@ -1,4 +1,6 @@
 import { Attachment } from 'ai';
+import { FileIcon } from 'lucide-react';
+import { useState } from 'react';
 
 import { LoaderIcon } from './icons';
 
@@ -10,10 +12,12 @@ export const PreviewAttachment = ({
   isUploading?: boolean;
 }) => {
   const { name, url, contentType } = attachment;
+  const isPDF = contentType === 'application/pdf';
+  const [showPDF, setShowPDF] = useState(false);
 
   return (
-    <div className="flex flex-col gap-2 max-w-16">
-      <div className="w-20 aspect-video bg-muted rounded-md relative flex flex-col items-center justify-center">
+    <div className="flex flex-col gap-2">
+      <div className="w-full bg-muted rounded-md relative">
         {contentType ? (
           contentType.startsWith('image') ? (
             // NOTE: it is recommended to use next/image for images
@@ -24,12 +28,32 @@ export const PreviewAttachment = ({
               alt={name ?? 'An image attachment'}
               className="rounded-md size-full object-cover"
             />
+          ) : isPDF ? (
+            <>
+              <div 
+                className="cursor-pointer p-4 flex items-center gap-2"
+                onClick={() => setShowPDF(!showPDF)}
+              >
+                <FileIcon className="h-4 w-4" />
+                <span className="text-sm">
+                  {showPDF ? 'Hide PDF' : 'View PDF'}
+                </span>
+              </div>
+              {showPDF && (
+                <iframe
+                  src={url}
+                  className="w-full h-[600px] rounded-md mt-2"
+                  title={name ?? 'PDF Document'}
+                />
+              )}
+            </>
           ) : (
-            <div className=""></div>
+            <div className="p-4 flex items-center gap-2">
+              <FileIcon className="h-4 w-4" />
+              <span className="text-sm">Unsupported file type</span>
+            </div>
           )
-        ) : (
-          <div className=""></div>
-        )}
+        ) : null}
 
         {isUploading && (
           <div className="animate-spin absolute text-zinc-500">
@@ -37,7 +61,9 @@ export const PreviewAttachment = ({
           </div>
         )}
       </div>
-      <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
+      {name && (
+        <div className="text-xs text-zinc-500 truncate">{name}</div>
+      )}
     </div>
   );
 };

@@ -2,13 +2,23 @@ import {
   CoreMessage,
   CoreToolMessage,
   generateId,
-  Message,
+  Message as AIMessage,
   ToolInvocation,
 } from "ai";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { Chat } from "@/db/schema";
+
+// Extend the Message type to support complex content
+interface Message extends Omit<AIMessage, 'content'> {
+  content: string | Array<{
+    type: string;
+    text?: string;
+    data?: string;
+    mimeType?: string;
+  }>;
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -95,30 +105,47 @@ export function convertToUIMessages(
       });
     }
 
-    let textContent = "";
+    let content: Message['content'] = "";
     let toolInvocations: Array<ToolInvocation> = [];
 
     if (typeof message.content === "string") {
-      textContent = message.content;
+      content = message.content;
     } else if (Array.isArray(message.content)) {
-      for (const content of message.content) {
-        if (content.type === "text") {
-          textContent += content.text;
-        } else if (content.type === "tool-call") {
+      // If the content is an array, preserve its structure
+      content = message.content.map(item => {
+        if (item.type === "text") {
+          return {
+            type: "text",
+            text: item.text
+          };
+        } else if (item.type === "file") {
+          return {
+            type: "file",
+            data: item.data,
+            mimeType: item.mimeType
+          };
+        } else if (item.type === "tool-call") {
           toolInvocations.push({
             state: "call",
-            toolCallId: content.toolCallId,
-            toolName: content.toolName,
-            args: content.args,
+            toolCallId: item.toolCallId,
+            toolName: item.toolName,
+            args: item.args,
           });
+          return null;
         }
+        return item;
+      }).filter(Boolean) as Message['content'];
+
+      // If there's only text content, simplify to string
+      if (Array.isArray(content) && content.length === 1 && content[0].type === "text") {
+        content = content[0].text || "";
       }
     }
 
     chatMessages.push({
       id: generateId(),
       role: message.role,
-      content: textContent,
+      content,
       toolInvocations,
     });
 
@@ -134,5 +161,14 @@ export function getTitleFromChat(chat: Chat) {
     return "Untitled";
   }
 
-  return firstMessage.content;
+  // Handle complex content structure
+  if (Array.isArray(firstMessage.content)) {
+    const textContent = firstMessage.content
+      .filter(item => item.type === 'text')
+      .map(item => item.text)
+      .join('\n');
+    return textContent || "Untitled";
+  }
+
+  return firstMessage.content || "Untitled";
 }

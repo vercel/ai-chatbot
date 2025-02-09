@@ -16,13 +16,57 @@ export const Message = ({
   attachments,
 }: {
   role: string;
-  content: string | ReactNode;
+  content: string | ReactNode | Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
   toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
 }) => {
+  // Handle complex content structure
+  const renderContent = () => {
+    if (Array.isArray(content)) {
+      const textContent = content
+        .filter(item => item.type === 'text')
+        .map(item => item.text)
+        .join('\n');
+
+      const fileAttachments = content
+        .filter(item => item.type === 'file')
+        .map(item => ({
+          url: item.data as string,
+          contentType: item.mimeType,
+          name: 'Document'
+        }));
+
+      return (
+        <>
+          {textContent && (
+            <div className="flex flex-col gap-4">
+              <Markdown>{textContent}</Markdown>
+            </div>
+          )}
+          {fileAttachments.length > 0 && (
+            <div className="flex flex-row gap-2">
+              {fileAttachments.map((attachment) => (
+                <PreviewAttachment
+                  key={attachment.url}
+                  attachment={attachment}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      );
+    }
+
+    return content && (
+      <div className="flex flex-col gap-4">
+        <Markdown>{content as string}</Markdown>
+      </div>
+    );
+  };
+
   return (
     <motion.div
-      className="w-full mx-auto max-w-3xl px-4 group/message "
+      className="w-full mx-auto max-w-3xl px-4 group/message"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       data-role={role}
@@ -34,11 +78,7 @@ export const Message = ({
           </div>
         )}
         <div className="flex flex-col gap-2 w-full">
-          {content && (
-            <div className="flex flex-col gap-4">
-              <Markdown>{content as string}</Markdown>
-            </div>
-          )}
+          {renderContent()}
 
           {toolInvocations && toolInvocations.length > 0 ? (
             <div className="flex flex-col gap-4">
