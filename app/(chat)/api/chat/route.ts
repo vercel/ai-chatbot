@@ -5,7 +5,6 @@ import {
   streamText,
 } from 'ai';
 
-import { auth } from '@/app/(auth)/auth';
 import { myProvider } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -25,6 +24,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { getUser } from '@civic/auth/nextjs';
 
 export const maxDuration = 60;
 
@@ -36,9 +36,9 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; selectedChatModel: string } =
     await request.json();
 
-  const session = await auth();
+  const user = await getUser();
 
-  if (!session || !session.user || !session.user.id) {
+  if (!user || !user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
+    await saveChat({ id, userId: user.id, title });
   }
 
   await saveMessages({
@@ -79,15 +79,15 @@ export async function POST(request: Request) {
         experimental_generateMessageId: generateUUID,
         tools: {
           getWeather,
-          createDocument: createDocument({ session, dataStream }),
-          updateDocument: updateDocument({ session, dataStream }),
+          createDocument: createDocument({ user, dataStream }),
+          updateDocument: updateDocument({ user, dataStream }),
           requestSuggestions: requestSuggestions({
-            session,
+            user,
             dataStream,
           }),
         },
         onFinish: async ({ response, reasoning }) => {
-          if (session.user?.id) {
+          if (user?.id) {
             try {
               const sanitizedResponseMessages = sanitizeResponseMessages({
                 messages: response.messages,
@@ -134,16 +134,16 @@ export async function DELETE(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const session = await auth();
+  const user = await getUser();
 
-  if (!session || !session.user) {
+  if (!user || !user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
-    if (chat.userId !== session.user.id) {
+    if (chat.userId !== user.id) {
       return new Response('Unauthorized', { status: 401 });
     }
 

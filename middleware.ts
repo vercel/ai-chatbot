@@ -1,9 +1,7 @@
-import NextAuth from 'next-auth';
+import { authMiddleware } from '@civic/auth/nextjs/middleware';
 
-import { authConfig } from '@/app/(auth)/auth.config';
-
-export default NextAuth(authConfig).auth;
+export default authMiddleware();
 
 export const config = {
-  matcher: ['/', '/:id', '/api/:path*', '/login', '/register'],
+  matcher: ['/api/:path*', '/admin/:path*']
 };
