@@ -12,9 +12,10 @@ import {
 } from 'drizzle-orm/pg-core';
 import { blockKinds } from '../blocks/server';
 
-export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  email: varchar('email', { length: 64 }).notNull(),
+export const user = pgTable('user', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export type User = InferSelectModel<typeof user>;

@@ -45,9 +45,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import type { Chat, User } from '@/lib/db/schema';
+import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { User } from '@/lib/types/auth';
 
 type GroupedChats = {
   today: Chat[];

@@ -1,15 +1,15 @@
 import { DataStreamWriter, tool } from 'ai';
-import { Session } from 'next-auth';
 import { z } from 'zod';
-import { getDocumentById, saveDocument } from '@/lib/db/queries';
+import { getDocumentById } from '@/lib/db/queries';
 import { documentHandlersByBlockKind } from '@/lib/blocks/server';
+import { User } from '@/lib/types/auth';
 
 interface UpdateDocumentProps {
-  session: Session;
+  user: User;
   dataStream: DataStreamWriter;
 }
 
-export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
+export const updateDocument = ({ user, dataStream }: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
     parameters: z.object({
@@ -45,7 +45,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         document,
         description,
         dataStream,
-        session,
+        user,
       });
 
       dataStream.writeData({ type: 'finish', content: '' });

@@ -25,6 +25,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { getUser } from '@civic/auth/nextjs';
+import { getTypedUser } from '@/lib/auth';
 
 export const maxDuration = 60;
 
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; selectedChatModel: string } =
     await request.json();
 
-  const user = await getUser();
+  const user = await getTypedUser();
 
   if (!user || !user.id) {
     return new Response('Unauthorized', { status: 401 });

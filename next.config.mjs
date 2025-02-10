@@ -39,6 +39,7 @@ const withCivicAuth = createCivicAuthPlugin({
   clientId,
   loginUrl: '/login',
   redirectUrl: '/',
+  include: ['/', '/chat', '/chat/*', '/api/*'], // Add include patterns for all protected routes
 });
 
 export default withCivicAuth(nextConfig);
