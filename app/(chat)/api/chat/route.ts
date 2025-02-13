@@ -38,24 +38,70 @@ type LangGraphStreamEvent = {
   data: any
 }
 
-async function* filteredMessagesGenerator(
+// For simplicity we assume each message chunk is an object with a 'content' property (a string)
+type LangGraphAIMessageChunk = {
+  content: string
+}
+
+// --- 1. Provided Function: Delta Messages Generator ---
+async function* deltaMessagesGenerator(
   streamResponse: AsyncGenerator<{ event: string; data: any }, any, any>
 ): AsyncGenerator<string, void, unknown> {
+  let lastOutput = '' // holds the last full accumulated message
   for await (const message of streamResponse) {
-    // Skip complete events
+    // Process only non-complete messages
     if (message.event !== 'messages/complete') {
-      // Check if there's a valid content in the first element of data
-      if (message.data?.[0]?.content) {
-        // Format the content with text code 0
-        const formatted = formatDataStreamPart('text', message.data[0].content)
-        console.log('Received non-complete message:', formatted)
-        yield formatted
+      const msg = message.data?.[0]
+      if (msg?.content) {
+        const current = msg.content
+        // Calculate delta (new part of the message)
+        const delta = current.substring(lastOutput.length)
+        // Update the last seen full text
+        lastOutput = current
+        if (delta) {
+          // Format the delta with text code 0 (using your helper)
+          const formatted = formatDataStreamPart('text', delta)
+          console.log('Delta message:', formatted)
+          yield formatted
+        }
       }
     }
   }
 }
 
-// --- 2. Helper to Convert an Async Generator into a ReadableStream ---
+// --- 2. Full Data Stream Generator ---
+// This async generator wraps deltaMessagesGenerator and emits the additional codes.
+async function* fullDataStreamGenerator(
+  streamResponse: AsyncGenerator<{ event: string; data: any }, any, any>
+): AsyncGenerator<string, void, unknown> {
+  // Yield start event (code "f:").
+  const startEvent = formatDataStreamPart('start_step', {
+    messageId: 'msg-I6K5RzPfJmSp4F00t9NlDuY6'
+  })
+  yield startEvent
+
+  // Yield each delta update from the API.
+  for await (const delta of deltaMessagesGenerator(streamResponse)) {
+    yield delta
+  }
+
+  // Yield finish step event (code "e:").
+  const finishStepEvent = formatDataStreamPart('finish_step', {
+    finishReason: 'stop',
+    usage: { promptTokens: 55, completionTokens: 20 },
+    isContinued: false
+  })
+  yield finishStepEvent
+
+  // Yield finish message event (code "d:").
+  const finishMessageEvent = formatDataStreamPart('finish_message', {
+    finishReason: 'stop',
+    usage: { promptTokens: 55, completionTokens: 20 }
+  })
+  yield finishMessageEvent
+}
+
+// --- 3. Convert an Async Generator into a ReadableStream ---
 function asyncGeneratorToReadableStream(
   generator: AsyncGenerator<string, any, any>
 ): ReadableStream<string> {
@@ -247,16 +293,14 @@ export async function POST(request: Request) {
   )
 
   console.log('\nStreaming response...\n\n')
-  // Build our filtered async generator that yields formatted partial messages.
-  const filteredGenerator = filteredMessagesGenerator(streamResponse)
-
-  // Convert the async generator into a ReadableStream of strings.
-  const readableStream = asyncGeneratorToReadableStream(filteredGenerator)
-
-  // Pipe the text stream through a TextEncoderStream so that the response body is binary.
+  // Create our full data stream generator (start, delta, finish events).
+  const fullGenerator = fullDataStreamGenerator(streamResponse)
+  // Convert it into a ReadableStream of strings.
+  const readableStream = asyncGeneratorToReadableStream(fullGenerator)
+  // Pipe through a TextEncoderStream so the body is binary.
   const responseStream = readableStream.pipeThrough(new TextEncoderStream())
 
-  // Create the HTTP Response with appropriate headers.
+  // Create the HTTP Response.
   const response = new Response(responseStream, {
     status: 200,
     statusText: 'OK',
@@ -318,3 +362,28 @@ export async function DELETE(request: Request) {
     })
   }
 }
+
+// const result = streamText({
+//     model: myProvider.languageModel(selectedChatModel),
+//     messages
+//   })
+
+//   const response = result.toDataStreamResponse()
+
+//   if (!response.body) {
+//     throw new Error('Response body is null')
+//   }
+//   const reader = response.body.getReader()
+//   const decoder = new TextDecoder('utf-8')
+//   let fullText = ''
+//   while (true) {
+//     const { done, value } = await reader.read()
+//     if (done) break
+//     const chunkText = decoder.decode(value, { stream: true })
+//     console.log('Received chunk:', chunkText)
+//     fullText += chunkText
+//   }
+//   fullText += decoder.decode() // flush remaining bytes
+//   console.log('Full response stream:', fullText)
+//   return response
+// }
