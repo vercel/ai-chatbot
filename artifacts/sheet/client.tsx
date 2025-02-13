@@ -1,4 +1,4 @@
-import { Block } from '@/components/create-block';
+import { Artifact } from '@/components/create-artifact';
 import {
   CopyIcon,
   LineChartIcon,
@@ -12,14 +12,14 @@ import { toast } from 'sonner';
 
 type Metadata = any;
 
-export const sheetBlock = new Block<'sheet', Metadata>({
+export const sheetArtifact = new Artifact<'sheet', Metadata>({
   kind: 'sheet',
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},
-  onStreamPart: ({ setBlock, streamPart }) => {
+  onStreamPart: ({ setArtifact, streamPart }) => {
     if (streamPart.type === 'sheet-delta') {
-      setBlock((draftBlock) => ({
-        ...draftBlock,
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
         content: streamPart.content as string,
         isVisible: true,
         status: 'streaming',
@@ -107,7 +107,7 @@ export const sheetBlock = new Block<'sheet', Metadata>({
         appendMessage({
           role: 'user',
           content:
-            'Can you please analyze and visualize the data by creating a new code block in python?',
+            'Can you please analyze and visualize the data by creating a new code artifact in python?',
         });
       },
     },
