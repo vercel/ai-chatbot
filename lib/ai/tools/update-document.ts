@@ -2,7 +2,7 @@ import { DataStreamWriter, tool } from 'ai';
 import { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
-import { documentHandlersByBlockKind } from '@/lib/blocks/server';
+import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 
 interface UpdateDocumentProps {
   session: Session;
@@ -32,9 +32,9 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         content: document.title,
       });
 
-      const documentHandler = documentHandlersByBlockKind.find(
-        (documentHandlerByBlockKind) =>
-          documentHandlerByBlockKind.kind === document.kind,
+      const documentHandler = documentHandlersByArtifactKind.find(
+        (documentHandlerByArtifactKind) =>
+          documentHandlerByArtifactKind.kind === document.kind,
       );
 
       if (!documentHandler) {

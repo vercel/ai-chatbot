@@ -1,8 +1,8 @@
-import { codeDocumentHandler } from '@/blocks/code/server';
-import { imageDocumentHandler } from '@/blocks/image/server';
-import { sheetDocumentHandler } from '@/blocks/sheet/server';
-import { textDocumentHandler } from '@/blocks/text/server';
-import { BlockKind } from '@/components/block';
+import { codeDocumentHandler } from '@/artifacts/code/server';
+import { imageDocumentHandler } from '@/artifacts/image/server';
+import { sheetDocumentHandler } from '@/artifacts/sheet/server';
+import { textDocumentHandler } from '@/artifacts/text/server';
+import { ArtifactKind } from '@/components/artifact';
 import { DataStreamWriter } from 'ai';
 import { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
@@ -11,7 +11,7 @@ import { Session } from 'next-auth';
 export interface SaveDocumentProps {
   id: string;
   title: string;
-  kind: BlockKind;
+  kind: ArtifactKind;
   content: string;
   userId: string;
 }
@@ -30,13 +30,13 @@ export interface UpdateDocumentCallbackProps {
   session: Session;
 }
 
-export interface DocumentHandler<T = BlockKind> {
+export interface DocumentHandler<T = ArtifactKind> {
   kind: T;
   onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<void>;
   onUpdateDocument: (args: UpdateDocumentCallbackProps) => Promise<void>;
 }
 
-export function createDocumentHandler<T extends BlockKind>(config: {
+export function createDocumentHandler<T extends ArtifactKind>(config: {
   kind: T;
   onCreateDocument: (params: CreateDocumentCallbackProps) => Promise<string>;
   onUpdateDocument: (params: UpdateDocumentCallbackProps) => Promise<string>;
@@ -87,13 +87,13 @@ export function createDocumentHandler<T extends BlockKind>(config: {
 }
 
 /*
- * Use this array to define the document handlers for each block kind.
+ * Use this array to define the document handlers for each artifact kind.
  */
-export const documentHandlersByBlockKind: Array<DocumentHandler> = [
+export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   textDocumentHandler,
   codeDocumentHandler,
   imageDocumentHandler,
   sheetDocumentHandler,
 ];
 
-export const blockKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
