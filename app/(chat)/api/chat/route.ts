@@ -69,14 +69,19 @@ async function* deltaMessagesGenerator(
   }
 }
 
+interface fullDataStreamGeneratorProps {
+  streamResponse: AsyncGenerator<LangGraphStreamEvent, any, any>
+  messageId?: string
+}
 // --- 2. Full Data Stream Generator ---
 // This async generator wraps deltaMessagesGenerator and emits the additional codes.
-async function* fullDataStreamGenerator(
-  streamResponse: AsyncGenerator<{ event: string; data: any }, any, any>
-): AsyncGenerator<string, void, unknown> {
+async function* fullDataStreamGenerator({
+  streamResponse,
+  messageId = generateUUID()
+}: fullDataStreamGeneratorProps): AsyncGenerator<string, void, unknown> {
   // Yield start event (code "f:").
   const startEvent = formatDataStreamPart('start_step', {
-    messageId: 'msg-I6K5RzPfJmSp4F00t9NlDuY6'
+    messageId
   })
   yield startEvent
 
@@ -157,6 +162,9 @@ export async function POST(request: Request) {
   }
 
   const userMessage = getMostRecentUserMessage(messages)
+  console.log('User message:', userMessage)
+  console.log('Messages:', messages)
+  console.log('id', id)
 
   if (!userMessage) {
     return new Response('No user message found', { status: 400 })
@@ -265,9 +273,9 @@ export async function POST(request: Request) {
   // get default assistant
   const assistants = await client.assistants.search()
   //console.log(assistants)
-  let assistant = assistants.find((a) => a.graph_id === 'medicalAgent')
+  let assistant = assistants.find((a) => a.graph_id === 'researcher')
   if (!assistant) {
-    assistant = await client.assistants.create({ graphId: 'medicalAgent' })
+    assistant = await client.assistants.create({ graphId: 'researcher' })
     // throw new Error('No assistant found')
   }
   // create thread
@@ -275,12 +283,7 @@ export async function POST(request: Request) {
   console.log('Thread: ', thread)
 
   const input = {
-    messages: [
-      {
-        role: 'user',
-        content: 'quem foi John Lennon em 10 palavras?'
-      }
-    ]
+    messages: [userMessage]
   }
 
   const streamResponse = client.runs.stream(
@@ -294,7 +297,9 @@ export async function POST(request: Request) {
 
   console.log('\nStreaming response...\n\n')
   // Create our full data stream generator (start, delta, finish events).
-  const fullGenerator = fullDataStreamGenerator(streamResponse)
+  const fullGenerator = fullDataStreamGenerator({
+    streamResponse
+  })
   // Convert it into a ReadableStream of strings.
   const readableStream = asyncGeneratorToReadableStream(fullGenerator)
   // Pipe through a TextEncoderStream so the body is binary.
