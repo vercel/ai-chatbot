@@ -1,25 +1,25 @@
-# Blocks
+# Artifacts
 
-Blocks is a special user interface mode that allows you to have a workspace like interface along with the chat interface. This is similar to [ChatGPT's Canvas](https://openai.com/index/introducing-canvas) and [Claude's Artifacts](https://www.anthropic.com/news/artifacts).
+Artifacts is a special user interface mode that allows you to have a workspace like interface along with the chat interface. This is similar to [ChatGPT's Canvas](https://openai.com/index/introducing-canvas) and [Claude's Artifacts](https://www.anthropic.com/news/artifacts).
 
-The template already ships with the following blocks:
+The template already ships with the following artifacts:
 
-- **Text Block**: A block that allows you to work with text content like drafting essays and emails.
-- **Code Block**: A block that allows you to write and execute code (Python).
-- **Image Block**: A block that allows you to work with images like editing, annotating, and processing images.
-- **Sheet Block**: A block that allows you to work with tabular data like creating, editing, and analyzing data.
+- **Text Artifact**: A artifact that allows you to work with text content like drafting essays and emails.
+- **Code Artifact**: A artifact that allows you to write and execute code (Python).
+- **Image Artifact**: A artifact that allows you to work with images like editing, annotating, and processing images.
+- **Sheet Artifact**: A artifact that allows you to work with tabular data like creating, editing, and analyzing data.
 
-## Adding a Custom Block
+## Adding a Custom Artifact
 
-To add a custom block, you will need to create a folder in the `blocks` directory with the block name. The folder should contain the following files:
+To add a custom artifact, you will need to create a folder in the `artifacts` directory with the artifact name. The folder should contain the following files:
 
-- `client.tsx`: The client-side code for the block.
-- `server.ts`: The server-side code for the block.
+- `client.tsx`: The client-side code for the artifact.
+- `server.ts`: The server-side code for the artifact.
 
-Here is an example of a custom block called `CustomBlock`:
+Here is an example of a custom artifact called `CustomArtifact`:
 
 ```bash
-blocks/
+artifacts/
   custom/
     client.tsx
     server.ts
@@ -27,30 +27,30 @@ blocks/
 
 ### Client-Side Example (client.tsx)
 
-This file is responsible for rendering your custom block. You might replace the inner UI with your own components, but the overall pattern (initialization, handling streamed data, and rendering content) remains the same. For instance:
+This file is responsible for rendering your custom artifact. You might replace the inner UI with your own components, but the overall pattern (initialization, handling streamed data, and rendering content) remains the same. For instance:
 
 ```tsx
-import { Block } from "@/components/create-block";
+import { Artifact } from "@/components/create-artifact";
 import { ExampleComponent } from "@/components/example-component";
 import { toast } from "sonner";
 
-interface CustomBlockMetadata {
-  // Define metadata your custom block might need—the example below is minimal.
+interface CustomArtifactMetadata {
+  // Define metadata your custom artifact might need—the example below is minimal.
   info: string;
 }
 
-export const customBlock = new Block<"custom", CustomBlockMetadata>({
+export const customArtifact = new Artifact<"custom", CustomArtifactMetadata>({
   kind: "custom",
-  description: "A custom block for demonstrating custom functionality.",
+  description: "A custom artifact for demonstrating custom functionality.",
   // Initialization can fetch any extra data or perform side effects
   initialize: async ({ documentId, setMetadata }) => {
-    // For example, initialize the block with default metadata.
+    // For example, initialize the artifact with default metadata.
     setMetadata({
       info: `Document ${documentId} initialized.`,
     });
   },
-  // Handle streamed parts from the server (if your block supports streaming updates)
-  onStreamPart: ({ streamPart, setMetadata, setBlock }) => {
+  // Handle streamed parts from the server (if your artifact supports streaming updates)
+  onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
     if (streamPart.type === "info-update") {
       setMetadata((metadata) => ({
         ...metadata,
@@ -58,14 +58,14 @@ export const customBlock = new Block<"custom", CustomBlockMetadata>({
       }));
     }
     if (streamPart.type === "content-update") {
-      setBlock((draftBlock) => ({
-        ...draftBlock,
-        content: draftBlock.content + (streamPart.content as string),
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
+        content: draftArtifact.content + (streamPart.content as string),
         status: "streaming",
       }));
     }
   },
-  // Defines how the block content is rendered
+  // Defines how the artifact content is rendered
   content: ({
     mode,
     status,
@@ -78,7 +78,7 @@ export const customBlock = new Block<"custom", CustomBlockMetadata>({
     metadata,
   }) => {
     if (isLoading) {
-      return <div>Loading custom block...</div>;
+      return <div>Loading custom artifact...</div>;
     }
 
     if (mode === "diff") {
@@ -94,7 +94,7 @@ export const customBlock = new Block<"custom", CustomBlockMetadata>({
     }
 
     return (
-      <div className="custom-block">
+      <div className="custom-artifact">
         <ExampleComponent
           content={content}
           metadata={metadata}
@@ -112,15 +112,15 @@ export const customBlock = new Block<"custom", CustomBlockMetadata>({
       </div>
     );
   },
-  // An optional set of actions exposed in the block toolbar.
+  // An optional set of actions exposed in the artifact toolbar.
   actions: [
     {
       icon: <span>⟳</span>,
-      description: "Refresh block info",
+      description: "Refresh artifact info",
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: "user",
-          content: "Please refresh the info for my custom block.",
+          content: "Please refresh the info for my custom artifact.",
         });
       },
     },
@@ -129,11 +129,11 @@ export const customBlock = new Block<"custom", CustomBlockMetadata>({
   toolbar: [
     {
       icon: <span>✎</span>,
-      description: "Edit custom block",
+      description: "Edit custom artifact",
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: "user",
-          content: "Edit the custom block content.",
+          content: "Edit the custom artifact content.",
         });
       },
     },
@@ -143,12 +143,12 @@ export const customBlock = new Block<"custom", CustomBlockMetadata>({
 
 Server-Side Example (server.ts)
 
-The server file processes the document for the block. It streams updates (if applicable) and returns the final content. For example:
+The server file processes the document for the artifact. It streams updates (if applicable) and returns the final content. For example:
 
 ```ts
 import { smoothStream, streamText } from "ai";
 import { myProvider } from "@/lib/ai/models";
-import { createDocumentHandler } from "@/lib/blocks/server";
+import { createDocumentHandler } from "@/lib/artifacts/server";
 import { updateDocumentPrompt } from "@/lib/ai/prompts";
 
 export const customDocumentHandler = createDocumentHandler<"custom">({
@@ -158,7 +158,7 @@ export const customDocumentHandler = createDocumentHandler<"custom">({
     let draftContent = "";
     // For demonstration, use streamText to generate content.
     const { fullStream } = streamText({
-      model: myProvider.languageModel("block-model"),
+      model: myProvider.languageModel("artifact-model"),
       system:
         "Generate a creative piece based on the title. Markdown is supported.",
       experimental_transform: smoothStream({ chunking: "word" }),
@@ -182,7 +182,7 @@ export const customDocumentHandler = createDocumentHandler<"custom">({
   onUpdateDocument: async ({ document, description, dataStream }) => {
     let draftContent = "";
     const { fullStream } = streamText({
-      model: myProvider.languageModel("block-model"),
+      model: myProvider.languageModel("artifact-model"),
       system: updateDocumentPrompt(document.content, "custom"),
       experimental_transform: smoothStream({ chunking: "word" }),
       prompt: description,
@@ -211,15 +211,15 @@ export const customDocumentHandler = createDocumentHandler<"custom">({
 });
 ```
 
-Once you have created the client and server files, you can import the block in the `lib/blocks/server.ts` file and add it to the `documentHandlersByBlockKind` array.
+Once you have created the client and server files, you can import the artifact in the `lib/artifacts/server.ts` file and add it to the `documentHandlersByArtifactKind` array.
 
 ```ts
-export const documentHandlersByBlockKind: Array<DocumentHandler> = [
+export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   ...,
   customDocumentHandler,
 ];
 
-export const blockKinds = [..., "custom"] as const;
+export const artifactKinds = [..., "custom"] as const;
 ```
 
 Specify it in document schema at `lib/db/schema.ts`.
@@ -232,7 +232,7 @@ export const document = pgTable(
     createdAt: timestamp("createdAt").notNull(),
     title: text("title").notNull(),
     content: text("content"),
-    kind: varchar("text", { enum: [..., "custom"] }) // Add the custom block kind here
+    kind: varchar("text", { enum: [..., "custom"] }) // Add the custom artifact kind here
       .notNull()
       .default("text"),
     userId: uuid("userId")
@@ -247,12 +247,12 @@ export const document = pgTable(
 );
 ```
 
-And also add the client-side block to the `blockDefinitions` array in the `components/block.tsx` file.
+And also add the client-side artifact to the `artifactDefinitions` array in the `components/artifact.tsx` file.
 
 ```ts
-import { customBlock } from "@/blocks/custom/client";
+import { customArtifact } from "@/artifacts/custom/client";
 
-export const blockDefinitions = [..., customBlock];
+export const artifactDefinitions = [..., customArtifact];
 ```
 
-You should now be able to see the custom block in the workspace!
+You should now be able to see the custom artifact in the workspace!
