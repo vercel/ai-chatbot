@@ -6,14 +6,18 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 ] {
   const containerRef = useRef<T>(null);
   const endRef = useRef<T>(null);
-
+  let scroll = true;
   useEffect(() => {
+    scroll = true;
     const container = containerRef.current;
     const end = endRef.current;
 
     if (container && end) {
-      const observer = new MutationObserver(() => {
-        end.scrollIntoView({ behavior: 'instant', block: 'end' });
+      const observer = new MutationObserver((e) => {
+        if (scroll || ( e.length === 1 && e[0].type === 'characterData' )) {
+          end.scrollIntoView({ behavior: 'instant', block: 'end' });
+        }
+        scroll = false;
       });
 
       observer.observe(container, {
