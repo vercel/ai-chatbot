@@ -1,158 +1,320 @@
 import {
   type Message,
   createDataStreamResponse,
+  formatDataStreamPart,
   smoothStream,
-  streamText,
-} from 'ai';
-
-import { auth } from '@/app/(auth)/auth';
-import { myProvider } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
+  streamText
+} from 'ai'
+import { ChatOpenAI } from '@langchain/openai'
+import { LangChainAdapter } from 'ai'
+import { auth } from '@/app/(auth)/auth'
+import { myProvider } from '@/lib/ai/models'
+import { systemPrompt } from '@/lib/ai/prompts'
 import {
   deleteChatById,
   getChatById,
   saveChat,
-  saveMessages,
-} from '@/lib/db/queries';
+  saveMessages
+} from '@/lib/db/queries'
 import {
   generateUUID,
   getMostRecentUserMessage,
-  sanitizeResponseMessages,
-} from '@/lib/utils';
+  sanitizeResponseMessages
+} from '@/lib/utils'
 
-import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
+import { generateTitleFromUserMessage } from '../../actions'
+import { createDocument } from '@/lib/ai/tools/create-document'
+import { updateDocument } from '@/lib/ai/tools/update-document'
+import { requestSuggestions } from '@/lib/ai/tools/request-suggestions'
+import { getWeather } from '@/lib/ai/tools/get-weather'
+import { m } from 'framer-motion'
+import { Client } from '@langchain/langgraph-sdk'
+import { console } from 'inspector'
 
-export const maxDuration = 60;
+export const maxDuration = 60
+
+type LangGraphStreamEvent = {
+  event: string
+  data: any
+}
+
+async function* filteredMessagesGenerator(
+  streamResponse: AsyncGenerator<{ event: string; data: any }, any, any>
+): AsyncGenerator<string, void, unknown> {
+  for await (const message of streamResponse) {
+    // Skip complete events
+    if (message.event !== 'messages/complete') {
+      // Check if there's a valid content in the first element of data
+      if (message.data?.[0]?.content) {
+        // Format the content with text code 0
+        const formatted = formatDataStreamPart('text', message.data[0].content)
+        console.log('Received non-complete message:', formatted)
+        yield formatted
+      }
+    }
+  }
+}
+
+// --- 2. Helper to Convert an Async Generator into a ReadableStream ---
+function asyncGeneratorToReadableStream(
+  generator: AsyncGenerator<string, any, any>
+): ReadableStream<string> {
+  return new ReadableStream<string>({
+    async pull(controller) {
+      const { done, value } = await generator.next()
+      if (done) {
+        controller.close()
+      } else {
+        controller.enqueue(value)
+      }
+    },
+    async cancel(reason) {
+      if (generator.return) {
+        await generator.return(reason)
+      }
+    }
+  })
+}
+
+function prepareResponseHeaders(
+  headers: HeadersInit | undefined,
+  {
+    contentType,
+    dataStreamVersion
+  }: { contentType: string; dataStreamVersion?: 'v1' | undefined }
+) {
+  const responseHeaders = new Headers(headers ?? {})
+
+  if (!responseHeaders.has('Content-Type')) {
+    responseHeaders.set('Content-Type', contentType)
+  }
+
+  if (dataStreamVersion !== undefined) {
+    responseHeaders.set('X-Vercel-AI-Data-Stream', dataStreamVersion)
+  }
+
+  return responseHeaders
+}
 
 export async function POST(request: Request) {
   const {
     id,
     messages,
-    selectedChatModel,
+    selectedChatModel
   }: { id: string; messages: Array<Message>; selectedChatModel: string } =
-    await request.json();
+    await request.json()
 
-  const session = await auth();
+  const session = await auth()
 
   if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Unauthorized', { status: 401 })
   }
 
-  const userMessage = getMostRecentUserMessage(messages);
+  const userMessage = getMostRecentUserMessage(messages)
 
   if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
+    return new Response('No user message found', { status: 400 })
   }
 
-  const chat = await getChatById({ id });
+  const chat = await getChatById({ id })
 
   if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
+    const title = await generateTitleFromUserMessage({ message: userMessage })
+    await saveChat({ id, userId: session.user.id, title })
   }
 
   await saveMessages({
-    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
-  });
+    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }]
+  })
 
-  return createDataStreamResponse({
-    execute: (dataStream) => {
-      const result = streamText({
-        model: myProvider.languageModel(selectedChatModel),
-        system: systemPrompt({ selectedChatModel }),
-        messages,
-        maxSteps: 5,
-        experimental_activeTools:
-          selectedChatModel === 'chat-model-reasoning'
-            ? []
-            : [
-                'getWeather',
-                'createDocument',
-                'updateDocument',
-                'requestSuggestions',
-              ],
-        experimental_transform: smoothStream({ chunking: 'word' }),
-        experimental_generateMessageId: generateUUID,
-        tools: {
-          getWeather,
-          createDocument: createDocument({ session, dataStream }),
-          updateDocument: updateDocument({ session, dataStream }),
-          requestSuggestions: requestSuggestions({
-            session,
-            dataStream,
-          }),
-        },
-        onFinish: async ({ response, reasoning }) => {
-          if (session.user?.id) {
-            try {
-              const sanitizedResponseMessages = sanitizeResponseMessages({
-                messages: response.messages,
-                reasoning,
-              });
+  // const result = streamText({
+  //   model: myProvider.languageModel(selectedChatModel),
+  //   messages
+  // })
 
-              await saveMessages({
-                messages: sanitizedResponseMessages.map((message) => {
-                  return {
-                    id: message.id,
-                    chatId: id,
-                    role: message.role,
-                    content: message.content,
-                    createdAt: new Date(),
-                  };
-                }),
-              });
-            } catch (error) {
-              console.error('Failed to save chat');
-            }
-          }
-        },
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: 'stream-text',
-        },
-      });
+  // return result.toDataStreamResponse()
 
-      result.mergeIntoDataStream(dataStream, {
-        sendReasoning: true,
-      });
-    },
-    onError: () => {
-      return 'Oops, an error occured!';
-    },
-  });
+  // const llm = new ChatOpenAI({
+  //   apiKey: process.env.OPENAI_API_KEY,
+  //   modelName: 'gpt-4o-mini' // context window 128k
+  // })
+
+  // const formattedMessages = messages.map((message) => ({
+  //   ...message,
+  //   type: message.role // assuming 'role' is the equivalent of 'type'
+  // }))
+  // const result = await llm.stream(formattedMessages)
+  // console.log('\nGenerating stream: ', result, '\n')
+  // return LangChainAdapter.toDataStreamResponse(result)
+
+  // return createDataStreamResponse({
+  //   execute: (dataStream) => {
+  //     const result = streamText({
+  //       model: myProvider.languageModel(selectedChatModel),
+  //       system: systemPrompt({ selectedChatModel }),
+  //       messages,
+  //       maxSteps: 5,
+  //       experimental_activeTools:
+  //         selectedChatModel === 'chat-model-reasoning'
+  //           ? []
+  //           : [
+  //               'getWeather',
+  //               'createDocument',
+  //               'updateDocument',
+  //               'requestSuggestions',
+  //             ],
+  //       experimental_transform: smoothStream({ chunking: 'word' }),
+  //       experimental_generateMessageId: generateUUID,
+  //       tools: {
+  //         getWeather,
+  //         createDocument: createDocument({ session, dataStream }),
+  //         updateDocument: updateDocument({ session, dataStream }),
+  //         requestSuggestions: requestSuggestions({
+  //           session,
+  //           dataStream,
+  //         }),
+  //       },
+  //       onFinish: async ({ response, reasoning }) => {
+  //         if (session.user?.id) {
+  //           try {
+  //             const sanitizedResponseMessages = sanitizeResponseMessages({
+  //               messages: response.messages,
+  //               reasoning,
+  //             });
+
+  //             await saveMessages({
+  //               messages: sanitizedResponseMessages.map((message) => {
+  //                 return {
+  //                   id: message.id,
+  //                   chatId: id,
+  //                   role: message.role,
+  //                   content: message.content,
+  //                   createdAt: new Date(),
+  //                 };
+  //               }),
+  //             });
+  //           } catch (error) {
+  //             console.error('Failed to save chat');
+  //           }
+  //         }
+  //       },
+  //       experimental_telemetry: {
+  //         isEnabled: true,
+  //         functionId: 'stream-text',
+  //       },
+  //     });
+
+  //     result.mergeIntoDataStream(dataStream, {
+  //       sendReasoning: true,
+  //     });
+  //   },
+  //   onError: () => {
+  //     return 'Oops, an error occured!';
+  //   },
+  // });
+
+  console.log('Starting the model...')
+  const client = new Client({ apiUrl: 'http://localhost:2024' })
+  console.log('Client created...')
+  // get default assistant
+  const assistants = await client.assistants.search()
+  //console.log(assistants)
+  let assistant = assistants.find((a) => a.graph_id === 'medicalAgent')
+  if (!assistant) {
+    assistant = await client.assistants.create({ graphId: 'medicalAgent' })
+    // throw new Error('No assistant found')
+  }
+  // create thread
+  const thread = await client.threads.create()
+  console.log('Thread: ', thread)
+
+  const input = {
+    messages: [
+      {
+        role: 'user',
+        content: 'quem foi John Lennon em 10 palavras?'
+      }
+    ]
+  }
+
+  const streamResponse = client.runs.stream(
+    thread['thread_id'],
+    assistant['assistant_id'],
+    {
+      input,
+      streamMode: 'messages'
+    }
+  )
+
+  console.log('\nStreaming response...\n\n')
+  // Build our filtered async generator that yields formatted partial messages.
+  const filteredGenerator = filteredMessagesGenerator(streamResponse)
+
+  // Convert the async generator into a ReadableStream of strings.
+  const readableStream = asyncGeneratorToReadableStream(filteredGenerator)
+
+  // Pipe the text stream through a TextEncoderStream so that the response body is binary.
+  const responseStream = readableStream.pipeThrough(new TextEncoderStream())
+
+  // Create the HTTP Response with appropriate headers.
+  const response = new Response(responseStream, {
+    status: 200,
+    statusText: 'OK',
+    headers: prepareResponseHeaders(
+      {},
+      {
+        contentType: 'text/plain; charset=utf-8',
+        dataStreamVersion: 'v1'
+      }
+    )
+  })
+  return response
+
+  // if (!response.body) {
+  //   throw new Error('Response body is null')
+  // }
+  // const reader = response.body.getReader()
+  // const decoder = new TextDecoder('utf-8')
+  // let result = ''
+
+  // while (true) {
+  //   const { done, value } = await reader.read()
+  //   if (done) break
+  //   const textChunk = decoder.decode(value, { stream: true })
+  //   console.log('Received chunk:', textChunk)
+  //   result += textChunk
+  // }
+  // result += decoder.decode() // flush remaining bytes
+  // console.log('Full response:', result)
 }
 
 export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get('id')
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response('Not Found', { status: 404 })
   }
 
-  const session = await auth();
+  const session = await auth()
 
   if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Unauthorized', { status: 401 })
   }
 
   try {
-    const chat = await getChatById({ id });
+    const chat = await getChatById({ id })
 
     if (chat.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response('Unauthorized', { status: 401 })
     }
 
-    await deleteChatById({ id });
+    await deleteChatById({ id })
 
-    return new Response('Chat deleted', { status: 200 });
+    return new Response('Chat deleted', { status: 200 })
   } catch (error) {
     return new Response('An error occurred while processing your request', {
-      status: 500,
-    });
+      status: 500
+    })
   }
 }
