@@ -1,19 +1,19 @@
 'use client';
 
-interface CodeArtifactProps {
+interface CodeBlockProps {
   node: any;
   inline: boolean;
   className: string;
   children: any;
 }
 
-export function CodeArtifact({
+export function CodeBlock({
   node,
   inline,
   className,
   children,
   ...props
-}: CodeArtifactProps) {
+}: CodeBlockProps) {
   if (!inline) {
     return (
       <div className="not-prose flex flex-col">
