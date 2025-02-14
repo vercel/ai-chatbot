@@ -2,7 +2,7 @@
 
 import { User } from 'next-auth';
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
-
+import { toast } from 'sonner';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,6 +55,11 @@ export function ModelSelector({
             <DropdownMenuItem
               key={id}
               onSelect={() => {
+                if (chatModel.requiresAuth && !user) {
+                  toast.error('Please login to use this model!');
+                  return;
+                }
+
                 setOpen(false);
 
                 startTransition(() => {
@@ -66,10 +71,17 @@ export function ModelSelector({
               data-active={id === optimisticModelId}
             >
               <div className="flex flex-col gap-1 items-start">
-                <div>{chatModel.name}</div>
+                <div className="flex flex-row gap-2.5">
+                  <div>{chatModel.name}</div>
+
+                  {chatModel.requiresAuth && !user && (
+                    <div className="text-xs dark:bg-blue-600 h-fit py-0.5 px-1 rounded-md">
+                      Login
+                    </div>
+                  )}
+                </div>
                 <div className="text-xs text-muted-foreground">
                   {chatModel.description}
-                  {chatModel.requiresAuth && !user && ' (login to continue)'}
                 </div>
               </div>
 
