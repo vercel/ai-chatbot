@@ -8,9 +8,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ConsoleOutput } from './block';
 import { cn } from '@/lib/utils';
-import { useBlockSelector } from '@/hooks/use-block';
+import { useArtifactSelector } from '@/hooks/use-artifact';
+
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
+export interface ConsoleOutput {
+  id: string;
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
+}
 
 interface ConsoleProps {
   consoleOutputs: Array<ConsoleOutput>;
@@ -22,7 +32,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [isResizing, setIsResizing] = useState(false);
   const consoleEndRef = useRef<HTMLDivElement>(null);
 
-  const isBlockVisible = useBlockSelector((state) => state.isVisible);
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   const minHeight = 100;
   const maxHeight = 800;
@@ -61,10 +71,10 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   }, [consoleOutputs]);
 
   useEffect(() => {
-    if (!isBlockVisible) {
+    if (!isArtifactVisible) {
       setConsoleOutputs([]);
     }
-  }, [isBlockVisible, setConsoleOutputs]);
+  }, [isArtifactVisible, setConsoleOutputs]);
 
   return consoleOutputs.length > 0 ? (
     <>

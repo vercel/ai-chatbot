@@ -1,6 +1,6 @@
 import "katex/dist/katex.min.css";
 import Link from 'next/link';
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';

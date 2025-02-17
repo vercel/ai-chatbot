@@ -8,17 +8,18 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { BlockKind, UIBlock } from './block';
+import { ArtifactKind, UIArtifact } from './artifact';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
 import { Document } from '@/lib/db/schema';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import useSWR from 'swr';
-import { Editor } from './editor';
+import { Editor } from './text-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { CodeEditor } from './code-editor';
-import { useBlock } from '@/hooks/use-block';
+import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
+import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
 
 interface DocumentPreviewProps {
@@ -32,7 +33,7 @@ export function DocumentPreview({
   result,
   args,
 }: DocumentPreviewProps) {
-  const { block, setBlock } = useBlock();
+  const { artifact, setArtifact } = useArtifact();
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<
     Array<Document>
@@ -43,9 +44,10 @@ export function DocumentPreview({
 
   useEffect(() => {
     const boundingBox = hitboxRef.current?.getBoundingClientRect();
-    if (block.documentId && boundingBox) {
-      setBlock((block) => ({
-        ...block,
+
+    if (artifact.documentId && boundingBox) {
+      setArtifact((artifact) => ({
+        ...artifact,
         boundingBox: {
           left: boundingBox.x,
           top: boundingBox.y,
@@ -54,9 +56,9 @@ export function DocumentPreview({
         },
       }));
     }
-  }, [block.documentId, setBlock]);
+  }, [artifact.documentId, setArtifact]);
 
-  if (block.isVisible) {
+  if (artifact.isVisible) {
     if (result) {
       return (
         <DocumentToolResult
@@ -79,38 +81,42 @@ export function DocumentPreview({
   }
 
   if (isDocumentsFetching) {
-    return <LoadingSkeleton blockKind={result.kind ?? args.kind} />;
+    return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
   }
 
   const document: Document | null = previewDocument
     ? previewDocument
-    : block.status === 'streaming'
+    : artifact.status === 'streaming'
       ? {
-          title: block.title,
-          kind: block.kind,
-          content: block.content,
-          id: block.documentId,
+          title: artifact.title,
+          kind: artifact.kind,
+          content: artifact.content,
+          id: artifact.documentId,
           createdAt: new Date(),
           userId: 'noop',
         }
       : null;
 
-  if (!document) return <LoadingSkeleton blockKind={block.kind} />;
+  if (!document) return <LoadingSkeleton artifactKind={artifact.kind} />;
 
   return (
     <div className="relative w-full cursor-pointer">
-      <HitboxLayer hitboxRef={hitboxRef} result={result} setBlock={setBlock} />
+      <HitboxLayer
+        hitboxRef={hitboxRef}
+        result={result}
+        setArtifact={setArtifact}
+      />
       <DocumentHeader
         title={document.title}
         kind={document.kind}
-        isStreaming={block.status === 'streaming'}
+        isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
     </div>
   );
 }
 
-const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
+const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
   <div className="w-full">
     <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-center justify-between dark:bg-muted h-[57px] dark:border-zinc-700 border-b-0">
       <div className="flex flex-row items-center gap-3">
@@ -123,7 +129,7 @@ const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
         <FullscreenIcon />
       </div>
     </div>
-    {blockKind === 'image' ? (
+    {artifactKind === 'image' ? (
       <div className="overflow-y-scroll border rounded-b-2xl bg-muted border-t-0 dark:border-zinc-700">
         <div className="animate-pulse h-[257px] bg-muted-foreground/20 w-full" />
       </div>
@@ -138,21 +144,23 @@ const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
 const PureHitboxLayer = ({
   hitboxRef,
   result,
-  setBlock,
+  setArtifact,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
   result: any;
-  setBlock: (updaterFn: UIBlock | ((currentBlock: UIBlock) => UIBlock)) => void;
+  setArtifact: (
+    updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
+  ) => void;
 }) => {
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
-      setBlock((block) =>
-        block.status === 'streaming'
-          ? { ...block, isVisible: true }
+      setArtifact((artifact) =>
+        artifact.status === 'streaming'
+          ? { ...artifact, isVisible: true }
           : {
-              ...block,
+              ...artifact,
               title: result.title,
               documentId: result.id,
               kind: result.kind,
@@ -166,7 +174,7 @@ const PureHitboxLayer = ({
             },
       );
     },
-    [setBlock, result],
+    [setArtifact, result],
   );
 
   return (
@@ -197,7 +205,7 @@ const PureDocumentHeader = ({
   isStreaming,
 }: {
   title: string;
-  kind: BlockKind;
+  kind: ArtifactKind;
   isStreaming: boolean;
 }) => (
   <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
@@ -227,7 +235,7 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 });
 
 const DocumentContent = ({ document }: { document: Document }) => {
-  const { block } = useBlock();
+  const { artifact } = useArtifact();
 
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
@@ -241,7 +249,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
     content: document.content ?? '',
     isCurrentVersion: true,
     currentVersionIndex: 0,
-    status: block.status,
+    status: artifact.status,
     saveContent: () => {},
     suggestions: [],
   };
@@ -249,11 +257,17 @@ const DocumentContent = ({ document }: { document: Document }) => {
   return (
     <div className={containerClassName}>
       {document.kind === 'text' ? (
-        <Editor {...commonProps} />
+        <Editor {...commonProps} onSaveContent={() => {}} />
       ) : document.kind === 'code' ? (
         <div className="flex flex-1 relative w-full">
           <div className="absolute inset-0">
-            <CodeEditor {...commonProps} />
+            <CodeEditor {...commonProps} onSaveContent={() => {}} />
+          </div>
+        </div>
+      ) : document.kind === 'sheet' ? (
+        <div className="flex flex-1 relative size-full p-4">
+          <div className="absolute inset-0">
+            <SpreadsheetEditor {...commonProps} />
           </div>
         </div>
       ) : document.kind === 'image' ? (
@@ -262,7 +276,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
           content={document.content ?? ''}
           isCurrentVersion={true}
           currentVersionIndex={0}
-          status={block.status}
+          status={artifact.status}
           isInline={true}
         />
       ) : null}
