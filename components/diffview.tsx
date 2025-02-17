@@ -11,9 +11,9 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { useEffect, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
-import ReactMarkdown from 'react-markdown';
 
 import { diffEditor, DiffType } from '@/lib/editor/diff';
+import { Markdown } from './markdown';
 
 const diffSchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
@@ -60,10 +60,10 @@ export const DiffView = ({ oldContent, newContent }: DiffEditorProps) => {
       const parser = DOMParser.fromSchema(diffSchema);
 
       const oldHtmlContent = renderToString(
-        <ReactMarkdown>{oldContent}</ReactMarkdown>,
+        <Markdown>{oldContent}</Markdown>,
       );
       const newHtmlContent = renderToString(
-        <ReactMarkdown>{newContent}</ReactMarkdown>,
+        <Markdown>{newContent}</Markdown>,
       );
 
       const oldContainer = document.createElement('div');
