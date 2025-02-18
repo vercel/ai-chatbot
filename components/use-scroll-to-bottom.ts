@@ -19,7 +19,6 @@ export function useScrollToBottom<T extends HTMLElement>(): [
           autoScrollInProgress.current = true;
           end.scrollIntoView({ behavior: "smooth", block: "end" });
 
-          // 处理滚动结束事件
           const handleScrollEnd = () => {
             autoScrollInProgress.current = false;
             container.removeEventListener("scrollend", handleScrollEnd);
@@ -28,7 +27,6 @@ export function useScrollToBottom<T extends HTMLElement>(): [
           if ("onscrollend" in window) {
             container.addEventListener("scrollend", handleScrollEnd);
           } else {
-            // 回退：假设滚动动画在1秒内完成
             setTimeout(() => {
               autoScrollInProgress.current = false;
             }, 1000);
@@ -39,7 +37,6 @@ export function useScrollToBottom<T extends HTMLElement>(): [
       const handleScroll = () => {
         if (autoScrollInProgress.current) return;
 
-        // 检查是否滚动到底部
         const { scrollTop, scrollHeight, clientHeight } = container;
         const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 1;
 
