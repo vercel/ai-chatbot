@@ -85,7 +85,6 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {/* use message parts over content and toolInvocations directly */}
             {message.parts?.map((p, i) => {
               const key = `message-${message.id}-part-${i}`;
               switch (p.type) {
