@@ -3,17 +3,12 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { memo, useState } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
 import { DocumentToolCall, DocumentToolResult } from './document';
-import {
-  ChevronDownIcon,
-  LoaderIcon,
-  PencilEditIcon,
-  SparklesIcon,
-} from './icons';
+import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
@@ -90,72 +85,84 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.reasoning && (
-              <MessageReasoning
-                isLoading={isLoading}
-                reasoning={message.reasoning}
-              />
-            )}
-
-            {(message.content || message.reasoning) && mode === 'view' && (
-              <div className="flex flex-row gap-2 items-start">
-                {message.role === 'user' && !isReadonly && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                        onClick={() => {
-                          if (!user) {
-                            toast.error(
-                              'You must be signed in to edit messages!',
-                            );
-
-                            return;
-                          }
-
-                          setMode('edit');
-                        }}
+            {message.parts?.map((p, i) => {
+              const key = `message-${message.id}-part-${i}`;
+              switch (p.type) {
+                case 'text':
+                  if (mode === 'view') {
+                    return (
+                      <div
+                        key={key}
+                        className="flex flex-row gap-2 items-start"
                       >
-                        <PencilEditIcon />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit message</TooltipContent>
-                  </Tooltip>
-                )}
+                        {message.role === 'user' && !isReadonly && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                                onClick={() => {
+                                  if (!user) {
+                                    toast.error(
+                                      'You must be signed in to edit messages!',
+                                    );
 
-                <div
-                  className={cn('flex flex-col gap-4', {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                      message.role === 'user',
-                  })}
-                >
-                  <Markdown>{message.content as string}</Markdown>
-                </div>
-              </div>
-            )}
+                                    return;
+                                  }
 
-            {message.content && mode === 'edit' && (
-              <div className="flex flex-row gap-2 items-start">
-                <div className="size-8" />
+                                  setMode('edit');
+                                }}
+                              >
+                                <PencilEditIcon />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit message</TooltipContent>
+                          </Tooltip>
+                        )}
 
-                <MessageEditor
-                  key={message.id}
-                  message={message}
-                  setMode={setMode}
-                  setMessages={setMessages}
-                  reload={reload}
-                />
-              </div>
-            )}
+                        <div
+                          className={cn('flex flex-col gap-4', {
+                            'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                              message.role === 'user',
+                          })}
+                        >
+                          <Markdown>{p.text}</Markdown>
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (mode === 'edit') {
+                    return (
+                      <div
+                        key={key}
+                        className="flex flex-row gap-2 items-start"
+                      >
+                        <div className="size-8" />
 
-            {message.toolInvocations && message.toolInvocations.length > 0 && (
-              <div className="flex flex-col gap-4">
-                {message.toolInvocations.map((toolInvocation) => {
-                  const { toolName, toolCallId, state, args } = toolInvocation;
-
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          setMode={setMode}
+                          setMessages={setMessages}
+                          reload={reload}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                case 'reasoning':
+                  return (
+                    <MessageReasoning
+                      key={key}
+                      isLoading={isLoading}
+                      reasoning={p.reasoning}
+                    />
+                  );
+                case 'tool-invocation':
+                  const { toolName, toolCallId, state, args } =
+                    p.toolInvocation;
                   if (state === 'result') {
-                    const { result } = toolInvocation;
+                    const { result } = p.toolInvocation;
 
                     return (
                       <div key={toolCallId}>
@@ -210,9 +217,10 @@ const PurePreviewMessage = ({
                       ) : null}
                     </div>
                   );
-                })}
-              </div>
-            )}
+                default:
+                  return null;
+              }
+            })}
 
             {!isReadonly && (
               <MessageActions
