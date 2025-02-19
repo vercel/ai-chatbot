@@ -40,7 +40,7 @@
     "@vercel/functions": "^1.4.2",
     "@vercel/kv": "^3.0.0",
     "@vercel/postgres": "^0.10.0",
-    "ai": "4.1.17",
+    "ai": "4.1.44",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
@@ -102,5 +102,6 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
-  }
+  },
+  "packageManager": "pnpm@10.4.0+sha512.6b849d0787d97f8f4e1f03a9b8ff8f038e79e153d6f11ae539ae7c435ff9e796df6a862c991502695c7f9e8fac8aeafc1ac5a8dab47e36148d183832d886dd52"
 }
