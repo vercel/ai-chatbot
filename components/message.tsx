@@ -8,10 +8,7 @@ import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 
 import { DocumentToolCall, DocumentToolResult } from './document';
-import {
-  PencilEditIcon,
-  SparklesIcon,
-} from './icons';
+import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
@@ -92,14 +89,14 @@ const PurePreviewMessage = ({
             {message.parts?.map((p, i) => {
               const key = `message-${message.id}-part-${i}`;
               switch (p.type) {
-                case "text":
-                  if (mode === "view") {
+                case 'text':
+                  if (mode === 'view') {
                     return (
                       <div
                         key={key}
                         className="flex flex-row gap-2 items-start"
                       >
-                        {message.role === "user" && !isReadonly && (
+                        {message.role === 'user' && !isReadonly && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -108,13 +105,13 @@ const PurePreviewMessage = ({
                                 onClick={() => {
                                   if (!user) {
                                     toast.error(
-                                      "You must be signed in to edit messages!",
+                                      'You must be signed in to edit messages!',
                                     );
 
                                     return;
                                   }
 
-                                  setMode("edit");
+                                  setMode('edit');
                                 }}
                               >
                                 <PencilEditIcon />
@@ -125,9 +122,9 @@ const PurePreviewMessage = ({
                         )}
 
                         <div
-                          className={cn("flex flex-col gap-4", {
-                            "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
-                              message.role === "user",
+                          className={cn('flex flex-col gap-4', {
+                            'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                              message.role === 'user',
                           })}
                         >
                           <Markdown>{p.text}</Markdown>
@@ -135,9 +132,12 @@ const PurePreviewMessage = ({
                       </div>
                     );
                   }
-                  if (mode === "edit") {
+                  if (mode === 'edit') {
                     return (
-                      <div key={key} className="flex flex-row gap-2 items-start">
+                      <div
+                        key={key}
+                        className="flex flex-row gap-2 items-start"
+                      >
                         <div className="size-8" />
 
                         <MessageEditor
@@ -151,7 +151,7 @@ const PurePreviewMessage = ({
                     );
                   }
                   return null;
-                case "reasoning":
+                case 'reasoning':
                   return (
                     <MessageReasoning
                       key={key}
@@ -159,28 +159,28 @@ const PurePreviewMessage = ({
                       reasoning={p.reasoning}
                     />
                   );
-                case "tool-invocation":
+                case 'tool-invocation':
                   const { toolName, toolCallId, state, args } =
                     p.toolInvocation;
-                  if (state === "result") {
+                  if (state === 'result') {
                     const { result } = p.toolInvocation;
 
                     return (
                       <div key={toolCallId}>
-                        {toolName === "getWeather" ? (
+                        {toolName === 'getWeather' ? (
                           <Weather weatherAtLocation={result} />
-                        ) : toolName === "createDocument" ? (
+                        ) : toolName === 'createDocument' ? (
                           <DocumentPreview
                             isReadonly={isReadonly}
                             result={result}
                           />
-                        ) : toolName === "updateDocument" ? (
+                        ) : toolName === 'updateDocument' ? (
                           <DocumentToolResult
                             type="update"
                             result={result}
                             isReadonly={isReadonly}
                           />
-                        ) : toolName === "requestSuggestions" ? (
+                        ) : toolName === 'requestSuggestions' ? (
                           <DocumentToolResult
                             type="request-suggestions"
                             result={result}
@@ -196,20 +196,20 @@ const PurePreviewMessage = ({
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ["getWeather"].includes(toolName),
+                        skeleton: ['getWeather'].includes(toolName),
                       })}
                     >
-                      {toolName === "getWeather" ? (
+                      {toolName === 'getWeather' ? (
                         <Weather />
-                      ) : toolName === "createDocument" ? (
+                      ) : toolName === 'createDocument' ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
-                      ) : toolName === "updateDocument" ? (
+                      ) : toolName === 'updateDocument' ? (
                         <DocumentToolCall
                           type="update"
                           args={args}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === "requestSuggestions" ? (
+                      ) : toolName === 'requestSuggestions' ? (
                         <DocumentToolCall
                           type="request-suggestions"
                           args={args}
