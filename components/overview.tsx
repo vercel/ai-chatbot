@@ -23,7 +23,7 @@ export const Overview = () => {
          The Regulation of Beauty
         </p>
         <p>
-          Your AI-Powered Regulatory Copilot for Beauty
+          Your AI-Powered Regulatory Copilot for Beauty v2
         </p>
       </div>
     </motion.div>
