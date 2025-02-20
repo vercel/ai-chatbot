@@ -20,13 +20,13 @@ export const Overview = () => {
           <MessageIcon size={32} />
         </p>
         <p>
-          This is an{' '}
+          This is a{' '}
           <Link
             className="font-medium underline underline-offset-4"
             href="https://github.com/vercel/ai-chatbot"
             target="_blank"
           >
-            open source
+            RA
           </Link>{' '}
           chatbot template built with Next.js and the AI SDK by Vercel. It uses
           the{' '}
