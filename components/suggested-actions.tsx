@@ -16,24 +16,24 @@ interface SuggestedActionsProps {
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'How Sunscreen Products',
+      label: 'are regulated in the USA?',
+      action: 'How Sunscreen Products are regulated in the USA?',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Are parabens',
+      label: `banned in the EU? What about the US?`,
+      action: `Are parabens banned in the EU? What about the USA?`,
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Can I call',
+      label: `my SPF moisturizer ‘anti-aging’ under EU law?`,
+      action: `Can I call my SPF moisturizer ‘anti-aging’ under EU law? `,
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'What documents do I need',
+      label: 'to register a skincare product in the EU?',
+      action: 'What documents do I need to register a skincare product in the EU?',
     },
   ];
 
