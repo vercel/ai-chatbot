@@ -23,7 +23,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
     {
       title: 'Are parabens',
       label: `banned in the EU? What about the US?`,
-      action: `Are parabens banned in the EU? What about the US?`,
+      action: `Are parabens banned in the EU? What about the USA?`,
     },
     {
       title: 'Can I call',
