@@ -1,7 +1,7 @@
-import { Block } from '@/components/create-block';
+import { Artifact } from '@/components/create-artifact';
 import { DiffView } from '@/components/diffview';
 import { DocumentSkeleton } from '@/components/document-skeleton';
-import { Editor } from '@/components/editor';
+import { Editor } from '@/components/text-editor';
 import {
   ClockRewind,
   CopyIcon,
@@ -14,11 +14,11 @@ import { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
 
-interface TextBlockMetadata {
+interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;
 }
 
-export const textBlock = new Block<'text', TextBlockMetadata>({
+export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
   kind: 'text',
   description: 'Useful for text content, like drafting essays and emails.',
   initialize: async ({ documentId, setMetadata }) => {
@@ -28,7 +28,7 @@ export const textBlock = new Block<'text', TextBlockMetadata>({
       suggestions,
     });
   },
-  onStreamPart: ({ streamPart, setMetadata, setBlock }) => {
+  onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
     if (streamPart.type === 'suggestion') {
       setMetadata((metadata) => {
         return {
@@ -41,16 +41,16 @@ export const textBlock = new Block<'text', TextBlockMetadata>({
     }
 
     if (streamPart.type === 'text-delta') {
-      setBlock((draftBlock) => {
+      setArtifact((draftArtifact) => {
         return {
-          ...draftBlock,
-          content: draftBlock.content + (streamPart.content as string),
+          ...draftArtifact,
+          content: draftArtifact.content + (streamPart.content as string),
           isVisible:
-            draftBlock.status === 'streaming' &&
-            draftBlock.content.length > 400 &&
-            draftBlock.content.length < 450
+            draftArtifact.status === 'streaming' &&
+            draftArtifact.content.length > 400 &&
+            draftArtifact.content.length < 450
               ? true
-              : draftBlock.isVisible,
+              : draftArtifact.isVisible,
           status: 'streaming',
         };
       });
@@ -68,7 +68,7 @@ export const textBlock = new Block<'text', TextBlockMetadata>({
     metadata,
   }) => {
     if (isLoading) {
-      return <DocumentSkeleton blockKind="text" />;
+      return <DocumentSkeleton artifactKind="text" />;
     }
 
     if (mode === 'diff') {

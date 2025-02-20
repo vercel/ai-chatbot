@@ -1,4 +1,4 @@
-import { Block } from '@/components/create-block';
+import { Artifact } from '@/components/create-artifact';
 import { CodeEditor } from '@/components/code-editor';
 import {
   CopyIcon,
@@ -66,7 +66,7 @@ interface Metadata {
   outputs: Array<ConsoleOutput>;
 }
 
-export const codeBlock = new Block<'code', Metadata>({
+export const codeArtifact = new Artifact<'code', Metadata>({
   kind: 'code',
   description:
     'Useful for code generation; Code execution is only available for python code.',
@@ -75,17 +75,17 @@ export const codeBlock = new Block<'code', Metadata>({
       outputs: [],
     });
   },
-  onStreamPart: ({ streamPart, setBlock }) => {
+  onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === 'code-delta') {
-      setBlock((draftBlock) => ({
-        ...draftBlock,
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
         content: streamPart.content as string,
         isVisible:
-          draftBlock.status === 'streaming' &&
-          draftBlock.content.length > 300 &&
-          draftBlock.content.length < 310
+          draftArtifact.status === 'streaming' &&
+          draftArtifact.content.length > 300 &&
+          draftArtifact.content.length < 310
             ? true
-            : draftBlock.isVisible,
+            : draftArtifact.isVisible,
         status: 'streaming',
       }));
     }
