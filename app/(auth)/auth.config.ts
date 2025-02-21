@@ -11,6 +11,10 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
+      const isCallback = nextUrl.pathname.startsWith('/api/auth/callback');
+      if (isCallback) {
+        return true;
+      }
       const isLoggedIn = !!auth?.user;
       const isOnChat = nextUrl.pathname.startsWith('/');
       const isOnRegister = nextUrl.pathname.startsWith('/register');
