@@ -2,12 +2,14 @@
 
 import { z } from 'zod';
 
-import { createUser, getUser } from '@/lib/db/queries';
+import { createSSOUser, getUser } from '@/lib/db/queries';
 
 import { signIn } from './auth';
 
 const authFormSchema = z.object({
+  id: z.string(),
   email: z.string().email(),
+  name: z.string().max(64),
   password: z.string().min(6),
 });
 
@@ -17,7 +19,7 @@ export interface LoginActionState {
 
 export const login = async (
   _: LoginActionState,
-  formData: FormData,
+  formData: FormData
 ): Promise<LoginActionState> => {
   try {
     const validatedData = authFormSchema.parse({
@@ -53,25 +55,27 @@ export interface RegisterActionState {
 
 export const register = async (
   _: RegisterActionState,
-  formData: FormData,
+  formData: FormData
 ): Promise<RegisterActionState> => {
   try {
     const validatedData = authFormSchema.parse({
+      id: formData.get('id'),
       email: formData.get('email'),
+      name: formData.get('name'),
       password: formData.get('password'),
     });
 
     const [user] = await getUser(validatedData.email);
-
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
-    await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
+
+    await createSSOUser(
+      validatedData.id,
+      validatedData.email,
+      validatedData.name,
+      validatedData.password
+    );
 
     return { status: 'success' };
   } catch (error) {
