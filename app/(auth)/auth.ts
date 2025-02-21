@@ -1,6 +1,5 @@
 import { compare } from 'bcrypt-ts';
 import NextAuth, { type User, type Session } from 'next-auth';
-import Github from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import { createSSOUser, getUser } from '@/lib/db/queries';
 
