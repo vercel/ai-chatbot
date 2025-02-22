@@ -181,12 +181,12 @@ export async function POST(request: Request) {
     messages: [{ ...userMessage, createdAt: new Date(), chatId: id }]
   })
 
-  // const result = streamText({
-  //   model: myProvider.languageModel(selectedChatModel),
-  //   messages
-  // })
+  const result = streamText({
+    model: myProvider.languageModel(selectedChatModel),
+    messages
+  })
 
-  // return result.toDataStreamResponse()
+  return result.toDataStreamResponse()
 
   // const llm = new ChatOpenAI({
   //   apiKey: process.env.OPENAI_API_KEY,
@@ -267,57 +267,57 @@ export async function POST(request: Request) {
   //   },
   // });
 
-  console.log('Starting the model...')
-  const client = new Client({ apiUrl: 'http://localhost:2024' })
-  console.log('Client created...')
-  // get default assistant
-  const assistants = await client.assistants.search()
-  //console.log(assistants)
-  let assistant = assistants.find((a) => a.graph_id === 'researcher')
-  if (!assistant) {
-    assistant = await client.assistants.create({ graphId: 'researcher' })
-    // throw new Error('No assistant found')
-  }
-  // create thread
-  const thread = await client.threads.create()
-  console.log('Thread: ', thread)
+  // console.log('Starting the model...')
+  // const client = new Client({ apiUrl: 'http://localhost:2024' })
+  // console.log('Client created...')
+  // // get default assistant
+  // const assistants = await client.assistants.search()
+  // //console.log(assistants)
+  // let assistant = assistants.find((a) => a.graph_id === 'researcher')
+  // if (!assistant) {
+  //   assistant = await client.assistants.create({ graphId: 'researcher' })
+  //   // throw new Error('No assistant found')
+  // }
+  // // create thread
+  // const thread = await client.threads.create()
+  // console.log('Thread: ', thread)
 
-  const input = {
-    messages: [userMessage]
-  }
+  // const input = {
+  //   messages: [userMessage]
+  // }
 
-  const streamResponse = client.runs.stream(
-    thread['thread_id'],
-    assistant['assistant_id'],
-    {
-      input,
-      streamMode: 'messages'
-    }
-  )
+  // const streamResponse = client.runs.stream(
+  //   thread['thread_id'],
+  //   assistant['assistant_id'],
+  //   {
+  //     input,
+  //     streamMode: 'messages'
+  //   }
+  // )
 
-  console.log('\nStreaming response...\n\n')
-  // Create our full data stream generator (start, delta, finish events).
-  const fullGenerator = fullDataStreamGenerator({
-    streamResponse
-  })
-  // Convert it into a ReadableStream of strings.
-  const readableStream = asyncGeneratorToReadableStream(fullGenerator)
-  // Pipe through a TextEncoderStream so the body is binary.
-  const responseStream = readableStream.pipeThrough(new TextEncoderStream())
+  // console.log('\nStreaming response...\n\n')
+  // // Create our full data stream generator (start, delta, finish events).
+  // const fullGenerator = fullDataStreamGenerator({
+  //   streamResponse
+  // })
+  // // Convert it into a ReadableStream of strings.
+  // const readableStream = asyncGeneratorToReadableStream(fullGenerator)
+  // // Pipe through a TextEncoderStream so the body is binary.
+  // const responseStream = readableStream.pipeThrough(new TextEncoderStream())
 
-  // Create the HTTP Response.
-  const response = new Response(responseStream, {
-    status: 200,
-    statusText: 'OK',
-    headers: prepareResponseHeaders(
-      {},
-      {
-        contentType: 'text/plain; charset=utf-8',
-        dataStreamVersion: 'v1'
-      }
-    )
-  })
-  return response
+  // // Create the HTTP Response.
+  // const response = new Response(responseStream, {
+  //   status: 200,
+  //   statusText: 'OK',
+  //   headers: prepareResponseHeaders(
+  //     {},
+  //     {
+  //       contentType: 'text/plain; charset=utf-8',
+  //       dataStreamVersion: 'v1'
+  //     }
+  //   )
+  // })
+  // return response
 
   // if (!response.body) {
   //   throw new Error('Response body is null')

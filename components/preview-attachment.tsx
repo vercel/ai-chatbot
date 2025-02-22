@@ -1,15 +1,17 @@
-import type { Attachment } from 'ai';
+import type { Attachment } from 'ai'
 
-import { LoaderIcon } from './icons';
+import { LoaderIcon } from './icons'
+import { FileTextIcon } from 'lucide-react'
 
 export const PreviewAttachment = ({
   attachment,
-  isUploading = false,
+  isUploading = false
 }: {
-  attachment: Attachment;
-  isUploading?: boolean;
+  attachment: Attachment
+  isUploading?: boolean
 }) => {
-  const { name, url, contentType } = attachment;
+  const { name, url, contentType } = attachment
+  console.log('attachment', attachment)
 
   return (
     <div className="flex flex-col gap-2">
@@ -25,7 +27,7 @@ export const PreviewAttachment = ({
               className="rounded-md size-full object-cover"
             />
           ) : (
-            <div className="" />
+            <FileTextIcon size={30} className="text-zinc-500" />
           )
         ) : (
           <div className="" />
@@ -39,5 +41,5 @@ export const PreviewAttachment = ({
       </div>
       <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
     </div>
-  );
-};
+  )
+}
