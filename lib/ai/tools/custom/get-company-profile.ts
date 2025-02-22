@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { getFiveElmsClient, handleFiveElmsAPIError } from '@/lib/clients/five-elms';
+import { CompanyResponse } from '@FiveElmsCapital/five-elms-ts-sdk';
 
 // Helper function to safely stringify objects for logging
 function safeStringify(obj: unknown): string {
@@ -9,6 +10,11 @@ function safeStringify(obj: unknown): string {
   } catch (error) {
     return `[Unable to stringify: ${error}]`;
   }
+}
+
+interface GetCompanyProfileResult {
+  profile: CompanyResponse;
+  summary: string;
 }
 
 export const getCompanyProfile = tool({
@@ -22,7 +28,7 @@ export const getCompanyProfile = tool({
   parameters: z.object({
     domain: z.string().describe('The company domain to look up (e.g., "example.com")'),
   }),
-  execute: async ({ domain }) => {
+  execute: async ({ domain }): Promise<GetCompanyProfileResult> => {
     console.log('Fetching company profile for domain:', domain);
 
     try {

@@ -267,119 +267,6 @@ declare module '@FiveElmsCapital/five-elms-ts-sdk' {
       count: number
     }
   
-    export interface CompanyProfileResponse {
-      fec_domain_id: string;
-      company: string;
-      website: string;
-      linkedin: string;
-      company_description: string | null;
-      year_founded: string;
-      city: string;
-      state_province: string;
-      country: string;
-      city_state: string;
-      travel_city: string;
-      database_status: DatabaseStatus;
-      lisa_score: number;
-      lisa_rank: ScaleScore;
-      viability: Viability;
-      pipeline_status: PipelineStatus;
-      salesforce_stage_group: SFStageGroup;
-      salesforce_ownership: SFOwnership;
-      review_status: string;
-      date_added_to_db: string;
-      date_last_updated: string;
-      staff_size: number;
-      pct_2_year_employee_growth: number | null;
-      staff_size_date: string;
-      qa_status: QAStatus;
-      last_qa_date: string | null;
-      funding_status: FundingStatus;
-      total_funding: number;
-      last_funding_on: string | null;
-      acquisition_detail: string | null;
-      crunchbase_link: string | null;
-      salesforce_bucket: string;
-      salesforce_stage: string;
-      organization_id: string;
-      owner_name: string;
-      owner_id: string;
-      last_activity: string;
-      key: boolean;
-      do_not_contact: boolean;
-      person_id: string;
-      first_name: string;
-      last_name: string;
-      title: string;
-      email: string;
-      instances: number;
-      instances_delivered: number;
-      instances_w_email: number;
-      instances_w_viewed_email: number;
-      instances_w_reply: number;
-      instances_w_call: number;
-      instances_w_live_meeting: number;
-      instances_w_opportunity: number;
-      pct_instances_delivered: number;
-      pct_instances_w_email: number;
-      pct_instances_w_viewed_email: number;
-      pct_instances_w_reply: number;
-      pct_instances_w_call: number;
-      pct_instances_w_live_meeting: number;
-      pct_instances_w_opportunity: number;
-      total_emails: number;
-      total_viewed_emails: number;
-      total_replies: number;
-      total_calls: number;
-      total_live_meetings: number;
-      total_opportunities: number;
-      first_email_date: string | null;
-      first_reply_date: string | null;
-      first_call_date: string | null;
-      first_opportunity_date: string | null;
-      last_email_date: string | null;
-      last_reply_date: string | null;
-      last_call_date: string | null;
-      last_opportunity_date: string | null;
-      unique_instance_owners: number;
-      highest_instance_owner_seniority: string;
-      total_sourcing_calls: number;
-      total_company_calls: number;
-      highest_lifetime_opportunity_stage: HighestLifetimeOppStage;
-      total_opportunities_to_eval: string;
-      first_instance_start_date: string;
-      first_instance_attribution_bucket: string;
-      first_instance_attribution_funnel: string;
-      first_instance_owner: string;
-      converting_instance_start_date: string | null;
-      converting_instance_attribution_bucket: string | null;
-      converting_instance_attribution_funnel: string | null;
-      converting_instance_owner: string | null;
-      converting_instance_type: string | null;
-      last_instance_start_date: string;
-      last_instance_attribution_bucket: string;
-      last_instance_attribution_funnel: string;
-      last_instance_owner: string;
-      last_instance_type: string;
-      last_instance_delivered: boolean;
-      last_instance_contains_email: boolean;
-      last_instance_contains_viewed_email: boolean;
-      last_instance_contains_reply: boolean;
-      last_instance_contains_call: boolean;
-      last_instance_contains_live_meeting: boolean;
-      last_instance_contains_opportunity: boolean;
-      last_initial_call_type: string | null;
-      last_quality_call: boolean | null;
-      last_call_is_raising: boolean | null;
-      last_opportunity_id: string | null;
-      last_opportunity_creator_name: string | null;
-      last_opportunity_owner_name: string | null;
-      last_opportunity_current_stage: string | null;
-      last_opportunity_highest_stage: string | null;
-      last_opportunity_created_date: string | null;
-      last_opportunity_last_stage_change_date: string | null;
-    }
-  
     export interface CompanyTaxonomyResponse {
       // Add specific fields based on the API response
       taxonomy: Record<string, unknown>;
@@ -418,7 +305,7 @@ declare module '@FiveElmsCapital/five-elms-ts-sdk' {
         timeout: number
       })
   
-      getCompanyProfile(domain: string): Promise<CompanyProfileResponse>
+      getCompanyProfile(domain: string): Promise<CompanyResponse>
       getCompanyTaxonomy(domain: string): Promise<CompanyTaxonomyResponse>
       getCompanySponsors(domain: string): Promise<CompanySponsorResponse>
       getCompanyInstanceSummaries(domain: string): Promise<CompanyInstanceSummaryResponse>
