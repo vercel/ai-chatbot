@@ -21,10 +21,11 @@ import {
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
+import { createDocument } from '@/lib/ai/tools/artifacts/create-document';
+import { updateDocument } from '@/lib/ai/tools/artifacts/update-document';
+import { requestSuggestions } from '@/lib/ai/tools/artifacts/request-suggestions';
+import { getWeather } from '@/lib/ai/tools/default/get-weather';
+import { getCompanyProfile } from '@/lib/ai/tools/custom/get-company-profile';
 
 // Maximum duration for the API route execution in seconds
 export const maxDuration = 60;
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
                 'createDocument',
                 'updateDocument',
                 'requestSuggestions',
+                'getCompanyProfile',
               ],
         // Configure stream processing
         experimental_transform: smoothStream({ chunking: 'word' }), // Word-by-word streaming
@@ -101,6 +103,7 @@ export async function POST(request: Request) {
             session,
             dataStream,
           }),
+          getCompanyProfile, // Five Elms company profile tool
         },
 
         // Handle stream completion

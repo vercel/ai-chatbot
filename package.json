@@ -18,6 +18,7 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
+    "@FiveElmsCapital/five-elms-ts-sdk": "^1.0.1",
     "@ai-sdk/fireworks": "^0.1.8",
     "@ai-sdk/openai": "1.1.9",
     "@codemirror/lang-javascript": "^6.2.2",

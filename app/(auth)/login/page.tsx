@@ -1,4 +1,4 @@
-import { GoogleAuthForm } from '@/components/auth-google/google-auth-form';
+import { GoogleAuthForm } from '@/components/auth/google-auth-form';
 import Image from 'next/image';
 
 export default function Page() {
