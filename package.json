@@ -18,6 +18,7 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
+    "@FiveElmsCapital/five-elms-ts-sdk": "^1.0.1",
     "@ai-sdk/fireworks": "^0.1.8",
     "@ai-sdk/openai": "1.1.9",
     "@codemirror/lang-javascript": "^6.2.2",
@@ -48,6 +49,7 @@
     "diff-match-patch": "^1.0.5",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.34.0",
+    "exa-js": "^1.4.10",
     "fast-deep-equal": "^3.1.3",
     "framer-motion": "^11.3.19",
     "geist": "^1.3.1",

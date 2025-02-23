@@ -17,7 +17,14 @@ import {
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
+import { Weather } from './tools/default/weather';
+import { CompanyProfile } from './tools/custom/company-profile';
+import { 
+  ExaSearchResult, 
+  ExaAnswerResult,
+  ExaFindSimilarResult,
+  ExaGetContentsResult 
+} from './tools/default/exa-search';
 import equal from 'fast-deep-equal';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -25,6 +32,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
+
+// Define which tools should appear below the message (artifact manipulation tools)
+const ARTIFACT_TOOLS = ['createDocument', 'updateDocument', 'requestSuggestions'];
 
 const PurePreviewMessage = ({
   chatId,
@@ -49,6 +59,15 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
+  // Separate tool invocations into information tools and artifact tools
+  const toolInvocations = message.toolInvocations || [];
+  const artifactTools = toolInvocations.filter(tool => 
+    ARTIFACT_TOOLS.includes(tool.toolName)
+  );
+  const infoTools = toolInvocations.filter(tool => 
+    !ARTIFACT_TOOLS.includes(tool.toolName)
+  );
+
   return (
     <AnimatePresence>
       <motion.div
@@ -57,15 +76,13 @@ const PurePreviewMessage = ({
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
       >
-        <div
-          className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
-            {
-              'w-full': mode === 'edit',
-              'group-data-[role=user]/message:w-fit': mode !== 'edit',
-            },
-          )}
-        >
+        <div className={cn(
+          'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+          {
+            'w-full': mode === 'edit',
+            'group-data-[role=user]/message:w-fit': mode !== 'edit',
+          },
+        )}>
           {message.role === 'assistant' && (
             <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
@@ -75,6 +92,55 @@ const PurePreviewMessage = ({
           )}
 
           <div className="flex flex-col gap-4 w-full">
+            {/* Information tools that appear above content */}
+            {infoTools.length > 0 && (
+              <div className="flex flex-col gap-4">
+                {infoTools.map((toolInvocation) => {
+                  const { toolName, toolCallId, state, args } = toolInvocation;
+
+                  if (state === 'result') {
+                    const { result } = toolInvocation;
+                    return (
+                      <div key={toolCallId}>
+                        {toolName === 'getWeather' ? (
+                          <Weather weatherAtLocation={result} />
+                        ) : toolName === 'getCompanyProfile' ? (
+                          <CompanyProfile profile={result} />
+                        ) : toolName === 'exaSearch' || toolName === 'exaSearchAndContents' ? (
+                          <ExaSearchResult title="Web Search Results" response={result} />
+                        ) : toolName === 'exaFindSimilar' ? (
+                          <ExaFindSimilarResult title="Similar Pages" response={result} />
+                        ) : toolName === 'exaGetContents' ? (
+                          <ExaGetContentsResult title="Page Contents" response={result} />
+                        ) : toolName === 'exaAnswer' ? (
+                          <ExaAnswerResult title="AI Answer" answer={result.answer} sources={result.sources} />
+                        ) : (
+                          <pre>{JSON.stringify(result, null, 2)}</pre>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={toolCallId}
+                      className={cx({
+                        skeleton: ['getWeather', 'getCompanyProfile'].includes(toolName),
+                      })}
+                    >
+                      {toolName === 'getWeather' ? (
+                        <Weather />
+                      ) : toolName === 'getCompanyProfile' ? (
+                        <CompanyProfile isLoading={true} />
+                      ) : toolName === 'exaSearch' || toolName === 'exaSearchAndContents' || toolName === 'exaFindSimilar' || toolName === 'exaGetContents' || toolName === 'exaAnswer' ? (
+                        <div className="h-24 animate-pulse bg-muted rounded-lg" />
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Message content and attachments */}
             {message.experimental_attachments && (
               <div className="flex flex-row justify-end gap-2">
                 {message.experimental_attachments.map((attachment) => (
@@ -112,12 +178,10 @@ const PurePreviewMessage = ({
                   </Tooltip>
                 )}
 
-                <div
-                  className={cn('flex flex-col gap-4', {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                      message.role === 'user',
-                  })}
-                >
+                <div className={cn('flex flex-col gap-4', {
+                  'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                    message.role === 'user',
+                })}>
                   <Markdown>{message.content as string}</Markdown>
                 </div>
               </div>
@@ -126,7 +190,6 @@ const PurePreviewMessage = ({
             {message.content && mode === 'edit' && (
               <div className="flex flex-row gap-2 items-start">
                 <div className="size-8" />
-
                 <MessageEditor
                   key={message.id}
                   message={message}
@@ -137,19 +200,17 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.toolInvocations && message.toolInvocations.length > 0 && (
+            {/* Artifact tools that appear below content */}
+            {artifactTools.length > 0 && (
               <div className="flex flex-col gap-4">
-                {message.toolInvocations.map((toolInvocation) => {
+                {artifactTools.map((toolInvocation) => {
                   const { toolName, toolCallId, state, args } = toolInvocation;
 
                   if (state === 'result') {
                     const { result } = toolInvocation;
-
                     return (
                       <div key={toolCallId}>
-                        {toolName === 'getWeather' ? (
-                          <Weather weatherAtLocation={result} />
-                        ) : toolName === 'createDocument' ? (
+                        {toolName === 'createDocument' ? (
                           <DocumentPreview
                             isReadonly={isReadonly}
                             result={result}
@@ -166,22 +227,13 @@ const PurePreviewMessage = ({
                             result={result}
                             isReadonly={isReadonly}
                           />
-                        ) : (
-                          <pre>{JSON.stringify(result, null, 2)}</pre>
-                        )}
+                        ) : null}
                       </div>
                     );
                   }
                   return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'getWeather' ? (
-                        <Weather />
-                      ) : toolName === 'createDocument' ? (
+                    <div key={toolCallId}>
+                      {toolName === 'createDocument' ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
                       ) : toolName === 'updateDocument' ? (
                         <DocumentToolCall

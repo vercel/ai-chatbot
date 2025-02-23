@@ -1,4 +1,4 @@
-import { GoogleAuthForm } from '@/components/auth-google/google-auth-form';
+import { GoogleAuthForm } from '@/components/auth/google-auth-form';
 import Image from 'next/image';
 
 export default function Page() {
@@ -40,12 +40,12 @@ export default function Page() {
 
       {/* Right Column - Visual */}
       <div className="hidden lg:flex w-1/2 bg-muted relative items-center justify-center overflow-hidden">
-        <div className="relative w-80 h-80">
+        <div className="relative size-80">
           <Image
             src="/favicon.ico"
             alt="Five Elms Capital Logo"
             fill
-            className="object-contain opacity-[0.15] dark:opacity-[0.50]"
+            className="object-contain opacity-15 dark:opacity-[0.50]"
             priority
           />
         </div>

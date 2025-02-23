@@ -29,7 +29,7 @@ export function GoogleAuthForm() {
             alt="Google"
             width={20}
             height={20}
-            className="flex-shrink-0"
+            className="shrink-0"
             priority
           />
           Sign in with Google

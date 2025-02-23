@@ -1,4 +1,4 @@
-import { compare } from 'bcrypt-ts';
+
 import NextAuth, { type User, type Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { createSSOUser, getUser } from '@/lib/db/queries';
@@ -71,7 +71,7 @@ export const {
       //   }
       // }
       if (account?.provider === 'google') {
-        if (user && user.id && user.email && user.name) {
+        if (user?.id && user.email && user.name) {
           const [googleUser] = await getUser(user?.email);
           if (googleUser) {
             return true;
