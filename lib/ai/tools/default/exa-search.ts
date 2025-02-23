@@ -115,8 +115,7 @@ export const exaSearch = tool({
       if (error instanceof ExaAPIError) {
         throw new Error(`Exa search failed: ${error.message}`);
       }
-      throw new Error('Failed to perform Exa search: ' + 
-        (error instanceof Error ? error.message : 'Unknown error'));
+      throw new Error(`Failed to perform Exa search: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
@@ -136,8 +135,7 @@ export const exaFindSimilar = tool({
       if (error instanceof ExaAPIError) {
         throw new Error(`Exa findSimilar failed: ${error.message}`);
       }
-      throw new Error('Failed to find similar content: ' + 
-        (error instanceof Error ? error.message : 'Unknown error'));
+      throw new Error(`Failed to find similar content: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
@@ -157,8 +155,7 @@ export const exaGetContents = tool({
       if (error instanceof ExaAPIError) {
         throw new Error(`Exa getContents failed: ${error.message}`);
       }
-      throw new Error('Failed to get contents: ' + 
-        (error instanceof Error ? error.message : 'Unknown error'));
+      throw new Error(`Failed to get contents: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
@@ -180,8 +177,7 @@ export const exaAnswer = tool({
       if (error instanceof ExaAPIError) {
         throw new Error(`Exa answer failed: ${error.message}`);
       }
-      throw new Error('Failed to generate answer: ' + 
-        (error instanceof Error ? error.message : 'Unknown error'));
+      throw new Error(`Failed to generate answer: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
@@ -201,8 +197,7 @@ export const exaSearchAndContents = tool({
       if (error instanceof ExaAPIError) {
         throw new Error(`Exa search and contents failed: ${error.message}`);
       }
-      throw new Error('Failed to perform search and contents: ' + 
-        (error instanceof Error ? error.message : 'Unknown error'));
+      throw new Error(`Failed to perform search and contents: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
