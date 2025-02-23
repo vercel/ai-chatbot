@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Globe, Search, FileText, Clock, Link2, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -21,7 +20,7 @@ function ResultList({ results }: { results: ResultWithContent[] }) {
                   <img
                     src={result.favicon}
                     alt="Site favicon"
-                    className="w-4 h-4"
+                    className="size-4"
                   />
                 )}
                 <a
@@ -35,12 +34,12 @@ function ResultList({ results }: { results: ResultWithContent[] }) {
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
-                  <Globe className="w-4 h-4" />
+                  <Globe className="size-4" />
                   <span>{new URL(result.url).hostname}</span>
                 </div>
                 {result.publishedDate && (
                   <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
+                    <Clock className="size-4" />
                     <span>
                       {new Date(result.publishedDate).toLocaleDateString()}
                     </span>
@@ -62,7 +61,7 @@ function ResultList({ results }: { results: ResultWithContent[] }) {
                   key={i}
                   className="text-sm text-gray-600 bg-gray-50 p-2 rounded"
                 >
-                  "{highlight}"
+                  &ldquo;{highlight}&rdquo;
                 </div>
               ))}
             </div>
@@ -92,7 +91,7 @@ export function ExaSearchResult({ title, response }: ExaSearchResultProps) {
     <Card className="w-full p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Search className="w-5 h-5 text-blue-500" />
+          <Search className="size-5 text-blue-500" />
           <h3 className="font-medium">{title}</h3>
           <Badge variant="secondary" className="ml-2">
             {response.results.length} results
@@ -110,9 +109,9 @@ export function ExaSearchResult({ title, response }: ExaSearchResultProps) {
           className="ml-auto"
         >
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="size-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="size-4" />
           )}
         </Button>
       </div>
@@ -138,7 +137,7 @@ export function ExaFindSimilarResult({ title, response }: ExaSearchResultProps) 
     <Card className="w-full p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link2 className="w-5 h-5 text-blue-500" />
+          <Link2 className="size-5 text-blue-500" />
           <h3 className="font-medium">{title}</h3>
           <Badge variant="secondary" className="ml-2">
             {response.results.length} similar pages
@@ -151,9 +150,9 @@ export function ExaFindSimilarResult({ title, response }: ExaSearchResultProps) 
           className="ml-auto"
         >
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="size-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="size-4" />
           )}
         </Button>
       </div>
@@ -179,7 +178,7 @@ export function ExaGetContentsResult({ title, response }: ExaSearchResultProps) 
     <Card className="w-full p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-500" />
+          <FileText className="size-5 text-blue-500" />
           <h3 className="font-medium">{title}</h3>
           <Badge variant="secondary" className="ml-2">
             {response.results.length} pages
@@ -192,9 +191,9 @@ export function ExaGetContentsResult({ title, response }: ExaSearchResultProps) 
           className="ml-auto"
         >
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="size-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="size-4" />
           )}
         </Button>
       </div>
@@ -226,7 +225,7 @@ export function ExaAnswerResult({ title, answer, sources }: ExaAnswerResultProps
     <Card className="w-full p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-blue-500" />
+          <Sparkles className="size-5 text-blue-500" />
           <h3 className="font-medium">{title}</h3>
           {sources && (
             <Badge variant="secondary" className="ml-2">
@@ -241,9 +240,9 @@ export function ExaAnswerResult({ title, answer, sources }: ExaAnswerResultProps
           className="ml-auto"
         >
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="size-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="size-4" />
           )}
         </Button>
       </div>

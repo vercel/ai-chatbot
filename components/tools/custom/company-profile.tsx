@@ -1,6 +1,6 @@
 'use client';
 
-import { CompanyResponse } from '@FiveElmsCapital/five-elms-ts-sdk';
+import type { CompanyResponse } from '@FiveElmsCapital/five-elms-ts-sdk';
 import { cn } from '@/lib/utils';
 import { format, isValid } from 'date-fns';
 import { useState } from 'react';
@@ -47,7 +47,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
     return (
       <Card className="w-full p-6">
         <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Loader2 className="size-5 animate-spin" />
           <p>Loading company information...</p>
         </div>
       </Card>
@@ -59,7 +59,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
     return (
       <Card className="w-full p-6">
         <div className="flex items-center gap-3 text-muted-foreground">
-          <AlertCircle className="w-5 h-5" />
+          <AlertCircle className="size-5" />
           <p>No company information found</p>
         </div>
       </Card>
@@ -82,7 +82,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"
               >
-                <Globe className="w-4 h-4" />
+                <Globe className="size-4" />
               </a>
             )}
             {companyData.linkedin && (
@@ -92,7 +92,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"
               >
-                <Linkedin className="w-4 h-4" />
+                <Linkedin className="size-4" />
               </a>
             )}
             {companyData.crunchbase_link && (
@@ -102,7 +102,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary"
               >
-                <LineChart className="w-4 h-4" />
+                <LineChart className="size-4" />
               </a>
             )}
           </div>
@@ -127,7 +127,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
       {/* Quick Info Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
         <div className="flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-muted-foreground" />
+          <Building2 className="size-4 text-muted-foreground" />
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Location</span>
             <span className="text-sm font-medium">
@@ -136,7 +136,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-muted-foreground" />
+          <Users className="size-4 text-muted-foreground" />
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Staff Size</span>
             <span className="text-sm font-medium">{companyData.staff_size.toLocaleString()}</span>
@@ -205,7 +205,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <span>Interaction History</span>
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </Button>
 
         {isExpanded && (
