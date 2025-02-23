@@ -4,14 +4,26 @@ import { CompanyResponse } from '@FiveElmsCapital/five-elms-ts-sdk';
 import { cn } from '@/lib/utils';
 import { format, isValid } from 'date-fns';
 import { useState } from 'react';
-import { Globe, Linkedin, LineChart, ChevronDown, ChevronUp, Building2, Users } from 'lucide-react';
+import { Globe, Linkedin, LineChart, ChevronDown, ChevronUp, Building2, Users, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface CompanyProfileProps {
   profile?: {
     profile: CompanyResponse;
     summary: string;
-  };
+  } | null;
+  isLoading?: boolean;
+}
+
+// Type guard to check if the response is a valid CompanyResponse
+function isValidCompanyResponse(profile: any): profile is CompanyResponse {
+  return (
+    profile &&
+    typeof profile === 'object' &&
+    'company' in profile &&
+    typeof profile.company === 'string'
+  );
 }
 
 // Helper function to safely format dates
@@ -27,10 +39,32 @@ function formatScore(score: number | string | null): string {
   return typeof score === 'number' ? score.toFixed(1) : score;
 }
 
-export function CompanyProfile({ profile }: CompanyProfileProps) {
+export function CompanyProfile({ profile, isLoading = false }: CompanyProfileProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (!profile?.profile) return null;
+  // Show loading state
+  if (isLoading || typeof profile === 'undefined') {
+    return (
+      <Card className="w-full p-6">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <p>Loading company information...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  // Handle empty or invalid response
+  if (!profile || !profile.profile || !isValidCompanyResponse(profile.profile)) {
+    return (
+      <Card className="w-full p-6">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <AlertCircle className="w-5 h-5" />
+          <p>No company information found</p>
+        </div>
+      </Card>
+    );
+  }
 
   const companyData = profile.profile;
 

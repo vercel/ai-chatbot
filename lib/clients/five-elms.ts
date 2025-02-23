@@ -7,6 +7,33 @@ const API_CONFIG = {
   timeout: 30000, // 30 seconds
 } as const;
 
+// Error types
+export class FiveElmsAPIError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+    public code?: string,
+    public details?: unknown
+  ) {
+    super(message);
+    this.name = 'FiveElmsAPIError';
+  }
+}
+
+export class CompanyNotFoundError extends FiveElmsAPIError {
+  constructor(domain: string) {
+    super(`Company not found for domain: ${domain}`, 404, 'COMPANY_NOT_FOUND');
+    this.name = 'CompanyNotFoundError';
+  }
+}
+
+export class ConfigurationError extends FiveElmsAPIError {
+  constructor(message: string) {
+    super(message, 500, 'CONFIGURATION_ERROR');
+    this.name = 'ConfigurationError';
+  }
+}
+
 // Create a singleton instance
 class FiveElmsClientSingleton {
   private static instance: FiveElmsAPIClient;
@@ -14,13 +41,11 @@ class FiveElmsClientSingleton {
   public static getInstance(): FiveElmsAPIClient {
     if (!FiveElmsClientSingleton.instance) {
       if (!API_CONFIG.token) {
-        console.error('Five Elms API Configuration Error: Missing API token');
-        throw new Error('Five Elms API token is not configured');
+        throw new ConfigurationError('Five Elms API token is not configured');
       }
 
       if (!API_CONFIG.baseUrl) {
-        console.error('Five Elms API Configuration Error: Missing base URL');
-        throw new Error('Five Elms API base URL is not configured');
+        throw new ConfigurationError('Five Elms API base URL is not configured');
       }
 
       console.log('Five Elms API Client Configuration:', {
@@ -40,22 +65,6 @@ class FiveElmsClientSingleton {
   }
 }
 
-// Error handling types and utilities
-export interface FiveElmsAPIError {
-  message: string;
-  code?: string;
-  status?: number;
-  details?: unknown;
-}
-
-export function isFiveElmsAPIError(error: unknown): error is FiveElmsAPIError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error
-  );
-}
-
 // Helper function to safely stringify objects for logging
 function safeStringify(obj: unknown): string {
   try {
@@ -73,11 +82,15 @@ export async function handleFiveElmsAPIError(error: unknown): Promise<FiveElmsAP
     type: error?.constructor?.name,
   });
 
-  if (isFiveElmsAPIError(error)) {
-    return {
-      ...error,
-      details: error,
-    };
+  if (error instanceof FiveElmsAPIError) {
+    return error;
+  }
+
+  // Handle specific error cases
+  if (error instanceof Error) {
+    if (error.message.includes('404') || error.message.toLowerCase().includes('not found')) {
+      return new CompanyNotFoundError(error.message);
+    }
   }
   
   // Log unexpected errors
@@ -86,11 +99,12 @@ export async function handleFiveElmsAPIError(error: unknown): Promise<FiveElmsAP
     stack: error instanceof Error ? error.stack : undefined,
   });
   
-  return {
-    message: 'An unexpected error occurred while accessing Five Elms API',
-    status: 500,
-    details: error,
-  };
+  return new FiveElmsAPIError(
+    'An unexpected error occurred while accessing Five Elms API',
+    500,
+    'UNEXPECTED_ERROR',
+    error
+  );
 }
 
 // Export a function to get the client instance

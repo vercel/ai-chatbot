@@ -1,6 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { getFiveElmsClient, handleFiveElmsAPIError } from '@/lib/clients/five-elms';
+import { getFiveElmsClient, handleFiveElmsAPIError, CompanyNotFoundError } from '@/lib/clients/five-elms';
 import { CompanyResponse } from '@FiveElmsCapital/five-elms-ts-sdk';
 
 // Helper function to safely stringify objects for logging
@@ -13,8 +13,18 @@ function safeStringify(obj: unknown): string {
 }
 
 interface GetCompanyProfileResult {
-  profile: CompanyResponse;
+  profile: CompanyResponse | null;
   summary: string;
+}
+
+// Helper function to validate company profile data
+function isValidCompanyProfile(profile: unknown): profile is CompanyResponse {
+  return (
+    profile !== null &&
+    typeof profile === 'object' &&
+    'company' in profile &&
+    typeof (profile as any).company === 'string'
+  );
 }
 
 export const getCompanyProfile = tool({
@@ -36,8 +46,27 @@ export const getCompanyProfile = tool({
       console.log('Making API request to Five Elms for domain:', domain);
       
       const response = await client.getCompanyProfile(domain);
+      
+      // Handle empty response cases
+      if (!response) {
+        console.log('No company found for domain:', domain);
+        return {
+          profile: null,
+          summary: `No company profile found for domain: ${domain}`
+        };
+      }
+
       // The API returns an array, get the first item
       const profile = Array.isArray(response) ? response[0] : response;
+
+      // Validate the profile data
+      if (!isValidCompanyProfile(profile)) {
+        console.warn('Invalid company profile data:', safeStringify(profile));
+        return {
+          profile: null,
+          summary: `Unable to retrieve valid company data for domain: ${domain}`
+        };
+      }
 
       console.log('Received API response:', {
         company: profile.company,
@@ -65,8 +94,22 @@ export const getCompanyProfile = tool({
         stack: error instanceof Error ? error.stack : undefined,
       });
 
+      // Handle known error cases
+      if (error instanceof CompanyNotFoundError) {
+        return {
+          profile: null,
+          summary: `No company profile found for domain: ${domain}`
+        };
+      }
+
+      // For other errors, let the error handler process it
       const apiError = await handleFiveElmsAPIError(error);
-      throw new Error(`Failed to get company profile: ${apiError.message}`);
+      
+      // Return a graceful response instead of throwing
+      return {
+        profile: null,
+        summary: `Unable to retrieve company profile: ${apiError.message}`
+      };
     }
   },
 }); 

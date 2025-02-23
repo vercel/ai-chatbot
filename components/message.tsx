@@ -130,7 +130,7 @@ const PurePreviewMessage = ({
                       {toolName === 'getWeather' ? (
                         <Weather />
                       ) : toolName === 'getCompanyProfile' ? (
-                        <CompanyProfile />
+                        <CompanyProfile isLoading={true} />
                       ) : toolName === 'exaSearch' || toolName === 'exaSearchAndContents' || toolName === 'exaFindSimilar' || toolName === 'exaGetContents' || toolName === 'exaAnswer' ? (
                         <div className="h-24 animate-pulse bg-muted rounded-lg" />
                       ) : null}
