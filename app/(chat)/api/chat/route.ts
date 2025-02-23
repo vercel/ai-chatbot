@@ -26,6 +26,13 @@ import { updateDocument } from '@/lib/ai/tools/artifacts/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/artifacts/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/default/get-weather';
 import { getCompanyProfile } from '@/lib/ai/tools/custom/get-company-profile';
+import { 
+  exaSearch, 
+  exaSearchAndContents, 
+  exaFindSimilar,
+  exaGetContents,
+  exaAnswer 
+} from '@/lib/ai/tools/default/exa-search';
 
 // Maximum duration for the API route execution in seconds
 export const maxDuration = 60;
@@ -89,6 +96,11 @@ export async function POST(request: Request) {
                 'updateDocument',
                 'requestSuggestions',
                 'getCompanyProfile',
+                'exaSearch',
+                'exaSearchAndContents',
+                'exaFindSimilar',
+                'exaGetContents',
+                'exaAnswer'
               ],
         // Configure stream processing
         experimental_transform: smoothStream({ chunking: 'word' }), // Word-by-word streaming
@@ -104,6 +116,11 @@ export async function POST(request: Request) {
             dataStream,
           }),
           getCompanyProfile, // Five Elms company profile tool
+          exaSearch,
+          exaSearchAndContents,
+          exaFindSimilar,
+          exaGetContents,
+          exaAnswer
         },
 
         // Handle stream completion

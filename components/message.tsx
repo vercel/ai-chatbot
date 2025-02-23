@@ -19,6 +19,12 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './tools/default/weather';
 import { CompanyProfile } from './tools/custom/company-profile';
+import { 
+  ExaSearchResult, 
+  ExaAnswerResult,
+  ExaFindSimilarResult,
+  ExaGetContentsResult 
+} from './tools/default/exa-search';
 import equal from 'fast-deep-equal';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -100,6 +106,14 @@ const PurePreviewMessage = ({
                           <Weather weatherAtLocation={result} />
                         ) : toolName === 'getCompanyProfile' ? (
                           <CompanyProfile profile={result} />
+                        ) : toolName === 'exaSearch' || toolName === 'exaSearchAndContents' ? (
+                          <ExaSearchResult title="Web Search Results" response={result} />
+                        ) : toolName === 'exaFindSimilar' ? (
+                          <ExaFindSimilarResult title="Similar Pages" response={result} />
+                        ) : toolName === 'exaGetContents' ? (
+                          <ExaGetContentsResult title="Page Contents" response={result} />
+                        ) : toolName === 'exaAnswer' ? (
+                          <ExaAnswerResult title="AI Answer" answer={result.answer} sources={result.sources} />
                         ) : (
                           <pre>{JSON.stringify(result, null, 2)}</pre>
                         )}
@@ -117,6 +131,8 @@ const PurePreviewMessage = ({
                         <Weather />
                       ) : toolName === 'getCompanyProfile' ? (
                         <CompanyProfile />
+                      ) : toolName === 'exaSearch' || toolName === 'exaSearchAndContents' || toolName === 'exaFindSimilar' || toolName === 'exaGetContents' || toolName === 'exaAnswer' ? (
+                        <div className="h-24 animate-pulse bg-muted rounded-lg" />
                       ) : null}
                     </div>
                   );
