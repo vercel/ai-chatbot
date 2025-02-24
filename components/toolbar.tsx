@@ -11,7 +11,7 @@ import {
 import {
   type Dispatch,
   memo,
-  ReactNode,
+  type ReactNode,
   type SetStateAction,
   useEffect,
   useRef,
@@ -29,17 +29,12 @@ import { sanitizeUIMessages } from '@/lib/utils';
 
 import {
   ArrowUpIcon,
-  CodeIcon,
-  LogsIcon,
-  MessageIcon,
-  PenIcon,
-  SparklesIcon,
   StopIcon,
   SummarizeIcon,
 } from './icons';
-import { artifactDefinitions, ArtifactKind } from './artifact';
-import { ArtifactToolbarItem } from './create-artifact';
-import { UseChatHelpers } from 'ai/react';
+import { artifactDefinitions, type ArtifactKind } from './artifact';
+import type { ArtifactToolbarItem } from './create-artifact';
+import type { UseChatHelpers } from 'ai/react';
 
 type ToolProps = {
   description: string;

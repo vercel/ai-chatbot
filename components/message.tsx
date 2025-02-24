@@ -3,14 +3,12 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { memo, useState } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
 import { DocumentToolCall, DocumentToolResult } from './document';
 import {
-  ChevronDownIcon,
-  LoaderIcon,
   PencilEditIcon,
   SparklesIcon,
 } from './icons';
