@@ -1,4 +1,7 @@
 // lib/types/exa.ts
+import { categorySchema } from '@/lib/clients/exa';
+import { z } from 'zod';
+
 export type SearchType = 'keyword' | 'neural' | 'auto';
 export type Category = 
   | 'company' 

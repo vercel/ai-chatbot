@@ -2,114 +2,30 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import type { 
-  SearchType, 
-  Category,
-  LivecrawlOption,
-  ContentOptions,
-  CommonRequestOptions,
   SearchResponse,
   AnswerResponse,
-  SearchAndContentsOptions,
   SearchAndContentsResponse
 } from '@/lib/types/exa';
-import { getExaClient, ExaAPIError } from '@/lib/clients/exa';
-
-// Zod schemas for validation
-const searchTypeSchema = z.enum(['keyword', 'neural', 'auto'] as const) satisfies z.ZodType<SearchType>;
-const categorySchema = z.enum([
-  'company', 'research paper', 'news', 'pdf', 'github', 
-  'tweet', 'personal site', 'linkedin profile', 'financial report'
-] as const) satisfies z.ZodType<Category>;
-const livecrawlOptionSchema = z.enum(['never', 'fallback', 'always', 'auto'] as const) satisfies z.ZodType<LivecrawlOption>;
-
-const contentOptionsSchema = z.object({
-  text: z.union([z.literal(true), z.object({
-    maxCharacters: z.number().optional(),
-    includeHtmlTags: z.boolean().optional()
-  })]).optional(),
-  highlights: z.union([z.literal(true), z.object({
-    numSentences: z.number().optional(),
-    highlightsPerUrl: z.number().optional(),
-    query: z.string().optional()
-  })]).optional(),
-  summary: z.union([z.literal(true), z.object({
-    query: z.string().optional()
-  })]).optional(),
-  livecrawl: livecrawlOptionSchema.optional(),
-  livecrawlTimeout: z.number().optional(),
-  subpages: z.number().optional(),
-  subpageTarget: z.union([z.string(), z.array(z.string())]).optional(),
-  extras: z.object({
-    links: z.number().optional(),
-    imageLinks: z.number().optional()
-  }).optional()
-}) satisfies z.ZodType<ContentOptions>;
-
-const commonOptionsSchema = z.object({
-  numResults: z.number().max(100).optional(),
-  includeDomains: z.array(z.string()).optional(),
-  excludeDomains: z.array(z.string()).optional(),
-  startCrawlDate: z.string().optional(),
-  endCrawlDate: z.string().optional(),
-  startPublishedDate: z.string().optional(),
-  endPublishedDate: z.string().optional(),
-  includeText: z.array(z.string()).optional(),
-  excludeText: z.array(z.string()).optional(),
-  contents: contentOptionsSchema.optional()
-}) satisfies z.ZodType<CommonRequestOptions>;
-
-// Schema for the combined search and contents options
-const searchAndContentsOptionsSchema = z.object({
-  type: searchTypeSchema.optional(),
-  category: categorySchema.optional(),
-  useAutoprompt: z.boolean().optional(),
-  moderation: z.boolean().optional(),
-  // Content options at the top level
-  text: z.union([z.literal(true), z.object({
-    maxCharacters: z.number().optional(),
-    includeHtmlTags: z.boolean().optional()
-  })]).optional(),
-  highlights: z.union([z.literal(true), z.object({
-    numSentences: z.number().optional(),
-    highlightsPerUrl: z.number().optional(),
-    query: z.string().optional()
-  })]).optional(),
-  summary: z.union([z.literal(true), z.object({
-    query: z.string().optional()
-  })]).optional(),
-  livecrawl: livecrawlOptionSchema.optional(),
-  livecrawlTimeout: z.number().optional(),
-  subpages: z.number().optional(),
-  subpageTarget: z.union([z.string(), z.array(z.string())]).optional(),
-  extras: z.object({
-    links: z.number().optional(),
-    imageLinks: z.number().optional()
-  }).optional(),
-  // Common options (excluding 'contents')
-  numResults: z.number().max(100).optional(),
-  includeDomains: z.array(z.string()).optional(),
-  excludeDomains: z.array(z.string()).optional(),
-  startCrawlDate: z.string().optional(),
-  endCrawlDate: z.string().optional(),
-  startPublishedDate: z.string().optional(),
-  endPublishedDate: z.string().optional(),
-  includeText: z.array(z.string()).optional(),
-  excludeText: z.array(z.string()).optional()
-}) satisfies z.ZodType<SearchAndContentsOptions>;
+import { 
+  getExaClient, 
+  ExaAPIError,
+  searchOptionsSchema,
+  answerOptionsSchema,
+  searchAndContentsOptionsSchema,
+  commonOptionsSchema,
+  contentOptionsSchema
+} from '@/lib/clients/exa';
 
 export const exaSearch = tool({
-  description: "Perform a neural or keyword search using Exa's advanced search capabilities.",
+  description: "Search the web for current, factual information. Best for: finding recent information, verifying claims, researching topics, or gathering data from multiple sources.",
   parameters: z.object({
-    query: z.string().min(1).describe("The search query"),
-    type: searchTypeSchema.optional().default('auto'),
-    category: categorySchema.optional(),
-    useAutoprompt: z.boolean().optional().default(true),
-    options: commonOptionsSchema.optional()
+    query: z.string().min(1).describe("The search query to find relevant information. Be specific and include key terms."),
+    options: searchOptionsSchema.optional()
   }),
-  execute: async ({ query, type, category, useAutoprompt, options }): Promise<SearchResponse> => {
+  execute: async ({ query, options }): Promise<SearchResponse> => {
     try {
       const client = getExaClient();
-      return await client.search(query, type, category, useAutoprompt, options);
+      return await client.search(query, options?.type, options?.category, options?.useAutoprompt, options);
     } catch (error) {
       console.error('Exa search error:', error);
       if (error instanceof ExaAPIError) {
@@ -121,9 +37,9 @@ export const exaSearch = tool({
 });
 
 export const exaFindSimilar = tool({
-  description: "Find similar content to a given URL using Exa.",
+  description: "Find content similar to a specific URL. Useful for discovering related articles, research, or competitive analysis.",
   parameters: z.object({
-    url: z.string().url(),
+    url: z.string().url().describe("The source URL to find similar content for"),
     options: commonOptionsSchema.optional()
   }),
   execute: async ({ url, options }): Promise<SearchResponse> => {
@@ -164,14 +80,12 @@ export const exaAnswer = tool({
   description: "Generate an answer from search results using Exa.",
   parameters: z.object({
     query: z.string(),
-    stream: z.boolean().optional().default(false),
-    text: z.boolean().optional().default(false),
-    model: z.enum(['exa', 'exa-pro']).optional().default('exa')
+    options: answerOptionsSchema.optional()
   }),
-  execute: async ({ query, stream, text, model }): Promise<AnswerResponse> => {
+  execute: async ({ query, options }): Promise<AnswerResponse> => {
     try {
       const client = getExaClient();
-      return await client.answer(query, { stream, text, model });
+      return await client.answer(query, options || {});
     } catch (error) {
       console.error('Exa answer error:', error);
       if (error instanceof ExaAPIError) {

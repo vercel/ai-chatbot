@@ -139,7 +139,11 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
           <Users className="size-4 text-muted-foreground" />
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Staff Size</span>
-            <span className="text-sm font-medium">{companyData.staff_size.toLocaleString()}</span>
+            <span className="text-sm font-medium">
+              {typeof companyData.staff_size === 'number' 
+                ? companyData.staff_size.toLocaleString() 
+                : 'N/A'}
+            </span>
           </div>
         </div>
         <div className="flex flex-col">
@@ -157,18 +161,20 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">LISA Rank</span>
-            <div className={cn(
-              "px-2 py-1 rounded-full text-xs font-medium",
-              {
-                'bg-green-100 text-green-800': companyData.lisa_rank === 'A',
-                'bg-blue-100 text-blue-800': companyData.lisa_rank === 'B',
-                'bg-yellow-100 text-yellow-800': companyData.lisa_rank === 'C',
-                'bg-orange-100 text-orange-800': companyData.lisa_rank === 'D',
-                'bg-red-100 text-red-800': companyData.lisa_rank === 'E',
-              }
-            )}>
-              {companyData.lisa_rank} ({companyData.lisa_score.toFixed(1)})
-            </div>
+            {typeof companyData.lisa_score === 'number' && (
+              <div className={cn(
+                "px-2 py-1 rounded-full text-xs font-medium",
+                {
+                  'bg-green-100 text-green-800': companyData.lisa_rank === 'A',
+                  'bg-blue-100 text-blue-800': companyData.lisa_rank === 'B',
+                  'bg-yellow-100 text-yellow-800': companyData.lisa_rank === 'C',
+                  'bg-orange-100 text-orange-800': companyData.lisa_rank === 'D',
+                  'bg-red-100 text-red-800': companyData.lisa_rank === 'E',
+                }
+              )}>
+                {companyData.lisa_rank} ({companyData.lisa_score.toFixed(1)})
+              </div>
+            )}
           </div>
 
           {companyData.last_post_call_score && (
@@ -252,7 +258,7 @@ export function CompanyProfile({ profile, isLoading = false }: CompanyProfilePro
             )}
 
             {/* Funding Details */}
-            {companyData.total_funding > 0 && (
+            {companyData.total_funding > 0 && typeof companyData.total_funding === 'number' && (
               <div className="pt-4 border-t border-border">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
