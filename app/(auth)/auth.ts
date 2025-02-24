@@ -1,4 +1,3 @@
-
 import NextAuth, { type User, type Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { createSSOUser, getUser } from '@/lib/db/queries';
@@ -59,26 +58,31 @@ export const {
       return session;
     },
     async signIn({ user, account }) {
-      // if (account?.provider === 'github') {
-      //   if (user && user.id && user.email && user.name) {
-      //     const [githubUser] = await getUser(user?.email);
-      //     if (githubUser) {
-      //       return true;
-      //     } else {
-      //       //create User if uset not exists
-      //       await createSSOUser(user.id, user.email, user.name);
-      //     }
-      //   }
-      // }
+      console.log('SignIn callback started:', { provider: account?.provider });
+      
       if (account?.provider === 'google') {
+        console.log('Google sign in - user data:', { 
+          id: user?.id,
+          email: user?.email,
+          name: user?.name 
+        });
+
         if (user?.id && user.email && user.name) {
-          const [googleUser] = await getUser(user?.email);
+          const [googleUser] = await getUser(user.email);
+          console.log('Database lookup result:', { existingUser: googleUser });
+
           if (googleUser) {
+            console.log('Existing user found, proceeding with sign in');
             return true;
           } else {
-            //create User if uset not exists
+            console.log('Creating new user in database');
             await createSSOUser(user.id, user.email, user.name);
+            console.log('New user created successfully');
+            return true;
           }
+        } else {
+          console.log('Missing required user information:', { user });
+          return false;
         }
       }
       return true;
