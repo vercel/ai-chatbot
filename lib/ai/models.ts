@@ -34,7 +34,7 @@ interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-small',
-    name: 'Small model',
+    name: 'Bottlr v1',
     description: 'Small model for fast, lightweight tasks',
   },
   {
