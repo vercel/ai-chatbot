@@ -42,7 +42,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: myProvider.languageModel('artifacts-model'),
+      model: myProvider.languageModel('artifact-model'),
       system: updateDocumentPrompt(document.content, 'code'),
       prompt: description,
       schema: z.object({
