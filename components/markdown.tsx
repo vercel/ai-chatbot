@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CodeBlock } from './code-block';
