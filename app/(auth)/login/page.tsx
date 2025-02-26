@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import dynamic from 'next/dynamic';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 
 import { login, type LoginActionState } from '../actions';
 
-// Import the SplineBackground component directly
+// Import SplineBackground but with a guard to unmount it during navigation
 import SplineBackground from '@/components/spline-bg';
 
 export default function Page() {
@@ -19,6 +18,7 @@ export default function Page() {
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -30,11 +30,17 @@ export default function Page() {
   useEffect(() => {
     if (state.status === 'failed') {
       toast.error('Invalid credentials!');
+      setIsNavigating(false);
     } else if (state.status === 'invalid_data') {
       toast.error('Failed validating your submission!');
+      setIsNavigating(false);
     } else if (state.status === 'success') {
       setIsSuccessful(true);
-      router.refresh();
+      setIsNavigating(true);
+      // Add a small delay before refreshing to allow cleanup
+      setTimeout(() => {
+        router.refresh();
+      }, 100);
     }
   }, [state.status, router]);
 
@@ -45,10 +51,12 @@ export default function Page() {
 
   return (
     <div className="relative h-dvh w-screen overflow-hidden">
-      {/* Spline background - positioned absolutely to fill the entire viewport */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <SplineBackground />
-      </div>
+      {/* Only render Spline when not navigating */}
+      {!isNavigating && (
+        <div className="absolute inset-0 w-full h-full z-0">
+          <SplineBackground />
+        </div>
+      )}
       
       {/* Login form container with backdrop blur for better readability */}
       <div className="relative z-10 flex h-full w-full items-start pt-12 md:pt-0 md:items-center justify-center">
