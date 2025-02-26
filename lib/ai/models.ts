@@ -1,3 +1,4 @@
+// models.ts
 import { openai } from '@ai-sdk/openai';
 import { fireworks } from '@ai-sdk/fireworks';
 import {
@@ -5,6 +6,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
+import { bottlrProvider } from './bottlrProvider2'; // Import the bottlrProvider directly
 
 export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
 
@@ -18,6 +20,7 @@ export const myProvider = customProvider({
     }),
     'title-model': openai('gpt-4-turbo'),
     'artifact-model': openai('gpt-4o-mini'),
+    'bottlr-backend': bottlrProvider, // Use the imported bottlrProvider
   },
   imageModels: {
     'small-model': openai.image('dall-e-2'),
@@ -34,7 +37,7 @@ interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-small',
-    name: 'Bottlr v1',
+    name: 'Small model',
     description: 'Small model for fast, lightweight tasks',
   },
   {
@@ -46,5 +49,10 @@ export const chatModels: Array<ChatModel> = [
     id: 'chat-model-reasoning',
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
+  },
+  {
+    id: 'bottlr-backend',
+    name: 'Bottlr v1',
+    description: 'Uses a custom API endpoint for responses',
   },
 ];
