@@ -53,9 +53,20 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
 
+start postges with e.g. docker
+```bash
+docker run --name my_postgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydatabase -p 5432:5432 -d postgres
+```
+add docker url to .env and env.local file
+```bash
+DATABASE_URL=postgresql://myuser:mypassword@localhost:5432/mydatabase
+```
+
 ```bash
 pnpm install
 pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
+
+login with random email and password (password is AUTH_SECRET form env file)
