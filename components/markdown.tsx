@@ -7,7 +7,18 @@ import { CodeBlock } from './code-block';
 const components: Partial<Components> = {
   // @ts-expect-error
   code: CodeBlock,
-  pre: ({ children }) => <>{children}</>,
+  p: ({ children }) => {
+    const isPreTag = Array.isArray(children) && children.length > 0 && (children[0] as any)?.type === "pre";
+    if (isPreTag) {
+      return <>{children}</>;
+    }
+    return <p className="leading-6">{children}</p>;
+  },
+  pre: ({ children }) => (
+    <pre className="overflow-x-auto p-4 bg-zinc-900 text-white rounded-lg">
+      {children}
+    </pre>
+  ),
   ol: ({ node, children, ...props }) => {
     return (
       <ol className="list-decimal list-outside ml-4" {...props}>
