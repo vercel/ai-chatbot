@@ -20,6 +20,9 @@
   "dependencies": {
     "@ai-sdk/fireworks": "^0.1.8",
     "@ai-sdk/openai": "1.1.9",
+    "@ai-sdk/provider": "1.0.9",
+    "@ai-sdk/provider-utils": "2.1.10",
+    "@ai-sdk/openai-compatible": "^0.1.12",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",

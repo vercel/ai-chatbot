@@ -1,5 +1,6 @@
 import { openai } from '@ai-sdk/openai';
 import { fireworks } from '@ai-sdk/fireworks';
+import { galadriel } from '../galadriel_provider/galadriel-provider';
 import {
   customProvider,
   extractReasoningMiddleware,
@@ -18,6 +19,7 @@ export const myProvider = customProvider({
     }),
     'title-model': openai('gpt-4-turbo'),
     'artifact-model': openai('gpt-4o-mini'),
+    'galadriel-model': galadriel('gpt-4-turbo', {}) as any,
   },
   imageModels: {
     'small-model': openai.image('dall-e-2'),
@@ -46,5 +48,10 @@ export const chatModels: Array<ChatModel> = [
     id: 'chat-model-reasoning',
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
+  },
+  {
+    id: 'galadriel-model',
+    name: 'Galadriel Agent',
+    description: 'Galadriel agent',
   },
 ];
