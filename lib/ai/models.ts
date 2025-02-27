@@ -51,7 +51,7 @@ export const chatModels: Array<ChatModel> = [
   },
   {
     id: 'galadriel-model',
-    name: 'Galadriel model',
+    name: 'Galadriel Agent',
     description: 'Galadriel agent',
   },
 ];
