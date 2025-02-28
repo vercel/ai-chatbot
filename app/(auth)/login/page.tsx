@@ -1,7 +1,17 @@
-import { GoogleAuthForm } from '@/components/auth/google-auth-form';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { GoogleAuthForm } from '@/components/auth/google-auth-form';
+import { DevImpersonateForm } from '@/components/auth/dev-impersonate-form';
+
+// Check if we're in preview or development
+const showDevTools = process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' || 
+                    process.env.NODE_ENV === 'development';
 
 export default function Page() {
+  const router = useRouter();
+
   return (
     <div className="flex min-h-screen relative">
       {/* Left Column - Sign In */}
@@ -29,6 +39,24 @@ export default function Page() {
             </div>
 
             <GoogleAuthForm />
+
+            {/* Show impersonation form in development/preview */}
+            {showDevTools && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Development Tools
+                    </span>
+                  </div>
+                </div>
+
+                <DevImpersonateForm />
+              </>
+            )}
           </div>
         </div>
 
