@@ -35,6 +35,11 @@ interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
+    id: 'galadriel-model',
+    name: 'Galadriel Agent',
+    description: 'Galadriel agent',
+  },
+  {
     id: 'chat-model-small',
     name: 'Small model',
     description: 'Small model for fast, lightweight tasks',
@@ -48,10 +53,5 @@ export const chatModels: Array<ChatModel> = [
     id: 'chat-model-reasoning',
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
-  },
-  {
-    id: 'galadriel-model',
-    name: 'Galadriel Agent',
-    description: 'Galadriel agent',
   },
 ];

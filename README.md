@@ -64,6 +64,7 @@ DATABASE_URL=postgresql://myuser:mypassword@localhost:5432/mydatabase
 
 ```bash
 pnpm install
+pnpm db:migrate
 pnpm dev
 ```
 

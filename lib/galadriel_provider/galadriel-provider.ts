@@ -30,6 +30,10 @@ export interface GaladrielProviderSettings {
    * Custom fetch implementation.
    */
   fetch?: FetchFunction;
+  /**
+   * API key for authentication.
+   */
+  apiKey?: string;
 }
 
 export interface GaladrielProvider {
@@ -40,9 +44,14 @@ export interface GaladrielProvider {
 export function createGaladriel(
   options: GaladrielProviderSettings = {},
 ): GaladrielProvider {
-  const baseURL = withoutTrailingSlash(options.baseURL ?? 'http://localhost:8000');
+  const baseURL = withoutTrailingSlash(options.baseURL ?? process.env.GALADRIEL_BASE_URL ?? 'http://localhost:8000');
   const getHeaders = () => ({
     ...options.headers,
+    Authorization: `Bearer ${loadApiKey({
+      apiKey: options.apiKey,
+      environmentVariableName: 'GALADRIEL_API_KEY',
+      description: 'Galadriel API key',
+    })}`,
   });
 
   interface CommonModelConfig {
