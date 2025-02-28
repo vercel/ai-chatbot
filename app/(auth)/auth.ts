@@ -1,11 +1,39 @@
 import NextAuth, { type User, type Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import type { NextAuthConfig } from 'next-auth';
 import { createSSOUser, getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 
 interface ExtendedSession extends Session {
   user: User;
+}
+
+// Only include dev provider in development/preview
+const isDevelopment = process.env.NODE_ENV === 'development' || 
+                     process.env.VERCEL_ENV === 'preview';
+
+const providers = [
+  GoogleProvider({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET
+  })
+] as NextAuthConfig['providers'];
+
+// Add development-only provider
+if (isDevelopment) {
+  providers.push(
+    CredentialsProvider({
+      id: 'dev-impersonate',
+      name: 'Dev Impersonation',
+      credentials: {},
+      async authorize(credentials) {
+        if (!isDevelopment) return null;
+        return credentials as any;
+      }
+    })
+  );
 }
 
 export const {
@@ -15,25 +43,13 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
-    }),
-    // Github({
-    //   allowDangerousEmailAccountLinking: true,
-    //   clientId: process.env.GITHUB_ID,
-    //   clientSecret: process.env.GITHUB_SECRET,
-    // }),
-  ],
+  providers,
   callbacks: {
     async jwt({ token, user, profile }) {
       if (token.email) {
-        // const [githubUser_id] = await getUser(token.email);
-        const [googleUser_id] = await getUser(token.email);
-
-        if (googleUser_id) {
-          token.id = googleUser_id;
+        const [user] = await getUser(token.email);
+        if (user) {
+          token.id = user.id;
         }
       }
 
@@ -45,46 +61,33 @@ export const {
       }
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
       }
       return session;
     },
     async signIn({ user, account }) {
-      console.log('SignIn callback started:', { provider: account?.provider });
+      // For dev impersonation, always allow
+      if (account?.provider === 'dev-impersonate') {
+        return true;
+      }
       
+      // Normal Google auth flow
       if (account?.provider === 'google') {
-        console.log('Google sign in - user data:', { 
-          id: user?.id,
-          email: user?.email,
-          name: user?.name 
-        });
-
         if (user?.id && user.email && user.name) {
-          const [googleUser] = await getUser(user.email);
-          console.log('Database lookup result:', { existingUser: googleUser });
+          const [existingUser] = await getUser(user.email);
 
-          if (googleUser) {
-            console.log('Existing user found, proceeding with sign in');
+          if (existingUser) {
             return true;
           } else {
-            console.log('Creating new user in database');
             await createSSOUser(user.id, user.email, user.name);
-            console.log('New user created successfully');
             return true;
           }
-        } else {
-          console.log('Missing required user information:', { user });
-          return false;
         }
+        return false;
       }
+
       return true;
     },
   },
