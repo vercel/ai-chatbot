@@ -16,6 +16,12 @@ import {
   ConsoleOutputContent,
 } from '@/components/console';
 
+declare global {
+  interface Window {
+    loadPyodide: (config: { indexURL: string }) => Promise<any>;
+  }
+}
+
 const OUTPUT_HANDLERS = {
   matplotlib: `
     import io
@@ -133,12 +139,26 @@ export const codeArtifact = new Artifact<'code', Metadata>({
         }));
 
         try {
-          // @ts-expect-error - loadPyodide is not defined
-          const currentPyodideInstance = await globalThis.loadPyodide({
+          if (typeof window === 'undefined') {
+            throw new Error('Code execution is only available in the browser');
+          }
+
+          // Load Pyodide script if not already loaded
+          if (!window.loadPyodide) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
+            document.head.appendChild(script);
+            await new Promise((resolve, reject) => {
+              script.onload = resolve;
+              script.onerror = reject;
+            });
+          }
+
+          const pyodide = await window.loadPyodide({
             indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
           });
 
-          currentPyodideInstance.setStdout({
+          pyodide.setStdout({
             batched: (output: string) => {
               outputContent.push({
                 type: output.startsWith('data:image/png;base64')
@@ -149,7 +169,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
             },
           });
 
-          await currentPyodideInstance.loadPackagesFromImports(content, {
+          await pyodide.loadPackagesFromImports(content, {
             messageCallback: (message: string) => {
               setMetadata((metadata) => ({
                 ...metadata,
@@ -168,19 +188,19 @@ export const codeArtifact = new Artifact<'code', Metadata>({
           const requiredHandlers = detectRequiredHandlers(content);
           for (const handler of requiredHandlers) {
             if (OUTPUT_HANDLERS[handler as keyof typeof OUTPUT_HANDLERS]) {
-              await currentPyodideInstance.runPythonAsync(
+              await pyodide.runPythonAsync(
                 OUTPUT_HANDLERS[handler as keyof typeof OUTPUT_HANDLERS],
               );
 
               if (handler === 'matplotlib') {
-                await currentPyodideInstance.runPythonAsync(
+                await pyodide.runPythonAsync(
                   'setup_matplotlib_output()',
                 );
               }
             }
           }
 
-          await currentPyodideInstance.runPythonAsync(content);
+          await pyodide.runPythonAsync(content);
 
           setMetadata((metadata) => ({
             ...metadata,
