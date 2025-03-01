@@ -120,7 +120,8 @@ export async function POST(request: Request) {
         sendReasoning: true,
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error);
       return 'Oops, an error occured!';
     },
   });
