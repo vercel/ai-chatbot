@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers';
 
-import { Chat } from '@/components/chat';
+import { Chat } from '@/components/chat/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
-import { DataStreamHandler } from '@/components/data-stream-handler';
+import { DataStreamHandler } from '@/components/chat/data-stream-handler';
 
 export default async function Page() {
   const id = generateUUID();

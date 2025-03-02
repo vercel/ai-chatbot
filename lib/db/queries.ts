@@ -16,7 +16,7 @@ import {
   message,
   vote,
 } from './schema';
-import { ArtifactKind } from '@/components/artifact';
+import { ArtifactKind } from '@/components/chat/artifacts/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth

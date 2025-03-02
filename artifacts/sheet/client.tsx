@@ -1,4 +1,4 @@
-import { Artifact } from '@/components/create-artifact';
+import { Artifact } from '@/components/chat/artifacts/create-artifact';
 import {
   CopyIcon,
   LineChartIcon,
@@ -6,7 +6,7 @@ import {
   SparklesIcon,
   UndoIcon,
 } from '@/components/icons';
-import { SpreadsheetEditor } from '@/components/sheet-editor';
+import { SpreadsheetEditor } from '@/components/chat/artifacts/sheet/sheet-editor';
 import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
 
