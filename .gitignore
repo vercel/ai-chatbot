@@ -17,7 +17,8 @@ build
 .DS_Store
 *.pem
 *.db
-lib/db/migrations-sqlite/meta/
+lib/db/migrations-sqlite/meta
+lib/db/migrations/meta/
 
 # debug
 npm-debug.log*

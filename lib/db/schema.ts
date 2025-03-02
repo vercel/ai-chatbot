@@ -106,3 +106,15 @@ export const suggestion = sqliteTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+export const project = sqliteTable('Project', {
+  id: text('id').primaryKey().notNull().$defaultFn(() => createId()),
+  name: text('name').notNull(),
+  description: text('description'),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+});
+
+export type Project = InferSelectModel<typeof project>;

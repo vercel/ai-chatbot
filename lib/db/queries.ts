@@ -15,6 +15,8 @@ import {
   type Message,
   message,
   vote,
+  project,
+  type Project,
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
 
@@ -352,6 +354,90 @@ export async function updateChatVisiblityById({
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+export async function createProject({
+  name,
+  description,
+  userId,
+}: {
+  name: string;
+  description?: string;
+  userId: string;
+}) {
+  try {
+    const newProject = {
+      name,
+      description: description || '',
+      userId,
+      createdAt: new Date(),
+    };
+    await db.insert(project).values(newProject);
+    return newProject;
+  } catch (error) {
+    console.error('Failed to create project in database');
+    throw error;
+  }
+}
+
+export async function getProjectById({ id }: { id: string }): Promise<Project | undefined> {
+  try {
+    const [selectedProject] = await db.select().from(project).where(eq(project.id, id));
+    return selectedProject;
+  } catch (error) {
+    console.error('Failed to get project by id from database');
+    throw error;
+  }
+}
+
+export async function getProjectsByUserId({ id }: { id: string }): Promise<Project[]> {
+  try {
+    return await db
+      .select()
+      .from(project)
+      .where(eq(project.userId, id))
+      .orderBy(desc(project.createdAt));
+  } catch (error) {
+    console.error('Failed to get projects by user from database');
+    throw error;
+  }
+}
+
+export async function updateProject({
+  id,
+  name,
+  description,
+}: {
+  id: string;
+  name?: string;
+  description?: string;
+}): Promise<boolean> {
+  try {
+    const updateData: Partial<Project> = {};
+    
+    if (name) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    
+    if (Object.keys(updateData).length === 0) {
+      return false;
+    }
+    
+    const result = await db.update(project).set(updateData).where(eq(project.id, id));
+    return true;
+  } catch (error) {
+    console.error('Failed to update project in database');
+    throw error;
+  }
+}
+
+export async function deleteProject({ id }: { id: string }): Promise<boolean> {
+  try {
+    await db.delete(project).where(eq(project.id, id));
+    return true;
+  } catch (error) {
+    console.error('Failed to delete project from database');
     throw error;
   }
 }
