@@ -1,5 +1,5 @@
-import { Artifact } from '@/components/create-artifact';
-import { CodeEditor } from '@/components/code-editor';
+import { Artifact } from '@/components/chat/artifacts/create-artifact';
+import { CodeEditor } from '@/components/chat/artifacts/code/code-editor';
 import {
   CopyIcon,
   LogsIcon,
@@ -14,7 +14,7 @@ import {
   Console,
   ConsoleOutput,
   ConsoleOutputContent,
-} from '@/components/console';
+} from '@/components/chat/artifacts/code/console';
 
 declare global {
   interface Window {

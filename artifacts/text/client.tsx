@@ -1,7 +1,7 @@
-import { Artifact } from '@/components/create-artifact';
-import { DiffView } from '@/components/diffview';
-import { DocumentSkeleton } from '@/components/document-skeleton';
-import { Editor } from '@/components/text-editor';
+import { Artifact } from '@/components/chat/artifacts/create-artifact';
+import { DiffView } from '@/components/chat/artifacts/text/diffview';
+import { DocumentSkeleton } from '@/components/chat/artifacts/text/document-skeleton';
+import { Editor } from '@/components/chat/artifacts/text/text-editor';
 import {
   ClockRewind,
   CopyIcon,
