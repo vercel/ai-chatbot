@@ -1,15 +1,15 @@
-import { Block } from '@/components/create-block';
+import { Artifact } from '@/components/create-artifact';
 import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { ImageEditor } from '@/components/image-editor';
 import { toast } from 'sonner';
 
-export const imageBlock = new Block({
+export const imageArtifact = new Artifact({
   kind: 'image',
   description: 'Useful for image generation',
-  onStreamPart: ({ streamPart, setBlock }) => {
+  onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === 'image-delta') {
-      setBlock((draftBlock) => ({
-        ...draftBlock,
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
         content: streamPart.content as string,
         isVisible: true,
         status: 'streaming',

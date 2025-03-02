@@ -1,6 +1,6 @@
 import { smoothStream, streamText } from 'ai';
 import { myProvider } from '@/lib/ai/models';
-import { createDocumentHandler } from '@/lib/blocks/server';
+import { createDocumentHandler } from '@/lib/artifacts/server';
 import { updateDocumentPrompt } from '@/lib/ai/prompts';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
@@ -9,7 +9,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
     let draftContent = '';
 
     const { fullStream } = streamText({
-      model: myProvider.languageModel('block-model'),
+      model: myProvider.languageModel('artifact-model'),
       system:
         'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
       experimental_transform: smoothStream({ chunking: 'word' }),
@@ -37,7 +37,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
     let draftContent = '';
 
     const { fullStream } = streamText({
-      model: myProvider.languageModel('block-model'),
+      model: myProvider.languageModel('artifact-model'),
       system: updateDocumentPrompt(document.content, 'text'),
       experimental_transform: smoothStream({ chunking: 'word' }),
       prompt: description,

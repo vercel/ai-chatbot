@@ -116,6 +116,8 @@ export async function POST(request: Request) {
         },
       });
 
+      result.consumeStream();
+
       result.mergeIntoDataStream(dataStream, {
         sendReasoning: true,
       });
