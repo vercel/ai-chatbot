@@ -7,10 +7,9 @@ config({
 
 export default defineConfig({
   schema: './lib/db/schema.ts',
-  out: './lib/db/migrations',
-  dialect: 'postgresql',
+  out: './lib/db/migrations-sqlite',
+  dialect: 'sqlite',
   dbCredentials: {
-    // biome-ignore lint: Forbidden non-null assertion.
-    url: process.env.POSTGRES_URL!,
+    url: process.env.DATABASE_URL || 'file:./local.db',
   },
 });
