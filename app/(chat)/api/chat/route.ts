@@ -13,6 +13,7 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  createKnowledgeReference,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -25,6 +26,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { searchKnowledge } from '@/lib/ai/tools/search-knowledge';
 
 export const maxDuration = 60;
 
@@ -59,6 +61,9 @@ export async function POST(request: Request) {
     messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
   });
 
+  // Track knowledge chunks used for this message
+  let usedKnowledgeChunks: Array<{ id: string; content: string }> = [];
+
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
@@ -74,6 +79,7 @@ export async function POST(request: Request) {
                 'createDocument',
                 'updateDocument',
                 'requestSuggestions',
+                'searchKnowledge',
               ],
         experimental_transform: smoothStream({ chunking: 'word' }),
         experimental_generateMessageId: generateUUID,
@@ -85,6 +91,13 @@ export async function POST(request: Request) {
             session,
             dataStream,
           }),
+          searchKnowledge: searchKnowledge({
+            session,
+            dataStream,
+            onChunksUsed: (chunks) => {
+              usedKnowledgeChunks = chunks;
+            },
+          }),
         },
         onFinish: async ({ response, reasoning }) => {
           if (session.user?.id) {
@@ -94,7 +107,8 @@ export async function POST(request: Request) {
                 reasoning,
               });
 
-              await saveMessages({
+              // Save the messages
+              const savedMessages = await saveMessages({
                 messages: sanitizedResponseMessages.map((message) => {
                   return {
                     id: message.id,
@@ -105,8 +119,24 @@ export async function POST(request: Request) {
                   };
                 }),
               });
+
+              // Create knowledge references for the assistant message
+              if (usedKnowledgeChunks.length > 0) {
+                const assistantMessage = savedMessages.find(
+                  (msg) => msg.role === 'assistant'
+                );
+                
+                if (assistantMessage) {
+                  for (const chunk of usedKnowledgeChunks) {
+                    await createKnowledgeReference({
+                      messageId: assistantMessage.id,
+                      chunkId: chunk.id,
+                    });
+                  }
+                }
+              }
             } catch (error) {
-              console.error('Failed to save chat');
+              console.error('Failed to save chat', error);
             }
           }
         },

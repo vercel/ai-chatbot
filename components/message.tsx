@@ -3,7 +3,8 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
+import useSWR from 'swr';
 
 import type { Vote } from '@/lib/db/schema';
 
@@ -25,6 +26,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
+import { KnowledgeReferences, KnowledgeReference } from './knowledge-references';
+
+// Extend the Message type to include knowledge references
+declare module 'ai' {
+  interface Message {
+    knowledgeReferences?: KnowledgeReference[];
+  }
+}
 
 const PurePreviewMessage = ({
   chatId,
@@ -48,6 +57,33 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+  
+  // Fetch knowledge references if they're not already included in the message
+  const { data: knowledgeReferences } = useSWR(
+    message.role === 'assistant' && !message.knowledgeReferences
+      ? `/api/knowledge/references?messageId=${message.id}`
+      : null,
+    async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch knowledge references');
+      }
+      return response.json();
+    }
+  );
+
+  // Update the message with knowledge references if they were fetched
+  useEffect(() => {
+    if (knowledgeReferences && knowledgeReferences.length > 0 && !message.knowledgeReferences) {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === message.id
+            ? { ...msg, knowledgeReferences }
+            : msg
+        )
+      );
+    }
+  }, [knowledgeReferences, message.id, message.knowledgeReferences, setMessages]);
 
   return (
     <AnimatePresence>
@@ -135,6 +171,10 @@ const PurePreviewMessage = ({
                   reload={reload}
                 />
               </div>
+            )}
+
+            {message.knowledgeReferences && message.knowledgeReferences.length > 0 && (
+              <KnowledgeReferences references={message.knowledgeReferences} />
             )}
 
             {message.toolInvocations && message.toolInvocations.length > 0 && (
@@ -229,6 +269,13 @@ export const PreviewMessage = memo(
       !equal(
         prevProps.message.toolInvocations,
         nextProps.message.toolInvocations,
+      )
+    )
+      return false;
+    if (
+      !equal(
+        prevProps.message.knowledgeReferences,
+        nextProps.message.knowledgeReferences,
       )
     )
       return false;

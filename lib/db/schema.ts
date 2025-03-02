@@ -9,6 +9,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  index,
+  vector,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -113,3 +115,62 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+// Knowledge Base tables
+export const knowledgeDocument = pgTable('KnowledgeDocument', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  title: text('title').notNull(),
+  description: text('description'),
+  sourceType: varchar('sourceType', { 
+    enum: ['pdf', 'text', 'url', 'audio', 'video', 'youtube']
+  }).notNull(),
+  sourceUrl: text('sourceUrl'),
+  fileSize: varchar('fileSize', { length: 20 }),
+  fileType: varchar('fileType', { length: 50 }),
+  status: varchar('status', { 
+    enum: ['processing', 'completed', 'failed']
+  }).notNull().default('processing'),
+  processingError: text('processingError'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type KnowledgeDocument = InferSelectModel<typeof knowledgeDocument>;
+
+export const knowledgeChunk = pgTable('KnowledgeChunk', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  documentId: uuid('documentId')
+    .notNull()
+    .references(() => knowledgeDocument.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  metadata: json('metadata'),
+  chunkIndex: varchar('chunkIndex', { length: 20 }).notNull(),
+  embedding: text('embedding'), // Temporarily changed from vector to text
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+}, (table) => {
+  return {
+    documentIdIdx: index('documentId_idx').on(table.documentId),
+  };
+});
+
+export type KnowledgeChunk = InferSelectModel<typeof knowledgeChunk>;
+
+export const knowledgeReference = pgTable('KnowledgeReference', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  messageId: uuid('messageId')
+    .notNull()
+    .references(() => message.id, { onDelete: 'cascade' }),
+  chunkId: uuid('chunkId')
+    .notNull()
+    .references(() => knowledgeChunk.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+}, (table) => {
+  return {
+    messageChunkIdx: index('message_chunk_idx').on(table.messageId, table.chunkId),
+  };
+});
+
+export type KnowledgeReference = InferSelectModel<typeof knowledgeReference>;

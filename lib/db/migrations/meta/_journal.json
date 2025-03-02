@@ -36,6 +36,20 @@
       "when": 1733945232355,
       "tag": "0004_odd_slayback",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1740956742984,
+      "tag": "0005_fancy_cammi",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1740956823027,
+      "tag": "0006_cuddly_roughhouse",
+      "breakpoints": true
     }
   ]
 }

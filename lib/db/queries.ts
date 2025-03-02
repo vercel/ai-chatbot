@@ -15,8 +15,12 @@ import {
   type Message,
   message,
   vote,
+  knowledgeDocument,
+  knowledgeChunk,
+  knowledgeReference,
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
+import { sql } from 'drizzle-orm';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -344,4 +348,225 @@ export async function updateChatVisiblityById({
     console.error('Failed to update chat visibility in database');
     throw error;
   }
+}
+
+// Knowledge Base Queries
+
+// Get all knowledge documents for a user
+export async function getKnowledgeDocumentsByUserId({
+  userId,
+}: {
+  userId: string;
+}) {
+  return db
+    .select()
+    .from(knowledgeDocument)
+    .where(eq(knowledgeDocument.userId, userId))
+    .orderBy(desc(knowledgeDocument.createdAt));
+}
+
+// Get a knowledge document by ID
+export async function getKnowledgeDocumentById({
+  id,
+}: {
+  id: string;
+}) {
+  const result = await db
+    .select()
+    .from(knowledgeDocument)
+    .where(eq(knowledgeDocument.id, id))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+// Create a new knowledge document
+export async function createKnowledgeDocument({
+  userId,
+  title,
+  description,
+  sourceType,
+  sourceUrl,
+  fileSize,
+  fileType,
+}: {
+  userId: string;
+  title: string;
+  description?: string;
+  sourceType: 'pdf' | 'text' | 'url' | 'audio' | 'video' | 'youtube';
+  sourceUrl?: string;
+  fileSize?: string;
+  fileType?: string;
+}) {
+  const result = await db
+    .insert(knowledgeDocument)
+    .values({
+      userId,
+      title,
+      description,
+      sourceType,
+      sourceUrl,
+      fileSize,
+      fileType,
+      status: 'processing',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return result[0];
+}
+
+// Update a knowledge document
+export async function updateKnowledgeDocument({
+  id,
+  title,
+  description,
+  status,
+  processingError,
+}: {
+  id: string;
+  title?: string;
+  description?: string;
+  status?: 'processing' | 'completed' | 'failed';
+  processingError?: string;
+}) {
+  const values: Record<string, unknown> = {
+    updatedAt: new Date(),
+  };
+
+  if (title !== undefined) values.title = title;
+  if (description !== undefined) values.description = description;
+  if (status !== undefined) values.status = status;
+  if (processingError !== undefined) values.processingError = processingError;
+
+  const result = await db
+    .update(knowledgeDocument)
+    .set(values)
+    .where(eq(knowledgeDocument.id, id))
+    .returning();
+
+  return result[0];
+}
+
+// Delete a knowledge document
+export async function deleteKnowledgeDocument({
+  id,
+}: {
+  id: string;
+}) {
+  return db
+    .delete(knowledgeDocument)
+    .where(eq(knowledgeDocument.id, id))
+    .returning();
+}
+
+// Create a knowledge chunk
+export async function createKnowledgeChunk({
+  documentId,
+  content,
+  metadata,
+  chunkIndex,
+  embedding,
+}: {
+  documentId: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  chunkIndex: string;
+  embedding?: number[];
+}) {
+  const result = await db
+    .insert(knowledgeChunk)
+    .values({
+      documentId,
+      content,
+      metadata,
+      chunkIndex,
+      embedding: embedding ? JSON.stringify(embedding) : undefined,
+      createdAt: new Date(),
+    })
+    .returning();
+
+  return result[0];
+}
+
+// Get chunks by document ID
+export async function getChunksByDocumentId({
+  documentId,
+}: {
+  documentId: string;
+}) {
+  return db
+    .select()
+    .from(knowledgeChunk)
+    .where(eq(knowledgeChunk.documentId, documentId))
+    .orderBy(knowledgeChunk.chunkIndex);
+}
+
+// Semantic search on knowledge chunks
+export async function semanticSearch({
+  embedding,
+  limit = 5,
+}: {
+  embedding: number[];
+  limit?: number;
+}) {
+  // Since we're using text-based embeddings temporarily, return recent chunks
+  // as a fallback (will be replaced with vector similarity when pgvector is available)
+  return db
+    .select({
+      id: knowledgeChunk.id,
+      content: knowledgeChunk.content,
+      metadata: knowledgeChunk.metadata,
+      documentId: knowledgeChunk.documentId,
+      // Provide a dummy similarity score
+      similarity: sql`0.95`, 
+    })
+    .from(knowledgeChunk)
+    .orderBy(desc(knowledgeChunk.createdAt))
+    .limit(limit);
+}
+
+// Create a knowledge reference
+export async function createKnowledgeReference({
+  messageId,
+  chunkId,
+}: {
+  messageId: string;
+  chunkId: string;
+}) {
+  const result = await db
+    .insert(knowledgeReference)
+    .values({
+      messageId,
+      chunkId,
+      createdAt: new Date(),
+    })
+    .returning();
+
+  return result[0];
+}
+
+// Get references by message ID
+export async function getReferencesByMessageId({
+  messageId,
+}: {
+  messageId: string;
+}) {
+  return db
+    .select({
+      reference: knowledgeReference,
+      chunk: knowledgeChunk,
+      document: knowledgeDocument,
+    })
+    .from(knowledgeReference)
+    .innerJoin(
+      knowledgeChunk,
+      eq(knowledgeReference.chunkId, knowledgeChunk.id)
+    )
+    .innerJoin(
+      knowledgeDocument,
+      eq(knowledgeChunk.documentId, knowledgeDocument.id)
+    )
+    .where(eq(knowledgeReference.messageId, messageId));
 }
