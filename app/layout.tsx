@@ -7,8 +7,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  title: 'WIZZO',
+  description: 'WIZZO - AI Assistant',
 };
 
 export const viewport = {
@@ -16,7 +16,7 @@ export const viewport = {
 };
 
 const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
-const DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)';
+const DARK_THEME_COLOR = 'hsl(150deg 30% 10%)';
 const THEME_COLOR_SCRIPT = `\
 (function() {
   var html = document.documentElement;
