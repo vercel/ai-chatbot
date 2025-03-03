@@ -3,16 +3,16 @@ import {
   customProvider,
   FinishReason,
   simulateReadableStream,
-} from "ai";
-import { MockLanguageModelV1 } from "ai/test";
+} from 'ai';
+import { MockLanguageModelV1 } from 'ai/test';
 
 interface TextDeltaChunk {
-  type: "text-delta";
+  type: 'text-delta';
   textDelta: string;
 }
 
 interface FinishChunk {
-  type: "finish";
+  type: 'finish';
   finishReason: FinishReason;
   logprobs: undefined;
   usage: { completionTokens: number; promptTokens: number };
@@ -24,91 +24,91 @@ const getResponseChunksByPrompt = (prompt: CoreMessage[]): Array<Chunk> => {
   const userMessage = prompt.at(-1);
 
   if (!userMessage) {
-    throw new Error("No user message found");
+    throw new Error('No user message found');
   }
 
   if (
     compareMessages(userMessage, {
-      role: "user",
-      content: [{ type: "text", text: "why is grass green?" }],
+      role: 'user',
+      content: [{ type: 'text', text: 'why is grass green?' }],
     })
   ) {
     return [
-      { type: "text-delta", textDelta: "it's " },
-      { type: "text-delta", textDelta: "just " },
-      { type: "text-delta", textDelta: "green " },
-      { type: "text-delta", textDelta: "duh!" },
+      { type: 'text-delta', textDelta: "it's " },
+      { type: 'text-delta', textDelta: 'just ' },
+      { type: 'text-delta', textDelta: 'green ' },
+      { type: 'text-delta', textDelta: 'duh!' },
       {
-        type: "finish",
-        finishReason: "stop",
+        type: 'finish',
+        finishReason: 'stop',
         logprobs: undefined,
         usage: { completionTokens: 10, promptTokens: 3 },
       },
     ];
   } else if (
     compareMessages(userMessage, {
-      role: "user",
-      content: [{ type: "text", text: "why is the sky blue?" }],
+      role: 'user',
+      content: [{ type: 'text', text: 'why is the sky blue?' }],
     })
   ) {
     return [
-      { type: "text-delta", textDelta: "it's " },
-      { type: "text-delta", textDelta: "just " },
-      { type: "text-delta", textDelta: "blue " },
-      { type: "text-delta", textDelta: "duh!" },
+      { type: 'text-delta', textDelta: "it's " },
+      { type: 'text-delta', textDelta: 'just ' },
+      { type: 'text-delta', textDelta: 'blue ' },
+      { type: 'text-delta', textDelta: 'duh!' },
       {
-        type: "finish",
-        finishReason: "stop",
+        type: 'finish',
+        finishReason: 'stop',
         logprobs: undefined,
         usage: { completionTokens: 10, promptTokens: 3 },
       },
     ];
   } else if (
     compareMessages(userMessage, {
-      role: "user",
+      role: 'user',
       content: [
-        { type: "text", text: "What are the advantages of using Next.js?" },
+        { type: 'text', text: 'What are the advantages of using Next.js?' },
       ],
     })
   ) {
     return [
-      { type: "text-delta", textDelta: "with " },
-      { type: "text-delta", textDelta: "next.js " },
-      { type: "text-delta", textDelta: "you " },
-      { type: "text-delta", textDelta: "can " },
-      { type: "text-delta", textDelta: "ship " },
-      { type: "text-delta", textDelta: "fast! " },
+      { type: 'text-delta', textDelta: 'with ' },
+      { type: 'text-delta', textDelta: 'next.js ' },
+      { type: 'text-delta', textDelta: 'you ' },
+      { type: 'text-delta', textDelta: 'can ' },
+      { type: 'text-delta', textDelta: 'ship ' },
+      { type: 'text-delta', textDelta: 'fast! ' },
       {
-        type: "finish",
-        finishReason: "stop",
+        type: 'finish',
+        finishReason: 'stop',
         logprobs: undefined,
         usage: { completionTokens: 10, promptTokens: 3 },
       },
     ];
   } else if (
     compareMessages(userMessage, {
-      role: "user",
+      role: 'user',
       content: [
         {
-          type: "text",
-          text: "who painted this?",
+          type: 'text',
+          text: 'who painted this?',
         },
         {
-          type: "image",
-          image: "...",
+          type: 'image',
+          image: '...',
         },
       ],
     })
   ) {
     return [
-      { type: "text-delta", textDelta: "this " },
-      { type: "text-delta", textDelta: "painting " },
-      { type: "text-delta", textDelta: "is " },
-      { type: "text-delta", textDelta: "by " },
-      { type: "text-delta", textDelta: "monet!" },
+      { type: 'text-delta', textDelta: 'this ' },
+      { type: 'text-delta', textDelta: 'painting ' },
+      { type: 'text-delta', textDelta: 'is ' },
+      { type: 'text-delta', textDelta: 'by ' },
+      { type: 'text-delta', textDelta: 'monet!' },
       {
-        type: "finish",
-        finishReason: "stop",
+        type: 'finish',
+        finishReason: 'stop',
         logprobs: undefined,
         usage: { completionTokens: 10, promptTokens: 3 },
       },
@@ -121,7 +121,7 @@ const getResponseChunksByPrompt = (prompt: CoreMessage[]): Array<Chunk> => {
 export const chatModel = new MockLanguageModelV1({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: "stop",
+    finishReason: 'stop',
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `Hello, world!`,
   }),
@@ -136,17 +136,17 @@ export const chatModel = new MockLanguageModelV1({
 export const reasoningModel = new MockLanguageModelV1({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: "stop",
+    finishReason: 'stop',
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `Hello, world!`,
   }),
   doStream: async () => ({
     stream: simulateReadableStream({
       chunks: [
-        { type: "text-delta", textDelta: "test" },
+        { type: 'text-delta', textDelta: 'test' },
         {
-          type: "finish",
-          finishReason: "stop",
+          type: 'finish',
+          finishReason: 'stop',
           logprobs: undefined,
           usage: { completionTokens: 10, promptTokens: 3 },
         },
@@ -159,17 +159,17 @@ export const reasoningModel = new MockLanguageModelV1({
 export const titleModel = new MockLanguageModelV1({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: "stop",
+    finishReason: 'stop',
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `This is a test title`,
   }),
   doStream: async () => ({
     stream: simulateReadableStream({
       chunks: [
-        { type: "text-delta", textDelta: "This is a test title" },
+        { type: 'text-delta', textDelta: 'This is a test title' },
         {
-          type: "finish",
-          finishReason: "stop",
+          type: 'finish',
+          finishReason: 'stop',
           logprobs: undefined,
           usage: { completionTokens: 10, promptTokens: 3 },
         },
@@ -182,17 +182,17 @@ export const titleModel = new MockLanguageModelV1({
 export const artifactModel = new MockLanguageModelV1({
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
-    finishReason: "stop",
+    finishReason: 'stop',
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `Hello, world!`,
   }),
   doStream: async () => ({
     stream: simulateReadableStream({
       chunks: [
-        { type: "text-delta", textDelta: "test" },
+        { type: 'text-delta', textDelta: 'test' },
         {
-          type: "finish",
-          finishReason: "stop",
+          type: 'finish',
+          finishReason: 'stop',
           logprobs: undefined,
           usage: { completionTokens: 10, promptTokens: 3 },
         },
@@ -204,11 +204,11 @@ export const artifactModel = new MockLanguageModelV1({
 
 export const testProvider = customProvider({
   languageModels: {
-    "chat-model-small": chatModel,
-    "chat-model-large": chatModel,
-    "chat-model-reasoning": reasoningModel,
-    "title-model": titleModel,
-    "artifact-model": artifactModel,
+    'chat-model-small': chatModel,
+    'chat-model-large': chatModel,
+    'chat-model-reasoning': reasoningModel,
+    'title-model': titleModel,
+    'artifact-model': artifactModel,
   },
 });
 
@@ -240,13 +240,13 @@ function compareMessages(msg1: CoreMessage, msg2: CoreMessage): boolean {
     if (item1.type !== item2.type) return false;
 
     // Handle image content by comparing URL strings only
-    if (item1.type === "image" && item2.type === "image") {
+    if (item1.type === 'image' && item2.type === 'image') {
       // if (item1.image.toString() !== item2.image.toString()) return false;
       // if (item1.mimeType !== item2.mimeType) return false;
       // Ignore providerMetadata
     }
     // Handle text content - compare text only
-    else if (item1.type === "text" && item2.type === "text") {
+    else if (item1.type === 'text' && item2.type === 'text') {
       if (item1.text !== item2.text) return false;
       // Ignore providerMetadata
     }
