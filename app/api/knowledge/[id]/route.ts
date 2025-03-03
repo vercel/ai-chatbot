@@ -8,10 +8,12 @@ import {
 } from '@/lib/db/queries';
 
 export async function GET(
-  req: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const id = await params.id;
+    
     const session = await auth();
     
     if (!session?.user) {
@@ -22,7 +24,7 @@ export async function GET(
     }
 
     const document = await getKnowledgeDocumentById({
-      id: params.id,
+      id,
     });
 
     if (!document) {
@@ -54,6 +56,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const id = await params.id;
     const session = await auth();
     
     if (!session?.user) {
@@ -64,7 +67,7 @@ export async function PATCH(
     }
 
     const document = await getKnowledgeDocumentById({
-      id: params.id,
+      id,
     });
 
     if (!document) {
@@ -85,7 +88,7 @@ export async function PATCH(
     const { title, description } = body;
 
     const updatedDocument = await updateKnowledgeDocument({
-      id: params.id,
+      id,
       title,
       description,
     });
@@ -105,6 +108,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const id = await params.id;
     const session = await auth();
     
     if (!session?.user) {
@@ -115,7 +119,7 @@ export async function DELETE(
     }
 
     const document = await getKnowledgeDocumentById({
-      id: params.id,
+      id,
     });
 
     if (!document) {
@@ -133,7 +137,7 @@ export async function DELETE(
     }
 
     await deleteKnowledgeDocument({
-      id: params.id,
+      id,
     });
 
     return NextResponse.json(
