@@ -1,7 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
-import { createKnowledgeDocument } from '@/lib/db/queries';
+import { createKnowledgeDocument, getKnowledgeDocumentsByUserId } from '@/lib/db/queries';
 import { processDocument } from '@/lib/knowledge/processor';
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth();
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const documents = await getKnowledgeDocumentsByUserId({
+      userId: session.user.id,
+    });
+
+    return NextResponse.json(documents);
+  } catch (error) {
+    console.error('Error fetching knowledge documents:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch knowledge documents' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {

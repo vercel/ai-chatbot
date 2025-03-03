@@ -39,15 +39,7 @@ export async function GET(
       );
     }
 
-    // Get chunks for this document
-    const chunks = await getChunksByDocumentId({
-      documentId: params.id,
-    });
-
-    return NextResponse.json({
-      document,
-      chunks,
-    });
+    return NextResponse.json(document);
   } catch (error) {
     console.error('Error fetching knowledge document:', error);
     return NextResponse.json(

@@ -1,29 +1,12 @@
 import { KnowledgeDocument } from '../db/schema';
 import { createKnowledgeChunk, updateKnowledgeDocument } from '../db/queries';
-// Replace OpenAI import with mock implementation
-// import OpenAI from 'openai';
+import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-// Mock OpenAI client
-const openai = {
-  embeddings: {
-    create: async ({ model, input }: { model: string; input: string }) => {
-      console.log(`[MOCK] Creating embedding for input: ${input.substring(0, 50)}...`);
-      // Return mock embedding with 1536 dimensions (same as Ada)
-      return {
-        data: [
-          {
-            embedding: Array(1536).fill(0).map(() => Math.random() * 2 - 1),
-            object: 'embedding',
-            index: 0
-          }
-        ]
-      };
-    }
-  }
-};
+// Create OpenAI client
+const openai = new OpenAI();
 
 // Cache directory for embeddings
 const EMBEDDINGS_CACHE_DIR = path.join(process.cwd(), '.cache', 'document-embeddings');

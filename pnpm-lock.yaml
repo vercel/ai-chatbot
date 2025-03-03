@@ -123,7 +123,7 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
       openai:
-        specifier: ^4.86.1
+        specifier: 4.86.1
         version: 4.86.1(ws@8.18.0(bufferutil@4.0.8))(zod@3.23.8)
       orderedmap:
         specifier: ^2.1.1

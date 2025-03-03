@@ -30,6 +30,7 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     messages,
@@ -49,10 +50,33 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
+      setErrorMessage(null);
       mutate('/api/history');
     },
+    onResponse: (response) => {
+      if (!response.ok) {
+        console.error('Error response from chat API:', response.status, response.statusText);
+        response.json().then(data => {
+          console.error('Error details:', data);
+          if (data.message) {
+            setErrorMessage(data.message);
+          }
+        }).catch(e => {
+          console.error('Could not parse error response:', e);
+        });
+      }
+    },
     onError: (error) => {
-      toast.error('An error occured, please try again!');
+      console.error('Chat error:', error);
+      let errorMsg = 'An error occurred, please try again!';
+      
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+        errorMsg = `Error: ${error.message || 'Unknown error'}`;
+      }
+      
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
     },
   });
 
@@ -73,6 +97,13 @@ export function Chat({
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />
+
+        {errorMessage && (
+          <div className="bg-destructive/10 text-destructive text-sm p-2 mx-auto w-full max-w-3xl my-2 rounded">
+            <p>Error: {errorMessage}</p>
+            <p className="text-xs mt-1">Check the browser console for more details.</p>
+          </div>
+        )}
 
         <Messages
           chatId={id}

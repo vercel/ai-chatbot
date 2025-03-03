@@ -31,131 +31,152 @@ import { searchKnowledge } from '@/lib/ai/tools/search-knowledge';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const {
-    id,
-    messages,
-    selectedChatModel,
-  }: { id: string; messages: Array<Message>; selectedChatModel: string } =
-    await request.json();
+  try {
+    const {
+      id,
+      messages,
+      selectedChatModel,
+    }: { id: string; messages: Array<Message>; selectedChatModel: string } =
+      await request.json();
 
-  const session = await auth();
+    console.log(`Chat API called - Chat ID: ${id}, Model: ${selectedChatModel}`);
+    
+    const session = await auth();
 
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+    if (!session || !session.user || !session.user.id) {
+      console.error('Unauthorized access attempt to chat API');
+      return new Response('Unauthorized', { status: 401 });
+    }
 
-  const userMessage = getMostRecentUserMessage(messages);
+    const userMessage = getMostRecentUserMessage(messages);
 
-  if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
-  }
+    if (!userMessage) {
+      console.error('No user message found in request');
+      return new Response('No user message found', { status: 400 });
+    }
 
-  const chat = await getChatById({ id });
+    console.log(`Processing message from user ${session.user.id}: "${userMessage.content.substring(0, 50)}..."`);
 
-  if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
-  }
+    const chat = await getChatById({ id });
 
-  await saveMessages({
-    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
-  });
+    if (!chat) {
+      console.log(`Creating new chat with ID: ${id}`);
+      const title = await generateTitleFromUserMessage({ message: userMessage });
+      await saveChat({ id, userId: session.user.id, title });
+    }
 
-  // Track knowledge chunks used for this message
-  let usedKnowledgeChunks: Array<{ id: string; content: string }> = [];
+    await saveMessages({
+      messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
+    });
 
-  return createDataStreamResponse({
-    execute: (dataStream) => {
-      const result = streamText({
-        model: myProvider.languageModel(selectedChatModel),
-        system: systemPrompt({ selectedChatModel }),
-        messages,
-        maxSteps: 5,
-        experimental_activeTools:
-          selectedChatModel === 'chat-model-reasoning'
-            ? []
-            : [
-                'getWeather',
-                'createDocument',
-                'updateDocument',
-                'requestSuggestions',
-                'searchKnowledge',
-              ],
-        experimental_transform: smoothStream({ chunking: 'word' }),
-        experimental_generateMessageId: generateUUID,
-        tools: {
-          getWeather,
-          createDocument: createDocument({ session, dataStream }),
-          updateDocument: updateDocument({ session, dataStream }),
-          requestSuggestions: requestSuggestions({
-            session,
-            dataStream,
-          }),
-          searchKnowledge: searchKnowledge({
-            session,
-            dataStream,
-            onChunksUsed: (chunks) => {
-              usedKnowledgeChunks = chunks;
-            },
-          }),
-        },
-        onFinish: async ({ response, reasoning }) => {
-          if (session.user?.id) {
-            try {
-              const sanitizedResponseMessages = sanitizeResponseMessages({
-                messages: response.messages,
-                reasoning,
-              });
+    // Track knowledge chunks used for this message
+    let usedKnowledgeChunks: Array<{ id: string; content: string }> = [];
 
-              // Save the messages
-              const savedMessages = await saveMessages({
-                messages: sanitizedResponseMessages.map((message) => {
-                  return {
-                    id: message.id,
-                    chatId: id,
-                    role: message.role,
-                    content: message.content,
-                    createdAt: new Date(),
-                  };
-                }),
-              });
-
-              // Create knowledge references for the assistant message
-              if (usedKnowledgeChunks.length > 0) {
-                const assistantMessage = savedMessages.find(
-                  (msg) => msg.role === 'assistant'
-                );
-                
-                if (assistantMessage) {
-                  for (const chunk of usedKnowledgeChunks) {
-                    await createKnowledgeReference({
-                      messageId: assistantMessage.id,
-                      chunkId: chunk.id,
+    return createDataStreamResponse({
+      execute: async (dataStream) => {
+        try {
+          console.log(`Streaming response for chat ${id} using model ${selectedChatModel}`);
+          
+          try {
+            // Temporarily disable tools to work around Zod schema issue
+            console.log("Using chat model without tools to work around schema issues");
+            const result = streamText({
+              model: myProvider.languageModel(selectedChatModel),
+              system: systemPrompt({ selectedChatModel }),
+              messages,
+              maxSteps: 5,
+              experimental_transform: smoothStream({ chunking: 'word' }),
+              experimental_generateMessageId: generateUUID,
+              onFinish: async ({ response, reasoning }) => {
+                if (session.user?.id) {
+                  try {
+                    console.log(`Finalizing response for chat ${id}`);
+                    
+                    const sanitizedResponseMessages = sanitizeResponseMessages({
+                      messages: response.messages,
+                      reasoning,
                     });
+
+                    // Save the messages
+                    const savedMessages = await saveMessages({
+                      messages: sanitizedResponseMessages.map((message) => {
+                        return {
+                          id: message.id,
+                          chatId: id,
+                          role: message.role,
+                          content: message.content,
+                          createdAt: new Date(),
+                        };
+                      }),
+                    });
+
+                    console.log(`Saved ${savedMessages.length} messages to chat ${id}`);
+
+                    // Create knowledge references for the assistant message
+                    if (usedKnowledgeChunks.length > 0) {
+                      const assistantMessage = savedMessages.find(
+                        (msg) => msg.role === 'assistant'
+                      );
+                      
+                      if (assistantMessage) {
+                        console.log(`Creating ${usedKnowledgeChunks.length} knowledge references for message ${assistantMessage.id}`);
+                        
+                        for (const chunk of usedKnowledgeChunks) {
+                          await createKnowledgeReference({
+                            messageId: assistantMessage.id,
+                            chunkId: chunk.id,
+                          });
+                        }
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Failed to save chat or create references:', error);
                   }
                 }
-              }
-            } catch (error) {
-              console.error('Failed to save chat', error);
-            }
+              },
+              experimental_telemetry: {
+                isEnabled: true,
+                functionId: 'stream-text',
+              },
+            });
+
+            result.consumeStream();
+
+            result.mergeIntoDataStream(dataStream, {
+              sendReasoning: true,
+            });
+          } catch (error) {
+            console.error('Error in stream processing:', error);
+            dataStream.close();
+            throw error;
           }
-        },
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: 'stream-text',
-        },
-      });
-
-      result.consumeStream();
-
-      result.mergeIntoDataStream(dataStream, {
-        sendReasoning: true,
-      });
-    },
-    onError: () => {
-      return 'Oops, an error occured!';
-    },
-  });
+        } catch (error) {
+          console.error('Error in stream processing:', error);
+          dataStream.close();
+          throw error;
+        }
+      },
+      onError: (error) => {
+        console.error('Chat API stream error:', error);
+        return `An error occurred: ${error.message || 'Unknown error'}. Please try again.`;
+      },
+    });
+  } catch (error) {
+    console.error('Unhandled error in chat API:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'An unexpected error occurred', 
+        message: error.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }),
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  }
 }
 
 export async function DELETE(request: Request) {
