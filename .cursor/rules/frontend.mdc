@@ -1,0 +1,208 @@
+---
+description: Useful for building react full stack applications
+globs: app/**/*.{ts,tsx,js,jsx},components/**/*.{ts,tsx},lib/**/*.{ts,tsx},hooks/**/*.{ts,tsx},middleware.ts,*.config.ts
+alwaysApply: false
+---
+You are an expert TypeScript software engineer and architect with over 10 years of industry experience. Your expertise spans the entire stack, including React, Next.js 15 (with App Router), Tailwind CSS, shadcn/ui, Radix, Postgres and Drizzle .
+
+
+### Code Style and Structure
+
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
+- Structure files: exported component, subcomponents, helpers, static content, types.
+
+### Frontend Components
+
+- Prefer Server Components over Client Components when possible to reduce client-side JavaScript.
+- Avoid using `useEffect` unless absolutely necessary for client-side-only logic or interactions.
+- When `useEffect` is needed in Client Components, clearly justify its use and consider alternatives.
+- Implement proper error boundaries and loading states for better user experience.
+- Using default shadcn/ui color theme (I.e not hardcoded)
+- Some shadcn/ui components have been improved. 
+
+### Component colocation
+When building Next.js applications, follow component co-location principles for better maintainability and code organization. Co-locate simple, feature-specific components (used only within a single page/feature) in a _components directory within that feature's folder. For shared components, use two main categories: UI components (from your component library like shadcn/ui) and app-specific reusable components. The folder structure should look like this:
+.
+├── app/                           # Next.js app directory (routes and layouts)
+│   ├── (auth)/                   # Auth-related routes
+│   │   ├── page.tsx
+│   │   └── _components/          # Auth-specific components (to be implemented)
+│   ├── (chat)/                   # Chat-related routes
+│   │   ├── page.tsx
+│   │   └── _components/          # Chat-specific components (to be implemented)
+│   └── layout.tsx                # Root layout
+├── components/                    # Shared components
+│   ├── ui/                       # Component library components (shadcn/ui)
+│   │   ├── button.tsx
+│   │   └── card.tsx
+│   ├── chat/                     # Chat-specific components in folder or individual
+│   │   ├── chat.tsx              # Broadest chat componnent
+│   │   ├── messages.tsx          # Messages componnent
+│   │   ├── data-stream-handler.tsx # Data stream handler component
+│   │   ├── [other-feature].tsx
+│   │   ├── input/                # Tool-specific shared components
+│   │   ├── message/                # Tool-specific shared components
+│   │   ├── settings/                # Tool-specific shared components
+│   │   ├── sidebar/                # Tool-specific shared components
+│   │   ├── artifacts/            # Artifact related components
+│   │   └── tools/                # Tool components 
+│   ├── auth/                     # Auth-related shared components
+│   └── [current-feature].tsx     # Current feature components (to be gradually migrated)
+├── lib/                          # Shared utilities and configurations
+├── hooks/                        # Custom React hooks
+└── public/                       # Static assets
+
+Note: Our current structure has feature-specific components at the root of the components directory. As we evolve the codebase, we can gradually migrate these into their respective feature _components directories within the app folder structure, while keeping truly shared components in the main components directory.
+
+This structure maintains the best practices of component colocation while acknowledging our current implementation and providing a clear path for future organization. The key differences from our current setup are:
+- Introduction of _components directories within route groups for feature-specific components
+- Eventual migration of feature-specific components from the root components directory to their respective feature folders
+- Maintaining our existing specialized directories (auth, tools) for shared functionality across features
+
+Note sometimes, when a feature gets large and complex, it makes more sense to put it in the `component` folder instead, since it is more maintainable.
+
+### Folder Structure
+Within the frontend, using nextjs, you can leverage route grouping using `(group)`
+The root layout component should be reserved only for providers and other configuration. 
+
+
+### Web app Data Fetching
+
+- Use TanStack Query as the primary data fetching solution:
+  - Use `useQuery` for GET operations
+  - Use `useMutation` for POST/PUT/DELETE operations
+- Avoid creating custom data fetching hooks (i.e `useFn`) unless absolutely necessary (2 or more separate components need the same data).
+- Instead, react-query within components, until multiple components require the same data.
+- Leverage TanStack Query's built-in features:
+  - Automatic background refetching
+  - Cache invalidation
+  - Optimistic updates
+  - Infinite queries for pagination
+  - Parallel queries when needed
+- Structure query keys consistently:
+  - Use array syntax: ['users', userId]
+  - Include relevant dependencies
+- Handle loading and error states using built-in properties:
+  - isLoading, isError, error, data
+- Use prefetching where appropriate for better UX
+- Implement proper retry and error handling strategies using TanStack Query configuration
+- You can use sonnet toast for handling toast notifications (toast.error, toast.success, toast.info, etc)
+
+### Typesafe rpc client with react query
+When fetching data from the backend api, create functions in `src/api/name.api.ts`
+For example:
+```ts
+import { apiRpc, getApiClient, InferRequestType } from "./client";
+
+const $createPost = apiRpc.posts.$post;
+// Simple get
+export async function getPosts() {
+  const client = await getApiClient();
+
+  const response = await client.posts.$get();
+  return response.json();
+}
+// Safely leverage the typed params elsewhere within the nextjs application 
+export type CreatePostParams = InferRequestType<typeof $createPost>["json"];
+export async function createPost(params: CreatePostParams) {
+  const client = await getApiClient();
+
+  const response = await client.posts.$post({ json: params });
+  // This returns fully typed response, no need to cast anything
+  return response.json();
+}
+```
+
+### Naming Conventions
+- Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
+- Use kebab-case (`example-card.tsx`) for *all* components.
+- Favor named exports for components.
+
+### TypeScript Usage
+
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Use functional components with TypeScript interfaces.
+
+### Syntax and Formatting
+
+- Use the `function` keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Never use `React.FC` or arrow functions to define components.
+- Use declarative JSX in web projects and React Native JSX in mobile projects.
+
+### UI and Styling
+
+- For React, use Shadcn UI, Radix, and Tailwind for components and styling.
+- Implement responsive design in React using Tailwind CSS, with a mobile-first approach.
+- Use the `cn` utility function from `clsx` or a similar library for joining Tailwind classes, especially for conditional styling.
+- Use new tailwind v4 semantic, i.e. size-4 instead of h-4 w-4 etc.
+
+
+### Performance Optimization
+
+- Use dynamic loading for non-critical components.
+- Optimize images: use WebP format, include size data, implement lazy loading.
+
+### Key Conventions
+
+- Use 'nuqs' for URL search parameter state management (where applicable).
+- Optimize Web Vitals (LCP, CLS, FID).
+
+### Architectural Thinking
+
+- Always consider the broader system architecture when proposing solutions.
+- Explain your design decisions and trade-offs.
+- Suggest appropriate abstractions and patterns that enhance code reusability and maintainability.
+
+### Code Quality
+
+- Write clean, idiomatic TypeScript code with proper type annotations.
+- Implement error handling and edge cases.
+- Use modern ES6+ features appropriately.
+- For methods with more than one argument, use object destructuring: `function myMethod({ param1, param2 }: MyMethodParams) {...}`.
+
+### Testing and Documentation
+
+- Suggest unit tests for critical functions using Vitest and React Testing Library.
+- Provide JSDoc comments for complex functions and types.
+
+### Performance and Optimization
+
+- Consider performance implications of your code, especially for larger datasets or complex operations.
+- Suggest optimizations where relevant, explaining the benefits.
+
+### Reasoning and Explanation
+
+- Explain your thought process and decisions.
+- If multiple approaches are viable, outline them and explain the pros and cons of each.
+
+### Continuous Improvement
+
+  - Use functional and declarative programming patterns; avoid classes.
+  - Prefer iteration and modularization over code duplication.
+  - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+  - Structure files: exported component, subcomponents, helpers, static content, types.
+    Naming Conventions
+  - Use lowercase with dashes for directories (e.g., components/auth-wizard).
+  - Favor named exports for components.
+  TypeScript Usage
+  - Use TypeScript for all code; prefer interfaces over types.
+  - Avoid enums; use maps instead.
+  - Use functional components with TypeScript interfaces.
+    Syntax and Formatting
+  - Use the "function" keyword for pure functions.
+  - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+  - Never use ReactFC or arrow functions to define components
+  - Use declarative JSX.
+
+<package_management>
+
+- Use `pnpm` as the primary package manager for the project
+- Install dependencies using `pnpm add [package-name]`
+- Install dev dependencies using `pnpm add -D [package-name]`
+- Install workspace dependencies using `pnpm add -w [package-name]`
+</package_management>
