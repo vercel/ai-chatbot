@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { test, expect, Page } from '@playwright/test';
 
-export class ChatPage {
+class ChatPage {
   constructor(private page: Page) {}
 
   async goto() {
@@ -174,7 +174,7 @@ test.describe('chat activity', () => {
     await chatPage.isElementNotVisible('suggested-actions');
   });
 
-  test('handle file upload and send image attachment with message', async ({}) => {
+  test('handle file upload and send image attachment with message', async () => {
     await chatPage.addImageAttachment();
 
     await chatPage.isElementVisible('attachments-preview');
