@@ -44,6 +44,7 @@ function PureArtifactMessages({
           key={message.id}
           message={message}
           isLoading={isLoading && index === messages.length - 1}
+          index={index}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)

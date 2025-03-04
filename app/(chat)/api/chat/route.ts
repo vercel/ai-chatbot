@@ -25,12 +25,15 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProduction } from '@/lib/constants';
+import { isProduction, isTest } from '@/lib/constants';
 import { NextResponse } from 'next/server';
+import { testProvider } from '@/lib/ai/models.test';
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  const selectedProvider = isTest ? testProvider : myProvider;
+
   try {
     const {
       id,
@@ -70,7 +73,7 @@ export async function POST(request: Request) {
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
+          model: selectedProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
           messages,
           maxSteps: 5,
