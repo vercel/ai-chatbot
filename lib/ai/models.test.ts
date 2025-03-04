@@ -1,9 +1,4 @@
-import {
-  CoreMessage,
-  customProvider,
-  FinishReason,
-  simulateReadableStream,
-} from 'ai';
+import { CoreMessage, FinishReason, simulateReadableStream } from 'ai';
 import { MockLanguageModelV1 } from 'ai/test';
 
 interface TextDeltaChunk {
@@ -202,61 +197,30 @@ export const artifactModel = new MockLanguageModelV1({
   }),
 });
 
-export const testProvider = customProvider({
-  languageModels: {
-    'chat-model-small': chatModel,
-    'chat-model-large': chatModel,
-    'chat-model-reasoning': reasoningModel,
-    'title-model': titleModel,
-    'artifact-model': artifactModel,
-  },
-});
-
-/**
- * Compares two messages to check if they're equal, handling URL objects
- * by comparing their string representations instead of object equality.
- * Completely ignores all providerMetadata fields during comparison.
- */
 function compareMessages(msg1: CoreMessage, msg2: CoreMessage): boolean {
-  // Compare message role only
   if (msg1.role !== msg2.role) return false;
 
-  // If content is not an array in both, use deep equality (except providerMetadata)
   if (!Array.isArray(msg1.content) || !Array.isArray(msg2.content)) {
-    // For non-array content, we'd need a custom comparison
-    // that ignores providerMetadata - simpler to just not support this case
     return false;
   }
 
-  // Check content arrays length
   if (msg1.content.length !== msg2.content.length) return false;
 
-  // Compare each content item
   for (let i = 0; i < msg1.content.length; i++) {
     const item1 = msg1.content[i];
     const item2 = msg2.content[i];
 
-    // If types don't match, they're not equal
     if (item1.type !== item2.type) return false;
 
-    // Handle image content by comparing URL strings only
     if (item1.type === 'image' && item2.type === 'image') {
       // if (item1.image.toString() !== item2.image.toString()) return false;
       // if (item1.mimeType !== item2.mimeType) return false;
-      // Ignore providerMetadata
-    }
-    // Handle text content - compare text only
-    else if (item1.type === 'text' && item2.type === 'text') {
+    } else if (item1.type === 'text' && item2.type === 'text') {
       if (item1.text !== item2.text) return false;
-      // Ignore providerMetadata
-    }
-    // For other content types, we would need custom comparison
-    // that ignores providerMetadata
-    else {
+    } else {
       return false;
     }
   }
 
-  // If we got this far, the messages are equal (ignoring providerMetadata)
   return true;
 }

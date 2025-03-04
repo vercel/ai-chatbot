@@ -1,5 +1,5 @@
 import { smoothStream, streamText } from 'ai';
-import { myProvider } from '@/lib/ai/models';
+import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
 import { updateDocumentPrompt } from '@/lib/ai/prompts';
 

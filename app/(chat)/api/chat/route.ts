@@ -4,9 +4,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
-
 import { auth } from '@/app/(auth)/auth';
-import { myProvider } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -19,21 +17,18 @@ import {
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from '@/lib/utils';
-
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProduction, isTest } from '@/lib/constants';
+import { isProductionEnvironment } from '@/lib/constants';
 import { NextResponse } from 'next/server';
-import { testProvider } from '@/lib/ai/models.test';
+import { myProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const selectedProvider = testProvider;
-
   try {
     const {
       id,
@@ -73,7 +68,7 @@ export async function POST(request: Request) {
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
-          model: selectedProvider.languageModel(selectedChatModel),
+          model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
           messages,
           maxSteps: 5,
@@ -127,7 +122,7 @@ export async function POST(request: Request) {
             }
           },
           experimental_telemetry: {
-            isEnabled: isProduction,
+            isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
         });
