@@ -21,7 +21,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: "pnpm"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -41,6 +40,11 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
