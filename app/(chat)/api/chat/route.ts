@@ -122,8 +122,19 @@ export async function POST(request: Request) {
         sendReasoning: true,
       });
     },
-    onError: () => {
-      return 'Oops, an error occured!';
+    onError: (error) => {
+      console.error('Streaming error:', error);
+      
+      // Return a more descriptive error message
+      const errorMessage = error instanceof Error 
+        ? `Error: ${error.message}`
+        : 'An unexpected error occurred while processing your request. Please try again.';
+      
+      if (error instanceof Error && error.stack) {
+        console.error('Error stack:', error.stack);
+      }
+
+      return errorMessage;
     },
   });
 }
