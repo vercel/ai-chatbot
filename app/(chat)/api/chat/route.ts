@@ -112,11 +112,6 @@ export async function POST(request: Request) {
                   }),
                 });
               } catch (error) {
-                console.error(
-                  'msgs',
-                  JSON.stringify(userMessage, null, 2),
-                  JSON.stringify(response.messages, null, 2),
-                );
                 console.error('Failed to save chat');
               }
             }
@@ -138,7 +133,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.log(error);
     return NextResponse.json({ error }, { status: 400 });
   }
 }
