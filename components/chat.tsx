@@ -44,20 +44,24 @@ export function Chat({
 
   // Handle wallet connection and transaction
   useEffect(() => {
+    console.log('@@swapDetails', swapDetails);
     if (swapDetails) {
       console.log('swapDetails', swapDetails);
       const handleTransaction = async () => {
         try {
+          console.log('Starting the provider');
           // Get Phantom provider
           const provider = (window as any).phantom?.solana;
           if (!provider?.isPhantom) {
+            console.log('Phantom provider not found');
             window.open('https://phantom.app/', '_blank');
             return;
           }
 
           // Connect to wallet
           await provider.connect();
-
+          console.log('Connected to wallet');
+          
           // Create and send transaction
           const connection = new Connection('https://api.mainnet-beta.solana.com');
           
@@ -70,6 +74,7 @@ export function Chat({
             // First try to deserialize as a legacy transaction
             transaction = Transaction.from(serializedTransaction);
           } catch (error) {
+            console.log('Error deserializing transaction:', error);
             // If that fails, try to deserialize as a versioned transaction
             const { VersionedTransaction } = await import('@solana/web3.js');
             transaction = VersionedTransaction.deserialize(serializedTransaction);
@@ -122,7 +127,22 @@ export function Chat({
       // Check last message for swap transaction
       const lastMessage = messages[messages.length - 1];
       try {
-        const content = JSON.parse(lastMessage.content);
+        // First try standard JSON parsing
+        let content;
+        try {
+          content = JSON.parse(lastMessage.content);
+        } catch (jsonError) {
+          // If that fails, try to handle Python-style single quotes
+          // Replace single quotes with double quotes, but be careful with nested quotes
+          const fixedContent = lastMessage.content
+            .replace(/'/g, '"')
+            .replace(/\\"/g, '\\\\"'); // Handle escaped quotes
+          
+          console.log('Attempting to parse fixed content:', fixedContent);
+          content = JSON.parse(fixedContent);
+        }
+        
+        console.log('@@content', content);
         if (
           content.operation === 'swap' &&
           content.transaction_data &&
@@ -132,8 +152,11 @@ export function Chat({
         ) {
           console.log('Received swap operation:', content);
           setSwapDetails(content); // This will trigger the wallet popup
+        } else {
+          console.log('@@Not a swap operation');
         }
       } catch (e) {
+        console.log('@@Not a JSON! Error: ' + e + "\nContent: " + lastMessage.content);
         // Not JSON or doesn't match schema
       }
 
