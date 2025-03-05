@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 
 import { register, type RegisterActionState } from '../actions';
+import { toast } from '@/components/toast';
 
 export default function Page() {
   const router = useRouter();
@@ -25,13 +25,17 @@ export default function Page() {
 
   useEffect(() => {
     if (state.status === 'user_exists') {
-      toast.error('Account already exists');
+      toast({ type: 'error', description: 'Account already exists!' });
     } else if (state.status === 'failed') {
-      toast.error('Failed to create account');
+      toast({ type: 'error', description: 'Failed to create account!' });
     } else if (state.status === 'invalid_data') {
-      toast.error('Failed validating your submission!');
+      toast({
+        type: 'error',
+        description: 'Failed validating your submission!',
+      });
     } else if (state.status === 'success') {
-      toast.success('Account created successfully');
+      toast({ type: 'success', description: 'Account created successfully!' });
+
       setIsSuccessful(true);
       router.refresh();
     }

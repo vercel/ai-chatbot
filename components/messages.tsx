@@ -43,6 +43,7 @@ function PureMessages({
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
+          index={index}
           chatId={chatId}
           message={message}
           isLoading={isLoading && messages.length - 1 === index}
