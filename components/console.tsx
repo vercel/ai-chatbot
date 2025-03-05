@@ -155,7 +155,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                         <img
                           src={content.value}
                           alt="output"
-                          className="rounded-md max-w-[600px] w-full"
+                          className="rounded-md max-w-screen-toast-mobile w-full"
                         />
                       </picture>
                     ) : (
