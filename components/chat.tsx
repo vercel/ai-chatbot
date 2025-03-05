@@ -126,15 +126,24 @@ export function Chat({
       
       // Check last message for swap transaction
       const lastMessage = messages[messages.length - 1];
+      console.log('LastMessage', lastMessage.content);
       try {
         // First try standard JSON parsing
         let content;
+        let rawContent = lastMessage.content;
+        
+        // Check if content is wrapped in a code block
+        const codeBlockMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (codeBlockMatch && codeBlockMatch[1]) {
+          console.log('Found code block, extracting content');
+          rawContent = codeBlockMatch[1];
+        }
+        
         try {
-          content = JSON.parse(lastMessage.content);
+          content = JSON.parse(rawContent);
         } catch (jsonError) {
           // If that fails, try to handle Python-style single quotes
-          // Replace single quotes with double quotes, but be careful with nested quotes
-          const fixedContent = lastMessage.content
+          const fixedContent = rawContent
             .replace(/'/g, '"')
             .replace(/\\"/g, '\\\\"'); // Handle escaped quotes
           
@@ -153,10 +162,10 @@ export function Chat({
           console.log('Received swap operation:', content);
           setSwapDetails(content); // This will trigger the wallet popup
         } else {
-          console.log('@@Not a swap operation');
+          console.log('Not a swap operation');
         }
       } catch (e) {
-        console.log('@@Not a JSON! Error: ' + e + "\nContent: " + lastMessage.content);
+        console.log('Error: ' + e + "\nContent: " + lastMessage.content);
         // Not JSON or doesn't match schema
       }
 
