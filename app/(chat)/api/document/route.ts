@@ -67,6 +67,7 @@ export async function POST(request: Request) {
 
     return Response.json(document, { status: 200 });
   }
+
   return new Response('Unauthorized', { status: 401 });
 }
 
