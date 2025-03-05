@@ -57,10 +57,6 @@ export function Chat({
   const { data: votes } = useSWR<Array<Vote>>(
     `/api/vote?chatId=${id}`,
     fetcher,
-    {
-      refreshInterval: 0,
-      revalidateOnFocus: false,
-    },
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
