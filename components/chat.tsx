@@ -41,6 +41,7 @@ export function Chat({
     isLoading,
     stop,
     reload,
+    data,
   } = useChat({
     id,
     body: { id, selectedChatModel: selectedChatModel },
@@ -49,10 +50,30 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
+      console.log('Chat response finished:', { messages, data });
+      
+      // Check last message for swap transaction
+      const lastMessage = messages[messages.length - 1];
+      try {
+        const content = JSON.parse(lastMessage.content);
+        if (
+          content.operation === 'swap' &&
+          content.transaction_data &&
+          content.input_mint &&
+          content.output_mint &&
+          typeof content.input_amount === 'number'
+        ) {
+          console.log('Received swap operation:', content);
+        }
+      } catch (e) {
+        // Not JSON or doesn't match schema
+      }
+
       mutate('/api/history');
     },
     onError: (error) => {
-      toast.error('An error occured, please try again!');
+      console.error('Chat error in browser:', error);
+      toast.error('An error occurred, please try again!');
     },
   });
 
