@@ -1,5 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { getVotesByChatId, voteMessage } from '@/lib/db/queries';
+import { getChatById, getVotesByChatId, voteMessage } from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,6 +12,16 @@ export async function GET(request: Request) {
   const session = await auth();
 
   if (!session || !session.user || !session.user.email) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const chat = await getChatById({ id: chatId });
+
+  if (!chat) {
+    return new Response('Chat not found', { status: 404 });
+  }
+
+  if (chat.userId !== session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -35,6 +45,16 @@ export async function PATCH(request: Request) {
   const session = await auth();
 
   if (!session || !session.user || !session.user.email) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const chat = await getChatById({ id: chatId });
+
+  if (!chat) {
+    return new Response('Chat not found', { status: 404 });
+  }
+
+  if (chat.userId !== session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
