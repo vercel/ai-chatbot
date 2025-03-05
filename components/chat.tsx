@@ -1,14 +1,12 @@
 'use client';
 
 import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
-
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
@@ -51,7 +49,7 @@ export function Chat({
     onFinish: () => {
       mutate('/api/history');
     },
-    onError: (error) => {
+    onError: () => {
       toast.error('An error occured, please try again!');
     },
   });
