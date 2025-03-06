@@ -22,6 +22,7 @@
     "@ai-sdk/fireworks": "0.1.12",
     "@ai-sdk/openai": "1.2.0",
     "@ai-sdk/react": "^1.1.20",
+    "@civic/auth-web3": "^0.4.3",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",

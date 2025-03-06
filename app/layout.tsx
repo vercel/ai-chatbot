@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 
 import { ThemeProvider } from '@/components/theme-provider';
+import { CivicAuthProvider } from '@civic/auth-web3/nextjs'
 
 import './globals.css';
 
@@ -59,12 +60,14 @@ export default async function RootLayout({
       <body className="antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
           <Toaster position="top-center" />
-          {children}
+          <CivicAuthProvider iframeMode={"embedded"} >
+            {children}
+          </CivicAuthProvider>
         </ThemeProvider>
       </body>
     </html>

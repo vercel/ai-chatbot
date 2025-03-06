@@ -32,7 +32,9 @@ yarn-error.log*
 # turbo
 .turbo
 
+.env*.local
 .env
+
 .vercel
 .vscode
 .env*.local
