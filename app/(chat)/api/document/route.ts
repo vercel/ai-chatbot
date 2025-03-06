@@ -1,5 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { BlockKind } from '@/components/block';
+import { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
@@ -53,7 +53,8 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-  }: { content: string; title: string; kind: BlockKind } = await request.json();
+  }: { content: string; title: string; kind: ArtifactKind } =
+    await request.json();
 
   if (session.user?.id) {
     const document = await saveDocument({
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
 
     return Response.json(document, { status: 200 });
   }
+
   return new Response('Unauthorized', { status: 401 });
 }
 

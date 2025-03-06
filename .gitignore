@@ -37,3 +37,11 @@ yarn-error.log*
 
 .vercel
 .vscode
+.env*.local
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

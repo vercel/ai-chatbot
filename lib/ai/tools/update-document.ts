@@ -1,8 +1,8 @@
 import { DataStreamWriter, tool } from 'ai';
 import { z } from 'zod';
-import { getDocumentById } from '@/lib/db/queries';
-import { documentHandlersByBlockKind } from '@/lib/blocks/server';
 import { User } from '@/lib/types/auth';
+import { getDocumentById, saveDocument } from '@/lib/db/queries';
+import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 
 interface UpdateDocumentProps {
   user: User;
@@ -32,9 +32,9 @@ export const updateDocument = ({ user, dataStream }: UpdateDocumentProps) =>
         content: document.title,
       });
 
-      const documentHandler = documentHandlersByBlockKind.find(
-        (documentHandlerByBlockKind) =>
-          documentHandlerByBlockKind.kind === document.kind,
+      const documentHandler = documentHandlersByArtifactKind.find(
+        (documentHandlerByArtifactKind) =>
+          documentHandlerByArtifactKind.kind === document.kind,
       );
 
       if (!documentHandler) {

@@ -15,11 +15,13 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
-    "db:up": "drizzle-kit up"
+    "db:up": "drizzle-kit up",
+    "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
   },
   "dependencies": {
-    "@ai-sdk/fireworks": "^0.1.8",
-    "@ai-sdk/openai": "1.1.9",
+    "@ai-sdk/fireworks": "0.1.12",
+    "@ai-sdk/openai": "1.2.0",
+    "@ai-sdk/react": "^1.1.20",
     "@civic/auth-web3": "^0.4.3",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
@@ -39,7 +41,7 @@
     "@vercel/analytics": "^1.3.1",
     "@vercel/blob": "^0.24.1",
     "@vercel/postgres": "^0.10.0",
-    "ai": "4.1.17",
+    "ai": "4.1.50",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
@@ -54,7 +56,8 @@
     "geist": "^1.3.1",
     "lucide-react": "^0.446.0",
     "nanoid": "^5.0.8",
-    "next": "15.0.3-canary.2",
+    "next": "15.2.2-canary.1",
+    "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
@@ -83,6 +86,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@playwright/test": "^1.50.1",
     "@tailwindcss/typography": "^0.5.15",
     "@types/d3-scale": "^4.0.8",
     "@types/node": "^22.8.6",
