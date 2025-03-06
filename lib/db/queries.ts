@@ -58,6 +58,7 @@ export async function saveChat({
   title: string;
 }) {
   try {
+    console.log('Saving chat in database', id, userId, title);
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
