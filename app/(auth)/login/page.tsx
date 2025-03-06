@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useEffect, } from 'react';
-import { CivicAuthIframeContainer, useUser } from "@civic/auth/react";
+import { CivicAuthIframeContainer, useUser } from "@civic/auth-web3/react";
 
 export default function Page() {
   const router = useRouter();

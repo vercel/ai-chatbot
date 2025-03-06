@@ -1,4 +1,4 @@
-import type { User as CivicUser } from '@civic/auth';
+import type { User as CivicUser } from '@civic/auth-web3';
 
 // Ensure our user always has id and email
 interface CustomUserFields {

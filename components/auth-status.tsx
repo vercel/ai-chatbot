@@ -1,10 +1,10 @@
 'use client';
 
-import { useUser } from "@civic/auth/react";
+import { useUser } from "@civic/auth-web3/react";
 import type { User } from '@/lib/types/auth';
 
 export function AuthStatus() {
-  const { user, signIn, signOut } = useUser<User>();
+  const { user, signIn, signOut } = useUser();
 
   if (!user) {
     return (

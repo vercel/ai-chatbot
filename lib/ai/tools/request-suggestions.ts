@@ -4,7 +4,7 @@ import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
 import { Suggestion } from '@/lib/db/schema';
 import { generateUUID } from '@/lib/utils';
 import { myProvider } from '../models';
-import { User } from '@civic/auth';
+import { User } from '@civic/auth-web3';
 
 interface RequestSuggestionsProps {
   user: User;

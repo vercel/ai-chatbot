@@ -1,4 +1,4 @@
-import { authMiddleware } from '@civic/auth/nextjs/middleware';
+import { authMiddleware } from '@civic/auth-web3/nextjs/middleware';
 
 export default authMiddleware();
 

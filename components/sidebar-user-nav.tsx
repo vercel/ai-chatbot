@@ -16,11 +16,11 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { User } from '@/lib/types/auth';
-import { useUser } from '@civic/auth/react';
+import { useUser } from '@civic/auth-web3/react';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, theme } = useTheme();
-  const { signOut } = useUser<User>();
+  const { signOut } = useUser();
 
   return (
     <SidebarMenu>

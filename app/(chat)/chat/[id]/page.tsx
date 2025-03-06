@@ -6,7 +6,7 @@ import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { convertToUIMessages } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import { getUser } from '@civic/auth/nextjs';
+import { getUser } from '@civic/auth-web3/nextjs';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

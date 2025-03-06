@@ -24,7 +24,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { getUser } from '@civic/auth/nextjs';
+import { getUser } from '@civic/auth-web3/nextjs';
 import { getTypedUser } from '@/lib/auth';
 
 export const maxDuration = 60;

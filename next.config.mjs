@@ -1,6 +1,6 @@
-import { createCivicAuthPlugin } from "@civic/auth/nextjs";
+import { createCivicAuthPlugin } from "@civic/auth-web3/nextjs";
 import { config } from 'dotenv';
-import { authMiddleware } from "@civic/auth/nextjs/middleware";
+import { authMiddleware } from "@civic/auth-web3/nextjs/middleware";
 
 // Load environment variables based on NODE_ENV
 const envFiles = [

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 
 import { ThemeProvider } from '@/components/theme-provider';
-import { CivicAuthProvider } from "@civic/auth/nextjs";
+import { CivicAuthProvider } from '@civic/auth-web3/nextjs'
 
 import './globals.css';
 

@@ -1,4 +1,4 @@
-import { getUser } from '@civic/auth/nextjs';
+import { getUser } from '@civic/auth-web3/nextjs';
 import { User, isValidUser } from './types/auth';
 import { user as userTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
