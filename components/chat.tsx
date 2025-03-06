@@ -58,43 +58,96 @@ export function Chat({
             return;
           }
 
+          console.log('Connecting to wallet');
           // Connect to wallet
           await provider.connect();
           console.log('Connected to wallet');
           
           // Create and send transaction
-          const connection = new Connection('https://api.mainnet-beta.solana.com');
+          // Use a more reliable RPC endpoint
+          const connection = new Connection(
+            'https://solana-mainnet.g.alchemy.com/v2/demo',
+            'confirmed'
+          );
           
           // Decode the transaction data
           const serializedTransaction = Buffer.from(swapDetails.transaction_data, 'base64');
           
+          console.log('Serialized transaction', serializedTransaction);
+
           // Use the correct deserialization method based on transaction version
           let transaction;
           try {
             // First try to deserialize as a legacy transaction
             transaction = Transaction.from(serializedTransaction);
+            console.log('Transaction deserialized as legacy transaction');
+            
+            // Update the blockhash only
+            const { blockhash } = await connection.getLatestBlockhash();
+            transaction.recentBlockhash = blockhash;
+            
+            // Log the transaction details for debugging
+            console.log('Transaction instructions:', transaction.instructions.map(inst => ({
+              programId: inst.programId.toString(),
+              dataLength: inst.data.length
+            })));
+            
           } catch (error) {
             console.log('Error deserializing transaction:', error);
             // If that fails, try to deserialize as a versioned transaction
             const { VersionedTransaction } = await import('@solana/web3.js');
             transaction = VersionedTransaction.deserialize(serializedTransaction);
+            console.log('Transaction deserialized as versioned transaction');
+            
+            // For versioned transactions, we need to update the blockhash differently
+            const { blockhash } = await connection.getLatestBlockhash();
+            const messageV0 = transaction.message;
+            messageV0.recentBlockhash = blockhash;
           }
 
           // Sign and send transaction
+          console.log('Signing transaction with updated blockhash...');
           const signed = await provider.signTransaction(transaction);
+          console.log('Transaction signed, sending to network...');
+          
           const signature = await connection.sendRawTransaction(
             signed instanceof Transaction ? 
               signed.serialize() : 
               signed.serialize()
           );
           
+          console.log('Transaction sent, signature:', signature);
+          
           // Wait for confirmation
+          console.log('Waiting for confirmation...');
           await connection.confirmTransaction(signature);
           
           console.log('Transaction completed:', signature);
+
+          // Display success message with transaction hash
+          toast.success(
+            <div>
+              Transaction completed!
+              <div className="mt-2 text-xs break-all">
+                <a 
+                  href={`https://solscan.io/tx/${signature}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  {signature}
+                </a>
+              </div>
+            </div>,
+            {
+              duration: 10000, // Show for 10 seconds
+            }
+          );
+
           setSwapDetails(null);
         } catch (error) {
           console.error('Transaction failed:', error);
+          toast.error('Transaction failed: ' + (error instanceof Error ? error.message : String(error)));
           setSwapDetails(null);
         }
       };
