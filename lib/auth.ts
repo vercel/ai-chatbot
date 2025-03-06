@@ -21,8 +21,25 @@ export async function getTypedUser(): Promise<User | null> {
         id: civicUser.id,
         email: civicUser.email,
       });
+      
+      // Verify the user was created and get the database record
+      const [verifiedUser] = await getDbUser(civicUser.email);
+      if (verifiedUser) {
+        // Return the civic user but with the database ID
+        return {
+          ...civicUser,
+          id: verifiedUser.id
+        };
+      }
+    } else {
+      // Return the civic user but with the database ID
+      return {
+        ...civicUser,
+        id: dbUser.id
+      };
     }
     
+    // Fallback to original civic user if database operations failed
     return civicUser;
   } catch (error) {
     console.error('DB Error:', error); // Debug log
