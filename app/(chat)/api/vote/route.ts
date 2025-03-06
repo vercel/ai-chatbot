@@ -54,7 +54,7 @@ export async function PATCH(request: Request) {
     return new Response('Chat not found', { status: 404 });
   }
 
-  if (chat.userId !== session.user.id) {
+  if (chat.userId !== user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
