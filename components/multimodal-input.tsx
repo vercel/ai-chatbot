@@ -206,6 +206,7 @@ function PureMultimodalInput({
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
         multiple
+        accept="image/jpeg,image/png"
         onChange={handleFileChange}
         tabIndex={-1}
       />
