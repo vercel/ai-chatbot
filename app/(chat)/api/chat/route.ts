@@ -22,6 +22,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { getUserProfile } from '@/lib/ai/tools/get-user-profile';
 import { getUser } from '@civic/auth-web3/nextjs';
 import { getTypedUser } from '@/lib/auth';
 import { isProductionEnvironment } from '@/lib/constants';
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'getUserProfile',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -95,6 +97,10 @@ export async function POST(request: Request) {
             createDocument: createDocument({ user, dataStream }),
             updateDocument: updateDocument({ user, dataStream }),
             requestSuggestions: requestSuggestions({
+              user,
+              dataStream,
+            }),
+            getUserProfile: getUserProfile({
               user,
               dataStream,
             }),
