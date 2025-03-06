@@ -11,6 +11,8 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  createUser,
+  getUser as getDbUser,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -48,6 +50,22 @@ export async function POST(request: Request) {
   if (!user || !user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
+
+    // Ensure the user exists in the database
+    try {
+      const [dbUser] = await getDbUser(user.email);
+      
+      if (!dbUser) {
+        console.log('Creating new user in DB from chat route:', user.id);
+        await createUser({
+          id: user.id,
+          email: user.email,
+        });
+      }
+    } catch (error) {
+      console.error('Error checking/creating user in database from chat route:', error);
+      return new Response('Error creating user', { status: 500 });
+    }
 
     const userMessage = getMostRecentUserMessage(messages);
 
