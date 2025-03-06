@@ -65,7 +65,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Toaster position="top-center" />
-          <CivicAuthProvider iframeMode={"embedded"} displayMode='redirect' >
+          <CivicAuthProvider iframeMode={"embedded"} >
             {children}
           </CivicAuthProvider>
         </ThemeProvider>
