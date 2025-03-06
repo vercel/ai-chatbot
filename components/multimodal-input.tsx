@@ -192,6 +192,60 @@ function PureMultimodalInput({
     },
     [setAttachments],
   );
+  
+  const handlePaste = useCallback(
+    async (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      const imageItems = Array.from(items).filter((item) =>
+        item.type.startsWith('image/'),
+      );
+
+      if (imageItems.length === 0) return;
+
+      // Prevent default paste behavior for images
+      event.preventDefault();
+
+      setUploadQueue((prev) => [...prev, 'Pasted image']);
+
+      try {
+        const uploadPromises = imageItems.map(async (item) => {
+          const file = item.getAsFile();
+          if (!file) return;
+          return uploadFile(file);
+        });
+
+        const uploadedAttachments = await Promise.all(uploadPromises);
+        const successfullyUploadedAttachments = uploadedAttachments.filter(
+          (attachment) =>
+            attachment !== undefined &&
+            attachment.url !== undefined &&
+            attachment.contentType !== undefined,
+        );
+
+        setAttachments((curr) => [
+          ...curr,
+          ...(successfullyUploadedAttachments as Attachment[]),
+        ]);
+      } catch (error) {
+        console.error('Error uploading pasted images:', error);
+        toast.error('Failed to upload pasted image(s)');
+      } finally {
+        setUploadQueue([]);
+      }
+    },
+    [setAttachments],
+  );
+
+  // Add paste event listener to textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.addEventListener('paste', handlePaste);
+    return () => textarea.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
 
   return (
     <div className="relative w-full flex flex-col gap-4">
