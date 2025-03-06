@@ -20,7 +20,7 @@
   "dependencies": {
     "@ai-sdk/fireworks": "^0.1.8",
     "@ai-sdk/openai": "1.1.9",
-    "@civic/auth": "^0.2.5",
+    "@civic/auth": "/Users/tyroneavnit/Projects/civic-auth/packages/civic-auth-client/civic-auth-0.3.1-tyrone.1.tgz",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",

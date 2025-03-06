@@ -1,5 +1,6 @@
 import { createCivicAuthPlugin } from "@civic/auth/nextjs";
 import { config } from 'dotenv';
+import { authMiddleware } from "@civic/auth/nextjs/middleware";
 
 // Load environment variables based on NODE_ENV
 const envFiles = [
@@ -39,7 +40,6 @@ const withCivicAuth = createCivicAuthPlugin({
   clientId,
   loginUrl: '/login',
   redirectUrl: '/',
-  include: ['/', '/chat', '/chat/*', '/api/*'], // Add include patterns for all protected routes
 });
 
 export default withCivicAuth(nextConfig);

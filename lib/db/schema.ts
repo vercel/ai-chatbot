@@ -12,8 +12,8 @@ import {
 } from 'drizzle-orm/pg-core';
 import { blockKinds } from '../blocks/server';
 
-export const user = pgTable('user', {
-  id: text('id').primaryKey(),
+export const user = pgTable('User', {
+  id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

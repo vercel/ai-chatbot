@@ -1,6 +1,5 @@
 import { getUser } from '@civic/auth/nextjs';
 import { User, isValidUser } from './types/auth';
-import { db } from '@/lib/db/queries';
 import { user as userTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createUser, getUser as getDbUser } from './db/queries';
@@ -14,15 +13,11 @@ export async function getTypedUser(): Promise<User | null> {
   }
 
   try {
-    const [dbUser] = await db
-      .select()
-      .from(userTable)
-      .where(eq(userTable.id, civicUser.id))
-      .limit(1);
+    const [dbUser] = await getDbUser(civicUser.email);
 
     if (!dbUser) {
       console.log('Creating new user in DB:', civicUser.id); // Debug log
-      await db.insert(userTable).values({
+      await createUser({
         id: civicUser.id,
         email: civicUser.email,
       });
