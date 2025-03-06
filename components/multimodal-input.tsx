@@ -67,6 +67,7 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -253,6 +254,10 @@ function PureMultimodalInput({
           ) {
             event.preventDefault();
 
+            if (isTyping) {
+              return;
+            }
+
             if (isLoading) {
               toast.error('Please wait for the model to finish its response!');
             } else {
@@ -260,6 +265,8 @@ function PureMultimodalInput({
             }
           }
         }}
+        onCompositionStart={() => setIsTyping(true)}
+        onCompositionEnd={() => setIsTyping(false)}
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
