@@ -195,6 +195,10 @@ export function Chat({
   const [prevMessagesLength, setPrevMessagesLength] = useState(
     initialMessages.length
   );
+  // Track processed message IDs to prevent infinite loops
+  const [processedSwapMessageIds, setProcessedSwapMessageIds] = useState(
+    new Set()
+  );
 
   // Process messages for swap operations
   useEffect(() => {
@@ -205,12 +209,18 @@ export function Chat({
     }
 
     const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || lastMessage.role !== "assistant") {
+    if (
+      !lastMessage ||
+      !lastMessage.id ||
+      lastMessage.role !== "assistant" ||
+      processedSwapMessageIds.has(lastMessage.id)
+    ) {
       setPrevMessagesLength(messages.length);
       return;
     }
 
     console.log("Processing new AI message:", lastMessage.content);
+
     try {
       // First try standard JSON parsing
       let content;
@@ -246,7 +256,32 @@ export function Chat({
         typeof content.input_amount === "number"
       ) {
         console.log("Received swap operation:", content);
-        setSwapDetails(content); // This will trigger the wallet popup
+
+        // Create the user-friendly message
+        const userFriendlyContent =
+          "Your transaction is being prepared. Please review and sign with your wallet.\n\nTransaction details:\n```" +
+          JSON.stringify(content) +
+          "```";
+
+        // Update the message in state for immediate UI update
+        const updatedMessages = [...messages];
+        updatedMessages[updatedMessages.length - 1] = {
+          ...lastMessage,
+          content: userFriendlyContent,
+        };
+        setMessages(updatedMessages);
+
+        // Mark as processed to prevent infinite loops
+        if (lastMessage.id) {
+          setProcessedSwapMessageIds((prev) => {
+            const newSet = new Set(prev);
+            newSet.add(lastMessage.id);
+            return newSet;
+          });
+        }
+
+        // Set swap details to trigger wallet transaction
+        setSwapDetails(content);
       } else {
         console.log("Not a swap operation");
       }
@@ -261,7 +296,13 @@ export function Chat({
     }
 
     mutate("/api/history");
-  }, [messages, mutate]);
+  }, [
+    messages,
+    mutate,
+    prevMessagesLength,
+    setMessages,
+    processedSwapMessageIds,
+  ]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     `/api/vote?chatId=${id}`,
