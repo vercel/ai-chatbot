@@ -247,7 +247,7 @@ function PureMultimodalInput({
         autoFocus
         onKeyDown={(event) => {
           if (
-            event.key === "Enter" &&
+            event.key === 'Enter' &&
             !event.shiftKey &&
             !event.nativeEvent.isComposing
           ) {

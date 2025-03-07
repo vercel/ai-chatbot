@@ -10,7 +10,7 @@ import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
+import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 
@@ -54,8 +54,10 @@ export function Chat({
     },
   });
 
+  const hasResponsesToVoteOn = messages.some((m) => m.role === 'assistant');
+
   const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
+    hasResponsesToVoteOn ? `/api/vote?chatId=${id}` : null,
     fetcher,
   );
 

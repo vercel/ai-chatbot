@@ -1,4 +1,8 @@
-import { CoreMessage, FinishReason, simulateReadableStream } from 'ai';
+import {
+  type CoreMessage,
+  type FinishReason,
+  simulateReadableStream,
+} from 'ai';
 import { MockLanguageModelV1 } from 'ai/test';
 
 interface TextDeltaChunk {
