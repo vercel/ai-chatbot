@@ -41,6 +41,7 @@ export const message = pgTable('Message', {
   role: varchar('role').notNull(),
   content: json('content').notNull(),
   createdAt: timestamp('createdAt').notNull(),
+  isCronMessage: boolean('isCronMessage').default(false),
 });
 
 export type Message = InferSelectModel<typeof message>;
@@ -113,3 +114,5 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+

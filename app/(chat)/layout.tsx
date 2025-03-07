@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 import { auth } from '../(auth)/auth';
 import Script from 'next/script';
+import { setupCronJobs } from '@/lib/cron';
 
 export const experimental_ppr = true;
 
@@ -13,6 +14,9 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
+
+  // Setup cron jobs at app initialization
+  setupCronJobs();
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
   const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
 

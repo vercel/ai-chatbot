@@ -53,11 +53,15 @@ docker run --name my_postgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypas
 ```
 add docker url to .env and env.local file
 ```bash
-DATABASE_URL=postgresql://myuser:mypassword@localhost:5432/mydatabase
+POSTGRES_URL=postgresql://myuser:mypassword@localhost:5432/mydatabase
 ```
+
+go inside user table in postgres and get the user id, this is important for the cron job. add the following to the env file
+ADMIN_USER_ID=***
 
 ```bash
 pnpm install
+pnpm db:generate
 pnpm db:migrate
 pnpm dev
 ```
