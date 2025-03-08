@@ -125,6 +125,7 @@ export function convertToUIMessages(
       content: textContent,
       reasoning,
       toolInvocations,
+      createdAt: message.createdAt ? new Date(message.createdAt) : undefined,
     });
 
     return chatMessages;
