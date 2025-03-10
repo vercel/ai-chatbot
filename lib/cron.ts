@@ -3,7 +3,15 @@ import { db } from './db/queries';
 import { chat } from './db/schema';
 import { eq } from 'drizzle-orm'; // Import eq from drizzle-orm
 
+let cronJobInitialized = false;
+
 export async function setupCronJobs(userId: string) {
+    // Skip if cron job is already initialized
+    if (cronJobInitialized) {
+        console.log('Cron jobs already initialized, skipping...');
+        return;
+    }
+    
     // First, ensure we have a system chat
     let systemChatId: string;
     
@@ -39,8 +47,8 @@ export async function setupCronJobs(userId: string) {
             const { saveMessages } = await import('./db/queries');
             const { generateUUID } = await import('./utils');
             
-            // Make a direct fetch request to your Galadriel endpoint
-            const response = await fetch('http://localhost:8000/chat/completions', {
+            const baseURL = process.env.GALADRIEL_BASE_URL ?? 'http://localhost:8000';
+            const response = await fetch(`${baseURL}/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -90,21 +98,24 @@ export async function setupCronJobs(userId: string) {
                 }
             }
             
-            if (messageContent) {
-                // Save the message to your database using the system chat ID
-                await saveMessages({
-                    messages: [{
-                        id: generateUUID(),
-                        chatId: systemChatId, // Use the system chat ID
-                        role: 'assistant',
-                        content: messageContent,
-                        createdAt: new Date(),
-                        isCronMessage: true
-                    }]
-                });
-                
-                console.log('Cron message saved successfully');
+            if (!messageContent || messageContent.trim() === '' || messageContent === ' ') {
+                console.log('Message content is empty:', messageContent);
+                return;
             }
+            
+            // Save the message to your database using the system chat ID
+            await saveMessages({
+                messages: [{
+                    id: generateUUID(),
+                    chatId: systemChatId, // Use the system chat ID
+                    role: 'assistant',
+                    content: messageContent,
+                    createdAt: new Date(),
+                    isCronMessage: true
+                }]
+            });
+            
+            console.log('Cron message saved successfully');
 
             console.log('Cron job completed successfully.');
         } catch (error) {
@@ -112,5 +123,7 @@ export async function setupCronJobs(userId: string) {
         }
     });
 
+    // Mark as initialized
+    cronJobInitialized = true;
     console.log('Cron jobs set up.');
 }
