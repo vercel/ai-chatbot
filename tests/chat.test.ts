@@ -53,6 +53,7 @@ test.describe('chat activity', () => {
 
   test('stop generation during submission', async () => {
     await chatPage.sendUserMessage('why is grass green?');
+    await expect(chatPage.stopButton).toBeVisible();
     await chatPage.stopButton.click();
     await expect(chatPage.sendButton).toBeVisible();
   });
