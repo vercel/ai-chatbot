@@ -90,12 +90,18 @@ export async function POST(request: Request) {
           }),
         },
         onFinish: async ({ response, reasoning }) => {
+          console.log('Provider response:', {
+            messages: response.messages,
+            reasoning
+          });
+
           if (session.user?.id) {
             try {
               const sanitizedResponseMessages = sanitizeResponseMessages({
                 messages: response.messages,
                 reasoning,
               });
+              console.log('Sanitized messages:', sanitizedResponseMessages);
               await saveMessages({
                 messages: sanitizedResponseMessages.map((message) => {
                   return {
@@ -109,7 +115,7 @@ export async function POST(request: Request) {
                 }),
               });
             } catch (error) {
-              console.error('Failed to save chat');
+              console.error('Failed to save chat:', error);
             }
           }
         },
@@ -121,6 +127,7 @@ export async function POST(request: Request) {
 
       result.consumeStream();
 
+      console.log('Starting stream merge');
       result.mergeIntoDataStream(dataStream, {
         sendReasoning: true,
       });
