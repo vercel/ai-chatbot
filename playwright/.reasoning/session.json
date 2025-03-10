@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "authjs.csrf-token",
-      "value": "902465a3049e371cd8a982da769a22223cdada405fa66d77d57f0f826314adad%7C5d9d9e3245a4ba9ceff8d4cf3b6a269bcd1674225973494be4676a581e7a0bdf",
+      "value": "4b0f0d94bed023f82f4446bdb931b065b7ba676e5c032cbddcd909075979cbd3%7C85f169861fc314a89043680312b51d113409e6576d1bd2dadce763ff6c396879",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -21,22 +21,22 @@
       "sameSite": "Lax"
     },
     {
+      "name": "authjs.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiMEVLX1VOYjlQS1VmZmxLc0JEbHBka01nS3J2emg3TTV0Z3lmQW1ZVTVoTmt1VTR2cnFOWXNGOU9tVmRQM25mX1c0TVpRdTJLOGM2NDdxV3RfazNRZEEifQ..yPoYLqfrvUBrzYnpkmgdxQ.wLDTdkkT8AQ2B7oNG4DycQh7Q7gW-XWLGB1as7w-YhtXeFk11VhM5mfOJe92Mkr8yFbAA85hGJGC_HMWHII1g1AGKIv7xRGaWpVQ4Bt4GI8MZsrULO0eVs6GCPWFawSBr8v7gruEfApij2y8H8nPD2se4Xo1UfQeMVWLZKPIkGgsDm2B6W2-R6DfFUMs2ULpmyNJWKkWv1mKV97TO4y3YlEfo1Knto4_XA5xZmTUNcA50dZxaBo5E7sRWOEt3YD4EfpvvCaqpeNoG0uVPsdixHTNCdnMHOawGc4TZS6r9dQ.D0POaJUfxiGT7PTbQX3abuzpBBO19HM0adcKbrch2EA",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1744170257.26343,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
       "name": "chat-model",
       "value": "chat-model-reasoning",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
       "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "authjs.session-token",
-      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiMEVLX1VOYjlQS1VmZmxLc0JEbHBka01nS3J2emg3TTV0Z3lmQW1ZVTVoTmt1VTR2cnFOWXNGOU9tVmRQM25mX1c0TVpRdTJLOGM2NDdxV3RfazNRZEEifQ..4OgZITDTuq0CRn_CFSlbgA.Q7_woBRWLWbMPXGbzez1JMiDaU5EXs3Y-fV98ilniN7GrsSh5wDcWplLdWotyYUdGQL3e6AaYmUgKpxdkZwqCT9x55YOpDlGG5jLxIyEE3WLTt5yUbnb6B-M9cQZxyT7Q4mumaY-Ddi1wm2Ob8gRSNi-L61FjitxHY2tG2hjL34dKf-yT-h-jo0mOuDdoVX5HJQplOG6widji2i-a8M8if9VmXK8E2EqMMxM4nQHEscyakF7-K2Qq4J77lA39221VNSnHi-mGmh8f5QART0HK6LrjKqB6s0324OYQvj_aOY.q8fj6bHRYgVE1el9hTnW7L07A6xZi8oie9gy0-24e4k",
-      "domain": "localhost",
-      "path": "/",
-      "expires": 1744154980.040832,
-      "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
     }
