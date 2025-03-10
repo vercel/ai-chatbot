@@ -102,8 +102,8 @@ export function Chat({
       }
     };
     
-    // Check every 2 minutes
-    const interval = setInterval(checkForCronMessages, 120000);
+    // Check every 30 seconds
+    const interval = setInterval(checkForCronMessages, 30000);
     return () => clearInterval(interval);
   }, [id, messages, isReadonly, lastCronCheck]);
 
