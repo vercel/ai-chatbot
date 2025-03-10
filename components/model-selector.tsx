@@ -39,7 +39,11 @@ export function ModelSelector({
           className,
         )}
       >
-        <Button variant="outline" className="md:px-2 md:h-[34px]">
+        <Button
+          data-testid="model-selector"
+          variant="outline"
+          className="md:px-2 md:h-[34px]"
+        >
           {selectedChatModel?.name}
           <ChevronDownIcon />
         </Button>
@@ -50,6 +54,7 @@ export function ModelSelector({
 
           return (
             <DropdownMenuItem
+              data-testid={`model-selector-item-${id}`}
               key={id}
               onSelect={() => {
                 setOpen(false);
@@ -59,19 +64,24 @@ export function ModelSelector({
                   saveChatModelAsCookie(id);
                 });
               }}
-              className="gap-4 group/item flex flex-row justify-between items-center"
               data-active={id === optimisticModelId}
+              asChild
             >
-              <div className="flex flex-col gap-1 items-start">
-                <div>{chatModel.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {chatModel.description}
+              <button
+                type="button"
+                className="gap-4 group/item flex flex-row justify-between items-center w-full"
+              >
+                <div className="flex flex-col gap-1 items-start">
+                  <div>{chatModel.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {chatModel.description}
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                <CheckCircleFillIcon />
-              </div>
+                <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+                  <CheckCircleFillIcon />
+                </div>
+              </button>
             </DropdownMenuItem>
           );
         })}

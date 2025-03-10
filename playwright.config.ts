@@ -49,19 +49,38 @@ export default defineConfig({
     timeout: 30000,
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects */
   projects: [
     {
-      name: 'setup',
-      testMatch: /.*\.setup\.ts/,
+      name: 'setup:auth',
+      testMatch: /auth.setup.ts/,
     },
     {
-      name: 'chromium',
+      name: 'setup:reasoning',
+      testMatch: /reasoning.setup.ts/,
+      dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json',
+        storageState: 'playwright/.auth/session.json',
       },
-      dependencies: ['setup'],
+    },
+    {
+      name: 'chat',
+      testMatch: /chat.test.ts/,
+      dependencies: ['setup:auth'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/session.json',
+      },
+    },
+    {
+      name: 'reasoning',
+      testMatch: /reasoning.test.ts/,
+      dependencies: ['setup:reasoning'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.reasoning/session.json',
+      },
     },
 
     // {
