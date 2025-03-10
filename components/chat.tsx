@@ -2,7 +2,7 @@
 
 import type { Attachment, Message } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -13,6 +13,7 @@ import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
+import { ChatSearch } from '@/components/chat-search';
 
 export function Chat({
   id,
@@ -27,6 +28,7 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { mutate } = useSWRConfig();
 
   const {
@@ -62,6 +64,19 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Open search modal on CMD + k or CTRL + k
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsSearchOpen((prevState) => !prevState);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -70,6 +85,7 @@ export function Chat({
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
+          setIsSearchOpen={setIsSearchOpen}
         />
 
         <Messages
@@ -118,6 +134,10 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
       />
+
+      {isSearchOpen ? (
+        <ChatSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+      ) : null}
     </>
   );
 }

@@ -12,17 +12,20 @@ import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { Search } from 'lucide-react';
 
 function PureChatHeader({
   chatId,
   selectedModelId,
   selectedVisibilityType,
   isReadonly,
+  setIsSearchOpen,
 }: {
   chatId: string;
   selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  setIsSearchOpen: (open: boolean) => void;
 }) {
   const router = useRouter();
   const { open } = useSidebar();
@@ -43,6 +46,7 @@ function PureChatHeader({
                 router.push('/');
                 router.refresh();
               }}
+              aria-label="New Chat"
             >
               <PlusIcon />
               <span className="md:sr-only">New Chat</span>
@@ -51,6 +55,24 @@ function PureChatHeader({
           <TooltipContent>New Chat</TooltipContent>
         </Tooltip>
       )}
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            className="order-1 md:px-2 md:h-fit md:ml-0"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search"
+          >
+            <Search />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Search (
+          {navigator?.userAgent?.toLowerCase().includes("mac") ? "⌘" : "Ctrl"} +
+          K)
+        </TooltipContent>
+      </Tooltip>
 
       {!isReadonly && (
         <ModelSelector
