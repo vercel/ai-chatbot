@@ -16,8 +16,10 @@ export default async function Layout({
 }) {
 
   // Setup cron jobs at app initialization
-  setupCronJobs();
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
+  if (session?.user?.id) {
+    setupCronJobs(session.user.id);
+  }
   const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
 
   return (

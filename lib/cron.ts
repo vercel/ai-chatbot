@@ -3,7 +3,7 @@ import { db } from './db/queries';
 import { chat } from './db/schema';
 import { eq } from 'drizzle-orm'; // Import eq from drizzle-orm
 
-export async function setupCronJobs() {
+export async function setupCronJobs(userId: string) {
     // First, ensure we have a system chat
     let systemChatId: string;
     
@@ -18,17 +18,11 @@ export async function setupCronJobs() {
             const { generateUUID } = await import('./utils');
             systemChatId = generateUUID();
             
-            // Create a system user first or use an existing admin user ID
-            const adminUserId = process.env.ADMIN_USER_ID;
-            if (!adminUserId) {
-                throw new Error('ADMIN_USER_ID environment variable is required for system notifications');
-            }
-            
             await db.insert(chat).values({
                 id: systemChatId,
                 createdAt: new Date(),
                 title: '[SYSTEM_NOTIFICATIONS]',
-                userId: adminUserId,
+                userId: userId,
                 visibility: 'public' // Make it public so all users can see it
             });
         }
