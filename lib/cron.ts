@@ -37,7 +37,7 @@ export async function setupCronJobs() {
         return; // Exit if we can't set up the system chat
     }
 
-    cron.schedule('*/30 * * * * *', async () => {
+    cron.schedule('*/2 * * * *', async () => {
         console.log('Running cron job...');
 
         try {
