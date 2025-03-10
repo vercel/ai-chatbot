@@ -51,36 +51,45 @@ export async function POST(request: Request) {
     messages: [{ ...userMessage, createdAt: new Date(), chatId: id }]
   })
 
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL,
-    apiKey: process.env.LANGGRAPH_API_KEY
-  })
+  try {
+    const client = new Client({
+      apiUrl: process.env.LANGGRAPH_API_URL,
+      apiKey: process.env.LANGGRAPH_API_KEY
+    })
 
-  // get default assistant
-  const assistants = await client.assistants.search()
-  //console.log(assistants)
-  let assistant = assistants.find((a) => a.graph_id === 'researcher')
-  if (!assistant) {
-    assistant = await client.assistants.create({ graphId: 'researcher' })
-    // throw new Error('No assistant found')
-  }
-  // create thread
-  const thread = await client.threads.create()
+    console.log('client', client)
 
-  const input = {
-    messages: [userMessage]
-  }
-
-  const streamResponse = client.runs.stream(
-    thread['thread_id'],
-    assistant['assistant_id'],
-    {
-      input,
-      streamMode: 'messages'
+    // get default assistant
+    const assistants = await client.assistants.search()
+    //console.log(assistants)
+    let assistant = assistants.find((a) => a.graph_id === 'researcher')
+    if (!assistant) {
+      assistant = await client.assistants.create({ graphId: 'researcher' })
+      // throw new Error('No assistant found')
     }
-  )
+    // create thread
+    const thread = await client.threads.create()
 
-  return LangGraphAdapter.toDataStreamResponse(streamResponse)
+    const input = {
+      messages: [userMessage]
+    }
+
+    const streamResponse = client.runs.stream(
+      thread['thread_id'],
+      assistant['assistant_id'],
+      {
+        input,
+        streamMode: 'messages'
+      }
+    )
+
+    return LangGraphAdapter.toDataStreamResponse(streamResponse)
+  } catch (error) {
+    console.error(error)
+    return new Response('An error occurred while processing your request', {
+      status: 500
+    })
+  }
 }
 
 export async function DELETE(request: Request) {
