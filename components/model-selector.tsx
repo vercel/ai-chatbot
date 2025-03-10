@@ -67,7 +67,10 @@ export function ModelSelector({
               data-active={id === optimisticModelId}
               asChild
             >
-              <button className="gap-4 group/item flex flex-row justify-between items-center w-full">
+              <button
+                type="button"
+                className="gap-4 group/item flex flex-row justify-between items-center w-full"
+              >
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>
                   <div className="text-xs text-muted-foreground">
