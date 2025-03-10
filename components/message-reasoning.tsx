@@ -44,6 +44,7 @@ export function MessageReasoning({
         <div className="flex flex-row gap-2 items-center">
           <div className="font-medium">Reasoned for a few seconds</div>
           <button
+            data-testid="message-reasoning-toggle"
             type="button"
             className="cursor-pointer"
             onClick={() => {
@@ -58,6 +59,7 @@ export function MessageReasoning({
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
+            data-testid="message-reasoning"
             key="content"
             initial="collapsed"
             animate="expanded"

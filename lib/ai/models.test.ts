@@ -1,6 +1,11 @@
 import { CoreMessage, FinishReason, simulateReadableStream } from 'ai';
 import { MockLanguageModelV1 } from 'ai/test';
 
+interface ReasoningChunk {
+  type: 'reasoning';
+  textDelta: string;
+}
+
 interface TextDeltaChunk {
   type: 'text-delta';
   textDelta: string;
@@ -13,13 +18,71 @@ interface FinishChunk {
   usage: { completionTokens: number; promptTokens: number };
 }
 
-type Chunk = TextDeltaChunk | FinishChunk;
+type Chunk = TextDeltaChunk | ReasoningChunk | FinishChunk;
 
-const getResponseChunksByPrompt = (prompt: CoreMessage[]): Array<Chunk> => {
+const getResponseChunksByPrompt = (
+  prompt: CoreMessage[],
+  isReasoningEnabled: boolean = false,
+): Array<Chunk> => {
   const userMessage = prompt.at(-1);
 
   if (!userMessage) {
     throw new Error('No user message found');
+  }
+
+  if (isReasoningEnabled) {
+    if (
+      compareMessages(userMessage, {
+        role: 'user',
+        content: [{ type: 'text', text: 'why is the sky blue?' }],
+      })
+    ) {
+      return [
+        { type: 'reasoning', textDelta: 'the ' },
+        { type: 'reasoning', textDelta: 'sky ' },
+        { type: 'reasoning', textDelta: 'is ' },
+        { type: 'reasoning', textDelta: 'blue ' },
+        { type: 'reasoning', textDelta: 'because ' },
+        { type: 'reasoning', textDelta: 'of ' },
+        { type: 'reasoning', textDelta: 'rayleigh ' },
+        { type: 'reasoning', textDelta: 'scattering! ' },
+        { type: 'text-delta', textDelta: "it's " },
+        { type: 'text-delta', textDelta: 'just ' },
+        { type: 'text-delta', textDelta: 'blue ' },
+        { type: 'text-delta', textDelta: 'duh!' },
+        {
+          type: 'finish',
+          finishReason: 'stop',
+          logprobs: undefined,
+          usage: { completionTokens: 10, promptTokens: 3 },
+        },
+      ];
+    } else if (
+      compareMessages(userMessage, {
+        role: 'user',
+        content: [{ type: 'text', text: 'why is grass green?' }],
+      })
+    ) {
+      return [
+        { type: 'reasoning', textDelta: 'grass ' },
+        { type: 'reasoning', textDelta: 'is ' },
+        { type: 'reasoning', textDelta: 'green ' },
+        { type: 'reasoning', textDelta: 'because ' },
+        { type: 'reasoning', textDelta: 'of ' },
+        { type: 'reasoning', textDelta: 'chlorophyll ' },
+        { type: 'reasoning', textDelta: 'absorption! ' },
+        { type: 'text-delta', textDelta: "it's " },
+        { type: 'text-delta', textDelta: 'just ' },
+        { type: 'text-delta', textDelta: 'green ' },
+        { type: 'text-delta', textDelta: 'duh!' },
+        {
+          type: 'finish',
+          finishReason: 'stop',
+          logprobs: undefined,
+          usage: { completionTokens: 10, promptTokens: 3 },
+        },
+      ];
+    }
   }
 
   if (
@@ -135,17 +198,9 @@ export const reasoningModel = new MockLanguageModelV1({
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `Hello, world!`,
   }),
-  doStream: async () => ({
+  doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
-      chunks: [
-        { type: 'text-delta', textDelta: 'test' },
-        {
-          type: 'finish',
-          finishReason: 'stop',
-          logprobs: undefined,
-          usage: { completionTokens: 10, promptTokens: 3 },
-        },
-      ],
+      chunks: getResponseChunksByPrompt(prompt, true),
     }),
     rawCall: { rawPrompt: null, rawSettings: {} },
   }),
