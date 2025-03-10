@@ -9,16 +9,20 @@ import { setupCronJobs } from '@/lib/cron';
 
 export const experimental_ppr = true;
 
+// Initialize cron job once at server startup
+let cronInitialized = false;
+
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
 
-  // Setup cron jobs at app initialization
+  // Setup cron jobs at app initialization, but only once
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
-  if (session?.user?.id) {
-    setupCronJobs(session.user.id);
+  if (session?.user?.id && !cronInitialized) {
+    await setupCronJobs(session.user.id);
+    cronInitialized = true;
   }
   const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
 
