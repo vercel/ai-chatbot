@@ -6,10 +6,6 @@ export function compareMessages(
 ): boolean {
   if (firstMessage.role !== secondMessage.role) return false;
 
-  if (firstMessage.role === 'tool') {
-    console.log(JSON.stringify({ firstMessage, secondMessage }, null, 2));
-  }
-
   if (
     !Array.isArray(firstMessage.content) ||
     !Array.isArray(secondMessage.content)

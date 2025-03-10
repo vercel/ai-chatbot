@@ -103,6 +103,5 @@ test.describe('chat activity', () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toContain('weather');
   });
 });

@@ -19,14 +19,6 @@ interface ToolCallChunk {
   args: any;
 }
 
-interface ToolResultChunk {
-  type: 'tool-result';
-  toolCallId: string;
-  toolName: string;
-  args: any;
-  result: any;
-}
-
 interface FinishChunk {
   type: 'finish';
   finishReason: FinishReason;
@@ -34,12 +26,7 @@ interface FinishChunk {
   usage: { completionTokens: number; promptTokens: number };
 }
 
-type Chunk =
-  | TextDeltaChunk
-  | ReasoningChunk
-  | ToolCallChunk
-  | ToolResultChunk
-  | FinishChunk;
+type Chunk = TextDeltaChunk | ReasoningChunk | ToolCallChunk | FinishChunk;
 
 const getResponseChunksByPrompt = (
   prompt: CoreMessage[],
@@ -537,6 +524,124 @@ const getResponseChunksByPrompt = (
       {
         type: 'finish',
         finishReason: 'tool-calls',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (
+    compareMessages(recentMessage, {
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: "what's the weather in sf?",
+        },
+      ],
+    })
+  ) {
+    return [
+      {
+        type: 'tool-call',
+        toolCallId: 'call_456',
+        toolName: 'getWeather',
+        args: JSON.stringify({ latitude: 37.7749, longitude: -122.4194 }),
+      },
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (
+    compareMessages(recentMessage, {
+      role: 'tool',
+      content: [
+        {
+          type: 'tool-result',
+          toolCallId: 'call_456',
+          toolName: 'getWeather',
+          result: {
+            latitude: 37.763283,
+            longitude: -122.41286,
+            generationtime_ms: 0.06449222564697266,
+            utc_offset_seconds: -25200,
+            timezone: 'America/Los_Angeles',
+            timezone_abbreviation: 'GMT-7',
+            elevation: 18,
+            current_units: {
+              time: 'iso8601',
+              interval: 'seconds',
+              temperature_2m: '°C',
+            },
+            current: {
+              time: '2025-03-10T14:00',
+              interval: 900,
+              temperature_2m: 17,
+            },
+            daily_units: {
+              time: 'iso8601',
+              sunrise: 'iso8601',
+              sunset: 'iso8601',
+            },
+            daily: {
+              time: [
+                '2025-03-10',
+                '2025-03-11',
+                '2025-03-12',
+                '2025-03-13',
+                '2025-03-14',
+                '2025-03-15',
+                '2025-03-16',
+              ],
+              sunrise: [
+                '2025-03-10T07:27',
+                '2025-03-11T07:25',
+                '2025-03-12T07:24',
+                '2025-03-13T07:22',
+                '2025-03-14T07:21',
+                '2025-03-15T07:19',
+                '2025-03-16T07:18',
+              ],
+              sunset: [
+                '2025-03-10T19:12',
+                '2025-03-11T19:13',
+                '2025-03-12T19:14',
+                '2025-03-13T19:15',
+                '2025-03-14T19:16',
+                '2025-03-15T19:17',
+                '2025-03-16T19:17',
+              ],
+            },
+          },
+        },
+      ],
+    })
+  ) {
+    return [
+      { type: 'text-delta', textDelta: 'The ' },
+      { type: 'text-delta', textDelta: 'current ' },
+      { type: 'text-delta', textDelta: 'temperature ' },
+      { type: 'text-delta', textDelta: 'in ' },
+      { type: 'text-delta', textDelta: 'San ' },
+      { type: 'text-delta', textDelta: 'Francisco ' },
+      { type: 'text-delta', textDelta: 'is ' },
+      { type: 'text-delta', textDelta: '17°C. ' },
+      { type: 'text-delta', textDelta: 'If ' },
+      { type: 'text-delta', textDelta: 'you ' },
+      { type: 'text-delta', textDelta: 'need ' },
+      { type: 'text-delta', textDelta: 'more ' },
+      { type: 'text-delta', textDelta: 'details ' },
+      { type: 'text-delta', textDelta: 'or ' },
+      { type: 'text-delta', textDelta: 'a ' },
+      { type: 'text-delta', textDelta: 'forecast, ' },
+      { type: 'text-delta', textDelta: 'just ' },
+      { type: 'text-delta', textDelta: 'let ' },
+      { type: 'text-delta', textDelta: 'me ' },
+      { type: 'text-delta', textDelta: 'know!' },
+      {
+        type: 'finish',
+        finishReason: 'stop',
         logprobs: undefined,
         usage: { completionTokens: 10, promptTokens: 3 },
       },
