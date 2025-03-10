@@ -125,6 +125,9 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
+          onChunk: async ({ chunk }) => {
+            console.log(chunk);
+          },
         });
 
         result.consumeStream();

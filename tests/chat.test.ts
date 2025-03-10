@@ -97,4 +97,12 @@ test.describe('chat activity', () => {
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toBe('this painting is by monet!');
   });
+
+  test('call weather tool', async () => {
+    await chatPage.sendUserMessage("what's the weather in sf?");
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    expect(assistantMessage.content).toContain('weather');
+  });
 });

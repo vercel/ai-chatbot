@@ -65,6 +65,15 @@ export default defineConfig({
       },
     },
     {
+      name: 'setup:artifacts',
+      testMatch: /artifacts.setup.ts/,
+      dependencies: ['setup:auth'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/session.json',
+      },
+    },
+    {
       name: 'chat',
       testMatch: /chat.test.ts/,
       dependencies: ['setup:auth'],
@@ -80,6 +89,15 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.reasoning/session.json',
+      },
+    },
+    {
+      name: 'artifacts',
+      testMatch: /artifacts.test.ts/,
+      dependencies: ['setup:artifacts'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.artifacts/session.json',
       },
     },
 
