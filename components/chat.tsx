@@ -1,9 +1,10 @@
 'use client';
 
 import type { Attachment, Message } from 'ai';
-import { useChat } from "@ai-sdk/react";
-import { useState, useEffect } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import { useChat } from 'ai/react';
+import { useState } from 'react';
+import { useEffect, useRef } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
 import { Connection, Transaction } from "@solana/web3.js";
 
 import { ChatHeader } from "@/components/chat-header";
@@ -167,6 +168,9 @@ export function Chat({
     }
   }, [swapDetails]);
 
+  // Add state for tracking last cron check
+  const [lastCronCheck, setLastCronCheck] = useState<string>(new Date().toISOString());
+
   const {
     messages,
     setMessages,
@@ -311,6 +315,45 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+
+  // Poll for cron messages
+  useEffect(() => {
+    if (isReadonly) return;
+    
+    const checkForCronMessages = async () => {
+      try {
+        const response = await fetch(`/api/chat?lastChecked=${encodeURIComponent(lastCronCheck)}`);
+        
+        if (response.ok) {
+          const cronMessages = await response.json();
+          
+          if (cronMessages.length > 0) {
+            // Add cron messages to the chat
+            const formattedMessages = cronMessages.map((msg: {
+              id: string;
+              role: string;
+              content: string;
+              createdAt: string;
+            }) => ({
+              id: msg.id,
+              role: msg.role,
+              content: msg.content,
+              createdAt: msg.createdAt
+            }));
+            
+            setMessages([...messages, ...formattedMessages]);
+            setLastCronCheck(new Date().toISOString());
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for cron messages:', error);
+      }
+    };
+    
+    // Check every 30 seconds
+    const interval = setInterval(checkForCronMessages, 30000);
+    return () => clearInterval(interval);
+  }, [id, messages, isReadonly, lastCronCheck]);
 
   return (
     <>

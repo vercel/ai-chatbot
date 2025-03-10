@@ -26,6 +26,10 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 
+import { db } from '@/lib/db/queries';
+import { message } from '@/lib/db/schema';
+import { and, eq, gt } from 'drizzle-orm';
+
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -54,9 +58,8 @@ export async function POST(request: Request) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
     await saveChat({ id, userId: session.user.id, title });
   }
-
   await saveMessages({
-    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
+    messages: [{ ...userMessage, createdAt: new Date(), chatId: id, isCronMessage: null }],
   });
 
   return createDataStreamResponse({
@@ -98,15 +101,14 @@ export async function POST(request: Request) {
                 messages: response.messages,
                 reasoning,
               });
-
               console.log('Sanitized messages:', sanitizedResponseMessages);
-
               await saveMessages({
                 messages: sanitizedResponseMessages.map((message) => {
                   return {
                     id: message.id,
                     chatId: id,
                     role: message.role,
+                    isCronMessage: null,
                     content: message.content,
                     createdAt: new Date(),
                   };
@@ -175,5 +177,35 @@ export async function DELETE(request: Request) {
     return new Response('An error occurred while processing your request', {
       status: 500,
     });
+  }
+}
+
+export async function GET(request: Request) {
+  const session = await auth();
+  
+  if (!session || !session.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  
+  const { searchParams } = new URL(request.url);
+  const lastChecked = searchParams.get('lastChecked');
+  
+  try {
+    // Query for cron messages newer than lastChecked timestamp
+    const cronMessages = await db
+      .select()
+      .from(message)
+      .where(
+        and(
+          eq(message.isCronMessage, true),
+          lastChecked ? gt(message.createdAt, new Date(lastChecked)) : undefined
+        )
+      )
+      .orderBy(message.createdAt);
+    
+    return Response.json(cronMessages);
+  } catch (error) {
+    console.error('Error fetching cron messages:', error);
+    return new Response('Error fetching cron messages', { status: 500 });
   }
 }

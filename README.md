@@ -53,11 +53,12 @@ docker run --name my_postgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypas
 ```
 add docker url to .env and env.local file
 ```bash
-DATABASE_URL=postgresql://myuser:mypassword@localhost:5432/mydatabase
+POSTGRES_URL=postgresql://myuser:mypassword@localhost:5432/mydatabase
 ```
 
 ```bash
 pnpm install
+pnpm db:generate
 pnpm db:migrate
 pnpm dev
 ```
