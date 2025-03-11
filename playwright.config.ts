@@ -82,6 +82,15 @@ export default defineConfig({
         storageState: 'playwright/.reasoning/session.json',
       },
     },
+    {
+      name: 'artifacts',
+      testMatch: /artifacts.test.ts/,
+      dependencies: ['setup:auth'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/session.json',
+      },
+    },
 
     // {
     //   name: 'firefox',

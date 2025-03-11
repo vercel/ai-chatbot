@@ -1,4 +1,3 @@
-import { useAssistant } from '@ai-sdk/react';
 import { ChatPage } from './pages/chat';
 import { test, expect } from '@playwright/test';
 
@@ -11,20 +10,19 @@ test.describe('chat activity with reasoning', () => {
   });
 
   test('send user message and generate response with reasoning', async () => {
-    await chatPage.sendUserMessage('why is the sky blue?');
+    await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.waitForMessageGeneration();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-
-    expect(assistantMessage.content).toBe("it's just blue duh!");
+    expect(assistantMessage.content).toBe("It's just blue duh!");
 
     expect(assistantMessage.reasoning).toBe(
-      'the sky is blue because of rayleigh scattering!',
+      'The sky is blue because of rayleigh scattering!',
     );
   });
 
   test('toggle reasoning visibility', async () => {
-    await chatPage.sendUserMessage('why is the sky blue?');
+    await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.waitForMessageGeneration();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
@@ -40,7 +38,7 @@ test.describe('chat activity with reasoning', () => {
   });
 
   test('edit message and resubmit', async () => {
-    await chatPage.sendUserMessage('why is the sky blue?');
+    await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.waitForMessageGeneration();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
@@ -50,15 +48,15 @@ test.describe('chat activity with reasoning', () => {
 
     const userMessage = await chatPage.getRecentUserMessage();
 
-    await userMessage.edit('why is grass green?');
+    await userMessage.edit('Why is grass green?');
     await chatPage.waitForMessageGeneration();
 
     const updatedAssistantMessage = await chatPage.getRecentAssistantMessage();
 
-    expect(updatedAssistantMessage.content).toBe("it's just green duh!");
+    expect(updatedAssistantMessage.content).toBe("It's just green duh!");
 
     expect(updatedAssistantMessage.reasoning).toBe(
-      'grass is green because of chlorophyll absorption!',
+      'Grass is green because of chlorophyll absorption!',
     );
   });
 });
