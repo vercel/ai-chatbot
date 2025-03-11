@@ -11,7 +11,7 @@ test.describe('chat activity with reasoning', () => {
 
   test('send user message and generate response with reasoning', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.waitForMessageGeneration();
+    await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toBe("It's just blue duh!");
@@ -23,7 +23,7 @@ test.describe('chat activity with reasoning', () => {
 
   test('toggle reasoning visibility', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.waitForMessageGeneration();
+    await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     const reasoningElement =
@@ -39,7 +39,7 @@ test.describe('chat activity with reasoning', () => {
 
   test('edit message and resubmit', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.waitForMessageGeneration();
+    await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     const reasoningElement =
@@ -49,7 +49,7 @@ test.describe('chat activity with reasoning', () => {
     const userMessage = await chatPage.getRecentUserMessage();
 
     await userMessage.edit('Why is grass green?');
-    await chatPage.waitForMessageGeneration();
+    await chatPage.isGenerationComplete();
 
     const updatedAssistantMessage = await chatPage.getRecentAssistantMessage();
 

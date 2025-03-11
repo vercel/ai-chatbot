@@ -27,7 +27,6 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
-  index,
 }: {
   chatId: string;
   message: Message;
@@ -40,7 +39,6 @@ const PurePreviewMessage = ({
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
-  index: number;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
