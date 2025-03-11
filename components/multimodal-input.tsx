@@ -29,12 +29,13 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
+import { UseChatHelpers, UseChatOptions } from '@ai-sdk/react';
 
 function PureMultimodalInput({
   chatId,
   input,
   setInput,
-  isLoading,
+  status,
   stop,
   attachments,
   setAttachments,
@@ -45,24 +46,16 @@ function PureMultimodalInput({
   className,
 }: {
   chatId: string;
-  input: string;
-  setInput: (value: string) => void;
-  isLoading: boolean;
+  input: UseChatHelpers['input'];
+  setInput: UseChatHelpers['setInput'];
+  status: UseChatHelpers['status'];
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions,
-  ) => void;
+  append: UseChatHelpers['append'];
+  handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -253,7 +246,7 @@ function PureMultimodalInput({
           ) {
             event.preventDefault();
 
-            if (isLoading) {
+            if (status !== 'ready') {
               toast.error('Please wait for the model to finish its response!');
             } else {
               submitForm();
@@ -263,11 +256,11 @@ function PureMultimodalInput({
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {isLoading ? (
+        {status === 'submitted' ? (
           <StopButton stop={stop} setMessages={setMessages} />
         ) : (
           <SendButton
@@ -285,7 +278,7 @@ export const MultimodalInput = memo(
   PureMultimodalInput,
   (prevProps, nextProps) => {
     if (prevProps.input !== nextProps.input) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
 
     return true;
@@ -294,10 +287,10 @@ export const MultimodalInput = memo(
 
 function PureAttachmentsButton({
   fileInputRef,
-  isLoading,
+  status,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  isLoading: boolean;
+  status: UseChatHelpers['status'];
 }) {
   return (
     <Button
@@ -307,7 +300,7 @@ function PureAttachmentsButton({
         event.preventDefault();
         fileInputRef.current?.click();
       }}
-      disabled={isLoading}
+      disabled={status !== 'ready'}
       variant="ghost"
     >
       <PaperclipIcon size={14} />

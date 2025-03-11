@@ -36,7 +36,7 @@ export function Chat({
     input,
     setInput,
     append,
-    isLoading,
+    status,
     stop,
     reload,
   } = useChat({
@@ -74,7 +74,7 @@ export function Chat({
 
         <Messages
           chatId={id}
-          isLoading={isLoading}
+          status={status}
           votes={votes}
           messages={messages}
           setMessages={setMessages}
@@ -90,7 +90,7 @@ export function Chat({
               input={input}
               setInput={setInput}
               handleSubmit={handleSubmit}
-              isLoading={isLoading}
+              status={status}
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
@@ -107,7 +107,7 @@ export function Chat({
         input={input}
         setInput={setInput}
         handleSubmit={handleSubmit}
-        isLoading={isLoading}
+        status={status}
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}

@@ -179,15 +179,4 @@ export class ChatPage {
       },
     };
   }
-
-  async waitForMessageGeneration(timeout = 10000) {
-    await this.page.waitForFunction(
-      () => {
-        return document.querySelector('[data-testid="send-button"]') !== null;
-      },
-      { timeout },
-    );
-
-    await this.page.waitForTimeout(500);
-  }
 }
