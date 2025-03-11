@@ -269,6 +269,7 @@ function PureArtifact({
     <AnimatePresence>
       {artifact.isVisible && (
         <motion.div
+          data-testid="artifact"
           className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}

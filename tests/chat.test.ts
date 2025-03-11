@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
 import { ChatPage } from './pages/chat';
+import { test, expect } from '@playwright/test';
 
 test.describe('chat activity', () => {
   let chatPage: ChatPage;
@@ -10,19 +10,19 @@ test.describe('chat activity', () => {
   });
 
   test('send a user message and receive response', async () => {
-    await chatPage.sendUserMessage('why is grass green?');
+    await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toContain("it's just green duh!");
+    expect(assistantMessage.content).toContain("It's just green duh!");
   });
 
   test('redirect to /chat/:id after submitting message', async () => {
-    await chatPage.sendUserMessage('why is grass green?');
+    await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toContain("it's just green duh!");
+    expect(assistantMessage.content).toContain("It's just green duh!");
     await chatPage.hasChatIdInUrl();
   });
 
@@ -32,7 +32,7 @@ test.describe('chat activity', () => {
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toContain(
-      'with next.js you can ship fast!',
+      'With Next.js, you can ship fast!',
     );
   });
 
@@ -40,7 +40,7 @@ test.describe('chat activity', () => {
     await expect(chatPage.sendButton).toBeVisible();
     await expect(chatPage.sendButton).toBeDisabled();
 
-    await chatPage.sendUserMessage('why is grass green?');
+    await chatPage.sendUserMessage('Why is grass green?');
 
     await expect(chatPage.sendButton).not.toBeVisible();
     await expect(chatPage.stopButton).toBeVisible();
@@ -52,26 +52,26 @@ test.describe('chat activity', () => {
   });
 
   test('stop generation during submission', async () => {
-    await chatPage.sendUserMessage('why is grass green?');
+    await chatPage.sendUserMessage('Why is grass green?');
     await expect(chatPage.stopButton).toBeVisible();
     await chatPage.stopButton.click();
     await expect(chatPage.sendButton).toBeVisible();
   });
 
   test('edit user message and resubmit', async () => {
-    await chatPage.sendUserMessage('why is grass green?');
+    await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toContain("it's just green duh!");
+    expect(assistantMessage.content).toContain("It's just green duh!");
 
     const userMessage = await chatPage.getRecentUserMessage();
-    await userMessage.edit('why is the sky blue?');
+    await userMessage.edit('Why is the sky blue?');
 
     await chatPage.isGenerationComplete();
 
     const updatedAssistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(updatedAssistantMessage.content).toContain("it's just blue duh!");
+    expect(updatedAssistantMessage.content).toContain("It's just blue duh!");
   });
 
   test('hide suggested actions after sending message', async () => {
@@ -87,7 +87,7 @@ test.describe('chat activity', () => {
     await chatPage.isElementVisible('input-attachment-loader');
     await chatPage.isElementNotVisible('input-attachment-loader');
 
-    await chatPage.sendUserMessage('who painted this?');
+    await chatPage.sendUserMessage('Who painted this?');
 
     const userMessage = await chatPage.getRecentUserMessage();
     expect(userMessage.attachments).toHaveLength(1);
@@ -95,6 +95,47 @@ test.describe('chat activity', () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toBe('this painting is by monet!');
+    expect(assistantMessage.content).toBe('This painting is by Monet!');
+  });
+
+  test('call weather tool', async () => {
+    await chatPage.sendUserMessage("What's the weather in sf?");
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+
+    expect(assistantMessage.content).toBe(
+      'The current temperature in San Francisco is 17°C.',
+    );
+  });
+
+  test('upvote message', async () => {
+    await chatPage.sendUserMessage('Why is the sky blue?');
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    await assistantMessage.upvote();
+    await chatPage.isVoteComplete();
+  });
+
+  test('downvote message', async () => {
+    await chatPage.sendUserMessage('Why is the sky blue?');
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    await assistantMessage.downvote();
+    await chatPage.isVoteComplete();
+  });
+
+  test('update vote', async () => {
+    await chatPage.sendUserMessage('Why is the sky blue?');
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    await assistantMessage.upvote();
+    await chatPage.isVoteComplete();
+
+    await assistantMessage.downvote();
+    await chatPage.isVoteComplete();
   });
 });
