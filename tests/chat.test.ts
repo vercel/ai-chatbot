@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
 import { ChatPage } from './pages/chat';
+import { test, expect } from '@playwright/test';
 
 test.describe('chat activity', () => {
   let chatPage: ChatPage;
