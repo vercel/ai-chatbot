@@ -15,7 +15,6 @@ test.describe('chat activity with reasoning', () => {
     await chatPage.waitForMessageGeneration();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
-
     expect(assistantMessage.content).toBe("it's just blue duh!");
 
     expect(assistantMessage.reasoning).toBe(

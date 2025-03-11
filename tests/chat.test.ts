@@ -108,4 +108,34 @@ test.describe('chat activity', () => {
       'The current temperature in San Francisco is 17°C. If you need more details or a forecast, just let me know!',
     );
   });
+
+  test('upvote message', async () => {
+    await chatPage.sendUserMessage('why is the sky blue?');
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    await assistantMessage.upvote();
+    await chatPage.isVoteComplete();
+  });
+
+  test('downvote message', async () => {
+    await chatPage.sendUserMessage('why is the sky blue?');
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    await assistantMessage.downvote();
+    await chatPage.isVoteComplete();
+  });
+
+  test('update vote', async () => {
+    await chatPage.sendUserMessage('why is the sky blue?');
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    await assistantMessage.upvote();
+    await chatPage.isVoteComplete();
+
+    await assistantMessage.downvote();
+    await chatPage.isVoteComplete();
+  });
 });
