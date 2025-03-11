@@ -29,6 +29,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { db } from '@/lib/db/queries';
 import { message } from '@/lib/db/schema';
 import { and, eq, gt } from 'drizzle-orm';
+import { chat } from '@/lib/db/schema';
 
 export const maxDuration = 60;
 
@@ -189,21 +190,114 @@ export async function GET(request: Request) {
   
   const { searchParams } = new URL(request.url);
   const lastChecked = searchParams.get('lastChecked');
+  const systemChat = searchParams.get('systemChat') === 'true';
   
   try {
-    // Query for cron messages newer than lastChecked timestamp
-    const cronMessages = await db
-      .select()
-      .from(message)
-      .where(
-        and(
-          eq(message.isCronMessage, true),
-          lastChecked ? gt(message.createdAt, new Date(lastChecked)) : undefined
+    if (systemChat) {
+      // First, find the system chat ID
+      const systemChats = await db
+        .select()
+        .from(chat)
+        .where(
+          and(
+            eq(chat.title, '[RESEARCH AGENT]'),
+            eq(chat.userId, session.user.id as string)
+          )
+        );
+      
+      if (systemChats.length === 0) {
+        return Response.json([]);
+      }
+      
+      const systemChatId = systemChats[0].id;
+      
+      // Query for cron messages newer than lastChecked timestamp
+      // and only from the system notifications chat
+      const cronMessages = await db
+        .select()
+        .from(message)
+        .where(
+          and(
+            eq(message.chatId, systemChatId),
+            lastChecked ? gt(message.createdAt, new Date(lastChecked)) : undefined
+          )
         )
-      )
-      .orderBy(message.createdAt);
-    
-    return Response.json(cronMessages);
+        .orderBy(message.createdAt);
+      
+      // Process messages to ensure content is always a string
+      const processedMessages = cronMessages.map(msg => {
+        // If content is an object, stringify it
+        if (typeof msg.content === 'object' && msg.content !== null) {
+          try {
+            return {
+              ...msg,
+              content: JSON.stringify(msg.content, null, 2)
+            };
+          } catch (error) {
+            console.error('Error stringifying message content:', error);
+            return {
+              ...msg,
+              content: JSON.stringify(msg.content)
+            };
+          }
+        }
+        
+        // If content is not a string, convert it
+        if (typeof msg.content !== 'string') {
+          return {
+            ...msg,
+            content: String(msg.content)
+          };
+        }
+        
+        return msg;
+      });
+      
+      return Response.json(processedMessages);
+    } else {
+      // Query for cron messages newer than lastChecked timestamp
+      const cronMessages = await db
+        .select()
+        .from(message)
+        .where(
+          and(
+            eq(message.isCronMessage, true),
+            lastChecked ? gt(message.createdAt, new Date(lastChecked)) : undefined
+          )
+        )
+        .orderBy(message.createdAt);
+      
+      // Process messages to ensure content is always a string
+      const processedMessages = cronMessages.map(msg => {
+        // If content is an object, stringify it
+        if (typeof msg.content === 'object' && msg.content !== null) {
+          try {
+            return {
+              ...msg,
+              content: JSON.stringify(msg.content, null, 2)
+            };
+          } catch (error) {
+            console.error('Error stringifying message content:', error);
+            return {
+              ...msg,
+              content: JSON.stringify(msg.content)
+            };
+          }
+        }
+        
+        // If content is not a string, convert it
+        if (typeof msg.content !== 'string') {
+          return {
+            ...msg,
+            content: String(msg.content)
+          };
+        }
+        
+        return msg;
+      });
+      
+      return Response.json(processedMessages);
+    }
   } catch (error) {
     console.error('Error fetching cron messages:', error);
     return new Response('Error fetching cron messages', { status: 500 });

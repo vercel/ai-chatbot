@@ -44,6 +44,28 @@ export function Chat({
     null
   );
 
+  // Add state for tracking the chat title
+  const [chatTitle, setChatTitle] = useState<string>('');
+
+  // Fetch chat details to get the title
+  useEffect(() => {
+    const fetchChatDetails = async () => {
+      try {
+        const response = await fetch(`/api/chat/${id}`);
+        if (response.ok) {
+          const chatData = await response.json();
+          setChatTitle(chatData.title);
+        }
+      } catch (error) {
+        console.error('Error fetching chat details:', error);
+      }
+    };
+    
+    if (id) {
+      fetchChatDetails();
+    }
+  }, [id]);
+
   // Handle wallet connection and transaction
   useEffect(() => {
     console.log("@@swapDetails", swapDetails);
@@ -318,11 +340,14 @@ export function Chat({
 
   // Poll for cron messages
   useEffect(() => {
-    if (isReadonly) return;
+    // Only poll for cron messages if this is the research agent chat and not readonly
+    if (isReadonly || chatTitle !== '[RESEARCH AGENT]') {
+      return;
+    }
     
     const checkForCronMessages = async () => {
       try {
-        const response = await fetch(`/api/chat?lastChecked=${encodeURIComponent(lastCronCheck)}`);
+        const response = await fetch(`/api/chat?lastChecked=${encodeURIComponent(lastCronCheck)}&systemChat=true`);
         
         if (response.ok) {
           const cronMessages = await response.json();
@@ -332,16 +357,38 @@ export function Chat({
             const formattedMessages = cronMessages.map((msg: {
               id: string;
               role: string;
-              content: string;
+              content: string | object;
               createdAt: string;
-            }) => ({
-              id: msg.id,
-              role: msg.role,
-              content: msg.content,
-              createdAt: msg.createdAt
-            }));
+            }) => {
+              // Ensure content is always a string
+              let content = msg.content;
+              if (typeof content === 'object' && content !== null) {
+                try {
+                  content = JSON.stringify(content, null, 2);
+                } catch (error) {
+                  console.error('Error stringifying message content:', error);
+                  content = JSON.stringify(content);
+                }
+              }
+              
+              return {
+                id: msg.id,
+                role: msg.role,
+                content: typeof content === 'string' ? content : String(content),
+                createdAt: msg.createdAt
+              };
+            });
             
-            setMessages([...messages, ...formattedMessages]);
+            // Filter out messages that already exist in the current messages array
+            const newMessages = formattedMessages.filter(
+              (newMsg: { id: string; role: string; content: string; createdAt: string }) => 
+                !messages.some(existingMsg => existingMsg.id === newMsg.id)
+            );
+            
+            if (newMessages.length > 0) {
+              setMessages([...messages, ...newMessages]);
+            }
+            
             setLastCronCheck(new Date().toISOString());
           }
         }
@@ -353,7 +400,7 @@ export function Chat({
     // Check every 30 seconds
     const interval = setInterval(checkForCronMessages, 30000);
     return () => clearInterval(interval);
-  }, [id, messages, isReadonly, lastCronCheck]);
+  }, [id, messages, isReadonly, lastCronCheck, chatTitle, setMessages]);
 
   return (
     <>
