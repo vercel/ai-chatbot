@@ -1,7 +1,18 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  or,
+  sql,
+} from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -92,6 +103,47 @@ export async function getChatsByUserId({ id }: { id: string }) {
     console.error('Failed to get chats by user from database');
     throw error;
   }
+}
+
+export async function searchChatsByUserId({
+  userId,
+  query,
+}: {
+  userId: string;
+  query: string;
+}) {
+  // Ignore any leading or trailing whitespace
+  const sanitizedQuery = `%${query.trim()}%`;
+
+  const searchResults = await db
+    .select({
+      id: chat.id,
+      title: chat.title,
+      createdAt: chat.createdAt,
+      userId: chat.userId,
+      // For the preview, take the newest matching message
+      preview: sql<string>`(
+            array_agg(${message.content}::text order by ${message.createdAt} desc)
+          )[1]`,
+      role: sql<string>`(
+        array_agg(${message.role} order by ${message.createdAt} desc)
+      )[1]`,
+    })
+    .from(chat)
+    .leftJoin(message, eq(chat.id, message.chatId))
+    .where(
+      and(
+        eq(chat.userId, userId),
+        or(
+          ilike(chat.title, sanitizedQuery),
+          sql`${message.content}::text ILIKE ${sanitizedQuery}`
+        )
+      )
+    )
+    .groupBy(chat.id, chat.title, chat.createdAt)
+    .orderBy(desc(chat.createdAt));
+
+  return searchResults;
 }
 
 export async function getChatById({ id }: { id: string }) {

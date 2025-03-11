@@ -2,14 +2,19 @@ import type {
   CoreAssistantMessage,
   CoreToolMessage,
   Message,
-  TextStreamPart,
   ToolInvocation,
-  ToolSet,
 } from 'ai';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
+import type { Chat, Message as DBMessage, Document } from '@/lib/db/schema';
+import {
+  isToday,
+  isYesterday,
+  subWeeks,
+  subMonths,
+  differenceInCalendarDays,
+  format,
+} from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -36,13 +41,6 @@ export const fetcher = async (url: string) => {
 
   return res.json();
 };
-
-export function getLocalStorage(key: string) {
-  if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  }
-  return [];
-}
 
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -228,4 +226,68 @@ export function getDocumentTimestampByIndex(
   if (index > documents.length) return new Date();
 
   return documents[index].createdAt;
+}
+
+export type GroupedChats = {
+  today: Chat[];
+  yesterday: Chat[];
+  lastWeek: Chat[];
+  lastMonth: Chat[];
+  older: Chat[];
+};
+
+/**
+ * Group chats by date
+ *
+ * @param chats - The chats to group
+ * @returns The grouped chats
+ */
+export function groupChatsByDate(chats: Chat[]): GroupedChats {
+  const now = new Date();
+  const oneWeekAgo = subWeeks(now, 1);
+  const oneMonthAgo = subMonths(now, 1);
+
+  return chats.reduce(
+    (groups, chat) => {
+      const chatDate = new Date(chat.createdAt);
+
+      if (isToday(chatDate)) {
+        groups.today.push(chat);
+      } else if (isYesterday(chatDate)) {
+        groups.yesterday.push(chat);
+      } else if (chatDate > oneWeekAgo) {
+        groups.lastWeek.push(chat);
+      } else if (chatDate > oneMonthAgo) {
+        groups.lastMonth.push(chat);
+      } else {
+        groups.older.push(chat);
+      }
+
+      return groups;
+    },
+    {
+      today: [],
+      yesterday: [],
+      lastWeek: [],
+      lastMonth: [],
+      older: [],
+    } as GroupedChats
+  );
+}
+
+/**
+ * Format a date string to a human-readable format
+ *
+ * @param createdAtStr - The date string to format
+ * @returns The formatted date string
+ */
+export function formatDate(createdAtStr: string) {
+  const created = new Date(createdAtStr);
+  if (isToday(created)) {
+    return format(created, 'p');
+  } else if (differenceInCalendarDays(new Date(), created) === 1) {
+    return 'Yesterday';
+  } else {
+    return format(created, 'P');
+  }
 }
