@@ -102,6 +102,11 @@ export async function POST(request: Request) {
               searchContextSize: 'medium'
             })
           },
+          providerOptions: {
+            openai: {
+              store: false,
+            }
+          },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.id) {
               try {
