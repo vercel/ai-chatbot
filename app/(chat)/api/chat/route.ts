@@ -86,7 +86,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
-                  'web_search_preview'
+                  'webSearchPreview'
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
-            web_search_preview: openai.tools.webSearchPreview({
+            webSearchPreview: openai.tools.webSearchPreview({
               searchContextSize: 'medium'
             })
           },
