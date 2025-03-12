@@ -25,6 +25,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { NextResponse } from 'next/server';
 import { myProvider } from '@/lib/ai/providers';
+import { openai } from '@ai-sdk/openai';
 
 export const maxDuration = 60;
 
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'web_search_preview'
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -96,6 +98,9 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            web_search_preview: openai.tools.webSearchPreview({
+              searchContextSize: 'medium'
+            })
           },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.id) {
@@ -134,7 +139,7 @@ export async function POST(request: Request) {
         });
       },
       onError: () => {
-        return 'Oops, an error occured!';
+        return 'Oops, an error occurred!';
       },
     });
   } catch (error) {
