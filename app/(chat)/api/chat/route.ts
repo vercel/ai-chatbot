@@ -23,7 +23,7 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { myProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60;
@@ -98,28 +98,30 @@ export async function POST(request: Request) {
             }),
           },
           onFinish: async ({ response, reasoning }) => {
-            if (session.user?.id) {
-              try {
-                const sanitizedResponseMessages = sanitizeResponseMessages({
-                  messages: response.messages,
-                  reasoning,
-                });
+            after(async () => {
+              if (session.user?.id) {
+                try {
+                  const sanitizedResponseMessages = sanitizeResponseMessages({
+                    messages: response.messages,
+                    reasoning,
+                  });
 
-                await saveMessages({
-                  messages: sanitizedResponseMessages.map((message) => {
-                    return {
-                      id: message.id,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  }),
-                });
-              } catch (error) {
-                console.error('Failed to save chat');
+                  await saveMessages({
+                    messages: sanitizedResponseMessages.map((message) => {
+                      return {
+                        id: message.id,
+                        chatId: id,
+                        role: message.role,
+                        content: message.content,
+                        createdAt: new Date(),
+                      };
+                    }),
+                  });
+                } catch (error) {
+                  console.error('Failed to save chat');
+                }
               }
-            }
+            });
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
