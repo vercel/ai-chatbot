@@ -6,6 +6,7 @@
     "dev": "next dev --turbo",
     "build": "tsx lib/db/migrate && next build",
     "start": "next start",
+    "install-pdf-parse": "node scripts/install-pdf-parse.js",
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
     "format": "biome format --write",
@@ -19,7 +20,8 @@
     "setup:local": "npx tsx scripts/init-local-storage.ts",
     "fix:database": "npx tsx scripts/fix-database.ts",
     "fix:knowledge": "npx tsx scripts/fix-knowledge-tables.ts",
-    "diagnose:schema": "npx tsx scripts/diagnose-schema.ts"
+    "diagnose:schema": "npx tsx scripts/diagnose-schema.ts",
+    "fix:vector-search": "npx tsx scripts/fix-vector-search.ts"
   },
   "dependencies": {
     "@ai-sdk/fireworks": "^0.1.8",
@@ -63,6 +65,7 @@
     "openai": "4.86.1",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
+    "pdf-parse": "^1.1.1",
     "postgres": "^3.4.4",
     "prosemirror-example-setup": "^1.2.3",
     "prosemirror-inputrules": "^1.4.0",

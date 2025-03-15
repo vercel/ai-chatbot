@@ -475,16 +475,18 @@ export async function createKnowledgeChunk({
   chunkIndex: string;
   embedding?: number[];
 }) {
+  const values = {
+    documentId,
+    content,
+    metadata,
+    chunkIndex,
+    embedding: embedding ? JSON.stringify(embedding) : undefined,
+    createdAt: new Date(),
+  };
+
   const result = await db
     .insert(knowledgeChunk)
-    .values({
-      documentId,
-      content,
-      metadata,
-      chunkIndex,
-      embedding: embedding ? JSON.stringify(embedding) : undefined,
-      createdAt: new Date(),
-    })
+    .values(values)
     .returning();
 
   return result[0];
@@ -503,7 +505,7 @@ export async function getChunksByDocumentId({
     .orderBy(knowledgeChunk.chunkIndex);
 }
 
-// Semantic search on knowledge chunks
+// Semantic search on knowledge chunks - text-based fallback since vector search is disabled
 export async function semanticSearch({
   embedding,
   limit = 5,
@@ -511,8 +513,9 @@ export async function semanticSearch({
   embedding: number[];
   limit?: number;
 }) {
-  // Since we're using text-based embeddings temporarily, return recent chunks
-  // as a fallback (will be replaced with vector similarity when pgvector is available)
+  // Since we can't use vector search, return recent chunks as a fallback
+  console.log('Using text-based fallback for semantic search');
+  
   return db
     .select({
       id: knowledgeChunk.id,
@@ -520,7 +523,7 @@ export async function semanticSearch({
       metadata: knowledgeChunk.metadata,
       documentId: knowledgeChunk.documentId,
       // Provide a dummy similarity score
-      similarity: sql`0.95`, 
+      similarity: sql`0.5`, 
     })
     .from(knowledgeChunk)
     .orderBy(desc(knowledgeChunk.createdAt))

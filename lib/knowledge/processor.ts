@@ -1,6 +1,6 @@
 import { KnowledgeDocument } from '../db/schema';
 import { createKnowledgeChunk, updateKnowledgeDocument } from '../db/queries';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -46,21 +46,34 @@ export async function processDocument({
     if (document.sourceType === 'text' && content) {
       extractedText = content;
       console.log(`[KNOWLEDGE PROCESSOR] Using provided text content (${content.length} characters)`);
-    } else if (document.sourceType === 'url') {
-      console.log(`[KNOWLEDGE PROCESSOR] Extracting content from URL: ${document.sourceUrl}`);
-      extractedText = await extractTextFromUrl(document.sourceUrl || '');
-    } else if (document.sourceType === 'youtube') {
-      console.log(`[KNOWLEDGE PROCESSOR] Extracting transcript from YouTube: ${document.sourceUrl}`);
-      extractedText = await extractTextFromYouTube(document.sourceUrl || '');
-    } else if (document.sourceType === 'pdf' && file) {
-      console.log(`[KNOWLEDGE PROCESSOR] Extracting text from PDF: ${file.name}`);
-      extractedText = await extractTextFromPdf(file);
-    } else if ((document.sourceType === 'audio' || document.sourceType === 'video') && file) {
-      console.log(`[KNOWLEDGE PROCESSOR] Transcribing ${document.sourceType} file: ${file.name}`);
-      extractedText = await transcribeAudioVideo(file);
     } else {
-      console.error(`[KNOWLEDGE PROCESSOR] Error: Unsupported document type or missing content: ${document.sourceType}`);
-      throw new Error(`Unsupported document type or missing content: ${document.sourceType}`);
+      // For all other types, use the server-side processing API
+      try {
+        const response = await fetch('/api/knowledge/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceType: document.sourceType,
+            content: content,
+            url: document.sourceUrl
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        if (data.success && data.content) {
+          extractedText = data.content;
+          console.log(`[KNOWLEDGE PROCESSOR] Received processed content from API (${extractedText.length} characters)`);
+        } else {
+          throw new Error(data.error || 'Unknown error processing content');
+        }
+      } catch (apiError) {
+        console.error('[KNOWLEDGE PROCESSOR] Error calling processing API:', apiError);
+        extractedText = `Unable to process ${document.sourceType} content. Error: ${apiError.message}`;
+      }
     }
 
     console.log(`[KNOWLEDGE PROCESSOR] Text extraction complete. Extracted ${extractedText.length} characters`);
@@ -115,66 +128,6 @@ export async function processDocument({
 
     console.log(`[KNOWLEDGE PROCESSOR] Document marked as failed due to error`);
     throw error;
-  }
-}
-
-/**
- * Extract text from a URL by fetching and parsing the content
- */
-async function extractTextFromUrl(url: string): Promise<string> {
-  try {
-    // In a real implementation, you would use a library like cheerio or puppeteer
-    // to fetch and parse the HTML content
-    // For now, we'll just return a placeholder
-    return `Content extracted from URL: ${url}`;
-  } catch (error) {
-    console.error('Error extracting text from URL:', error);
-    throw new Error('Failed to extract text from URL');
-  }
-}
-
-/**
- * Extract text from a YouTube video by fetching its transcript
- */
-async function extractTextFromYouTube(url: string): Promise<string> {
-  try {
-    // In a real implementation, you would use the YouTube API or a library
-    // to fetch the transcript
-    // For now, we'll just return a placeholder
-    return `Transcript extracted from YouTube video: ${url}`;
-  } catch (error) {
-    console.error('Error extracting text from YouTube:', error);
-    throw new Error('Failed to extract text from YouTube video');
-  }
-}
-
-/**
- * Extract text from a PDF file
- */
-async function extractTextFromPdf(file: File): Promise<string> {
-  try {
-    // In a real implementation, you would use a library like pdf-parse
-    // to extract text from the PDF
-    // For now, we'll just return a placeholder
-    return `Text extracted from PDF file: ${file.name}`;
-  } catch (error) {
-    console.error('Error extracting text from PDF:', error);
-    throw new Error('Failed to extract text from PDF');
-  }
-}
-
-/**
- * Transcribe audio or video file using OpenAI's Whisper API
- */
-async function transcribeAudioVideo(file: File): Promise<string> {
-  try {
-    // In a real implementation, you would use OpenAI's Whisper API
-    // to transcribe the audio/video
-    // For now, we'll just return a placeholder
-    return `Transcription of ${file.name}`;
-  } catch (error) {
-    console.error('Error transcribing audio/video:', error);
-    throw new Error('Failed to transcribe audio/video');
   }
 }
 

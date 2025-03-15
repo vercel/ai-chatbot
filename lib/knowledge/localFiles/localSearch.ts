@@ -112,33 +112,34 @@ export async function searchKnowledgeLocal(
     
     if (queryEmbedding.length > 0) {
       try {
-        // Query the database
-        const results = await db.execute(sql`
+        // First, try text search instead of vector search
+        console.log('[LOCAL SEARCH] Using text-based search');
+        
+        const textResults = await db.execute(sql`
           SELECT 
             kc.id,
             kc.document_id AS "documentId", 
             kd.title,
             kc.content,
-            kd.source_url AS url,
-            1 - (kc.embedding <=> ${`{${queryEmbedding.join(',')}}`}::vector) AS score
+            kd.source_url AS url
           FROM knowledge_chunk kc
           JOIN knowledge_document kd ON kc.document_id = kd.id
           WHERE kd.user_id = ${userId}
-          ORDER BY score DESC
+          AND kc.content ILIKE ${`%${query}%`}
           LIMIT ${limit}
         `);
         
-        if (results.length > 0) {
-          console.log(`[LOCAL SEARCH] Found ${results.length} results using vector search`);
+        if (textResults.length > 0) {
+          console.log(`[LOCAL SEARCH] Found ${textResults.length} results using text search`);
           
           // Format results
-          return results.map((chunk: any) => ({
+          return textResults.map((chunk: any) => ({
             id: chunk.id,
             documentId: chunk.documentid,
             title: chunk.title || 'Untitled Document',
             content: chunk.content,
             url: chunk.url || '',
-            score: parseFloat(chunk.score) || 0,
+            score: 0.5, // Default score for text matches
           }));
         }
       } catch (dbError) {

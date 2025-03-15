@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
-import { KnowledgeDocument } from '@/lib/db/schema';
+import { KnowledgeDocument, KnowledgeChunk } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Trash2, FileIcon, ExternalLinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,14 +26,63 @@ export default function KnowledgeDocumentPage({
   params: { id: string } | Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const [document, setDocument] = useState<KnowledgeDocument | null>(null);
+  const [document, setDocument] = useState<(KnowledgeDocument & { chunks?: KnowledgeChunk[] }) | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'combined' | 'chunks'>('combined');
   const resolvedParams = use(params);
+
+  // Process chunks for display
+  const processedChunks = useMemo(() => {
+    if (!document?.chunks) return [];
+    
+    // Sort chunks by chunkIndex if available
+    return [...document.chunks].sort((a, b) => {
+      const aIndex = parseInt(a.chunkIndex || '0');
+      const bIndex = parseInt(b.chunkIndex || '0');
+      return aIndex - bIndex;
+    });
+  }, [document?.chunks]);
+
+  // Combined content from all chunks for display
+  const combinedContent = useMemo(() => {
+    if (processedChunks.length === 0) return '';
+    return processedChunks.map(chunk => chunk.content).join('\n\n');
+  }, [processedChunks]);
+
+  // Formatted message for no content case
+  const noContentMessage = useMemo(() => {
+    if (!document) return 'No extracted content available.';
+    
+    if (document.status === 'processing') {
+      return 'Document is still being processed. Please check back later.';
+    } else if (document.status === 'failed') {
+      return `Processing failed: ${document.processingError || 'Unknown error'}`;
+    } else if (processedChunks.length === 0) {
+      return 'No extracted content available.';
+    }
+    
+    return 'No extracted content available.';
+  }, [document, processedChunks]);
 
   useEffect(() => {
     fetchDocument();
   }, [resolvedParams.id]);
+  
+  // Function to refresh document data
+  const refreshDocument = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchDocument();
+      toast.success('Document refreshed');
+    } catch (error) {
+      console.error('Error refreshing document:', error);
+      toast.error('Failed to refresh document');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   async function fetchDocument() {
     try {
@@ -144,12 +193,17 @@ export default function KnowledgeDocumentPage({
           <h1 className="text-2xl font-bold">{document.title}</h1>
         </div>
         <div className="flex items-center">
-          <Badge 
-            variant="outline" 
-            className={`${getStatusColor(document.status)} text-white mr-4`}
-          >
-            {document.status}
-          </Badge>
+          <div className="flex items-center">
+            <Badge 
+              variant="outline" 
+              className={`${getStatusColor(document.status)} text-white mr-2`}
+            >
+              {document.status}
+            </Badge>
+            {document.status === 'processing' && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            )}
+          </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" disabled={isDeleting}>
@@ -193,6 +247,79 @@ export default function KnowledgeDocumentPage({
               </div>
             </div>
           )}
+
+          {/* New Extracted Content Section */}
+          <div className="border rounded-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Extracted Content</h2>
+              <div className="flex space-x-2">
+                {processedChunks.length > 0 && (
+                  <>
+                    <Button 
+                      variant={viewMode === 'combined' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setViewMode('combined')}
+                    >
+                      Combined View
+                    </Button>
+                    <Button 
+                      variant={viewMode === 'chunks' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setViewMode('chunks')}
+                    >
+                      Chunks View
+                    </Button>
+                  </>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={refreshDocument}
+                  disabled={isRefreshing}
+                  className={isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}
+                >
+                  {isRefreshing ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 mr-2 border-b-2 border-current rounded-full"></div>
+                      Refreshing...
+                    </>
+                  ) : (
+                    'Refresh'
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="bg-muted p-4 rounded-md overflow-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+              {processedChunks.length > 0 ? (
+                viewMode === 'combined' ? (
+                  <pre className="whitespace-pre-wrap text-sm">{combinedContent}</pre>
+                ) : (
+                  processedChunks.map((chunk, index) => (
+                    <div key={chunk.id} className="mb-4 pb-4 border-b border-gray-200 last:border-0">
+                      <div className="text-xs text-muted-foreground mb-1">Chunk {index + 1}</div>
+                      <pre className="whitespace-pre-wrap text-sm">{chunk.content}</pre>
+                    </div>
+                  ))
+                )
+              ) : (
+                <div className={`p-4 rounded-md ${document?.status === 'failed' ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
+                  <p className={document?.status === 'failed' ? 'text-red-800' : 'text-amber-800'}>{noContentMessage}</p>
+                  {document?.status === 'processing' && (
+                    <div className="mt-2 flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-800 mr-2"></div>
+                      <p className="text-amber-800 text-sm">Processing in progress...</p>
+                    </div>
+                  )}
+                  {document?.status === 'failed' && document.processingError && (
+                    <div className="mt-2">
+                      <p className="text-red-800 text-sm font-semibold">Error details:</p>
+                      <p className="text-red-800 text-sm mt-1">{document.processingError}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">

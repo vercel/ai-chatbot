@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useEffect, useRef, type ForwardedRef, type TextareaHTMLAttributes } from 'react';
+import React, { forwardRef, useEffect, useRef, useState, type ForwardedRef, type TextareaHTMLAttributes } from 'react';
 import { Textarea } from './ui/textarea';
 
 interface HydrationSafeTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -18,6 +18,12 @@ export const HydrationSafeTextarea = forwardRef(function HydrationSafeTextarea(
   forwardedRef: ForwardedRef<HTMLTextAreaElement>
 ) {
   const internalRef = useRef<HTMLTextAreaElement | null>(null);
+  const [clientHydrated, setClientHydrated] = useState(false);
+  
+  // Mark the component as hydrated after the first render
+  useEffect(() => {
+    setClientHydrated(true);
+  }, []);
   
   // Handle Grammarly and other extensions by using useEffect
   useEffect(() => {
@@ -60,14 +66,28 @@ export const HydrationSafeTextarea = forwardRef(function HydrationSafeTextarea(
     }
   };
 
+  // We wrap the Textarea in a div to isolate it from Grammarly extensions
+  // We omit the className from the wrapper to keep proper styling
   return (
-    <Textarea
-      ref={setTextareaRef}
-      value={value}
-      onChange={onChange}
-      className={className}
-      suppressHydrationWarning
-      {...props}
-    />
+    <div suppressHydrationWarning>
+      {/* Only render the textarea client-side if we have issues with hydration */}
+      {clientHydrated ? (
+        <Textarea
+          ref={setTextareaRef}
+          value={value}
+          onChange={onChange}
+          className={className}
+          suppressHydrationWarning
+          {...props}
+        />
+      ) : (
+        <Textarea
+          ref={setTextareaRef}
+          className={className}
+          suppressHydrationWarning
+          {...props}
+        />
+      )}
+    </div>
   );
 });

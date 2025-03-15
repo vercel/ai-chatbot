@@ -15,13 +15,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 interface KnowledgeUploadProps {
@@ -32,18 +25,10 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [sourceType, setSourceType] = useState<'pdf' | 'text' | 'url' | 'audio' | 'video' | 'youtube'>('text');
-  const [sourceUrl, setSourceUrl] = useState('');
-  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [textContent, setTextContent] = useState('');
 
   const resetForm = () => {
     setTitle('');
-    setDescription('');
-    setSourceType('text');
-    setSourceUrl('');
-    setFileToUpload(null);
     setTextContent('');
   };
 
@@ -54,36 +39,21 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
       // Validate form
       if (!title) {
         toast.error('Title is required');
+        setIsUploading(false);
         return;
       }
 
-      if (sourceType === 'text' && !textContent) {
+      if (!textContent) {
         toast.error('Content is required');
-        return;
-      }
-
-      if ((sourceType === 'url' || sourceType === 'youtube') && !sourceUrl) {
-        toast.error('URL is required');
-        return;
-      }
-
-      if ((sourceType === 'pdf' || sourceType === 'audio' || sourceType === 'video') && !fileToUpload) {
-        toast.error('File is required');
+        setIsUploading(false);
         return;
       }
 
       const formData = new FormData();
       formData.append('title', title);
-      formData.append('description', description || '');
-      formData.append('sourceType', sourceType);
-      
-      if (sourceType === 'text') {
-        formData.append('content', textContent);
-      } else if (sourceType === 'url' || sourceType === 'youtube') {
-        formData.append('sourceUrl', sourceUrl);
-      } else if (fileToUpload) {
-        formData.append('file', fileToUpload);
-      }
+      formData.append('description', ''); // Empty description
+      formData.append('sourceType', 'text');
+      formData.append('content', textContent);
 
       const response = await fetch('/api/knowledge', {
         method: 'POST',
@@ -122,7 +92,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
         <DialogHeader>
           <DialogTitle>Add Knowledge Document</DialogTitle>
           <DialogDescription>
-            Upload a document to your knowledge base for AI to reference during chats.
+            Add text content to your knowledge base for AI to reference during chats.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -139,95 +109,18 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
-              Description
+            <Label htmlFor="textContent" className="text-right">
+              Content
             </Label>
             <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              id="textContent"
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
               className="col-span-3"
-              rows={2}
+              rows={10}
+              placeholder="Paste your text content here..."
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="sourceType" className="text-right">
-              Source Type
-            </Label>
-            <Select
-              value={sourceType}
-              onValueChange={(value) => 
-                setSourceType(value as 'pdf' | 'text' | 'url' | 'audio' | 'video' | 'youtube')
-              }
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select source type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="text">Text</SelectItem>
-                <SelectItem value="pdf">PDF</SelectItem>
-                <SelectItem value="url">Web URL</SelectItem>
-                <SelectItem value="youtube">YouTube</SelectItem>
-                <SelectItem value="audio">Audio</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {sourceType === 'text' && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="textContent" className="text-right">
-                Content
-              </Label>
-              <Textarea
-                id="textContent"
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                className="col-span-3"
-                rows={6}
-              />
-            </div>
-          )}
-
-          {(sourceType === 'url' || sourceType === 'youtube') && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="sourceUrl" className="text-right">
-                URL
-              </Label>
-              <Input
-                id="sourceUrl"
-                value={sourceUrl}
-                onChange={(e) => setSourceUrl(e.target.value)}
-                className="col-span-3"
-                placeholder={sourceType === 'youtube' ? 'YouTube URL' : 'Web URL'}
-              />
-            </div>
-          )}
-
-          {(sourceType === 'pdf' || sourceType === 'audio' || sourceType === 'video') && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="file" className="text-right">
-                File
-              </Label>
-              <Input
-                id="file"
-                type="file"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    setFileToUpload(e.target.files[0]);
-                  }
-                }}
-                className="col-span-3"
-                accept={
-                  sourceType === 'pdf'
-                    ? '.pdf'
-                    : sourceType === 'audio'
-                    ? '.mp3,.wav,.ogg'
-                    : '.mp4,.mov,.avi'
-                }
-              />
-            </div>
-          )}
         </div>
         <DialogFooter>
           <Button 
@@ -243,10 +136,10 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
             onClick={handleSubmit}
             disabled={isUploading}
           >
-            {isUploading ? 'Uploading...' : 'Add Document'}
+            {isUploading ? 'Adding...' : 'Add Document'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-} 
+}

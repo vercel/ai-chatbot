@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const sourceType = formData.get('sourceType') as 'pdf' | 'text' | 'url' | 'audio' | 'video' | 'youtube';
+    const sourceType = formData.get('sourceType') as string;
     
     if (!title || !sourceType) {
       return NextResponse.json(
@@ -52,40 +52,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let sourceUrl = '';
-    let fileSize = '';
-    let fileType = '';
-    let content = '';
-    let file: File | null = null;
+    // We only support 'text' source type in this simplified version
+    if (sourceType !== 'text') {
+      return NextResponse.json(
+        { error: 'Only text content is supported' },
+        { status: 400 }
+      );
+    }
 
-    // Handle different source types
-    if (sourceType === 'text') {
-      content = formData.get('content') as string;
-      if (!content) {
-        return NextResponse.json(
-          { error: 'Missing content for text document' },
-          { status: 400 }
-        );
-      }
-    } else if (sourceType === 'url' || sourceType === 'youtube') {
-      sourceUrl = formData.get('sourceUrl') as string;
-      if (!sourceUrl) {
-        return NextResponse.json(
-          { error: 'Missing URL' },
-          { status: 400 }
-        );
-      }
-    } else {
-      file = formData.get('file') as File;
-      if (!file) {
-        return NextResponse.json(
-          { error: 'Missing file' },
-          { status: 400 }
-        );
-      }
-      fileSize = file.size.toString();
-      fileType = file.type;
-      console.log(`File received: ${file.name}, Size: ${fileSize}, Type: ${fileType}`);
+    const content = formData.get('content') as string;
+    if (!content) {
+      return NextResponse.json(
+        { error: 'Missing content for text document' },
+        { status: 400 }
+      );
     }
 
     // Create the document in the database
@@ -93,22 +73,20 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       title,
       description,
-      sourceType,
-      sourceUrl,
-      fileSize,
-      fileType,
+      sourceType: 'text',
+      sourceUrl: '',
+      fileSize: '',
+      fileType: '',
     });
     
     console.log(`Created knowledge document in database: ${document.id}`);
 
     // Process the document asynchronously
-    // We wrap this in a try/catch but don't await it, so we can return the response immediately
     try {
       // Start processing in the background
       processDocumentLocal({
         document,
         content,
-        file: file || undefined,
         userId: session.user.id
       }).catch(processingError => {
         console.error('Error in background document processing:', processingError);

@@ -10,7 +10,6 @@ import {
   foreignKey,
   boolean,
   index,
-  vector,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -148,7 +147,7 @@ export const knowledgeChunk = pgTable('KnowledgeChunk', {
   content: text('content').notNull(),
   metadata: json('metadata'),
   chunkIndex: varchar('chunkIndex', { length: 20 }).notNull(),
-  embedding: text('embedding'), // Temporarily changed from vector to text
+  embedding: text('embedding'), // Store embeddings as JSON string
   createdAt: timestamp('createdAt').notNull().defaultNow(),
 }, (table) => {
   return {

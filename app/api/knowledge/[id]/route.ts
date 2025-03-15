@@ -6,13 +6,14 @@ import {
   deleteKnowledgeDocument,
   getChunksByDocumentId
 } from '@/lib/db/queries';
+import { getIdParam } from '@/app/api/utils/params';
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = await params.id;
+    const id = await getIdParam(params);
     
     const session = await auth();
     
@@ -41,7 +42,18 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(document);
+    // Get all chunks for this document
+    const chunks = await getChunksByDocumentId({
+      documentId: id,
+    });
+    
+    // Add chunks to the response
+    const response = {
+      ...document,
+      chunks: chunks
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching knowledge document:', error);
     return NextResponse.json(
@@ -56,7 +68,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = await params.id;
+    const id = await getIdParam(params);
     const session = await auth();
     
     if (!session?.user) {
@@ -108,7 +120,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = await params.id;
+    const id = await getIdParam(params);
     const session = await auth();
     
     if (!session?.user) {

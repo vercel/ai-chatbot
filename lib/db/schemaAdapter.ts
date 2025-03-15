@@ -61,7 +61,7 @@ export async function executeQuery(query: string, params: any[] = []): Promise<a
  * Does a basic search in the knowledge base without using vector search
  */
 export async function basicKnowledgeSearch(
-  query: string,
+  searchQuery: string,
   userId: string,
   limit: number = 5
 ): Promise<any[]> {
@@ -82,7 +82,8 @@ export async function basicKnowledgeSearch(
       LIMIT $3
     `;
     
-    const results = await db.execute(sql.raw(sqlQuery, [userId, `%${query}%`, limit]));
+    const params = [userId, `%${searchQuery}%`, limit];
+    const results = await db.execute(sql.raw(sqlQuery, params));
     
     if (results.length > 0) {
       return results.map((chunk: any) => ({
@@ -110,7 +111,8 @@ export async function basicKnowledgeSearch(
       LIMIT $2
     `;
     
-    const recentResults = await db.execute(sql.raw(recentQuery, [userId, limit]));
+    const recentParams = [userId, limit];
+    const recentResults = await db.execute(sql.raw(recentQuery, recentParams));
     
     return recentResults.map((chunk: any) => ({
       id: chunk.id,

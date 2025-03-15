@@ -1,0 +1,24 @@
+{
+  "documentId": "04411e2e-fc8a-46cb-983c-8f98dc8e397e",
+  "title": "CV",
+  "sourceType": "text",
+  "extractedTextLength": 5544,
+  "chunkCount": 2,
+  "processedAt": "2025-03-15T17:55:17.011Z",
+  "chunks": [
+    {
+      "id": "51a7f276-55aa-485b-9999-8416ea8ed862",
+      "index": 0,
+      "contentPreview": "",
+      "contentLength": 0,
+      "embeddingSource": "new"
+    },
+    {
+      "id": "092c9d7b-3039-44c9-a32b-ab50af60edfe",
+      "index": 1,
+      "contentPreview": "Contact\r\namrehab.afifi@gmail.com\r\nwww.linkedin.com/in/amr-ehab-afifi\r\n(LinkedIn)\r\nTop Skills\r\nDecisi...",
+      "contentLength": 5544,
+      "embeddingSource": "new"
+    }
+  ]
+}
