@@ -19,9 +19,10 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
   },
   "dependencies": {
-    "@ai-sdk/fireworks": "0.1.16",
-    "@ai-sdk/openai": "1.2.5",
+    "@ai-sdk/fireworks": "^0.1.16",
+    "@ai-sdk/openai": "^1.2.5",
     "@ai-sdk/react": "^1.1.23",
+    "@ai-sdk/xai": "^1.1.15",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
@@ -103,5 +104,6 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
-  }
+  },
+  "packageManager": "pnpm@9.12.3"
 }
