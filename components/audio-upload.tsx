@@ -143,7 +143,9 @@ export function AudioUpload({
       {!selectedFile ? (
         <div
           className={`border-2 border-dashed rounded-lg p-8 w-full max-w-md text-center ${
-            dragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
+            dragActive 
+              ? 'border-hunter_green-500 bg-hunter_green-50 dark:border-cornsilk-500 dark:bg-hunter_green-700/20' 
+              : 'border-hunter_green-300 dark:border-cornsilk-700'
           }`}
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
@@ -158,53 +160,57 @@ export function AudioUpload({
             className="hidden"
           />
           
-          <UploadIcon className="h-10 w-10 mx-auto mb-4 text-gray-400" />
+          <UploadIcon className="h-10 w-10 mx-auto mb-4 text-hunter_green-400 dark:text-cornsilk-400" />
           
-          <p className="mb-2 font-semibold">Drag and drop an audio file</p>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="mb-2 font-semibold text-hunter_green-600 dark:text-cornsilk-400">Drag and drop an audio file</p>
+          <p className="text-sm text-hunter_green-500 dark:text-cornsilk-500 mb-4">
             or click to browse (max {maxSizeMB}MB)
           </p>
           
-          <Button onClick={handleButtonClick} variant="outline" className="mt-2">
+          <Button 
+            onClick={handleButtonClick} 
+            variant="outline" 
+            className="mt-2 border-hunter_green-300 hover:bg-hunter_green-100 dark:border-cornsilk-700 dark:hover:bg-hunter_green-700"
+          >
             Select Audio File
           </Button>
           
           {error && (
-            <p className="mt-2 text-sm text-destructive">{error}</p>
+            <p className="mt-2 text-sm text-tigers_eye-500">{error}</p>
           )}
         </div>
       ) : (
-        <div className="border rounded-lg p-6 w-full max-w-md">
+        <div className="border border-hunter_green-200 dark:border-cornsilk-800 rounded-lg p-6 w-full max-w-md bg-cornsilk-600 dark:bg-hunter_green-400">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-lg">Selected Audio</h3>
+            <h3 className="font-medium text-lg text-hunter_green-600 dark:text-cornsilk-400">Selected Audio</h3>
             <Button
               variant="ghost"
               size="icon"
               onClick={clearSelection}
-              className="h-8 w-8"
+              className="h-8 w-8 hover:bg-hunter_green-100 dark:hover:bg-hunter_green-500"
             >
-              <XIcon className="h-4 w-4" />
+              <XIcon className="h-4 w-4 text-hunter_green-500 dark:text-cornsilk-500" />
             </Button>
           </div>
           
-          <div className="border rounded p-4 mb-4">
+          <div className="border border-hunter_green-200 dark:border-hunter_green-600 rounded p-4 mb-4 bg-cornsilk-500 dark:bg-hunter_green-500">
             <div className="flex items-center">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-12 w-12 mr-3 rounded-full"
+                className="h-12 w-12 mr-3 rounded-full hover:bg-earth_yellow-200 dark:hover:bg-earth_yellow-700"
                 onClick={togglePlayback}
               >
                 {isPlaying ? (
-                  <PauseIcon className="h-6 w-6" />
+                  <PauseIcon className="h-6 w-6 text-hunter_green-500 dark:text-cornsilk-500" />
                 ) : (
-                  <PlayIcon className="h-6 w-6" />
+                  <PlayIcon className="h-6 w-6 text-hunter_green-500 dark:text-cornsilk-500" />
                 )}
               </Button>
               
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{selectedFile.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-medium truncate text-hunter_green-600 dark:text-cornsilk-400">{selectedFile.name}</p>
+                <p className="text-sm text-hunter_green-500 dark:text-cornsilk-500">
                   {selectedFile.type.split('/')[1].toUpperCase()} • {formatFileSize(selectedFile.size)}
                 </p>
               </div>
@@ -212,10 +218,17 @@ export function AudioUpload({
           </div>
           
           <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={clearSelection}>
+            <Button 
+              variant="outline" 
+              onClick={clearSelection}
+              className="border-hunter_green-300 hover:bg-hunter_green-100 dark:border-cornsilk-700 dark:hover:bg-hunter_green-600"
+            >
               Cancel
             </Button>
-            <Button onClick={submitFile}>
+            <Button 
+              onClick={submitFile}
+              className="bg-hunter_green-500 hover:bg-hunter_green-600 dark:bg-asparagus-500 dark:hover:bg-asparagus-400"
+            >
               Use Audio
             </Button>
           </div>

@@ -152,14 +152,14 @@ export function VoiceRecorder({
   return (
     <div className="flex flex-col items-center py-6 space-y-8">
       {/* Recording visualization */}
-      <div className="relative w-32 h-32 flex items-center justify-center border border-gray-300 rounded-full">
+      <div className="relative w-32 h-32 flex items-center justify-center border border-hunter_green-300 dark:border-cornsilk-500 rounded-full">
         {isRecording ? (
-          <div className="animate-pulse absolute inset-1 rounded-full bg-red-500 opacity-30" />
+          <div className="animate-pulse absolute inset-1 rounded-full bg-tigers_eye-500 opacity-30" />
         ) : null}
         
         <div className={cn(
           "w-24 h-24 rounded-full flex items-center justify-center",
-          isRecording ? "bg-red-500 text-white" : "bg-gray-100"
+          isRecording ? "bg-tigers_eye-500 text-white" : "bg-cornsilk-400 dark:bg-hunter_green-300"
         )}>
           {isRecording ? (
             <div className="text-lg font-semibold">{formatTime(recordingDuration)}</div>
@@ -168,14 +168,14 @@ export function VoiceRecorder({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-16 w-16 rounded-full"
+                className="h-16 w-16 rounded-full hover:bg-earth_yellow-200 dark:hover:bg-earth_yellow-700"
                 onClick={togglePlayback}
               >
                 {isPlaying ? <PauseIcon size={32} /> : <PlayIcon size={32} />}
               </Button>
             </div>
           ) : (
-            <MicIcon className="h-8 w-8 text-gray-500" />
+            <MicIcon className="h-8 w-8 text-hunter_green-500 dark:text-cornsilk-500" />
           )}
         </div>
       </div>
@@ -187,6 +187,7 @@ export function VoiceRecorder({
             variant="destructive"
             size="lg"
             onClick={stopRecording}
+            className="bg-tigers_eye-500 hover:bg-tigers_eye-600 dark:bg-tigers_eye-600 dark:hover:bg-tigers_eye-500"
           >
             <StopCircleIcon className="mr-2 h-4 w-4" />
             Stop Recording
@@ -197,6 +198,7 @@ export function VoiceRecorder({
               variant="outline"
               size="lg"
               onClick={cancelRecording}
+              className="border-hunter_green-300 dark:border-cornsilk-500"
             >
               <TrashIcon className="mr-2 h-4 w-4" />
               Discard
@@ -205,6 +207,7 @@ export function VoiceRecorder({
               variant="default"
               size="lg"
               onClick={handleSubmit}
+              className="bg-hunter_green-500 hover:bg-hunter_green-600 dark:bg-asparagus-500 dark:hover:bg-asparagus-400"
             >
               Use Recording
             </Button>
@@ -215,6 +218,7 @@ export function VoiceRecorder({
               variant="outline"
               size="lg"
               onClick={onCancel}
+              className="border-hunter_green-300 dark:border-cornsilk-500"
             >
               Cancel
             </Button>
@@ -222,6 +226,7 @@ export function VoiceRecorder({
               variant="default"
               size="lg"
               onClick={startRecording}
+              className="bg-hunter_green-500 hover:bg-hunter_green-600 dark:bg-asparagus-500 dark:hover:bg-asparagus-400"
             >
               <MicIcon className="mr-2 h-4 w-4" />
               Start Recording
@@ -232,13 +237,13 @@ export function VoiceRecorder({
       
       {/* Info text */}
       {!isRecording && !recordedAudio && (
-        <p className="text-sm text-muted-foreground mt-4">
+        <p className="text-sm text-hunter_green-600 dark:text-cornsilk-500 mt-4">
           Record a voice note to add to your knowledge base. Maximum duration: {formatTime(maxDurationSec)}.
         </p>
       )}
       
       {recordedAudio && (
-        <p className="text-sm text-muted-foreground mt-4">
+        <p className="text-sm text-hunter_green-600 dark:text-cornsilk-500 mt-4">
           Recording duration: {formatTime(recordingDuration)}
         </p>
       )}

@@ -82,7 +82,7 @@ export async function processAudioFile({
       model: 'whisper-1',
       response_format: 'verbose_json',
       temperature: 0,
-      language: 'en', // Optional: specify language
+      language: '', // Optional: specify language
     }) as unknown as WhisperTranscriptionResponse;
     
     console.log(`[AUDIO PROCESSOR] Transcription completed: ${transcriptionResponse.text.length} characters`);

@@ -107,22 +107,22 @@ export function TranscriptViewer({
           <Button
             variant="outline"
             size="icon"
-            className="h-12 w-12 rounded-full"
+            className="h-12 w-12 rounded-full border-hunter_green-300 dark:border-cornsilk-600 hover:bg-earth_yellow-200 dark:hover:bg-earth_yellow-700"
             onClick={togglePlayback}
           >
             {isPlaying ? (
-              <PauseIcon className="h-5 w-5" />
+              <PauseIcon className="h-5 w-5 text-hunter_green-500 dark:text-cornsilk-500" />
             ) : (
-              <PlayIcon className="h-5 w-5" />
+              <PlayIcon className="h-5 w-5 text-hunter_green-500 dark:text-cornsilk-500" />
             )}
           </Button>
           <div className="flex-1">
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium text-hunter_green-600 dark:text-cornsilk-400">
               {isPlaying 
                 ? `Playing segment ${currentSegment !== null ? currentSegment + 1 : ''}`
                 : 'Click to play audio'}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-hunter_green-500 dark:text-cornsilk-500">
               Click on any segment below to jump to that part
             </p>
           </div>
@@ -131,10 +131,10 @@ export function TranscriptViewer({
       
       {/* Transcript metadata */}
       <div className="mb-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-hunter_green-500 dark:text-cornsilk-500">
           <span className="font-medium">Language:</span> {transcript.language || 'English'}
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-hunter_green-500 dark:text-cornsilk-500">
           <span className="font-medium">Segments:</span> {transcript.segments.length}
         </p>
       </div>
@@ -145,20 +145,22 @@ export function TranscriptViewer({
           <div
             key={segment.id}
             id={`segment-${index}`}
-            className={`p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border rounded-md ${
-              currentSegment === index ? 'bg-primary-50 border-primary dark:bg-primary-900/20' : ''
+            className={`p-3 cursor-pointer hover:bg-earth_yellow-100 dark:hover:bg-hunter_green-500 transition-colors border border-cornsilk-400 dark:border-hunter_green-500 rounded-md ${
+              currentSegment === index 
+                ? 'bg-earth_yellow-200 border-earth_yellow-400 dark:bg-earth_yellow-900/20 dark:border-earth_yellow-700' 
+                : 'bg-cornsilk-500 dark:bg-hunter_green-400'
             }`}
             onClick={() => playSegment(index)}
           >
             <div className="flex items-start gap-2">
-              <div className="shrink-0 text-xs text-muted-foreground pt-1 w-16">
+              <div className="shrink-0 text-xs text-hunter_green-500 dark:text-cornsilk-500 pt-1 w-16">
                 {formatTime(segment.start)}
               </div>
               <div className="flex-1">
-                <p className="text-sm text-muted-foreground font-medium mb-1">
+                <p className="text-sm text-hunter_green-600 dark:text-cornsilk-400 font-medium mb-1">
                   {segment.speaker || 'Speaker'}
                 </p>
-                <p>{segment.text}</p>
+                <p className="text-hunter_green-700 dark:text-cornsilk-300">{segment.text}</p>
               </div>
             </div>
           </div>
@@ -166,9 +168,9 @@ export function TranscriptViewer({
       </div>
       
       {/* Full transcript */}
-      <div className="mt-8 pt-4 border-t">
-        <h3 className="text-lg font-medium mb-2">Full Transcript</h3>
-        <div className="bg-slate-50 dark:bg-slate-900 rounded p-4">
+      <div className="mt-8 pt-4 border-t border-hunter_green-200 dark:border-cornsilk-700">
+        <h3 className="text-lg font-medium mb-2 text-hunter_green-600 dark:text-cornsilk-400">Full Transcript</h3>
+        <div className="bg-cornsilk-600 dark:bg-hunter_green-500 rounded p-4 text-hunter_green-700 dark:text-cornsilk-300">
           {transcript.text}
         </div>
       </div>

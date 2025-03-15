@@ -95,42 +95,42 @@ export function TranscriptionProgress({
     <div className="space-y-4 py-2">
       <div className="flex items-center gap-3 mb-2">
         {status === 'processing' && (
-          <div className="animate-spin h-5 w-5 border-b-2 border-primary rounded-full"></div>
+          <div className="animate-spin h-5 w-5 border-b-2 border-hunter_green-500 dark:border-asparagus-500 rounded-full"></div>
         )}
         
         {status === 'completed' && (
-          <CheckCircle2 className="h-5 w-5 text-green-500" />
+          <CheckCircle2 className="h-5 w-5 text-hunter_green-500 dark:text-asparagus-500" />
         )}
         
         {status === 'failed' && (
-          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <AlertTriangle className="h-5 w-5 text-tigers_eye-500" />
         )}
         
-        <span className="font-medium">{message}</span>
+        <span className="font-medium text-hunter_green-600 dark:text-cornsilk-400">{message}</span>
       </div>
       
       {/* Custom progress bar */}
-      <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-cornsilk-400 dark:bg-hunter_green-300 rounded-full overflow-hidden">
         <div 
-          className="h-full bg-slate-900 dark:bg-slate-50 transition-all"
+          className="h-full bg-hunter_green-500 dark:bg-asparagus-500 transition-all"
           style={{ width: `${progress}%` }}
         ></div>
       </div>
       
       {partialTranscript && (
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-muted-foreground mb-1">
+          <h4 className="text-sm font-medium text-hunter_green-500 dark:text-cornsilk-500 mb-1">
             Partial transcript:
           </h4>
-          <div className="bg-slate-50 dark:bg-slate-900 rounded p-3 text-sm">
+          <div className="bg-cornsilk-600 dark:bg-hunter_green-400 rounded p-3 text-sm text-hunter_green-600 dark:text-cornsilk-400">
             {partialTranscript}
           </div>
         </div>
       )}
       
       {error && (
-        <Alert variant="destructive" className="mt-4">
-          <AlertDescription>{error}</AlertDescription>
+        <Alert variant="destructive" className="mt-4 bg-tigers_eye-100 dark:bg-tigers_eye-900 border-tigers_eye-300 dark:border-tigers_eye-700">
+          <AlertDescription className="text-tigers_eye-600 dark:text-tigers_eye-300">{error}</AlertDescription>
         </Alert>
       )}
     </div>
