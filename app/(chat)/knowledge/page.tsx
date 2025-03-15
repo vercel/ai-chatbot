@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { KnowledgeDocument } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { KnowledgeUpload } from '@/components/knowledge-upload';
-import { TrashIcon, FileIcon, ExternalLinkIcon } from 'lucide-react';
+import { TrashIcon, FileIcon, ExternalLinkIcon, FileAudio, Volume2 } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -81,7 +81,7 @@ export default function KnowledgeBasePage() {
       case 'url':
         return <ExternalLinkIcon className="h-4 w-4" />;
       case 'audio':
-        return <FileIcon className="h-4 w-4" />;
+        return <FileAudio className="h-4 w-4" />;
       case 'video':
         return <FileIcon className="h-4 w-4" />;
       case 'youtube':

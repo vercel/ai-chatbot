@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import { KnowledgeDocument, KnowledgeChunk } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Trash2, FileIcon, ExternalLinkIcon } from 'lucide-react';
+import { ArrowLeft, Trash2, FileIcon, ExternalLinkIcon, FileAudio, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { TranscriptViewer } from '@/components/transcript-viewer';
+import { WhisperTranscriptionResponse } from '@/lib/knowledge/types/audio';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +25,7 @@ import {
 export default function KnowledgeDocumentPage({
   params,
 }: {
-  params: { id: string } | Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const router = useRouter();
   const [document, setDocument] = useState<(KnowledgeDocument & { chunks?: KnowledgeChunk[] }) | null>(null);
@@ -31,7 +33,8 @@ export default function KnowledgeDocumentPage({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<'combined' | 'chunks'>('combined');
-  const resolvedParams = use(params);
+  const [transcript, setTranscript] = useState<WhisperTranscriptionResponse | null>(null);
+  const { id } = params;
 
   // Process chunks for display
   const processedChunks = useMemo(() => {
@@ -66,15 +69,29 @@ export default function KnowledgeDocumentPage({
     return 'No extracted content available.';
   }, [document, processedChunks]);
 
+  // Audio URL for voice notes
+  const audioUrl = useMemo(() => {
+    if (document?.sourceType === 'audio') {
+      return `/api/knowledge/${id}/audio`;
+    }
+    return null;
+  }, [document, id]);
+
   useEffect(() => {
     fetchDocument();
-  }, [resolvedParams.id]);
+    if (id) {
+      fetchTranscript(id);
+    }
+  }, [id]);
   
   // Function to refresh document data
   const refreshDocument = async () => {
     try {
       setIsRefreshing(true);
       await fetchDocument();
+      if (document?.sourceType === 'audio') {
+        await fetchTranscript(resolvedParams.id);
+      }
       toast.success('Document refreshed');
     } catch (error) {
       console.error('Error refreshing document:', error);
@@ -87,7 +104,7 @@ export default function KnowledgeDocumentPage({
   async function fetchDocument() {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/knowledge/${resolvedParams.id}`);
+      const response = await fetch(`/api/knowledge/${id}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error('Document not found');
@@ -106,10 +123,26 @@ export default function KnowledgeDocumentPage({
     }
   }
 
+  async function fetchTranscript(documentId: string) {
+    try {
+      const response = await fetch(`/api/knowledge/${documentId}/transcription/progress`);
+      if (!response.ok) {
+        return;
+      }
+      
+      const data = await response.json();
+      if (data.status === 'completed' && data.transcript) {
+        setTranscript(data.transcript);
+      }
+    } catch (error) {
+      console.error('Error fetching transcript:', error);
+    }
+  }
+
   async function handleDeleteDocument() {
     try {
       setIsDeleting(true);
-      const response = await fetch(`/api/knowledge/${resolvedParams.id}`, {
+      const response = await fetch(`/api/knowledge/${id}`, {
         method: 'DELETE',
       });
 
@@ -148,7 +181,7 @@ export default function KnowledgeDocumentPage({
       case 'url':
         return <ExternalLinkIcon className="h-5 w-5" />;
       case 'audio':
-        return <FileIcon className="h-5 w-5" />;
+        return <FileAudio className="h-5 w-5" />;
       case 'video':
         return <FileIcon className="h-5 w-5" />;
       case 'youtube':
@@ -239,16 +272,41 @@ export default function KnowledgeDocumentPage({
             </p>
           </div>
 
-          {document.content && (
+          {/* Audio Player for Voice Notes */}
+          {document.sourceType === 'audio' && audioUrl && (
             <div className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Content</h2>
-              <div className="bg-muted p-4 rounded-md overflow-auto max-h-96">
-                <pre className="whitespace-pre-wrap">{document.content}</pre>
+              <h2 className="text-xl font-semibold mb-4">Audio Recording</h2>
+              <div className="bg-muted p-4 rounded-md">
+                <audio 
+                  controls 
+                  className="w-full" 
+                  src={audioUrl}
+                >
+                  Your browser does not support the audio element.
+                </audio>
               </div>
             </div>
           )}
 
-          {/* New Extracted Content Section */}
+          {/* Transcript Viewer for Voice Notes */}
+          {document.sourceType === 'audio' && transcript && (
+            <div className="border rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Transcript</h2>
+              <TranscriptViewer transcript={transcript} audioUrl={audioUrl || undefined} />
+            </div>
+          )}
+
+          {/* Text Content (for text documents) */}
+          {document.sourceType === 'text' && processedChunks.length > 0 && (
+            <div className="border rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Content</h2>
+              <div className="bg-muted p-4 rounded-md overflow-auto max-h-96">
+                <pre className="whitespace-pre-wrap">{processedChunks[0]?.content || 'No content available'}</pre>
+              </div>
+            </div>
+          )}
+
+          {/* Extracted Content Section */}
           <div className="border rounded-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Extracted Content</h2>
@@ -354,9 +412,16 @@ export default function KnowledgeDocumentPage({
                 <div>
                   <dt className="text-sm font-medium text-muted-foreground">File Size</dt>
                   <dd className="mt-1">
-                    {parseInt(document.fileSize, 10) > 1024 * 1024
-                      ? `${(parseInt(document.fileSize, 10) / (1024 * 1024)).toFixed(2)} MB`
-                      : `${(parseInt(document.fileSize, 10) / 1024).toFixed(2)} KB`}
+                    {document.fileSize}
+                  </dd>
+                </div>
+              )}
+              
+              {document.fileType && (
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">File Type</dt>
+                  <dd className="mt-1">
+                    {document.fileType}
                   </dd>
                 </div>
               )}
@@ -380,4 +445,4 @@ export default function KnowledgeDocumentPage({
       </div>
     </div>
   );
-} 
+}

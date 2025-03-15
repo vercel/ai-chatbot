@@ -296,7 +296,7 @@ async function transcribeAudioVideo(filePath: string, type: string): Promise<str
 /**
  * Split text into chunks of approximately 800-1000 tokens
  */
-function splitTextIntoChunks(text: string): string[] {
+export function splitTextIntoChunks(text: string): string[] {
   // A simple implementation that splits by paragraphs
   // In a real implementation, you would use a more sophisticated approach
   // that considers token count and semantic boundaries
@@ -324,7 +324,7 @@ function splitTextIntoChunks(text: string): string[] {
 /**
  * Create an embedding for a text chunk using OpenAI's embedding API
  */
-async function createEmbeddingWithAPI(text: string): Promise<number[]> {
+export async function createEmbeddingWithAPI(text: string): Promise<number[]> {
   try {
     console.log(`[DOCUMENT PROCESSOR] Generating embedding via OpenAI API`);
     const response = await openai.embeddings.create({
