@@ -1,0 +1,18 @@
+{
+  "documentId": "9a858288-e274-4d88-be2b-bef6deedf8a2",
+  "title": "CV",
+  "sourceType": "pdf",
+  "extractedTextLength": 245,
+  "chunkCount": 1,
+  "filePath": "/Users/amrehab/Downloads/wizzo-vercel-code/storage/uploads/8ac94f32-766d-4b67-931d-046b3f9cc3e6/9a858288-e274-4d88-be2b-bef6deedf8a2.pdf",
+  "processedAt": "2025-03-15T13:38:40.585Z",
+  "chunks": [
+    {
+      "id": "c3a355cc-f1b5-48af-8e43-553e86f2abc1",
+      "index": 0,
+      "contentPreview": "Text extracted from PDF file: 9a858288-e274-4d88-be2b-bef6deedf8a2.pdf. This is placeholder text for...",
+      "contentLength": 245,
+      "embeddingSource": "new"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { use } from 'react';
 import { KnowledgeDocument } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Trash2, FileIcon, ExternalLinkIcon } from 'lucide-react';
@@ -22,21 +23,22 @@ import {
 export default function KnowledgeDocumentPage({
   params,
 }: {
-  params: { id: string };
+  params: { id: string } | Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const [document, setDocument] = useState<KnowledgeDocument | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const resolvedParams = use(params);
 
   useEffect(() => {
     fetchDocument();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   async function fetchDocument() {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/knowledge/${params.id}`);
+      const response = await fetch(`/api/knowledge/${resolvedParams.id}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error('Document not found');
@@ -58,7 +60,7 @@ export default function KnowledgeDocumentPage({
   async function handleDeleteDocument() {
     try {
       setIsDeleting(true);
-      const response = await fetch(`/api/knowledge/${params.id}`, {
+      const response = await fetch(`/api/knowledge/${resolvedParams.id}`, {
         method: 'DELETE',
       });
 

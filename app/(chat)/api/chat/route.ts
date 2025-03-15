@@ -26,7 +26,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { searchKnowledge } from '@/lib/ai/tools/search-knowledge';
+import { searchKnowledgeToolAdapter } from '@/lib/knowledge/localFiles/searchToolAdapter';
 
 export const maxDuration = 60;
 
@@ -78,12 +78,64 @@ export async function POST(request: Request) {
           console.log(`Streaming response for chat ${id} using model ${selectedChatModel}`);
           
           try {
-            // Temporarily disable tools to work around Zod schema issue
-            console.log("Using chat model without tools to work around schema issues");
+            // First, try to find relevant knowledge for this message
+            const searchTool = searchKnowledgeToolAdapter({
+              session,
+              dataStream,
+              onChunksUsed: (chunks) => {
+                usedKnowledgeChunks = chunks;
+              },
+            });
+
+            // Search knowledge base with the user's message
+            console.log('Searching knowledge base for relevant information');
+            const knowledgeResults = await searchTool({
+              query: userMessage.content.toString(),
+              limit: 5,
+            });
+
+            console.log('Knowledge search results:', 
+              knowledgeResults.count > 0 
+                ? `Found ${knowledgeResults.count} relevant chunks` 
+                : 'No relevant information found');
+
+            // Now, invoke the chat model with enhanced context
+            let enhancedMessages = [...messages];
+            
+            // If we found knowledge information, add it to the context
+            if (knowledgeResults.count > 0) {
+              // Add a special system message with knowledge content
+              const knowledgeSystemMsg = {
+                id: generateUUID(),
+                role: 'system',
+                content: `I found the following relevant information in the user's knowledge base. Please use this information to answer their question:\n\n${knowledgeResults.relevantContent}\n\nYou MUST include and cite this information in your response, referring to the numbered sources.`
+              };
+              
+              // Insert just before the latest user message 
+              const userMsgIndex = enhancedMessages.findIndex(msg => 
+                msg.id === userMessage.id
+              );
+              
+              if (userMsgIndex > 0) {
+                enhancedMessages = [
+                  ...enhancedMessages.slice(0, userMsgIndex),
+                  knowledgeSystemMsg,
+                  ...enhancedMessages.slice(userMsgIndex)
+                ];
+              } else {
+                // Fallback - just append to the beginning
+                enhancedMessages = [knowledgeSystemMsg, ...enhancedMessages];
+              }
+              
+              console.log(`Added knowledge context to messages with ${knowledgeResults.count} chunks`);
+            } else {
+              console.log('No knowledge context found, using regular messages');
+            }
+            
             const result = streamText({
               model: myProvider.languageModel(selectedChatModel),
               system: systemPrompt({ selectedChatModel }),
-              messages,
+              messages: enhancedMessages,
               maxSteps: 5,
               experimental_transform: smoothStream({ chunking: 'word' }),
               experimental_generateMessageId: generateUUID,

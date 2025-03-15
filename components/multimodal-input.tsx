@@ -29,6 +29,8 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
+import { ClientFileInput, getFileInputRef } from './client-file-input';
+import { HydrationSafeTextarea } from './hydration-safe-textarea';
 
 function PureMultimodalInput({
   chatId,
@@ -68,25 +70,26 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      adjustHeight();
-    }
-  }, []);
-
-  const adjustHeight = () => {
+  // Define the adjustHeight function before using it in useEffect
+  const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
-  };
+  }, [textareaRef]);
 
-  const resetHeight = () => {
+  const resetHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = '98px';
     }
-  };
+  }, [textareaRef]);
+  
+  useEffect(() => {
+    if (textareaRef.current) {
+      adjustHeight();
+    }
+  }, [adjustHeight]);
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     'input',
@@ -99,7 +102,12 @@ function PureMultimodalInput({
       // Prefer DOM value over localStorage to handle hydration
       const finalValue = domValue || localStorageInput || '';
       setInput(finalValue);
-      adjustHeight();
+      // Use timeout to ensure DOM is ready
+      setTimeout(() => {
+        if (textareaRef.current) {
+          adjustHeight();
+        }
+      }, 0);
     }
     // Only run once after hydration
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,12 +117,34 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInput = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
     adjustHeight();
-  };
+  }, [setInput, adjustHeight]);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Use a different approach for file input to avoid hydration mismatches
+  const [fileInputKey, setFileInputKey] = useState<number>(0);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isClientMounted, setIsClientMounted] = useState(false);
+
+  // Set client mounted flag after hydration
+  useEffect(() => {
+    setIsClientMounted(true);
+  }, []);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setUploadQueue([]);
+      setAttachments([]);
+    };
+  }, [setAttachments]);
+
+  const resetFileInput = useCallback(() => {
+    // Force re-render the file input by changing its key
+    setFileInputKey(prev => prev + 1);
+  }, []);
+  
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
@@ -138,6 +168,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    resetHeight,
   ]);
 
   const uploadFile = async (file: File) => {
@@ -201,14 +232,14 @@ function PureMultimodalInput({
           <SuggestedActions append={append} chatId={chatId} />
         )}
 
-      <input
-        type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
-        ref={fileInputRef}
-        multiple
-        onChange={handleFileChange}
-        tabIndex={-1}
-      />
+      {/* Client-side only file input to avoid hydration mismatches */}
+      {isClientMounted && (
+        <ClientFileInput 
+          key={fileInputKey}
+          onChange={handleFileChange}
+          ref={fileInputRef}
+        />
+      )}
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
         <div className="flex flex-row gap-2 overflow-x-scroll items-end">
@@ -230,7 +261,7 @@ function PureMultimodalInput({
         </div>
       )}
 
-      <Textarea
+      <HydrationSafeTextarea
         ref={textareaRef}
         placeholder="Send a message..."
         value={input}
@@ -241,6 +272,7 @@ function PureMultimodalInput({
         )}
         rows={2}
         autoFocus
+        onHeightChange={adjustHeight}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -276,10 +308,13 @@ function PureMultimodalInput({
 export const MultimodalInput = memo(
   PureMultimodalInput,
   (prevProps, nextProps) => {
+    // These props would cause a re-render when changed
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-
+    if (prevProps.className !== nextProps.className) return false;
+    
+    // The component should re-render when these change
     return true;
   },
 );

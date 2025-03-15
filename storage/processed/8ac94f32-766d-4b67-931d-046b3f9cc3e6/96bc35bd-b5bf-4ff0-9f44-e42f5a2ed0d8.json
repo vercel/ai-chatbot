@@ -1,0 +1,24 @@
+{
+  "documentId": "96bc35bd-b5bf-4ff0-9f44-e42f5a2ed0d8",
+  "title": "appartment",
+  "sourceType": "text",
+  "extractedTextLength": 4342,
+  "chunkCount": 2,
+  "processedAt": "2025-03-15T14:13:55.363Z",
+  "chunks": [
+    {
+      "id": "d6371594-839c-43d3-8bd2-af33790cd5a8",
+      "index": 0,
+      "contentPreview": "Description\tAmount\t\t\t\t\t\t\r\nApartment Price\t£6,432,048\tApartment Data\t£44,667\t\t\t\t\r\nDown Payment (5%) -...",
+      "contentLength": 577,
+      "embeddingSource": "new"
+    },
+    {
+      "id": "df30a39a-f7e4-489e-887a-025526fca874",
+      "index": 1,
+      "contentPreview": "Month\tCheques\tMonthly Installments (Virtual)\tEGP In Hand\tUSD > EGP\tUSD Needed\tSavings USD\tReserve US...",
+      "contentLength": 3748,
+      "embeddingSource": "new"
+    }
+  ]
+}

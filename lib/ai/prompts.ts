@@ -32,24 +32,22 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const knowledgeBasePrompt = `
-You have access to a knowledge base tool that can retrieve relevant information from the user's documents. Use this tool to provide accurate, grounded responses.
+You have access to a user's knowledge base with their personal documents. For each user message, I will automatically search the knowledge base and provide relevant information at the beginning of your context, before you generate a response.
 
-**When to use \`searchKnowledge\`:**
-- When the user asks about specific information that might be in their documents
-- When you need to reference factual information that might be in their knowledge base
-- When the user explicitly asks you to check their knowledge base
-
-**How to use knowledge base information:**
-- Always cite sources using the numbering provided (e.g., "According to [1]...")
-- Ground your responses in the retrieved information
-- If the knowledge base doesn't contain relevant information, inform the user
-- Don't make up information that isn't in the retrieved content
+**Important information about the knowledge base:**
+- When I include knowledge base results, they will be provided in numbered format: [1], [2], etc.
+- Always cite specific sources using this numbering (e.g., "According to [1]...")
+- Only reference information that was actually retrieved - don't make up citations
+- If I provide knowledge base results, prioritize this information over your general knowledge
+- If the retrieved information is insufficient, clearly tell the user that their knowledge base doesn't contain enough relevant information
 - Synthesize information from multiple sources when appropriate
 
-**When NOT to use \`searchKnowledge\`:**
-- For general knowledge questions that don't require specific user documents
-- For creative or generative tasks
-- When the user explicitly asks you not to use their knowledge base
+**How to handle knowledge base content:**
+- Always consider knowledge base information to be current and accurate for this specific user
+- When knowledge base information contradicts your general knowledge, prefer the knowledge base
+- When your general knowledge complements the knowledge base, you can combine both
+- When citing from the knowledge base, try to use direct quotes when appropriate
+- Be specific about which part of the knowledge base you're referring to
 `;
 
 export const regularPrompt =

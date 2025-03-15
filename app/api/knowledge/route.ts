@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { createKnowledgeDocument, getKnowledgeDocumentsByUserId } from '@/lib/db/queries';
-import { processDocument } from '@/lib/knowledge/processor';
+import { processDocumentLocal } from '@/lib/knowledge/localFiles/documentProcessor';
+import { saveUploadedFile } from '@/lib/knowledge/localFiles/fileHandler';
 
 export async function GET(req: NextRequest) {
   try {
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
     let fileSize = '';
     let fileType = '';
     let content = '';
+    let file: File | null = null;
 
     // Handle different source types
     if (sourceType === 'text') {
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
         );
       }
     } else {
-      const file = formData.get('file') as File;
+      file = formData.get('file') as File;
       if (!file) {
         return NextResponse.json(
           { error: 'Missing file' },
@@ -83,9 +85,7 @@ export async function POST(req: NextRequest) {
       }
       fileSize = file.size.toString();
       fileType = file.type;
-      
-      // Here you would handle file upload to storage
-      // For now, we'll just create the document record
+      console.log(`File received: ${file.name}, Size: ${fileSize}, Type: ${fileType}`);
     }
 
     // Create the document in the database
@@ -98,19 +98,33 @@ export async function POST(req: NextRequest) {
       fileSize,
       fileType,
     });
+    
+    console.log(`Created knowledge document in database: ${document.id}`);
 
     // Process the document asynchronously
-    // This would typically be done in a background job
-    // For simplicity, we'll just call it here
-    processDocument({
-      document,
-      content,
-      // file would be passed here in a real implementation
-    }).catch(error => {
-      console.error('Error processing document:', error);
-    });
+    // We wrap this in a try/catch but don't await it, so we can return the response immediately
+    try {
+      // Start processing in the background
+      processDocumentLocal({
+        document,
+        content,
+        file: file || undefined,
+        userId: session.user.id
+      }).catch(processingError => {
+        console.error('Error in background document processing:', processingError);
+      });
+      
+      console.log(`Started background processing for document: ${document.id}`);
+    } catch (processingSetupError) {
+      console.error('Error setting up document processing:', processingSetupError);
+      // We don't return an error here since the document was created in the DB
+      // The processing status will be updated to 'failed' by the processor itself
+    }
 
-    return NextResponse.json(document, { status: 201 });
+    return NextResponse.json({
+      ...document,
+      message: 'Document created and processing started',
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating knowledge document:', error);
     return NextResponse.json(
@@ -118,4 +132,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

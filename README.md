@@ -1,61 +1,100 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Next.js AI Chatbot</h1>
-</a>
+# WIZZO - Enhanced AI Chatbot with Knowledge Base
 
-<p align="center">
-  An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.
-</p>
-
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+This is an enhanced version of the Next.js AI Chatbot, with extended capabilities for knowledge base integration.
 
 ## Features
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://sdk.vercel.ai/docs)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports OpenAI (default), Anthropic, Cohere, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Vercel Postgres powered by Neon](https://vercel.com/storage/postgres) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [NextAuth.js](https://github.com/nextauthjs/next-auth)
-  - Simple and secure authentication
+- Chat with multiple AI models
+- Upload and process various document types
+- Reference your knowledge base in conversations
+- Dark and light theme support
+- Secure authentication
 
-## Model Providers
+## Setting Up Locally
 
-This template ships with OpenAI `gpt-4o` as the default. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+### Quick Start
 
-## Deploy Your Own
-
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET,OPENAI_API_KEY&envDescription=Learn%20more%20about%20how%20to%20get%20the%20API%20Keys%20for%20the%20application&envLink=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot%2Fblob%2Fmain%2F.env.example&demo-title=AI%20Chatbot&demo-description=An%20Open-Source%20AI%20Chatbot%20Template%20Built%20With%20Next.js%20and%20the%20AI%20SDK%20by%20Vercel.&demo-url=https%3A%2F%2Fchat.vercel.ai&stores=[{%22type%22:%22postgres%22},{%22type%22:%22blob%22}])
-
-## Running locally
-
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
-
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various OpenAI and authentication provider accounts.
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+Run the automated setup script:
 
 ```bash
-pnpm install
-pnpm dev
+# Make the script executable
+chmod +x scripts/start-wizzo.sh
+
+# Run the script
+./scripts/start-wizzo.sh
 ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000/).
+This script will:
+1. Set up local storage directories
+2. Fix database schema issues
+3. Set up knowledge base tables
+4. Install dependencies if needed
+5. Start the development server
+
+### Manual Setup
+
+If you prefer to set up manually:
+
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+2. Set up local storage:
+   ```bash
+   pnpm setup:local
+   ```
+
+3. Fix database issues:
+   ```bash
+   pnpm fix:database
+   pnpm fix:knowledge
+   ```
+
+4. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+
+## Environment Variables
+
+The app uses several environment variables defined in `.env.local`. Make sure to set them properly for your environment.
+
+## Knowledge Base Integration
+
+This enhanced version includes:
+- Local storage for uploaded files
+- Improved document processing
+- Advanced content extraction
+- Fallback search when database issues occur
+
+## Database Schema
+
+The knowledge base uses three main tables:
+- KnowledgeDocument - stores document metadata
+- KnowledgeChunk - stores chunks of text with embeddings
+- KnowledgeReference - links chunks to chat messages
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. Run the database diagnostic:
+   ```bash
+   pnpm diagnose:schema
+   ```
+
+2. Fix knowledge tables specifically:
+   ```bash
+   pnpm fix:knowledge
+   ```
+
+3. Clear and recreate local storage:
+   ```bash
+   rm -rf storage
+   pnpm setup:local
+   ```
+
+## Credits
+
+Based on the original [Next.js AI Chatbot template](https://github.com/vercel/ai-chatbot) by Vercel.
