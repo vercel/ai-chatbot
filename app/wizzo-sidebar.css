@@ -1,0 +1,123 @@
+/* WIZZO Sidebar Styles - To be imported in globals.css */
+
+/* Main layout container for the app */
+.wizzo-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Primary sidebar styles */
+.wizzo-primary-sidebar {
+  background-color: #386641 !important;
+  color: #fefae0 !important;
+  transition: width 0.2s ease;
+}
+
+/* Ensure sidebar background color is consistent */
+.wizzo-primary-sidebar [data-sidebar="sidebar"] {
+  background-color: #386641 !important;
+}
+
+/* Logo style */
+.wizzo-logo {
+  color: #fefae0;
+  font-weight: 600;
+}
+
+/* Main content area that adjusts based on sidebar states */
+.wizzo-main-content {
+  flex: 1;
+  transition: margin-left 0.2s ease;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+/* Main content margin adjustment for collapsed sidebar */
+.group-data-[collapsible=icon] ~ .wizzo-main-content {
+  margin-left: var(--sidebar-width-icon);
+}
+
+/* Sidebar menu buttons styling */
+[data-sidebar="menu-button"] {
+  color: #fefae0 !important;
+  font-weight: 500;
+}
+
+[data-sidebar="menu-button"]:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-sidebar="menu-button"][data-active="true"] {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  font-weight: 600;
+}
+
+/* Primary buttons */
+.primary-button {
+  color: #fefae0 !important;
+}
+
+.primary-button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Secondary content container */
+.secondary-content-container {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.5rem;
+}
+
+.secondary-content h3 {
+  color: #fefae0;
+  opacity: 0.8;
+}
+
+/* Accessibility improvements */
+:focus-visible {
+  outline: 3px solid #fefae0 !important;
+  outline-offset: 2px;
+}
+
+/* WCAG compliance - Touch targets */
+[data-sidebar="menu-button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Improved contrast for secondary text */
+.text-muted-foreground {
+  color: #d1d5db !important;
+  opacity: 0.9;
+}
+
+.secondary-content .text-muted-foreground {
+  color: #ddd !important;
+}
+
+.dark .secondary-content .text-muted-foreground {
+  color: #aaa !important;
+}
+
+/* Dark mode adjustments */
+.dark .wizzo-main-content {
+  background-color: hsl(var(--background));
+}
+
+/* Ensure content inside expanded sidebar is properly spaced */
+.group-data-[collapsible=icon] [data-sidebar="menu-button"] span,
+.group-data-[collapsible=icon] .secondary-content-container {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Animate visibility transitions */
+[data-sidebar="menu-button"] span {
+  transition: opacity 0.2s ease;
+}
+
+.secondary-content-container {
+  transition: opacity 0.2s ease;
+}

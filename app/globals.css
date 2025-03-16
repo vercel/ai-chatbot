@@ -55,14 +55,14 @@
         --radius: 0.5rem;
         
         /* Sidebar colors */
-        --sidebar-background: 52 80% 97%; /* slightly different cornsilk */
-        --sidebar-foreground: 132 29% 31%; /* hunter green #386641 */
+        --sidebar-background: 132 29% 31%; /* hunter green #386641 for both modes */
+        --sidebar-foreground: 52 94% 94%; /* cornsilk #fefae0 for both modes */
         --sidebar-primary: 132 29% 31%; /* hunter green #386641 */
         --sidebar-primary-foreground: 52 94% 94%; /* cornsilk #fefae0 */
-        --sidebar-accent: 98 32% 45%; /* asparagus #6a994e */
+        --sidebar-accent: 132 29% 38%; /* slightly lighter hunter green for hover */
         --sidebar-accent-foreground: 52 94% 94%; /* cornsilk #fefae0 */
-        --sidebar-border: 52 40% 84%; /* border based on cornsilk */
-        --sidebar-ring: 132 29% 31%; /* hunter green #386641 */
+        --sidebar-border: 132 29% 25%; /* darker hunter green for borders */
+        --sidebar-ring: 52 94% 94%; /* cornsilk #fefae0 */
     }
     
     .dark {
@@ -94,15 +94,15 @@
         --chart-4: 32 57% 65%; /* lightened earth yellow */
         --chart-5: 28 67% 55%; /* lightened tiger's eye */
         
-        /* Sidebar colors for dark mode */
-        --sidebar-background: 132 29% 15%; /* darker hunter green for sidebar */
-        --sidebar-foreground: 52 94% 94%; /* cornsilk #fefae0 */
-        --sidebar-primary: 98 32% 45%; /* asparagus #6a994e */
+        /* Sidebar colors for dark mode - same as light mode for consistency */
+        --sidebar-background: 132 29% 31%; /* hunter green #386641 for both modes */
+        --sidebar-foreground: 52 94% 94%; /* cornsilk #fefae0 for both modes */
+        --sidebar-primary: 132 29% 31%; /* hunter green #386641 */
         --sidebar-primary-foreground: 52 94% 94%; /* cornsilk #fefae0 */
-        --sidebar-accent: 132 29% 25%; /* darker hunter green */
+        --sidebar-accent: 132 29% 38%; /* slightly lighter hunter green for hover */
         --sidebar-accent-foreground: 52 94% 94%; /* cornsilk #fefae0 */
-        --sidebar-border: 132 20% 25%; /* border based on hunter green */
-        --sidebar-ring: 98 32% 45%; /* asparagus #6a994e */
+        --sidebar-border: 132 29% 25%; /* darker hunter green for borders */
+        --sidebar-ring: 52 94% 94%; /* cornsilk #fefae0 */
     }
 }
 
@@ -156,6 +156,53 @@
 .cm-editor,
 .cm-gutters {
     @apply bg-background dark:bg-hunter_green-400 outline-none selection:bg-asparagus-200 dark:selection:bg-asparagus-700 !important;
+}
+
+/* Simple sidebar styling */
+.wizzo-sidebar {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  background-color: #386641 !important;
+  color: #fefae0 !important;
+  overflow: hidden;
+}
+
+.wizzo-sidebar-secondary {
+  width: 240px !important;
+  min-width: 240px !important;
+  background-color: #386641 !important;
+  color: #fefae0 !important;
+}
+
+/* Thread section styles */
+.date-header {
+  color: #a0aec0;
+  font-size: 0.8125rem;
+  padding: 0.75rem 0.5rem 0.25rem 0.75rem;
+}
+
+.thread-title {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  padding: 0.375rem 0.75rem;
+  margin-bottom: 0.125rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease;
+}
+
+.thread-title:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.thread-title[data-active="true"] {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Fix main content height */
+body, html, #root {
+  height: 100vh;
+  overflow: hidden;
 }
 
 .ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
