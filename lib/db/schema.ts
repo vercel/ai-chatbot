@@ -173,3 +173,76 @@ export const knowledgeReference = pgTable('KnowledgeReference', {
 });
 
 export type KnowledgeReference = InferSelectModel<typeof knowledgeReference>;
+
+// Tasks Management tables
+export const taskProject = pgTable('task_project', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  color: varchar('color', { length: 20 }).notNull().default('#808080'),
+  isDefault: boolean('isDefault').notNull().default(false),
+  isDeleted: boolean('isDeleted').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type TaskProject = InferSelectModel<typeof taskProject>;
+
+export const taskItem = pgTable('task_item', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  projectId: uuid('projectId')
+    .notNull()
+    .references(() => taskProject.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  description: text('description'),
+  completed: boolean('completed').notNull().default(false),
+  priority: varchar('priority', { enum: ['p1', 'p2', 'p3', 'p4'] }).notNull().default('p4'),
+  dueDate: varchar('dueDate', { length: 50 }),
+  isDeleted: boolean('isDeleted').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+}, (table) => {
+  return {
+    projectIdIdx: index('project_id_idx').on(table.projectId),
+    userIdIdx: index('user_id_idx').on(table.userId),
+  };
+});
+
+export type TaskItem = InferSelectModel<typeof taskItem>;
+
+export const taskLabel = pgTable('task_label', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  color: varchar('color', { length: 20 }).notNull().default('#808080'),
+  isDeleted: boolean('isDeleted').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type TaskLabel = InferSelectModel<typeof taskLabel>;
+
+export const taskItemLabel = pgTable('task_item_label', {
+  taskId: uuid('taskId')
+    .notNull()
+    .references(() => taskItem.id, { onDelete: 'cascade' }),
+  labelId: uuid('labelId')
+    .notNull()
+    .references(() => taskLabel.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.taskId, table.labelId] }),
+    taskIdIdx: index('task_id_idx').on(table.taskId),
+    labelIdIdx: index('label_id_idx').on(table.labelId),
+  };
+});
+
+export type TaskItemLabel = InferSelectModel<typeof taskItemLabel>;

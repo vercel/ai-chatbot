@@ -10,19 +10,15 @@ import {
   Sidebar, 
   SidebarContent, 
   SidebarFooter, 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton,
-  SidebarTrigger,
-  useSidebar,
   SidebarProvider
 } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { BookOpen, MessageSquare, Video, Menu } from 'lucide-react';
+import { BookOpen, MessageSquare, Video, Menu, CheckSquare, Plus } from 'lucide-react';
 import { IconWrapper } from './ui/icon-wrapper';
 import { SidebarUserNav } from './sidebar-user-nav';
 import { Button } from './ui/button';
 import { SidebarHistory } from '@/components/sidebar-history';
+import { ScrollArea } from './ui/scroll-area';
+import { MobileHeader } from './mobile-header';
 
 export function AppSidebar({ 
   user, 
@@ -33,9 +29,33 @@ export function AppSidebar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isSecondaryOpen, setIsSecondaryOpen] = useState(true);
-  const [open, setOpen] = useState(true);
-  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | 'meets' | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | 'meets' | 'tasks' | null>(null);
+  
+  // Check if mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    // Check if mobile on first render and on resize
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      // Auto-close sidebar on mobile
+      if (window.innerWidth < 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Listen for resize events
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
   
   // Determine the active section based on the current pathname
   useEffect(() => {
@@ -45,164 +65,184 @@ export function AppSidebar({
       setActiveSection('knowledge');
     } else if (pathname.startsWith('/meets')) {
       setActiveSection('meets');
+    } else if (pathname.startsWith('/task-management') || pathname.startsWith('/tasks')) {
+      setActiveSection('tasks');
     } else {
       setActiveSection(null);
     }
   }, [pathname]);
 
-  // Navigate directly to the section pages
-  const handleSectionClick = (section: 'threads' | 'knowledge' | 'meets') => {
-    if (section === 'threads') {
-      router.push('/');
-    } else if (section === 'knowledge') {
-      router.push('/knowledge');
-    } else if (section === 'meets') {
-      router.push('/meets');
+  // Create a new chat
+  const handleNewChat = () => {
+    router.push('/');
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
     }
-    
-    setActiveSection(section);
+  };
+  
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    } else {
+      setIsSidebarOpen(!isSidebarOpen);
+    }
+  };
+  
+  // Close mobile menu when navigating
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
+    }
+  };
+  
+  // Get page title based on active section
+  const getPageTitle = () => {
+    switch (activeSection) {
+      case 'threads':
+        return 'Wizzo Chat';
+      case 'knowledge':
+        return 'Knowledge Base';
+      case 'meets':
+        return 'Meets';
+      case 'tasks':
+        return 'Task Management';
+      default:
+        return 'Wizzo';
+    }
+  };
+  
+  // Handle navigation for task management paths
+  const handleTasksNavigation = () => {
+    // Maintain the same path format the user is currently on
+    if (pathname.startsWith('/tasks')) {
+      handleNavigation('/tasks');
+    } else {
+      handleNavigation('/task-management');
+    }
   };
 
   return (
     <SidebarProvider>
-      <div className="flex h-full">
-      {/* Main sidebar with minimal width */}
-      <Sidebar 
-        className="h-full border-r-0 wizzo-sidebar"
-        collapsible="none"
-        variant="sidebar"
-      >
-        <div className="flex flex-col h-full">
-          {/* Top header with logo */}
-          <div className="flex items-center px-3 h-[60px] border-b border-hunter_green-600">
-            <Link href="/" className="flex items-center">
-              <span className="font-bold text-xl text-cornsilk-500">
-                WIZZO
-              </span>
-            </Link>
-            
-            <IconWrapper 
-              icon={Menu}
-              className="ml-auto size-5 cursor-pointer hover:text-cornsilk-200" 
-              onClick={() => setIsSecondaryOpen(!isSecondaryOpen)} 
-            />
-          </div>
-          
-          {/* Navigation buttons */}
-          <div className="flex flex-col pt-4 space-y-1">
+      <div className="flex h-full relative">
+        {/* Mobile overlay */}
+        {isMobile && (
+          <div 
+            className={`chatgpt-sidebar-overlay ${isMobileMenuOpen ? 'show' : ''}`} 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+        
+        {/* Mobile menu toggle */}
+        {isMobile && (
+          <button 
+            className="md:hidden fixed top-3 left-3 z-50 p-2 rounded-md bg-[#2A5B34] shadow-sm border border-white/10"
+            onClick={toggleSidebar}
+          >
+            <Menu className="h-5 w-5 text-white" />
+          </button>
+        )}
+        
+        {/* Main sidebar with ChatGPT-like styling */}
+        <div className={`chatgpt-sidebar ${isMobile ? (isMobileMenuOpen ? 'chatgpt-sidebar-open' : '') : (isSidebarOpen ? 'chatgpt-sidebar-open' : 'chatgpt-sidebar-closed')} h-full flex flex-col border-r border-gray-200 dark:border-gray-700/50 transition-all duration-300 ease-in-out bg-[#2A5B34] text-white z-50`}>
+          {/* New Chat button and Toggle */}
+          <div className="p-2">
             <button
-              className={`flex items-center py-2 px-3 hover:bg-hunter_green-600 transition-colors ${
-                activeSection === 'threads' ? 'bg-hunter_green-700' : ''
-              }`}
-              onClick={() => handleSectionClick('threads')}
-              aria-label="Threads"
+              onClick={handleNewChat}
+              className="flex w-full items-center rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium shadow-sm hover:bg-white/20 transition-colors group"
             >
-              <IconWrapper icon={MessageSquare} className="size-5 text-cornsilk-500" strokeWidth={2.2} />
-            </button>
-            
-            <button
-              className={`flex items-center py-2 px-3 hover:bg-hunter_green-600 transition-colors ${
-                activeSection === 'knowledge' ? 'bg-hunter_green-700' : ''
-              }`}
-              onClick={() => handleSectionClick('knowledge')}
-              aria-label="Knowledge Base"
-            >
-              <IconWrapper icon={BookOpen} className="size-5 text-cornsilk-500" strokeWidth={2.2} />
-            </button>
-            
-            <button
-              className={`flex items-center py-2 px-3 hover:bg-hunter_green-600 transition-colors ${
-                activeSection === 'meets' ? 'bg-hunter_green-700' : ''
-              }`}
-              onClick={() => handleSectionClick('meets')}
-              aria-label="Meets"
-            >
-              <IconWrapper icon={Video} className="size-5 text-cornsilk-500" strokeWidth={2.2} />
+              <Plus className="mr-2 h-4 w-4" />
+              <span className={`${isMobile || isSidebarOpen ? 'block' : 'hidden'} flex-1 text-left`}>New chat</span>
+              {!isMobile && (
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsSidebarOpen(!isSidebarOpen);
+                  }}
+                  className="p-1 rounded-md hover:bg-white/10"
+                >
+                  <Menu className="h-4 w-4 text-white/70" />
+                </div>
+              )}
             </button>
           </div>
-          
-          {/* User navigation at bottom */}
-          <div className="mt-auto pb-4 px-2">
-            {user && <SidebarUserNav user={user} />}
+
+          {/* History list */}
+          <div className={`flex-1 overflow-hidden ${isMobile || isSidebarOpen ? 'block' : 'hidden'}`}>
+            <ScrollArea className="h-full px-2">
+              {user && <SidebarHistory user={user} />}
+            </ScrollArea>
+          </div>
+
+          {/* Bottom section with buttons and user profile */}
+          <div className={`border-t border-white/10 ${isMobile || isSidebarOpen ? 'p-2' : 'p-1'}`}>
+            {/* Main feature buttons */}
+            <div className={`flex ${isMobile || isSidebarOpen ? 'flex-col space-y-1' : 'flex-col items-center space-y-3'} mb-2`}>
+              <button
+                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
+                  activeSection === 'threads' 
+                    ? 'bg-white/20 text-white font-medium' 
+                    : 'text-white/80 hover:bg-white/10'
+                }`}
+                onClick={() => handleNavigation('/')}
+              >
+                <MessageSquare className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                {(isMobile || isSidebarOpen) && <span>Chats</span>}
+              </button>
+              
+              <button
+                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
+                  activeSection === 'knowledge' 
+                    ? 'bg-white/20 text-white font-medium' 
+                    : 'text-white/80 hover:bg-white/10'
+                }`}
+                onClick={() => handleNavigation('/knowledge')}
+              >
+                <BookOpen className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                {(isMobile || isSidebarOpen) && <span>Knowledge</span>}
+              </button>
+              
+              <button
+                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
+                  activeSection === 'meets' 
+                    ? 'bg-white/20 text-white font-medium' 
+                    : 'text-white/80 hover:bg-white/10'
+                }`}
+                onClick={() => handleNavigation('/meets')}
+              >
+                <Video className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                {(isMobile || isSidebarOpen) && <span>Meets</span>}
+              </button>
+              
+              <button
+                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
+                  activeSection === 'tasks' 
+                    ? 'bg-white/20 text-white font-medium' 
+                    : 'text-white/80 hover:bg-white/10'
+                }`}
+                onClick={() => handleTasksNavigation()}
+              >
+                <CheckSquare className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                {(isMobile || isSidebarOpen) && <span>Tasks</span>}
+              </button>
+            </div>
+            
+            {/* User avatar and profile */}
+            <div className={`mt-2 ${isMobile || isSidebarOpen ? '' : 'flex justify-center'}`}>
+              {user && <SidebarUserNav user={user} isCollapsed={!isMobile && !isSidebarOpen} />}
+            </div>
           </div>
         </div>
-      </Sidebar>
-      
-      {/* Secondary sidebar */}
-      {isSecondaryOpen && activeSection && activeSection !== 'meets' && (
-        <div className="w-60 h-full overflow-y-auto border-r border-hunter_green-600 bg-hunter_green-500 wizzo-sidebar-secondary">
-          {activeSection === 'threads' && (
-            <div className="h-full">
-              <div className="flex items-center justify-between p-3 h-[60px] border-b border-hunter_green-600">
-                <h2 className="font-semibold text-cornsilk-500">Conversations</h2>
-                <Link href="/">
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="p-1 h-8 w-8 rounded-full text-cornsilk-500 hover:bg-hunter_green-600"
-                  >
-                    <PlusIcon className="size-5" />
-                    <span className="sr-only">New Chat</span>
-                  </Button>
-                </Link>
-              </div>
-              
-              <SidebarHistory user={user} />
-            </div>
-          )}
-          
-          {activeSection === 'knowledge' && (
-            <div className="h-full">
-              <div className="flex items-center justify-between p-3 h-[60px] border-b border-hunter_green-600">
-                <h2 className="font-semibold text-cornsilk-500">Knowledge Base</h2>
-                <Link href="/knowledge">
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="p-1 h-8 w-8 rounded-full text-cornsilk-500 hover:bg-hunter_green-600"
-                  >
-                    <PlusIcon className="size-5" />
-                    <span className="sr-only">Add Document</span>
-                  </Button>
-                </Link>
-              </div>
-              
-              <div className="p-3">
-                <Link 
-                  href="/knowledge/category/text" 
-                  className="block py-2 px-3 mb-1 rounded hover:bg-hunter_green-600 transition-colors"
-                >
-                  Text Documents
-                </Link>
-                <Link 
-                  href="/knowledge/category/audio" 
-                  className="block py-2 px-3 mb-1 rounded hover:bg-hunter_green-600 transition-colors"
-                >
-                  Audio Files
-                </Link>
-                <Link 
-                  href="/knowledge/category/web" 
-                  className="block py-2 px-3 mb-1 rounded hover:bg-hunter_green-600 transition-colors"
-                >
-                  Web Content
-                </Link>
-                <Link 
-                  href="/knowledge" 
-                  className="block py-2 px-3 mb-1 rounded hover:bg-hunter_green-600 transition-colors"
-                >
-                  All Documents
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Main content */}
-      <main className="flex-1 h-full overflow-auto">
-        {children}
-      </main>
-    </div>
+        
+        {/* Main content */}
+        <main className="flex-1 h-full overflow-auto relative flex flex-col">
+          <MobileHeader toggleSidebar={toggleSidebar} title={getPageTitle()} />
+          <div className="flex-1">
+            {children}
+          </div>
+        </main>
+      </div>
     </SidebarProvider>
   );
 }

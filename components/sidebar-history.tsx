@@ -1,6 +1,6 @@
 'use client';
 
-import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
+import { isToday, isYesterday, subMonths, subWeeks, format } from 'date-fns';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { User } from 'next-auth';
@@ -32,6 +32,7 @@ import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useSidebar } from '@/components/ui/sidebar';
+import { MessageSquare, MoreVertical, Trash2 } from 'lucide-react';
 
 type GroupedChats = {
   today: Chat[];
@@ -89,8 +90,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   if (!user) {
     return (
-      <div className="p-4 text-center text-cornsilk-500/70">
-        Login to save and revisit previous chats
+      <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500 dark:text-gray-400">
+        <MessageSquare className="h-6 w-6 mb-2 opacity-50" />
+        <p>Login to save and revisit previous chats</p>
       </div>
     );
   }
@@ -98,11 +100,11 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   if (isLoading) {
     return (
       <div className="p-3">
-        <div className="date-header">Today</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2 px-1">Today</div>
         {[44, 32, 28].map((width, i) => (
           <div
             key={i}
-            className="bg-hunter_green-600/50 h-8 my-1 rounded animate-pulse"
+            className="bg-gray-200 dark:bg-gray-700 h-8 my-1 rounded animate-pulse"
             style={{ width: `${width}%` }}
           ></div>
         ))}
@@ -112,8 +114,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   if (history?.length === 0) {
     return (
-      <div className="p-4 text-center text-cornsilk-500/70">
-        Your conversations will appear here once you start chatting!
+      <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500 dark:text-gray-400">
+        <MessageSquare className="h-6 w-6 mb-2 opacity-50" />
+        <p>Your conversations will appear here</p>
       </div>
     );
   }
@@ -151,200 +154,133 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     );
   };
 
+  const renderChatItem = (chat: Chat) => (
+    <div 
+      key={chat.id} 
+      className="group relative"
+    >
+      <div 
+        className={`flex items-center rounded-md py-2 px-3 text-sm cursor-pointer transition-colors ${
+          chat.id === id 
+            ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' 
+            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+        }`}
+        onClick={() => {
+          router.push(`/chat/${chat.id}`);
+          setOpenMobile(false);
+        }}
+      >
+        <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
+        <span className="truncate flex-1 text-sm">{chat.title}</span>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button 
+              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-sm hover:bg-gray-200 dark:hover:bg-gray-700"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              className="text-red-600 dark:text-red-400 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteId(chat.id);
+                setShowDeleteDialog(true);
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete chat
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="overflow-y-auto h-[calc(100vh-60px)]">
+    <div className="space-y-2 p-1 pb-4">
       {history &&
         (() => {
           const groupedChats = groupChatsByDate(history);
 
           return (
-            <div className="pb-4">
+            <>
               {groupedChats.today.length > 0 && (
-                <>
-                  <div className="date-header">
+                <div>
+                  <h3 className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1 px-3">
                     Today
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedChats.today.map(renderChatItem)}
                   </div>
-                  {groupedChats.today.map((chat) => (
-                    <div 
-                      key={chat.id} 
-                      className="relative group"
-                    >
-                      <div 
-                        className={`thread-title cursor-pointer ${chat.id === id ? 'bg-hunter_green-600' : ''}`}
-                        onClick={() => {
-                          router.push(`/chat/${chat.id}`);
-                          setOpenMobile(false);
-                        }}
-                      >
-                        <span className="block truncate pr-7">{chat.title}</span>
-                      </div>
-                      <div 
-                        className="absolute right-2 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(chat.id);
-                          setShowDeleteDialog(true);
-                        }}
-                      >
-                        <TrashIcon size={16} className="size-4 text-cornsilk-400 hover:text-cornsilk-300 cursor-pointer" />
-                      </div>
-                    </div>
-                  ))}
-                </>
+                </div>
               )}
 
               {groupedChats.yesterday.length > 0 && (
-                <>
-                  <div className="date-header mt-2">
+                <div>
+                  <h3 className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1 px-3 mt-3">
                     Yesterday
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedChats.yesterday.map(renderChatItem)}
                   </div>
-                  {groupedChats.yesterday.map((chat) => (
-                    <div 
-                      key={chat.id} 
-                      className="relative group"
-                    >
-                      <div 
-                        className={`thread-title cursor-pointer ${chat.id === id ? 'bg-hunter_green-600' : ''}`}
-                        onClick={() => {
-                          router.push(`/chat/${chat.id}`);
-                          setOpenMobile(false);
-                        }}
-                      >
-                        <span className="block truncate pr-7">{chat.title}</span>
-                      </div>
-                      <div 
-                        className="absolute right-2 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(chat.id);
-                          setShowDeleteDialog(true);
-                        }}
-                      >
-                        <TrashIcon size={16} className="size-4 text-cornsilk-400 hover:text-cornsilk-300 cursor-pointer" />
-                      </div>
-                    </div>
-                  ))}
-                </>
+                </div>
               )}
 
               {groupedChats.lastWeek.length > 0 && (
-                <>
-                  <div className="date-header mt-2">
-                    Last 7 days
+                <div>
+                  <h3 className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1 px-3 mt-3">
+                    Previous 7 days
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedChats.lastWeek.map(renderChatItem)}
                   </div>
-                  {groupedChats.lastWeek.map((chat) => (
-                    <div 
-                      key={chat.id} 
-                      className="relative group"
-                    >
-                      <div 
-                        className={`thread-title cursor-pointer ${chat.id === id ? 'bg-hunter_green-600' : ''}`}
-                        onClick={() => {
-                          router.push(`/chat/${chat.id}`);
-                          setOpenMobile(false);
-                        }}
-                      >
-                        <span className="block truncate pr-7">{chat.title}</span>
-                      </div>
-                      <div 
-                        className="absolute right-2 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(chat.id);
-                          setShowDeleteDialog(true);
-                        }}
-                      >
-                        <TrashIcon size={16} className="size-4 text-cornsilk-400 hover:text-cornsilk-300 cursor-pointer" />
-                      </div>
-                    </div>
-                  ))}
-                </>
+                </div>
               )}
 
               {groupedChats.lastMonth.length > 0 && (
-                <>
-                  <div className="date-header mt-2">
-                    Last 30 days
+                <div>
+                  <h3 className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1 px-3 mt-3">
+                    Previous 30 days
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedChats.lastMonth.map(renderChatItem)}
                   </div>
-                  {groupedChats.lastMonth.map((chat) => (
-                    <div 
-                      key={chat.id} 
-                      className="relative group"
-                    >
-                      <div 
-                        className={`thread-title cursor-pointer ${chat.id === id ? 'bg-hunter_green-600' : ''}`}
-                        onClick={() => {
-                          router.push(`/chat/${chat.id}`);
-                          setOpenMobile(false);
-                        }}
-                      >
-                        <span className="block truncate pr-7">{chat.title}</span>
-                      </div>
-                      <div 
-                        className="absolute right-2 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(chat.id);
-                          setShowDeleteDialog(true);
-                        }}
-                      >
-                        <TrashIcon size={16} className="size-4 text-cornsilk-400 hover:text-cornsilk-300 cursor-pointer" />
-                      </div>
-                    </div>
-                  ))}
-                </>
+                </div>
               )}
 
               {groupedChats.older.length > 0 && (
-                <>
-                  <div className="date-header mt-2">
+                <div>
+                  <h3 className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1 px-3 mt-3">
                     Older
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedChats.older.map(renderChatItem)}
                   </div>
-                  {groupedChats.older.map((chat) => (
-                    <div 
-                      key={chat.id} 
-                      className="relative group"
-                    >
-                      <div 
-                        className={`thread-title cursor-pointer ${chat.id === id ? 'bg-hunter_green-600' : ''}`}
-                        onClick={() => {
-                          router.push(`/chat/${chat.id}`);
-                          setOpenMobile(false);
-                        }}
-                      >
-                        <span className="block truncate pr-7">{chat.title}</span>
-                      </div>
-                      <div 
-                        className="absolute right-2 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(chat.id);
-                          setShowDeleteDialog(true);
-                        }}
-                      >
-                        <TrashIcon size={16} className="size-4 text-cornsilk-400 hover:text-cornsilk-300 cursor-pointer" />
-                      </div>
-                    </div>
-                  ))}
-                </>
+                </div>
               )}
-            </div>
+            </>
           );
         })()}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete chat?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              chat and remove it from our servers.
+              This will delete this chat from your history. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              Continue
+            <AlertDialogAction 
+              onClick={handleDelete} 
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
