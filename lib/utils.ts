@@ -6,11 +6,11 @@ import type {
   ToolInvocation,
   ToolSet,
   UIMessage,
-} from "ai";
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+} from 'ai';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-import type { DBMessage, Document } from "@/lib/db/schema";
+import type { DBMessage, Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -26,7 +26,7 @@ export const fetcher = async (url: string) => {
 
   if (!res.ok) {
     const error = new Error(
-      "An error occurred while fetching the data.",
+      'An error occurred while fetching the data.',
     ) as ApplicationError;
 
     error.info = await res.json();
@@ -39,16 +39,16 @@ export const fetcher = async (url: string) => {
 };
 
 export function getLocalStorage(key: string) {
-  if (typeof window !== "undefined") {
-    return JSON.parse(localStorage.getItem(key) || "[]");
+  if (typeof window !== 'undefined') {
+    return JSON.parse(localStorage.getItem(key) || '[]');
   }
   return [];
 }
 
 export function generateUUID(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -72,7 +72,7 @@ function addToolMessageToChat({
           if (toolResult) {
             return {
               ...toolInvocation,
-              state: "result",
+              state: 'result',
               result: toolResult.result,
             };
           }
@@ -99,9 +99,9 @@ export function sanitizeResponseMessages({
   const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
-    if (message.role === "tool") {
+    if (message.role === 'tool') {
       for (const content of message.content) {
-        if (content.type === "tool-result") {
+        if (content.type === 'tool-result') {
           toolResultIds.push(content.toolCallId);
         }
       }
@@ -109,21 +109,21 @@ export function sanitizeResponseMessages({
   }
 
   const messagesBySanitizedContent = messages.map((message) => {
-    if (message.role !== "assistant") return message;
+    if (message.role !== 'assistant') return message;
 
-    if (typeof message.content === "string") return message;
+    if (typeof message.content === 'string') return message;
 
     const sanitizedContent = message.content.filter((content) =>
-      content.type === "tool-call"
+      content.type === 'tool-call'
         ? toolResultIds.includes(content.toolCallId)
-        : content.type === "text"
+        : content.type === 'text'
           ? content.text.length > 0
           : true,
     );
 
     if (reasoning) {
       // @ts-expect-error: reasoning message parts in sdk is wip
-      sanitizedContent.push({ type: "reasoning", reasoning });
+      sanitizedContent.push({ type: 'reasoning', reasoning });
     }
 
     return {
@@ -138,7 +138,7 @@ export function sanitizeResponseMessages({
 }
 
 export function getMostRecentUserMessage(messages: Array<UIMessage>) {
-  const userMessages = messages.filter((message) => message.role === "user");
+  const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
 
