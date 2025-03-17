@@ -7,7 +7,7 @@ import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { DBMessage } from '@/lib/db/schema';
-import { UIMessage } from 'ai';
+import { Attachment, UIMessage } from 'ai';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -42,6 +42,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       // Note: content will soon be deprecated in @ai-sdk/react
       content: '',
       createdAt: message.createdAt,
+      experimental_attachments:
+        (message.attachments as Array<Attachment>) ?? [],
     }));
   }
 
