@@ -12,9 +12,9 @@ import {
   document,
   type Suggestion,
   suggestion,
-  type Message,
   message,
   vote,
+  type DBMessage,
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
 
@@ -104,7 +104,11 @@ export async function getChatById({ id }: { id: string }) {
   }
 }
 
-export async function saveMessages({ messages }: { messages: Array<Message> }) {
+export async function saveMessages({
+  messages,
+}: {
+  messages: Array<DBMessage>;
+}) {
   try {
     return await db.insert(message).values(messages);
   } catch (error) {
