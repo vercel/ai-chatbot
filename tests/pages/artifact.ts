@@ -92,7 +92,7 @@ export class ArtifactPage {
       content,
       attachments,
       async edit(newMessage: string) {
-        await page.getByTestId('message-edit').click();
+        await page.getByTestId('message-edit-button').click();
         await page.getByTestId('message-editor').fill(newMessage);
         await page.getByTestId('message-editor-send-button').click();
         await expect(
