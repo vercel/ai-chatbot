@@ -10,7 +10,7 @@ import { xai } from "@ai-sdk/xai";
 
 export const myProvider = customProvider({
   languageModels: {
-    "chat-model-small": xai("grok-2-1212"),
+    "chat-model": xai("grok-2-1212"),
     "chat-model-reasoning": wrapLanguageModel({
       model: fireworks("accounts/fireworks/models/deepseek-r1"),
       middleware: extractReasoningMiddleware({ tagName: "think" }),
@@ -27,7 +27,7 @@ export const myProvider = customProvider({
 
 You can replace the models with any other provider of your choice. You will need to install the provider library and switch the models accordingly.
 
-For example, if you want to use Anthropic's `claude-3-5-sonnet` model for `chat-model-large`, you can replace the `xai` model with the `anthropic` model as shown below.
+For example, if you want to use Anthropic's `claude-3-5-sonnet` model for `chat-model`, you can replace the `xai` model with the `anthropic` model as shown below.
 
 ```ts
 import { customProvider } from "ai";
@@ -35,8 +35,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 
 export const myProvider = customProvider({
   languageModels: {
-    "chat-model-small": openai("gpt-4o-mini"),
-    "chat-model-large": anthropic("claude-3-5-sonnet"), // Replace openai with anthropic
+    "chat-model": anthropic("claude-3-5-sonnet"), // Replace xai with anthropic
     "chat-model-reasoning": wrapLanguageModel({
       model: fireworks("accounts/fireworks/models/deepseek-r1"),
       middleware: extractReasoningMiddleware({ tagName: "think" }),
