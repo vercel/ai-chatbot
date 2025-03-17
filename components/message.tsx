@@ -1,6 +1,6 @@
 'use client';
 
-import type { ChatRequestOptions, Message, UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
