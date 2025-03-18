@@ -3,7 +3,7 @@
 import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { User } from 'next-auth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
@@ -17,6 +17,7 @@ import { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
 import { DeployDialog } from './deploy-dialog';
 import { toast } from 'sonner';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function Chat({
   id,
@@ -34,6 +35,8 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const searchParams = useSearchParams();
+  const query = searchParams.get('query');
 
   const {
     messages,
@@ -72,6 +75,25 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const [isDeployDialogOpen, setIsDeployDialogOpen] = useState(false);
   const isBlockVisible = useBlockSelector((state) => state.isVisible);
+
+  const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
+
+  useEffect(() => {
+    if (query && !hasAppendedQuery) {
+      append({
+        role: 'user',
+        content: query,
+      });
+
+      setHasAppendedQuery(true);
+
+      if (user) {
+        window.history.replaceState({}, '', `/chat/${id}`);
+      } else {
+        window.history.replaceState({}, '', `/`);
+      }
+    }
+  }, [query, append, hasAppendedQuery, user, id]);
 
   return (
     <>
