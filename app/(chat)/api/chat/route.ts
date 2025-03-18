@@ -25,6 +25,7 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import { chatConfig } from '@/lib/chat-config';
 
 export const maxDuration = 60;
 
@@ -42,9 +43,12 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!chatConfig.allowGuestUsage && !session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });
     }
+
+    const userId = session?.user?.id;
+    const isAuthenticated = !!userId;
 
     const userMessage = getMostRecentUserMessage(messages);
 
@@ -59,25 +63,26 @@ export async function POST(request: Request) {
         message: userMessage,
       });
 
-      await saveChat({ id, userId: session.user.id, title });
+      if (isAuthenticated) await saveChat({ id, userId, title });
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== userId) {
         return new Response('Unauthorized', { status: 401 });
       }
     }
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: userMessage.id,
-          role: 'user',
-          parts: userMessage.parts,
-          attachments: userMessage.experimental_attachments ?? [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    if (isAuthenticated)
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            id: userMessage.id,
+            role: 'user',
+            parts: userMessage.parts,
+            attachments: userMessage.experimental_attachments ?? [],
+            createdAt: new Date(),
+          },
+        ],
+      });
 
     return createDataStreamResponse({
       execute: (dataStream) => {
@@ -107,7 +112,7 @@ export async function POST(request: Request) {
             }),
           },
           onFinish: async ({ response }) => {
-            if (session.user?.id) {
+            if (isAuthenticated) {
               try {
                 const assistantId = getTrailingMessageId({
                   messages: response.messages.filter(

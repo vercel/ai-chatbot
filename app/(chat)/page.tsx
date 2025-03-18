@@ -4,12 +4,14 @@ import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
+import { isAuthenticated } from '../(auth)/actions';
 
 export default async function Page() {
   const id = generateUUID();
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
+  const isGuest = !(await isAuthenticated());
 
   if (!modelIdFromCookie) {
     return (
@@ -20,7 +22,7 @@ export default async function Page() {
           initialMessages={[]}
           selectedChatModel={DEFAULT_CHAT_MODEL}
           selectedVisibilityType="private"
-          isReadonly={false}
+          isGuest={isGuest}
         />
         <DataStreamHandler id={id} />
       </>
@@ -35,7 +37,7 @@ export default async function Page() {
         initialMessages={[]}
         selectedChatModel={modelIdFromCookie.value}
         selectedVisibilityType="private"
-        isReadonly={false}
+        isGuest={isGuest}
       />
       <DataStreamHandler id={id} />
     </>

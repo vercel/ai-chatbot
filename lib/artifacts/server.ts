@@ -7,6 +7,7 @@ import { DataStreamWriter } from 'ai';
 import { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
 import { Session } from 'next-auth';
+import { chatConfig } from '../chat-config';
 
 export interface SaveDocumentProps {
   id: string;
@@ -20,14 +21,14 @@ export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
   dataStream: DataStreamWriter;
-  session: Session;
+  session: Session | null;
 }
 
 export interface UpdateDocumentCallbackProps {
   document: Document;
   description: string;
   dataStream: DataStreamWriter;
-  session: Session;
+  session: Session | null;
 }
 
 export interface DocumentHandler<T = ArtifactKind> {
@@ -51,14 +52,24 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         session: args.session,
       });
 
-      if (args.session?.user?.id) {
+      const saveDocumentByUserId = async (userId: string) => {
         await saveDocument({
           id: args.id,
           title: args.title,
           content: draftContent,
           kind: config.kind,
-          userId: args.session.user.id,
+          userId: userId,
         });
+      };
+
+      if (args.session?.user?.id) {
+        await saveDocumentByUserId(args.session.user.id);
+      } else if (chatConfig.allowGuestUsage) {
+        if (!process.env.GUEST_USER_ID) {
+          throw new Error('Guest user ID not set!');
+        }
+
+        await saveDocumentByUserId(process.env.GUEST_USER_ID);
       }
 
       return;
@@ -71,14 +82,24 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         session: args.session,
       });
 
-      if (args.session?.user?.id) {
+      const saveDocumentByUserId = async (userId: string) => {
         await saveDocument({
           id: args.document.id,
           title: args.document.title,
           content: draftContent,
           kind: config.kind,
-          userId: args.session.user.id,
+          userId: userId,
         });
+      };
+
+      if (args.session?.user?.id) {
+        await saveDocumentByUserId(args.session.user.id);
+      } else if (chatConfig.allowGuestUsage) {
+        if (!process.env.GUEST_USER_ID) {
+          throw new Error('Guest user ID not set!');
+        }
+
+        await saveDocumentByUserId(process.env.GUEST_USER_ID);
       }
 
       return;

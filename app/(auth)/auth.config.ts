@@ -1,3 +1,4 @@
+import { chatConfig } from '@/lib/chat-config';
 import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
@@ -12,21 +13,24 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
-      const isOnLogin = nextUrl.pathname.startsWith('/login');
+      const isOnRegisterPage = nextUrl.pathname.startsWith('/register');
+      const isOnLoginPage = nextUrl.pathname.startsWith('/login');
+      const isOnChatPage = nextUrl.pathname.startsWith('/');
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
+      // If logged in, redirect to home page
+      if (isLoggedIn && (isOnLoginPage || isOnRegisterPage)) {
         return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      // Always allow access to register and login pages
+      if (isOnRegisterPage || isOnLoginPage) {
+        return true;
       }
 
-      if (isOnChat) {
+      // Redirect unauthenticated users to login page
+      if (isOnChatPage && !chatConfig.allowGuestUsage) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return false;
       }
 
       if (isLoggedIn) {

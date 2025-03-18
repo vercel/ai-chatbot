@@ -7,7 +7,7 @@ import { generateUUID } from '@/lib/utils';
 import { myProvider } from '../providers';
 
 interface RequestSuggestionsProps {
-  session: Session;
+  session: Session | null;
   dataStream: DataStreamWriter;
 }
 
@@ -66,7 +66,7 @@ export const requestSuggestions = ({
         suggestions.push(suggestion);
       }
 
-      if (session.user?.id) {
+      if (session?.user?.id) {
         const userId = session.user.id;
 
         await saveSuggestions({
