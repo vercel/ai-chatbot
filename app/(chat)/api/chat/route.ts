@@ -1,9 +1,11 @@
 import {
-  type Message,
+  UIMessage,
+  appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
   streamText,
 } from 'ai';
+import { NextResponse, after } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -15,7 +17,7 @@ import {
 import {
   generateUUID,
   getMostRecentUserMessage,
-  sanitizeResponseMessages,
+  getTrailingMessageId,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
@@ -23,7 +25,6 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { NextResponse, after } from 'next/server';
 import { myProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60;
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       selectedChatModel,
     }: {
       id: string;
-      messages: Array<Message>;
+      messages: Array<UIMessage>;
       selectedChatModel: string;
     } = await request.json();
 
@@ -67,7 +68,16 @@ export async function POST(request: Request) {
     }
 
     await saveMessages({
-      messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
+      messages: [
+        {
+          chatId: id,
+          id: userMessage.id,
+          role: 'user',
+          parts: userMessage.parts,
+          attachments: userMessage.experimental_attachments ?? [],
+          createdAt: new Date(),
+        },
+      ],
     });
 
     return createDataStreamResponse({
@@ -101,11 +111,32 @@ export async function POST(request: Request) {
             after(async () => {
               if (session.user?.id) {
                 try {
-                  const sanitizedResponseMessages = sanitizeResponseMessages({
-                    messages: response.messages,
-                    reasoning,
+                  const assistantId = getTrailingMessageId({
+                    messages: response.messages.filter(
+                      (message) => message.role === 'assistant',
+                    ),
                   });
+                  if (!assistantId) {
+                    throw new Error('No assistant message found!');
+                  }
+                  const [, assistantMessage] = appendResponseMessages({
+                      messages: [userMessage],
+                      responseMessages: response.messages,
+                    });
 
+                  await saveMessages({
+                    messages: [
+                      {
+                        id: assistantId,
+                        chatId: id,
+                        role: assistantMessage.role,
+                        parts: assistantMessage.parts,
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
                   await saveMessages({
                     messages: sanitizedResponseMessages.map((message) => {
                       return {
@@ -140,7 +171,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    return NextResponse.json({ error }, { status: 400 });
+    return new Response('An error occurred while processing your request!', {
+      status: 404,
+    });
   }
 }
 
@@ -169,7 +202,7 @@ export async function DELETE(request: Request) {
 
     return new Response('Chat deleted', { status: 200 });
   } catch (error) {
-    return new Response('An error occurred while processing your request', {
+    return new Response('An error occurred while processing your request!', {
       status: 500,
     });
   }

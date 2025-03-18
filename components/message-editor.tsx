@@ -5,17 +5,13 @@ import { Button } from './ui/button';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Textarea } from './ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import { toast } from 'sonner';
+import { UseChatHelpers } from '@ai-sdk/react';
 
 export type MessageEditorProps = {
   message: Message;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  setMessages: UseChatHelpers['setMessages'];
+  reload: UseChatHelpers['reload'];
 };
 
 export function MessageEditor({
@@ -79,6 +75,7 @@ export function MessageEditor({
               id: message.id,
             });
 
+            // @ts-expect-error todo: support UIMessage in setMessages
             setMessages((messages) => {
               const index = messages.findIndex((m) => m.id === message.id);
 
@@ -86,6 +83,7 @@ export function MessageEditor({
                 const updatedMessage = {
                   ...message,
                   content: draftContent,
+                  parts: [{ type: 'text', text: draftContent }],
                 };
 
                 return [...messages.slice(0, index), updatedMessage];
