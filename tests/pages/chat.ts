@@ -27,18 +27,25 @@ export class ChatPage {
   }
 
   async sendUserMessage(message: string) {
-    await this.page.getByTestId('multimodal-input').click();
-    await this.page.getByTestId('multimodal-input').fill(message);
-    await this.page.getByTestId('send-button').click();
-    await this.page.getByTestId('message-user').isVisible();
-    expect(await this.page.getByTestId('message-user').innerText()).toContain(
-      message,
-    );
+    await this.multimodalInput.click();
+    await this.multimodalInput.fill(message);
+    await this.sendButton.click();
   }
 
   async isGenerationComplete() {
-    await expect(this.page.getByTestId('send-button')).toBeVisible();
-    await this.page.waitForTimeout(2000);
+    const response = await this.page.waitForResponse((response) =>
+      response.url().includes('/api/chat'),
+    );
+
+    await response.finished();
+  }
+
+  async isVoteComplete() {
+    const response = await this.page.waitForResponse((response) =>
+      response.url().includes('/api/vote'),
+    );
+
+    await response.finished();
   }
 
   async hasChatIdInUrl() {
@@ -123,20 +130,20 @@ export class ChatPage {
       )
       .catch(() => null);
 
-    const page = this.page;
-
     return {
       element: lastMessageElement,
       content,
       reasoning: reasoningElement,
-      async waitForGenerationComplete() {
-        await expect(page.getByTestId('send-button')).toBeVisible();
-        await page.waitForTimeout(2000);
-      },
       async toggleReasoningVisibility() {
         await lastMessageElement
           .getByTestId('message-reasoning-toggle')
           .click();
+      },
+      async upvote() {
+        await lastMessageElement.getByTestId('message-upvote').click();
+      },
+      async downvote() {
+        await lastMessageElement.getByTestId('message-downvote').click();
       },
     };
   }
@@ -163,7 +170,7 @@ export class ChatPage {
       content,
       attachments,
       async edit(newMessage: string) {
-        await page.getByTestId('message-edit').click();
+        await page.getByTestId('message-edit-button').click();
         await page.getByTestId('message-editor').fill(newMessage);
         await page.getByTestId('message-editor-send-button').click();
         await expect(
@@ -171,16 +178,5 @@ export class ChatPage {
         ).not.toBeVisible();
       },
     };
-  }
-
-  async waitForMessageGeneration(timeout = 10000) {
-    await this.page.waitForFunction(
-      () => {
-        return document.querySelector('[data-testid="send-button"]') !== null;
-      },
-      { timeout },
-    );
-
-    await this.page.waitForTimeout(500);
   }
 }
