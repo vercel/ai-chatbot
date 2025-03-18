@@ -8,7 +8,7 @@ import {
 } from '@/lib/artifacts/server';
 
 interface CreateDocumentProps {
-  session: Session;
+  session: Session | null;
   dataStream: DataStreamWriter;
 }
 

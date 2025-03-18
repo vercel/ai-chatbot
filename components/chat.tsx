@@ -19,13 +19,13 @@ export function Chat({
   initialMessages,
   selectedChatModel,
   selectedVisibilityType,
-  isReadonly,
+  isGuest,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
-  isReadonly: boolean;
+  isGuest: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -47,20 +47,26 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate('/api/history');
+      if (selectedVisibilityType === 'private' && !isGuest) {
+        mutate('/api/history');
+      }
     },
     onError: () => {
       toast.error('An error occured, please try again!');
     },
   });
 
+  const canPollVotes =
+    !isGuest && selectedVisibilityType === 'private' && messages.length >= 2;
+
   const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
+    canPollVotes ? `/api/vote?chatId=${id}` : null,
     fetcher,
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const isReadonly = isGuest || selectedVisibilityType === 'public';
 
   return (
     <>
@@ -70,6 +76,7 @@ export function Chat({
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
+          isGuest={isGuest}
         />
 
         <Messages
@@ -79,12 +86,12 @@ export function Chat({
           messages={messages}
           setMessages={setMessages}
           reload={reload}
-          isReadonly={isReadonly}
+          isReadonly={isReadonly || isGuest}
           isArtifactVisible={isArtifactVisible}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          {!isReadonly && (
+          {selectedVisibilityType === 'private' && (
             <MultimodalInput
               chatId={id}
               input={input}
@@ -97,6 +104,7 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
+              isGuest={isGuest}
             />
           )}
         </form>
@@ -117,6 +125,7 @@ export function Chat({
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}
+        isGuest={isGuest}
       />
     </>
   );
