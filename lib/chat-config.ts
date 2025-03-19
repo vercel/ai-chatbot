@@ -1,25 +1,32 @@
-import configFromProject from "../chat.config";
-import { isTestEnvironment } from "./constants";
+import configFromProject from '../chat.config';
+import { isTestEnvironment } from './constants';
 
 export interface ChatConfig {
   /**
    * Whether guests are allowed to use the application without authentication.
    */
   guestUsage: {
+    /**
+     * Boolean flag indicating whether guest usage is enabled.
+     */
     isEnabled: boolean;
+
+    /**
+     * User ID of guest account to assign documents and attachments to.
+     */
     userId: string | null;
   };
 }
 
 function getGuestUsageFromEnv() {
   if (
-    process.env.ALLOW_GUEST_USAGE === "True" &&
+    process.env.ALLOW_GUEST_USAGE === 'True' &&
     process.env.GUEST_USER_ID === undefined
   ) {
-    throw new Error("GUEST_USER_ID is required when ALLOW_GUEST_USAGE is true");
+    throw new Error('GUEST_USER_ID is required when ALLOW_GUEST_USAGE is true');
   }
 
-  return process.env.ALLOW_GUEST_USAGE === "True" &&
+  return process.env.ALLOW_GUEST_USAGE === 'True' &&
     process.env.GUEST_USER_ID !== undefined
     ? {
         isEnabled: true,
@@ -32,18 +39,23 @@ function getGuestUsageFromEnv() {
 }
 
 function getConfig(): ChatConfig {
+  const env = {
+    guestUsage: getGuestUsageFromEnv(),
+  };
+
   if (isTestEnvironment) {
     return {
       ...configFromProject,
-      guestUsage: getGuestUsageFromEnv(),
+      guestUsage: env.guestUsage,
     };
   }
 
   return {
     ...configFromProject,
-    guestUsage: configFromProject.guestUsage?.userId
-      ? configFromProject.guestUsage
-      : getGuestUsageFromEnv(),
+    guestUsage:
+      env.guestUsage.isEnabled && env.guestUsage.userId
+        ? env.guestUsage
+        : configFromProject.guestUsage,
   };
 }
 

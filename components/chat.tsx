@@ -66,7 +66,7 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  const isReadonly = isGuest || selectedVisibilityType === 'public';
+  const isReadonly = selectedVisibilityType === 'public';
 
   return (
     <>
@@ -86,7 +86,8 @@ export function Chat({
           messages={messages}
           setMessages={setMessages}
           reload={reload}
-          isReadonly={isReadonly || isGuest}
+          isReadonly={isReadonly}
+          isGuest={isGuest}
           isArtifactVisible={isArtifactVisible}
         />
 

@@ -1,13 +1,13 @@
-import { codeDocumentHandler } from "@/artifacts/code/server";
-import { imageDocumentHandler } from "@/artifacts/image/server";
-import { sheetDocumentHandler } from "@/artifacts/sheet/server";
-import { textDocumentHandler } from "@/artifacts/text/server";
-import { ArtifactKind } from "@/components/artifact";
-import { DataStreamWriter } from "ai";
-import { Document } from "../db/schema";
-import { saveDocument } from "../db/queries";
-import { Session } from "next-auth";
-import { chatConfig } from "../chat-config";
+import { codeDocumentHandler } from '@/artifacts/code/server';
+import { imageDocumentHandler } from '@/artifacts/image/server';
+import { sheetDocumentHandler } from '@/artifacts/sheet/server';
+import { textDocumentHandler } from '@/artifacts/text/server';
+import { ArtifactKind } from '@/components/artifact';
+import { DataStreamWriter } from 'ai';
+import { Document } from '../db/schema';
+import { saveDocument } from '../db/queries';
+import { Session } from 'next-auth';
+import { chatConfig } from '../chat-config';
 
 export interface SaveDocumentProps {
   id: string;
@@ -66,7 +66,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         await saveDocumentByUserId(args.session.user.id);
       } else if (chatConfig.guestUsage.isEnabled) {
         if (!process.env.GUEST_USER_ID) {
-          throw new Error("Guest user ID not set!");
+          throw new Error('Guest user ID not set!');
         }
 
         await saveDocumentByUserId(process.env.GUEST_USER_ID);
@@ -96,7 +96,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         await saveDocumentByUserId(args.session.user.id);
       } else if (chatConfig.guestUsage.isEnabled) {
         if (!process.env.GUEST_USER_ID) {
-          throw new Error("Guest user ID not set!");
+          throw new Error('Guest user ID not set!');
         }
 
         await saveDocumentByUserId(process.env.GUEST_USER_ID);
@@ -117,4 +117,4 @@ export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   sheetDocumentHandler,
 ];
 
-export const artifactKinds = ["text", "code", "image", "sheet"] as const;
+export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;

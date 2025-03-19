@@ -138,4 +138,11 @@ test.describe('chat activity', () => {
     await assistantMessage.downvote();
     await chatPage.isVoteComplete();
   });
+
+  test('ensure visibility selector is mounted', async () => {
+    await chatPage.sendUserMessage("What's the weather in sf?");
+    await chatPage.isGenerationComplete();
+
+    await chatPage.isElementVisible('visibility-selector');
+  });
 });
