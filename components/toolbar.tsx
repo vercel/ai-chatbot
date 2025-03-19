@@ -30,7 +30,7 @@ import { sanitizeUIMessages } from '@/lib/utils';
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
 import { blockDefinitions, BlockKind } from './block';
 import { BlockToolbarItem } from './create-block';
-import { UseChatHelpers } from 'ai/react';
+import { UseChatHelpers } from '@ai-sdk/react';
 
 type ToolProps = {
   description: string;

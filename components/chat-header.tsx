@@ -14,6 +14,7 @@ import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { UseChatHelpers } from '@ai-sdk/react';
 
 function PureChatHeader({
   chatId,
@@ -28,9 +29,7 @@ function PureChatHeader({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
   user: User | undefined;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
+  setMessages: UseChatHelpers['setMessages'];
 }) {
   const router = useRouter();
   const { open } = useSidebar();
