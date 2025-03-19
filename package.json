@@ -16,7 +16,7 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
+    "test": "export PLAYWRIGHT=1 && pnpm exec playwright test --workers=4"
   },
   "dependencies": {
     "@ai-sdk/fireworks": "0.1.16",

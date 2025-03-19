@@ -1,10 +1,10 @@
-import { chatConfig } from '@/lib/chat-config';
-import type { NextAuthConfig } from 'next-auth';
+import { chatConfig } from "@/lib/chat-config";
+import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: {
-    signIn: '/login',
-    newUser: '/',
+    signIn: "/login",
+    newUser: "/",
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -13,13 +13,13 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnRegisterPage = nextUrl.pathname.startsWith('/register');
-      const isOnLoginPage = nextUrl.pathname.startsWith('/login');
-      const isOnChatPage = nextUrl.pathname.startsWith('/');
+      const isOnRegisterPage = nextUrl.pathname.startsWith("/register");
+      const isOnLoginPage = nextUrl.pathname.startsWith("/login");
+      const isOnChatPage = nextUrl.pathname.startsWith("/");
 
       // If logged in, redirect to home page
       if (isLoggedIn && (isOnLoginPage || isOnRegisterPage)) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+        return Response.redirect(new URL("/", nextUrl as unknown as URL));
       }
 
       // Always allow access to register and login pages
@@ -28,13 +28,13 @@ export const authConfig = {
       }
 
       // Redirect unauthenticated users to login page
-      if (isOnChatPage && !chatConfig.allowGuestUsage) {
+      if (isOnChatPage && !chatConfig.guestUsage.isEnabled) {
         if (isLoggedIn) return true;
         return false;
       }
 
       if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+        return Response.redirect(new URL("/", nextUrl as unknown as URL));
       }
 
       return true;

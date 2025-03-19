@@ -1,28 +1,49 @@
-import configFromProject from '../chat.config';
+import configFromProject from "../chat.config";
+import { isTestEnvironment } from "./constants";
 
 export interface ChatConfig {
   /**
    * Whether guests are allowed to use the application without authentication.
-   * Defaults to true.
-   *
-   * Note: You should also set the environment variable GUEST_USER_ID to a valid user ID to enable guest usage.
    */
-  allowGuestUsage: boolean;
+  guestUsage: {
+    isEnabled: boolean;
+    userId: string | null;
+  };
 }
 
-function getConfig() {
-  if (process.env.PLAYWRIGHT) {
+function getGuestUsageFromEnv() {
+  if (
+    process.env.ALLOW_GUEST_USAGE === "True" &&
+    process.env.GUEST_USER_ID === undefined
+  ) {
+    throw new Error("GUEST_USER_ID is required when ALLOW_GUEST_USAGE is true");
+  }
+
+  return process.env.ALLOW_GUEST_USAGE === "True" &&
+    process.env.GUEST_USER_ID !== undefined
+    ? {
+        isEnabled: true,
+        userId: process.env.GUEST_USER_ID,
+      }
+    : {
+        isEnabled: false,
+        userId: null,
+      };
+}
+
+function getConfig(): ChatConfig {
+  if (isTestEnvironment) {
     return {
       ...configFromProject,
-      allowGuestUsage: process.env.ALLOW_GUEST_USAGE === 'True',
+      guestUsage: getGuestUsageFromEnv(),
     };
   }
 
   return {
     ...configFromProject,
-    allowGuestUsage: process.env.GUEST_USER_ID
-      ? configFromProject.allowGuestUsage
-      : false,
+    guestUsage: configFromProject.guestUsage?.userId
+      ? configFromProject.guestUsage
+      : getGuestUsageFromEnv(),
   };
 }
 

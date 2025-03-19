@@ -1,7 +1,10 @@
-import { ChatConfig } from './lib/chat-config';
+import { ChatConfig } from "./lib/chat-config";
 
 const config: ChatConfig = {
-  allowGuestUsage: true,
+  guestUsage: {
+    isEnabled: true,
+    userId: process.env.GUEST_USER_ID!,
+  },
 };
 
 export default config;
