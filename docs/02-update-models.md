@@ -7,20 +7,21 @@ To update the models, you will need to update the custom provider called `myProv
 ```ts
 import { customProvider } from "ai";
 import { xai } from "@ai-sdk/xai";
+import { groq } from "@ai-sdk/groq";
+import { fal } from "@ai-sdk/fal";
 
 export const myProvider = customProvider({
   languageModels: {
     "chat-model": xai("grok-2-1212"),
     "chat-model-reasoning": wrapLanguageModel({
-      model: fireworks("accounts/fireworks/models/deepseek-r1"),
+      model: groq("deepseek-r1-distill-llama-70b"),
       middleware: extractReasoningMiddleware({ tagName: "think" }),
     }),
     "title-model": xai("grok-2-1212"),
     "artifact-model": xai("grok-2-1212"),
   },
   imageModels: {
-    "small-model": openai.image("dall-e-2"),
-    "large-model": openai.image("dall-e-3"),
+    "small-model": fal.image("fal-ai/fast-sdxl"),
   },
 });
 ```
@@ -31,20 +32,22 @@ For example, if you want to use Anthropic's `claude-3-5-sonnet` model for `chat-
 
 ```ts
 import { customProvider } from "ai";
+import { fal } from "@ai-sdk/fal";
+import { groq } from "@ai-sdk/groq";
 import { anthropic } from "@ai-sdk/anthropic";
 
 export const myProvider = customProvider({
   languageModels: {
     "chat-model": anthropic("claude-3-5-sonnet"), // Replace xai with anthropic
     "chat-model-reasoning": wrapLanguageModel({
-      model: fireworks("accounts/fireworks/models/deepseek-r1"),
+      model: groq("deepseek-r1-distill-llama-70b"),
       middleware: extractReasoningMiddleware({ tagName: "think" }),
     }),
-    "title-model": openai("gpt-4-turbo"),
-    "artifact-model": openai("gpt-4o-mini"),
+    "title-model": anthropic("claude-3-5-haiku"),
+    "artifact-model": anthropic("claude-3-5-haiku"),
   },
   imageModels: {
-    "small-model": openai.image("dall-e-3"),
+    "small-model": fal.image("fal-ai/fast-sdxl"),
   },
 });
 ```
