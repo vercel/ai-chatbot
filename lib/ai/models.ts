@@ -17,7 +17,7 @@ export const myProvider = customProvider({
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
     'title-model': xai('grok-2-1212'),
-    'artifact-model': xai('grok-2-1212'),
+    'block-model': xai('grok-2-1212'),
   },
   imageModels: {
     'small-model': openai.image('dall-e-2'),
