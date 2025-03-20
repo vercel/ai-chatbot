@@ -1,3 +1,4 @@
+import { xai } from '@ai-sdk/xai';
 import { openai } from '@ai-sdk/openai';
 import { fireworks } from '@ai-sdk/fireworks';
 import {
@@ -6,18 +7,17 @@ import {
   wrapLanguageModel,
 } from 'ai';
 
-export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
+export const DEFAULT_CHAT_MODEL: string = 'chat-model';
 
 export const myProvider = customProvider({
   languageModels: {
-    'chat-model-small': openai('gpt-4o-mini'),
-    'chat-model-large': openai('gpt-4o'),
+    'chat-model': xai('grok-2-1212'),
     'chat-model-reasoning': wrapLanguageModel({
       model: fireworks('accounts/fireworks/models/deepseek-r1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
-    'title-model': openai('gpt-4-turbo'),
-    'block-model': openai('gpt-4o-mini'),
+    'title-model': xai('grok-2-1212'),
+    'block-model': xai('grok-2-1212'),
   },
   imageModels: {
     'small-model': openai.image('dall-e-2'),
@@ -34,16 +34,10 @@ interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'chat-model-small',
-    name: 'Small model',
-    description: 'Small model for fast, lightweight tasks',
+    id: 'chat-model',
+    name: 'Chat model',
+    description: 'Primary model for all-purpose chat',
     requiresAuth: false,
-  },
-  {
-    id: 'chat-model-large',
-    name: 'Large model',
-    description: 'Large model for complex, multi-step tasks',
-    requiresAuth: true,
   },
   {
     id: 'chat-model-reasoning',
