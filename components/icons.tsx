@@ -757,7 +757,7 @@ export const PlusIcon = ({ size = 16 }: { size?: number }) => (
     <path
       fillRule="evenodd"
       clipRule="evenodd"
-      d="M8.75 1.75V1H7.25V1.75V6.75H2.25H1.5V8.25H2.25H7.25V13.25V14H8.75V13.25V8.25H13.75H14.5V6.75H13.75H8.75V1.75Z"
+      d="M 8.75,1 H7.25 V7.25 H1.5 V8.75 H7.25 V15 H8.75 V8.75 H14.5 V7.25 H8.75 V1.75 Z"
       fill="currentColor"
     />
   </svg>
