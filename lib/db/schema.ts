@@ -42,6 +42,13 @@ export const message = pgTable('Message', {
   role: varchar('role').notNull(),
   content: json('content').notNull(),
   createdAt: timestamp('createdAt').notNull(),
+}, (table) => {
+  return {
+    // Add index for faster chat message retrieval
+    chatIdIdx: index('chat_id_idx').on(table.chatId),
+    // Add index for faster message sorting by creation time
+    createdAtIdx: index('message_created_at_idx').on(table.chatId, table.createdAt),
+  };
 });
 
 export type Message = InferSelectModel<typeof message>;
@@ -83,6 +90,12 @@ export const document = pgTable(
   (table) => {
     return {
       pk: primaryKey({ columns: [table.id, table.createdAt] }),
+      // Add index for faster document retrieval by user
+      userIdIdx: index('document_user_id_idx').on(table.userId),
+      // Add index for faster document sorting by creation time
+      createdAtIdx: index('document_created_at_idx').on(table.createdAt),
+      // Add index for document type filtering
+      kindIdx: index('document_kind_idx').on(table.kind),
     };
   },
 );

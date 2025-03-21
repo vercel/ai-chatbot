@@ -28,16 +28,25 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { searchKnowledgeToolAdapter } from '@/lib/knowledge/localFiles/searchToolAdapter';
 
-export const maxDuration = 60;
+export const maxDuration = 120; // Extended to ensure complex queries have enough time
 
 export async function POST(request: Request) {
   try {
-    const {
-      id,
-      messages,
-      selectedChatModel,
-    }: { id: string; messages: Array<Message>; selectedChatModel: string } =
-      await request.json();
+    // Parse JSON once and validate required fields
+    const data = await request.json();
+    const { id, messages, selectedChatModel } = data as { 
+      id: string; 
+      messages: Array<Message>; 
+      selectedChatModel: string 
+    };
+    
+    if (!id || !messages || !selectedChatModel) {
+      console.error('Missing required fields in request');
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' } 
+      });
+    }
 
     console.log(`Chat API called - Chat ID: ${id}, Model: ${selectedChatModel}`);
     
@@ -104,27 +113,22 @@ export async function POST(request: Request) {
             
             // If we found knowledge information, add it to the context
             if (knowledgeResults.count > 0) {
-              // Add a special system message with knowledge content
+              // Add knowledge context more efficiently without creating unnecessary arrays
               const knowledgeSystemMsg = {
                 id: generateUUID(),
                 role: 'system',
                 content: `I found the following relevant information in the user's knowledge base. Please use this information to answer their question:\n\n${knowledgeResults.relevantContent}\n\nYou MUST include and cite this information in your response, referring to the numbered sources.`
               };
               
-              // Insert just before the latest user message 
-              const userMsgIndex = enhancedMessages.findIndex(msg => 
-                msg.id === userMessage.id
-              );
+              // Find optimal position to insert - just before the user message
+              const userMsgIndex = enhancedMessages.findIndex(msg => msg.id === userMessage.id);
               
               if (userMsgIndex > 0) {
-                enhancedMessages = [
-                  ...enhancedMessages.slice(0, userMsgIndex),
-                  knowledgeSystemMsg,
-                  ...enhancedMessages.slice(userMsgIndex)
-                ];
+                // Insert at specific position without creating a full copy of the array
+                enhancedMessages.splice(userMsgIndex, 0, knowledgeSystemMsg);
               } else {
-                // Fallback - just append to the beginning
-                enhancedMessages = [knowledgeSystemMsg, ...enhancedMessages];
+                // If we can't find the user message or it's at position 0, insert at beginning
+                enhancedMessages.unshift(knowledgeSystemMsg);
               }
               
               console.log(`Added knowledge context to messages with ${knowledgeResults.count} chunks`);
@@ -149,18 +153,17 @@ export async function POST(request: Request) {
                       reasoning,
                     });
 
+                    // Prepare messages for saving with a more direct approach
+                    const messagesToSave = sanitizedResponseMessages.map((message) => ({
+                      id: message.id,
+                      chatId: id,
+                      role: message.role,
+                      content: message.content,
+                      createdAt: new Date(),
+                    }));
+                    
                     // Save the messages
-                    const savedMessages = await saveMessages({
-                      messages: sanitizedResponseMessages.map((message) => {
-                        return {
-                          id: message.id,
-                          chatId: id,
-                          role: message.role,
-                          content: message.content,
-                          createdAt: new Date(),
-                        };
-                      }),
-                    });
+                    const savedMessages = await saveMessages({ messages: messagesToSave });
 
                     console.log(`Saved ${savedMessages.length} messages to chat ${id}`);
 
@@ -173,12 +176,14 @@ export async function POST(request: Request) {
                       if (assistantMessage) {
                         console.log(`Creating ${usedKnowledgeChunks.length} knowledge references for message ${assistantMessage.id}`);
                         
-                        for (const chunk of usedKnowledgeChunks) {
-                          await createKnowledgeReference({
-                            messageId: assistantMessage.id,
-                            chunkId: chunk.id,
-                          });
-                        }
+                        // Batch create knowledge references instead of individual calls
+                        const referencePromises = usedKnowledgeChunks.map(chunk => 
+                        createKnowledgeReference({
+                        messageId: assistantMessage.id,
+                          chunkId: chunk.id,
+                          })
+                      );
+                      await Promise.all(referencePromises);
                       }
                     }
                   } catch (error) {
@@ -199,8 +204,9 @@ export async function POST(request: Request) {
             });
           } catch (error) {
             console.error('Error in stream processing:', error);
-            dataStream.close();
-            throw error;
+            console.error('Detailed error in stream processing:', error);
+            dataStream.write(JSON.stringify({ error: 'An error occurred during processing' }));
+      dataStream.close();
           }
         } catch (error) {
           console.error('Error in stream processing:', error);

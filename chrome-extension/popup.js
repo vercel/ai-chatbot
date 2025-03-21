@@ -13,6 +13,73 @@ let settings = null;
 document.addEventListener('DOMContentLoaded', function() {
   // Load settings first
   loadSettings(() => {
+    // Check authentication status
+    checkAuthStatus();
+    
+    // Login form
+    const loginForm = document.getElementById('loginForm');
+    const userInfo = document.getElementById('userInfo');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userEmail = document.getElementById('userEmail');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    
+    // Login button
+    loginBtn.addEventListener('click', () => {
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value;
+      
+      if (!email || !password) {
+        loginError.textContent = 'Please enter both email and password';
+        return;
+      }
+      
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+      loginError.textContent = '';
+      
+      chrome.runtime.sendMessage(
+        { action: 'login', email, password }, 
+        (response) => {
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Login';
+          
+          if (response && response.success) {
+            // Update UI
+            loginForm.style.display = 'none';
+            userInfo.style.display = 'block';
+            userEmail.textContent = email;
+            
+            // Clear form
+            loginEmail.value = '';
+            loginPassword.value = '';
+            
+            // Check platform status again
+            checkWizzoStatus();
+          } else {
+            loginError.textContent = response?.error || 'Login failed';
+          }
+        }
+      );
+    });
+    
+    // Logout button
+    logoutBtn.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ action: 'logout' }, (response) => {
+        if (response && response.success) {
+          // Update UI
+          loginForm.style.display = 'block';
+          userInfo.style.display = 'none';
+          userEmail.textContent = '';
+          
+          // Check platform status again
+          checkWizzoStatus();
+        }
+      });
+    });
+    
     // Tab switching
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
@@ -88,17 +155,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for messages from background script
     chrome.runtime.onMessage.addListener((message) => {
       if (message.action === 'statusUpdate') {
-        updateStatusDisplay(message.status);
+        updateStatusDisplay(message.status, message.authenticated, message.email);
       } else if (message.action === 'refreshRecordings') {
         loadPendingRecordings();
       } else if (message.action === 'refreshTexts') {
         loadPendingTexts();
       } else if (message.action === 'refreshNotes') {
         loadPendingNotes();
+      } else if (message.action === 'authUpdate') {
+        checkAuthStatus();
+      } else if (message.action === 'authRequired') {
+        // Show authentication required message
+        const loginError = document.getElementById('loginError');
+        if (loginError) {
+          loginError.textContent = message.message || 'Authentication required';
+        }
+        // Ensure login form is visible
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+          loginForm.style.display = 'block';
+        }
+        const userInfo = document.getElementById('userInfo');
+        if (userInfo) {
+          userInfo.style.display = 'none';
+        }
       }
     });
   });
 });
+
+// Check authentication status
+function checkAuthStatus() {
+  chrome.runtime.sendMessage({ action: 'isAuthenticated' }, (response) => {
+    const loginForm = document.getElementById('loginForm');
+    const userInfo = document.getElementById('userInfo');
+    const userEmail = document.getElementById('userEmail');
+    
+    if (response && response.authenticated) {
+      // User is authenticated
+      loginForm.style.display = 'none';
+      userInfo.style.display = 'block';
+      userEmail.textContent = response.email || 'Unknown';
+    } else {
+      // User is not authenticated
+      loginForm.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
+  });
+}
 
 // Load settings
 function loadSettings(callback) {
@@ -161,7 +265,7 @@ function checkWizzoStatus() {
 }
 
 // Update the status display
-function updateStatusDisplay(isOnline) {
+function updateStatusDisplay(isOnline, isAuthenticated, email) {
   const statusIndicator = document.getElementById('status');
   const syncNowBtn = document.getElementById('syncNowBtn');
   
@@ -169,6 +273,20 @@ function updateStatusDisplay(isOnline) {
     statusIndicator.textContent = 'Online';
     statusIndicator.classList.add('online');
     syncNowBtn.classList.add('show');
+    
+    // Also update authentication display
+    const loginForm = document.getElementById('loginForm');
+    const userInfo = document.getElementById('userInfo');
+    const userEmail = document.getElementById('userEmail');
+    
+    if (isAuthenticated) {
+      loginForm.style.display = 'none';
+      userInfo.style.display = 'block';
+      userEmail.textContent = email || 'Unknown';
+    } else {
+      loginForm.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
   } else {
     statusIndicator.textContent = 'Offline';
     statusIndicator.classList.remove('online');
@@ -553,9 +671,14 @@ function resetTimer() {
 
 // Load pending items
 function loadPendingItems() {
-  loadPendingRecordings();
-  loadPendingTexts();
-  loadPendingNotes();
+  try {
+    loadPendingRecordings();
+    loadPendingTexts();
+    loadPendingNotes();
+    console.log('All pending items loaded successfully');
+  } catch(error) {
+    console.error('Error loading pending items:', error);
+  }
 }
 
 // Load pending recordings

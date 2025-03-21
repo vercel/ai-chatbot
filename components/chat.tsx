@@ -2,7 +2,7 @@
 
 import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
@@ -16,7 +16,8 @@ import { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 
-export function Chat({
+// Using memo to prevent unnecessary re-renders
+export const Chat = memo(function Chat({
   id,
   initialMessages,
   selectedChatModel,
@@ -88,6 +89,14 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Memoize expensive callbacks
+  const handleSubmitMemoized = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      handleSubmit(e);
+    },
+    [handleSubmit]
+  );
+
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -122,7 +131,7 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleSubmitMemoized}
               isLoading={isLoading}
               stop={stop}
               attachments={attachments}
@@ -153,4 +162,4 @@ export function Chat({
       />
     </>
   );
-}
+});

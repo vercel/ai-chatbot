@@ -4,6 +4,7 @@ import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { cache } from 'react';
 
 import {
   user,
@@ -26,8 +27,13 @@ import { sql } from 'drizzle-orm';
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+// Create a connection pool with appropriate settings for better performance
+const client = postgres(process.env.POSTGRES_URL!, {
+  max: 10, // Maximum number of connections in pool (default is 10)
+  idle_timeout: 20, // Max seconds a client can be idle before being closed
+  connect_timeout: 10, // Max seconds to wait for connection
+});
+
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
@@ -85,7 +91,8 @@ export async function deleteChatById({ id }: { id: string }) {
   }
 }
 
-export async function getChatsByUserId({ id }: { id: string }) {
+// Cache frequently used queries
+export const getChatsByUserId = cache(async ({ id }: { id: string }) => {
   try {
     return await db
       .select()
@@ -96,7 +103,7 @@ export async function getChatsByUserId({ id }: { id: string }) {
     console.error('Failed to get chats by user from database');
     throw error;
   }
-}
+});
 
 export async function getChatById({ id }: { id: string }) {
   try {
@@ -117,7 +124,7 @@ export async function saveMessages({ messages }: { messages: Array<Message> }) {
   }
 }
 
-export async function getMessagesByChatId({ id }: { id: string }) {
+export const getMessagesByChatId = cache(async ({ id }: { id: string }) => {
   try {
     return await db
       .select()
@@ -128,7 +135,7 @@ export async function getMessagesByChatId({ id }: { id: string }) {
     console.error('Failed to get messages by chat id from database', error);
     throw error;
   }
-}
+});
 
 export async function voteMessage({
   chatId,
@@ -353,17 +360,17 @@ export async function updateChatVisiblityById({
 // Knowledge Base Queries
 
 // Get all knowledge documents for a user
-export async function getKnowledgeDocumentsByUserId({
+export const getKnowledgeDocumentsByUserId = cache(async ({
   userId,
 }: {
   userId: string;
-}) {
+}) => {
   return db
     .select()
     .from(knowledgeDocument)
     .where(eq(knowledgeDocument.userId, userId))
     .orderBy(desc(knowledgeDocument.createdAt));
-}
+});
 
 // Get a knowledge document by ID
 export async function getKnowledgeDocumentById({
@@ -513,21 +520,29 @@ export async function semanticSearch({
   embedding: number[];
   limit?: number;
 }) {
-  // Since we can't use vector search, return recent chunks as a fallback
-  console.log('Using text-based fallback for semantic search');
+  // Since we can't use vector search, use a more optimized text-based fallback
+  console.log('Using optimized text-based fallback for semantic search');
   
-  return db
-    .select({
-      id: knowledgeChunk.id,
-      content: knowledgeChunk.content,
-      metadata: knowledgeChunk.metadata,
-      documentId: knowledgeChunk.documentId,
-      // Provide a dummy similarity score
-      similarity: sql`0.5`, 
+  // Use a prepared statement for better performance
+  const query = db.select({
+    id: knowledgeChunk.id,
+    content: knowledgeChunk.content,
+    metadata: knowledgeChunk.metadata,
+    documentId: knowledgeChunk.documentId,
+    // Provide a dummy similarity score
+    similarity: sql`0.5`, 
+  })
+  .from(knowledgeChunk)
+  .orderBy(desc(knowledgeChunk.createdAt))
+  .limit(limit);
+  
+  // Execute with a timeout to prevent long-running queries
+  return await Promise.race([
+    query,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Search query timeout')), 5000);
     })
-    .from(knowledgeChunk)
-    .orderBy(desc(knowledgeChunk.createdAt))
-    .limit(limit);
+  ]) as any; // Type assertion needed due to Promise.race
 }
 
 // Create a knowledge reference

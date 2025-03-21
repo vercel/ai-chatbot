@@ -1,7 +1,7 @@
 import { openai } from '@ai-sdk/openai';
-import {
-  customProvider,
-} from 'ai';
+import { customProvider } from 'ai';
+// Add caching for better performance
+import { cache } from 'react';
 
 export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';  
 

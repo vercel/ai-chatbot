@@ -1,13 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wizzo Assistant</title>
-  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="popup/styles.css">
 </head>
 <body>
   <div class="container">
     <div class="header">
+      <img src="icons/icon48.png" alt="Wizzo Logo" class="logo">
       <h1>Wizzo Assistant</h1>
+    </div>
+    
+    <div class="auth-container">
+      <div id="loginForm" class="login-form">
+        <h3>Login Required</h3>
+        <p>Please log in to sync with your Wizzo account</p>
+        <div class="form-group">
+          <label for="loginEmail">Email:</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password:</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password">
+        </div>
+        <button id="loginBtn" class="btn login-btn">Login</button>
+        <p id="loginError" class="error-message"></p>
+      </div>
+      
+      <div id="userInfo" class="user-info" style="display: none;">
+        <p>Logged in as: <span id="userEmail"></span></p>
+        <button id="logoutBtn" class="btn logout-btn">Logout</button>
+      </div>
     </div>
     
     <div class="tabs">

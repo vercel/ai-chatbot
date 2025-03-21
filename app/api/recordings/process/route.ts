@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { nanoid } from 'nanoid';
+import { authenticateExtensionRequest } from '@/lib/extension/auth';
 
 // Define the storage directory paths
 const RECORDINGS_DIR = path.join(process.cwd(), 'storage', 'recordings');
@@ -16,20 +17,22 @@ if (!fs.existsSync(RECORDINGS_DIR)) {
  * Process audio recordings from the Chrome extension
  */
 export async function POST(request: NextRequest) {
-  try {
-    // Parse the request body
-    const body = await request.json();
-    
-    // Extract the recording data
-    const { id, title, audio, timestamp } = body;
-    
-    if (!audio) {
-      return NextResponse.json({ success: false, error: 'Audio data is required' }, { status: 400 });
-    }
-    
-    // Create logging to debug the issue
-    console.log(`Processing recording: ${title}, ID: ${id}, Length: ${audio.length}`);
-    
+  // Use the authentication middleware
+  return authenticateExtensionRequest(request, async (userId, authRequest) => {
+    try {
+      // Parse the request body
+      const body = await authRequest.json();
+      
+      // Extract the recording data
+      const { id, title, audio, timestamp } = body;
+      
+      if (!audio) {
+        return NextResponse.json({ success: false, error: 'Audio data is required' }, { status: 400 });
+      }
+      
+      // Create logging to debug the issue
+      console.log(`Processing recording for user ${userId}: ${title}, ID: ${id}, Length: ${audio.length}`);
+      
     try {
       // Try to decode base64 data
       const base64Data = audio.replace(/^data:audio\/\w+;base64,/, '');

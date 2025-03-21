@@ -1,128 +1,72 @@
-# Wizzo Assistant Chrome Extension
+# Wizzo Chrome Extension
 
-This Chrome extension allows you to capture audio recordings, text notes, and other content even when the main Wizzo platform is not running. When the platform comes back online, the extension will automatically synchronize all pending content.
+This Chrome extension integrates with the Wizzo platform, providing users with a seamless way to create and manage widgets, record audio, and take notes directly from their browser.
 
 ## Features
 
-- **Audio Recording**: Record audio up to 5 minutes with visualizations
-- **Text Input**: Add text content for processing
-- **Quick Notes**: Create notes that will be added to your knowledge base
-- **Offline Mode**: All content is saved locally until the platform is available
-- **Auto-Sync**: Automatically processes pending content when the platform is running
+- **Authentication**: Uses the same authentication system as the Wizzo platform
+- **Widget Management**: Create, view, and sync widgets with the platform
+- **Audio Recording**: Record, save, and process voice recordings
+- **Notes**: Create and manage notes that sync with your Wizzo account
+- **Offline Support**: Work even when offline, with automatic sync when back online
 
-## Installation
+## Technical Implementation
 
-### Development Mode
+The extension follows a modular architecture with three main components:
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" by toggling the switch in the top right corner
-3. Click "Load unpacked" and select the `chrome-extension` folder
-4. The extension should now appear in your Chrome toolbar
+1. **Authentication Module**: Securely manages user authentication with token-based security
+2. **Data Synchronization Service**: Handles reliable data syncing between extension and platform
+3. **User Interface**: Provides a clean, intuitive interface for all functionality
 
-### Production Mode (Future)
-
-- The extension will be available on the Chrome Web Store (coming soon)
-
-## Usage
-
-### Recording Audio
-
-1. Click on the Wizzo Assistant icon in your Chrome toolbar
-2. Go to the "Recording" tab
-3. Click "Record" to start recording audio
-4. You can "Pause" and "Resume" as needed
-5. Click "Stop" when finished
-6. Add a title and the recording will be saved locally
-7. When the Wizzo platform is running again, your recording will be processed automatically
-
-### Adding Text
-
-1. Click on the Wizzo Assistant icon in your Chrome toolbar
-2. Go to the "Text" tab
-3. Enter a title and content
-4. Click "Save" to store the text locally
-5. When the Wizzo platform is running again, your text will be processed automatically
-
-### Creating Notes
-
-1. Click on the Wizzo Assistant icon in your Chrome toolbar
-2. Go to the "Notes" tab
-3. Enter your note content
-4. Click "Save" to store the note locally
-5. When the Wizzo platform is running again, your note will be added to the knowledge base
-
-## Full Screen Recording
-
-For a better recording experience, you can use the full screen recording view:
-
-1. Click on the extension icon
-2. Go to the "Recording" tab
-3. Click the "Open in new tab" button (or right-click on "Record" and select "Open in new tab")
-4. This will open a dedicated recording page with waveform visualization and controls
-
-## System Architecture
-
-### Storage
-
-The extension uses Chrome's local storage API to store pending items. This includes:
-- Audio recordings (stored as base64-encoded strings)
-- Text documents
-- Notes
-
-All items are stored with metadata including:
-- Unique ID
-- Timestamp
-- Title (when applicable)
-- Processing status
-
-### Background Processes
-
-The extension uses a background service worker to:
-1. Periodically check if the Wizzo platform is running
-2. Automatically process any pending items when the platform comes back online
-3. Retry failed processing attempts with an exponential backoff strategy
-
-### Platform Integration
-
-The extension connects to the Wizzo platform using these endpoints:
-
-- `/api/status` - Checks if the platform is running
-- `/api/recordings/process` - Processes pending recordings
-- `/api/texts/process` - Processes pending text files
-- `/api/notes/process` - Processes pending notes
-
-## Development
-
-The extension is built using standard web technologies:
-
-- JavaScript for functionality
-- HTML/CSS for the user interface
-- Chrome Extension APIs for browser integration
-
-### File Structure
+## Directory Structure
 
 ```
 chrome-extension/
-├── manifest.json        # Extension manifest
-├── popup.html           # Main popup interface
-├── popup.css            # Popup styles
-├── popup.js             # Popup logic
-├── background.js        # Background service worker
-├── recordingView.html   # Full-screen recording interface
-├── recordingView.js     # Recording interface logic
-└── icons/               # Extension icons
+├── background/             # Background services
+│   ├── background.js       # Main background script (entry point)
+│   ├── auth.js             # Authentication system
+│   ├── sync.js             # Data synchronization
+│   ├── storage.js          # Secure storage utilities
+│   ├── messaging.js        # Message handling
+│   └── errorTracking.js    # Error logging and reporting
+├── popup/                  # User interface
+│   ├── index.html          # Main popup HTML
+│   ├── popup.js            # Popup controller
+│   └── styles.css          # Popup styles
+├── icons/                  # Extension icons
+├── settings.html           # Settings page
+├── settings.js             # Settings controller
+├── recordingView.html      # Full-page recording view
+├── recordingView.js        # Recording controller
+└── manifest.json           # Extension manifest
 ```
 
-### Building & Testing
+## Security Considerations
 
-1. Make changes to the source files
-2. Load the extension in Chrome using "Load unpacked"
-3. To see console logs and debug, right-click the extension icon and select "Inspect popup"
-4. For background script logs, go to `chrome://extensions`, find the extension, and click "background page" under "Inspect views"
+- Authentication tokens are securely stored using Chrome's storage API
+- All communication with the server is encrypted
+- Automatic token refresh mechanism prevents session expiration
+- The extension follows the principle of least privilege
 
-## Privacy and Security
+## Development
 
-- All data is stored locally in your browser until it's processed by the Wizzo platform
-- No data is sent to any third-party servers
-- Audio recordings and other content are only transmitted to your own Wizzo platform instance
-- The extension requires minimal permissions and only accesses necessary APIs
+To set up the development environment:
+
+1. Clone the repository
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable "Developer mode"
+4. Click "Load unpacked" and select the `chrome-extension` folder
+5. Make your changes and reload the extension to test
+
+## Integration with Wizzo Platform
+
+The extension is designed to work seamlessly with the Wizzo platform. It:
+
+- Uses the same authentication module
+- Maintains consistent data models
+- Implements conflict resolution for syncing
+- Provides clear feedback on sync status
+
+## License
+
+See the LICENSE file for details.

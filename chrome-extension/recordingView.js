@@ -1,3 +1,5 @@
+// Recording View Controller
+
 // Global variables
 let mediaRecorder;
 let audioChunks = [];
@@ -7,88 +9,62 @@ let recordingTimer;
 let recordingSeconds = 0;
 let recordingMinutes = 0;
 let MAX_RECORDING_MINUTES = 5;
-let audioContext;
-let audioAnalyser;
-let mediaStreamSource;
-let dataArray;
-let settings = {
-  platformUrl: 'http://localhost:3000',
-  showWaveform: true,
-  maxRecordingTime: 5
-};
+let settings = null;
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
-  const recordBtn = document.getElementById('recordBtn');
-  const pauseBtn = document.getElementById('pauseBtn');
-  const stopBtn = document.getElementById('stopBtn');
-  const timerDisplay = document.getElementById('timerDisplay');
-  const statusText = document.getElementById('statusText');
-  const waveformContainer = document.getElementById('waveformContainer');
-  
   // Load settings
-  loadSettings();
-  
-  // Create waveform bars
-  createWaveformBars(waveformContainer);
-  
-  // Recording functionality
-  recordBtn.addEventListener('click', startRecording);
-  pauseBtn.addEventListener('click', pauseRecording);
-  stopBtn.addEventListener('click', stopRecording);
-  
-  // Keep this tab alive even if it's not active
-  navigator.mediaSession.setActionHandler('pause', () => {
-    pauseRecording();
-  });
-  
-  // Keep the tab from being closed accidentally
-  window.addEventListener('beforeunload', function(e) {
-    if (isRecording) {
-      // Cancel the event
-      e.preventDefault();
-      // Chrome requires returnValue to be set
-      e.returnValue = 'Recording in progress. Are you sure you want to leave?';
+  loadSettings(() => {
+    // Initialize waveform
+    const waveformInner = document.getElementById('waveformInner');
+    if (waveformInner) {
+      createWaveformBars(waveformInner);
     }
-  });
-  
-  // Check window visibility
-  document.addEventListener('visibilitychange', function() {
-    if (document.hidden && isRecording) {
-      // Notify user somehow that recording is still happening
-      if ('Notification' in window) {
-        Notification.requestPermission().then(function(permission) {
-          if (permission === 'granted') {
-            new Notification('Wizzo Recording', {
-              body: 'Recording is still in progress',
-              icon: 'icons/icon128.png'
-            });
-          }
-        });
-      }
+    
+    // Set up buttons
+    const recordBtn = document.getElementById('recordBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    // Set up event listeners
+    if (recordBtn) recordBtn.addEventListener('click', startRecording);
+    if (pauseBtn) pauseBtn.addEventListener('click', pauseRecording);
+    if (stopBtn) stopBtn.addEventListener('click', stopRecording);
+    if (saveBtn) saveBtn.addEventListener('click', saveRecording);
+    
+    // Update recording title when changed
+    const recordingTitleInput = document.getElementById('recordingTitleInput');
+    const recordingTitle = document.getElementById('recordingTitle');
+    
+    if (recordingTitleInput && recordingTitle) {
+      recordingTitleInput.addEventListener('input', () => {
+        recordingTitle.textContent = recordingTitleInput.value || 'New Recording';
+      });
     }
   });
 });
 
-// Load settings from storage
-function loadSettings() {
+// Load settings
+function loadSettings(callback) {
   chrome.storage.local.get(['settings'], function(result) {
     if (result.settings) {
       settings = result.settings;
-      MAX_RECORDING_MINUTES = settings.maxRecordingTime;
+      MAX_RECORDING_MINUTES = settings.maxRecordingTime || 5;
+    } else {
+      // Set default settings
+      settings = {
+        platformUrl: 'http://localhost:3000',
+        checkInterval: 60,
+        maxRecordingTime: 5,
+        showWaveform: true
+      };
       
-      // Update UI based on settings
-      if (!settings.showWaveform) {
-        const waveformEl = document.querySelector('.waveform');
-        if (waveformEl) waveformEl.style.display = 'none';
-      }
-      
-      // Update recording time limit display
-      const statusTextEl = document.getElementById('statusText');
-      if (statusTextEl) {
-        statusTextEl.textContent = `Ready to record (max ${settings.maxRecordingTime} min)`;
-      }
+      // Save default settings
+      chrome.storage.local.set({ settings });
     }
+    
+    if (callback) callback();
   });
 }
 
@@ -98,79 +74,26 @@ function createWaveformBars(container) {
   container.innerHTML = '';
   
   // Create bars
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 50; i++) {
     const bar = document.createElement('div');
     bar.className = 'waveform-bar';
     container.appendChild(bar);
   }
 }
 
-// Capture system audio and microphone
+// Start audio recording
 async function startRecording() {
   try {
-    // First try to capture desktop audio which includes system sounds
-    let stream = null;
-    
-    try {
-      // Try to use desktop capture for system audio
-      if (navigator.mediaDevices.getDisplayMedia) {
-        const displayStream = await navigator.mediaDevices.getDisplayMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          },
-          video: false
-        });
-        
-        // Check if we got audio tracks
-        if (displayStream.getAudioTracks().length > 0) {
-          console.log('Successfully captured desktop audio');
-          
-          // Also get microphone audio
-          const micStream = await navigator.mediaDevices.getUserMedia({ 
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true
-            }
-          });
-          
-          // Combine the streams
-          const audioContext = new AudioContext();
-          const desktopSource = audioContext.createMediaStreamSource(displayStream);
-          const micSource = audioContext.createMediaStreamSource(micStream);
-          const destination = audioContext.createMediaStreamDestination();
-          
-          desktopSource.connect(destination);
-          micSource.connect(destination);
-          
-          stream = destination.stream;
-        } else {
-          throw new Error('No audio tracks available in display capture');
-        }
+    // Request microphone access
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
       }
-    } catch (err) {
-      console.log('Desktop capture not available:', err);
-    }
+    });
     
-    // If desktop capture failed, fall back to just microphone
-    if (!stream) {
-      console.log('Falling back to microphone only');
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          // Attempt to get system audio on macOS
-          // Note: This doesn't work with AirPods but we try anyway
-          sampleRate: 44100,
-          channelCount: 2
-        }
-      });
-    }
-    
-    // Create media recorder with appropriate codec
+    // Create media recorder
     const options = { mimeType: 'audio/webm' };
     try {
       mediaRecorder = new MediaRecorder(stream, options);
@@ -186,8 +109,6 @@ async function startRecording() {
       audioChunks.push(event.data);
     };
     
-    mediaRecorder.onstop = saveRecording;
-    
     // Start recording
     mediaRecorder.start(1000); // Collect data every second
     isRecording = true;
@@ -196,26 +117,21 @@ async function startRecording() {
     // Start timer
     startTimer();
     
-    // Set up audio visualization if enabled
-    if (settings.showWaveform) {
-      setupAudioVisualization(stream);
-    }
+    // Start visualization
+    setupAudioVisualization(stream);
     
     // Update UI
-    document.getElementById('recordBtn').disabled = true;
-    document.getElementById('pauseBtn').disabled = false;
-    document.getElementById('stopBtn').disabled = false;
-    document.getElementById('statusText').textContent = 'Recording...';
+    const recordBtn = document.getElementById('recordBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    
+    if (recordBtn) recordBtn.disabled = true;
+    if (pauseBtn) pauseBtn.disabled = false;
+    if (stopBtn) stopBtn.disabled = false;
     
   } catch (error) {
     console.error('Error starting recording:', error);
-    document.getElementById('statusText').textContent = 'Error: Could not start recording. Please check microphone permissions.';
-    
-    // Show more detailed error
-    const errorDetails = document.createElement('div');
-    errorDetails.className = 'error-details';
-    errorDetails.textContent = error.toString();
-    document.getElementById('statusText').appendChild(errorDetails);
+    alert('Could not access microphone. Please check permissions.');
   }
 }
 
@@ -223,15 +139,16 @@ async function startRecording() {
 function pauseRecording() {
   if (!mediaRecorder) return;
   
+  const pauseBtn = document.getElementById('pauseBtn');
+  
   if (isPaused) {
     // Resume recording
     mediaRecorder.resume();
     isPaused = false;
-    document.getElementById('pauseBtn').textContent = 'Pause';
-    document.getElementById('statusText').textContent = 'Recording...';
+    pauseBtn.textContent = 'Pause';
     startTimer();
     
-    // Resume visualization if it was set up
+    // Resume visualization
     if (audioAnalyser) {
       visualize();
     }
@@ -239,8 +156,7 @@ function pauseRecording() {
     // Pause recording
     mediaRecorder.pause();
     isPaused = true;
-    document.getElementById('pauseBtn').textContent = 'Resume';
-    document.getElementById('statusText').textContent = 'Paused';
+    pauseBtn.textContent = 'Resume';
     clearInterval(recordingTimer);
     
     // Pause visualization
@@ -281,53 +197,43 @@ function stopRecording() {
     audioAnalyser = null;
   }
   
-  // Reset UI
-  document.getElementById('recordBtn').disabled = false;
-  document.getElementById('pauseBtn').disabled = true;
-  document.getElementById('stopBtn').disabled = true;
-  document.getElementById('pauseBtn').textContent = 'Pause';
-  document.getElementById('statusText').textContent = 'Recording stopped';
+  // Update UI
+  const recordBtn = document.getElementById('recordBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  
+  if (recordBtn) recordBtn.disabled = false;
+  if (pauseBtn) {
+    pauseBtn.disabled = true;
+    pauseBtn.textContent = 'Pause';
+  }
+  if (stopBtn) stopBtn.disabled = true;
+  if (saveBtn) saveBtn.disabled = false;
   
   // Reset waveform
   const waveformBars = document.querySelectorAll('.waveform-bar');
   waveformBars.forEach(bar => {
-    bar.style.height = '10%';
+    bar.style.height = '5%';
   });
 }
 
-// Save the recording
+// Save recording
 function saveRecording() {
-  if (audioChunks.length === 0) return;
+  if (audioChunks.length === 0) {
+    alert('No recording data available');
+    return;
+  }
   
-  const title = document.getElementById('recordingTitle').value || 'Unnamed Recording';
+  const titleInput = document.getElementById('recordingTitleInput');
+  const title = titleInput ? titleInput.value || 'Unnamed Recording' : 'Unnamed Recording';
   const timestamp = new Date().toISOString();
   
-  // Create blob with appropriate mime type
+  // Create blob from chunks
   const mimeType = mediaRecorder.mimeType || 'audio/webm';
   const audioBlob = new Blob(audioChunks, { type: mimeType });
   
-  // Create audio element and play preview
-  const audioPreview = document.createElement('audio');
-  audioPreview.controls = true;
-  audioPreview.src = URL.createObjectURL(audioBlob);
-  
-  // Add preview to the page
-  const previewContainer = document.createElement('div');
-  previewContainer.className = 'preview-container';
-  previewContainer.innerHTML = '<h3>Preview</h3>';
-  previewContainer.appendChild(audioPreview);
-  
-  // Remove any existing preview
-  const existingPreview = document.querySelector('.preview-container');
-  if (existingPreview) {
-    existingPreview.remove();
-  }
-  
-  // Add preview before the status text
-  const statusText = document.getElementById('statusText');
-  statusText.parentNode.insertBefore(previewContainer, statusText);
-  
-  // Convert blob to base64 for storage
+  // Convert to base64 for storage
   const reader = new FileReader();
   reader.readAsDataURL(audioBlob);
   reader.onloadend = function() {
@@ -336,48 +242,42 @@ function saveRecording() {
     // Save to Chrome storage
     chrome.storage.local.get(['pendingRecordings'], function(result) {
       const pendingRecordings = result.pendingRecordings || [];
-      pendingRecordings.push({
+      const newRecording = {
         id: Date.now(),
         title: title,
         timestamp: timestamp,
         audio: base64Audio,
         processed: false
-      });
+      };
+      
+      pendingRecordings.push(newRecording);
       
       chrome.storage.local.set({ pendingRecordings: pendingRecordings }, function() {
-        // Update status
-        document.getElementById('statusText').textContent = 'Recording saved! You can now close this tab.';
+        alert('Recording saved successfully');
         
-        // Also save to disk
+        // Reset the UI
+        if (titleInput) titleInput.value = '';
+        
+        // Reset the recording title
+        const recordingTitle = document.getElementById('recordingTitle');
+        if (recordingTitle) recordingTitle.textContent = 'New Recording';
+        
+        // Disable save button
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) saveBtn.disabled = true;
+        
+        // Also save to downloads
         const sanitizedTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const filename = `wizzo_recording_${sanitizedTitle}_${Date.now()}.webm`;
-        
-        // Save to the wizzo recording directory if possible
-        const localDirUrl = settings.platformUrl + '/storage/recordings';
         
         // Use the downloads API to save the file
         chrome.downloads.download({
           url: URL.createObjectURL(audioBlob),
           filename: filename,
           saveAs: false
-        }, function(downloadId) {
-          const notification = document.createElement('div');
-          notification.className = 'notification';
-          notification.textContent = `File saved to your downloads folder as ${filename}`;
-          statusText.parentNode.insertBefore(notification, statusText.nextSibling);
         });
         
-        // Add notification about auto-processing
-        const autoProcessNotification = document.createElement('div');
-        autoProcessNotification.className = 'notification';
-        autoProcessNotification.textContent = 'Recording will be automatically processed when Wizzo platform is online.';
-        statusText.parentNode.insertBefore(autoProcessNotification, statusText.nextSibling);
-        
-        // Reset form
-        document.getElementById('recordingTitle').value = '';
-        resetTimer();
-        
-        // Check if Wizzo is running and attempt to process immediately
+        // Notify background script to sync
         chrome.runtime.sendMessage({ action: 'syncNow' });
       });
     });
@@ -397,27 +297,26 @@ function updateTimer() {
     recordingMinutes++;
   }
   
-  // Update the display
-  const timerDisplay = document.getElementById('timerDisplay');
-  timerDisplay.textContent = `${recordingMinutes.toString().padStart(2, '0')}:${recordingSeconds.toString().padStart(2, '0')}`;
+  // Update timer display
+  const timerDisplay = document.getElementById('timer');
+  if (timerDisplay) {
+    timerDisplay.textContent = `${recordingMinutes.toString().padStart(2, '0')}:${recordingSeconds.toString().padStart(2, '0')}`;
+  }
   
-  // Check if we've reached the limit
+  // Check if reached maximum recording time
   if (recordingMinutes >= MAX_RECORDING_MINUTES) {
     stopRecording();
-    document.getElementById('statusText').textContent = `Recording stopped after ${MAX_RECORDING_MINUTES} minutes`;
+    alert(`Recording stopped after ${MAX_RECORDING_MINUTES} minutes`);
   }
 }
 
-function resetTimer() {
-  clearInterval(recordingTimer);
-  recordingSeconds = 0;
-  recordingMinutes = 0;
-  document.getElementById('timerDisplay').textContent = '00:00';
-}
-
 // Audio visualization
-let animationFrameId = null;
+let audioContext;
+let audioAnalyser;
+let dataArray;
+let animationFrameId;
 
+// Set up audio visualization
 function setupAudioVisualization(stream) {
   try {
     // Create audio context
@@ -425,11 +324,11 @@ function setupAudioVisualization(stream) {
     audioAnalyser = audioContext.createAnalyser();
     audioAnalyser.fftSize = 256;
     
-    // Connect the media stream to the analyzer
-    mediaStreamSource = audioContext.createMediaStreamSource(stream);
+    // Connect stream to analyser
+    const mediaStreamSource = audioContext.createMediaStreamSource(stream);
     mediaStreamSource.connect(audioAnalyser);
     
-    // Set up data array for visualization
+    // Create data array
     const bufferLength = audioAnalyser.frequencyBinCount;
     dataArray = new Uint8Array(bufferLength);
     
@@ -437,10 +336,11 @@ function setupAudioVisualization(stream) {
     visualize();
   } catch (error) {
     console.error('Error setting up audio visualization:', error);
-    // Fail silently, recording can still work without visualization
+    // Continue without visualization
   }
 }
 
+// Visualize audio
 function visualize() {
   if (!audioAnalyser) return;
   
@@ -449,11 +349,10 @@ function visualize() {
   // Get frequency data
   audioAnalyser.getByteFrequencyData(dataArray);
   
-  // Update waveform
+  // Update waveform bars
   const waveformBars = document.querySelectorAll('.waveform-bar');
   const barCount = waveformBars.length;
   
-  // Map the data array to the bars
   for (let i = 0; i < barCount; i++) {
     const index = Math.floor(i * dataArray.length / barCount);
     const value = dataArray[index];

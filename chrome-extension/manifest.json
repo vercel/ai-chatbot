@@ -19,7 +19,8 @@
     "audioCapture",
     "notifications",
     "tabCapture",
-    "downloads"
+    "downloads",
+    "alarms"
   ],
   "host_permissions": [
     "*://*/*"
@@ -35,7 +36,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["recordingView.html", "recordingView.js"],
+      "resources": ["recordingView.html", "recordingView.js", "popup/styles.css", "icons/*"],
       "matches": ["<all_urls>"]
     }
   ]

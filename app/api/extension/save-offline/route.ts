@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { authenticateExtensionRequest } from '@/lib/extension/auth';
+import { verifyExtensionToken } from '@/lib/extension/auth';
 
 // Define the directory paths
 const STORAGE_ROOT = path.join(process.cwd(), 'storage');
@@ -9,21 +11,25 @@ const OFFLINE_TEMP_DIR = path.join(STORAGE_ROOT, 'offline-temp-files');
 /**
  * Save data from the Chrome extension to the offline temp directory
  */
-export async function POST(request: Request) {
-  try {
-    // Parse the request body
-    const data = await request.json();
-    
-    // Make sure the offline temp directory exists
-    ensureOfflineTempDirectories();
-    
-    // Validate the data
-    if (!data.id || !data.type) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid data: id and type are required'
-      }, { status: 400 });
-    }
+export async function POST(request: NextRequest) {
+  return authenticateExtensionRequest(request, async (userId, authRequest) => {
+    try {
+      // Parse the request body
+      const data = await authRequest.clone().json();
+      
+      // Make sure the offline temp directory exists
+      ensureOfflineTempDirectories();
+      
+      // Validate the data
+      if (!data.id || !data.type) {
+        return NextResponse.json({
+          success: false,
+          error: 'Invalid data: id and type are required'
+        }, { status: 400 });
+      }
+      
+      // Set the user ID from authentication
+      data.userId = userId;
     
     let filePath;
     switch (data.type) {
@@ -62,14 +68,15 @@ export async function POST(request: Request) {
       message: `Saved ${data.type} to offline temp directory`,
       path: filePath
     });
-  } catch (error) {
-    console.error('Error saving to offline temp directory:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to save to offline temp directory',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
-  }
+    } catch (error) {
+      console.error('Error saving to offline temp directory:', error);
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to save to offline temp directory',
+        details: error instanceof Error ? error.message : String(error)
+      }, { status: 500 });
+    }
+  });
 }
 
 /**

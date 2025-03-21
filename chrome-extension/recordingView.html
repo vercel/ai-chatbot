@@ -1,234 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wizzo Recording</title>
   <style>
+    /* Basic styling */
     body {
-      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f5f5;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      width: 100%;
       min-height: 100vh;
-      color: #333;
+      background-color: #f9f9f9;
     }
     
-    .recording-container {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    .header {
+      display: flex;
+      align-items: center;
       width: 100%;
-      max-width: 600px;
-      padding: 30px;
-      text-align: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    
+    .logo {
+      width: 32px;
+      height: 32px;
+      margin-right: 15px;
     }
     
     h1 {
-      color: #2A5B34;
-      margin-top: 0;
+      font-size: 18px;
+      margin: 0;
+      color: #333;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .recording-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .recording-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
     }
     
     .timer {
       font-size: 48px;
-      font-weight: bold;
+      font-weight: 700;
+      color: #333;
       margin: 20px 0;
-    }
-    
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.3s, transform 0.1s;
-    }
-    
-    .btn:active {
-      transform: scale(0.98);
-    }
-    
-    .record-btn {
-      background-color: #ff0000;
-      color: white;
-    }
-    
-    .record-btn:hover {
-      background-color: #e00000;
-    }
-    
-    .pause-btn {
-      background-color: #ffaa00;
-      color: white;
-    }
-    
-    .pause-btn:hover {
-      background-color: #e09900;
-    }
-    
-    .stop-btn {
-      background-color: #333;
-      color: white;
-    }
-    
-    .stop-btn:hover {
-      background-color: #222;
-    }
-    
-    .title-input {
-      width: 100%;
-      margin-top: 20px;
-    }
-    
-    input[type="text"] {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-    
-    .status {
-      margin-top: 20px;
-      font-style: italic;
-      color: #666;
+      text-align: center;
     }
     
     .waveform {
       width: 100%;
       height: 120px;
       background-color: #f0f0f0;
-      border-radius: 4px;
+      border-radius: 8px;
       margin: 20px 0;
       position: relative;
       overflow: hidden;
     }
     
     .waveform-inner {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
       display: flex;
       align-items: flex-end;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
       padding: 0 10px;
-      box-sizing: border-box;
     }
     
     .waveform-bar {
-      background-color: #2A5B34;
-      width: 3px;
+      flex: 1;
+      background-color: #4a90e2;
+      height: 5%;
       margin: 0 1px;
-      height: 10%;
+      border-radius: 1px;
+      max-width: 4px;
       transition: height 0.1s ease;
     }
     
-    .error-details {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #ffebee;
-      color: #c62828;
-      border-radius: 4px;
-      font-size: 14px;
-      word-break: break-all;
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 30px 0;
+      flex-wrap: wrap;
     }
     
-    .preview-container {
-      margin: 20px 0;
-      padding: 15px;
-      background-color: #EFF6F0;
-      border-radius: 4px;
-    }
-    
-    .preview-container h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      color: #2A5B34;
-    }
-    
-    audio {
-      width: 100%;
-    }
-    
-    .notification {
-      margin: 10px 0;
-      padding: 10px;
-      background-color: #EFF6F0;
-      color: #2A5B34;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    /* Permission error dialog */
-    .permission-alert {
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 20px;
-      border-radius: 6px;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      max-width: 80%;
-      text-align: center;
-      z-index: 1001;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    
-    .permission-alert h3 {
-      margin-top: 0;
-      color: white;
-    }
-    
-    .permission-alert button {
-      margin-top: 15px;
-      background-color: #2A5B34;
-      color: white;
+    .btn {
+      padding: 12px 25px;
+      border-radius: 50px;
       border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      font-weight: bold;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
     }
     
-    .permission-alert button:hover {
-      background-color: #1F4526;
+    .record-btn {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    .pause-btn {
+      background-color: #ff9800;
+      color: white;
+    }
+    
+    .stop-btn {
+      background-color: #2196f3;
+      color: white;
+    }
+    
+    .save-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+    
+    .btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .recording-info {
+      margin: 20px 0;
+    }
+    
+    .recording-info input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
-  <div class="recording-container">
-    <h1>Wizzo Audio Recording</h1>
-    
-    <div class="waveform">
-      <div class="waveform-inner" id="waveformContainer"></div>
+  <div class="header">
+    <img src="icons/icon48.png" alt="Wizzo Logo" class="logo">
+    <h1>Wizzo Recording</h1>
+  </div>
+  
+  <div class="container">
+    <div class="recording-header">
+      <div class="recording-title" id="recordingTitle">New Recording</div>
     </div>
     
-    <div class="timer" id="timerDisplay">00:00</div>
+    <div class="timer" id="timer">00:00</div>
+    
+    <div class="waveform" id="waveform">
+      <div class="waveform-inner" id="waveformInner"></div>
+    </div>
+    
+    <div class="recording-info">
+      <input type="text" id="recordingTitleInput" placeholder="Recording Title">
+    </div>
     
     <div class="controls">
       <button id="recordBtn" class="btn record-btn">Record</button>
       <button id="pauseBtn" class="btn pause-btn" disabled>Pause</button>
       <button id="stopBtn" class="btn stop-btn" disabled>Stop</button>
+      <button id="saveBtn" class="btn save-btn" disabled>Save</button>
     </div>
-    
-    <div class="title-input">
-      <input type="text" id="recordingTitle" placeholder="Recording Title">
-    </div>
-    
-    <p class="status" id="statusText">Ready to record</p>
   </div>
   
   <script src="recordingView.js"></script>

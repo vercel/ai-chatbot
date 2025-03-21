@@ -1,4 +1,13 @@
-import fs from 'fs';
+// Create a user-specific directory structure for files
+function getUserDataPaths(userId: string) {
+  const userPath = path.join(STORAGE_ROOT, 'users', userId);
+  return {
+    root: userPath,
+    recordings: path.join(userPath, 'recordings'),
+    texts: path.join(userPath, 'texts'),
+    notes: path.join(userPath, 'notes')
+  };
+}import fs from 'fs';
 import path from 'path';
 import { nanoid } from 'nanoid';
 
@@ -16,16 +25,28 @@ const SUPPORTED_FORMATS = ['text', 'recording', 'note'];
 
 // Ensure all directories exist
 export function ensureOfflineDirectories() {
-  [
-    STORAGE_ROOT,
-    OFFLINE_TEMP_DIR,
-    path.join(OFFLINE_TEMP_DIR, 'recordings'),
-    path.join(OFFLINE_TEMP_DIR, 'texts'),
-    path.join(OFFLINE_TEMP_DIR, 'notes'),
-    RECORDINGS_DIR,
-    TEXTS_DIR,
-    NOTES_DIR
-  ].forEach(dir => {
+  [STORAGE_ROOT, OFFLINE_TEMP_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+  
+  // Create type-specific directories
+  ['recordings', 'texts', 'notes'].forEach(type => {
+    const dir = path.join(OFFLINE_TEMP_DIR, type);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
+
+// Ensure user directories exist
+export function ensureUserDirectories(userId: string) {
+  if (!userId) return;
+  
+  const userPaths = getUserDataPaths(userId);
+  
+  [userPaths.root, userPaths.recordings, userPaths.texts, userPaths.notes].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -50,6 +71,17 @@ export async function processOfflineTempFiles() {
       try {
         const sourcePath = path.join(OFFLINE_TEMP_DIR, 'recordings', file);
         const fileData = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+        
+        // Ensure the user ID exists
+        if (!fileData.userId) {
+          throw new Error('User ID is missing');
+        }
+        
+        // Ensure user directories
+        ensureUserDirectories(fileData.userId);
+        
+        // Create user-specific paths
+        const userPaths = getUserDataPaths(fileData.userId);
         
         // Perform validation
         let validationError = validateRecording(fileData);

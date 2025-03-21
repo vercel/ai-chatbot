@@ -1,62 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Wizzo Assistant Settings</title>
-  <link rel="stylesheet" href="settings.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wizzo - Settings</title>
+  <link rel="stylesheet" href="popup/styles.css">
+  <style>
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+    }
+    
+    h2 {
+      font-size: 18px;
+      margin-top: 0;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .flex-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .btn-primary {
+      background: #4a90e2;
+      color: white;
+      border: none;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .checkbox-label input {
+      width: auto;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Wizzo Assistant Settings</h1>
-    </div>
+    <header>
+      <h1>Wizzo Settings</h1>
+    </header>
     
-    <div class="settings-content">
-      <div class="setting-group">
-        <h2>Connection Settings</h2>
-        <div class="form-group">
-          <label for="platformUrl">Platform URL</label>
-          <input type="text" id="platformUrl" placeholder="http://localhost:3000">
-          <p class="help-text">URL of your Wizzo platform (include http:// or https://)</p>
-        </div>
-        <div class="form-group">
-          <label for="checkInterval">Check Interval (seconds)</label>
-          <input type="number" id="checkInterval" min="10" max="300" step="10">
-          <p class="help-text">How often to check if the platform is running</p>
-        </div>
+    <div class="section">
+      <h2>Connection Settings</h2>
+      <div class="form-group">
+        <label for="platformUrl">Platform URL</label>
+        <input type="text" id="platformUrl" placeholder="https://wizzo.com">
       </div>
-      
-      <div class="setting-group">
-        <h2>Recording Settings</h2>
-        <div class="form-group">
-          <label for="maxRecordingTime">Maximum Recording Time (minutes)</label>
-          <input type="number" id="maxRecordingTime" min="1" max="30" step="1">
-          <p class="help-text">Maximum allowed recording duration</p>
-        </div>
-        <div class="form-group">
-          <div class="checkbox-group">
-            <input type="checkbox" id="showWaveform">
-            <label for="showWaveform">Show Audio Waveform</label>
-          </div>
-          <p class="help-text">Display waveform visualization during recording</p>
-        </div>
-      </div>
-      
-      <div class="setting-group">
-        <h2>Storage Settings</h2>
-        <div class="form-group">
-          <button id="clearDataBtn" class="btn danger-btn">Clear All Pending Data</button>
-          <p class="help-text">This will remove all unprocessed recordings, texts, and notes</p>
-        </div>
-      </div>
-      
-      <div class="btn-group">
-        <button id="saveSettingsBtn" class="btn primary-btn">Save Settings</button>
-        <button id="resetSettingsBtn" class="btn">Reset to Defaults</button>
+      <div class="form-group">
+        <label for="syncInterval">Sync Interval (minutes)</label>
+        <input type="number" id="syncInterval" min="1" max="120">
       </div>
     </div>
     
-    <div class="footer">
-      <a href="popup.html" class="btn back-btn">Back</a>
+    <div class="section">
+      <h2>Recording Settings</h2>
+      <div class="form-group">
+        <label for="maxRecordingTime">Maximum Recording Time (minutes)</label>
+        <input type="number" id="maxRecordingTime" min="1" max="60">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="showWaveform">
+          Show waveform visualization during recording
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Advanced</h2>
+      <div class="form-group">
+        <button id="clearDataBtn" class="btn">Clear All Local Data</button>
+        <p class="help-text">This will remove all pending recordings, texts, and notes.</p>
+      </div>
+      <div class="form-group">
+        <button id="viewLogsBtn" class="btn">View Debug Logs</button>
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button id="cancelBtn" class="btn">Cancel</button>
+      <button id="saveBtn" class="btn btn-primary">Save Settings</button>
     </div>
   </div>
   
