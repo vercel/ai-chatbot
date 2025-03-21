@@ -150,12 +150,7 @@ export function PrivateCodeChat({
         chatId: generateUUID(),
         role: 'system',
         createdAt: new Date(),
-        parts: [
-          {
-            type: 'text',
-            text: systemPrompt,
-          },
-        ],
+        parts: null,
         attachments: null,
       },
     ]),
