@@ -18,10 +18,9 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
-    "@ai-sdk/fireworks": "^0.1.16",
-    "@ai-sdk/openai": "^1.2.5",
-    "@ai-sdk/react": "^1.1.24",
-    "@ai-sdk/xai": "^1.1.15",
+    "@ai-sdk/groq": "^1.2.0",
+    "@ai-sdk/react": "^1.2.0",
+    "@ai-sdk/xai": "^1.2.1",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
@@ -42,7 +41,7 @@
     "@vercel/functions": "^1.4.2",
     "@vercel/kv": "^3.0.0",
     "@vercel/postgres": "^0.10.0",
-    "ai": "4.1.63",
+    "ai": "4.2.0",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
