@@ -3,16 +3,24 @@ import Form from 'next/form';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
+import { Turnstile } from 'next-turnstile';
+
 export function AuthForm({
   action,
   children,
   defaultEmail = '',
+  handleTurnstileStatus,
+  turnstileRef,
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
   children: React.ReactNode;
   defaultEmail?: string;
+  handleTurnstileStatus: (
+    status: 'success' | 'error' | 'expired' | 'required',
+  ) => void;
+  turnstileRef: React.MutableRefObject<string | undefined>;
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
@@ -53,6 +61,24 @@ export function AuthForm({
           required
         />
       </div>
+      <Turnstile
+        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+        retry="auto"
+        refreshExpired="auto"
+        sandbox={process.env.NODE_ENV === 'development'}
+        onError={() => {
+          handleTurnstileStatus('error');
+        }}
+        onExpire={() => {
+          handleTurnstileStatus('expired');
+        }}
+        onLoad={() => {
+          handleTurnstileStatus('required');
+        }}
+        onVerify={(token) => {
+          handleTurnstileStatus('success');
+        }}
+      />
 
       {children}
     </Form>

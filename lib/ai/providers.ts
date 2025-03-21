@@ -4,8 +4,6 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { groq } from '@ai-sdk/groq';
-import { xai } from '@ai-sdk/xai';
-import { fal } from '@ai-sdk/fal';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -25,15 +23,16 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-1212'),
+        'chat-llama3-70b': groq('llama3-70b-8192'),
+        'chat-llama3.3-70b-versatile': groq('llama-3.3-70b-versatile'),
+        'chat-llama3.3-70b-specdec': groq('llama-3.3-70b-specdec'),
+        'chat-qwen2.5-32b': groq('qwen-2.5-32b'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: groq('deepseek-r1-distill-llama-70b'),
+          model: groq('deepseek-r1-distill-qwen-32b'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'title-model': groq('qwen-2.5-32b'),
+        'artifact-model': groq('llama3-70b-8192'),
       },
-      imageModels: {
-        'small-model': fal.image('fal-ai/fast-sdxl'),
-      },
+      imageModels: {},
     });

@@ -1,10 +1,8 @@
 import type {
+  Attachment,
   CoreAssistantMessage,
   CoreToolMessage,
   Message,
-  TextStreamPart,
-  ToolInvocation,
-  ToolSet,
   UIMessage,
 } from 'ai';
 import { type ClassValue, clsx } from 'clsx';
@@ -162,4 +160,18 @@ export function getTrailingMessageId({
   if (!trailingMessage) return null;
 
   return trailingMessage.id;
+}
+
+export function convertToUIMessages(
+  messages: Array<DBMessage>,
+): Array<UIMessage> {
+  return messages.map((message) => ({
+    id: message.id,
+    parts: message.parts as UIMessage['parts'],
+    role: message.role as UIMessage['role'],
+    // Note: content will soon be deprecated in @ai-sdk/react
+    content: '',
+    createdAt: message.createdAt,
+    experimental_attachments: (message.attachments as Array<Attachment>) ?? [],
+  }));
 }

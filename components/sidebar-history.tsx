@@ -31,7 +31,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuPortal,
-  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -144,6 +143,81 @@ const PureChatItem = ({
   );
 };
 
+const UnPurehatItem = ({
+  chat,
+  isActive,
+  setOpenMobile,
+}: {
+  chat: {
+    id: string;
+    title: string;
+  };
+  isActive: boolean;
+  setOpenMobile: (open: boolean) => void;
+}) => {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive}>
+        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+          <span>{chat.title}</span>
+        </Link>
+      </SidebarMenuButton>
+      <DropdownMenu modal={true}>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuAction
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5"
+            showOnHover={!isActive}
+          >
+            <MoreHorizontalIcon />
+            <span className="sr-only">More</span>
+          </SidebarMenuAction>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent side="bottom" align="end">
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="cursor-pointer">
+              <ShareIcon />
+              <span>Share</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  className="cursor-pointer flex-row justify-between"
+                  onClick={() => {}}
+                >
+                  <div className="flex flex-row gap-2 items-center">
+                    <LockIcon size={12} />
+                    <span>Private</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer flex-row justify-between"
+                  onClick={() => {}}
+                >
+                  <div className="flex flex-row gap-2 items-center">
+                    <GlobeIcon />
+                    <span>Public</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+
+          <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500">
+            <TrashIcon />
+            <span>Delete</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+};
+
+export const CustomChatItem = memo(UnPurehatItem, (prevProps, nextProps) => {
+  if (prevProps.isActive !== nextProps.isActive) return false;
+  return true;
+});
+
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) return false;
   return true;
@@ -164,6 +238,17 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   useEffect(() => {
     mutate();
   }, [pathname, mutate]);
+
+  const customChats = [
+    {
+      id: 'draft-emails',
+      title: 'Draft Professional Emails',
+    },
+    {
+      id: 'rephrase-text-professionally',
+      title: 'Rephrase Text Professionally',
+    },
+  ];
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -290,6 +375,17 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
                 return (
                   <>
+                    <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                      Customer Modules
+                    </div>
+                    {customChats.map((chat) => (
+                      <CustomChatItem
+                        key={chat.id}
+                        chat={chat}
+                        isActive={chat.id === id}
+                        setOpenMobile={setOpenMobile}
+                      />
+                    ))}
                     {groupedChats.today.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
