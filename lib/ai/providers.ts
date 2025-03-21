@@ -3,7 +3,10 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
+
 import { groq } from '@ai-sdk/groq';
+import { google } from '@ai-sdk/google';
+
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -25,8 +28,10 @@ export const myProvider = isTestEnvironment
       languageModels: {
         'chat-llama3-70b': groq('llama3-70b-8192'),
         'chat-llama3.3-70b-versatile': groq('llama-3.3-70b-versatile'),
-        'chat-llama3.3-70b-specdec': groq('llama-3.3-70b-specdec'),
         'chat-qwen2.5-32b': groq('qwen-2.5-32b'),
+        'chat-gemini-2.0-flash-lite': google('gemini-2.0-flash-lite'),
+        'chat-gemini-1.5-flash-8b': google('gemini-1.5-flash-8b'),
+        'chat-gemini-2.0-flash': google('gemini-2.0-flash'),
         'chat-model-reasoning': wrapLanguageModel({
           model: groq('deepseek-r1-distill-qwen-32b'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
