@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wizzo Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Wizzo Assistant</h1>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="recording">Recording</button>
+      <button class="tab-btn" data-tab="text">Text</button>
+      <button class="tab-btn" data-tab="notes">Notes</button>
+    </div>
+    
+    <div class="tab-content">
+      <div id="recording" class="tab-pane active">
+        <h2>Record Audio</h2>
+        <div class="record-controls">
+          <button id="recordBtn" class="btn record-btn">Record</button>
+          <button id="pauseBtn" class="btn pause-btn" disabled>Pause</button>
+          <button id="stopBtn" class="btn stop-btn" disabled>Stop</button>
+          <button id="openRecordBtn" class="btn open-record-btn">Open in Tab</button>
+        </div>
+        <div class="timer">00:00</div>
+        <div class="recording-info">
+          <input type="text" id="recordingTitle" placeholder="Recording Title">
+          <div class="waveform" id="waveformMini"></div>
+        </div>
+        <div class="recordings-list">
+          <h3>Recordings</h3>
+          <ul id="pendingRecordings"></ul>
+        </div>
+      </div>
+      
+      <div id="text" class="tab-pane">
+        <h2>Add Text</h2>
+        <div class="text-input">
+          <input type="text" id="textTitle" placeholder="Text Title">
+          <textarea id="textContent" placeholder="Enter your text here..."></textarea>
+          <button id="saveTextBtn" class="btn save-btn">Save</button>
+        </div>
+        <div class="text-list">
+          <h3>Texts</h3>
+          <ul id="pendingTexts"></ul>
+        </div>
+      </div>
+      
+      <div id="notes" class="tab-pane">
+        <h2>Quick Notes</h2>
+        <div class="note-input">
+          <textarea id="noteContent" placeholder="Enter your note here..."></textarea>
+          <button id="saveNoteBtn" class="btn save-btn">Save</button>
+        </div>
+        <div class="notes-list">
+          <h3>Notes</h3>
+          <ul id="pendingNotes"></ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="status-section">
+        <p>Status: <span id="status">Offline</span></p>
+        <button id="syncNowBtn" class="btn sync-btn">Sync Now</button>
+      </div>
+      <div class="action-buttons">
+        <a href="settings.html" class="btn settings-btn">Settings</a>
+        <button id="openAppBtn" class="btn">Open Wizzo</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -160,10 +160,12 @@
 
 /* ChatGPT-like sidebar styling */
 .chatgpt-sidebar {
-  transition: width 300ms ease;
+  transition: width 300ms ease, transform 300ms ease;
   overflow: hidden;
   height: 100dvh;
   z-index: 50;
+  left: 0;
+  top: 0;
 }
 
 .chatgpt-sidebar-open {
@@ -177,32 +179,12 @@
 /* Mobile sidebar handling */
 @media (max-width: 768px) {
   .chatgpt-sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
     transform: translateX(-100%);
-    transition: transform 300ms ease;
   }
   
   .chatgpt-sidebar.chatgpt-sidebar-open {
     transform: translateX(0);
     width: 280px;
-  }
-  
-  .chatgpt-sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 49;
-    display: none;
-  }
-  
-  .chatgpt-sidebar-overlay.show {
-    display: block;
   }
 }
 
@@ -237,6 +219,19 @@
 body, html, #root {
   height: 100vh;
   overflow: hidden;
+}
+
+/* Ensure sidebar is always visible in desktop mode */
+@media (min-width: 768px) {
+  .chatgpt-sidebar-closed {
+    width: 72px !important; /* Force minimum width even if state is incorrect */
+    display: block !important;
+  }
+  
+  .chatgpt-sidebar-open {
+    width: 260px !important;
+    display: block !important;
+  }
 }
 
 .ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,

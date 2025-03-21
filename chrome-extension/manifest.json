@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Wizzo Assistant",
+  "version": "1.0",
+  "description": "Record audio and add notes for processing in Wizzo platform",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "audioCapture",
+    "notifications",
+    "tabCapture",
+    "downloads"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "settings.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["recordingView.html", "recordingView.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -4,6 +4,8 @@ import { getSession } from '@/lib/auth';
 import { taskItem, taskProject } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { TaskManagementClient } from '@/components/task-management/task-management-client';
+import { TaskManagementDebug } from '@/components/task-management/task-management-debug';
+import Script from 'next/script';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -60,13 +62,17 @@ export default async function TaskManagementPage() {
   
   return (
     <div className="h-full container mx-auto p-6">
+      {/* Load debug helpers script */}
+      <Script src="/debug-helpers.js" strategy="beforeInteractive" />
+      
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-cornsilk-500">Task Management</h1>
         <p className="text-cornsilk-300 mt-1">Organize, prioritize, and complete your tasks efficiently.</p>
       </div>
       
       <Suspense fallback={<div>Loading tasks...</div>}>
-        <TaskManagementClient 
+        {/* Use the debug wrapper instead of directly using the client */}
+        <TaskManagementDebug 
           initialTasks={tasks} 
           initialProjects={projects} 
         />

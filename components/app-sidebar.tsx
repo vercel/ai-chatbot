@@ -12,7 +12,7 @@ import {
   SidebarFooter, 
   SidebarProvider
 } from '@/components/ui/sidebar';
-import { BookOpen, MessageSquare, Video, Menu, CheckSquare, Plus } from 'lucide-react';
+import { BookOpen, MessageSquare, Video, Menu, CheckSquare, Plus, Chrome } from 'lucide-react';
 import { IconWrapper } from './ui/icon-wrapper';
 import { SidebarUserNav } from './sidebar-user-nav';
 import { Button } from './ui/button';
@@ -31,7 +31,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | 'meets' | 'tasks' | null>(null);
+  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | 'meets' | 'tasks' | 'extension' | null>(null);
   
   // Check if mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -67,10 +67,26 @@ export function AppSidebar({
       setActiveSection('meets');
     } else if (pathname.startsWith('/task-management') || pathname.startsWith('/tasks')) {
       setActiveSection('tasks');
+    } else if (pathname.startsWith('/extension')) {
+      setActiveSection('extension');
     } else {
       setActiveSection(null);
     }
-  }, [pathname]);
+
+    // Ensure sidebar is visible when navigating to any section
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
+    } else {
+      setIsSidebarOpen(true);
+    }
+  }, [pathname, isMobile]);
+
+  // Ensure the sidebar state is synchronized with window resize
+  useEffect(() => {
+    if (!isMobile && !isSidebarOpen) {
+      setIsSidebarOpen(true);
+    }
+  }, [isMobile, isSidebarOpen]);
 
   // Create a new chat
   const handleNewChat = () => {
@@ -108,6 +124,8 @@ export function AppSidebar({
         return 'Meets';
       case 'tasks':
         return 'Task Management';
+      case 'extension':
+        return 'Chrome Extension';
       default:
         return 'Wizzo';
     }
@@ -129,7 +147,7 @@ export function AppSidebar({
         {/* Mobile overlay */}
         {isMobile && (
           <div 
-            className={`chatgpt-sidebar-overlay ${isMobileMenuOpen ? 'show' : ''}`} 
+            className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
@@ -145,7 +163,7 @@ export function AppSidebar({
         )}
         
         {/* Main sidebar with ChatGPT-like styling */}
-        <div className={`chatgpt-sidebar ${isMobile ? (isMobileMenuOpen ? 'chatgpt-sidebar-open' : '') : (isSidebarOpen ? 'chatgpt-sidebar-open' : 'chatgpt-sidebar-closed')} h-full flex flex-col border-r border-gray-200 dark:border-gray-700/50 transition-all duration-300 ease-in-out bg-[#2A5B34] text-white z-50`}>
+        <div className={`chatgpt-sidebar fixed md:relative ${isMobile ? (isMobileMenuOpen ? 'chatgpt-sidebar-open' : '') : (isSidebarOpen ? 'chatgpt-sidebar-open' : 'chatgpt-sidebar-closed')} h-full flex flex-col border-r border-gray-200 dark:border-gray-700/50 transition-all duration-300 ease-in-out bg-[#2A5B34] text-white z-50`}>
           {/* New Chat button and Toggle */}
           <div className="p-2">
             <button
@@ -225,6 +243,18 @@ export function AppSidebar({
               >
                 <CheckSquare className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
                 {(isMobile || isSidebarOpen) && <span>Tasks</span>}
+              </button>
+              
+              <button
+                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
+                  activeSection === 'extension' 
+                    ? 'bg-white/20 text-white font-medium' 
+                    : 'text-white/80 hover:bg-white/10'
+                }`}
+                onClick={() => handleNavigation('/extension')}
+              >
+                <Chrome className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                {(isMobile || isSidebarOpen) && <span>Extension</span>}
               </button>
             </div>
             

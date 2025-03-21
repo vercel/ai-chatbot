@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wizzo Assistant Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Wizzo Assistant Settings</h1>
+    </div>
+    
+    <div class="settings-content">
+      <div class="setting-group">
+        <h2>Connection Settings</h2>
+        <div class="form-group">
+          <label for="platformUrl">Platform URL</label>
+          <input type="text" id="platformUrl" placeholder="http://localhost:3000">
+          <p class="help-text">URL of your Wizzo platform (include http:// or https://)</p>
+        </div>
+        <div class="form-group">
+          <label for="checkInterval">Check Interval (seconds)</label>
+          <input type="number" id="checkInterval" min="10" max="300" step="10">
+          <p class="help-text">How often to check if the platform is running</p>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h2>Recording Settings</h2>
+        <div class="form-group">
+          <label for="maxRecordingTime">Maximum Recording Time (minutes)</label>
+          <input type="number" id="maxRecordingTime" min="1" max="30" step="1">
+          <p class="help-text">Maximum allowed recording duration</p>
+        </div>
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="showWaveform">
+            <label for="showWaveform">Show Audio Waveform</label>
+          </div>
+          <p class="help-text">Display waveform visualization during recording</p>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h2>Storage Settings</h2>
+        <div class="form-group">
+          <button id="clearDataBtn" class="btn danger-btn">Clear All Pending Data</button>
+          <p class="help-text">This will remove all unprocessed recordings, texts, and notes</p>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button id="saveSettingsBtn" class="btn primary-btn">Save Settings</button>
+        <button id="resetSettingsBtn" class="btn">Reset to Defaults</button>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <a href="popup.html" class="btn back-btn">Back</a>
+    </div>
+  </div>
+  
+  <script src="settings.js"></script>
+</body>
+</html>

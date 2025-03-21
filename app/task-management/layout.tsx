@@ -2,11 +2,11 @@ import { ReactNode } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { getSession } from '@/lib/auth';
 
-interface TasksLayoutProps {
+interface TaskManagementLayoutProps {
   children: ReactNode;
 }
 
-export default async function TasksLayout({ children }: TasksLayoutProps) {
+export default async function TaskManagementLayout({ children }: TaskManagementLayoutProps) {
   const session = await getSession();
 
   return (
