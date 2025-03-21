@@ -19,8 +19,8 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
   },
   "dependencies": {
-    "@ai-sdk/groq": "^1.1.16",
-    "@ai-sdk/react": "^1.1.25",
+    "@ai-sdk/groq": "^1.2.0",
+    "@ai-sdk/react": "^1.2.0",
     "@ai-sdk/xai": "^1.2.1",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
