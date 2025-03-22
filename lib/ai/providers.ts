@@ -40,7 +40,7 @@ export const myProvider = isTestEnvironment
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
         'title-model': groq('qwen-2.5-32b'),
-        'artifact-model': groq('llama3-70b-8192'),
+        'artifact-model': google('gemini-2.0-flash-lite'),
       },
       imageModels: {},
     });
