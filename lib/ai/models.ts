@@ -35,6 +35,12 @@ export const chatModels: Array<ChatModel> = [
       'Built by Google, Next generation features, speed, thinking, realtime streaming',
   },
   {
+    id: 'chat-gemini-2.0-flash-search',
+    name: 'Gemini 2.0 Flash + Web Search',
+    description:
+      'Built by Google, Next generation features, speed, thinking, realtime streaming + Google Search',
+  },
+  {
     id: 'chat-qwen2.5-32b',
     name: 'Qwen 2.5 32b',
     description: 'For simple, single-step tasks',

@@ -32,6 +32,9 @@ export const myProvider = isTestEnvironment
         'chat-gemini-2.0-flash-lite': google('gemini-2.0-flash-lite'),
         'chat-gemini-1.5-flash-8b': google('gemini-1.5-flash-8b'),
         'chat-gemini-2.0-flash': google('gemini-2.0-flash'),
+        'chat-gemini-2.0-flash-search': google('gemini-2.0-flash', {
+          useSearchGrounding: true,
+        }),
         'chat-model-reasoning': wrapLanguageModel({
           model: groq('deepseek-r1-distill-qwen-32b'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
