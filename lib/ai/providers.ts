@@ -5,7 +5,6 @@ import {
 } from 'ai';
 import { groq } from '@ai-sdk/groq';
 import { xai } from '@ai-sdk/xai';
-import { fal } from '@ai-sdk/fal';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -34,6 +33,6 @@ export const myProvider = isTestEnvironment
         'artifact-model': xai('grok-2-1212'),
       },
       imageModels: {
-        'small-model': fal.image('fal-ai/fast-sdxl'),
+        'small-model': xai.image('grok-2-image'),
       },
     });
