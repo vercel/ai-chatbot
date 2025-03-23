@@ -1,193 +1,160 @@
-// Debug helper functions for development
-
 /**
- * This function adds mock data to localStorage to help debug the Extension page
+ * Global debug helpers for the UI
+ * This script adds utility functions to the window object to help debug the UI
  */
-function setupExtensionMockData() {
-  // Mock unprocessed files for extension status panel
-  const unprocessedFiles = [
-    {
-      name: "Meeting recording.m4a",
-      path: "/downloads/meeting-recording.m4a",
-      type: "recording",
-      timestamp: new Date().toISOString()
-    },
-    {
-      name: "Notes from call.txt",
-      path: "/downloads/notes-from-call.txt",
-      type: "text",
-      timestamp: new Date(Date.now() - 3600000).toISOString()
-    },
-    {
-      name: "Quick thought.txt",
-      path: "/downloads/quick-thought.txt",
-      type: "note",
-      timestamp: new Date(Date.now() - 7200000).toISOString()
-    }
-  ];
 
-  // Mock offline files
-  const offlineFiles = [
-    {
-      id: "1",
-      name: "Weekly meeting.m4a",
-      path: "/offline/weekly-meeting.m4a",
-      type: "recording",
-      timestamp: new Date().toISOString(),
-      processed: true,
-      error: null,
-      processingTimestamp: new Date().toISOString()
-    },
-    {
-      id: "2",
-      name: "Research notes.txt",
-      path: "/offline/research-notes.txt",
-      type: "text",
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      processed: false,
-      error: null,
-      processingTimestamp: null
-    },
-    {
-      id: "3",
-      name: "Failed recording.m4a",
-      path: "/offline/failed-recording.m4a",
-      type: "recording",
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      processed: false,
-      error: "File format not supported",
-      processingTimestamp: new Date(Date.now() - 6000000).toISOString()
-    }
-  ];
-
-  // Store in localStorage
-  localStorage.setItem('debug_unprocessedFiles', JSON.stringify(unprocessedFiles));
-  localStorage.setItem('debug_offlineFiles', JSON.stringify(offlineFiles));
-  
-  console.log('Extension mock data initialized');
-  alert('Extension mock data initialized! Refresh the page to see it.');
-}
-
-/**
- * This function adds mock data to localStorage to help debug the Task Management page
- */
-function setupTaskMockData() {
-  // Mock projects
+// Create task management debug data
+window.setupTaskMockData = () => {
+  // Default projects
   const projects = [
     {
-      id: "p1",
-      name: "Inbox",
-      color: "#3B82F6", // Blue
+      id: 'p1',
+      name: 'Inbox',
+      color: '#3B82F6',
       isDefault: true,
-      userId: "current-user",
       isDeleted: false,
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     },
     {
-      id: "p2",
-      name: "Work",
-      color: "#EF4444", // Red
+      id: 'p2',
+      name: 'Personal',
+      color: '#10B981',
       isDefault: false,
-      userId: "current-user",
       isDeleted: false,
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     },
     {
-      id: "p3",
-      name: "Personal",
-      color: "#10B981", // Green
+      id: 'p3',
+      name: 'Work',
+      color: '#F59E0B',
       isDefault: false,
-      userId: "current-user",
       isDeleted: false,
-      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
   ];
-
-  // Mock tasks
+  
+  // Default tasks
   const tasks = [
     {
-      id: "t1",
-      name: "Complete project proposal",
-      description: "Finalize the Q2 project proposal for client review",
+      id: 't1',
+      content: 'Fix UI layout issues',
+      description: 'Address sidebar and content width problems',
+      priority: 'p1',
+      projectId: 'p1',
       completed: false,
-      priority: "p1",
-      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-      projectId: "p2",
-      userId: "current-user",
       isDeleted: false,
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     },
     {
-      id: "t2",
-      name: "Grocery shopping",
-      description: "Buy groceries for the week",
+      id: 't2',
+      content: 'Implement task management features',
+      description: 'Complete the core functionality',
+      priority: 'p2',
+      projectId: 'p2',
+      completed: false,
+      isDeleted: false,
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 't3',
+      content: 'Fix API errors',
+      description: 'Address the errors displayed in the browser console',
+      priority: 'p1',
+      projectId: 'p3',
+      completed: false,
+      isDeleted: false,
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 't4',
+      content: 'Update component styles',
+      description: 'Make UI look more consistent',
+      priority: 'p3',
+      projectId: 'p1',
       completed: true,
-      priority: "p2",
-      dueDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      projectId: "p3",
-      userId: "current-user",
       isDeleted: false,
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "t3",
-      name: "Schedule doctor appointment",
-      description: "Annual checkup",
-      completed: false,
-      priority: "p3",
-      dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-      projectId: "p3",
-      userId: "current-user",
-      isDeleted: false,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "t4",
-      name: "Review marketing materials",
-      description: "Look over the new brochures and website copy",
-      completed: false,
-      priority: "p2",
-      dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-      projectId: "p2",
-      userId: "current-user",
-      isDeleted: false,
-      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "t5",
-      name: "Prepare presentation",
-      description: "Create slides for the team meeting",
-      completed: false,
-      priority: "p1",
-      dueDate: null,
-      projectId: "p1",
-      userId: "current-user",
-      isDeleted: false,
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+      userId: 'user1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
   ];
-
-  // Store in localStorage
+  
+  // Save to localStorage
   localStorage.setItem('debug_taskProjects', JSON.stringify(projects));
   localStorage.setItem('debug_taskItems', JSON.stringify(tasks));
   
-  console.log('Task Management mock data initialized');
-  alert('Task Management mock data initialized! Refresh the page to see it.');
-}
+  console.log('Task management debug data created:', { projects, tasks });
+  
+  // Reload the page to apply changes
+  window.location.reload();
+};
 
-// Make functions available globally
-window.setupExtensionMockData = setupExtensionMockData;
-window.setupTaskMockData = setupTaskMockData;
+// Create extension debug data
+window.setupExtensionMockData = () => {
+  const mockFiles = [
+    { id: 'f1', name: 'Recording 1.mp3', type: 'audio', size: '2.3 MB', status: 'ready' },
+    { id: 'f2', name: 'Notes from meeting.txt', type: 'text', size: '4.1 KB', status: 'ready' },
+    { id: 'f3', name: 'Quick note.txt', type: 'note', size: '1.5 KB', status: 'ready' }
+  ];
+  
+  const mockOfflineFiles = [
+    { id: 'of1', name: 'Offline recording.webm', type: 'audio', size: '3.7 MB', timestamp: new Date().toISOString() },
+    { id: 'of2', name: 'Offline note.txt', type: 'text', size: '2.9 KB', timestamp: new Date().toISOString() }
+  ];
+  
+  localStorage.setItem('extension_unprocessed_files', JSON.stringify(mockFiles));
+  localStorage.setItem('extension_offline_files', JSON.stringify(mockOfflineFiles));
+  
+  console.log('Extension debug data created:', { mockFiles, mockOfflineFiles });
+  
+  // Reload the page to apply changes
+  window.location.reload();
+};
 
-// Show a message in the console
-console.log('Debug helpers loaded. Use the following functions to initialize mock data:');
-console.log('1. window.setupExtensionMockData() - to add mock data for Extension page');
-console.log('2. window.setupTaskMockData() - to add mock data for Task Management page');
+// Clear all debug data
+window.clearDebugData = () => {
+  // Task management
+  localStorage.removeItem('debug_taskProjects');
+  localStorage.removeItem('debug_taskItems');
+  
+  // Extension
+  localStorage.removeItem('extension_unprocessed_files');
+  localStorage.removeItem('extension_offline_files');
+  
+  console.log('All debug data cleared');
+  
+  // Reload the page to apply changes
+  window.location.reload();
+};
+
+// Create default debug data if none exists
+(function initializeDebugData() {
+  // Check if task data exists
+  if (!localStorage.getItem('debug_taskProjects')) {
+    console.log('No task management debug data found. Creating default data...');
+    window.setupTaskMockData();
+  }
+  
+  // Check if extension data exists
+  if (!localStorage.getItem('extension_unprocessed_files')) {
+    console.log('No extension debug data found. Creating default data...');
+    window.setupExtensionMockData();
+  }
+  
+  console.log('Debug helpers loaded. Available commands:');
+  console.log('- window.setupTaskMockData(): Create task management debug data');
+  console.log('- window.setupExtensionMockData(): Create extension debug data');
+  console.log('- window.clearDebugData(): Clear all debug data');
+})();

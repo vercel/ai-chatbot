@@ -27,7 +27,7 @@ export function MobileHeader({ toggleSidebar, title = 'Wizzo Chat' }: MobileHead
   if (!isMobile) return null;
   
   return (
-    <div className="sticky top-0 z-10 px-3 py-2 flex items-center border-b border-white/10 bg-[#2A5B34] text-white md:hidden">
+    <div className="sticky top-0 z-10 px-3 py-2 flex items-center border-b border-white/10 bg-[#2A5B34] text-cornsilk-500 md:hidden w-full">
       <button 
         className="p-1 mr-2 rounded-md hover:bg-white/10"
         onClick={toggleSidebar}

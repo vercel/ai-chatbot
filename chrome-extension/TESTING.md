@@ -1,136 +1,133 @@
-# Testing and Debugging the Wizzo Chrome Extension
+# Wizzo Extension Side Panel - Testing Guide
 
-This guide provides instructions for testing and debugging the Wizzo Chrome Extension during development.
+This document outlines the testing procedures for the Wizzo Chrome extension side panel implementation. Follow these steps to verify that all functionality is working correctly.
 
-## Installing the Extension for Testing
+## Prerequisites
+
+- Chrome browser (version 88 or higher)
+- Developer mode enabled in Chrome extensions
+- Access to a test Wizzo platform account
+
+## Installation for Testing
 
 1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" by toggling the switch in the top right corner
-3. Click "Load unpacked" and select the `chrome-extension` folder
-4. The extension should now appear in your Chrome toolbar
+2. Enable "Developer mode" using the toggle in the top-right corner
+3. Click "Load unpacked" and select the `chrome-extension` directory
+4. Verify that the Wizzo extension appears with its icon in the extensions list
+5. Make sure the extension is pinned to the toolbar for easy access
 
-## Testing Workflow
+## Test Cases
 
-### Basic Functionality Testing
+### 1. Basic Side Panel Functionality
 
-1. **Platform Connection Test**
-   - Start the Wizzo platform (`npm run dev` or equivalent)
-   - Click the extension icon to open the popup
-   - The status should show "Online" if the connection is successful
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 1.1 | Click the Wizzo extension icon in the toolbar | Side panel opens from the right side of the browser |
+| 1.2 | Navigate to different websites in different tabs | Side panel remains accessible and functional across all tabs |
+| 1.3 | Close and reopen the browser | Side panel settings and authentication state persist |
 
-2. **Audio Recording Test**
-   - Click the "Record" button in the popup
-   - Speak into your microphone
-   - Click "Stop" and enter a title
-   - Check that the recording appears in the list
-   - If the platform is online, it should be processed automatically
+### 2. Authentication Flow
 
-3. **Text Input Test**
-   - Go to the "Text" tab
-   - Enter a title and content
-   - Click "Save"
-   - Check that the text appears in the list
-   - If the platform is online, it should be processed automatically
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 2.1 | Open the side panel without being logged in | Login form is displayed |
+| 2.2 | Enter invalid credentials and click "Sign In" | Error message displayed, user remains on login form |
+| 2.3 | Enter valid credentials and click "Sign In" | Login successful, main interface displayed |
+| 2.4 | Click "Sign Out" | User logged out, login form displayed |
+| 2.5 | Close side panel, reopen in a different tab | Authentication state persists (logged in or out) |
+| 2.6 | Click "Sign up" | Opens Wizzo platform signup page in a new tab |
 
-4. **Notes Test**
-   - Go to the "Notes" tab
-   - Enter some content
-   - Click "Save"
-   - Check that the note appears in the list
-   - If the platform is online, it should be processed automatically
+### 3. Recording Functionality
 
-5. **Settings Test**
-   - Click the gear icon to access settings
-   - Change various settings and save
-   - Verify that the changes take effect
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 3.1 | Go to "Recordings" tab and click "Record" | Permission prompt appears if not previously granted |
+| 3.2 | Grant microphone permission and start recording | Recording begins, timer starts, waveform visualizes audio (if enabled) |
+| 3.3 | Click "Pause" during recording | Recording pauses, timer stops |
+| 3.4 | Click "Resume" | Recording continues, timer resumes |
+| 3.5 | Click "Stop" | Recording ends, data saved locally |
+| 3.6 | Enter a title and click "Stop" | Recording saved with the provided title |
+| 3.7 | View saved recordings list | Recording appears in the list with correct title |
+| 3.8 | Click "Play" on a recording | Audio playback begins |
+| 3.9 | Click "Delete" on a recording | Confirmation prompt appears, recording removed when confirmed |
+| 3.10 | Start recording and leave it for max time limit | Recording stops automatically after reaching time limit |
 
-### Offline Mode Testing
+### 4. Notes Functionality
 
-1. **Capturing Content While Offline**
-   - Stop the Wizzo platform
-   - Record audio, add text, and create notes
-   - Verify that all content is saved locally (status should show "Pending")
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 4.1 | Go to "Notes" tab and enter text | Text appears in the note input field |
+| 4.2 | Click "Save" with empty content | Error message displayed |
+| 4.3 | Enter content and click "Save" | Note saved and appears in the list |
+| 4.4 | Click "View" on a note | Modal opens showing full note content |
+| 4.5 | Click "Delete" on a note | Confirmation prompt appears, note removed when confirmed |
+| 4.6 | Create multiple notes | All notes appear in the list in correct order |
 
-2. **Auto-sync When Platform Comes Online**
-   - With pending content in the extension
-   - Start the Wizzo platform
-   - Wait for the extension to detect the platform (or click "Check Now")
-   - Verify that all pending content is processed
+### 5. Widget Management
 
-3. **Manual Sync Test**
-   - With pending content and the platform running
-   - Click "Sync Now" in the extension
-   - Verify that all pending content is processed
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 5.1 | Go to "Widgets" tab | List of existing widgets displayed or empty state shown |
+| 5.2 | Click "Create New Widget" | Widget form displayed |
+| 5.3 | Submit widget form without title | Error message displayed |
+| 5.4 | Fill form and click "Save Widget" | Widget created, appears in list |
+| 5.5 | Click on a widget in the list | Opens the widget in the Wizzo platform in a new tab |
+| 5.6 | Create widget while offline | Widget saved locally with "pending sync" status |
 
-## Debugging Tools
+### 6. Synchronization
 
-### Extension Console
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 6.1 | Create content while online | Automatic sync attempt, "synced" status appears |
+| 6.2 | Turn off internet connection | Connection status changes to "Offline" |
+| 6.3 | Create content while offline | Content saved with "pending sync" status |
+| 6.4 | Turn internet connection back on | Connection status changes to "Online" |
+| 6.5 | Click sync button | Manual sync triggered, pending items synchronized |
+| 6.6 | View Wizzo platform website | Created content appears on the platform |
 
-To access logs and debug information:
+### 7. Error Handling
 
-1. Right-click on the extension icon
-2. Select "Inspect popup"
-3. Check the Console tab for logs and errors
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 7.1 | Simulate network error during sync | Error handling, retry option provided |
+| 7.2 | Interrupt a recording abruptly | Graceful handling, no crash |
+| 7.3 | Try to create identical widgets | Proper error handling, no duplicates |
+| 7.4 | Revoke microphone permission | Clear error message when trying to record |
 
-### Background Script Console
+### 8. Side Panel Specific Tests
 
-To view background process logs:
+| Test | Steps | Expected Result |
+|------|-------|-----------------|
+| 8.1 | Resize browser window | Side panel UI adjusts responsively |
+| 8.2 | Open side panel on very small screen | UI elements remain usable, scrolling works |
+| 8.3 | Switch between tabs quickly | UI state maintained, no rendering issues |
+| 8.4 | Open side panel while on platform website | Optional: enhanced integration features activated |
 
-1. Go to `chrome://extensions/`
-2. Find the Wizzo extension
-3. Click on "background page" under "Inspect views"
-4. Check the Console tab
+## Reporting Issues
 
-### Content Storage Inspection
+If you encounter any issues during testing, please document them with the following information:
 
-To inspect the local storage:
+1. Test case ID and description
+2. Steps to reproduce
+3. Expected result
+4. Actual result
+5. Browser version and OS
+6. Screenshots (if applicable)
+7. Console errors (if any)
 
-1. Open the background or popup console
-2. Run this command to view all stored data:
-   ```javascript
-   chrome.storage.local.get(null, function(data) { console.log(data); });
-   ```
+Submit the issue report to the development team for investigation.
 
-3. To view specific data:
-   ```javascript
-   chrome.storage.local.get(['pendingRecordings'], function(result) { console.log(result); });
-   ```
+## Sign-off Checklist
 
-## Common Issues and Solutions
+- [ ] All test cases pass
+- [ ] Authentication works reliably
+- [ ] Recording functionality works in all scenarios
+- [ ] Notes functionality works correctly
+- [ ] Widget management functions properly
+- [ ] Synchronization works reliably
+- [ ] Error handling is robust
+- [ ] UI is responsive and user-friendly
+- [ ] Performance is acceptable
+- [ ] No console errors during normal operation
 
-### Microphone Access
-
-If recording doesn't work:
-1. Check that you've granted microphone permissions
-2. Go to Chrome Settings > Privacy and Security > Site Settings > Microphone
-3. Ensure the extension or site has permission
-
-### Connection Issues
-
-If the extension shows "Offline" when the platform is running:
-1. Verify the platform URL in the extension settings
-2. Check that the `/api/status` endpoint is functioning correctly
-3. Look for CORS errors in the console (may need to add headers on the server)
-
-### Processing Failures
-
-If content isn't being processed:
-1. Check the browser console for detailed error messages
-2. Verify the API endpoints are working by testing them directly
-3. Ensure the storage paths on the server exist and are writable
-
-## Automated Testing (Future)
-
-For future implementation:
-
-- Unit tests for the extension using Jest
-- End-to-end tests using Cypress or Playwright
-- API endpoint tests to verify integration with the platform
-
-## Performance Testing
-
-To ensure good performance:
-
-1. Test with large files to ensure proper handling
-2. Monitor memory usage during extended recording sessions
-3. Test sync with multiple pending items
+Once all items are checked, the extension is ready for deployment.

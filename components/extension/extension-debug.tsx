@@ -13,7 +13,37 @@ import { Download, RefreshCw, Mic, FileText, StickyNote } from 'lucide-react';
  */
 export function ExtensionDebug() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6 w-full">
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          // Create mock data in localStorage if it doesn't exist
+          window.setupExtensionMockData = () => {
+            const mockFiles = [
+              { id: 'f1', name: 'Recording 1.mp3', type: 'audio', size: '2.3 MB', status: 'ready' },
+              { id: 'f2', name: 'Notes from meeting.txt', type: 'text', size: '4.1 KB', status: 'ready' },
+              { id: 'f3', name: 'Quick note.txt', type: 'note', size: '1.5 KB', status: 'ready' }
+            ];
+            
+            const mockOfflineFiles = [
+              { id: 'of1', name: 'Offline recording.webm', type: 'audio', size: '3.7 MB', timestamp: new Date().toISOString() },
+              { id: 'of2', name: 'Offline note.txt', type: 'text', size: '2.9 KB', timestamp: new Date().toISOString() }
+            ];
+            
+            localStorage.setItem('extension_unprocessed_files', JSON.stringify(mockFiles));
+            localStorage.setItem('extension_offline_files', JSON.stringify(mockOfflineFiles));
+            console.log('Extension mock data created');
+            
+            // Reload to apply changes
+            window.location.reload();
+          };
+          
+          // Auto-setup mock data if none exists
+          if (!localStorage.getItem('extension_unprocessed_files')) {
+            window.setupExtensionMockData();
+          }
+        `
+      }} />
+      
       {/* Status Panel Debug */}
       <Card className="w-full">
         <CardHeader>

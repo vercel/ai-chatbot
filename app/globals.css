@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Additional sidebar text classes with escaped selectors */
+.chatgpt-sidebar .text-white {
+  color: #fefae0 !important;
+}
+
+.chatgpt-sidebar .text-white\:80 {
+  color: #fefae0 !important;
+}
+
+.chatgpt-sidebar .text-white\:70 {
+  color: #fefae0 !important;
+}
+
 :root {
     --foreground-rgb: 56, 102, 65;
     --background-start-rgb: 254, 250, 224;
@@ -166,14 +179,25 @@
   z-index: 50;
   left: 0;
   top: 0;
+  color: #fefae0 !important;
+}
+
+/* Ensure all sidebar text is visible */
+.chatgpt-sidebar button,
+.chatgpt-sidebar a,
+.chatgpt-sidebar span,
+.chatgpt-sidebar div {
+  color: #fefae0 !important;
 }
 
 .chatgpt-sidebar-open {
   width: 260px;
+  min-width: 260px;
 }
 
 .chatgpt-sidebar-closed {
   width: 72px;
+  min-width: 72px;
 }
 
 /* Mobile sidebar handling */
@@ -218,19 +242,49 @@
 /* Fix main content height */
 body, html, #root {
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
+}
+
+/* Ensure content uses full width */
+.container {
+  width: 100% !important;
+  max-width: none !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Main chat content - ensure full width */
+[data-messages] {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Chat message wrapper - ensure full width */
+[data-message] {
+  width: 100% !important;
+  max-width: none !important;
 }
 
 /* Ensure sidebar is always visible in desktop mode */
 @media (min-width: 768px) {
   .chatgpt-sidebar-closed {
     width: 72px !important; /* Force minimum width even if state is incorrect */
+    min-width: 72px !important;
     display: block !important;
+    transform: translateX(0) !important;
   }
   
   .chatgpt-sidebar-open {
     width: 260px !important;
+    min-width: 260px !important;
     display: block !important;
+    transform: translateX(0) !important;
+  }
+  
+  /* Main content should adjust to available space */
+  main {
+    width: calc(100% - var(--sidebar-width, 260px)) !important;
   }
 }
 

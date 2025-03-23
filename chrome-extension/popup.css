@@ -67,6 +67,8 @@ body {
   width: 360px;
   height: 580px;
   overflow-x: hidden;
+  background-color: #fefae0; /* Cornsilk background */
+  color: #386641; /* Hunter Green text */
 }
 
 .container {
@@ -76,8 +78,8 @@ body {
 }
 
 .header {
-  background-color: #2A5B34;
-  color: white;
+  background-color: #386641; /* Hunter Green */
+  color: #fefae0; /* Cornsilk */
   padding: 10px 20px;
   text-align: center;
 }
@@ -89,8 +91,8 @@ body {
 
 .tabs {
   display: flex;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #ddd;
+  background-color: #f7f3d7; /* Light Cornsilk */
+  border-bottom: 1px solid #dda15e; /* Earth Yellow */
 }
 
 .tab-btn {
@@ -105,8 +107,8 @@ body {
 
 .tab-btn.active {
   background-color: white;
-  border-bottom: 2px solid #2A5B34;
-  color: #2A5B34;
+  border-bottom: 2px solid #386641; /* Hunter Green */
+  color: #386641; /* Hunter Green */
 }
 
 .tab-content {
@@ -125,7 +127,7 @@ body {
 
 h2 {
   margin-top: 0;
-  color: #333;
+  color: #386641; /* Hunter Green */
   font-size: 18px;
 }
 
@@ -146,18 +148,18 @@ h2 {
 }
 
 .record-btn {
-  background-color: #ff0000;
-  color: white;
+  background-color: #bc6c25; /* Tiger's Eye - for recording button */
+  color: #fefae0; /* Cornsilk */
 }
 
 .pause-btn {
-  background-color: #ffaa00;
-  color: white;
+  background-color: #dda15e; /* Earth Yellow */
+  color: #fefae0; /* Cornsilk */
 }
 
 .stop-btn {
-  background-color: #333;
-  color: white;
+  background-color: #2a5b34; /* Dark Hunter Green */
+  color: #fefae0; /* Cornsilk */
 }
 
 .open-record-btn {
@@ -167,15 +169,15 @@ h2 {
 }
 
 .save-btn {
-  background-color: #2A5B34;
-  color: white;
+  background-color: #386641; /* Hunter Green */
+  color: #fefae0; /* Cornsilk */
   width: 100%;
   margin-top: 10px;
 }
 
 .sync-btn {
-  background-color: #00aa00;
-  color: white;
+  background-color: #6a994e; /* Asparagus */
+  color: #fefae0; /* Cornsilk */
   display: none;
 }
 
@@ -208,7 +210,7 @@ h3 {
   margin-top: 15px;
   margin-bottom: 10px;
   font-size: 16px;
-  color: #555;
+  color: #6a994e; /* Asparagus */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -223,11 +225,12 @@ h3 .count {
 .waveform {
   width: 100%;
   height: 40px;
-  background-color: #f5f5f5;
+  background-color: #f7f3d7; /* Light Cornsilk */
   border-radius: 4px;
   margin-top: 10px;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(56, 102, 65, 0.2); /* Hunter Green with transparency */
 }
 
 .waveform-inner {
@@ -239,7 +242,7 @@ h3 .count {
 }
 
 .waveform-bar {
-  background-color: #2A5B34;
+  background-color: #386641; /* Hunter Green */
   width: 2px;
   margin: 0 1px;
   height: 5%;
@@ -276,11 +279,11 @@ li .item-status {
 }
 
 .processed {
-  color: green;
+  color: #57cc99; /* Light green for success */
 }
 
 .pending {
-  color: orange;
+  color: #dda15e; /* Earth Yellow for pending */
 }
 
 li .item-actions {
@@ -295,8 +298,8 @@ li .item-actions {
 
 .footer {
   padding: 10px 15px;
-  background-color: #f5f5f5;
-  border-top: 1px solid #ddd;
+  background-color: #f7f3d7; /* Light Cornsilk */
+  border-top: 1px solid #dda15e; /* Earth Yellow */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -315,11 +318,11 @@ li .item-actions {
 
 #status {
   font-weight: bold;
-  color: #ff0000;
+  color: #bc6c25; /* Tiger's Eye for offline */
 }
 
 #status.online {
-  color: #00aa00;
+  color: #57cc99; /* Light green for online */
 }
 
 .action-buttons {
@@ -329,13 +332,13 @@ li .item-actions {
 }
 
 #openAppBtn {
-  background-color: #2A5B34;
-  color: white;
+  background-color: #386641; /* Hunter Green */
+  color: #fefae0; /* Cornsilk */
 }
 
 .settings-btn {
-  background-color: #2A5B34;
-  color: white;
+  background-color: #386641; /* Hunter Green */
+  color: #fefae0; /* Cornsilk */
   text-decoration: none;
   display: inline-flex;
   justify-content: center;
@@ -392,8 +395,8 @@ li .item-actions {
 
 /* Permission error dialog */
 .permission-alert {
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
+  background-color: rgba(56, 102, 65, 0.9); /* Hunter Green with transparency */
+  color: #fefae0; /* Cornsilk */
   padding: 20px;
   border-radius: 6px;
   position: fixed;
@@ -408,13 +411,13 @@ li .item-actions {
 
 .permission-alert h3 {
   margin-top: 0;
-  color: white;
+  color: #fefae0; /* Cornsilk */
 }
 
 .permission-alert button {
   margin-top: 15px;
-  background-color: #2A5B34;
-  color: white;
+  background-color: #6a994e; /* Asparagus */
+  color: #fefae0; /* Cornsilk */
   border: none;
   padding: 8px 16px;
   border-radius: 4px;

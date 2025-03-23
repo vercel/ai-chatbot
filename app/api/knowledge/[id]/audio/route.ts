@@ -24,7 +24,8 @@ export async function GET(
       );
     }
 
-    const documentId = params.id;
+    const { id } = await params;
+    const documentId = id;
     
     // Get the document to verify ownership
     const document = await getKnowledgeDocumentById({ id: documentId });

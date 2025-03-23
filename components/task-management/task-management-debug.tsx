@@ -23,6 +23,57 @@ export function TaskManagementDebug({
     const loadMockData = async () => {
       setLoading(true);
       
+      // Create default mock data
+      const defaultProjects = [
+        {
+          id: 'p1',
+          name: 'Inbox',
+          color: '#3B82F6',
+          isDefault: true,
+          isDeleted: false,
+          userId: 'user1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'p2',
+          name: 'Personal',
+          color: '#10B981',
+          isDefault: false,
+          isDeleted: false,
+          userId: 'user1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      
+      const defaultTasks = [
+        {
+          id: 't1',
+          content: 'Fix UI layout issues',
+          description: 'Address sidebar and content width problems',
+          priority: 'p1',
+          projectId: 'p1',
+          completed: false,
+          isDeleted: false,
+          userId: 'user1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 't2',
+          content: 'Implement task management features',
+          description: 'Complete the core functionality',
+          priority: 'p2',
+          projectId: 'p2',
+          completed: false,
+          isDeleted: false,
+          userId: 'user1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      
       // Check if we already have data
       if (initialTasks.length > 0 && initialProjects.length > 0) {
         console.log('Using provided data:', { tasks: initialTasks, projects: initialProjects });
@@ -49,11 +100,20 @@ export function TaskManagementDebug({
           setTasks(parsedTasks);
           setProjects(parsedProjects);
         } else {
-          console.warn('No mock data found in localStorage. Using empty data.');
-          // Keep the initial empty arrays
+          // Use default mock data
+          console.log('Using default mock data');
+          setTasks(defaultTasks);
+          setProjects(defaultProjects);
+          
+          // Save to localStorage for future use
+          localStorage.setItem('debug_taskProjects', JSON.stringify(defaultProjects));
+          localStorage.setItem('debug_taskItems', JSON.stringify(defaultTasks));
         }
       } catch (error) {
         console.error('Error loading mock data:', error);
+        // Fallback to default mock data
+        setTasks(defaultTasks);
+        setProjects(defaultProjects);
       } finally {
         setLoading(false);
       }

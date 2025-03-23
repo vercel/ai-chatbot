@@ -1,24 +1,18 @@
 {
   "manifest_version": 3,
   "name": "Wizzo Assistant",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Record audio and add notes for processing in Wizzo platform",
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
   },
   "permissions": [
+    "sidePanel",
     "storage",
     "tabs",
     "activeTab",
     "scripting",
-    "audioCapture",
     "notifications",
-    "tabCapture",
     "downloads",
     "alarms"
   ],
@@ -28,15 +22,22 @@
   "background": {
     "service_worker": "background.js"
   },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "48": "icons/icon.svg",
+      "128": "icons/icon.svg"
+    }
+  },
   "options_page": "settings.html",
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "128": "icons/icon.svg"
   },
   "web_accessible_resources": [
     {
-      "resources": ["recordingView.html", "recordingView.js", "popup/styles.css", "icons/*"],
+      "resources": ["sidepanel/*", "icons/*", "recordingView.html", "recordingView.js", "popup/styles.css"],
       "matches": ["<all_urls>"]
     }
   ]

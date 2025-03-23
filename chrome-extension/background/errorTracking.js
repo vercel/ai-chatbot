@@ -1,61 +1,92 @@
-// Error tracking and reporting
+// Error tracking system
 
 const ERROR_LOG_KEY = 'wizzo_error_log';
-const MAX_ERRORS = 50;
+const MAX_ERROR_LOG_SIZE = 50;
 
-// Track an error
-export async function trackError(context, error) {
+// Initialize error tracking
+export async function initErrorTracking() {
+  console.log('Initializing error tracking...');
+  
+  // Set up global error handler
+  window.onerror = function(message, source, lineno, colno, error) {
+    trackError('window.onerror', { message, source, lineno, colno, stack: error?.stack });
+    return false;
+  };
+  
+  // Set up unhandled promise rejection handler
+  window.onunhandledrejection = function(event) {
+    trackError('unhandledRejection', { 
+      reason: event.reason?.message || event.reason,
+      stack: event.reason?.stack 
+    });
+  };
+  
+  return true;
+}
+
+// Track an error with details
+export async function trackError(source, error) {
   try {
-    // Log to console
-    console.error(`[${context}] Error:`, error);
+    const timestamp = new Date().toISOString();
     
-    // Get current error log
-    const errorLog = await getErrorLog();
+    // Format the error object
+    let errorDetails = {
+      source,
+      timestamp,
+      message: error?.message || error
+    };
     
-    // Add new error
-    errorLog.push({
-      context,
-      message: error.message || String(error),
-      stack: error.stack,
-      timestamp: new Date().toISOString()
+    if (error?.stack) {
+      errorDetails.stack = error.stack;
+    }
+    
+    if (typeof error === 'object') {
+      try {
+        // Add any additional properties without risking circular references
+        const serialized = JSON.parse(JSON.stringify(error));
+        errorDetails = { ...errorDetails, ...serialized };
+      } catch (e) {
+        // If serialization fails, use basic error info
+      }
+    }
+    
+    console.error(`[${source}] Error:`, errorDetails);
+    
+    // Get existing error log
+    const { wizzo_error_log = [] } = await new Promise(resolve => {
+      chrome.storage.local.get([ERROR_LOG_KEY], resolve);
     });
     
-    // Keep only the most recent errors
-    const trimmedLog = errorLog.slice(-MAX_ERRORS);
+    // Add the new error to the log
+    const updatedLog = [errorDetails, ...wizzo_error_log].slice(0, MAX_ERROR_LOG_SIZE);
     
-    // Save updated log
-    await saveErrorLog(trimmedLog);
+    // Save the updated log
+    await new Promise(resolve => {
+      chrome.storage.local.set({ [ERROR_LOG_KEY]: updatedLog }, resolve);
+    });
     
-    // Could also send to remote error tracking service here
-  } catch (loggingError) {
-    // Fallback to console if error logging fails
-    console.error('Error logging failed:', loggingError);
-    console.error('Original error:', error);
+    // Save additional debug information
+    await new Promise(resolve => {
+      chrome.storage.local.set({
+        wizzo_debug: {
+          lastError: errorDetails,
+          timestamp,
+          navigator: {
+            onLine: navigator.onLine,
+            userAgent: navigator.userAgent,
+            language: navigator.language
+          },
+          runtime: {
+            lastError: chrome.runtime.lastError
+          }
+        }
+      }, resolve);
+    });
+    
+    return true;
+  } catch (e) {
+    // Last resort console output if error tracking itself fails
+    console.error('Error tracking system failure:', e);
+    return false;
   }
-}
-
-// Get the error log
-async function getErrorLog() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([ERROR_LOG_KEY], (result) => {
-      resolve(result[ERROR_LOG_KEY] || []);
-    });
-  });
-}
-
-// Save the error log
-async function saveErrorLog(log) {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ [ERROR_LOG_KEY]: log }, resolve);
-  });
-}
-
-// Get the error log for display
-export async function getErrorLogForDisplay() {
-  return await getErrorLog();
-}
-
-// Clear the error log
-export async function clearErrorLog() {
-  return await saveErrorLog([]);
 }

@@ -17,7 +17,8 @@ export async function GET(
       );
     }
 
-    const documentId = params.id;
+    const { id } = await params;
+    const documentId = id;
     
     // Get the document to check status
     const document = await getKnowledgeDocumentById({ id: documentId });

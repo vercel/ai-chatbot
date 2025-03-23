@@ -21,7 +21,7 @@ export function SidebarToggle({
         <Button
           onClick={toggleSidebar}
           variant="outline"
-          className="md:px-2 md:h-fit"
+          className="md:px-2 md:h-fit bg-transparent border-transparent hover:bg-hunter_green-700 hover:border-hunter_green-700"
         >
           <SidebarLeftIcon size={16} />
         </Button>

@@ -12,7 +12,7 @@ import {
   SidebarFooter, 
   SidebarProvider
 } from '@/components/ui/sidebar';
-import { BookOpen, MessageSquare, Video, Menu, CheckSquare, Plus, Chrome } from 'lucide-react';
+import { BookOpen, MessageSquare, Menu, Plus } from 'lucide-react';
 import { IconWrapper } from './ui/icon-wrapper';
 import { SidebarUserNav } from './sidebar-user-nav';
 import { Button } from './ui/button';
@@ -31,7 +31,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | 'meets' | 'tasks' | 'extension' | null>(null);
+  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | null>(null);
   
   // Check if mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -63,12 +63,6 @@ export function AppSidebar({
       setActiveSection('threads');
     } else if (pathname.startsWith('/knowledge')) {
       setActiveSection('knowledge');
-    } else if (pathname.startsWith('/meets')) {
-      setActiveSection('meets');
-    } else if (pathname.startsWith('/task-management') || pathname.startsWith('/tasks')) {
-      setActiveSection('tasks');
-    } else if (pathname.startsWith('/extension')) {
-      setActiveSection('extension');
     } else {
       setActiveSection(null);
     }
@@ -103,6 +97,8 @@ export function AppSidebar({
     } else {
       setIsSidebarOpen(!isSidebarOpen);
     }
+    // Force layout recalculation
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
   };
   
   // Close mobile menu when navigating
@@ -120,26 +116,12 @@ export function AppSidebar({
         return 'Wizzo Chat';
       case 'knowledge':
         return 'Knowledge Base';
-      case 'meets':
-        return 'Meets';
-      case 'tasks':
-        return 'Task Management';
-      case 'extension':
-        return 'Chrome Extension';
       default:
         return 'Wizzo';
     }
   };
   
-  // Handle navigation for task management paths
-  const handleTasksNavigation = () => {
-    // Maintain the same path format the user is currently on
-    if (pathname.startsWith('/tasks')) {
-      handleNavigation('/tasks');
-    } else {
-      handleNavigation('/task-management');
-    }
-  };
+
 
   return (
     <SidebarProvider>
@@ -163,7 +145,7 @@ export function AppSidebar({
         )}
         
         {/* Main sidebar with ChatGPT-like styling */}
-        <div className={`chatgpt-sidebar fixed md:relative ${isMobile ? (isMobileMenuOpen ? 'chatgpt-sidebar-open' : '') : (isSidebarOpen ? 'chatgpt-sidebar-open' : 'chatgpt-sidebar-closed')} h-full flex flex-col border-r border-gray-200 dark:border-gray-700/50 transition-all duration-300 ease-in-out bg-[#2A5B34] text-white z-50`}>
+        <div className={`chatgpt-sidebar fixed md:relative ${isMobile ? (isMobileMenuOpen ? 'chatgpt-sidebar-open' : '') : (isSidebarOpen ? 'chatgpt-sidebar-open' : 'chatgpt-sidebar-closed')} h-full flex flex-col border-r border-gray-200 dark:border-gray-700/50 transition-all duration-300 ease-in-out bg-[#2A5B34] text-cornsilk-500 z-50`}>
           {/* New Chat button and Toggle */}
           <div className="p-2">
             <button
@@ -172,17 +154,7 @@ export function AppSidebar({
             >
               <Plus className="mr-2 h-4 w-4" />
               <span className={`${isMobile || isSidebarOpen ? 'block' : 'hidden'} flex-1 text-left`}>New chat</span>
-              {!isMobile && (
-                <div 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsSidebarOpen(!isSidebarOpen);
-                  }}
-                  className="p-1 rounded-md hover:bg-white/10"
-                >
-                  <Menu className="h-4 w-4 text-white/70" />
-                </div>
-              )}
+              {/* Removed redundant sidebar toggle */}
             </button>
           </div>
 
@@ -220,42 +192,6 @@ export function AppSidebar({
                 <BookOpen className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
                 {(isMobile || isSidebarOpen) && <span>Knowledge</span>}
               </button>
-              
-              <button
-                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
-                  activeSection === 'meets' 
-                    ? 'bg-white/20 text-white font-medium' 
-                    : 'text-white/80 hover:bg-white/10'
-                }`}
-                onClick={() => handleNavigation('/meets')}
-              >
-                <Video className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
-                {(isMobile || isSidebarOpen) && <span>Meets</span>}
-              </button>
-              
-              <button
-                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
-                  activeSection === 'tasks' 
-                    ? 'bg-white/20 text-white font-medium' 
-                    : 'text-white/80 hover:bg-white/10'
-                }`}
-                onClick={() => handleTasksNavigation()}
-              >
-                <CheckSquare className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
-                {(isMobile || isSidebarOpen) && <span>Tasks</span>}
-              </button>
-              
-              <button
-                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
-                  activeSection === 'extension' 
-                    ? 'bg-white/20 text-white font-medium' 
-                    : 'text-white/80 hover:bg-white/10'
-                }`}
-                onClick={() => handleNavigation('/extension')}
-              >
-                <Chrome className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
-                {(isMobile || isSidebarOpen) && <span>Extension</span>}
-              </button>
             </div>
             
             {/* User avatar and profile */}
@@ -266,7 +202,7 @@ export function AppSidebar({
         </div>
         
         {/* Main content */}
-        <main className="flex-1 h-full overflow-auto relative flex flex-col">
+        <main className="flex-1 h-full overflow-auto relative flex flex-col w-full">
           <MobileHeader toggleSidebar={toggleSidebar} title={getPageTitle()} />
           <div className="flex-1">
             {children}
