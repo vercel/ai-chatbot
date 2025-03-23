@@ -2,7 +2,7 @@
 
 The chatbot template ships with [xAI](https://sdk.vercel.ai/providers/ai-sdk-providers/xai) as the default model provider. Since the template is powered by the [AI SDK](https://sdk.vercel.ai), which supports [multiple providers](https://sdk.vercel.ai/providers/ai-sdk-providers) out of the box, you can easily switch to another provider of your choice.
 
-To update the models, you will need to update the custom provider called `myProvider` at `/lib/ai/models.ts` shown below.
+To update the models, you will need to update the custom provider called `myProvider` at `/lib/ai/providers.ts` shown below.
 
 ```ts
 import { customProvider } from "ai";
