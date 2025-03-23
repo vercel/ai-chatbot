@@ -18,9 +18,10 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
     parameters: z.object({
       title: z.string(),
+      description: z.string().describe('A detailed description of what the document should contain'),
       kind: z.enum(artifactKinds),
     }),
-    execute: async ({ title, kind }) => {
+    execute: async ({ title, description, kind }) => {
       const id = generateUUID();
 
       dataStream.writeData({
@@ -55,6 +56,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       await documentHandler.onCreateDocument({
         id,
         title,
+        description,
         dataStream,
         session,
       });
