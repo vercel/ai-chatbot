@@ -6,13 +6,13 @@ import { z } from 'zod';
 
 export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
   kind: 'sheet',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, description, dataStream }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
       system: sheetPrompt,
-      prompt: title,
+      prompt: `${title}\n\n${description}`,
       schema: z.object({
         csv: z.string().describe('CSV data'),
       }),
