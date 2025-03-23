@@ -51,10 +51,18 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
+
+> Alternatively, set the environment variables from Vercel (without linking to a project.)
+
 3. Download your environment variables: `vercel env pull`
 
 ```bash
 pnpm install
+pnpm tsx lib/db/migrate.ts && pnpm run build
+```
+
+4. Start the development server:
+```bash
 pnpm dev
 ```
 
