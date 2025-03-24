@@ -1,36 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
-import { createKnowledgeDocument, createKnowledgeChunk } from '@/lib/db/queries';
+import { createKnowledgeDocument, createKnowledgeChunk, updateKnowledgeDocument } from '@/lib/db/queries';
+import { fetchWebContent } from '@/lib/knowledge/urlProcessor/index';
 
 // Ensure dynamic rendering and disable caching
 export const dynamic = 'force-dynamic';
 
 /**
- * Simplified API endpoint with basic chunk creation
+ * API endpoint for handling knowledge document uploads
  */
 export async function POST(req: NextRequest) {
-  console.log('[KNOWLEDGEUPLOAD] POST request received');
+  console.log('[KNOWLEDGE-NEW] POST request received');
   
   try {
     // Get user session
     const session = await auth();
     
     if (!session?.user) {
-      console.log('[KNOWLEDGEUPLOAD] Unauthorized access attempt');
+      console.log('[KNOWLEDGE-NEW] Unauthorized access attempt');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const userId = session.user.id;
-    console.log(`[KNOWLEDGEUPLOAD] Authenticated user: ${userId}`);
+    const userId = session.user.id as string;
+    console.log(`[KNOWLEDGE-NEW] Authenticated user: ${userId}`);
     
     // Parse form data
     const formData = await req.formData();
-    console.log('[KNOWLEDGEUPLOAD] Successfully parsed form data');
+    console.log('[KNOWLEDGE-NEW] Successfully parsed form data');
     
     // Get essential fields
     const title = formData.get('title') as string;
     const description = formData.get('description') as string || '';
-    const sourceType = formData.get('sourceType') as string;
+    const sourceType = formData.get('sourceType') as 'text' | 'url' | 'audio';
     
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Source type is required' }, { status: 400 });
     }
     
-    console.log(`[KNOWLEDGEUPLOAD] Creating document: ${title}, type: ${sourceType}`);
+    console.log(`[KNOWLEDGE-NEW] Creating document: ${title}, type: ${sourceType}`);
     
     // Handle different source types and set accurate file sizes
     let fileSize = 'unknown';
@@ -85,17 +86,17 @@ export async function POST(req: NextRequest) {
       fileType,
     });
     
-    console.log(`[KNOWLEDGEUPLOAD] Document created with ID: ${document.id}`);
+    console.log(`[KNOWLEDGE-NEW] Document created with ID: ${document.id}`);
 
     // Handle text content - create basic chunks
     if (sourceType === 'text') {
       const content = formData.get('content') as string;
       if (content) {
-        console.log(`[KNOWLEDGEUPLOAD] Processing text content (${content.length} chars)`);
+        console.log(`[KNOWLEDGE-NEW] Processing text content (${content.length} chars)`);
         
         // Simple chunking - split by paragraphs or fixed size if too large
         const chunks = splitTextIntoChunks(content);
-        console.log(`[KNOWLEDGEUPLOAD] Created ${chunks.length} chunks`);
+        console.log(`[KNOWLEDGE-NEW] Created ${chunks.length} chunks`);
         
         // Store chunks in database
         for (let i = 0; i < chunks.length; i++) {
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
             chunkIndex: i.toString(),
             embedding: [], // Empty embedding for simplified version
           });
-          console.log(`[KNOWLEDGEUPLOAD] Stored chunk ${i+1}/${chunks.length}`);
+          console.log(`[KNOWLEDGE-NEW] Stored chunk ${i+1}/${chunks.length}`);
         }
 
         // Mark document as completed
@@ -114,15 +115,23 @@ export async function POST(req: NextRequest) {
           id: document.id,
           status: 'completed',
         });
-        console.log(`[KNOWLEDGEUPLOAD] Document marked as completed`);
+        console.log(`[KNOWLEDGE-NEW] Document marked as completed`);
       }
     } else if (sourceType === 'url') {
-      // For now, just mark URL documents as completed (skipping actual fetching)
-      await updateKnowledgeDocument({
-        id: document.id,
-        status: 'completed',
+      const sourceUrl = formData.get('sourceUrl') as string;
+      console.log(`[KNOWLEDGE-NEW] Starting URL processing for ${sourceUrl}...`);
+      
+      // Process URL in the background without waiting for completion
+      fetchWebContent({
+        documentId: document.id,
+        url: sourceUrl,
+        userId: userId
+      }).catch(processingError => {
+        console.error(`[KNOWLEDGE-NEW] Background URL processing error:`, processingError);
+        // The error will be handled within the processor and the document status will be updated
       });
-      console.log(`[KNOWLEDGEUPLOAD] URL document marked as completed (simplified processing)`);
+      
+      console.log(`[KNOWLEDGE-NEW] URL processing started in the background`);
     }
     
     return NextResponse.json({
@@ -134,16 +143,13 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
     
   } catch (error) {
-    console.error('[KNOWLEDGEUPLOAD] Error:', error);
+    console.error('[KNOWLEDGE-NEW] Error:', error);
     return NextResponse.json({ 
       error: 'An unexpected error occurred',
       details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
 }
-
-// Import database update function
-import { updateKnowledgeDocument } from '@/lib/db/queries';
 
 /**
  * Split text into chunks of approximately 800-1000 tokens (simplified version)

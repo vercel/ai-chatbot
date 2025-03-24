@@ -54,7 +54,7 @@ function PDFUpload({ onFileSelected, onCancel, accept = '.pdf', label = 'PDF Fil
   return (
     <div className="p-4 border rounded-md bg-muted/30">
       <div className="mb-4 text-center">
-        <FileIcon className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+        <FileIcon className="mx-auto size-12 text-muted-foreground mb-2" />
         <h3 className="text-lg font-medium">{label}</h3>
         <p className="text-sm text-muted-foreground">Upload a PDF document to add to your knowledge base</p>
       </div>
@@ -156,8 +156,8 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
       formData.append('content', textContent);
       console.log(`[KnowledgeUpload] Form data prepared: title="${title}", content length=${textContent.length}`);
 
-      // Use our knowledgeupload endpoint
-      console.log('[KnowledgeUpload] Submitting to /api/knowledgeupload endpoint');
+      // Use our knowledge-new endpoint
+      console.log('[KnowledgeUpload] Submitting to /api/knowledge-new endpoint');
       console.log('[KnowledgeUpload] Form data contents (text document):', {
         title,
         description,
@@ -173,7 +173,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
           console.log(`[KnowledgeUpload] FormData entry: ${key} = ${value}`);
         }
       }
-      const response = await fetch('/api/knowledgeupload', {
+      const response = await fetch('/api/knowledge-new', {
         method: 'POST',
         body: formData,
       });
@@ -250,9 +250,9 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
       formData.append('file', audioFile);
       console.log(`[KnowledgeUpload] Form data prepared: title="${title}", file=${audioFile.name}`);
       
-      // Use our knowledgeupload endpoint
-      console.log('[KnowledgeUpload] Submitting to /api/knowledgeupload endpoint');
-      const response = await fetch('/api/knowledgeupload', {
+      // Use our knowledge-new endpoint
+      console.log('[KnowledgeUpload] Submitting to /api/knowledge-new endpoint');
+      const response = await fetch('/api/knowledge-new', {
         method: 'POST',
         body: formData,
       });
@@ -324,9 +324,9 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
       formData.append('audioBlob', audioBlob);
       console.log(`[KnowledgeUpload] Form data prepared: title="${title}", blob size=${audioBlob.size} bytes`);
       
-      // Use our knowledgeupload endpoint
-      console.log('[KnowledgeUpload] Submitting to /api/knowledgeupload endpoint');
-      const response = await fetch('/api/knowledgeupload', {
+      // Use our knowledge-new endpoint
+      console.log('[KnowledgeUpload] Submitting to /api/knowledge-new endpoint');
+      const response = await fetch('/api/knowledge-new', {
         method: 'POST',
         body: formData,
       });
@@ -393,7 +393,13 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
 
       // Validate URL format
       try {
-        new URL(url);
+        let urlToCheck = url;
+        // Add protocol if missing
+        if (!urlToCheck.startsWith('http://') && !urlToCheck.startsWith('https://')) {
+          urlToCheck = 'https://' + urlToCheck;
+          setUrl(urlToCheck);
+        }
+        new URL(urlToCheck);
       } catch (e) {
         console.log(`[KnowledgeUpload] Validation failed: Invalid URL format: ${url}`);
         toast.error('Please enter a valid URL (e.g., https://example.com)');
@@ -416,9 +422,9 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
         console.log(`[KnowledgeUpload] FormData entry: ${key} = ${value}`);
       }
 
-      // Use our knowledgeupload endpoint
-      console.log('[KnowledgeUpload] Submitting to /api/knowledgeupload endpoint');
-      const response = await fetch('/api/knowledgeupload', {
+      // Use our knowledge-new endpoint
+      console.log('[KnowledgeUpload] Submitting to /api/knowledge-new endpoint');
+      const response = await fetch('/api/knowledge-new', {
         method: 'POST',
         body: formData,
       });
@@ -543,7 +549,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                 onClick={() => setActiveTab('url')}
                 className="flex items-center gap-2"
               >
-                <Globe className="h-4 w-4" />
+                <Globe className="size-4" />
                 <span>URL</span>
               </Button>
               <Button
@@ -551,7 +557,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                 onClick={() => setActiveTab('text')}
                 className="flex items-center gap-2"
               >
-                <FileTextIcon className="h-4 w-4" />
+                <FileTextIcon className="size-4" />
                 <span>Text & Documents</span>
               </Button>
               <Button
@@ -559,7 +565,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                 onClick={() => setActiveTab('audio')}
                 className="flex items-center gap-2"
               >
-                <MicIcon className="h-4 w-4" />
+                <MicIcon className="size-4" />
                 <span>Audio</span>
               </Button>
             </div>
@@ -573,7 +579,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                   className="flex items-center gap-2 text-sm"
                   size="sm"
                 >
-                  <MicIcon className="h-3 w-3" />
+                  <MicIcon className="size-3" />
                   <span>Record</span>
                 </Button>
                 <Button
@@ -582,7 +588,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                   className="flex items-center gap-2 text-sm"
                   size="sm"
                 >
-                  <UploadIcon className="h-3 w-3" />
+                  <UploadIcon className="size-3" />
                   <span>Upload</span>
                 </Button>
               </div>
@@ -696,7 +702,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                           input.click();
                         }}
                       >
-                        <FileIcon className="h-3 w-3" />
+                        <FileIcon className="size-3" />
                         Upload Document
                       </Button>
                     </div>
@@ -750,7 +756,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
               >
                 {isUploading ? (
                   <>
-                    <div className="animate-spin h-4 w-4 mr-2 border-b-2 border-current rounded-full"></div>
+                    <div className="animate-spin size-4 mr-2 border-b-2 border-current rounded-full"></div>
                     Processing...
                   </>
                 ) : (
