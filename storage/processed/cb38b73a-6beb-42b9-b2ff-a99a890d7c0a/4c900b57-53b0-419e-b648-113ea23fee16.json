@@ -1,0 +1,16 @@
+{
+  "documentId": "4c900b57-53b0-419e-b648-113ea23fee16",
+  "url": "https://openweathermap.org/city/360630",
+  "extractedTextLength": 1155,
+  "chunkCount": 1,
+  "processedAt": "2025-03-23T13:12:31.266Z",
+  "chunks": [
+    {
+      "id": "c795e8e9-d8cd-4138-880d-4507e7d520a9",
+      "index": 0,
+      "contentPreview": "# Weather forecast - OpenWeatherMap\n\nSource: https://openweathermap.org/city/360630\n\nOpenWeather Ope...",
+      "contentLength": 1155,
+      "embeddingSource": "new"
+    }
+  ]
+}

@@ -39,10 +39,8 @@ export function PdfTextExtractor({ file, onTextExtracted, onCancel }: PdfTextExt
         const text = await extractTextFromPdf(file);
         setExtractedText(text);
         
-        // Auto-proceed if text is extracted successfully
-        if (text.trim().length > 0) {
-          onTextExtracted(text);
-        } else {
+        // Check if text was extracted
+        if (!text.trim().length) {
           setError('No text could be extracted from this PDF. It may be scanned or contain only images.');
         }
       } catch (err) {
@@ -54,7 +52,15 @@ export function PdfTextExtractor({ file, onTextExtracted, onCancel }: PdfTextExt
     };
     
     processFile();
-  }, [file, onTextExtracted]);
+  }, [file]);
+
+  const handleSubmit = () => {
+    if (extractedText.trim().length > 0) {
+      onTextExtracted(extractedText);
+    } else {
+      toast.error('No text was extracted from this PDF.');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -81,13 +87,7 @@ export function PdfTextExtractor({ file, onTextExtracted, onCancel }: PdfTextExt
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button onClick={() => {
-              if (extractedText.trim().length > 0) {
-                onTextExtracted(extractedText);
-              } else {
-                toast.error('No text was extracted from this PDF.');
-              }
-            }}>
+            <Button onClick={handleSubmit}>
               Use Anyway
             </Button>
           </div>
@@ -108,7 +108,7 @@ export function PdfTextExtractor({ file, onTextExtracted, onCancel }: PdfTextExt
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button onClick={() => onTextExtracted(extractedText)}>
+            <Button onClick={handleSubmit}>
               Use This Text
             </Button>
           </div>

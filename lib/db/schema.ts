@@ -137,7 +137,7 @@ export const knowledgeDocument = pgTable('KnowledgeDocument', {
   title: text('title').notNull(),
   description: text('description'),
   sourceType: varchar('sourceType', { 
-    enum: ['pdf', 'text', 'url', 'audio', 'video', 'youtube']
+    enum: ['text', 'url', 'audio']
   }).notNull(),
   sourceUrl: text('sourceUrl'),
   fileSize: varchar('fileSize', { length: 20 }),

@@ -400,7 +400,7 @@ export async function createKnowledgeDocument({
   userId: string;
   title: string;
   description?: string;
-  sourceType: 'pdf' | 'text' | 'url' | 'audio' | 'video' | 'youtube';
+  sourceType: 'text' | 'url' | 'audio';
   sourceUrl?: string;
   fileSize?: string;
   fileType?: string;

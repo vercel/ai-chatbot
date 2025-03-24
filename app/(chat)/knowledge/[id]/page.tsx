@@ -34,7 +34,7 @@ export default function KnowledgeDocumentPage({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<'combined' | 'chunks'>('combined');
   const [transcript, setTranscript] = useState<WhisperTranscriptionResponse | null>(null);
-  const { id } = params;
+  const { id } = use(params);
 
   // Process chunks for display
   const processedChunks = useMemo(() => {
@@ -90,7 +90,7 @@ export default function KnowledgeDocumentPage({
       setIsRefreshing(true);
       await fetchDocument();
       if (document?.sourceType === 'audio') {
-        await fetchTranscript(resolvedParams.id);
+        await fetchTranscript(id);
       }
       toast.success('Document refreshed');
     } catch (error) {
@@ -392,7 +392,24 @@ export default function KnowledgeDocumentPage({
                 </dd>
               </div>
               
-              {document.sourceUrl && (
+              {document.sourceUrl && document.sourceType === 'url' && (
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">Source URL</dt>
+                  <dd className="mt-1">
+                    <a 
+                      href={document.sourceUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline break-all flex items-center"
+                    >
+                      <span className="mr-1">{document.sourceUrl}</span>
+                      <ExternalLinkIcon className="h-3 w-3" />
+                    </a>
+                  </dd>
+                </div>
+              )}
+              
+              {document.sourceUrl && document.sourceType !== 'url' && (
                 <div>
                   <dt className="text-sm font-medium text-muted-foreground">Source URL</dt>
                   <dd className="mt-1">

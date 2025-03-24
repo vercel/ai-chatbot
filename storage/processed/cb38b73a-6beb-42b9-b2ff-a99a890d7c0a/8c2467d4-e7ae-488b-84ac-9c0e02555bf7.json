@@ -1,0 +1,16 @@
+{
+  "documentId": "8c2467d4-e7ae-488b-84ac-9c0e02555bf7",
+  "url": "https://www.espn.com/",
+  "extractedTextLength": 237,
+  "chunkCount": 1,
+  "processedAt": "2025-03-23T13:14:15.265Z",
+  "chunks": [
+    {
+      "id": "4006d1a7-3bae-4a58-8d3a-444781fa3bc7",
+      "index": 0,
+      "contentPreview": "# ESPN - Serving Sports Fans. Anytime. Anywhere.\n\nSource: https://www.espn.com/\n\nSubscribe Now NHL P...",
+      "contentLength": 237,
+      "embeddingSource": "new"
+    }
+  ]
+}

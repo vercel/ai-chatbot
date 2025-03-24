@@ -1,0 +1,16 @@
+{
+  "documentId": "2d12ea38-ae38-4019-adb2-5f65da86bb04",
+  "url": "https://www.almasryalyoum.com/news/details/3407643",
+  "extractedTextLength": 435,
+  "chunkCount": 1,
+  "processedAt": "2025-03-23T13:22:36.754Z",
+  "chunks": [
+    {
+      "id": "6329329f-3bb8-4715-818e-db9cef359280",
+      "index": 0,
+      "contentPreview": "# بعد تراجع عيار 21 بالمصنعية والدمغة.. سعر الذهب اليوم الأحد 23 مارس 2025 | المصري اليوم\n\nSource: h...",
+      "contentLength": 435,
+      "embeddingSource": "new"
+    }
+  ]
+}

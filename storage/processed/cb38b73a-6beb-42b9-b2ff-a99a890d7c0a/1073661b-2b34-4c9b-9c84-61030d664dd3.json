@@ -1,0 +1,23 @@
+{
+  "documentId": "1073661b-2b34-4c9b-9c84-61030d664dd3",
+  "url": "https://www.almasryalyoum.com/news/details/3407643",
+  "extractedTextLength": 4654,
+  "chunkCount": 2,
+  "processedAt": "2025-03-23T13:28:49.776Z",
+  "chunks": [
+    {
+      "id": "d003eefa-480b-4d3a-91f9-9c120dd6a3d1",
+      "index": 0,
+      "contentPreview": "# بعد تراجع عيار 21 بالمصنعية والدمغة.. سعر الذهب اليوم الأحد 23 مارس 2025 | المصري اليوم\n\nSource: h...",
+      "contentLength": 149,
+      "embeddingSource": "new"
+    },
+    {
+      "id": "7983d721-a7f8-4170-86e6-64471210eb3b",
+      "index": 1,
+      "contentPreview": "الرئيسية أخبار رمضان ٢٠٢٥ اقتصاد رأي حوادث رياضة عرب وعالم فنون المزيد المصري أوتو السكوت ممنوع سياس...",
+      "contentLength": 4503,
+      "embeddingSource": "new"
+    }
+  ]
+}

@@ -2,18 +2,16 @@ import { KnowledgeDocument } from '../../db/schema';
 import { createKnowledgeChunk, updateKnowledgeDocument } from '../../db/queries';
 import { OpenAI } from 'openai';
 import {
-  saveUploadedFile,
   saveProcessedContent,
   getProcessedContent,
   isDocumentProcessed,
   saveEmbedding,
   getEmbedding,
-  cleanupDocumentFiles
+  cleanupDocumentFiles,
+  getUploadFilePath
 } from './fileHandler';
-import * as fs from 'fs';
-import * as path from 'path';
-
-// We're using client-side PDF processing, so no server-side PDF library is needed
+import { extractTextFromPdf, getPdfMetadata } from './pdfExtractor';
+import path from 'path';
 
 // Create OpenAI client
 const openai = new OpenAI();
@@ -22,6 +20,7 @@ interface ProcessDocumentParams {
   document: KnowledgeDocument;
   content?: string;
   userId: string;
+  filePath?: string;
 }
 
 /**
@@ -32,6 +31,7 @@ export async function processDocumentLocal({
   document,
   content,
   userId,
+  filePath,
 }: ProcessDocumentParams) {
   console.log(`\n[DOCUMENT PROCESSOR] Starting processing of document: "${document.title}" (${document.id})`);
   console.log(`[DOCUMENT PROCESSOR] Source type: ${document.sourceType}`);
@@ -57,6 +57,24 @@ export async function processDocumentLocal({
     if (document.sourceType === 'text' && content) {
       extractedText = content;
       console.log(`[DOCUMENT PROCESSOR] Using provided text content (${content.length} characters)`);
+    } else if ((document.sourceType === 'pdf' || document.sourceType === 'file') && filePath) {
+      // Process PDF file
+      console.log(`[DOCUMENT PROCESSOR] Processing PDF file: ${filePath}`);
+      extractedText = await extractTextFromPdf(filePath);
+      console.log(`[DOCUMENT PROCESSOR] Extracted ${extractedText.length} characters from PDF`);
+      
+      // Get PDF metadata for file size and update the document
+      try {
+        const metadata = await getPdfMetadata(filePath);
+        await updateKnowledgeDocument({
+          id: document.id,
+          fileSize: metadata.fileSize,
+        });
+        console.log(`[DOCUMENT PROCESSOR] Updated document with PDF metadata`);
+      } catch (metadataError) {
+        console.error(`[DOCUMENT PROCESSOR] Error getting PDF metadata:`, metadataError);
+        // Continue processing even if metadata extraction fails
+      }
     } else {
       console.error(`[DOCUMENT PROCESSOR] Error: Unsupported document type or missing content: ${document.sourceType}`);
       throw new Error(`Unsupported document type or missing content: ${document.sourceType}`);
@@ -104,7 +122,7 @@ export async function processDocumentLocal({
           embeddingSource,
         },
         chunkIndex: i.toString(),
-        embedding: embedding,  // This is already a number[] type
+        embedding: embedding,
       });
       
       console.log(`[DOCUMENT PROCESSOR] Stored chunk ${i+1} in database`);
@@ -159,147 +177,10 @@ export async function processDocumentLocal({
 }
 
 /**
- * Extract text from a URL by fetching and parsing the content
- */
-async function extractTextFromUrl(url: string): Promise<string> {
-  try {
-    console.log(`[DOCUMENT PROCESSOR] Extracting content from URL: ${url}`);
-    
-    // Due to CORS restrictions, we can't directly fetch many URLs from the browser
-    // In a real implementation, you'd use a server-side proxy or service
-    
-    // Return a more informative message
-    return `Content from URL: ${url}\n\nThis is a placeholder for the content that would be extracted from the URL. In a production environment, we would use a server-side proxy to fetch the content to avoid CORS issues.\n\nThe extracted content would include all relevant text from the webpage, with proper formatting and structure preservation.`;
-  } catch (error) {
-    console.error('Error extracting text from URL:', error);
-    throw new Error(`Failed to extract text from URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/**
- * Extract text from a YouTube video by fetching its transcript
- */
-async function extractTextFromYouTube(url: string): Promise<string> {
-  try {
-    console.log(`[DOCUMENT PROCESSOR] Extracting transcript from YouTube URL: ${url}`);
-    
-    // Extract video ID from URL
-    const videoId = extractYoutubeVideoId(url);
-    if (!videoId) {
-      throw new Error('Invalid YouTube URL format');
-    }
-    
-    console.log(`[DOCUMENT PROCESSOR] Extracted video ID: ${videoId}`);
-    
-    // Due to CORS restrictions in the browser, we can't directly call YouTube's API
-    // In a real implementation, you'd have a server-side endpoint to handle this
-    
-    // For now, return a more informative message than before
-    return `Transcript from YouTube video: ${url}\n\nThis is a placeholder for the video transcript. In a production environment, we would use the YouTube API with proper authentication to fetch the actual transcript.\n\nVideo ID: ${videoId}\n\nThe transcript would include all spoken content from the video, formatted as text with timestamps.`;
-  } catch (error) {
-    console.error('Error extracting text from YouTube:', error);
-    throw new Error(`Failed to extract text from YouTube video: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/**
- * Helper function to extract YouTube video ID from various URL formats
- */
-function extractYoutubeVideoId(url: string): string | null {
-  // Regular expressions to match different YouTube URL formats
-  const regexps = [
-    /youtube\.com\/watch\?v=([^&]+)/,       // Standard YouTube URL
-    /youtube\.com\/embed\/([^/?]+)/,        // Embedded YouTube URL
-    /youtube\.com\/v\/([^/?]+)/,            // Old YouTube URL
-    /youtu\.be\/([^/?]+)/                   // Short YouTube URL
-  ];
-  
-  for (const regex of regexps) {
-    const match = url.match(regex);
-    if (match && match[1]) {
-      return match[1];
-    }
-  }
-  
-  return null;
-}
-
-/**
- * Extract text from a PDF file
- */
-async function extractTextFromPdf(filePath: string): Promise<string> {
-  try {
-    console.log(`[DOCUMENT PROCESSOR] Reading PDF file: ${filePath}`);
-    
-    // Check if the file exists
-    if (!fs.existsSync(filePath)) {
-      console.error(`[DOCUMENT PROCESSOR] PDF file not found: ${filePath}`);
-      throw new Error(`PDF file not found or unable to access: ${path.basename(filePath)}`);
-    }
-    
-    const stats = fs.statSync(filePath);
-    const fileName = path.basename(filePath);
-    const fileSize = stats.size;
-    
-    console.log(`[DOCUMENT PROCESSOR] PDF file exists, size: ${fileSize} bytes`);
-    
-    // Our system now uses client-side PDF processing instead of server-side
-    // Return a message notifying that text has been extracted via the client-side process
-    return `PDF text extraction is handled client-side in this version of the application. The file ${fileName} (${fileSize} bytes) has been saved and should be processed through the browser-based extraction process.`;
-  } catch (error) {
-    console.error('Error handling PDF file:', error);
-    // Fall back to a basic message if there's an error
-    const fileName = path.basename(filePath);
-    return `There was an issue with the PDF file ${fileName}: ${error instanceof Error ? error.message : 'Unknown error'}. PDF text extraction is now handled client-side in this application.`;
-  }
-}
-
-/**
- * Transcribe audio or video file
- */
-async function transcribeAudioVideo(filePath: string, type: string): Promise<string> {
-  try {
-    console.log(`[DOCUMENT PROCESSOR] Attempting to transcribe ${type} file: ${filePath}`);
-    
-    // In a production environment, we would use a service like OpenAI's Whisper API
-    // or another transcription service to process the audio/video
-    
-    // For now, since we don't have actual integration with a transcription API in this sample,
-    // we'll return a more informative message than before
-    
-    // Note: With an actual OpenAI API integration, the code would look something like this:
-    /*
-    const formData = new FormData();
-    formData.append('file', fs.createReadStream(filePath));
-    formData.append('model', 'whisper-1');
-    
-    const response = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(filePath),
-      model: 'whisper-1',
-    });
-    
-    return response.text;
-    */
-    
-    // Instead, we'll return this message explaining what's happening
-    return `This is a placeholder for ${type} transcription of ${path.basename(filePath)}. ` +
-      `In a production environment, this would contain the actual transcription from the ${type} file ` +
-      `using a service like OpenAI's Whisper API. The transcription would include all spoken content ` +
-      `from the ${type} file, formatted as text.`;
-      
-  } catch (error) {
-    console.error(`Error transcribing ${type}:`, error);
-    throw new Error(`Failed to transcribe ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/**
  * Split text into chunks of approximately 800-1000 tokens
  */
 export function splitTextIntoChunks(text: string): string[] {
   // A simple implementation that splits by paragraphs
-  // In a real implementation, you would use a more sophisticated approach
-  // that considers token count and semantic boundaries
   const paragraphs = text.split(/\n\s*\n/);
   const chunks: string[] = [];
   let currentChunk = '';

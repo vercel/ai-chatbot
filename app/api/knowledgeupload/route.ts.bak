@@ -1,0 +1,253 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
+import { createKnowledgeDocument } from '@/lib/db/queries';
+import { processDocumentLocal } from '@/lib/knowledge/localFiles/documentProcessor';
+import { fetchWebContent } from '@/lib/knowledge/urlProcessor/index';
+import { saveAudioFile, saveRecordedAudio } from '@/lib/knowledge/localFiles/audioFileHandler';
+import { processAudioFile } from '@/lib/knowledge/localFiles/audioProcessor';
+
+// Ensure dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+
+/**
+ * Unified API endpoint for uploading knowledge documents (text, URL, audio)
+ */
+export async function POST(req: NextRequest) {
+  console.log('[KNOWLEDGEUPLOAD] POST request received');
+  
+  try {
+    // Get user session
+    const session = await auth();
+    
+    if (!session?.user) {
+      console.log('[KNOWLEDGEUPLOAD] Unauthorized access attempt');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
+    console.log(`[KNOWLEDGEUPLOAD] Authenticated user: ${userId}`);
+    
+    // Parse form data
+    const formData = await req.formData();
+    
+    // Log form data
+    for (const [key, value] of formData.entries()) {
+      if (key === 'content') {
+        console.log(`[KNOWLEDGEUPLOAD] Form data: ${key} = [content length: ${(value as string).length} chars]`);
+      } else {
+        console.log(`[KNOWLEDGEUPLOAD] Form data: ${key} = ${value}`);
+      }
+    }
+    
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string || '';
+    const sourceType = formData.get('sourceType') as string;
+    
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+    
+    if (!sourceType || !['text', 'url', 'audio'].includes(sourceType)) {
+      return NextResponse.json({ error: 'Valid source type (text, url, or audio) is required' }, { status: 400 });
+    }
+    
+    // Handle different source types
+    if (sourceType === 'text') {
+      const content = formData.get('content') as string;
+      
+      if (!content) {
+        return NextResponse.json({ error: 'Content is required for text documents' }, { status: 400 });
+      }
+      
+      console.log(`[KNOWLEDGEUPLOAD] Creating text document: ${title}`);
+      
+      // Create document in database
+      const document = await createKnowledgeDocument({
+        userId,
+        title,
+        description,
+        sourceType: 'text',
+        sourceUrl: '',
+        fileSize: `${content.length} chars`,
+        fileType: 'text/plain',
+      });
+      
+      // Process document asynchronously
+      processDocumentLocal({
+        document,
+        content,
+        userId
+      }).catch(error => {
+        console.error(`[KNOWLEDGEUPLOAD] Error processing text document: ${error.message}`);
+      });
+      
+      return NextResponse.json({
+        success: true,
+        id: document.id,
+        title: document.title,
+        status: document.status,
+        message: 'Text document created and processing started'
+      }, { status: 201 });
+      
+    } else if (sourceType === 'url') {
+      const sourceUrl = formData.get('sourceUrl') as string;
+      const notes = formData.get('notes') as string || '';
+      
+      if (!sourceUrl) {
+        return NextResponse.json({ error: 'URL is required for URL documents' }, { status: 400 });
+      }
+      
+      // Validate URL
+      try {
+        new URL(sourceUrl);
+      } catch (e) {
+        return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+      }
+      
+      console.log(`[KNOWLEDGEUPLOAD] Creating URL document: ${title} (${sourceUrl})`);
+      
+      // Combine description and notes
+      const combinedDescription = notes 
+        ? `${description || ''}\n\nNotes: ${notes}`.trim()
+        : description;
+      
+      // Create document in database
+      const document = await createKnowledgeDocument({
+        userId,
+        title,
+        description: combinedDescription,
+        sourceType: 'url',
+        sourceUrl,
+        fileSize: '',
+        fileType: 'text/html',
+      });
+      
+      // Process URL asynchronously
+      fetchWebContent({
+        documentId: document.id,
+        url: sourceUrl,
+        userId
+      }).catch(error => {
+        console.error(`[KNOWLEDGEUPLOAD] Error processing URL: ${error.message}`);
+      });
+      
+      return NextResponse.json({
+        success: true,
+        id: document.id,
+        title: document.title,
+        status: document.status,
+        message: 'URL document created and processing started'
+      }, { status: 201 });
+    } else if (sourceType === 'audio') {
+      // Handle audio uploads - check whether it's a file or recorded blob
+      const audioFile = formData.get('file') as File;
+      const audioBlob = formData.get('audioBlob') as Blob;
+      
+      if (!audioFile && !audioBlob) {
+        return NextResponse.json(
+          { error: 'Either audio file or recording is required' },
+          { status: 400 }
+        );
+      }
+      
+      let filePath: string;
+      let fileSize: string;
+      let fileType: string;
+      let isRecording = false;
+      
+      if (audioFile) {
+        // Handle uploaded audio file
+        console.log(`[KNOWLEDGEUPLOAD] Creating audio document from file: ${title}`);
+        fileSize = (audioFile.size / 1024).toFixed(2) + ' KB';
+        fileType = audioFile.type || 'audio/unknown';
+        
+        // Create document in database
+        const document = await createKnowledgeDocument({
+          userId,
+          title,
+          description,
+          sourceType: 'audio',
+          sourceUrl: '',
+          fileSize,
+          fileType,
+        });
+        
+        // Save the audio file
+        filePath = await saveAudioFile(audioFile, userId, document.id);
+        console.log(`[KNOWLEDGEUPLOAD] Saved audio file to ${filePath}`);
+        
+        // Process audio file asynchronously
+        processAudioFile({
+          document,
+          audioFile,
+          audioFilePath: filePath,
+          userId
+        }).catch(error => {
+          console.error(`[KNOWLEDGEUPLOAD] Error processing audio file: ${error.message}`);
+        });
+        
+        return NextResponse.json({
+          success: true,
+          id: document.id,
+          title: document.title,
+          status: document.status,
+          message: 'Audio file uploaded and processing started'
+        }, { status: 201 });
+        
+      } else if (audioBlob) {
+        // Handle recorded audio
+        console.log(`[KNOWLEDGEUPLOAD] Creating audio document from recording: ${title}`);
+        fileSize = (audioBlob.size / 1024).toFixed(2) + ' KB';
+        fileType = audioBlob.type || 'audio/webm';
+        isRecording = true;
+        
+        // Create document in database
+        const document = await createKnowledgeDocument({
+          userId,
+          title,
+          description,
+          sourceType: 'audio',
+          sourceUrl: '',
+          fileSize,
+          fileType,
+        });
+        
+        // Save the audio recording
+        filePath = await saveRecordedAudio(audioBlob, userId, document.id);
+        console.log(`[KNOWLEDGEUPLOAD] Saved audio recording to ${filePath}`);
+        
+        // Create a File object from the Blob for processing
+        const file = new File([audioBlob], `recording-${document.id}.webm`, { 
+          type: 'audio/webm' 
+        });
+        
+        // Process audio recording asynchronously
+        processAudioFile({
+          document,
+          audioFile: file,
+          audioFilePath: filePath,
+          userId
+        }).catch(error => {
+          console.error(`[KNOWLEDGEUPLOAD] Error processing audio recording: ${error.message}`);
+        });
+        
+        return NextResponse.json({
+          success: true,
+          id: document.id,
+          title: document.title,
+          status: document.status,
+          message: 'Audio recording uploaded and processing started'
+        }, { status: 201 });
+      }
+    
+    // Should never reach here
+    return NextResponse.json({ error: 'Invalid source type' }, { status: 400 });
+    
+  } catch (error) {
+    console.error('[KNOWLEDGEUPLOAD] Error:', error);
+    return NextResponse.json({ 
+      error: 'An unexpected error occurred',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
+  }
+}

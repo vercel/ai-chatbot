@@ -112,7 +112,7 @@ export function KnowledgeDocumentDetail({
           onClick={() => router.push('/knowledge')}
           className="mr-2"
         >
-          <ArrowUpIcon className="mr-2 h-4 w-4" />
+          <ArrowUpIcon className="mr-2" />
           Back to Knowledge Base
         </Button>
       </div>
@@ -128,7 +128,6 @@ export function KnowledgeDocumentDetail({
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsEditDialogOpen(true)}
-                    className="h-8 w-8 p-0"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +137,7 @@ export function KnowledgeDocumentDetail({
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-4 w-4"
+                      className="size-4"
                     >
                       <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                       <path d="m15 5 4 4" />
@@ -149,9 +148,10 @@ export function KnowledgeDocumentDetail({
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsDeleteDialogOpen(true)}
-                    className="h-8 w-8 p-0"
                   >
-                    <TrashIcon />
+                    <div className="mr-2">
+                      <TrashIcon size={16} />
+                    </div>
                     <span className="sr-only">Delete</span>
                   </Button>
                 </div>
