@@ -20,6 +20,9 @@ export async function GET(
     const { id } = await params;
     const documentId = id;
     
+    // Add console log for debugging
+    console.log(`[TRANSCRIPTION PROGRESS] Fetching progress for document ID: ${documentId}`);
+    
     // Get the document to check status
     const document = await getKnowledgeDocumentById({ id: documentId });
     
@@ -40,6 +43,10 @@ export async function GET(
     
     // Get transcript if it exists
     const transcript = getTranscript(session.user.id, documentId);
+    
+    // Log transcript status for debugging
+    console.log(`[TRANSCRIPTION PROGRESS] Transcript status for ${documentId}: ${transcript ? 'Found' : 'Not found'}`);
+    console.log(`[TRANSCRIPTION PROGRESS] Document status: ${document.status}`);
     
     // Return progress based on document status
     switch (document.status) {

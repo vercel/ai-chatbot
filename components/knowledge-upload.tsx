@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from '@/components/icons';
 import {
@@ -15,11 +15,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { VoiceRecorder } from '@/components/voice-recorder';
-import { AudioUpload } from '@/components/audio-upload';
-import { TranscriptionProgress } from '@/components/transcription-progress';
+// Audio components have been removed
 import { toast } from 'sonner';
-import { FileTextIcon, MicIcon, UploadIcon, Globe, FileIcon } from 'lucide-react';
+import { FileTextIcon, Globe, FileIcon } from 'lucide-react'; // MicIcon and UploadIcon removed
 
 interface KnowledgeUploadProps {
   onSuccess?: () => void;
@@ -92,8 +90,8 @@ function PDFUpload({ onFileSelected, onCancel, accept = '.pdf', label = 'PDF Fil
 export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'url' | 'text' | 'audio' | 'pdf'>('url');
-  const [audioTab, setAudioTab] = useState<'record' | 'upload'>('record');
+  const [activeTab, setActiveTab] = useState<'url' | 'text' | 'pdf'>('url');
+  // Audio tab removed
   
   // Form state
   const [title, setTitle] = useState('');
@@ -103,13 +101,13 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
   const [notes, setNotes] = useState('');
   
   // File states
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  // Audio related states removed
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfExtractedText, setPdfExtractedText] = useState<string>('');
   const [showPdfExtractor, setShowPdfExtractor] = useState<boolean>(false);
   const [processingDocumentId, setProcessingDocumentId] = useState<string | null>(null);
-  const [isTranscriptionCompleted, setIsTranscriptionCompleted] = useState(false);
+  // Transcription states removed
+  const [pollCount, setPollCount] = useState(0);
 
   const resetForm = () => {
     setUrl('');
@@ -117,15 +115,14 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
     setTitle('');
     setDescription('');
     setTextContent('');
-    setAudioFile(null);
-    setAudioBlob(null);
+    // Audio state resets removed
     setPdfFile(null);
     setPdfExtractedText('');
     setShowPdfExtractor(false);
     setProcessingDocumentId(null);
-    setIsTranscriptionCompleted(false);
+    setPollCount(0);
     setActiveTab('url');
-    setAudioTab('record');
+    // Audio tab reset removed
   };
 
   const handleTextSubmit = async () => {
@@ -222,153 +219,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
     }
   };
   
-  const handleAudioUploadSubmit = async () => {
-    try {
-      setIsUploading(true);
-      console.log('[KnowledgeUpload] Starting audio file upload');
-      
-      // Validate form
-      if (!title) {
-        console.log('[KnowledgeUpload] Validation failed: Missing title');
-        toast.error('Title is required');
-        setIsUploading(false);
-        return;
-      }
-      
-      if (!audioFile) {
-        console.log('[KnowledgeUpload] Validation failed: Missing audio file');
-        toast.error('Audio file is required');
-        setIsUploading(false);
-        return;
-      }
-      
-      // Create form data
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('sourceType', 'audio');
-      formData.append('file', audioFile);
-      console.log(`[KnowledgeUpload] Form data prepared: title="${title}", file=${audioFile.name}`);
-      
-      // Use our knowledge-new endpoint
-      console.log('[KnowledgeUpload] Submitting to /api/knowledge-new endpoint');
-      const response = await fetch('/api/knowledge-new', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      console.log(`[KnowledgeUpload] Response received: status=${response.status}, statusText="${response.statusText}"`);
-      
-      // Parse the response body - do this before checking response.ok to get error details
-      let responseData;
-      try {
-        responseData = await response.json();
-        console.log('[KnowledgeUpload] Response data:', responseData);
-      } catch (parseError) {
-        console.error('[KnowledgeUpload] Failed to parse response as JSON:', parseError);
-      }
-      
-      // Handle non-success responses
-      if (!response.ok) {
-        // Construct error message using response data if available
-        let errorMessage = `Request failed with status ${response.status}`;
-        
-        if (responseData?.error) {
-          errorMessage = responseData.message || responseData.error;
-          if (responseData.details) {
-            errorMessage += `: ${responseData.details}`;
-          }
-        }
-        
-        console.error(`[KnowledgeUpload] Error response: ${errorMessage}`);
-        throw new Error(errorMessage);
-      }
-      
-      // Process successful response
-      console.log('[KnowledgeUpload] Audio file added successfully:', responseData?.id);
-      toast.success('Audio added successfully');
-      setProcessingDocumentId(responseData.id);
-      
-    } catch (error) {
-      console.error('[KnowledgeUpload] Error adding audio:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to add audio');
-      setIsUploading(false);
-    }
-  };
-  
-  const handleRecordingSubmit = async () => {
-    try {
-      setIsUploading(true);
-      console.log('[KnowledgeUpload] Starting audio recording submission');
-      
-      // Validate form
-      if (!title) {
-        console.log('[KnowledgeUpload] Validation failed: Missing title');
-        toast.error('Title is required');
-        setIsUploading(false);
-        return;
-      }
-      
-      if (!audioBlob) {
-        console.log('[KnowledgeUpload] Validation failed: Missing voice recording');
-        toast.error('Voice recording is required');
-        setIsUploading(false);
-        return;
-      }
-      
-      // Create form data
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('sourceType', 'audio');
-      formData.append('audioBlob', audioBlob);
-      console.log(`[KnowledgeUpload] Form data prepared: title="${title}", blob size=${audioBlob.size} bytes`);
-      
-      // Use our knowledge-new endpoint
-      console.log('[KnowledgeUpload] Submitting to /api/knowledge-new endpoint');
-      const response = await fetch('/api/knowledge-new', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      console.log(`[KnowledgeUpload] Response received: status=${response.status}, statusText="${response.statusText}"`);
-      
-      // Parse the response body - do this before checking response.ok to get error details
-      let responseData;
-      try {
-        responseData = await response.json();
-        console.log('[KnowledgeUpload] Response data:', responseData);
-      } catch (parseError) {
-        console.error('[KnowledgeUpload] Failed to parse response as JSON:', parseError);
-      }
-      
-      // Handle non-success responses
-      if (!response.ok) {
-        // Construct error message using response data if available
-        let errorMessage = `Request failed with status ${response.status}`;
-        
-        if (responseData?.error) {
-          errorMessage = responseData.message || responseData.error;
-          if (responseData.details) {
-            errorMessage += `: ${responseData.details}`;
-          }
-        }
-        
-        console.error(`[KnowledgeUpload] Error response: ${errorMessage}`);
-        throw new Error(errorMessage);
-      }
-      
-      // Process successful response
-      console.log('[KnowledgeUpload] Recording added successfully:', responseData?.id);
-      toast.success('Recording added successfully');
-      setProcessingDocumentId(responseData.id);
-      
-    } catch (error) {
-      console.error('[KnowledgeUpload] Error adding recording:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to add recording');
-      setIsUploading(false);
-    }
-  };
+  // Audio upload and recording submit functions removed
   
   const handleUrlSubmit = async () => {
     console.log('[KnowledgeUpload] Starting URL document submission with debug logs enabled');
@@ -483,37 +334,19 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
       case 'text':
         handleTextSubmit();
         break;
-      case 'audio':
-        if (audioTab === 'upload') {
-          handleAudioUploadSubmit();
-        } else if (audioTab === 'record') {
-          handleRecordingSubmit();
-        }
-        break;
       default:
         console.error('Unknown tab selected:', activeTab);
     }
   };
   
-  const handleTranscriptionComplete = () => {
-    setIsTranscriptionCompleted(true);
-    setIsUploading(false);
-    
-    if (onSuccess) {
-      onSuccess();
-    }
-    
-    // Automatically close the dialog after a delay
-    setTimeout(() => {
-      setIsOpen(false);
-      resetForm();
-    }, 2000);
-  };
+  // Transcription handlers removed
+  
+  // Safety timeout for transcription removed
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       // Only allow closing if not currently uploading
-      if (!isUploading || isTranscriptionCompleted) {
+      if (!isUploading) {
         setIsOpen(open);
         if (!open) resetForm();
       }
@@ -532,13 +365,9 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
           </DialogDescription>
         </DialogHeader>
         
-        {processingDocumentId ? (
-          <div className="py-4">
-            <h3 className="text-lg font-medium mb-4">Processing Audio</h3>
-            <TranscriptionProgress 
-              documentId={processingDocumentId}
-              onCompleted={handleTranscriptionComplete}
-            />
+        {false ? (
+          <div>
+            {/* Audio processing UI removed */}
           </div>
         ) : (
           <>
@@ -560,39 +389,10 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                 <FileTextIcon className="size-4" />
                 <span>Text & Documents</span>
               </Button>
-              <Button
-                variant={activeTab === 'audio' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('audio')}
-                className="flex items-center gap-2"
-              >
-                <MicIcon className="size-4" />
-                <span>Audio</span>
-              </Button>
+              {/* Audio tab removed */}
             </div>
             
-            {/* Audio Sub-tabs (only shown when audio is selected) */}
-            {activeTab === 'audio' && (
-              <div className="flex space-x-2 mb-6 ml-6">
-                <Button
-                  variant={audioTab === 'record' ? 'default' : 'outline'}
-                  onClick={() => setAudioTab('record')}
-                  className="flex items-center gap-2 text-sm"
-                  size="sm"
-                >
-                  <MicIcon className="size-3" />
-                  <span>Record</span>
-                </Button>
-                <Button
-                  variant={audioTab === 'upload' ? 'default' : 'outline'}
-                  onClick={() => setAudioTab('upload')}
-                  className="flex items-center gap-2 text-sm"
-                  size="sm"
-                >
-                  <UploadIcon className="size-3" />
-                  <span>Upload</span>
-                </Button>
-              </div>
-            )}
+            {/* Audio Sub-tabs removed */}
             
             <div className="space-y-4 mb-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -718,20 +518,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
               </div>
             )}
             
-            {/* Audio Content */}
-            {activeTab === 'audio' && audioTab === 'record' && (
-              <VoiceRecorder
-                onRecordingComplete={(blob) => setAudioBlob(blob)}
-                onCancel={() => setActiveTab('url')}
-              />
-            )}
-            
-            {activeTab === 'audio' && audioTab === 'upload' && (
-              <AudioUpload
-                onFileSelected={(file) => setAudioFile(file)}
-                onCancel={() => setActiveTab('url')}
-              />
-            )}
+            {/* Audio Content removed */}
 
             <DialogFooter>
               <Button 
@@ -749,9 +536,7 @@ export function KnowledgeUpload({ onSuccess }: KnowledgeUploadProps) {
                 onClick={handleSubmit}
                 disabled={isUploading || 
                   (activeTab === 'url' && !url) || 
-                  (activeTab === 'text' && !textContent) || 
-                  (activeTab === 'audio' && audioTab === 'upload' && !audioFile) || 
-                  (activeTab === 'audio' && audioTab === 'record' && !audioBlob)}
+                  (activeTab === 'text' && !textContent)}
                 className="dark:bg-hunter_green-500 dark:text-white dark:hover:bg-hunter_green-400"
               >
                 {isUploading ? (

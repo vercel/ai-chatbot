@@ -9,7 +9,7 @@ const AUDIO_DIR = process.env.AUDIO_DIR || path.join(STORAGE_DIR, 'audio');
 const TRANSCRIPTS_DIR = process.env.TRANSCRIPTS_DIR || path.join(STORAGE_DIR, 'transcripts');
 
 // Ensure directories exist
-for (const dir of [AUDIO_DIR, TRANSCRIPTS_DIR]) {
+for (const dir of [STORAGE_DIR, AUDIO_DIR, TRANSCRIPTS_DIR]) {
   if (!fs.existsSync(dir)) {
     console.log(`Creating directory: ${dir}`);
     fs.mkdirSync(dir, { recursive: true });

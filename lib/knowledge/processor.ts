@@ -132,31 +132,121 @@ export async function processDocument({
 }
 
 /**
- * Split text into chunks of approximately 800-1000 tokens
+ * Split text into chunks with overlapping content to maintain context.
+ * The function tries to split at sentence boundaries and maintains overlapping
+ * segments to preserve context across chunks.
+ * 
+ * @param {string} text - The text to split into chunks
+ * @param {number} chunkSize - Target size of each chunk in characters (default: 2000)
+ * @param {number} overlapSize - Number of characters to overlap between chunks (default: 400)
+ * @returns {string[]} An array of text chunks
  */
-function splitTextIntoChunks(text: string): string[] {
-  // A very simple implementation that splits by paragraphs
-  // In a real implementation, you would use a more sophisticated approach
-  // that considers token count and semantic boundaries
-  const paragraphs = text.split(/\n\s*\n/);
-  const chunks: string[] = [];
-  let currentChunk = '';
+function splitTextIntoChunks(text, chunkSize = 2000, overlapSize = 400) {
+  // Early return for empty or very short texts
+  if (!text || text.length <= chunkSize) {
+    return text ? [text] : [];
+  }
 
-  for (const paragraph of paragraphs) {
-    // Rough estimate: 1 token ≈ 4 characters
-    if (currentChunk.length + paragraph.length > 3500) { // ~875 tokens
-      chunks.push(currentChunk.trim());
-      currentChunk = paragraph;
+  console.log(`[KNOWLEDGE PROCESSOR] Splitting text (${text.length} chars) into chunks of ~${chunkSize} chars with ${overlapSize} char overlap`);
+  
+  // Split the text into sentences
+  // This regex looks for sentence-ending punctuation followed by a space or newline
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  
+  console.log(`[KNOWLEDGE PROCESSOR] Text split into ${sentences.length} sentences`);
+  
+  // For extremely long sentences, we need to forcibly split them
+  const processedSentences = [];
+  for (const sentence of sentences) {
+    // If sentence is really long, split it further (ensuring we don't exceed chunk size)
+    if (sentence.length > chunkSize) {
+      // Use a sliding window approach for long sentences
+      for (let i = 0; i < sentence.length; i += (chunkSize / 2)) {
+        // Don't create tiny fragments at the end
+        const end = Math.min(i + chunkSize, sentence.length);
+        processedSentences.push(sentence.substring(i, end));
+        
+        // If we're at the end, stop to avoid tiny fragments
+        if (end === sentence.length) break;
+      }
     } else {
-      currentChunk += '\n\n' + paragraph;
+      processedSentences.push(sentence);
     }
   }
-
-  if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
+  
+  if (processedSentences.length > sentences.length) {
+    console.log(`[KNOWLEDGE PROCESSOR] Further split ${sentences.length} sentences into ${processedSentences.length} segments due to length`);
   }
-
-  return chunks;
+  
+  const chunks = [];
+  let currentChunk = [];
+  let currentLength = 0;
+  
+  // Process each sentence
+  for (let i = 0; i < processedSentences.length; i++) {
+    const sentence = processedSentences[i];
+    
+    // Add sentence to current chunk
+    currentChunk.push(sentence);
+    currentLength += sentence.length + (currentChunk.length > 1 ? 1 : 0); // Add space if not first sentence
+    
+    // Check if current chunk exceeds target size or if we're at the end
+    const isLastSentence = i === processedSentences.length - 1;
+    
+    if (currentLength >= chunkSize || isLastSentence) {
+      // Create chunk from current sentences
+      if (currentChunk.length > 0) {
+        const chunkText = currentChunk.join(' ');
+        chunks.push(chunkText);
+        
+        // Debug info
+        console.log(`[KNOWLEDGE PROCESSOR] Created chunk ${chunks.length} with ${chunkText.length} chars and ${currentChunk.length} sentences`);
+      }
+      
+      // If not at the end, prepare the next chunk with overlap
+      if (!isLastSentence) {
+        // Calculate overlap (keep sentences until we have enough overlap)
+        let overlapLength = 0;
+        let overlapSentences = [];
+        
+        // Go backwards through current chunk for overlap
+        for (let j = currentChunk.length - 1; j >= 0 && overlapLength < overlapSize; j--) {
+          const sentenceWithSpace = currentChunk[j] + (j > 0 ? ' ' : '');
+          overlapLength += sentenceWithSpace.length;
+          overlapSentences.unshift(currentChunk[j]);
+        }
+        
+        // Start next chunk with overlap sentences
+        currentChunk = [...overlapSentences];
+        currentLength = overlapLength;
+        
+        console.log(`[KNOWLEDGE PROCESSOR] Starting next chunk with ${overlapLength} chars overlap (${overlapSentences.length} sentences)`);
+      } else {
+        // Reset for potential next iteration
+        currentChunk = [];
+        currentLength = 0;
+      }
+    }
+  }
+  
+  // Remove any empty chunks and trim whitespace
+  const finalChunks = chunks.map(chunk => chunk.trim()).filter(chunk => chunk.length > 0);
+  
+  // Final statistics
+  if (finalChunks.length > 0) {
+    const totalChars = finalChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    const avgChunkSize = Math.round(totalChars / finalChunks.length);
+    console.log(`[KNOWLEDGE PROCESSOR] Created ${finalChunks.length} chunks with average size of ${avgChunkSize} characters`);
+    
+    // Log chunk sizes for debugging
+    finalChunks.forEach((chunk, i) => {
+      console.log(`[KNOWLEDGE PROCESSOR] Chunk ${i+1} size: ${chunk.length} characters`);
+    });
+  } else {
+    console.log(`[KNOWLEDGE PROCESSOR] Warning: No chunks were created from text of length ${text.length}`);
+  }
+  
+  return finalChunks;
 }
 
 /**

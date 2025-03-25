@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Trash2, FileIcon, ExternalLinkIcon, FileAudio, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { TranscriptViewer } from '@/components/transcript-viewer';
+// import { TranscriptViewer } from '@/components/transcript-viewer';
+// TranscriptViewer component has been removed
 import { WhisperTranscriptionResponse } from '@/lib/knowledge/types/audio';
 import {
   AlertDialog,
@@ -78,10 +79,15 @@ export default function KnowledgeDocumentPage({
   }, [document, id]);
 
   useEffect(() => {
-    fetchDocument();
-    if (id) {
-      fetchTranscript(id);
-    }
+    const loadInitialData = async () => {
+      await fetchDocument();
+      if (id && document?.sourceType === 'audio') {
+        await fetchTranscript(id);
+      }
+    };
+    
+    loadInitialData();
+    // Only depend on id, not document which would cause extra fetches
   }, [id]);
   
   // Function to refresh document data
@@ -89,7 +95,8 @@ export default function KnowledgeDocumentPage({
     try {
       setIsRefreshing(true);
       await fetchDocument();
-      if (document?.sourceType === 'audio') {
+      // Only fetch transcript if document is loaded and is audio type
+      if (document && document.sourceType === 'audio') {
         await fetchTranscript(id);
       }
       toast.success('Document refreshed');
@@ -126,7 +133,15 @@ export default function KnowledgeDocumentPage({
   async function fetchTranscript(documentId: string) {
     try {
       const response = await fetch(`/api/knowledge/${documentId}/transcription/progress`);
+      
+      // If response is 404, just return silently - document might not have a transcript yet
+      if (response.status === 404) {
+        return;
+      }
+      
+      // For other non-OK responses, log but don't throw to prevent refresh loops
       if (!response.ok) {
+        console.warn(`Transcript fetch returned status ${response.status}`);
         return;
       }
       
@@ -135,6 +150,7 @@ export default function KnowledgeDocumentPage({
         setTranscript(data.transcript);
       }
     } catch (error) {
+      // Log error but don't trigger state updates or retries to prevent loops
       console.error('Error fetching transcript:', error);
     }
   }
@@ -288,11 +304,13 @@ export default function KnowledgeDocumentPage({
             </div>
           )}
 
-          {/* Transcript Viewer for Voice Notes */}
+          {/* Transcript Viewer for Voice Notes - Removed */}
           {document.sourceType === 'audio' && transcript && (
             <div className="border rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Transcript</h2>
-              <TranscriptViewer transcript={transcript} audioUrl={audioUrl || undefined} />
+              <div className="bg-muted p-4 rounded-md">
+                <pre className="whitespace-pre-wrap">{transcript.text}</pre>
+              </div>
             </div>
           )}
 

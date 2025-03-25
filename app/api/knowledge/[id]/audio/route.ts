@@ -48,8 +48,9 @@ export async function GET(
     // Find the audio file in the user's directory
     const userDir = path.join(AUDIO_DIR, session.user.id);
     if (!fs.existsSync(userDir)) {
+      console.error(`Audio directory not found for user: ${session.user.id}. Path: ${userDir}`);
       return NextResponse.json(
-        { error: 'Audio file not found' },
+        { error: 'Audio file not found - User directory does not exist' },
         { status: 404 }
       );
     }
@@ -59,8 +60,10 @@ export async function GET(
     const audioFile = files.find(file => file.startsWith(documentId));
     
     if (!audioFile) {
+      console.error(`Audio file not found for document: ${documentId} in directory: ${userDir}`);
+      console.error(`Available files: ${files.join(', ')}`);
       return NextResponse.json(
-        { error: 'Audio file not found' },
+        { error: 'Audio file not found for this document' },
         { status: 404 }
       );
     }
