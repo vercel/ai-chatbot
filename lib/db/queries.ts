@@ -23,6 +23,77 @@ import {
 import { ArtifactKind } from '@/components/artifact';
 import { sql } from 'drizzle-orm';
 
+// Create multiple knowledge references in a single operation
+export async function createBulkKnowledgeReferences(references: Array<{ messageId: string; chunkId: string; createdAt: Date }>) {
+  try {
+    console.log(`Creating ${references.length} knowledge references in bulk`);
+    
+    // First verify all message IDs and chunk IDs exist
+    const messageIds = [...new Set(references.map(ref => ref.messageId))];
+    const chunkIds = [...new Set(references.map(ref => ref.chunkId))];
+    
+    // Check if all messages exist
+    const messagesExist = await db
+      .select({
+        id: message.id
+      })
+      .from(message)
+      .where(inArray(message.id, messageIds));
+    
+    if (messagesExist.length !== messageIds.length) {
+      console.error('Some message IDs do not exist in the database');
+      return 0;
+    }
+    
+    // Check if all chunks exist
+    const chunksExist = await db
+      .select({
+        id: knowledgeChunk.id
+      })
+      .from(knowledgeChunk)
+      .where(inArray(knowledgeChunk.id, chunkIds));
+    
+    if (chunksExist.length !== chunkIds.length) {
+      console.error('Some chunk IDs do not exist in the database');
+      return 0;
+    }
+    
+    // Insert all references in a single operation
+    const result = await db
+      .insert(knowledgeReference)
+      .values(references)
+      .returning();
+    
+    console.log(`Successfully created ${result.length} knowledge references with IDs: ${result.map(r => r.id).join(', ')}`);
+    return result.length;
+  } catch (error) {
+    console.error(`Failed to create bulk knowledge references: ${error.message || error}`);
+    
+    // Try to create each reference individually as a fallback
+    console.log('Trying fallback approach: creating references one by one');
+    let successCount = 0;
+    
+    for (const ref of references) {
+      try {
+        const result = await db
+          .insert(knowledgeReference)
+          .values(ref)
+          .returning();
+        
+        if (result.length > 0) {
+          successCount++;
+          console.log(`Created reference ${successCount}: ${result[0].id}`);
+        }
+      } catch (innerError) {
+        console.error(`Failed to create individual reference: ${innerError.message || innerError}`);
+      }
+    }
+    
+    console.log(`Created ${successCount}/${references.length} references using fallback approach`);
+    return successCount;
+  }
+}
+
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
@@ -117,10 +188,30 @@ export async function getChatById({ id }: { id: string }) {
 
 export async function saveMessages({ messages }: { messages: Array<Message> }) {
   try {
-    return await db.insert(message).values(messages);
+    // Insert the messages
+    const result = await db.insert(message).values(messages);
+    
+    // If there are no messages inserted, return empty array
+    if (!messages.length) {
+      console.log('No messages to save');
+      return [];
+    }
+    
+    // Get the IDs of the messages we just inserted
+    const messageIds = messages.map(msg => msg.id);
+    
+    // Fetch the inserted messages to return the complete objects
+    const savedMessages = await db
+      .select()
+      .from(message)
+      .where(inArray(message.id, messageIds));
+    
+    console.log(`Successfully saved and retrieved ${savedMessages.length} messages`);
+    return savedMessages;
   } catch (error) {
     console.error('Failed to save messages in database', error);
-    throw error;
+    // Return an empty array on error rather than throwing
+    return [];
   }
 }
 
@@ -546,6 +637,7 @@ export async function semanticSearch({
 }
 
 // Create a knowledge reference
+// Create a knowledge reference with better error handling
 export async function createKnowledgeReference({
   messageId,
   chunkId,
@@ -553,38 +645,98 @@ export async function createKnowledgeReference({
   messageId: string;
   chunkId: string;
 }) {
-  const result = await db
-    .insert(knowledgeReference)
-    .values({
-      messageId,
-      chunkId,
-      createdAt: new Date(),
-    })
-    .returning();
-
-  return result[0];
+  try {
+    console.log(`Creating knowledge reference: message=${messageId}, chunk=${chunkId}`);
+    
+    // First check if the message and chunk exist to avoid foreign key issues
+    const messageExists = await db
+      .select({ count: sql`count(*)` })
+      .from(message)
+      .where(eq(message.id, messageId));
+      
+    if (!messageExists[0] || messageExists[0].count === 0) {
+      console.error(`Cannot create reference: Message ${messageId} does not exist`);
+      return null;
+    }
+    
+    const chunkExists = await db
+      .select({ count: sql`count(*)` })
+      .from(knowledgeChunk)
+      .where(eq(knowledgeChunk.id, chunkId));
+      
+    if (!chunkExists[0] || chunkExists[0].count === 0) {
+      console.error(`Cannot create reference: Chunk ${chunkId} does not exist`);
+      return null;
+    }
+    
+    const result = await db
+      .insert(knowledgeReference)
+      .values({
+        messageId,
+        chunkId,
+        createdAt: new Date(),
+      })
+      .returning();
+    
+    console.log(`Successfully created knowledge reference with ID: ${result[0]?.id || 'unknown'}`);
+    return result[0];
+  } catch (error) {
+    console.error(`Failed to create knowledge reference: ${error.message || error}`);
+    return null;
+  }
 }
 
 // Get references by message ID
+// Get references by message ID with improved handling
 export async function getReferencesByMessageId({
   messageId,
 }: {
   messageId: string;
 }) {
-  return db
-    .select({
-      reference: knowledgeReference,
-      chunk: knowledgeChunk,
-      document: knowledgeDocument,
-    })
-    .from(knowledgeReference)
-    .innerJoin(
-      knowledgeChunk,
-      eq(knowledgeReference.chunkId, knowledgeChunk.id)
-    )
-    .innerJoin(
-      knowledgeDocument,
-      eq(knowledgeChunk.documentId, knowledgeDocument.id)
-    )
-    .where(eq(knowledgeReference.messageId, messageId));
+  try {
+    console.log(`Fetching knowledge references for message ID: ${messageId}`);
+    
+    // Use a more reliable direct SQL query
+    const queryResult = await db.execute(sql`
+      SELECT 
+        kr.id as reference_id,
+        kr."messageId" as message_id,
+        kr."chunkId" as chunk_id,
+        kr."createdAt" as reference_created_at,
+        kc.id as chunk_id,
+        kc.content as chunk_content,
+        kc."documentId" as document_id,
+        kd.title as document_title,
+        kd."sourceUrl" as source_url
+      FROM "KnowledgeReference" kr
+      JOIN "KnowledgeChunk" kc ON kr."chunkId" = kc.id
+      JOIN "KnowledgeDocument" kd ON kc."documentId" = kd.id
+      WHERE kr."messageId" = ${messageId}
+    `);
+    
+    console.log(`Found ${queryResult.length} references for message ${messageId}`);
+    
+    // Format results for consistency
+    return queryResult.map((row: any) => ({
+      reference: {
+        id: row.reference_id,
+        messageId: row.message_id,
+        chunkId: row.chunk_id,
+        createdAt: row.reference_created_at
+      },
+      chunk: {
+        id: row.chunk_id,
+        content: row.chunk_content,
+        documentId: row.document_id
+      },
+      document: {
+        id: row.document_id,
+        title: row.document_title,
+        sourceUrl: row.source_url
+      }
+    }));
+  } catch (error) {
+    console.error(`Error fetching references for message ${messageId}:`, error);
+    return [];
+  }
 }

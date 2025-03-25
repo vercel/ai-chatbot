@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ModelSelector } from '@/components/model-selector';
+import { ReferencesSidebarToggle } from '@/components/references-sidebar';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import { PlusIcon, VercelIcon, BookIcon } from './icons';
@@ -68,6 +69,7 @@ function PureChatHeader({
       )}
 
       <div className="flex items-center gap-2 order-4">
+        <ReferencesSidebarToggle />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

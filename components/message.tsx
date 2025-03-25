@@ -16,6 +16,8 @@ import {
   SparklesIcon,
 } from './icons';
 import { Markdown } from './markdown';
+import { ReferenceMarkdown } from './reference-markdown';
+import { useReferencesSidebar } from '@/hooks/use-references-sidebar';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
@@ -59,9 +61,12 @@ const PurePreviewMessage = ({
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   
   // Fetch knowledge references if they're not already included in the message
-  const { data: knowledgeReferences } = useSWR(
+  const [referenceRetries, setReferenceRetries] = useState(0);
+  const maxRetries = 3;
+  
+  const { data: knowledgeReferences, error: referencesError } = useSWR(
     message.role === 'assistant' && !message.knowledgeReferences
-      ? `/api/knowledge/references?messageId=${message.id}`
+      ? `/api/knowledge/references?messageId=${message.id}&retry=${referenceRetries}`
       : null,
     async (url) => {
       const response = await fetch(url);
@@ -69,12 +74,16 @@ const PurePreviewMessage = ({
         throw new Error('Failed to fetch knowledge references');
       }
       return response.json();
-    }
+    },
+    { refreshInterval: referenceRetries < maxRetries ? 1500 : 0 } // Retry every 1.5 seconds for up to 3 times
   );
+
+  const { setReferences } = useReferencesSidebar();
 
   // Update the message with knowledge references if they were fetched
   useEffect(() => {
     if (knowledgeReferences && knowledgeReferences.length > 0 && !message.knowledgeReferences) {
+      // Update message with references
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === message.id
@@ -82,8 +91,21 @@ const PurePreviewMessage = ({
             : msg
         )
       );
+      
+      // Update reference sidebar state when references are available
+      setReferences(knowledgeReferences);
+      
+      // Reset retry counter as we've found references
+      setReferenceRetries(0);
+    } else if (knowledgeReferences && knowledgeReferences.length === 0 && referenceRetries < maxRetries) {
+      // Increment retry counter if no references found yet
+      setTimeout(() => {
+        setReferenceRetries(prev => prev + 1);
+      }, 500); // Small delay before incrementing
+      
+      console.log(`No references found for message ${message.id}, retry ${referenceRetries + 1}/${maxRetries}`);
     }
-  }, [knowledgeReferences, message.id, message.knowledgeReferences, setMessages]);
+  }, [knowledgeReferences, message.id, message.knowledgeReferences, setMessages, setReferences, referenceRetries, maxRetries]);
 
   return (
     <AnimatePresence>
@@ -154,7 +176,19 @@ const PurePreviewMessage = ({
                       message.role === 'user',
                   })}
                 >
-                  <Markdown>{message.content as string}</Markdown>
+                  {message.role === 'assistant' && message.knowledgeReferences && message.knowledgeReferences.length > 0 ? (
+                    <div>
+                      <ReferenceMarkdown references={message.knowledgeReferences}>
+                        {message.content as string}
+                      </ReferenceMarkdown>
+                      {/* Show a debug message during development */}
+                      <div className="text-xs text-muted-foreground mt-2">
+                        {message.knowledgeReferences.length} reference(s) available - click citations like [1] to view
+                      </div>
+                    </div>
+                  ) : (
+                    <Markdown>{message.content as string}</Markdown>
+                  )}
                 </div>
               </div>
             )}
@@ -173,9 +207,7 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.knowledgeReferences && message.knowledgeReferences.length > 0 && (
-              <KnowledgeReferences references={message.knowledgeReferences} />
-            )}
+            {/* Removed knowledge references display from here as they are now shown in the sidebar */}
 
             {message.toolInvocations && message.toolInvocations.length > 0 && (
               <div className="flex flex-col gap-4">

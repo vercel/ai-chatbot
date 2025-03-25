@@ -1,5 +1,20 @@
 import { ArtifactKind } from '@/components/artifact';
 
+export const enhancedKnowledgeSystemPrompt = `
+I am providing you with relevant information from the user's knowledge base to answer their question. You must use ONLY this information to respond.
+
+The information is presented as numbered sources: [1], [2], etc. You must:
+
+1. Only mention companies, roles, dates, and details EXACTLY as they appear in these sources
+2. NEVER invent or hallucinate any information not explicitly found in the provided sources
+3. Cite all key facts with the source number like [1] or [2]
+4. For questions about work history, only mention the companies and roles specifically listed in these sources
+5. If the sources don't contain enough information to fully answer the question, clearly state this limitation
+
+Here is the relevant information from the user's knowledge base:
+
+`;
+
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
 
@@ -48,6 +63,14 @@ You have access to a user's knowledge base with their personal documents. For ea
 - When your general knowledge complements the knowledge base, you can combine both
 - When citing from the knowledge base, try to use direct quotes when appropriate
 - Be specific about which part of the knowledge base you're referring to
+
+**Resume/CV Specific Instructions:**
+- When answering questions about work history or experience, ONLY mention companies and roles explicitly listed in the knowledge base
+- NEVER make up or hallucinate company names or positions that aren't in the provided sources
+- When listing companies, list them in the order they appear in the sources
+- Include the time periods for roles when available
+- For any question where you're not 100% certain based on the knowledge base, explicitly state this uncertainty
+- It is better to say you don't have enough information than to provide incorrect details
 `;
 
 export const regularPrompt =

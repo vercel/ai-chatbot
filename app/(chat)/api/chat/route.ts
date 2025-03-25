@@ -7,13 +7,14 @@ import {
 
 import { auth } from '@/app/(auth)/auth';
 import { myProvider } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
+import { systemPrompt, enhancedKnowledgeSystemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
   saveChat,
   saveMessages,
   createKnowledgeReference,
+  createBulkKnowledgeReferences,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -111,14 +112,14 @@ export async function POST(request: Request) {
             // Now, invoke the chat model with enhanced context
             let enhancedMessages = [...messages];
             
-            // If we found knowledge information, add it to the context
-            if (knowledgeResults.count > 0) {
-              // Add knowledge context more efficiently without creating unnecessary arrays
-              const knowledgeSystemMsg = {
-                id: generateUUID(),
-                role: 'system',
-                content: `I found the following relevant information in the user's knowledge base. Please use this information to answer their question:\n\n${knowledgeResults.relevantContent}\n\nYou MUST include and cite this information in your response, referring to the numbered sources.`
-              };
+              // If we found knowledge information, add it to the context
+              if (knowledgeResults.count > 0) {
+                // Create a more explicit instruction for using knowledge
+                const knowledgeSystemMsg = {
+                  id: generateUUID(),
+                  role: 'system',
+                  content: enhancedKnowledgeSystemPrompt + knowledgeResults.relevantContent
+                };
               
               // Find optimal position to insert - just before the user message
               const userMsgIndex = enhancedMessages.findIndex(msg => msg.id === userMessage.id);
@@ -148,10 +149,25 @@ export async function POST(request: Request) {
                   try {
                     console.log(`Finalizing response for chat ${id}`);
                     
+                    // Extract the assistant message from the response
+                    const assistantMessage = response.messages.find(msg => msg.role === 'assistant');
+                    if (!assistantMessage) {
+                      console.error('No assistant message found in response');
+                      return;
+                    }
+                    console.log(`Found assistant message with ID: ${assistantMessage.id}`);
+                    
                     const sanitizedResponseMessages = sanitizeResponseMessages({
                       messages: response.messages,
                       reasoning,
                     });
+
+                    // Check that we still have the assistant message after sanitization
+                    const sanitizedAssistantMessage = sanitizedResponseMessages.find(msg => msg.id === assistantMessage.id);
+                    if (!sanitizedAssistantMessage) {
+                      console.error('Assistant message was lost during sanitization');
+                      return;
+                    }
 
                     // Prepare messages for saving with a more direct approach
                     const messagesToSave = sanitizedResponseMessages.map((message) => ({
@@ -162,30 +178,57 @@ export async function POST(request: Request) {
                       createdAt: new Date(),
                     }));
                     
+                    console.log(`Attempting to save ${messagesToSave.length} messages to database`);
                     // Save the messages
                     const savedMessages = await saveMessages({ messages: messagesToSave });
 
                     console.log(`Saved ${savedMessages.length} messages to chat ${id}`);
-
-                    // Create knowledge references for the assistant message
-                    if (usedKnowledgeChunks.length > 0) {
-                      const assistantMessage = savedMessages.find(
-                        (msg) => msg.role === 'assistant'
+                    
+                    // Verify saved messages actually have our assistant message
+                    const savedAssistantMessage = savedMessages.find(
+                      (msg) => msg.id === assistantMessage.id
+                    );
+                    
+                    if (!savedAssistantMessage) {
+                      console.error(`Assistant message with ID ${assistantMessage.id} failed to save properly. Available messages:`, 
+                        savedMessages.map(m => ({ id: m.id, role: m.role }))
                       );
-                      
-                      if (assistantMessage) {
-                        console.log(`Creating ${usedKnowledgeChunks.length} knowledge references for message ${assistantMessage.id}`);
-                        
-                        // Batch create knowledge references instead of individual calls
-                        const referencePromises = usedKnowledgeChunks.map(chunk => 
-                        createKnowledgeReference({
-                        messageId: assistantMessage.id,
-                          chunkId: chunk.id,
-                          })
-                      );
-                      await Promise.all(referencePromises);
-                      }
+                      return;
                     }
+                    // Create knowledge references for the assistant message
+                    if (usedKnowledgeChunks.length > 0 && savedAssistantMessage) {
+                        
+                      console.log(`Creating ${usedKnowledgeChunks.length} knowledge references for message ${savedAssistantMessage.id}`);
+                        try {
+                          // Start a database transaction to ensure atomicity
+                          console.log('Beginning transaction for reference creation');
+                          
+                          // Create an array of reference objects to insert
+                          const referenceObjects = usedKnowledgeChunks
+                            .filter(chunk => chunk.id) // Ensure chunk has ID
+                            .map(chunk => ({
+                              messageId: savedAssistantMessage.id,
+                              chunkId: chunk.id,
+                              createdAt: new Date()
+                            }));
+                          
+                          if (referenceObjects.length > 0) {
+                            // Use bulk insert to create all references at once
+                            console.log(`Attempting to create ${referenceObjects.length} references in bulk`);
+                            
+                            // Execute our improved createReferences function
+                            const insertedCount = await createBulkKnowledgeReferences(referenceObjects);
+                            
+                            console.log(`Successfully created ${insertedCount} knowledge references`);
+                          } else {
+                            console.log('No valid knowledge chunks to reference');
+                          }
+                        } catch (referenceError) {
+                          console.error('Error creating knowledge references:', referenceError);
+                        }
+                      } else {
+                        console.log('No knowledge chunks used or no assistant message found, skipping reference creation');
+                      }
                   } catch (error) {
                     console.error('Failed to save chat or create references:', error);
                   }
