@@ -93,7 +93,8 @@ const PurePreviewMessage = ({
       );
       
       // Update reference sidebar state when references are available
-      setReferences(knowledgeReferences);
+      // Pass the message ID to make references unique per message
+      setReferences(knowledgeReferences, message.id);
       
       // Reset retry counter as we've found references
       setReferenceRetries(0);

@@ -1,0 +1,483 @@
+# WIZZO API Endpoints
+# Generated on March 26, 2025
+
+api_overview:
+  base_url: "/api"
+  architecture: "Next.js API Routes with App Router"
+  authentication: "JWT-based auth via NextAuth"
+  response_format: "JSON"
+  error_handling: "Standard HTTP status codes with error messages"
+
+api_groups:
+  - name: "Chat API"
+    prefix: "/api/chat"
+    description: "Endpoints for chat functionality"
+  
+  - name: "Knowledge API"
+    prefix: "/api/knowledge"
+    description: "Endpoints for knowledge base functionality"
+  
+  - name: "Tasks API"
+    prefix: "/api/tasks"
+    description: "Endpoints for task management functionality"
+  
+  - name: "Extension API"
+    prefix: "/api/extension"
+    description: "Endpoints for Chrome extension integration"
+  
+  - name: "Authentication API"
+    prefix: "/api/auth"
+    description: "Endpoints for authentication via NextAuth"
+
+chat_api:
+  - endpoint: "/api/chat"
+    method: "POST"
+    description: "Send a message and get AI response"
+    implementation: "app/(chat)/api/chat/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "chatId"
+        type: "string (UUID)"
+        description: "ID of the chat session"
+        required: true
+      - name: "message"
+        type: "string"
+        description: "User message content"
+        required: true
+      - name: "useKnowledge"
+        type: "boolean"
+        description: "Whether to use knowledge base for context"
+        required: false
+        default: true
+    responses:
+      - status: 200
+        description: "AI response stream"
+        content_type: "text/event-stream"
+      - status: 401
+        description: "Unauthorized"
+      - status: 500
+        description: "Server error"
+  
+  - endpoint: "/api/history"
+    method: "GET"
+    description: "Get chat history"
+    implementation: "app/(chat)/api/history/route.ts"
+    authentication: "Required"
+    query_parameters:
+      - name: "limit"
+        type: "number"
+        description: "Maximum number of chats to return"
+        required: false
+        default: 10
+    responses:
+      - status: 200
+        description: "Chat history"
+        content:
+          type: "application/json"
+          schema: "Array of Chat objects"
+      - status: 401
+        description: "Unauthorized"
+  
+  - endpoint: "/api/vote"
+    method: "POST"
+    description: "Record feedback on AI responses"
+    implementation: "app/(chat)/api/vote/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "chatId"
+        type: "string (UUID)"
+        description: "ID of the chat session"
+        required: true
+      - name: "messageId"
+        type: "string (UUID)"
+        description: "ID of the message"
+        required: true
+      - name: "isUpvoted"
+        type: "boolean"
+        description: "Whether the message is upvoted"
+        required: true
+    responses:
+      - status: 200
+        description: "Vote recorded"
+      - status: 401
+        description: "Unauthorized"
+
+knowledge_api:
+  - endpoint: "/api/knowledge"
+    method: "GET"
+    description: "List knowledge documents"
+    implementation: "app/api/knowledge/route.ts"
+    authentication: "Required"
+    query_parameters:
+      - name: "limit"
+        type: "number"
+        default: 20
+      - name: "offset"
+        type: "number"
+        default: 0
+      - name: "sourceType"
+        type: "string"
+        enum: ["text", "url", "pdf", "audio"]
+    responses:
+      - status: 200
+        description: "List of knowledge documents"
+      - status: 401
+        description: "Unauthorized"
+  
+  - endpoint: "/api/knowledge"
+    method: "POST"
+    description: "Create a new knowledge document"
+    implementation: "app/api/knowledge/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "title"
+        type: "string"
+        required: true
+      - name: "description"
+        type: "string"
+        required: false
+      - name: "sourceType"
+        type: "string"
+        required: true
+        enum: ["text", "url"]
+      - name: "content"
+        type: "string"
+        required: true
+    responses:
+      - status: 201
+        description: "Document created"
+      - status: 400
+        description: "Invalid request"
+  
+  - endpoint: "/api/knowledge/[id]"
+    method: "GET"
+    description: "Get knowledge document details"
+    implementation: "app/api/knowledge/[id]/route.ts"
+    authentication: "Required"
+    path_parameters:
+      - name: "id"
+        type: "string (UUID)"
+        required: true
+    responses:
+      - status: 200
+        description: "Document details"
+      - status: 404
+        description: "Document not found"
+  
+  - endpoint: "/api/knowledge/[id]"
+    method: "DELETE"
+    description: "Delete a knowledge document"
+    implementation: "app/api/knowledge/[id]/route.ts"
+    authentication: "Required"
+    path_parameters:
+      - name: "id"
+        type: "string (UUID)"
+        required: true
+    responses:
+      - status: 200
+        description: "Document deleted"
+      - status: 404
+        description: "Document not found"
+  
+  - endpoint: "/api/knowledge/process"
+    method: "POST"
+    description: "Process a knowledge document"
+    implementation: "app/api/knowledge/process/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "documentId"
+        type: "string (UUID)"
+        required: true
+    responses:
+      - status: 200
+        description: "Processing started"
+      - status: 404
+        description: "Document not found"
+  
+  - endpoint: "/api/knowledge/search"
+    method: "POST"
+    description: "Search knowledge base"
+    implementation: "app/api/knowledge/search/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "query"
+        type: "string"
+        required: true
+      - name: "limit"
+        type: "number"
+        default: 5
+    responses:
+      - status: 200
+        description: "Search results"
+  
+  - endpoint: "/api/knowledge/pdf"
+    method: "POST"
+    description: "Upload and process PDF document"
+    implementation: "app/api/knowledge/pdf/route.ts"
+    authentication: "Required"
+    content_type: "multipart/form-data"
+    form_parameters:
+      - name: "file"
+        type: "File (PDF)"
+        required: true
+      - name: "title"
+        type: "string"
+        required: true
+      - name: "description"
+        type: "string"
+        required: false
+    responses:
+      - status: 201
+        description: "PDF uploaded and processing started"
+      - status: 400
+        description: "Invalid file or parameters"
+  
+  - endpoint: "/api/knowledge/audio"
+    method: "POST"
+    description: "Upload audio recording"
+    implementation: "app/api/knowledge/audio/route.ts"
+    authentication: "Required"
+    content_type: "multipart/form-data"
+    form_parameters:
+      - name: "file"
+        type: "File (Audio)"
+        required: true
+      - name: "title"
+        type: "string"
+        required: true
+    responses:
+      - status: 201
+        description: "Audio uploaded and processing started"
+      - status: 400
+        description: "Invalid file or parameters"
+  
+  - endpoint: "/api/knowledge/url"
+    method: "POST"
+    description: "Process content from URL"
+    implementation: "app/api/knowledge/url/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "url"
+        type: "string"
+        required: true
+      - name: "title"
+        type: "string"
+        required: true
+      - name: "description"
+        type: "string"
+        required: false
+    responses:
+      - status: 201
+        description: "URL content processing started"
+      - status: 400
+        description: "Invalid URL or parameters"
+
+tasks_api:
+  - endpoint: "/api/tasks"
+    method: "GET"
+    description: "List tasks"
+    implementation: "app/api/tasks/route.ts"
+    authentication: "Required"
+    query_parameters:
+      - name: "projectId"
+        type: "string (UUID)"
+        description: "Filter by project"
+      - name: "priority"
+        type: "string"
+        description: "Filter by priority"
+        enum: ["p1", "p2", "p3", "p4"]
+      - name: "completed"
+        type: "boolean"
+        description: "Filter by completion status"
+      - name: "dueDate"
+        type: "string"
+        description: "Filter by due date"
+    responses:
+      - status: 200
+        description: "List of tasks"
+  
+  - endpoint: "/api/tasks"
+    method: "POST"
+    description: "Create a new task"
+    implementation: "app/api/tasks/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "content"
+        type: "string"
+        required: true
+      - name: "projectId"
+        type: "string (UUID)"
+        required: true
+      - name: "description"
+        type: "string"
+        required: false
+      - name: "priority"
+        type: "string"
+        enum: ["p1", "p2", "p3", "p4"]
+        default: "p4"
+      - name: "dueDate"
+        type: "string"
+        required: false
+      - name: "labelIds"
+        type: "array of string (UUID)"
+        required: false
+    responses:
+      - status: 201
+        description: "Task created"
+      - status: 400
+        description: "Invalid request"
+  
+  - endpoint: "/api/tasks/[id]"
+    method: "GET"
+    description: "Get task details"
+    implementation: "app/api/tasks/[id]/route.ts"
+    authentication: "Required"
+    path_parameters:
+      - name: "id"
+        type: "string (UUID)"
+        required: true
+    responses:
+      - status: 200
+        description: "Task details"
+      - status: 404
+        description: "Task not found"
+  
+  - endpoint: "/api/tasks/[id]"
+    method: "PUT"
+    description: "Update a task"
+    implementation: "app/api/tasks/[id]/route.ts"
+    authentication: "Required"
+    path_parameters:
+      - name: "id"
+        type: "string (UUID)"
+        required: true
+    request_body:
+      - name: "content"
+        type: "string"
+      - name: "description"
+        type: "string"
+      - name: "completed"
+        type: "boolean"
+      - name: "priority"
+        type: "string"
+        enum: ["p1", "p2", "p3", "p4"]
+      - name: "dueDate"
+        type: "string"
+      - name: "labelIds"
+        type: "array of string (UUID)"
+    responses:
+      - status: 200
+        description: "Task updated"
+      - status: 404
+        description: "Task not found"
+  
+  - endpoint: "/api/tasks/[id]"
+    method: "DELETE"
+    description: "Delete a task"
+    implementation: "app/api/tasks/[id]/route.ts"
+    authentication: "Required"
+    path_parameters:
+      - name: "id"
+        type: "string (UUID)"
+        required: true
+    responses:
+      - status: 200
+        description: "Task deleted"
+      - status: 404
+        description: "Task not found"
+  
+  - endpoint: "/api/tasks/projects"
+    method: "GET"
+    description: "List task projects"
+    implementation: "app/api/tasks/projects/route.ts"
+    authentication: "Required"
+    responses:
+      - status: 200
+        description: "List of projects"
+  
+  - endpoint: "/api/tasks/projects"
+    method: "POST"
+    description: "Create a new task project"
+    implementation: "app/api/tasks/projects/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "name"
+        type: "string"
+        required: true
+      - name: "color"
+        type: "string"
+        default: "#808080"
+    responses:
+      - status: 201
+        description: "Project created"
+      - status: 400
+        description: "Invalid request"
+
+extension_api:
+  - endpoint: "/api/extension/auth"
+    method: "POST"
+    description: "Authenticate extension user"
+    implementation: "app/api/extension/auth/route.ts"
+    authentication: "None"
+    request_body:
+      - name: "email"
+        type: "string"
+        required: true
+      - name: "password"
+        type: "string"
+        required: true
+    responses:
+      - status: 200
+        description: "Authentication successful"
+        content:
+          type: "application/json"
+          schema: { token: "string" }
+      - status: 401
+        description: "Invalid credentials"
+  
+  - endpoint: "/api/extension/save-offline"
+    method: "POST"
+    description: "Save offline content"
+    implementation: "app/api/extension/save-offline/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "type"
+        type: "string"
+        required: true
+        enum: ["audio", "text", "url"]
+      - name: "content"
+        type: "string or base64"
+        required: true
+      - name: "title"
+        type: "string"
+        required: true
+      - name: "timestamp"
+        type: "string"
+        required: true
+    responses:
+      - status: 200
+        description: "Content saved"
+      - status: 400
+        description: "Invalid content"
+  
+  - endpoint: "/api/extension/process-offline"
+    method: "POST"
+    description: "Process offline content"
+    implementation: "app/api/extension/process-offline/route.ts"
+    authentication: "Required"
+    request_body:
+      - name: "itemIds"
+        type: "array of string (UUID)"
+        required: true
+    responses:
+      - status: 200
+        description: "Processing started"
+  
+  - endpoint: "/api/extension/unprocessed"
+    method: "GET"
+    description: "Get unprocessed content list"
+    implementation: "app/api/extension/unprocessed/route.ts"
+    authentication: "Required"
+    responses:
+      - status: 200
+        description: "List of unprocessed items"

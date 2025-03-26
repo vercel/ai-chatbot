@@ -1,44 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "Wizzo Assistant",
+  "name": "Wizzo Magic Wand",
   "version": "2.0",
-  "description": "Record audio and add notes for processing in Wizzo platform",
+  "description": "Snooze tabs and chat with your magic Wizzo assistant",
   "side_panel": {
     "default_path": "sidepanel/index.html"
   },
   "permissions": [
-    "sidePanel",
     "storage",
     "tabs",
     "activeTab",
-    "scripting",
-    "notifications",
-    "downloads",
-    "alarms"
+    "alarms",
+    "sidePanel"
   ],
-  "host_permissions": [
-    "*://*/*"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
-    "default_icon": {
-      "16": "icons/icon.svg",
-      "48": "icons/icon.svg",
-      "128": "icons/icon.svg"
-    }
+    "default_popup": "popup/index.html"
   },
-  "options_page": "settings.html",
-  "icons": {
-    "16": "icons/icon.svg",
-    "48": "icons/icon.svg",
-    "128": "icons/icon.svg"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["sidepanel/*", "icons/*", "recordingView.html", "recordingView.js", "popup/styles.css"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  "background": {
+    "service_worker": "background/main.js"
+  }
 }

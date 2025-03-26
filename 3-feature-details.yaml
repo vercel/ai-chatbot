@@ -1,0 +1,374 @@
+# WIZZO Feature Details
+# Generated on March 26, 2025
+
+feature_groups:
+  core:
+    - "Authentication"
+    - "Chat System"
+  knowledge:
+    - "Knowledge Base"
+    - "Document Processing"
+  productivity:
+    - "Task Management"
+    - "Meeting Integration"
+  extension:
+    - "Chrome Extension"
+    - "Offline Support"
+
+authentication:
+  description: >
+    The authentication system uses NextAuth v5 to handle user registration, login, and session management.
+    It supports both email/password authentication and Google OAuth.
+  
+  components:
+    - name: "Login Page"
+      description: "User login interface with email/password and OAuth options"
+      implementation: "app/(auth)/login/page.tsx"
+    
+    - name: "Register Page"
+      description: "User registration interface for new account creation"
+      implementation: "app/(auth)/register/page.tsx"
+    
+    - name: "Auth Provider"
+      description: "Context provider for authentication state management"
+      implementation: "app/(auth)/auth.ts"
+    
+    - name: "Auth Configuration"
+      description: "NextAuth configuration for auth providers and callbacks"
+      implementation: "app/(auth)/auth.config.ts"
+    
+    - name: "Auth API Route"
+      description: "API route handler for authentication requests"
+      implementation: "app/(auth)/api/auth/[...nextauth]/route.ts"
+  
+  auth_flow:
+    - step: "User enters login credentials or clicks OAuth provider"
+      component: "Login Page"
+    
+    - step: "Authentication request is sent to NextAuth"
+      component: "Auth API Route"
+    
+    - step: "Credentials are validated or OAuth flow is completed"
+      component: "Auth Configuration"
+    
+    - step: "Session is created and token is issued"
+      component: "Auth API Route"
+    
+    - step: "User is redirected to main application"
+      component: "Auth Provider"
+  
+  security_features:
+    - "Password hashing with bcrypt-ts"
+    - "CSRF protection with NextAuth"
+    - "JWT session tokens"
+    - "Secure cookie handling"
+    - "Protected routes with middleware"
+
+chat_system:
+  description: >
+    The chat system enables users to interact with AI models through a conversational interface.
+    It supports creating new chat sessions, viewing chat history, and referencing knowledge documents.
+  
+  components:
+    - name: "Chat List"
+      description: "Display and management of chat sessions"
+      implementation: "app/(chat)/page.tsx"
+    
+    - name: "Chat Interface"
+      description: "Main chat conversation interface"
+      implementation: "app/(chat)/chat/[id]/page.tsx"
+    
+    - name: "Chat Actions"
+      description: "Server actions for chat operations"
+      implementation: "app/(chat)/actions.ts"
+    
+    - name: "Chat API"
+      description: "API route for chat message processing"
+      implementation: "app/(chat)/api/chat/route.ts"
+    
+    - name: "History API"
+      description: "API route for retrieving chat history"
+      implementation: "app/(chat)/api/history/route.ts"
+    
+    - name: "Vote API"
+      description: "API route for feedback on AI responses"
+      implementation: "app/(chat)/api/vote/route.ts"
+  
+  chat_flow:
+    - step: "User creates a new chat or selects existing chat"
+      component: "Chat List"
+    
+    - step: "Chat interface loads with conversation history"
+      component: "Chat Interface"
+    
+    - step: "User sends a message to the AI"
+      component: "Chat Interface"
+    
+    - step: "Message is processed by AI with potential knowledge context"
+      component: "Chat API"
+    
+    - step: "AI response is streamed back to the interface"
+      component: "Chat Interface"
+    
+    - step: "User can provide feedback on AI response"
+      component: "Vote API"
+  
+  ai_integration:
+    models:
+      - "OpenAI GPT models"
+      - "Custom models via AI SDK"
+    
+    features:
+      - "Streaming responses"
+      - "Context preservation across messages"
+      - "Knowledge base citation"
+      - "Message formatting with markdown"
+
+knowledge_base:
+  description: >
+    The knowledge base feature allows users to upload, process, and reference various document types.
+    It supports PDF, audio, text, and URL sources, and integrates with the chat system for context-aware responses.
+  
+  components:
+    - name: "Knowledge Dashboard"
+      description: "Overview of knowledge documents and management interface"
+      implementation: "app/(chat)/knowledge/page.tsx"
+    
+    - name: "Document Detail"
+      description: "Detailed view of a specific knowledge document"
+      implementation: "app/(chat)/knowledge/[id]/page.tsx"
+    
+    - name: "Category View"
+      description: "View documents by category/type"
+      implementation: "app/(chat)/knowledge/category/[type]/page.tsx"
+    
+    - name: "Knowledge API"
+      description: "Main API for knowledge document operations"
+      implementation: "app/api/knowledge/route.ts"
+    
+    - name: "Document Processing API"
+      description: "API for processing uploaded documents"
+      implementation: "app/api/knowledge/process/route.ts"
+    
+    - name: "Search API"
+      description: "API for semantic search of knowledge base"
+      implementation: "app/api/knowledge/search/route.ts"
+  
+  document_types:
+    - name: "PDF"
+      description: "PDF document processing"
+      implementation: "app/api/knowledge/pdf/route.ts"
+      processing_steps:
+        - "File upload to storage"
+        - "Text extraction with pdf-parse"
+        - "Content chunking"
+        - "Embedding generation"
+        - "Database storage"
+    
+    - name: "Audio"
+      description: "Audio recording and transcription"
+      implementation: "app/api/knowledge/audio/route.ts"
+      processing_steps:
+        - "Audio recording/upload"
+        - "Transcription"
+        - "Content chunking"
+        - "Embedding generation"
+        - "Database storage"
+    
+    - name: "Text"
+      description: "Plain text processing"
+      implementation: "app/api/knowledge/create/route.ts"
+      processing_steps:
+        - "Text input/upload"
+        - "Content chunking"
+        - "Embedding generation"
+        - "Database storage"
+    
+    - name: "URL"
+      description: "Web content extraction"
+      implementation: "app/api/knowledge/url/route.ts"
+      processing_steps:
+        - "URL validation"
+        - "Content fetching"
+        - "HTML parsing"
+        - "Content chunking"
+        - "Embedding generation"
+        - "Database storage"
+  
+  search_and_retrieval:
+    embedding_model: "OpenAI embeddings API"
+    search_methods:
+      - name: "Vector search"
+        description: "Semantic search using vector embeddings"
+      - name: "Keyword search"
+        description: "Fallback search using keyword matching"
+    integration:
+      - "Automatic search during chat for relevant context"
+      - "Manual search through knowledge base"
+      - "Citation of sources in AI responses"
+
+task_management:
+  description: >
+    The task management system is inspired by Todoist, allowing users to create, organize, and track tasks.
+    It supports projects, priorities, due dates, and labels.
+  
+  components:
+    - name: "Task Dashboard"
+      description: "Overview of tasks and management interface"
+      implementation: "app/tasks/page.tsx"
+    
+    - name: "Today View"
+      description: "View of tasks due today"
+      implementation: "app/tasks/today/page.tsx"
+    
+    - name: "Upcoming View"
+      description: "View of upcoming tasks"
+      implementation: "app/tasks/upcoming/page.tsx"
+    
+    - name: "Projects View"
+      description: "Project management interface"
+      implementation: "app/tasks/projects/page.tsx"
+    
+    - name: "New Task"
+      description: "Interface for creating new tasks"
+      implementation: "app/tasks/new/page.tsx"
+    
+    - name: "Task API"
+      description: "API for task operations"
+      implementation: "app/api/tasks/route.ts"
+    
+    - name: "Projects API"
+      description: "API for project operations"
+      implementation: "app/api/tasks/projects/route.ts"
+  
+  task_features:
+    priority_levels:
+      - name: "P1"
+        description: "Highest priority"
+        color: "red"
+      - name: "P2"
+        description: "High priority"
+        color: "orange"
+      - name: "P3"
+        description: "Medium priority"
+        color: "blue"
+      - name: "P4"
+        description: "Low priority (default)"
+        color: "gray"
+    
+    due_date_options:
+      - "Today"
+      - "Tomorrow"
+      - "Next Week"
+      - "Custom Date"
+    
+    filtering:
+      - "By project"
+      - "By priority"
+      - "By due date"
+      - "By label"
+    
+    sorting:
+      - "By priority"
+      - "By due date"
+      - "By creation date"
+      - "By completion status"
+
+chrome_extension:
+  description: >
+    The Chrome extension integrates with the platform through a side panel interface, allowing users to
+    capture content even when offline. It supports audio recording, note-taking, and file processing.
+  
+  components:
+    - name: "Side Panel Interface"
+      description: "Main extension interface in browser side panel"
+      implementation: "chrome-extension/sidepanel/index.html"
+    
+    - name: "Authentication Module"
+      description: "Handles user authentication with main platform"
+      implementation: "chrome-extension/background/auth.js"
+    
+    - name: "Data Synchronization"
+      description: "Manages syncing data between extension and platform"
+      implementation: "chrome-extension/background/sync.js"
+    
+    - name: "Storage Module"
+      description: "Handles local storage of data when offline"
+      implementation: "chrome-extension/background/storage.js"
+    
+    - name: "Recording Component"
+      description: "Interface for audio recording"
+      implementation: "chrome-extension/sidepanel/components/recording.js"
+    
+    - name: "Notes Component"
+      description: "Interface for note creation and management"
+      implementation: "chrome-extension/sidepanel/components/notes.js"
+  
+  capabilities:
+    - name: "Audio Recording"
+      description: "Record audio notes directly from browser"
+      online_requirements: "None (syncs when online)"
+    
+    - name: "Text Notes"
+      description: "Create text notes directly from browser"
+      online_requirements: "None (syncs when online)"
+    
+    - name: "Web Content Capture"
+      description: "Save content from web pages"
+      online_requirements: "None (syncs when online)"
+    
+    - name: "Knowledge Integration"
+      description: "Automatic addition to knowledge base"
+      online_requirements: "Required for processing"
+  
+  synchronization:
+    - strategy: "Automatic sync when online"
+      description: "Automatically syncs offline content when connection is restored"
+    
+    - strategy: "Manual sync"
+      description: "User can manually trigger synchronization"
+    
+    - strategy: "Batch processing"
+      description: "Processes multiple offline items in batch"
+    
+    - strategy: "Conflict resolution"
+      description: "Resolves conflicts between local and server versions"
+
+meeting_integration:
+  description: >
+    The meeting integration feature allows users to schedule and manage meetings, potentially with
+    integration to calendar services like Google Calendar.
+  
+  components:
+    - name: "Meetings Dashboard"
+      description: "Overview of meetings and management interface"
+      implementation: "app/(chat)/meets/page.tsx"
+    
+    - name: "Calendar Integration"
+      description: "Integration with external calendar services"
+      implementation: "app/lib/google-calendar.ts"
+    
+    - name: "Meetings API"
+      description: "API for meeting operations"
+      implementation: "app/api/meetings/route.ts"
+  
+  features:
+    - name: "Calendar View"
+      description: "Calendar interface for viewing scheduled meetings"
+      status: "Implemented"
+    
+    - name: "Meeting Creation"
+      description: "Interface for creating new meetings"
+      status: "Implemented"
+    
+    - name: "Google Calendar Integration"
+      description: "Sync with Google Calendar"
+      status: "Partially implemented"
+    
+    - name: "Meeting Notifications"
+      description: "Notifications for upcoming meetings"
+      status: "Planned"
+    
+    - name: "Meeting Notes"
+      description: "Take and store notes for meetings"
+      status: "Planned"

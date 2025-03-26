@@ -1,0 +1,184 @@
+# WIZZO Project Overview
+# Generated on March 26, 2025
+
+project:
+  name: "WIZZO"
+  version: "0.1.0"
+  description: "Enhanced AI Chatbot with Knowledge Base, Task Management, and Chrome Extension Integration"
+  base_architecture: "Next.js Web Application with Chrome Extension"
+  repository_url: "Not specified"
+
+overview:
+  summary: >
+    WIZZO is an enhanced version of the Next.js AI Chatbot template by Vercel, with extended capabilities
+    for knowledge base integration, task management, and a Chrome extension. The platform allows users to 
+    chat with multiple AI models, upload and process various document types, reference knowledge bases in 
+    conversations, manage tasks, and seamlessly integrate with the Chrome browser for offline content capture.
+  
+  key_features:
+    - Chat with multiple AI models
+    - Upload and process various document types (PDF, audio, text, URLs)
+    - Reference knowledge base in conversations
+    - Dark and light theme support
+    - Secure authentication
+    - Task Management system (Todoist-inspired)
+    - Chrome Extension integration with offline support
+    - Meeting/calendar integration
+
+technology_stack:
+  frontend:
+    framework: "Next.js 15"
+    ui_libraries:
+      - name: "React 19"
+        description: "Frontend UI library"
+      - name: "Tailwind CSS"
+        description: "Utility-first CSS framework"
+      - name: "Radix UI"
+        description: "Headless UI components"
+      - name: "Framer Motion"
+        description: "Animation library"
+      - name: "Lucide React"
+        description: "Icon library"
+    state_management:
+      - name: "SWR"
+        description: "Data fetching and caching"
+    components:
+      - name: "Prosemirror"
+        description: "Rich text editing framework"
+      - name: "CodeMirror"
+        description: "Code editor component"
+      - name: "React Day Picker"
+        description: "Date picker component for task due dates"
+      - name: "React Markdown"
+        description: "Markdown rendering"
+      - name: "React Resizable Panels"
+        description: "Resizable panel layout components"
+  
+  backend:
+    runtime: "Next.js API Routes"
+    database:
+      - name: "Vercel Postgres"
+        description: "SQL database for structured data"
+      - name: "Drizzle ORM"
+        description: "TypeScript ORM for database interactions"
+    storage:
+      - name: "Vercel Blob"
+        description: "Object storage for files and media"
+      - name: "Local Storage (Development)"
+        description: "Local file storage for development environment"
+  
+  ai_integration:
+    providers:
+      - name: "OpenAI"
+        description: "API integration for AI models"
+      - name: "AI SDK"
+        description: "Tools for AI integration"
+  
+  authentication:
+    framework: "NextAuth v5"
+    strategies:
+      - "Email/Password"
+      - "Google OAuth"
+  
+  extension:
+    platform: "Chrome Extension"
+    manifest_version: "v3"
+    features:
+      - "Side Panel Integration"
+      - "Background Services"
+      - "Offline Support"
+
+architecture:
+  high_level:
+    pattern: "Component-based architecture with server-side rendering and API routes"
+    description: >
+      The application follows a modular architecture with clearly separated components for chat, knowledge base,
+      task management, and extension integration. It uses Next.js App Router for routing and server components.
+  
+  components:
+    - name: "Authentication System"
+      description: "Handles user registration, login, and session management"
+      location: "app/(auth)"
+    
+    - name: "Chat System"
+      description: "Manages chat sessions, messages, and interactions with AI models"
+      location: "app/(chat)"
+    
+    - name: "Knowledge Base"
+      description: "Handles document uploading, processing, chunking, and retrieval"
+      location: "app/(chat)/knowledge and app/api/knowledge"
+    
+    - name: "Task Management"
+      description: "Todoist-inspired task management system with projects and labels"
+      location: "app/task-management and app/tasks"
+    
+    - name: "Chrome Extension"
+      description: "Browser extension with side panel for content capture when offline"
+      location: "chrome-extension"
+    
+    - name: "Meeting Integration"
+      description: "Calendar/meeting integration feature"
+      location: "app/(chat)/meets"
+
+file_structure:
+  main_directories:
+    - name: "app"
+      description: "Next.js App Router application code"
+      key_subdirectories:
+        - "(auth)"
+        - "(chat)"
+        - "api"
+        - "extension"
+        - "task-management"
+        - "tasks"
+    
+    - name: "components"
+      description: "Reusable UI components"
+      key_subdirectories:
+        - "chat"
+        - "knowledge"
+        - "tasks"
+        - "ui"
+    
+    - name: "lib"
+      description: "Utility functions and libraries"
+      key_subdirectories:
+        - "db"
+        - "utils"
+        - "ai"
+    
+    - name: "public"
+      description: "Static assets"
+    
+    - name: "chrome-extension"
+      description: "Chrome extension code"
+      key_subdirectories:
+        - "background"
+        - "sidepanel"
+        - "popup"
+        - "icons"
+
+environment_variables:
+  authentication:
+    - "NEXTAUTH_URL"
+    - "NEXTAUTH_SECRET"
+    - "GOOGLE_CLIENT_ID"
+    - "GOOGLE_CLIENT_SECRET"
+  
+  database:
+    - "POSTGRES_URL"
+    - "POSTGRES_PRISMA_URL"
+    - "POSTGRES_URL_NON_POOLING"
+  
+  ai_services:
+    - "OPENAI_API_KEY"
+    - "AI_MODEL_PROVIDER"
+  
+  storage:
+    - "BLOB_READ_WRITE_TOKEN"
+    - "LOCAL_STORAGE_PATH"
+  
+  feature_flags:
+    - "ENABLE_KNOWLEDGE_BASE"
+    - "ENABLE_TASK_MANAGEMENT"
+    - "ENABLE_EXTENSION_INTEGRATION"

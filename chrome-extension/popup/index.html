@@ -3,152 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wizzo</title>
+  <title>Wizzo Magic</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
-      <img src="../icons/icon48.png" alt="Wizzo Logo" class="logo">
-      <h1>Wizzo</h1>
-    </div>
-    
-    <!-- Login Form (shown when not authenticated) -->
-    <div id="loginForm" class="section" style="display: none;">
-      <h2>Sign in to your account</h2>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="Enter your email">
+      <div class="logo-container">
+        <h1>Wizzo</h1>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Enter your password">
-      </div>
-      <div class="error-message" id="loginError"></div>
-      <button id="loginButton" class="primary-button">Sign In</button>
-      <div class="helper-text">
-        Don't have an account? <a href="#" id="openSignupLink">Sign up</a>
+      <div class="status-container">
+        <span>I'm online</span>
+        <div class="status-indicator online"></div>
       </div>
     </div>
     
-    <!-- Main Content (shown when authenticated) -->
-    <div id="mainContent" class="section" style="display: none;">
-      <div id="userInfo" class="user-info">
-        <span id="userEmail"></span>
-        <button id="logoutButton" class="text-button">Sign Out</button>
-      </div>
-      
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="widgets">Widgets</button>
-        <button class="tab-btn" data-tab="recordings">Recordings</button>
-        <button class="tab-btn" data-tab="notes">Notes</button>
-      </div>
-      
-      <div class="tab-content">
-        <!-- Widgets Tab -->
-        <div id="widgets" class="tab-pane active">
-          <div class="widgets-section">
-            <div class="section-header">
-              <h2>Your Widgets</h2>
-              <div class="sync-status">
-                <span id="syncStatusText">All synced</span>
-                <button id="syncButton" class="icon-button">🔄</button>
-              </div>
-            </div>
-            
-            <div id="widgetsList" class="widgets-list">
-              <!-- Widgets will be added here dynamically -->
-              <div class="empty-state" id="emptyWidgetsState">
-                <p>No widgets created yet.</p>
-              </div>
-            </div>
-          </div>
-          
-          <button id="createWidgetButton" class="primary-button">Create New Widget</button>
-        </div>
-        
-        <!-- Recordings Tab -->
-        <div id="recordings" class="tab-pane">
-          <h2>Voice Recordings</h2>
-          <div class="record-controls">
-            <button id="recordBtn" class="btn record-btn">Record</button>
-            <button id="pauseBtn" class="btn pause-btn" disabled>Pause</button>
-            <button id="stopBtn" class="btn stop-btn" disabled>Stop</button>
-          </div>
-          <div class="timer">00:00</div>
-          <div class="recording-info">
-            <input type="text" id="recordingTitle" placeholder="Recording Title">
-            <div class="waveform" id="waveformMini"></div>
-          </div>
-          <div class="recordings-list">
-            <h3>Recordings</h3>
-            <ul id="pendingRecordings"></ul>
-          </div>
-        </div>
-        
-        <!-- Notes Tab -->
-        <div id="notes" class="tab-pane">
-          <h2>Quick Notes</h2>
-          <div class="note-input">
-            <textarea id="noteContent" placeholder="Enter your note here..."></textarea>
-            <button id="saveNoteBtn" class="btn save-btn">Save</button>
-          </div>
-          <div class="notes-list">
-            <h3>Notes</h3>
-            <ul id="pendingNotes"></ul>
+    <!-- Snooze Tabs Section -->
+    <div class="snooze-tabs-section">
+      <h2>Snooze Tabs</h2>
+      <div class="snooze-options">
+        <button class="snooze-option">1h</button>
+        <button class="snooze-option">2h</button>
+        <button class="snooze-option">Tom</button>
+        <div class="custom-dropdown">
+          <button class="snooze-option custom">Custom ▼</button>
+          <div class="dropdown-content" id="customOptions">
+            <button class="dropdown-item">3h</button>
+            <button class="dropdown-item">4h</button>
+            <button class="dropdown-item">Tomorrow</button>
+            <button class="dropdown-item">Next week</button>
           </div>
         </div>
       </div>
-      
-      <div class="footer">
-        <button id="openWizzoButton" class="secondary-button">Open Wizzo Platform</button>
-        <a href="../settings.html" class="btn settings-btn">Settings</a>
-      </div>
     </div>
     
-    <!-- Loading State -->
-    <div id="loadingState" class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading...</p>
-    </div>
-    
-    <!-- Widget Form (hidden by default) -->
-    <div id="widgetForm" class="section widget-form" style="display: none;">
-      <h2>Create New Widget</h2>
-      <div class="form-group">
-        <label for="widgetTitle">Title</label>
-        <input type="text" id="widgetTitle" placeholder="Enter widget title">
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <span>Chat</span>
+        <button class="add-chat-btn">+</button>
       </div>
-      <div class="form-group">
-        <label for="widgetType">Type</label>
-        <select id="widgetType">
-          <option value="chart">Chart</option>
-          <option value="counter">Counter</option>
-          <option value="timer">Timer</option>
-          <option value="notes">Notes</option>
-        </select>
+      <div class="chat-display">
+        <p class="chat-message assistant">How can I help with my magic wand?</p>
       </div>
-      <div class="form-group">
-        <label for="widgetColor">Color</label>
-        <select id="widgetColor">
-          <option value="blue">Blue</option>
-          <option value="green">Green</option>
-          <option value="red">Red</option>
-          <option value="purple">Purple</option>
-          <option value="orange">Orange</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="widgetDescription">Description (optional)</label>
-        <textarea id="widgetDescription" placeholder="Enter widget description"></textarea>
-      </div>
-      <div class="btn-group">
-        <button id="saveWidgetButton" class="primary-button">Save Widget</button>
-        <button id="cancelWidgetButton" class="secondary-button">Cancel</button>
+      <div class="chat-input">
+        <input type="text" id="inputText" placeholder="Type your request...">
+        <button id="sendButton" class="send-btn">Send</button>
       </div>
     </div>
   </div>
   
-  <script src="popup.js" type="module"></script>
+  <script src="popup.js"></script>
 </body>
 </html>

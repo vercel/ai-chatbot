@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wizzo Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="wizzo-styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Login View (shown by default) -->
+    <div id="loginView" class="glass-card glass-card-dark">
+      <div class="auth-header">
+        <img src="../icons/icon.svg" alt="Wizzo Logo" class="auth-logo">
+        <h1>Wizzo</h1>
+      </div>
+      
+      <h2>Sign in to continue</h2>
+      
+      <div class="auth-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        
+        <div class="form-group checkbox">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe">Remember me</label>
+        </div>
+        
+        <div id="loginError" class="error-message"></div>
+        
+        <button id="loginButton" class="auth-button">
+          <span>Sign In</span>
+          <div class="spinner-container">
+            <div class="spinner"></div>
+          </div>
+        </button>
+        
+        <div class="auth-links">
+          <a href="#" id="openSignupLink">Create account</a>
+          <a href="#" id="forgotPasswordLink">Forgot password?</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main View (hidden until logged in) -->
+    <div id="mainView" class="main-container" style="display: none;">
+      <!-- Header -->
+      <div class="header glass-card glass-card-dark">
+        <div class="header-left">
+          <img src="../icons/icon.svg" alt="Wizzo Logo" class="logo">
+          <h1>Wizzo</h1>
+        </div>
+        
+        <div class="header-right">
+          <div class="connection-badge" id="connectionStatus">Online</div>
+          <div class="avatar-circle" id="userAvatar">W</div>
+        </div>
+      </div>
+      
+      <!-- Tabs Menu -->
+      <div class="tabs-container glass-card">
+        <button class="tab-btn active" data-tab="widgets">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+          </svg>
+          <span>Widgets</span>
+        </button>
+        <button class="tab-btn" data-tab="recordings">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          <span>Recordings</span>
+        </button>
+        <button class="tab-btn" data-tab="notes">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 3v4a1 1 0 001 1h4"></path>
+            <path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"></path>
+            <line x1="9" y1="9" x2="10" y2="9"></line>
+            <line x1="9" y1="13" x2="15" y2="13"></line>
+            <line x1="9" y1="17" x2="15" y2="17"></line>
+          </svg>
+          <span>Notes</span>
+        </button>
+      </div>
+      
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Widgets Tab -->
+        <div id="widgets" class="tab-pane active">
+          <div class="tab-header glass-card">
+            <h2>Your Widgets</h2>
+            <div class="sync-status">
+              <span id="syncStatusText">All synced</span>
+              <button id="syncButton" class="icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 019-9M21 12a9 9 0 01-9 9"></path>
+                  <path d="M3 12l3-3 3 3"></path>
+                  <path d="M21 12l-3 3-3-3"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div id="widgetsList" class="widgets-container">
+            <!-- Widgets will be added here dynamically -->
+          </div>
+          
+          <div id="emptyWidgetsState" class="empty-state glass-card">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+            </svg>
+            <p>No widgets created yet</p>
+          </div>
+          
+          <button id="createWidgetButton" class="floating-action-button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Recordings Tab -->
+        <div id="recordings" class="tab-pane">
+          <div class="tab-header glass-card">
+            <h2>Voice Recordings</h2>
+          </div>
+          
+          <div class="record-controls glass-card">
+            <div class="timer">00:00</div>
+            <div class="control-buttons">
+              <button id="recordBtn" class="record-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="6"></circle>
+                </svg>
+                <span>Record</span>
+              </button>
+              <button id="pauseBtn" class="pause-btn" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="6" y="5" width="4" height="14"></rect>
+                  <rect x="14" y="5" width="4" height="14"></rect>
+                </svg>
+                <span>Pause</span>
+              </button>
+              <button id="stopBtn" class="stop-btn" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="5" width="14" height="14" rx="2"></rect>
+                </svg>
+                <span>Stop</span>
+              </button>
+            </div>
+            <div class="recording-info">
+              <input type="text" id="recordingTitle" placeholder="Recording Title">
+              <div class="waveform" id="waveformMini"></div>
+            </div>
+          </div>
+          
+          <div class="glass-card">
+            <h3>Recordings</h3>
+            <ul id="pendingRecordings" class="recordings-list"></ul>
+          </div>
+        </div>
+        
+        <!-- Notes Tab -->
+        <div id="notes" class="tab-pane">
+          <div class="tab-header glass-card">
+            <h2>Quick Notes</h2>
+          </div>
+          
+          <div class="note-input glass-card">
+            <textarea id="noteContent" placeholder="Enter your note here..."></textarea>
+            <button id="saveNoteBtn" class="action-button">Save Note</button>
+          </div>
+          
+          <div class="glass-card">
+            <h3>Notes</h3>
+            <ul id="pendingNotes" class="notes-list"></ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer glass-card">
+        <button id="openWizzoButton" class="secondary-button">Open Platform</button>
+        <button id="logoutButton" class="text-button">Sign Out</button>
+      </div>
+    </div>
+    
+    <!-- Widget Form (hidden by default) -->
+    <div id="widgetForm" class="form-container glass-card" style="display: none;">
+      <div class="form-header">
+        <h2>Create New Widget</h2>
+        <button id="cancelWidgetButton" class="close-button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="form-content">
+        <div class="form-group">
+          <label for="widgetTitle">Title</label>
+          <input type="text" id="widgetTitle" placeholder="Enter widget title">
+        </div>
+        
+        <div class="form-group">
+          <label for="widgetType">Type</label>
+          <select id="widgetType">
+            <option value="chart">Chart</option>
+            <option value="counter">Counter</option>
+            <option value="timer">Timer</option>
+            <option value="notes">Notes</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="widgetColor">Color</label>
+          <div class="color-options">
+            <div class="color-option blue active" data-color="blue"></div>
+            <div class="color-option green" data-color="green"></div>
+            <div class="color-option red" data-color="red"></div>
+            <div class="color-option purple" data-color="purple"></div>
+            <div class="color-option orange" data-color="orange"></div>
+          </div>
+          <input type="hidden" id="widgetColor" value="blue">
+        </div>
+        
+        <div class="form-group">
+          <label for="widgetDescription">Description (optional)</label>
+          <textarea id="widgetDescription" placeholder="Enter widget description"></textarea>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button id="saveWidgetButton" class="primary-button">Save Widget</button>
+      </div>
+    </div>
+    
+    <!-- User Menu (hidden by default) -->
+    <div id="userMenu" class="menu-container glass-card" style="display: none;">
+      <div class="menu-header">
+        <div class="menu-avatar">
+          <div class="avatar-circle large" id="menuAvatar">W</div>
+          <div class="user-info">
+            <span id="menuUserName">John Doe</span>
+            <span id="menuUserEmail">john@example.com</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="menu-items">
+        <a href="#" class="menu-item" id="menuSettings">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
+          </svg>
+          Settings
+        </a>
+        <a href="#" class="menu-item" id="menuHelp">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          Help & Support
+        </a>
+        <a href="#" class="menu-item" id="menuLogout">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sign out
+        </a>
+      </div>
+    </div>
+    
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+      <svg class="loading-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="64" height="64">
+        <rect width="128" height="128" rx="24" fill="rgba(74, 134, 232, 0.2)"/>
+        <path d="M30 90L48 40H58L76 90H66L62 78H44L40 90H30ZM47 70H59L53 52L47 70Z" fill="#4A86E8"/>
+      </svg>
+      <div class="loading-spinner"></div>
+      <p>Loading...</p>
+    </div>
+  </div>
+  
+  <script src="sidepanel.js"></script>
+</body>
+</html>

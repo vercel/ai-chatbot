@@ -1,0 +1,201 @@
+// Messaging system for background to side panel communication
+
+import { trackError } from './errorTracking.js';
+
+// Setup message handlers
+export function setupMessageHandlers() {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // Handle authentication messages
+    if (message.action === 'checkAuth') {
+      checkAuth().then(sendResponse);
+      return true; // Keep channel open for async response
+    } else if (message.action === 'login') {
+      login(message.email, message.password).then(sendResponse);
+      return true;
+    } else if (message.action === 'logout') {
+      logout().then(sendResponse);
+      return true;
+    }
+    
+    // Handle widget messages
+    else if (message.action === 'getWidgets') {
+      getWidgets().then(sendResponse);
+      return true;
+    } else if (message.action === 'addWidget') {
+      addWidget(message.widget).then(sendResponse);
+      return true;
+    } else if (message.action === 'syncData') {
+      syncData().then(sendResponse);
+      return true;
+    }
+    
+    // Handle knowledge sync messages
+    else if (message.action === 'syncKnowledge') {
+      syncKnowledge().then(sendResponse);
+      return true;
+    } else if (message.action === 'getKnowledgeSyncStatus') {
+      getKnowledgeSyncStatusHandler().then(sendResponse);
+      return true;
+    } else if (message.action === 'getKnowledgeData') {
+      getKnowledgeDataHandler().then(sendResponse);
+      return true;
+    }
+    
+    // If no handler matches
+    sendResponse({ error: 'Unknown action' });
+    return false;
+  });
+}
+
+// Check authentication status
+async function checkAuth() {
+  try {
+    const authStatus = await chrome.extension.getBackgroundPage().checkAuthStatus();
+    return authStatus;
+  } catch (error) {
+    trackError('checkAuth', error);
+    return { isAuthenticated: false, error: error.message };
+  }
+}
+
+// Login
+async function login(email, password) {
+  try {
+    const result = await chrome.extension.getBackgroundPage().login(email, password);
+    return result;
+  } catch (error) {
+    trackError('login', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Logout
+async function logout() {
+  try {
+    const result = await chrome.extension.getBackgroundPage().logout();
+    return result;
+  } catch (error) {
+    trackError('logout', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get widgets
+async function getWidgets() {
+  try {
+    const widgets = await chrome.extension.getBackgroundPage().getWidgetData();
+    return { success: true, widgets };
+  } catch (error) {
+    trackError('getWidgets', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Add widget
+async function addWidget(widget) {
+  try {
+    const result = await chrome.extension.getBackgroundPage().addWidget(widget);
+    return { success: true, widget: result };
+  } catch (error) {
+    trackError('addWidget', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Sync data
+async function syncData() {
+  try {
+    const result = await chrome.extension.getBackgroundPage().syncWidgetData();
+    return result;
+  } catch (error) {
+    trackError('syncData', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Sync knowledge
+async function syncKnowledge() {
+  try {
+    const result = await chrome.extension.getBackgroundPage().syncKnowledgeData();
+    await chrome.extension.getBackgroundPage().fetchKnowledgeFromServer();
+    return result;
+  } catch (error) {
+    trackError('syncKnowledge', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get knowledge sync status
+async function getKnowledgeSyncStatusHandler() {
+  try {
+    const status = await chrome.extension.getBackgroundPage().getKnowledgeSyncStatus();
+    return { success: true, status };
+  } catch (error) {
+    trackError('getKnowledgeSyncStatus', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get knowledge data
+async function getKnowledgeDataHandler() {
+  try {
+    const data = await chrome.extension.getBackgroundPage().getKnowledgeData();
+    return { success: true, data };
+  } catch (error) {
+    trackError('getKnowledgeData', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Initialize the messaging system
+export async function initMessaging() {
+  console.log('Initializing messaging system...');
+  
+  // Listen for tab updates to potentially notify side panel
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete' && tab.url) {
+      // Send a message to the side panel with the new context
+      notifySidePanel({
+        action: 'tabUpdate',
+        tabId,
+        url: tab.url,
+        title: tab.title
+      });
+    }
+  });
+
+  return true;
+}
+
+// Send a message to all open side panels
+export function notifySidePanel(message) {
+  try {
+    chrome.runtime.sendMessage(message).catch(error => {
+      // Ignore errors about no receivers, which happen when side panel isn't open
+      if (!error.message.includes('Could not establish connection')) {
+        console.error('Error sending message to side panel:', error);
+      }
+    });
+  } catch (error) {
+    trackError('notifySidePanel', error);
+  }
+}
+
+// Send a notification to the user
+export function sendNotification(title, message, options = {}) {
+  try {
+    const notificationOptions = {
+      type: 'basic',
+      iconUrl: '../icons/icon128.png',
+      title,
+      message,
+      ...options
+    };
+    
+    chrome.notifications.create('', notificationOptions);
+  } catch (error) {
+    trackError('sendNotification', error);
+    // Fallback to console if notifications fail
+    console.log(`Notification: ${title} - ${message}`);
+  }
+}

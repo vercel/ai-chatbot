@@ -167,7 +167,7 @@ export const Chat = memo(function Chat({
         isReadonly={isReadonly}
       />
       
-      {/* Reference Sidebar */}
+      {/* Reference Sidebar - No specific messageId here as it will be set when references are loaded */}
       <ReferencesSidebar chatId={id} />
     </>
   );

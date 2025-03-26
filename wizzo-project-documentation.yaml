@@ -1,0 +1,434 @@
+# WIZZO Project Comprehensive Documentation
+# Generated on March 26, 2025
+
+project:
+  name: "WIZZO"
+  version: "0.1.0"
+  description: "Enhanced AI Chatbot with Knowledge Base, Task Management, and Chrome Extension Integration"
+  base_architecture: "Next.js Web Application with Chrome Extension"
+  repository_url: "Not specified"
+
+overview:
+  summary: >
+    WIZZO is an enhanced version of the Next.js AI Chatbot template by Vercel, with extended capabilities
+    for knowledge base integration, task management, and a Chrome extension. The platform allows users to 
+    chat with multiple AI models, upload and process various document types, reference knowledge bases in 
+    conversations, manage tasks, and seamlessly integrate with the Chrome browser for offline content capture.
+  
+  key_features:
+    - Chat with multiple AI models
+    - Upload and process various document types (PDF, audio, text, URLs)
+    - Reference knowledge base in conversations
+    - Dark and light theme support
+    - Secure authentication
+    - Task Management system (Todoist-inspired)
+    - Chrome Extension integration with offline support
+    - Meeting/calendar integration
+
+technology_stack:
+  frontend:
+    framework: "Next.js 15"
+    ui_libraries:
+      - name: "React 19"
+        description: "Frontend UI library"
+      - name: "Tailwind CSS"
+        description: "Utility-first CSS framework"
+      - name: "Radix UI"
+        description: "Headless UI components"
+      - name: "Framer Motion"
+        description: "Animation library"
+      - name: "Lucide React"
+        description: "Icon library"
+    state_management:
+      - name: "SWR"
+        description: "Data fetching and caching"
+  
+  backend:
+    runtime: "Next.js API Routes"
+    database:
+      - name: "Vercel Postgres"
+        description: "SQL database for structured data"
+      - name: "Drizzle ORM"
+        description: "TypeScript ORM for database interactions"
+    storage:
+      - name: "Vercel Blob"
+        description: "Object storage for files and media"
+      - name: "Local Storage (Development)"
+        description: "Local file storage for development environment"
+  
+  ai_integration:
+    providers:
+      - name: "OpenAI"
+        description: "API integration for AI models"
+      - name: "AI SDK"
+        description: "Tools for AI integration"
+  
+  authentication:
+    framework: "NextAuth v5"
+    strategies:
+      - "Email/Password"
+      - "Google OAuth"
+  
+  extension:
+    platform: "Chrome Extension"
+    manifest_version: "v3"
+    features:
+      - "Side Panel Integration"
+      - "Background Services"
+      - "Offline Support"
+
+architecture:
+  high_level:
+    pattern: "Component-based architecture with server-side rendering and API routes"
+    description: >
+      The application follows a modular architecture with clearly separated components for chat, knowledge base,
+      task management, and extension integration. It uses Next.js App Router for routing and server components.
+  
+  components:
+    - name: "Authentication System"
+      description: "Handles user registration, login, and session management"
+      location: "app/(auth)"
+    
+    - name: "Chat System"
+      description: "Manages chat sessions, messages, and interactions with AI models"
+      location: "app/(chat)"
+    
+    - name: "Knowledge Base"
+      description: "Handles document uploading, processing, chunking, and retrieval"
+      location: "app/(chat)/knowledge and app/api/knowledge"
+    
+    - name: "Task Management"
+      description: "Todoist-inspired task management system with projects and labels"
+      location: "app/task-management and app/tasks"
+    
+    - name: "Chrome Extension"
+      description: "Browser extension with side panel for content capture when offline"
+      location: "chrome-extension"
+    
+    - name: "Meeting Integration"
+      description: "Calendar/meeting integration feature"
+      location: "app/(chat)/meets"
+
+database_schema:
+  user_system:
+    - table: "User"
+      description: "Stores user authentication information"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "email"
+          type: "varchar(64)"
+          description: "User email address"
+        - name: "password"
+          type: "varchar(64)"
+          description: "Hashed password"
+  
+  chat_system:
+    - table: "Chat"
+      description: "Stores chat session information"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+        - name: "title"
+          type: "text"
+          description: "Chat title"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+        - name: "visibility"
+          type: "varchar"
+          description: "Chat visibility (public/private)"
+    
+    - table: "Message"
+      description: "Stores individual messages in chat sessions"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "chatId"
+          type: "uuid"
+          description: "Foreign key to Chat table"
+        - name: "role"
+          type: "varchar"
+          description: "Message role (user/assistant)"
+        - name: "content"
+          type: "json"
+          description: "Message content"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+      indexes:
+        - "chatIdIdx"
+        - "createdAtIdx"
+    
+    - table: "Vote"
+      description: "Stores user feedback on messages"
+      fields:
+        - name: "chatId"
+          type: "uuid"
+          description: "Foreign key to Chat table"
+        - name: "messageId"
+          type: "uuid"
+          description: "Foreign key to Message table"
+        - name: "isUpvoted"
+          type: "boolean"
+          description: "Upvote status"
+  
+  document_system:
+    - table: "Document"
+      description: "Stores document information"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key part 1"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Primary key part 2"
+        - name: "title"
+          type: "text"
+          description: "Document title"
+        - name: "content"
+          type: "text"
+          description: "Document content"
+        - name: "kind"
+          type: "varchar"
+          description: "Document type (text/code/image/sheet)"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+      indexes:
+        - "userIdIdx"
+        - "createdAtIdx"
+        - "kindIdx"
+    
+    - table: "Suggestion"
+      description: "Stores suggestions for document edits"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "documentId"
+          type: "uuid"
+          description: "Foreign key to Document table (part 1)"
+        - name: "documentCreatedAt"
+          type: "timestamp"
+          description: "Foreign key to Document table (part 2)"
+        - name: "originalText"
+          type: "text"
+          description: "Original text being edited"
+        - name: "suggestedText"
+          type: "text"
+          description: "Suggested replacement text"
+        - name: "description"
+          type: "text"
+          description: "Description of the suggestion"
+        - name: "isResolved"
+          type: "boolean"
+          description: "Resolution status"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+  
+  knowledge_base:
+    - table: "KnowledgeDocument"
+      description: "Stores knowledge document metadata"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+        - name: "title"
+          type: "text"
+          description: "Document title"
+        - name: "description"
+          type: "text"
+          description: "Document description"
+        - name: "sourceType"
+          type: "varchar"
+          description: "Source type (text/url)"
+        - name: "sourceUrl"
+          type: "text"
+          description: "Source URL if applicable"
+        - name: "fileSize"
+          type: "varchar(20)"
+          description: "File size"
+        - name: "fileType"
+          type: "varchar(50)"
+          description: "File type"
+        - name: "status"
+          type: "varchar"
+          description: "Processing status"
+        - name: "processingError"
+          type: "text"
+          description: "Error details if processing failed"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+        - name: "updatedAt"
+          type: "timestamp"
+          description: "Update timestamp"
+    
+    - table: "KnowledgeChunk"
+      description: "Stores chunks of knowledge documents with embeddings"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "documentId"
+          type: "uuid"
+          description: "Foreign key to KnowledgeDocument table"
+        - name: "content"
+          type: "text"
+          description: "Chunk content"
+        - name: "metadata"
+          type: "json"
+          description: "Additional metadata"
+        - name: "chunkIndex"
+          type: "varchar(20)"
+          description: "Index within the document"
+        - name: "embedding"
+          type: "text"
+          description: "Vector embedding as JSON string"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+      indexes:
+        - "documentIdIdx"
+    
+    - table: "KnowledgeReference"
+      description: "Links chunks to chat messages"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "messageId"
+          type: "uuid"
+          description: "Foreign key to Message table"
+        - name: "chunkId"
+          type: "uuid"
+          description: "Foreign key to KnowledgeChunk table"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+      indexes:
+        - "messageChunkIdx"
+  
+  task_management:
+    - table: "task_project"
+      description: "Stores task project information"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+        - name: "name"
+          type: "text"
+          description: "Project name"
+        - name: "color"
+          type: "varchar(20)"
+          description: "Project color"
+        - name: "isDefault"
+          type: "boolean"
+          description: "Default project flag"
+        - name: "isDeleted"
+          type: "boolean"
+          description: "Deletion flag"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+        - name: "updatedAt"
+          type: "timestamp"
+          description: "Update timestamp"
+    
+    - table: "task_item"
+      description: "Stores individual task information"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+        - name: "projectId"
+          type: "uuid"
+          description: "Foreign key to task_project table"
+        - name: "content"
+          type: "text"
+          description: "Task content"
+        - name: "description"
+          type: "text"
+          description: "Task description"
+        - name: "completed"
+          type: "boolean"
+          description: "Completion status"
+        - name: "priority"
+          type: "varchar"
+          description: "Priority level (p1-p4)"
+        - name: "dueDate"
+          type: "varchar(50)"
+          description: "Due date"
+        - name: "isDeleted"
+          type: "boolean"
+          description: "Deletion flag"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+        - name: "updatedAt"
+          type: "timestamp"
+          description: "Update timestamp"
+      indexes:
+        - "projectIdIdx"
+        - "userIdIdx"
+    
+    - table: "task_label"
+      description: "Stores task label information"
+      fields:
+        - name: "id"
+          type: "uuid"
+          description: "Primary key"
+        - name: "userId"
+          type: "uuid"
+          description: "Foreign key to User table"
+        - name: "name"
+          type: "text"
+          description: "Label name"
+        - name: "color"
+          type: "varchar(20)"
+          description: "Label color"
+        - name: "isDeleted"
+          type: "boolean"
+          description: "Deletion flag"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+        - name: "updatedAt"
+          type: "timestamp"
+          description: "Update timestamp"
+    
+    - table: "task_item_label"
+      description: "Links tasks to labels (many-to-many)"
+      fields:
+        - name: "taskId"
+          type: "uuid"
+          description: "Foreign key to task_item table"
+        - name: "labelId"
+          type: "uuid"
+          description: "Foreign key to task_label table"
+        - name: "createdAt"
+          type: "timestamp"
+          description: "Creation timestamp"
+      indexes:
+        - "taskIdIdx"
+        - "labelIdIdx"

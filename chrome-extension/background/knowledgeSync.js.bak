@@ -1,0 +1,369 @@
+// Knowledge & Chat Synchronization System
+
+import { secureStore } from './storage.js';
+import { checkAuthStatus, getAuthHeaders, API_BASE_URL } from './auth.js';
+import { trackError } from './errorTracking.js';
+import { notifySidePanel, sendNotification } from './messaging.js';
+
+// Storage keys
+const KNOWLEDGE_DATA_KEY = 'wizzo_knowledge_data';
+const CHAT_DATA_KEY = 'wizzo_chat_data';
+const KNOWLEDGE_SYNC_STATUS_KEY = 'wizzo_knowledge_sync_status';
+
+// Initialize knowledge synchronization
+export async function initKnowledgeSync() {
+  console.log('Initializing knowledge synchronization service...');
+  
+  // Set initial sync status if not exists
+  const syncStatus = await getKnowledgeSyncStatus();
+  if (!syncStatus) {
+    await setKnowledgeSyncStatus({
+      lastSyncAttempt: null,
+      lastSuccessfulSync: null,
+      pendingChanges: 0,
+      syncInProgress: false
+    });
+  }
+  
+  // Listen for changes in local storage
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') {
+      if (changes.pendingRecordings || changes.pendingNotes) {
+        updateKnowledgeSyncStatus();
+      }
+    }
+  });
+  
+  // Initial count
+  await updateKnowledgeSyncStatus();
+  
+  return true;
+}
+
+// Get knowledge sync status
+export async function getKnowledgeSyncStatus() {
+  return await secureStore().get(KNOWLEDGE_SYNC_STATUS_KEY);
+}
+
+// Set knowledge sync status
+export async function setKnowledgeSyncStatus(status) {
+  await secureStore().set(KNOWLEDGE_SYNC_STATUS_KEY, status);
+  
+  // Notify UI if it's open
+  notifySidePanel({
+    action: 'knowledgeSyncStatusUpdate',
+    status
+  });
+  
+  return status;
+}
+
+// Update knowledge sync status based on pending items
+export async function updateKnowledgeSyncStatus() {
+  const pendingItems = await countPendingItems();
+  
+  const currentStatus = await getKnowledgeSyncStatus() || {};
+  const newStatus = {
+    ...currentStatus,
+    pendingChanges: pendingItems,
+    lastStatusUpdate: new Date().toISOString()
+  };
+  
+  return setKnowledgeSyncStatus(newStatus);
+}
+
+// Count pending recordings and notes
+async function countPendingItems() {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['pendingRecordings', 'pendingNotes'], function(result) {
+      const pendingRecordings = (result.pendingRecordings || [])
+        .filter(recording => !recording.processed && !recording.synced);
+      
+      const pendingNotes = (result.pendingNotes || [])
+        .filter(note => !note.processed && !note.synced);
+      
+      resolve(pendingRecordings.length + pendingNotes.length);
+    });
+  });
+}
+
+// Synchronize knowledge data
+export async function syncKnowledgeData() {
+  try {
+    // Check auth
+    const authStatus = await checkAuthStatus();
+    if (!authStatus.isAuthenticated) {
+      console.warn('Cannot sync knowledge: User not authenticated');
+      return { success: false, error: 'Not authenticated' };
+    }
+    
+    // Update sync status
+    let syncStatus = await getKnowledgeSyncStatus() || {};
+    syncStatus = await setKnowledgeSyncStatus({
+      ...syncStatus,
+      lastSyncAttempt: new Date().toISOString(),
+      syncInProgress: true
+    });
+    
+    // Get pending items
+    const pendingItems = await getPendingItems();
+    
+    if (pendingItems.recordings.length === 0 && pendingItems.notes.length === 0) {
+      console.log('No knowledge data to synchronize');
+      await setKnowledgeSyncStatus({
+        ...syncStatus,
+        syncInProgress: false
+      });
+      return { success: true, message: 'No data to sync' };
+    }
+    
+    console.log(`Syncing ${pendingItems.recordings.length} recordings and ${pendingItems.notes.length} notes...`);
+    
+    // Sync recordings
+    const recordingsResult = await syncRecordings(pendingItems.recordings, authStatus.userId);
+    
+    // Sync notes
+    const notesResult = await syncNotes(pendingItems.notes, authStatus.userId);
+    
+    // Update sync status
+    await setKnowledgeSyncStatus({
+      lastSyncAttempt: new Date().toISOString(),
+      lastSuccessfulSync: new Date().toISOString(),
+      pendingChanges: 0,
+      syncInProgress: false
+    });
+    
+    console.log('Knowledge sync completed');
+    
+    // Notify user if items were synced
+    const syncedCount = (recordingsResult.syncedIds || []).length + (notesResult.syncedIds || []).length;
+    if (syncedCount > 0) {
+      sendNotification(
+        'Knowledge Synced',
+        `Successfully synced ${syncedCount} items to your Wizzo account`
+      );
+    }
+    
+    return { 
+      success: true, 
+      recordings: recordingsResult,
+      notes: notesResult
+    };
+  } catch (error) {
+    trackError('syncKnowledgeData', error);
+    
+    // Update sync status
+    const syncStatus = await getKnowledgeSyncStatus() || {};
+    await setKnowledgeSyncStatus({
+      ...syncStatus,
+      syncInProgress: false,
+      lastError: error.message
+    });
+    
+    return { success: false, error: 'Sync failed. Will retry later.' };
+  }
+}
+
+// Get all pending recordings and notes
+async function getPendingItems() {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['pendingRecordings', 'pendingNotes'], function(result) {
+      resolve({
+        recordings: (result.pendingRecordings || [])
+          .filter(recording => !recording.processed && !recording.synced),
+        notes: (result.pendingNotes || [])
+          .filter(note => !note.processed && !note.synced)
+      });
+    });
+  });
+}
+
+// Synchronize recordings with the server
+async function syncRecordings(recordings, userId) {
+  if (recordings.length === 0) {
+    return { success: true, syncedCount: 0, syncedIds: [] };
+  }
+  
+  try {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${API_BASE_URL}/api/extension/knowledge/sync-recordings`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        userId,
+        recordings,
+        clientTimestamp: new Date().toISOString()
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to sync recordings');
+    }
+    
+    const data = await response.json();
+    
+    // Mark recordings as synced
+    await markRecordingsAsSynced(data.syncedIds || []);
+    
+    return {
+      success: true,
+      syncedCount: data.syncedIds.length,
+      syncedIds: data.syncedIds
+    };
+  } catch (error) {
+    console.error('Error syncing recordings:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Synchronize notes with the server
+async function syncNotes(notes, userId) {
+  if (notes.length === 0) {
+    return { success: true, syncedCount: 0, syncedIds: [] };
+  }
+  
+  try {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${API_BASE_URL}/api/extension/knowledge/sync-notes`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        userId,
+        notes,
+        clientTimestamp: new Date().toISOString()
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to sync notes');
+    }
+    
+    const data = await response.json();
+    
+    // Mark notes as synced
+    await markNotesAsSynced(data.syncedIds || []);
+    
+    return {
+      success: true,
+      syncedCount: data.syncedIds.length,
+      syncedIds: data.syncedIds
+    };
+  } catch (error) {
+    console.error('Error syncing notes:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Mark recordings as synced
+async function markRecordingsAsSynced(recordingIds) {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['pendingRecordings'], function(result) {
+      const pendingRecordings = result.pendingRecordings || [];
+      
+      const updatedRecordings = pendingRecordings.map(recording => {
+        if (recordingIds.includes(recording.id)) {
+          return { ...recording, synced: true, syncedAt: new Date().toISOString() };
+        }
+        return recording;
+      });
+      
+      chrome.storage.local.set({ pendingRecordings: updatedRecordings }, function() {
+        updateKnowledgeSyncStatus();
+        resolve(updatedRecordings);
+      });
+    });
+  });
+}
+
+// Mark notes as synced
+async function markNotesAsSynced(noteIds) {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['pendingNotes'], function(result) {
+      const pendingNotes = result.pendingNotes || [];
+      
+      const updatedNotes = pendingNotes.map(note => {
+        if (noteIds.includes(note.id)) {
+          return { ...note, synced: true, syncedAt: new Date().toISOString() };
+        }
+        return note;
+      });
+      
+      chrome.storage.local.set({ pendingNotes: updatedNotes }, function() {
+        updateKnowledgeSyncStatus();
+        resolve(updatedNotes);
+      });
+    });
+  });
+}
+
+// Fetch knowledge from server
+export async function fetchKnowledgeFromServer() {
+  try {
+    // Check auth
+    const authStatus = await checkAuthStatus();
+    if (!authStatus.isAuthenticated) {
+      console.warn('Cannot fetch knowledge: User not authenticated');
+      return { success: false, error: 'Not authenticated' };
+    }
+    
+    // Get auth headers
+    const headers = await getAuthHeaders();
+    
+    // Get most recent local sync timestamp
+    const syncStatus = await getKnowledgeSyncStatus() || {};
+    const lastSync = syncStatus.lastSuccessfulSync || null;
+    
+    // Call API to get user's knowledge updates
+    const response = await fetch(`${API_BASE_URL}/api/extension/knowledge/get-updates?lastSync=${lastSync}`, {
+      method: 'GET',
+      headers
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch knowledge');
+    }
+    
+    const data = await response.json();
+    
+    // Store the knowledge data locally
+    await storeKnowledgeLocally(data.knowledge || []);
+    
+    return {
+      success: true,
+      knowledgeCount: data.knowledge.length
+    };
+  } catch (error) {
+    trackError('fetchKnowledgeFromServer', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Store knowledge data locally (simplified - would need expansion based on data structure)
+async function storeKnowledgeLocally(knowledgeItems) {
+  // This is a simplified implementation
+  // Real implementation would merge with existing data
+  await secureStore().set(KNOWLEDGE_DATA_KEY, knowledgeItems);
+  
+  // Notify UI if it's open
+  notifySidePanel({
+    action: 'knowledgeUpdated',
+    count: knowledgeItems.length
+  });
+  
+  return true;
+}
+
+// Get knowledge data
+export async function getKnowledgeData() {
+  return await secureStore().get(KNOWLEDGE_DATA_KEY) || [];
+}
+
+// Make functions available globally
+global.syncKnowledgeData = syncKnowledgeData;
+global.fetchKnowledgeFromServer = fetchKnowledgeFromServer;
+global.getKnowledgeSyncStatus = getKnowledgeSyncStatus;

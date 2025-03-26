@@ -1,0 +1,279 @@
+# WIZZO Setup and Deployment
+# Generated on March 26, 2025
+
+prerequisites:
+  system:
+    - name: "Node.js"
+      version: "18.0 or higher"
+    - name: "PNPM"
+      version: "8.0 or higher"
+  
+  external_services:
+    - name: "Vercel Account"
+      purpose: "For deployment and database hosting"
+    - name: "OpenAI API Key"
+      purpose: "For AI functionality"
+    - name: "Google OAuth Credentials"
+      purpose: "For Google authentication (optional)"
+
+local_development:
+  environment_setup:
+    - step: "Clone repository"
+      command: "git clone [repository_url]"
+    
+    - step: "Install dependencies"
+      command: "pnpm install"
+    
+    - step: "Configure environment variables"
+      command: "cp .env.example .env.local"
+      description: "Edit .env.local to add required API keys and configuration"
+    
+    - step: "Set up local storage"
+      command: "pnpm setup:local"
+      description: "Creates necessary local storage directories"
+    
+    - step: "Initialize database"
+      command: "pnpm db:migrate"
+      description: "Sets up database tables and relationships"
+    
+    - step: "Fix knowledge tables"
+      command: "pnpm fix:knowledge"
+      description: "Ensures knowledge base tables are properly configured"
+    
+    - step: "Start development server"
+      command: "pnpm dev"
+      description: "Starts Next.js development server with hot reloading"
+  
+  development_scripts:
+    database:
+      - "pnpm db:generate - Generate Drizzle migrations"
+      - "pnpm db:migrate - Run database migrations"
+      - "pnpm db:studio - Open Drizzle Studio for database management"
+      - "pnpm db:push - Push schema changes to database"
+      - "pnpm db:pull - Pull schema from database"
+      - "pnpm db:check - Check database schema consistency"
+    
+    maintenance:
+      - "pnpm fix:database - Fix general database issues"
+      - "pnpm fix:knowledge - Fix knowledge base tables"
+      - "pnpm fix:vector-search - Fix vector search functionality"
+      - "pnpm diagnose:schema - Diagnose database schema issues"
+    
+    tasks:
+      - "pnpm tasks:migrate - Migrate task management tables"
+      - "pnpm tasks:verify - Verify task schema integrity"
+      - "pnpm tasks:fix - Fix task tables issues"
+      - "pnpm tasks:fix-date - Fix date schema in tasks"
+
+extension_development:
+  setup:
+    - step: "Navigate to extension directory"
+      command: "cd chrome-extension"
+    
+    - step: "Load extension in Chrome"
+      description: "Open Chrome, go to chrome://extensions/, enable Developer mode, click 'Load unpacked', and select the chrome-extension directory"
+  
+  testing:
+    - "Test authentication with main application"
+    - "Test offline content capture"
+    - "Test synchronization when back online"
+    - "Test side panel functionality"
+    - "Verify background services"
+
+production_deployment:
+  vercel_setup:
+    - step: "Connect to Vercel"
+      description: "Link your GitHub repository to Vercel"
+    
+    - step: "Configure environment variables"
+      description: "Set up all required environment variables in Vercel dashboard"
+      variables:
+        - "NEXTAUTH_URL - Full URL to your application"
+        - "NEXTAUTH_SECRET - Secret for JWT encryption"
+        - "POSTGRES_URL - Vercel Postgres connection URL"
+        - "OPENAI_API_KEY - OpenAI API key"
+        - "BLOB_READ_WRITE_TOKEN - Vercel Blob storage token"
+    
+    - step: "Configure Vercel Postgres"
+      description: "Set up Vercel Postgres database in the Vercel dashboard"
+    
+    - step: "Configure Vercel Blob storage"
+      description: "Set up Vercel Blob storage in the Vercel dashboard"
+    
+    - step: "Deploy"
+      description: "Deploy to Vercel through the dashboard or by pushing to the connected repository"
+  
+  post_deployment:
+    - step: "Run database migrations"
+      command: "pnpm db:migrate"
+      description: "Can be run via Vercel CLI or as a deployment hook"
+    
+    - step: "Verify API routes"
+      description: "Test all API endpoints to ensure they're functioning correctly"
+    
+    - step: "Configure authentication providers"
+      description: "Set up NextAuth providers in the Vercel dashboard"
+
+known_issues:
+  ui_rendering:
+    - issue: "Task Management UI rendering issues"
+      description: "Blank screens when navigating to Task Management tab"
+      debugging_guide: "TASK_MANAGEMENT_DEBUG.md"
+      workaround: "Use debug-page.tsx temporarily by renaming files"
+    
+    - issue: "Extension tab UI rendering issues"
+      description: "Blank screens when navigating to Extension tab"
+      debugging_guide: "EXTENSION_DEBUG.md"
+      workaround: "Use debug-page.tsx temporarily by renaming files"
+  
+  database:
+    - issue: "Knowledge base table schema issues"
+      description: "Inconsistencies in knowledge base table schemas"
+      fix: "Run pnpm fix:knowledge"
+    
+    - issue: "Vector search failures"
+      description: "Search functionality may fail due to embedding issues"
+      fix: "Run pnpm fix:vector-search"
+      fallback: "System falls back to keyword search when vector search fails"
+  
+  pdf_handling:
+    - issue: "PDF upload occasionally fails with 405 error"
+      description: "HTTP method not allowed error during PDF upload"
+      fix: "Ensure all API route handlers properly support POST method"
+      debugging_guide: "DEBUGGING_GUIDE.md"
+  
+  audio_recording:
+    - issue: "Audio recording gets stuck in processing"
+      description: "Transcription process sometimes fails to complete"
+      fix: "Added timeouts and max attempt limits for polling"
+      workaround: "Use cancel button to abort stuck transcription"
+
+troubleshooting:
+  common_errors:
+    - error: "Database connection failure"
+      causes:
+        - "Invalid connection string"
+        - "Database server unreachable"
+      solutions:
+        - "Verify environment variables"
+        - "Check database status in Vercel dashboard"
+    
+    - error: "API Authentication failure"
+      causes:
+        - "Invalid or expired JWT token"
+        - "NextAuth configuration issues"
+      solutions:
+        - "Check NEXTAUTH_SECRET and NEXTAUTH_URL"
+        - "Verify auth provider configuration"
+    
+    - error: "AI model errors"
+      causes:
+        - "Invalid OpenAI API key"
+        - "Rate limiting or quota exceeded"
+      solutions:
+        - "Verify OPENAI_API_KEY"
+        - "Check OpenAI usage dashboard"
+  
+  diagnostic_commands:
+    - "pnpm diagnose:schema - Check database schema integrity"
+    - "pnpm db:check - Verify database tables"
+    - "curl localhost:3000/api/status - Check API status"
+
+future_improvements:
+  planned_features:
+    - name: "Enhanced Knowledge Processing"
+      description: "Improve document processing capabilities"
+      details:
+        - "Better chunking algorithm"
+        - "Improved embedding strategy"
+        - "Support for more document types"
+        - "Multi-language support"
+    
+    - name: "Multi-model Support"
+      description: "Support for additional AI models"
+      details:
+        - "Model switching in UI"
+        - "Model comparison"
+        - "Custom model configuration"
+        - "Local model support"
+    
+    - name: "Advanced Task Management"
+      description: "Enhanced task management features"
+      details:
+        - "Subtasks support"
+        - "Recurring tasks"
+        - "Task templates"
+        - "Better integration with chat system"
+    
+    - name: "Chrome Extension Enhancements"
+      description: "Expanded extension capabilities"
+      details:
+        - "Improved offline support"
+        - "Web page annotation"
+        - "Screenshot capture"
+        - "Better synchronization"
+    
+    - name: "Meeting Integration"
+      description: "Complete meeting management"
+      details:
+        - "Full Google Calendar integration"
+        - "Meeting notes and summaries"
+        - "Meeting recording and transcription"
+        - "Calendar synchronization"
+  
+  technical_improvements:
+    - name: "Performance Optimization"
+      description: "Improve application performance"
+      details:
+        - "Code splitting and lazy loading"
+        - "Database query optimization"
+        - "Caching strategies"
+        - "API response time improvement"
+    
+    - name: "Enhanced Testing"
+      description: "Expand test coverage"
+      details:
+        - "Unit tests for core functionality"
+        - "Integration tests for API endpoints"
+        - "End-to-end tests for user flows"
+        - "Automated UI testing"
+    
+    - name: "Mobile Responsiveness"
+      description: "Improve mobile experience"
+      details:
+        - "Responsive design improvements"
+        - "Touch-friendly interfaces"
+        - "Mobile-specific optimizations"
+        - "Progressive Web App features"
+
+deployment_guides:
+  environments:
+    - name: "Development"
+      description: "Local development environment"
+      setup: "Follow local development instructions"
+    
+    - name: "Staging"
+      description: "Staging environment for testing"
+      setup: "Deploy to Vercel preview branch"
+    
+    - name: "Production"
+      description: "Live production environment"
+      setup: "Deploy to Vercel main branch"
+  
+  ci_cd:
+    - name: "GitHub Actions"
+      description: "Automated testing and deployment"
+      setup:
+        - "Configure GitHub Actions workflow"
+        - "Set up environment secrets"
+        - "Configure test and build steps"
+        - "Set up Vercel deployment integration"
+  
+  monitoring:
+    - name: "Vercel Analytics"
+      description: "Built-in analytics for Vercel deployments"
+      setup: "Enable in Vercel dashboard"
+    
+    - name: "Error Tracking"
+      description: "Monitor application errors"
+      setup: "Integrate error tracking service"

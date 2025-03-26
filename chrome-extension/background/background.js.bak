@@ -2,6 +2,7 @@
 
 import { initAuthSystem } from './auth.js';
 import { initSyncService } from './sync.js';
+import { initKnowledgeSync } from './knowledgeSync.js';
 import { setupMessageHandlers } from './messaging.js';
 import { trackError } from './errorTracking.js';
 
@@ -20,14 +21,21 @@ async function initExtension() {
     // Initialize the data synchronization service
     await initSyncService();
     
+    // Initialize knowledge synchronization
+    await initKnowledgeSync();
+    
     // Set up message handlers for communication with popup and content scripts
     setupMessageHandlers();
     
     // Set up alarms for periodic tasks
     chrome.alarms.create('periodicSync', { periodInMinutes: 15 });
+    chrome.alarms.create('knowledgeSync', { periodInMinutes: 10 });
     chrome.alarms.onAlarm.addListener((alarm) => {
       if (alarm.name === 'periodicSync') {
         syncWidgetData();
+      } else if (alarm.name === 'knowledgeSync') {
+        syncKnowledgeData();
+        fetchKnowledgeFromServer();
       }
     });
     

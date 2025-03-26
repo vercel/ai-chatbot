@@ -8,12 +8,16 @@ interface ReferencesSidebarState {
   isVisible: boolean;
   activeReferenceId: string | null;
   references: KnowledgeReference[];
+  messageId: string | null;
+  isCollapsed: boolean;
 }
 
 export const initialReferencesSidebarState: ReferencesSidebarState = {
   isVisible: false,
   activeReferenceId: null,
-  references: []
+  references: [],
+  messageId: null,
+  isCollapsed: false
 };
 
 type Selector<T> = (state: ReferencesSidebarState) => T;
@@ -89,12 +93,20 @@ export function useReferencesSidebar() {
     }));
   }, [setState]);
 
-  const setReferences = useCallback((references: KnowledgeReference[]) => {
+  const setReferences = useCallback((references: KnowledgeReference[], messageId: string) => {
     setState(current => ({
       ...current,
       references,
+      messageId,
       // Auto-show sidebar when references are available and not empty
       isVisible: references.length > 0 ? true : current.isVisible
+    }));
+  }, [setState]);
+  
+  const toggleCollapse = useCallback(() => {
+    setState(current => ({
+      ...current,
+      isCollapsed: !current.isCollapsed
     }));
   }, [setState]);
 
@@ -104,8 +116,9 @@ export function useReferencesSidebar() {
       setState,
       toggleSidebar,
       setActiveReference,
-      setReferences
+      setReferences,
+      toggleCollapse
     }),
-    [state, setState, toggleSidebar, setActiveReference, setReferences],
+    [state, setState, toggleSidebar, setActiveReference, setReferences, toggleCollapse],
   );
 }

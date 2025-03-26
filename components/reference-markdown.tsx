@@ -75,7 +75,7 @@ export function ReferenceMarkdown({ children, className, references = [] }: Refe
             return (
               <button
                 key={index}
-                className="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-medium rounded bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
+                className="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-medium rounded bg-secondary/15 hover:bg-secondary/25 text-secondary-foreground cursor-pointer focus:ring-2 focus:ring-secondary/30 focus:outline-none transition-colors"
                 onClick={() => {
                   const reference = references[part.index];
                   if (reference) {
@@ -85,6 +85,7 @@ export function ReferenceMarkdown({ children, className, references = [] }: Refe
                     console.log('No reference found for citation:', part.content);
                   }
                 }}
+                aria-label={`View reference ${part.content}`}
               >
                 {part.content}
               </button>
