@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 // Execute Python code in a subprocess
 function executePython(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    exec(`python ${filePath}`, { timeout: 10000 }, (error, stdout, stderr) => {
+    exec(`python3 ${filePath}`, { timeout: 10000 }, (error, stdout, stderr) => {
       if (error) {
         // If the execution failed, return the error message
         return resolve(stderr || error.message);

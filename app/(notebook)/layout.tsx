@@ -19,12 +19,6 @@ export default function NotebookLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
           <NotebookProvider>
             <ResizablePanelGroup direction="horizontal">
               <ResizablePanel defaultSize={75} minSize={40}>
@@ -41,7 +35,6 @@ export default function NotebookLayout({
             </ResizablePanelGroup>
             <Toaster position="bottom-right" />
           </NotebookProvider>
-        </ThemeProvider>
       </body>
     </html>
   );

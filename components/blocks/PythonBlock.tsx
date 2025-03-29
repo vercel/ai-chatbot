@@ -83,7 +83,7 @@ export default function PythonBlock({ block }: PythonBlockProps) {
   const executeCode = async () => {
     setIsExecuting(true);
     updateBlock(block.id, {
-      type: 'python', // Ensure type is specified
+      type: 'python',
       isExecuting: true
     });
     
