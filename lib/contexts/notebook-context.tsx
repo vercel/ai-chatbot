@@ -192,34 +192,25 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
   const moveBlockUp = async (id: string) => {
     if (!notebook) return;
     
-    const currentBlock = notebook.blocks.find(block => block.id === id);
-    if (!currentBlock) return;
+    // Find the index of the current block
+    const blockIndex = notebook.blocks.findIndex(block => block.id === id);
+    if (blockIndex <= 0) return; // Already at the top or not found
     
-    // Find the block with the next lower position (the block above)
-    const blockAbove = notebook.blocks
-      .filter(block => block.position < currentBlock.position)
-      .sort((a, b) => b.position - a.position)[0];
+    // Create a new array with the block moved up
+    const updatedBlocks = [...notebook.blocks];
+    const temp = updatedBlocks[blockIndex];
+    updatedBlocks[blockIndex] = updatedBlocks[blockIndex - 1];
+    updatedBlocks[blockIndex - 1] = temp;
     
-    // If there's no block above, do nothing
-    if (!blockAbove) return;
-    
-    // Swap positions
-    const updatedBlocks = notebook.blocks.map(block => {
-      if (block.id === currentBlock.id) {
-        return { ...block, position: blockAbove.position };
-      } else if (block.id === blockAbove.id) {
-        return { ...block, position: currentBlock.position };
-      }
-      return block;
+    // Update positions to match new order
+    updatedBlocks.forEach((block, index) => {
+      block.position = index;
     });
-    
-    // Sort blocks by position
-    updatedBlocks.sort((a, b) => a.position - b.position);
     
     const updatedNotebook = { ...notebook, blocks: updatedBlocks };
     setNotebook(updatedNotebook);
     
-    // Update on the server
+    // Send the entire notebook to the server
     try {
       await fetch(`/api/notebooks/${notebook.id}`, {
         method: 'PUT',
@@ -236,34 +227,25 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
   const moveBlockDown = async (id: string) => {
     if (!notebook) return;
     
-    const currentBlock = notebook.blocks.find(block => block.id === id);
-    if (!currentBlock) return;
+    // Find the index of the current block
+    const blockIndex = notebook.blocks.findIndex(block => block.id === id);
+    if (blockIndex === -1 || blockIndex >= notebook.blocks.length - 1) return; // Not found or already at bottom
     
-    // Find the block with the next higher position (the block below)
-    const blockBelow = notebook.blocks
-      .filter(block => block.position > currentBlock.position)
-      .sort((a, b) => a.position - b.position)[0];
+    // Create a new array with the block moved down
+    const updatedBlocks = [...notebook.blocks];
+    const temp = updatedBlocks[blockIndex];
+    updatedBlocks[blockIndex] = updatedBlocks[blockIndex + 1];
+    updatedBlocks[blockIndex + 1] = temp;
     
-    // If there's no block below, do nothing
-    if (!blockBelow) return;
-    
-    // Swap positions
-    const updatedBlocks = notebook.blocks.map(block => {
-      if (block.id === currentBlock.id) {
-        return { ...block, position: blockBelow.position };
-      } else if (block.id === blockBelow.id) {
-        return { ...block, position: currentBlock.position };
-      }
-      return block;
+    // Update positions to match new order
+    updatedBlocks.forEach((block, index) => {
+      block.position = index;
     });
-    
-    // Sort blocks by position
-    updatedBlocks.sort((a, b) => a.position - b.position);
     
     const updatedNotebook = { ...notebook, blocks: updatedBlocks };
     setNotebook(updatedNotebook);
     
-    // Update on the server
+    // Send the entire notebook to the server
     try {
       await fetch(`/api/notebooks/${notebook.id}`, {
         method: 'PUT',
