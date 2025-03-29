@@ -9,7 +9,7 @@ interface BlockControlsProps {
 }
 
 export default function BlockControls({ block }: BlockControlsProps) {
-  const { notebook, createBlock } = useNotebook();
+  const { notebook, createBlock, deleteBlock } = useNotebook();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   if (!notebook) return null;
@@ -20,7 +20,7 @@ export default function BlockControls({ block }: BlockControlsProps) {
   };
   
   const handleDeleteBlock = async () => {
-    // To be implemented
+    await deleteBlock(block.id);
     setIsMenuOpen(false);
   };
   

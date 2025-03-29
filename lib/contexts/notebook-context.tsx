@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Notebook, Block, MarkdownBlock, PythonBlock, CsvBlock } from '@/lib/types';
+import { Notebook, MarkdownBlock, PythonBlock, CsvBlock } from '@/lib/types';
 import { generateUUID } from '@/lib/utils';
 
 interface NotebookContextType {
@@ -10,6 +10,7 @@ interface NotebookContextType {
   selectBlock: (id: string | null) => void;
   updateBlock: (id: string, updates: Partial<MarkdownBlock | PythonBlock | CsvBlock>) => void;
   createBlock: (type: 'markdown' | 'python' | 'csv', position?: number) => Promise<string>;
+  deleteBlock: (id: string) => Promise<void>;
 }
 
 const NotebookContext = createContext<NotebookContextType | undefined>(undefined);
@@ -110,12 +111,28 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
     // Sort blocks by position
     updatedBlocks.sort((a, b) => a.position - b.position);
     
-    // Update notebook
-    setNotebook({
+    // Create the updated notebook object
+    const updatedNotebook = {
       ...notebook,
       blocks: updatedBlocks,
       files: [...notebook.files, { path: filePath, type }]
-    });
+    };
+
+    // Update state
+    setNotebook(updatedNotebook);
+
+    // Use the updated object for API call
+    try {
+      await fetch(`/api/notebooks/${notebook.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ notebook: updatedNotebook })
+      });
+    } catch (error) {
+      console.error('Failed to update notebook:', error);
+    }
     
     // Create file on the server
     try {
@@ -135,6 +152,40 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
     
     return id;
   };
+
+  const deleteBlock = async (id: string) => {
+    if (!notebook) return;
+    const deletedFilePath = notebook.blocks.find(block => block.id === id)?.filePath;
+    const updatedBlocks = notebook.blocks.filter(block => block.id !== id);
+    const updatedFiles = notebook.files.filter(file => file.path !== deletedFilePath);
+    const updatedNotebook = { ...notebook, blocks: updatedBlocks, files: updatedFiles };
+    setNotebook(updatedNotebook);
+
+    // Use the updated object for API call
+    try {
+      await fetch(`/api/notebooks/${notebook.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ notebook: updatedNotebook })
+      });
+    } catch (error) {
+      console.error('Failed to update notebook:', error);
+    }
+
+    // Delete file from the server
+    if (deletedFilePath) {
+      try {
+        // Use the correct REST API format for the file path
+        await fetch(`/api/files/${deletedFilePath}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.error('Failed to delete file:', error);
+      }
+    }
+  };
   
   return (
     <NotebookContext.Provider value={{
@@ -143,12 +194,14 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
       selectedBlockId,
       selectBlock,
       updateBlock,
-      createBlock
+      createBlock,
+      deleteBlock
     }}>
       {children}
     </NotebookContext.Provider>
   );
 }
+
 
 export function useNotebook() {
   const context = useContext(NotebookContext);

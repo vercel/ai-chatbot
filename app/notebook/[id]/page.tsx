@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useNotebook } from '@/lib/contexts/notebook-context';
-import { Notebook, MarkdownBlock, PythonBlock, CsvBlock } from '@/lib/types';
+import { MarkdownBlock, PythonBlock, CsvBlock } from '@/lib/types';
 import MarkdownBlockComponent from '@/components/blocks/MarkdownBlock';
 import PythonBlockComponent from '@/components/blocks/PythonBlock';
 import CsvBlockComponent from '@/components/blocks/CsvBlock';
@@ -82,6 +82,7 @@ export default function NotebookPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">{notebook.title}</h1>
         
+        {notebook.blocks.length === 0 && (
         <div className="flex space-x-2">
           <button
             className="px-3 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200"
@@ -99,9 +100,10 @@ export default function NotebookPage() {
             className="px-3 py-2 bg-amber-100 text-amber-800 rounded-md hover:bg-amber-200"
             onClick={() => handleAddBlock('csv')}
           >
-            Add CSV
-          </button>
-        </div>
+              Add CSV
+            </button>
+          </div>
+        )}
       </div>
       
       {notebook.blocks.length === 0 ? (

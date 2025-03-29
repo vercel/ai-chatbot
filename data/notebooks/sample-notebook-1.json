@@ -47,6 +47,10 @@
     {
       "path": "sample-notebook-1/csv-1.csv",
       "type": "csv"
+    },
+    {
+      "path": "sample-notebook-1/1c17ce8f-6570-47fc-93a7-c39f6ab24816.md",
+      "type": "markdown"
     }
   ]
-} 
+}

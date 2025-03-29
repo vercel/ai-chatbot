@@ -55,6 +55,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
     
     const storageService = getStorageService();
     await storageService.saveNotebook(notebook);
+
+    console.log('Notebook updated:', notebook);
     
     return NextResponse.json({ success: true });
   } catch (error) {
