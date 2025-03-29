@@ -5,6 +5,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TooltipProvider
 } from '@/components/ui/tooltip';
 
 import { SidebarLeftIcon } from './icons';
@@ -16,17 +17,19 @@ export function SidebarToggle({
   const { toggleSidebar } = useSidebar();
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          onClick={toggleSidebar}
-          variant="outline"
-          className="md:px-2 md:h-fit"
-        >
-          <SidebarLeftIcon size={16} />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent align="start">Toggle Sidebar</TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={toggleSidebar}
+            variant="outline"
+            className="md:px-2 md:h-fit"
+          >
+            <SidebarLeftIcon size={16} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent align="start">Toggle Sidebar</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

@@ -1,0 +1,52 @@
+{
+  "id": "sample-notebook-1",
+  "title": "Sample Notebook - Introduction",
+  "blocks": [
+    {
+      "id": "md-1",
+      "type": "markdown",
+      "title": "Welcome",
+      "filePath": "sample-notebook-1/md-1.md",
+      "position": 0,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "editMode": false
+    },
+    {
+      "id": "py-1",
+      "type": "python",
+      "title": "Hello Python",
+      "filePath": "sample-notebook-1/py-1.py",
+      "position": 1,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "output": "Hello, World!",
+      "isExecuting": false
+    },
+    {
+      "id": "csv-1",
+      "type": "csv",
+      "title": "Sample Data",
+      "filePath": "sample-notebook-1/csv-1.csv",
+      "position": 2,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "sortColumn": "name",
+      "sortDirection": "asc"
+    }
+  ],
+  "files": [
+    {
+      "path": "sample-notebook-1/md-1.md",
+      "type": "markdown"
+    },
+    {
+      "path": "sample-notebook-1/py-1.py",
+      "type": "python"
+    },
+    {
+      "path": "sample-notebook-1/csv-1.csv",
+      "type": "csv"
+    }
+  ]
+} 

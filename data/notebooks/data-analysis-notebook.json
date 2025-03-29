@@ -1,0 +1,66 @@
+{
+  "id": "data-analysis-notebook",
+  "title": "Data Analysis Sample",
+  "blocks": [
+    {
+      "id": "intro-md",
+      "type": "markdown",
+      "title": "Introduction",
+      "filePath": "data-analysis-notebook/intro-md.md",
+      "position": 0,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "editMode": false
+    },
+    {
+      "id": "data-csv",
+      "type": "csv",
+      "title": "Sales Data",
+      "filePath": "data-analysis-notebook/data-csv.csv",
+      "position": 1,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "sortColumn": "month",
+      "sortDirection": "asc"
+    },
+    {
+      "id": "analysis-py",
+      "type": "python",
+      "title": "Data Analysis",
+      "filePath": "data-analysis-notebook/analysis-py.py",
+      "position": 2,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "output": "",
+      "isExecuting": false
+    },
+    {
+      "id": "conclusion-md",
+      "type": "markdown",
+      "title": "Conclusion",
+      "filePath": "data-analysis-notebook/conclusion-md.md",
+      "position": 3,
+      "created": "2023-03-29T00:00:00.000Z",
+      "updated": "2023-03-29T00:00:00.000Z",
+      "editMode": false
+    }
+  ],
+  "files": [
+    {
+      "path": "data-analysis-notebook/intro-md.md",
+      "type": "markdown"
+    },
+    {
+      "path": "data-analysis-notebook/data-csv.csv",
+      "type": "csv"
+    },
+    {
+      "path": "data-analysis-notebook/analysis-py.py",
+      "type": "python"
+    },
+    {
+      "path": "data-analysis-notebook/conclusion-md.md",
+      "type": "markdown"
+    }
+  ]
+} 

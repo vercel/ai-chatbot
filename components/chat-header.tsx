@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ModelSelector } from '@/components/model-selector';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { VisibilityType, VisibilitySelector } from './visibility-selector';
 
 function PureChatHeader({
@@ -25,6 +25,7 @@ function PureChatHeader({
   isReadonly: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { open } = useSidebar();
 
   const { width: windowWidth } = useWindowSize();
@@ -34,22 +35,24 @@ function PureChatHeader({
       <SidebarToggle />
 
       {(!open || windowWidth < 768) && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
-              onClick={() => {
-                router.push('/');
-                router.refresh();
-              }}
-            >
-              <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
+                onClick={() => {
+                  router.push('/');
+                  router.refresh();
+                }}
+              >
+                <PlusIcon />
+                <span className="md:sr-only">New Chat</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>New Chat</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       {!isReadonly && (
