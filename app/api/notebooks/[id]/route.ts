@@ -11,8 +11,7 @@ interface Params {
 // GET /api/notebooks/[id] - Get a notebook by ID
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
-    
+    const { id } = await params;
     const storageService = getStorageService();
     const notebook = await storageService.getNotebook(id);
     
@@ -36,7 +35,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 // PUT /api/notebooks/[id] - Update a notebook
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { notebook } = await request.json() as { notebook: Notebook };
     
     if (!notebook) {
@@ -70,7 +69,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 // DELETE /api/notebooks/[id] - Delete a notebook
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     const storageService = getStorageService();
     await storageService.deleteNotebook(id);

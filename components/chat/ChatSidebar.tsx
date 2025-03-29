@@ -10,7 +10,7 @@ import { PlusIcon } from '@/components/icons';
 import { generateUUID } from '@/lib/utils';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { saveChatModelAsCookie } from '@/app/(chat)/actions';
+import { saveChatModelAsCookie } from '@/app/notebook/actions';
 
 interface Message {
   role: 'user' | 'assistant';

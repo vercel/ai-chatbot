@@ -1,6 +1,6 @@
 'use client';
 
-import { updateChatVisibility } from '@/app/(chat)/actions';
+import { updateChatVisibility } from '@/app/notebook/actions';
 import { VisibilityType } from '@/components/visibility-selector';
 import { Chat } from '@/lib/db/schema';
 import { useMemo } from 'react';
