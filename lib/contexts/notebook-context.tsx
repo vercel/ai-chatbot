@@ -11,6 +11,8 @@ interface NotebookContextType {
   updateBlock: (id: string, updates: Partial<MarkdownBlock | PythonBlock | CsvBlock>) => void;
   createBlock: (type: 'markdown' | 'python' | 'csv', position?: number) => Promise<string>;
   deleteBlock: (id: string) => Promise<void>;
+  moveBlockUp: (id: string) => Promise<void>;
+  moveBlockDown: (id: string) => Promise<void>;
 }
 
 const NotebookContext = createContext<NotebookContextType | undefined>(undefined);
@@ -186,6 +188,94 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
       }
     }
   };
+
+  const moveBlockUp = async (id: string) => {
+    if (!notebook) return;
+    
+    const currentBlock = notebook.blocks.find(block => block.id === id);
+    if (!currentBlock) return;
+    
+    // Find the block with the next lower position (the block above)
+    const blockAbove = notebook.blocks
+      .filter(block => block.position < currentBlock.position)
+      .sort((a, b) => b.position - a.position)[0];
+    
+    // If there's no block above, do nothing
+    if (!blockAbove) return;
+    
+    // Swap positions
+    const updatedBlocks = notebook.blocks.map(block => {
+      if (block.id === currentBlock.id) {
+        return { ...block, position: blockAbove.position };
+      } else if (block.id === blockAbove.id) {
+        return { ...block, position: currentBlock.position };
+      }
+      return block;
+    });
+    
+    // Sort blocks by position
+    updatedBlocks.sort((a, b) => a.position - b.position);
+    
+    const updatedNotebook = { ...notebook, blocks: updatedBlocks };
+    setNotebook(updatedNotebook);
+    
+    // Update on the server
+    try {
+      await fetch(`/api/notebooks/${notebook.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ notebook: updatedNotebook })
+      });
+    } catch (error) {
+      console.error('Failed to update notebook:', error);
+    }
+  };
+  
+  const moveBlockDown = async (id: string) => {
+    if (!notebook) return;
+    
+    const currentBlock = notebook.blocks.find(block => block.id === id);
+    if (!currentBlock) return;
+    
+    // Find the block with the next higher position (the block below)
+    const blockBelow = notebook.blocks
+      .filter(block => block.position > currentBlock.position)
+      .sort((a, b) => a.position - b.position)[0];
+    
+    // If there's no block below, do nothing
+    if (!blockBelow) return;
+    
+    // Swap positions
+    const updatedBlocks = notebook.blocks.map(block => {
+      if (block.id === currentBlock.id) {
+        return { ...block, position: blockBelow.position };
+      } else if (block.id === blockBelow.id) {
+        return { ...block, position: currentBlock.position };
+      }
+      return block;
+    });
+    
+    // Sort blocks by position
+    updatedBlocks.sort((a, b) => a.position - b.position);
+    
+    const updatedNotebook = { ...notebook, blocks: updatedBlocks };
+    setNotebook(updatedNotebook);
+    
+    // Update on the server
+    try {
+      await fetch(`/api/notebooks/${notebook.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ notebook: updatedNotebook })
+      });
+    } catch (error) {
+      console.error('Failed to update notebook:', error);
+    }
+  };
   
   return (
     <NotebookContext.Provider value={{
@@ -195,7 +285,9 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
       selectBlock,
       updateBlock,
       createBlock,
-      deleteBlock
+      deleteBlock,
+      moveBlockUp,
+      moveBlockDown
     }}>
       {children}
     </NotebookContext.Provider>

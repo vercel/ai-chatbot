@@ -9,7 +9,7 @@ interface BlockControlsProps {
 }
 
 export default function BlockControls({ block }: BlockControlsProps) {
-  const { notebook, createBlock, deleteBlock } = useNotebook();
+  const { notebook, createBlock, deleteBlock, moveBlockUp, moveBlockDown } = useNotebook();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   if (!notebook) return null;
@@ -24,13 +24,13 @@ export default function BlockControls({ block }: BlockControlsProps) {
     setIsMenuOpen(false);
   };
   
-  const handleMoveUp = () => {
-    // To be implemented
+  const handleMoveUp = async () => {
+    await moveBlockUp(block.id);
     setIsMenuOpen(false);
   };
   
-  const handleMoveDown = () => {
-    // To be implemented
+  const handleMoveDown = async () => {
+    await moveBlockDown(block.id);
     setIsMenuOpen(false);
   };
   
