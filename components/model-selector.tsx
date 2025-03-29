@@ -1,6 +1,7 @@
 'use client';
 
 import { startTransition, useMemo, useOptimistic, useState } from 'react';
+import { setCookie } from 'cookies-next';
 
 import { saveChatModelAsCookie } from '@/app/notebook/actions';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,15 @@ export function ModelSelector({
     () => chatModels.find((chatModel) => chatModel.id === optimisticModelId),
     [optimisticModelId],
   );
+
+  const handleModelChange = async (value: string) => {
+    setCookie('selectedChatModel', value, { maxAge: 60 * 60 * 24 * 7 }); // 1 week
+    // Also dispatch a storage event so other components can react
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'selectedChatModel',
+      newValue: value
+    }));
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -62,6 +72,7 @@ export function ModelSelector({
                 startTransition(() => {
                   setOptimisticModelId(id);
                   saveChatModelAsCookie(id);
+                  handleModelChange(id);
                 });
               }}
               data-active={id === optimisticModelId}

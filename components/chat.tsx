@@ -46,11 +46,24 @@ export function Chat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    onFinish: () => {
+    onResponse: (response) => {
+      console.log('Chat received response:', {
+        status: response.status,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+    },
+    onFinish: (message) => {
+      console.log('Chat finished:', { message });
       mutate('/api/history');
     },
-    onError: () => {
-      toast.error('An error occured, please try again!');
+    onError: (error) => {
+      console.error('Chat error details:', {
+        error,
+        status,
+        currentMessages: messages
+      });
+      toast.error('An error occurred during chat processing. Please check console for details.');
     },
   });
 

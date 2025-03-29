@@ -9,7 +9,7 @@
       "filePath": "data-analysis-notebook/intro-md.md",
       "position": 0,
       "created": "2023-03-29T00:00:00.000Z",
-      "updated": "2023-03-29T00:00:00.000Z",
+      "updated": "2025-03-29T22:37:03.482Z",
       "editMode": false
     },
     {
@@ -20,8 +20,8 @@
       "position": 1,
       "created": "2023-03-29T00:00:00.000Z",
       "updated": "2023-03-29T00:00:00.000Z",
-      "sortColumn": "month",
-      "sortDirection": "asc"
+      "sortColumn": "units",
+      "sortDirection": "desc"
     },
     {
       "id": "analysis-py",
@@ -31,7 +31,7 @@
       "position": 2,
       "created": "2023-03-29T00:00:00.000Z",
       "updated": "2023-03-29T00:00:00.000Z",
-      "output": "",
+      "output": "Traceback (most recent call last):\n  File \"/var/folders/bq/f9mx3zw17537lvfhg7xl3kp00000gn/T/notebook-python/a0cc9f41-1a7b-49f6-8fe1-b1a9a8f665c3.py\", line 8, in <module>\n    with open(\"data-csv.csv\", \"r\") as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'data-csv.csv'\n",
       "isExecuting": false
     },
     {
@@ -43,6 +43,16 @@
       "created": "2023-03-29T00:00:00.000Z",
       "updated": "2023-03-29T00:00:00.000Z",
       "editMode": false
+    },
+    {
+      "id": "46f80a2d-181d-4b83-bca1-75bd5f432484",
+      "type": "python",
+      "filePath": "data-analysis-notebook/46f80a2d-181d-4b83-bca1-75bd5f432484.py",
+      "position": 4,
+      "created": "2025-03-29T22:38:18.886Z",
+      "updated": "2025-03-29T22:38:18.886Z",
+      "output": "",
+      "isExecuting": false
     }
   ],
   "files": [
@@ -61,6 +71,10 @@
     {
       "path": "data-analysis-notebook/conclusion-md.md",
       "type": "markdown"
+    },
+    {
+      "path": "data-analysis-notebook/46f80a2d-181d-4b83-bca1-75bd5f432484.py",
+      "type": "python"
     }
   ]
-} 
+}

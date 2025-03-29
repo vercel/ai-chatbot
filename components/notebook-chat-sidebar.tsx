@@ -12,7 +12,7 @@ export function NotebookChatSidebar() {
   const [chatId, setChatId] = useState<string>('');
   const [selectedChatModel, setSelectedChatModel] = useState<string>(DEFAULT_CHAT_MODEL);
 
-  // Initialize chat ID and model from cookies when the component mounts
+  // Initial useEffect to load chatId and model from cookies
   useEffect(() => {
     // Generate a new chat ID if one doesn't exist
     const storedChatId = getCookie('notebookChatId');
@@ -27,14 +27,16 @@ export function NotebookChatSidebar() {
     // Get selected model from cookies
     const storedModel = getCookie('selectedChatModel');
     if (storedModel) {
+      console.log('Loading model from cookie:', storedModel);
       setSelectedChatModel(storedModel as string);
     }
   }, []);
 
-  // Listen for changes to the selected model
+  // Listen for changes to the selected model via the storage event
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'selectedChatModel' && e.newValue) {
+        console.log('Model changed via storage event:', e.newValue);
         setSelectedChatModel(e.newValue);
       }
     };
@@ -50,6 +52,8 @@ export function NotebookChatSidebar() {
     setChatId(newChatId);
   };
 
+  console.log('Rendering NotebookChatSidebar with model:', selectedChatModel);
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 flex items-center justify-between">
@@ -63,7 +67,10 @@ export function NotebookChatSidebar() {
       </div>
       
       <div className="px-4 pb-2">
-        <ModelSelector selectedModelId={selectedChatModel} />
+        <div className="flex flex-col gap-1 mb-1">
+          <label className="text-xs text-muted-foreground">Model type:</label>
+          <ModelSelector selectedModelId={selectedChatModel} />
+        </div>
       </div>
 
       <Separator />

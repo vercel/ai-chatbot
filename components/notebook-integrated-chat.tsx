@@ -49,7 +49,8 @@ export function NotebookIntegratedChat({ id, selectedChatModel }: NotebookChatPr
     onFinish: () => {
       mutate('/api/history');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Chat error:', error);
       toast.error('An error occurred, please try again!');
     },
   });
@@ -150,16 +151,21 @@ export function NotebookIntegratedChat({ id, selectedChatModel }: NotebookChatPr
           formData.append('message', input);
           handleSubmit(formData as any);
         }} className="flex flex-col space-y-2">
-          <div className="text-xs text-gray-500 pb-1">
-            {selectedBlockId ? (
-              <span className="text-green-600">
-                Block selected: {selectedBlock?.type}
-              </span>
-            ) : (
-              <span>
-                No block selected
-              </span>
-            )}
+          <div className="flex justify-between items-center text-xs text-gray-500 pb-1">
+            <div>
+              {selectedBlockId ? (
+                <span className="text-green-600">
+                  Block selected: {selectedBlock?.type}
+                </span>
+              ) : (
+                <span>
+                  No block selected
+                </span>
+              )}
+            </div>
+            <div className={`px-2 py-0.5 rounded-full text-xs ${selectedChatModel === 'smart' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+              {selectedChatModel === 'smart' ? 'Smart model' : 'Fast model'}
+            </div>
           </div>
           
           <div className="flex space-x-2">

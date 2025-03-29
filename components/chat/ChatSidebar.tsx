@@ -82,7 +82,8 @@ export default function ChatSidebar() {
     onFinish: () => {
       mutate('/api/history');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Chat error:', error);
       toast.error('An error occurred, please try again!');
     },
   });
