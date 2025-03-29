@@ -108,7 +108,7 @@ export default function ChatSidebar() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-primary p-4 text-primary-foreground">
+      <div className="p-4">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-xl font-semibold">AI Assistant</h2>
           <TooltipProvider>
@@ -128,10 +128,10 @@ export default function ChatSidebar() {
           </TooltipProvider>
         </div>
         
-        <ModelSelector
+        {/* <ModelSelector
           selectedModelId={selectedChatModel}
           className="w-full mb-2"
-        />
+        /> */}
         
         {selectedBlockId && (
           <div className="text-sm opacity-90 mt-1 bg-primary-foreground/10 p-2 rounded">
