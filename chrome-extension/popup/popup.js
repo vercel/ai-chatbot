@@ -20,25 +20,32 @@ function setupEventListeners() {
     item.addEventListener('click', handleDropdownItem);
   });
   
-  // Chat functionality
-  const sendButton = document.getElementById('sendButton');
-  if (sendButton) {
-    sendButton.addEventListener('click', sendChatMessage);
-  }
-  
-  const inputText = document.getElementById('inputText');
-  if (inputText) {
-    inputText.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendChatMessage();
+  // Open side panel button
+  const openSidePanelBtn = document.getElementById('openSidePanel');
+  if (openSidePanelBtn) {
+    openSidePanelBtn.addEventListener('click', async () => {
+      try {
+        // Get current tab's window
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tabs && tabs.length > 0) {
+          const windowId = tabs[0].windowId;
+          
+          // Open side panel in the current window
+          chrome.runtime.sendMessage({ 
+            action: 'openSidePanel', 
+            windowId: windowId 
+          });
+        } else {
+          // Fallback if we can't get the current tab
+          chrome.runtime.sendMessage({ action: 'openSidePanel' });
+        }
+      } catch (error) {
+        console.error('Error opening side panel:', error);
       }
+      
+      // Close popup
+      window.close();
     });
-  }
-  
-  // Add chat button
-  const addChatBtn = document.querySelector('.add-chat-btn');
-  if (addChatBtn) {
-    addChatBtn.addEventListener('click', createNewChat);
   }
 }
 
@@ -60,13 +67,13 @@ function handleSnoozeOption(event) {
   event.target.classList.add('active');
   
   // Perform the snooze action
-  snoozeCurrentTab(option);
+  snoozeSelectedTabs(option);
 }
 
 // Handle dropdown item click
 function handleDropdownItem(event) {
   const option = event.target.textContent.trim();
-  snoozeCurrentTab(option);
+  snoozeSelectedTabs(option);
   
   // Hide dropdown
   const dropdown = document.querySelector('.dropdown-content');
@@ -90,67 +97,95 @@ function handleDropdownItem(event) {
   }
 }
 
-// Snooze the current tab
-function snoozeCurrentTab(duration) {
-  console.log(`Snoozing current tab for ${duration}`);
+// Snooze selected tabs
+async function snoozeSelectedTabs(duration) {
+  console.log(`Snoozing selected tabs for ${duration}`);
   
-  chrome.runtime.sendMessage({ 
-    action: 'snoozeTab', 
-    duration: duration 
-  }, response => {
-    if (response && response.success) {
-      addChatMessage(`✨ Tab magically snoozed for ${duration}`, 'system');
-    } else {
-      addChatMessage(`Magic failed: ${response?.error || 'Unknown error'}`, 'system');
-    }
-  });
-}
-
-// Add a message to the chat display
-function addChatMessage(message, sender = 'user') {
-  const chatDisplay = document.querySelector('.chat-display');
-  if (!chatDisplay) return;
-  
-  const messageElement = document.createElement('p');
-  messageElement.className = `chat-message ${sender}`;
-  messageElement.textContent = message;
-  chatDisplay.appendChild(messageElement);
-  
-  // Scroll to bottom
-  chatDisplay.scrollTop = chatDisplay.scrollHeight;
-}
-
-// Send a chat message
-function sendChatMessage() {
-  const inputField = document.getElementById('inputText');
-  if (!inputField) return;
-  
-  const message = inputField.value.trim();
-  
-  if (message) {
-    addChatMessage(message);
-    inputField.value = '';
+  try {
+    // Get highlighted tabs
+    const tabs = await chrome.tabs.query({ highlighted: true, currentWindow: true });
     
-    // Simulate a response after a short delay
-    setTimeout(() => {
-      const responses = [
-        "Let me wave my magic wand to help you with that ✨",
-        "I'll cast a helpful spell for that request! 🪄",
-        "My magical powers are at your service!",
-        "Abracadabra! I'm working on your request.",
-        "Let me sprinkle some magic on that for you ✨"
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addChatMessage(randomResponse, 'assistant');
-    }, 1000);
+    if (tabs.length === 0) {
+      // If no tabs are highlighted, just snooze the current tab
+      chrome.runtime.sendMessage({ 
+        action: 'snoozeTab',
+        duration: duration 
+      }, handleSnoozeResponse);
+    } else if (tabs.length === 1) {
+      // If only one tab is highlighted, use snoozeTab
+      chrome.runtime.sendMessage({ 
+        action: 'snoozeTab',
+        tabId: tabs[0].id,
+        duration: duration 
+      }, handleSnoozeResponse);
+    } else {
+      // If multiple tabs are highlighted, use snoozeTabs
+      const tabIds = tabs.map(tab => tab.id);
+      chrome.runtime.sendMessage({ 
+        action: 'snoozeTabs',
+        tabIds: tabIds,
+        duration: duration 
+      }, handleSnoozeResponse);
+    }
+  } catch (error) {
+    console.error('Error getting selected tabs:', error);
+    displayErrorMessage(`Failed to snooze tabs: ${error.message}`);
   }
 }
 
-// Create a new chat
-function createNewChat() {
-  const chatDisplay = document.querySelector('.chat-display');
-  if (!chatDisplay) return;
+// Handle snooze response
+function handleSnoozeResponse(response) {
+  if (!response) {
+    displayErrorMessage('Failed to snooze tabs: Unknown error');
+    return;
+  }
   
-  chatDisplay.innerHTML = '';
-  addChatMessage("How can I help with my magic wand today? ✨", 'assistant');
+  if (response.success) {
+    if (response.snoozedTabs && response.snoozedTabs.length > 0) {
+      // Multiple tabs were snoozed
+      const formattedWakeTime = new Date(response.snoozedTabs[0].wakeTime).toLocaleString();
+      displaySuccessMessage(`${response.snoozedTabs.length} tabs magically snoozed for ${response.snoozedTabs[0].duration} until ${formattedWakeTime}`);
+    } else if (response.tabInfo) {
+      // Single tab was snoozed
+      const formattedWakeTime = new Date(response.tabInfo.wakeTime).toLocaleString();
+      displaySuccessMessage(`Tab magically snoozed for ${response.tabInfo.duration} until ${formattedWakeTime}`);
+    } else {
+      // Generic success message
+      displaySuccessMessage('Tabs successfully snoozed!');
+    }
+  } else {
+    displayErrorMessage(`Failed to snooze tabs: ${response.error || 'Unknown error'}`);
+  }
+}
+
+// Display error message
+function displayErrorMessage(message) {
+  const messageElement = document.createElement('div');
+  messageElement.className = 'message error-message';
+  messageElement.textContent = message;
+  
+  document.querySelector('.container').appendChild(messageElement);
+  
+  // Remove after 5 seconds
+  setTimeout(() => {
+    if (messageElement && messageElement.parentNode) {
+      messageElement.remove();
+    }
+  }, 5000);
+}
+
+// Display success message
+function displaySuccessMessage(message) {
+  const messageElement = document.createElement('div');
+  messageElement.className = 'message success-message';
+  messageElement.textContent = message;
+  
+  document.querySelector('.container').appendChild(messageElement);
+  
+  // Remove after 5 seconds
+  setTimeout(() => {
+    if (messageElement && messageElement.parentNode) {
+      messageElement.remove();
+    }
+  }, 5000);
 }

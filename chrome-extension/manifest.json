@@ -4,19 +4,38 @@
   "version": "2.0",
   "description": "Snooze tabs and chat with your magic Wizzo assistant",
   "side_panel": {
-    "default_path": "sidepanel/index.html"
+    "default_path": "sidepanel/index.html",
+    "default_title": "Wizzo Magic Wand"
   },
   "permissions": [
     "storage",
     "tabs",
     "activeTab",
     "alarms",
-    "sidePanel"
+    "sidePanel",
+    "cookies",
+    "windows",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*"
   ],
   "action": {
-    "default_popup": "popup/index.html"
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Open Wizzo Magic Wand"
   },
   "background": {
-    "service_worker": "background/main.js"
+    "service_worker": "background/main.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }

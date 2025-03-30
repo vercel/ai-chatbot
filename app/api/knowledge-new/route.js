@@ -1,8 +1,8 @@
-// app/api/knowledge-new/route.js
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { createKnowledgeDocument, createKnowledgeChunk, updateKnowledgeDocument } from '@/lib/db/queries';
 import firecrawlClient from '@/lib/knowledge/firecrawl/client';
+import { processAudioFile } from '@/lib/knowledge/speechmatics/audioProcessor';
 
 // Ensure dynamic rendering and disable caching
 export const dynamic = 'force-dynamic';
@@ -182,6 +182,7 @@ function splitTextIntoChunks(text) {
 
 /**
  * API endpoint for handling knowledge document uploads
+ * Now supports audio files using Speechmatics API for transcription
  */
 export async function POST(req) {
   console.log('[KNOWLEDGE-NEW] POST request received');
@@ -249,13 +250,15 @@ export async function POST(req) {
       if (audioFile) {
         const estimatedChars = Math.round((audioFile.size / 1024) * 500);
         fileSize = `${estimatedChars} chars`;
+        fileType = audioFile.type || 'audio/webm';
       } else if (audioBlob) {
         const estimatedChars = Math.round((audioBlob.size / 1024) * 500);
         fileSize = `${estimatedChars} chars`;
+        fileType = 'audio/webm';
       } else {
         fileSize = '2000 chars';
+        fileType = 'audio/webm';
       }
-      fileType = 'audio/webm';
     }
     
     // Create a document in the database
@@ -318,6 +321,27 @@ export async function POST(req) {
       });
       
       console.log(`[KNOWLEDGE-NEW] URL processing started in the background`);
+    } else if (sourceType === 'audio') {
+      const audioFile = formData.get('file');
+      const language = formData.get('language') || 'en'; // Get the selected language
+      if (audioFile) {
+        // Process audio file in the background
+        console.log(`[KNOWLEDGE-NEW] Starting audio processing for ${audioFile.name}... (Language: ${language})`);
+        
+        processAudioFile({
+          documentId: document.id,
+          audioFile,
+          userId,
+          language // Pass the language to the processor
+        }).catch(processingError => {
+          console.error(`[KNOWLEDGE-NEW] Background audio processing error:`, processingError);
+        });
+        
+        console.log(`[KNOWLEDGE-NEW] Audio processing started in the background`);
+      } else {
+        console.log(`[KNOWLEDGE-NEW] Missing audio file`);
+        throw new Error('Audio file is required');
+      }
     }
     
     return NextResponse.json({

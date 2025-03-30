@@ -59,42 +59,48 @@ h1 {
 }
 
 /* Snooze Tabs styling */
-.snooze-tabs-section {
+.snooze-tabs-section, .chat-section {
   margin-bottom: 20px;
   background-color: white;
   padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
 
 h2 {
   font-size: 16px;
   margin: 0 0 12px 0;
   color: #4CAF50;
+  font-weight: 600;
 }
 
 .snooze-options {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .snooze-option {
-  padding: 8px 16px;
-  border: 1px solid #4CAF50;
-  border-radius: 4px;
-  background-color: white;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #f0f9f0;
   color: #4CAF50;
   font-size: 14px;
   cursor: pointer;
   flex: 1;
   text-align: center;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
 }
 
 .snooze-option:hover,
 .snooze-option.active {
-  background-color: #E8F5E9;
+  background-color: #4CAF50;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
 }
 
 .custom-dropdown {
@@ -113,10 +119,11 @@ h2 {
   left: 0;
   background-color: white;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 8px;
   z-index: 1;
   margin-top: 4px;
+  overflow: hidden;
 }
 
 .custom-dropdown:hover .dropdown-content {
@@ -126,120 +133,84 @@ h2 {
 .dropdown-item {
   display: block;
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   text-align: left;
   border: none;
   background: none;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
 }
 
 .dropdown-item:hover {
-  background-color: #E8F5E9;
+  background-color: #f0f9f0;
+  color: #4CAF50;
 }
 
 /* Chat Section styling */
 .chat-section {
   display: flex;
   flex-direction: column;
-  height: 250px;
-  background-color: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.chat-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-}
-
-.chat-header span {
-  font-weight: 500;
-  font-size: 16px;
-  color: #4CAF50;
-}
-
-.add-chat-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.chat-display {
-  flex-grow: 1;
-  border: 1px solid #E8F5E9;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
-  overflow-y: auto;
-  background-color: #f9f9f9;
-}
-
-.chat-message {
-  margin: 0 0 8px 0;
-  padding: 8px 12px;
-  border-radius: 16px;
-  max-width: 80%;
-  word-wrap: break-word;
-}
-
-.chat-message.user {
-  background-color: #E8F5E9;
-  align-self: flex-end;
-  margin-left: auto;
-}
-
-.chat-message.assistant {
-  background-color: #f1f1f1;
-  align-self: flex-start;
-}
-
-.chat-message.system {
-  background-color: #FFF9C4;
-  color: #827717;
-  font-style: italic;
-  align-self: center;
   text-align: center;
-  font-size: 12px;
 }
 
-.chat-input {
-  display: flex;
-  gap: 8px;
-}
-
-#inputText {
-  flex-grow: 1;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+.chat-description {
+  margin-bottom: 16px;
+  color: #666;
   font-size: 14px;
 }
 
-.send-btn {
+.open-sidepanel-btn {
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
 }
 
-.send-btn:hover {
+.open-sidepanel-btn:hover {
   background-color: #388E3C;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(76, 175, 80, 0.3);
+}
+
+/* Message styling */
+.message {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+  max-width: 90%;
+  z-index: 100;
+}
+
+.error-message {
+  background-color: #ffdddd;
+  color: #d32f2f;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.2);
+}
+
+.success-message {
+  background-color: #E8F5E9;
+  color: #388E3C;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 /* Magic wand icon for buttons */

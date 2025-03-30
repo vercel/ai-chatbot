@@ -17,52 +17,128 @@
         <span>I'm online</span>
         <div class="status-indicator online"></div>
       </div>
+      
+      <!-- User Avatar -->
+      <div class="user-avatar-container">
+        <button id="userAvatar" class="user-avatar" title="Login settings and options">
+          <span id="userInitial">?</span>
+        </button>
+        <div id="userMenu" class="user-menu hidden">
+          <!-- Menu items will be added dynamically based on auth state -->
+        </div>
+      </div>
     </div>
     
-    <!-- Snooze Tabs Section -->
-    <div class="snooze-tabs-section">
-      <h2>Snooze Tabs</h2>
-      <div class="snooze-options">
-        <button class="snooze-option">1h</button>
-        <button class="snooze-option">2h</button>
-        <button class="snooze-option">Tom</button>
-        <div class="custom-dropdown">
-          <button class="snooze-option custom">Custom ▼</button>
-          <div class="dropdown-content" id="customOptions">
-            <button class="dropdown-item">3h</button>
-            <button class="dropdown-item">4h</button>
-            <button class="dropdown-item">Tomorrow</button>
-            <button class="dropdown-item">Next week</button>
+    <!-- Authentication Screen - Hidden by default, shown when not logged in -->
+    <div id="authScreen" class="auth-screen hidden">
+      <div class="auth-container">
+        <h2>Connect to Wizzo</h2>
+        <p class="auth-description">You need to be logged in to access your Wizzo account and chat history.</p>
+        
+        <div class="connect-section">
+          <div class="connection-status">
+            <div id="connectionStatus" class="status-icon not-connected"></div>
+            <span id="connectionMessage">Not connected to Wizzo</span>
+          </div>
+          
+          <button id="connectBtn" class="connect-btn">Open Wizzo App</button>
+          
+          <div id="loginError" class="login-error hidden"></div>
+          
+          <div class="connection-help">
+            <p>1. Click the button above to open Wizzo</p>
+            <p>2. Log in to your account</p>
+            <p>3. Return to this extension</p>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Current Tab Info -->
-    <div class="current-tab-section">
-      <h2>Current Tab</h2>
-      <div class="tab-info" id="currentTabInfo">
-        <div class="tab-title" id="tabTitle">Loading...</div>
-        <div class="tab-url" id="tabUrl"></div>
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content">
+      <!-- Snooze Tabs Section -->
+      <div class="snooze-tabs-section">
+        <h2>Snooze Tabs</h2>
+        <div class="snooze-options">
+          <button class="snooze-option">1h</button>
+          <button class="snooze-option">2h</button>
+          <button class="snooze-option">Tom</button>
+          <div class="custom-dropdown">
+            <button class="snooze-option custom">Custom ▼</button>
+            <div class="dropdown-content" id="customOptions">
+              <button class="dropdown-item">2 mins</button>
+              <button class="dropdown-item">in 2 days</button>
+              <button class="dropdown-item">next weekend</button>
+              <button class="dropdown-item">next Sunday</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <!-- Chat Section -->
-    <div class="chat-section">
-      <div class="chat-header">
-        <span>Chat</span>
-        <button class="add-chat-btn">+</button>
+      
+      <!-- Settings Screen - Hidden by default -->
+      <div id="settingsScreen" class="settings-screen hidden">
+        <div class="settings-header">
+          <h2>Settings</h2>
+          <button id="closeSettingsBtn" class="close-btn">×</button>
+        </div>
+        
+        <div class="settings-content">
+          <div class="settings-group">
+            <h3>Account</h3>
+            <div class="settings-item">
+              <span>Email:</span>
+              <span id="userEmail">user@example.com</span>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>Application</h3>
+            <div class="settings-item">
+              <span>Platform URL:</span>
+              <input type="text" id="platformUrl" placeholder="https://wizzo.app">
+            </div>
+            <button id="savePlatformUrlBtn" class="settings-btn">Save</button>
+          </div>
+          
+          <div class="settings-group">
+            <h3>Extension Info</h3>
+            <div class="settings-item">
+              <span>Version:</span>
+              <span>2.0</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="chat-display">
-        <p class="chat-message assistant">How can I help with my magic wand?</p>
-      </div>
-      <div class="chat-input">
-        <input type="text" id="inputText" placeholder="Type your request...">
-        <button id="sendButton" class="send-btn">Send</button>
+      
+      <!-- Chat Section -->
+      <div id="chatSection" class="chat-section">
+        <div class="chat-header">
+          <span>Chat</span>
+          <button class="create-chat-btn">New Chat</button>
+        </div>
+        
+        <!-- Chat Threads List -->
+        <div class="chat-threads">
+          <div id="thread-list" class="thread-list"></div>
+        </div>
+        
+        <!-- Active Chat Display -->
+        <div class="active-chat hidden">
+          <div class="active-chat-header">
+            <button class="back-btn">←</button>
+            <span id="active-chat-title">Chat Title</span>
+          </div>
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input">
+            <input type="text" id="inputText" placeholder="Type your message...">
+            <button id="sendButton" class="send-btn">Send</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   
+  <script src="api-client.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>
