@@ -43,6 +43,13 @@
       "when": 1741934630596,
       "tag": "0005_wooden_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1743497514958,
+      "tag": "0006_overconfident_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

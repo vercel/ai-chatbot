@@ -15,6 +15,8 @@ import {
   message,
   vote,
   type DBMessage,
+  mcpServer,
+  type McpServer,
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
 
@@ -343,9 +345,118 @@ export async function updateChatVisiblityById({
   visibility: 'private' | 'public';
 }) {
   try {
-    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+    return await db
+      .update(chat)
+      .set({ visibility })
+      .where(eq(chat.id, chatId));
   } catch (error) {
-    console.error('Failed to update chat visibility in database');
+    console.error('Failed to update chat visibility by id in database');
+    throw error;
+  }
+}
+
+// --- MCP Server Queries ---
+
+export async function addMcpServer({
+  userId,
+  name,
+  config,
+}: {
+  userId: string;
+  name: string;
+  config: Record<string, any>; // Assuming config is a JSON object
+}) {
+  try {
+    const [newServer] = await db
+      .insert(mcpServer)
+      .values({
+        userId,
+        name,
+        config,
+        isEnabled: true, // Default to enabled when added
+        createdAt: new Date(),
+      })
+      .returning();
+    return newServer;
+  } catch (error) {
+    console.error('Failed to add MCP server to database', error);
+    throw error;
+  }
+}
+
+export async function getMcpServersByUserId({ userId }: { userId: string }) {
+  try {
+    return await db
+      .select()
+      .from(mcpServer)
+      .where(eq(mcpServer.userId, userId))
+      .orderBy(asc(mcpServer.createdAt));
+  } catch (error) {
+    console.error('Failed to get MCP servers by user ID from database', error);
+    throw error;
+  }
+}
+
+export async function getEnabledMcpServersByUserId({
+  userId,
+}: { userId: string }) {
+  try {
+    return await db
+      .select()
+      .from(mcpServer)
+      .where(and(eq(mcpServer.userId, userId), eq(mcpServer.isEnabled, true)))
+      .orderBy(asc(mcpServer.createdAt));
+  } catch (error) {
+    console.error(
+      'Failed to get enabled MCP servers by user ID from database',
+      error,
+    );
+    throw error;
+  }
+}
+
+export async function getMcpServerByIdAndUserId({
+  id,
+  userId,
+}: { id: string; userId: string }) {
+  try {
+    const [server] = await db
+      .select()
+      .from(mcpServer)
+      .where(and(eq(mcpServer.id, id), eq(mcpServer.userId, userId)));
+    return server;
+  } catch (error) {
+    console.error('Failed to get MCP server by ID and user ID', error);
+    throw error;
+  }
+}
+
+export async function updateMcpServerStatus({
+  id,
+  isEnabled,
+}: { id: string; isEnabled: boolean }) {
+  try {
+    const [updatedServer] = await db
+      .update(mcpServer)
+      .set({ isEnabled })
+      .where(eq(mcpServer.id, id))
+      .returning();
+    return updatedServer;
+  } catch (error) {
+    console.error('Failed to update MCP server status in database', error);
+    throw error;
+  }
+}
+
+export async function deleteMcpServer({ id }: { id: string }) {
+  try {
+    const [deletedServer] = await db
+      .delete(mcpServer)
+      .where(eq(mcpServer.id, id))
+      .returning();
+    return deletedServer;
+  } catch (error) {
+    console.error('Failed to delete MCP server from database', error);
     throw error;
   }
 }

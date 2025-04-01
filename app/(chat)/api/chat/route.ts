@@ -4,7 +4,9 @@ import {
   createDataStreamResponse,
   smoothStream,
   streamText,
+  experimental_createMCPClient,
 } from 'ai';
+import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
 import { auth } from '@/app/(auth)/auth';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -12,6 +14,7 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  getEnabledMcpServersByUserId,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -29,6 +32,8 @@ import { myProvider } from '@/lib/ai/providers';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  let mcpClientsToClose: Awaited<ReturnType<typeof experimental_createMCPClient>>[] = [];
+
   try {
     const {
       id,
@@ -45,6 +50,7 @@ export async function POST(request: Request) {
     if (!session || !session.user || !session.user.id) {
       return new Response('Unauthorized', { status: 401 });
     }
+    const userId = session.user.id;
 
     const userMessage = getMostRecentUserMessage(messages);
 
@@ -59,9 +65,9 @@ export async function POST(request: Request) {
         message: userMessage,
       });
 
-      await saveChat({ id, userId: session.user.id, title });
+      await saveChat({ id, userId: userId, title });
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== userId) {
         return new Response('Unauthorized', { status: 401 });
       }
     }
@@ -80,24 +86,9 @@ export async function POST(request: Request) {
     });
 
     return createDataStreamResponse({
-      execute: (dataStream) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
-          messages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          tools: {
+      execute: async (dataStream) => {
+        try {
+          const staticTools = {
             getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
@@ -105,62 +96,136 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
-          },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
+          };
+          let combinedTools: Record<string, any> = { ...staticTools };
 
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
+          try {
+            const enabledServers = await getEnabledMcpServersByUserId({ userId });
+
+            for (const server of enabledServers) {
+              try {
+                let transport;
+                const config = server.config as any;
+
+                if (config.transportType === 'sse') {
+                  transport = {
+                    type: 'sse' as const,
+                    url: config.url,
+                  };
+                } else if (config.transportType === 'stdio') {
+                   if (isProductionEnvironment) {
+                      console.warn(`SECURITY WARNING: Initializing MCP client with stdio transport in production for server: ${server.name} (ID: ${server.id})`);
+                   }
+                  transport = new Experimental_StdioMCPTransport({
+                    command: config.command,
+                    args: config.args || [],
+                  });
+                } else {
+                    console.warn(`Unsupported MCP transport type '${config.transportType}' for server ${server.name}`);
+                    continue;
                 }
 
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [userMessage],
-                  responseMessages: response.messages,
-                });
+                const mcpClient = await experimental_createMCPClient({ transport });
+                mcpClientsToClose.push(mcpClient);
 
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
+                const mcpTools = await mcpClient.tools();
+                combinedTools = { ...combinedTools, ...mcpTools };
+                console.log(`Loaded ${Object.keys(mcpTools).length} tools from MCP server: ${server.name}`);
+
+              } catch (mcpError) {
+                console.error(`Failed to initialize or get tools from MCP server ${server.name} (ID: ${server.id}):`, mcpError);
               }
             }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
+          } catch (dbError) {
+             console.error('Failed to fetch enabled MCP servers:', dbError);
+          }
 
-        result.consumeStream();
+          const activeToolsList = selectedChatModel === 'chat-model-reasoning'
+              ? []
+              : Object.keys(combinedTools);
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+          const result = streamText({
+            model: myProvider.languageModel(selectedChatModel),
+            system: systemPrompt({ selectedChatModel }),
+            messages,
+            maxSteps: 5,
+            tools: combinedTools,
+            experimental_activeTools: activeToolsList,
+            experimental_transform: smoothStream({ chunking: 'word' }),
+            experimental_generateMessageId: generateUUID,
+            onFinish: async ({ response }) => {
+              if (session.user?.id) {
+                try {
+                  const assistantId = getTrailingMessageId({
+                    messages: response.messages.filter(
+                      (message) => message.role === 'assistant',
+                    ),
+                  });
+
+                  if (!assistantId) {
+                    throw new Error('No assistant message found!');
+                  }
+
+                  const [, assistantMessage] = appendResponseMessages({
+                    messages: [userMessage],
+                    responseMessages: response.messages,
+                  });
+
+                  await saveMessages({
+                    messages: [
+                      {
+                        id: assistantId,
+                        chatId: id,
+                        role: assistantMessage.role,
+                        parts: assistantMessage.parts,
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
+                } catch (_) {
+                  console.error('Failed to save chat messages after stream completion');
+                }
+              }
+              console.log(`Closing ${mcpClientsToClose.length} MCP clients in onFinish...`);
+              for (const client of mcpClientsToClose) {
+                 try {
+                     await client.close();
+                 } catch (closeError: unknown) {
+                     console.error('Error closing MCP client in onFinish:', closeError);
+                 }
+              }
+              mcpClientsToClose = [];
+            },
+            experimental_telemetry: {
+              isEnabled: isProductionEnvironment,
+              functionId: 'stream-text',
+            },
+          });
+
+          result.consumeStream();
+          result.mergeIntoDataStream(dataStream, { sendReasoning: true });
+
+        } catch(streamError) {
+            console.error('Error during streamText execution or MCP setup:', streamError);
+            throw streamError;
+        } finally {
+             console.log('Stream execute try/catch finished.');
+        }
       },
-      onError: () => {
-        return 'Oops, an error occured!';
+      onError: (error) => {
+          console.error('Data stream error:', error);
+          return 'Oops, an error occured!';
       },
     });
   } catch (error) {
+      console.error('Error in POST /api/chat route (initial setup):', error);
+      for (const client of mcpClientsToClose) {
+          client.close().catch((closeError: unknown) => console.error('Error closing MCP client during outer catch:', closeError));
+      }
     return new Response('An error occurred while processing your request!', {
-      status: 404,
+      status: 500,
     });
   }
 }
@@ -190,6 +255,7 @@ export async function DELETE(request: Request) {
 
     return new Response('Chat deleted', { status: 200 });
   } catch (error) {
+    console.error('Error deleting chat:', error);
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });

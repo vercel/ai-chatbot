@@ -150,3 +150,17 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+// MCP Server configuration table
+export const mcpServer = pgTable('McpServer', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  name: text('name').notNull(),
+  config: json('config').notNull(), // Stores MCP connection details (type, url/command, etc.)
+  isEnabled: boolean('isEnabled').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type McpServer = InferSelectModel<typeof mcpServer>;

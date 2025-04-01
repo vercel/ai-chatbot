@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { BrainCircuit, FlaskRound, Loader2 } from 'lucide-react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -150,6 +151,9 @@ const PurePreviewMessage = ({
                 const { toolInvocation } = part;
                 const { toolName, toolCallId, state } = toolInvocation;
 
+                // Check if it's a MCP tool (could be sequentialthinking or other MCP tools)
+                const isMcpTool = toolName === 'sequentialthinking' || toolName.startsWith('mcp_');
+
                 if (state === 'call') {
                   const { args } = toolInvocation;
 
@@ -157,11 +161,23 @@ const PurePreviewMessage = ({
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
+                        skeleton: ['getWeather'].includes(toolName) || isMcpTool,
                       })}
                     >
                       {toolName === 'getWeather' ? (
                         <Weather />
+                      ) : isMcpTool ? (
+                        // Nice loading state for MCP tools
+                        <div className="flex flex-col gap-2 p-4 border rounded-md bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <BrainCircuit className="size-4 text-primary animate-pulse" />
+                            <span className="text-sm font-medium">
+                              Executing {toolName === 'sequentialthinking' ? 'Sequential Thinking' : toolName.replace('mcp_', '').replace(/_/g, ' ')}
+                            </span>
+                            <Loader2 className="size-3 animate-spin ml-1 text-muted-foreground" />
+                          </div>
+                          <p className="text-xs text-muted-foreground">Using MCP to process your query...</p>
+                        </div>
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
                       ) : toolName === 'updateDocument' ? (
@@ -205,6 +221,13 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : isMcpTool ? (
+                        // MCP tool results are meant for the LLM, not for direct user display
+                        // Either hide them completely or show a subtle indication
+                        <div className="text-xs text-muted-foreground flex items-center gap-1.5 px-1.5 py-1">
+                          <FlaskRound className="size-3" />
+                          <span>Processing completed</span>
+                        </div>
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>
                       )}
