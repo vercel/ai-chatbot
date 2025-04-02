@@ -5,7 +5,7 @@ import { updateDocumentPrompt } from '@/lib/ai/prompts';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
   kind: 'text',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream, initialContent }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({
@@ -13,7 +13,19 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       system:
         'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
       experimental_transform: smoothStream({ chunking: 'word' }),
-      prompt: title,
+      prompt: initialContent
+        ? `Title: ${title}\n\nInitial Content:\n${initialContent}\n\nPlease continue writing and expand upon this content, maintaining the style and incorporating the initial content seamlessly.`
+        : title,
+      experimental_providerMetadata: initialContent
+        ? {
+            openai: {
+              prediction: {
+                type: 'content',
+                content: initialContent,
+              },
+            },
+          }
+        : undefined,
     });
 
     for await (const delta of fullStream) {

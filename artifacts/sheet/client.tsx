@@ -1,11 +1,5 @@
 import { Artifact } from '@/components/create-artifact';
-import {
-  CopyIcon,
-  LineChartIcon,
-  RedoIcon,
-  SparklesIcon,
-  UndoIcon,
-} from '@/components/icons';
+import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { SpreadsheetEditor } from '@/components/sheet-editor';
 import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
@@ -90,26 +84,26 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
     },
   ],
   toolbar: [
-    {
-      description: 'Format and clean data',
-      icon: <SparklesIcon />,
-      onClick: ({ appendMessage }) => {
-        appendMessage({
-          role: 'user',
-          content: 'Can you please format and clean the data?',
-        });
-      },
-    },
-    {
-      description: 'Analyze and visualize data',
-      icon: <LineChartIcon />,
-      onClick: ({ appendMessage }) => {
-        appendMessage({
-          role: 'user',
-          content:
-            'Can you please analyze and visualize the data by creating a new code artifact in python?',
-        });
-      },
-    },
+    // {
+    //   description: 'Format and clean data',
+    //   icon: <SparklesIcon />,
+    //   onClick: ({ appendMessage }) => {
+    //     appendMessage({
+    //       role: 'user',
+    //       content: 'Can you please format and clean the data?',
+    //     });
+    //   },
+    // },
+    // {
+    //   description: 'Analyze and visualize data',
+    //   icon: <LineChartIcon />,
+    //   onClick: ({ appendMessage }) => {
+    //     appendMessage({
+    //       role: 'user',
+    //       content:
+    //         'Can you please analyze and visualize the data by creating a new code artifact in python?',
+    //     });
+    //   },
+    // },
   ],
 });

@@ -6,9 +6,15 @@ import { createUser, getUser } from '@/lib/db/queries';
 
 import { signIn } from './auth';
 
-const authFormSchema = z.object({
+const loginFormSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
+});
+
+const registerFormSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  preferredName: z.string().min(1).max(64),
 });
 
 export interface LoginActionState {
@@ -20,7 +26,7 @@ export const login = async (
   formData: FormData,
 ): Promise<LoginActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
+    const validatedData = loginFormSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
     });
@@ -56,9 +62,10 @@ export const register = async (
   formData: FormData,
 ): Promise<RegisterActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
+    const validatedData = registerFormSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
+      preferredName: formData.get('preferredName'),
     });
 
     const [user] = await getUser(validatedData.email);
@@ -66,7 +73,11 @@ export const register = async (
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
-    await createUser(validatedData.email, validatedData.password);
+    await createUser(
+      validatedData.email,
+      validatedData.password,
+      validatedData.preferredName,
+    );
     await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,

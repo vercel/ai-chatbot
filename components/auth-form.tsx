@@ -7,12 +7,14 @@ export function AuthForm({
   action,
   children,
   defaultEmail = '',
+  showPreferredName = false,
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
   children: React.ReactNode;
   defaultEmail?: string;
+  showPreferredName?: boolean;
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
@@ -36,7 +38,25 @@ export function AuthForm({
           defaultValue={defaultEmail}
         />
       </div>
+      {showPreferredName && (
+        <div className="flex flex-col gap-2">
+          <Label
+            htmlFor="preferredName"
+            className="text-zinc-600 font-normal dark:text-zinc-400"
+          >
+            Preferred Name
+          </Label>
 
+          <Input
+            id="preferredName"
+            name="preferredName"
+            className="bg-muted text-md md:text-sm"
+            type="text"
+            placeholder="How would you like to be called?"
+            required
+          />
+        </div>
+      )}
       <div className="flex flex-col gap-2">
         <Label
           htmlFor="password"

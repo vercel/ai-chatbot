@@ -10,24 +10,27 @@ import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
+import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
-
+import type { Session } from 'next-auth';
 export function Chat({
   id,
   initialMessages,
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
+  user,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  user: Session['user'] | null;
 }) {
   const { mutate } = useSWRConfig();
+  console.log('user', user);
 
   const {
     messages,
@@ -39,6 +42,7 @@ export function Chat({
     status,
     stop,
     reload,
+    addToolResult,
   } = useChat({
     id,
     body: { id, selectedChatModel: selectedChatModel },
@@ -49,6 +53,7 @@ export function Chat({
     onFinish: () => {
       mutate('/api/history');
     },
+
     onError: () => {
       toast.error('An error occured, please try again!');
     },
@@ -81,6 +86,8 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
+          addToolResult={addToolResult}
+          user={user}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

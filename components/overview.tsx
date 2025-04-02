@@ -1,9 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import type { Session } from 'next-auth';
 
-import { MessageIcon, VercelIcon } from './icons';
-
-export const Overview = () => {
+export const Overview = ({ user }: { user: Session['user'] | null }) => {
   return (
     <motion.div
       key="overview"
@@ -13,39 +12,22 @@ export const Overview = () => {
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ delay: 0.5 }}
     >
-      <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
-        <p className="flex flex-row justify-center gap-4 items-center">
-          <VercelIcon size={32} />
-          <span>+</span>
-          <MessageIcon size={32} />
+      <div className="rounded-xl p-6 flex flex-col leading-relaxed text-center max-w-xl">
+        <p className="flex flex-row justify-center gap-4 items-center mb-36">
+          <img
+            src="/images/arcade-logo-white.png"
+            alt="Arcade Logo"
+            width={241}
+            height={48}
+            className="w-auto h-6 invert dark:invert-0"
+          />
         </p>
-        <p>
-          This is an{' '}
-          <Link
-            className="font-medium underline underline-offset-4"
-            href="https://github.com/vercel/ai-chatbot"
-            target="_blank"
-          >
-            open source
-          </Link>{' '}
-          chatbot template built with Next.js and the AI SDK by Vercel. It uses
-          the{' '}
-          <code className="rounded-md bg-muted px-1 py-0.5">streamText</code>{' '}
-          function in the server and the{' '}
-          <code className="rounded-md bg-muted px-1 py-0.5">useChat</code> hook
-          on the client to create a seamless chat experience.
-        </p>
-        <p>
-          You can learn more about the AI SDK by visiting the{' '}
-          <Link
-            className="font-medium underline underline-offset-4"
-            href="https://sdk.vercel.ai/docs"
-            target="_blank"
-          >
-            docs
-          </Link>
-          .
-        </p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300">
+          Hi, <span className="text-primary/80">{user?.name || 'there'}</span>
+        </h1>
+        <h2 className="text-xl sm:text-2xl md:text-4xl font-medium mb-4 sm:mb-8 text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-200 dark:to-gray-400">
+          How can I help you today?
+        </h2>
       </div>
     </motion.div>
   );

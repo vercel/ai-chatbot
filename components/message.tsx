@@ -18,7 +18,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import { ToolArcadeAuthorization } from './tool-arcade-authorization';
+import { ToolResult } from './tool-result';
+import { SessionProvider } from 'next-auth/react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -28,6 +31,7 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
+  addToolResult,
 }: {
   chatId: string;
   message: UIMessage;
@@ -36,6 +40,13 @@ const PurePreviewMessage = ({
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: any;
+  }) => void;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -152,7 +163,6 @@ const PurePreviewMessage = ({
 
                 if (state === 'call') {
                   const { args } = toolInvocation;
-
                   return (
                     <div
                       key={toolCallId}
@@ -176,14 +186,20 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
-                      ) : null}
+                      ) : (
+                        <SessionProvider>
+                          <ToolArcadeAuthorization
+                            toolInvocation={toolInvocation}
+                            addToolResult={addToolResult}
+                          />
+                        </SessionProvider>
+                      )}
                     </div>
                   );
                 }
 
                 if (state === 'result') {
                   const { result } = toolInvocation;
-
                   return (
                     <div key={toolCallId}>
                       {toolName === 'getWeather' ? (
@@ -206,7 +222,7 @@ const PurePreviewMessage = ({
                           isReadonly={isReadonly}
                         />
                       ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                        <ToolResult toolInvocation={toolInvocation} />
                       )}
                     </div>
                   );

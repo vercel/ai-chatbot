@@ -1,0 +1,10 @@
+export * from './arcade';
+export { default as GitHub } from './github';
+export { default as Gmail } from './gmail';
+export { default as Google } from './google';
+export { default as LinkedIn } from './linkedIn';
+export { default as Slack } from './slack';
+export { default as Discord } from './discord';
+export { default as Notion } from './notion';
+export { default as X } from './x';
+export { default as Zoom } from './zoom';

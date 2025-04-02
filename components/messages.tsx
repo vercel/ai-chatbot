@@ -1,11 +1,12 @@
-import { UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Overview } from './overview';
 import { memo } from 'react';
-import { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { Session } from 'next-auth';
 
 interface MessagesProps {
   chatId: string;
@@ -16,6 +17,14 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: any;
+  }) => void;
+  user: Session['user'] | null;
 }
 
 function PureMessages({
@@ -26,6 +35,8 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
+  addToolResult,
+  user,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -35,14 +46,17 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {messages.length === 0 && <Overview />}
+      {messages.length === 0 && <Overview user={user} />}
 
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
           chatId={chatId}
           message={message}
-          isLoading={status === 'streaming' && messages.length - 1 === index}
+          isLoading={
+            (status === 'streaming' || status === 'submitted') &&
+            messages.length - 1 === index
+          }
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -51,6 +65,7 @@ function PureMessages({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          addToolResult={addToolResult}
         />
       ))}
 
