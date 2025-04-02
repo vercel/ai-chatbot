@@ -3,6 +3,7 @@ import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { getUser } from '@/lib/db/queries';
+import './types';
 
 import { authConfig } from './auth.config';
 
@@ -26,7 +27,12 @@ export const {
         // biome-ignore lint: Forbidden non-null assertion.
         const passwordsMatch = await compare(password, users[0].password!);
         if (!passwordsMatch) return null;
-        return users[0] as any;
+
+        return {
+          id: users[0].id,
+          email: users[0].email,
+          preferredName: users[0].preferredName,
+        };
       },
     }),
   ],
@@ -34,19 +40,17 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.preferredName = user.preferredName;
       }
 
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.preferredName = token.preferredName as string;
       }
 
       return session;

@@ -21,6 +21,7 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { ToolArcadeAuthorization } from './tool-arcade-authorization';
 import { ToolResult } from './tool-result';
+import { SessionProvider } from 'next-auth/react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -186,10 +187,12 @@ const PurePreviewMessage = ({
                           isReadonly={isReadonly}
                         />
                       ) : (
-                        <ToolArcadeAuthorization
-                          toolInvocation={toolInvocation}
-                          addToolResult={addToolResult}
-                        />
+                        <SessionProvider>
+                          <ToolArcadeAuthorization
+                            toolInvocation={toolInvocation}
+                            addToolResult={addToolResult}
+                          />
+                        </SessionProvider>
                       )}
                     </div>
                   );

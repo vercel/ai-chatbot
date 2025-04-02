@@ -1,11 +1,11 @@
-import { getAuthProvider } from '@/lib/arcade/auth-providers';
+import { getAuthProviderByProviderId } from '@/lib/arcade/auth-providers';
 import { cn } from '@/lib/utils';
 import type { AuthorizationResponse } from '@arcadeai/arcadejs/resources/shared.mjs';
 import type { ToolInvocation } from 'ai';
 import { AlertCircle, CheckCircle2, LockIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { ToolArcadeAuthorizationSkeleton } from './tool-arcade-authorization-skeleton';
+import { useState, useEffect } from 'react';
+import { ToolArcadeAuthorizationLoading } from './tool-arcade-authorization-loading';
 import { Button, buttonVariants } from './ui/button';
 import {
   Card,
@@ -36,6 +36,23 @@ export const ToolArcadeAuthorization = ({
 
   const [authResponse, setAuthResponse] =
     useState<AuthorizationResponse | null>(null);
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    if (isToolCall && authResponse?.url) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            window.open(authResponse.url, '_blank');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isToolCall, authResponse?.url]);
 
   useToolExecution({
     toolInvocation,
@@ -44,10 +61,10 @@ export const ToolArcadeAuthorization = ({
   });
 
   if (!authResponse) {
-    return <ToolArcadeAuthorizationSkeleton />;
+    return <ToolArcadeAuthorizationLoading toolInvocation={toolInvocation} />;
   }
 
-  const authProvider = getAuthProvider(authResponse.provider_id);
+  const authProvider = getAuthProviderByProviderId(authResponse.provider_id);
   const authProviderName = authProvider?.name ?? authResponse.provider_id;
 
   const Icon = authProvider?.icon ?? LockIcon;
@@ -64,14 +81,14 @@ export const ToolArcadeAuthorization = ({
                   'bg-green-50 dark:bg-green-950/50',
                 )}
               >
-                <CheckCircle2 className="size-5 text-green-500 dark:text-green-400" />
+                <Icon className="size-5 text-green-500 dark:text-green-400" />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-card-foreground">
-                  Authorization Successful
+                  Successfully Connected
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  You&apos;ve successfully connected with {authProviderName}
+                  Your {authProviderName} account is now connected
                 </p>
               </div>
             </div>
@@ -85,9 +102,13 @@ export const ToolArcadeAuthorization = ({
               'bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-300',
             )}
           >
-            Your connection with {authProviderName} has been successfully saved.
-            You can use this provider in future conversations without having to
-            authorize again.
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4" />
+              <span>
+                Your connection is ready! The tool will be executed in a few
+                seconds.
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -173,7 +194,7 @@ export const ToolArcadeAuthorization = ({
             )}
           >
             <Icon className="size-4 mr-2" />
-            <span>Waiting for {authProviderName}...</span>
+            <span>Opening window in {countdown}s...</span>
           </Link>
         </CardContent>
         <CardFooter className="justify-center">

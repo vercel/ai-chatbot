@@ -12,8 +12,8 @@ import { toast } from 'sonner';
 import { generateUUID } from '@/lib/utils';
 import {
   Console,
-  ConsoleOutput,
-  ConsoleOutputContent,
+  type ConsoleOutput,
+  type ConsoleOutputContent,
 } from '@/components/console';
 
 const OUTPUT_HANDLERS = {
@@ -135,7 +135,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
         try {
           // @ts-expect-error - loadPyodide is not defined
           const currentPyodideInstance = await globalThis.loadPyodide({
-            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.4/full/',
           });
 
           currentPyodideInstance.setStdout({

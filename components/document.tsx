@@ -88,7 +88,10 @@ export const DocumentToolResult = memo(PureDocumentToolResult, () => true);
 
 interface DocumentToolCallProps {
   type: 'create' | 'update' | 'request-suggestions';
-  args: { title: string };
+  args: {
+    title: string;
+    initialContent?: string;
+  };
   isReadonly: boolean;
 }
 

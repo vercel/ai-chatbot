@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { getToolkitIconByToolName } from './icons/utils';
 
 export function ToolResult({
   toolInvocation,
@@ -100,7 +101,7 @@ export function ToolResult({
             <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
               Response
             </h4>
-            <div className="bg-muted/50 p-3 rounded-md border border-border/50">
+            <div className="bg-muted/50 p-3 rounded-md border border-border/50 w-full overflow-x-auto">
               <table className="w-full text-xs">
                 <tbody>
                   {Object.entries(result).map(([key, value]) => (
@@ -109,7 +110,18 @@ export function ToolResult({
                       className="border-b border-border/50 last:border-0"
                     >
                       <td className="py-1 pr-4 font-medium">{key}</td>
-                      <td className="py-1">{JSON.stringify(value)}</td>
+                      <td
+                        className="py-1 w-full overflow-x-hidden"
+                        width="100%"
+                      >
+                        {typeof value === 'object' ? (
+                          <pre className="whitespace-pre-wrap break-words">
+                            {JSON.stringify(value, null, 2)}
+                          </pre>
+                        ) : (
+                          JSON.stringify(value)
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -120,6 +132,8 @@ export function ToolResult({
       </div>
     );
   };
+
+  const ToolIcon = getToolkitIconByToolName(toolInvocation.toolName);
 
   return (
     <motion.div
@@ -142,10 +156,11 @@ export function ToolResult({
               className="border-b-0"
             >
               <AccordionTrigger className="pt-1 pb-0 hover:no-underline text-muted-foreground hover:text-foreground transition-colors">
-                <div className="flex items-center gap-2 text-xs mr-3">
+                <div className="flex items-center justify-between gap-2 text-xs mr-3 w-full">
                   <span className="font-mono">
                     Calling tool {toolInvocation.toolName}
                   </span>
+                  {ToolIcon && <ToolIcon className="size-4" />}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="py-3 pr-6 md:pr-10 w-full overflow-x-hidden">

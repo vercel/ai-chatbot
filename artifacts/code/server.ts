@@ -6,34 +6,42 @@ import { createDocumentHandler } from '@/lib/artifacts/server';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
-  onCreateDocument: async ({ title, dataStream }) => {
-    let draftContent = '';
+  onCreateDocument: async ({ title, dataStream, initialContent }) => {
+    let draftContent = initialContent || '';
 
-    const { fullStream } = streamObject({
-      model: myProvider.languageModel('artifact-model'),
-      system: codePrompt,
-      prompt: title,
-      schema: z.object({
-        code: z.string(),
-      }),
-    });
+    if (!initialContent) {
+      const { fullStream } = streamObject({
+        model: myProvider.languageModel('artifact-model'),
+        system: codePrompt,
+        prompt: title,
+        schema: z.object({
+          code: z.string().min(1, 'Code cannot be empty'),
+        }),
+      });
 
-    for await (const delta of fullStream) {
-      const { type } = delta;
+      for await (const delta of fullStream) {
+        const { type } = delta;
 
-      if (type === 'object') {
-        const { object } = delta;
-        const { code } = object;
+        if (type === 'object') {
+          const { object } = delta;
+          const { code } = object;
 
-        if (code) {
-          dataStream.writeData({
-            type: 'code-delta',
-            content: code ?? '',
-          });
+          if (code) {
+            dataStream.writeData({
+              type: 'code-delta',
+              content: code,
+            });
 
-          draftContent = code;
+            draftContent = code;
+          }
         }
       }
+    } else {
+      // If we have initial content, use it directly
+      dataStream.writeData({
+        type: 'code-delta',
+        content: initialContent,
+      });
     }
 
     return draftContent;
@@ -46,7 +54,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
       system: updateDocumentPrompt(document.content, 'code'),
       prompt: description,
       schema: z.object({
-        code: z.string(),
+        code: z.string().min(1, 'Code cannot be empty'),
       }),
     });
 
@@ -60,7 +68,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
         if (code) {
           dataStream.writeData({
             type: 'code-delta',
-            content: code ?? '',
+            content: code,
           });
 
           draftContent = code;

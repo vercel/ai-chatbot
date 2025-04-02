@@ -1,10 +1,9 @@
 import { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
-import { client } from '@/lib/arcade/client';
 import { formatOpenAIToolNameToArcadeToolName } from '@/lib/arcade/utils';
 import type { ToolInvocation } from 'ai';
 import { useDebounceCallback } from 'usehooks-ts';
-import { PermissionDeniedError } from '@arcadeai/arcadejs';
 import type { AuthorizationResponse } from '@arcadeai/arcadejs/resources/shared.mjs';
+import { executeTool, waitForAuthAndExecute } from '../actions';
 
 type UseToolExecutionProps = {
   toolInvocation: ToolInvocation;
@@ -32,64 +31,68 @@ export const useToolExecution = ({
     [toolName],
   );
 
-  const executeTool = useCallback(async () => {
+  const executeToolCallback = useCallback(async () => {
     if (isToolResult) {
       return;
     }
-    const tool = await client.tools.get(formattedToolName);
-    if (!tool) {
+
+    const result = await executeTool({
+      toolName,
+      args,
+    });
+
+    if (result.error) {
+      console.error('Error executing tool:', result.error);
       return;
     }
 
-    try {
-      const result = await client.tools.execute({
-        tool_name: formattedToolName,
-        input: args,
-        user_id: 'sdserranog@gmail.com',
-      });
+    if (result.authResponse) {
+      setAuthResponse(result.authResponse);
 
-      addToolResult({
-        toolCallId: toolInvocation.toolCallId,
-        result,
-      });
-    } catch (error) {
-      if (error instanceof PermissionDeniedError) {
-        const authInfo = await client.tools.authorize({
-          tool_name: formattedToolName,
-          user_id: 'sdserranog@gmail.com',
+      // If we've already started checking this ID, don't start again
+      if (
+        result.authResponse.id &&
+        !hasStartedChecking.current.has(result.authResponse.id)
+      ) {
+        hasStartedChecking.current.add(result.authResponse.id);
+        const authResult = await waitForAuthAndExecute({
+          authId: result.authResponse.id,
+          toolName,
+          args,
         });
-        setAuthResponse(authInfo);
 
-        // If we've already started checking this ID, don't start again
-        if (authInfo.id && !hasStartedChecking.current.has(authInfo.id)) {
-          hasStartedChecking.current.add(authInfo.id);
-          await client.auth.waitForCompletion(authInfo).then(async (auth) => {
-            setAuthResponse(auth);
-            const result = await client.tools.execute({
-              tool_name: formattedToolName,
-              input: args,
-              user_id: 'sdserranog@gmail.com',
-            });
-            addToolResult({
-              toolCallId: toolInvocation.toolCallId,
-              result,
-            });
+        if (authResult.error) {
+          console.error('Error waiting for auth:', authResult.error);
+          return;
+        }
+
+        if (authResult.result) {
+          addToolResult({
+            toolCallId: toolInvocation.toolCallId,
+            result: authResult.result,
           });
         }
-      } else {
-        console.error('Error executing tool', error);
+
+        if (authResult.authResponse) {
+          setAuthResponse(authResult.authResponse);
+        }
       }
+    } else if (result.result) {
+      addToolResult({
+        toolCallId: toolInvocation.toolCallId,
+        result: result.result,
+      });
     }
   }, [
-    formattedToolName,
     isToolResult,
+    toolName,
     args,
+    setAuthResponse,
     addToolResult,
     toolInvocation.toolCallId,
-    setAuthResponse,
   ]);
 
-  const debouncedExecute = useDebounceCallback(executeTool, 1000);
+  const debouncedExecute = useDebounceCallback(executeToolCallback, 1000);
 
   useLayoutEffect(() => {
     debouncedExecute();
