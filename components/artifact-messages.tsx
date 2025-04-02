@@ -16,6 +16,13 @@ interface ArtifactMessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: any;
+  }) => void;
 }
 
 function PureArtifactMessages({
@@ -26,6 +33,7 @@ function PureArtifactMessages({
   setMessages,
   reload,
   isReadonly,
+  addToolResult,
 }: ArtifactMessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -49,6 +57,7 @@ function PureArtifactMessages({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          addToolResult={addToolResult}
         />
       ))}
 

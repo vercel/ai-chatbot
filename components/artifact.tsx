@@ -66,6 +66,7 @@ function PureArtifact({
   reload,
   votes,
   isReadonly,
+  addToolResult,
 }: {
   chatId: string;
   input: string;
@@ -81,6 +82,13 @@ function PureArtifact({
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: any;
+  }) => void;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -319,6 +327,7 @@ function PureArtifact({
                   reload={reload}
                   isReadonly={isReadonly}
                   artifactStatus={artifact.status}
+                  addToolResult={addToolResult}
                 />
 
                 <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">

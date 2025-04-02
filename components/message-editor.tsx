@@ -32,7 +32,6 @@ export function MessageEditor({
     message.parts?.find((part) => part.type === 'text')?.text ??
       message.content,
   );
-  console.log({ message, draftContent });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

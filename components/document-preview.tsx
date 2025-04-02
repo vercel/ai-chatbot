@@ -33,7 +33,6 @@ export function DocumentPreview({
   result,
   args,
 }: DocumentPreviewProps) {
-  console.log('A document preview');
   const { artifact, setArtifact } = useArtifact();
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<

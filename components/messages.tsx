@@ -24,7 +24,7 @@ interface MessagesProps {
     toolCallId: string;
     result: any;
   }) => void;
-  user: Session['user'] | null;
+  user: Session['user'] | undefined;
 }
 
 function PureMessages({

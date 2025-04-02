@@ -24,8 +24,6 @@ export async function executeTool({
     return { error: 'Unauthorized' };
   }
 
-  console.log('session', session, session?.user?.id);
-
   const formattedToolName = formatOpenAIToolNameToArcadeToolName(toolName);
   const tool = await client.tools.get(formattedToolName);
 

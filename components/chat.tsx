@@ -27,10 +27,9 @@ export function Chat({
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
-  user: Session['user'] | null;
+  user: Session['user'] | undefined;
 }) {
   const { mutate } = useSWRConfig();
-  console.log('user', user);
 
   const {
     messages,
@@ -124,6 +123,7 @@ export function Chat({
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}
+        addToolResult={addToolResult}
       />
     </>
   );

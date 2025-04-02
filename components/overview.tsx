@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import type { Session } from 'next-auth';
 
-export const Overview = ({ user }: { user: Session['user'] | null }) => {
+export const Overview = ({ user }: { user: Session['user'] | undefined }) => {
   return (
     <motion.div
       key="overview"
