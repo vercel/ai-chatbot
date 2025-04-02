@@ -17,6 +17,7 @@ export type GetToolsOptions = {
 
 export async function getTools({ userId, toolkit }: GetToolsOptions) {
   if (!arcadeServer) {
+    console.error('Arcade server not initialized');
     return {} as ToolSet;
   }
 

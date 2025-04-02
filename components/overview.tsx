@@ -23,7 +23,10 @@ export const Overview = ({ user }: { user: Session['user'] | undefined }) => {
           />
         </p>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300">
-          Hi, <span className="text-primary/80">{user?.name || 'there'}</span>
+          Hi,{' '}
+          <span className="text-primary/80">
+            {user?.preferredName || user?.name || 'there'}
+          </span>
         </h1>
         <h2 className="text-xl sm:text-2xl md:text-4xl font-medium mb-4 sm:mb-8 text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-200 dark:to-gray-400">
           How can I help you today?
