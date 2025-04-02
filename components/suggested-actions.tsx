@@ -42,8 +42,8 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
       id: 'slack',
     },
     {
-      title: 'Star the arcadeai/arcade-ai repo',
-      subtitle: 'on GitHub',
+      title: 'Star the arcadeai/arcade-ai',
+      subtitle: 'repo on GitHub',
       action: 'Star the arcadeai/arcade-ai repo on GitHub',
       icon: <Github className="size-4 sm:size-5 " />,
       id: 'github',

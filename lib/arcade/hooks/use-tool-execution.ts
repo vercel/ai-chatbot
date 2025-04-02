@@ -3,7 +3,7 @@ import { formatOpenAIToolNameToArcadeToolName } from '@/lib/arcade/utils';
 import type { ToolInvocation } from 'ai';
 import { useDebounceCallback } from 'usehooks-ts';
 import type { AuthorizationResponse } from '@arcadeai/arcadejs/resources/shared.mjs';
-import { executeTool, waitForAuthAndExecute } from '../actions';
+import { useToolExecution as useToolExecutionApi } from '@/hooks/use-tool-execution';
 
 type UseToolExecutionProps = {
   toolInvocation: ToolInvocation;
@@ -31,12 +31,14 @@ export const useToolExecution = ({
     [toolName],
   );
 
+  const { executeTool, waitForAuth } = useToolExecutionApi();
+
   const executeToolCallback = useCallback(async () => {
     if (isToolResult) {
       return;
     }
 
-    const result = await executeTool({
+    const result = await executeTool.trigger({
       toolName,
       args,
     });
@@ -55,7 +57,7 @@ export const useToolExecution = ({
         !hasStartedChecking.current.has(result.authResponse.id)
       ) {
         hasStartedChecking.current.add(result.authResponse.id);
-        const authResult = await waitForAuthAndExecute({
+        const authResult = await waitForAuth.trigger({
           authId: result.authResponse.id,
           toolName,
           args,
@@ -90,6 +92,8 @@ export const useToolExecution = ({
     setAuthResponse,
     addToolResult,
     toolInvocation.toolCallId,
+    executeTool,
+    waitForAuth,
   ]);
 
   const debouncedExecute = useDebounceCallback(executeToolCallback, 1000);
@@ -104,8 +108,7 @@ export const useToolExecution = ({
     toolInvocation,
     formattedToolName,
     addToolResult,
-    args,
-    isToolResult,
+    setAuthResponse,
     debouncedExecute,
   ]);
 };

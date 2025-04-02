@@ -1,5 +1,5 @@
 import { jsonSchema, type ToolSet } from 'ai';
-import { client } from './client';
+import { arcadeServer } from './server';
 
 export const ARCADE_AUTHORIZATION = {
   REQUIRED: 'ARCADE_AUTHORIZATION_REQUIRED',
@@ -16,8 +16,12 @@ export type GetToolsOptions = {
 };
 
 export async function getTools({ userId, toolkit }: GetToolsOptions) {
+  if (!arcadeServer) {
+    return {} as ToolSet;
+  }
+
   try {
-    const arcadeTools = await client.tools.list({
+    const arcadeTools = await arcadeServer.client.tools.list({
       limit: 1000,
       ...(toolkit && { toolkit }),
     });
@@ -28,9 +32,12 @@ export async function getTools({ userId, toolkit }: GetToolsOptions) {
 
       const toolName = `${item.toolkit.name}.${item.name}`;
 
-      const formattedTool = (await client.tools.formatted.get(toolName, {
-        format: 'openai',
-      })) as {
+      const formattedTool = (await arcadeServer.client.tools.formatted.get(
+        toolName,
+        {
+          format: 'openai',
+        },
+      )) as {
         function: {
           name: string;
           parameters: any;
@@ -45,7 +52,10 @@ export async function getTools({ userId, toolkit }: GetToolsOptions) {
         execute: needsAuth
           ? undefined // If the tool needs authorization, we omit the execute function to handle it in the client
           : async (input: any) => {
-              return await client.tools.execute({
+              if (!arcadeServer) {
+                throw new Error('Arcade server not initialized');
+              }
+              return await arcadeServer.client.tools.execute({
                 tool_name: toolName,
                 input,
                 user_id: userId,
