@@ -12,6 +12,7 @@ import {
   type SetStateAction,
   type ChangeEvent,
   memo,
+  useMemo,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
@@ -179,6 +180,23 @@ function PureMultimodalInput({
     [setAttachments],
   );
 
+
+  const actionButton = useMemo(() => {
+    switch (status) {
+      case 'submitted':
+      case 'streaming':
+        return <StopButton stop={stop} setMessages={setMessages} />;
+      default:
+        return (
+          <SendButton
+            input={input}
+            submitForm={submitForm}
+            uploadQueue={uploadQueue}
+          />
+        );
+    }
+  }, [status, stop, setMessages, input, submitForm, uploadQueue]);
+
   return (
     <div className="relative w-full flex flex-col gap-4">
       {messages.length === 0 &&
@@ -239,7 +257,7 @@ function PureMultimodalInput({
           ) {
             event.preventDefault();
 
-            if (status !== 'ready') {
+            if (status === 'submitted' || status === 'streaming') {
               toast.error('Please wait for the model to finish its response!');
             } else {
               submitForm();
@@ -253,15 +271,7 @@ function PureMultimodalInput({
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {status === 'submitted' ? (
-          <StopButton stop={stop} setMessages={setMessages} />
-        ) : (
-          <SendButton
-            input={input}
-            submitForm={submitForm}
-            uploadQueue={uploadQueue}
-          />
-        )}
+        {actionButton}
       </div>
     </div>
   );
