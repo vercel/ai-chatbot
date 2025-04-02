@@ -2,7 +2,7 @@
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -10,7 +10,7 @@ import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
+import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 
@@ -28,6 +28,7 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const hasStartedChecking = useRef<Set<string>>(new Set());
 
   const {
     messages,
@@ -39,6 +40,7 @@ export function Chat({
     status,
     stop,
     reload,
+    addToolResult,
   } = useChat({
     id,
     body: { id, selectedChatModel: selectedChatModel },
@@ -49,6 +51,7 @@ export function Chat({
     onFinish: () => {
       mutate('/api/history');
     },
+
     onError: () => {
       toast.error('An error occured, please try again!');
     },
@@ -81,6 +84,7 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
+          addToolResult={addToolResult}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

@@ -16,7 +16,7 @@ import {
   vote,
   type DBMessage,
 } from './schema';
-import { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -110,7 +110,30 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }) {
   try {
-    return await db.insert(message).values(messages);
+    const results = await Promise.all(
+      messages.map(async (msg) => {
+        const [existingMessage] = await db
+          .select()
+          .from(message)
+          .where(eq(message.id, msg.id));
+
+        if (existingMessage) {
+          return await db
+            .update(message)
+            .set({
+              role: msg.role,
+              parts: msg.parts,
+              attachments: msg.attachments,
+              createdAt: msg.createdAt,
+            })
+            .where(eq(message.id, msg.id));
+        }
+
+        return await db.insert(message).values(msg);
+      }),
+    );
+
+    return results;
   } catch (error) {
     console.error('Failed to save messages in database', error);
     throw error;
@@ -346,6 +369,32 @@ export async function updateChatVisiblityById({
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
+  try {
+    // First get all chat IDs for this user
+    const userChats = await db
+      .select({ id: chat.id })
+      .from(chat)
+      .where(eq(chat.userId, userId));
+
+    const chatIds = userChats.map((chat) => chat.id);
+
+    if (chatIds.length > 0) {
+      // Delete all votes for these chats
+      await db.delete(vote).where(inArray(vote.chatId, chatIds));
+
+      // Delete all messages for these chats
+      await db.delete(message).where(inArray(message.chatId, chatIds));
+
+      // Finally delete all chats
+      return await db.delete(chat).where(inArray(chat.id, chatIds));
+    }
+  } catch (error) {
+    console.error('Failed to delete all chats by user from database');
     throw error;
   }
 }
