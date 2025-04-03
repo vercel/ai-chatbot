@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useWindowSize } from "usehooks-ts";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useWindowSize } from 'usehooks-ts';
 
-import { ModelSelector } from "@/components/model-selector";
-import { SidebarToggle } from "@/components/sidebar-toggle";
-import { Button } from "@/components/ui/button";
-import { PlusIcon, VercelIcon } from "./icons";
-import { useSidebar } from "./ui/sidebar";
-import { memo } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { VisibilityType, VisibilitySelector } from "./visibility-selector";
-import { UserIcon } from "lucide-react";
+import { ModelSelector } from '@/components/model-selector';
+import { SidebarToggle } from '@/components/sidebar-toggle';
+import { Button } from '@/components/ui/button';
+import { PlusIcon, VercelIcon } from './icons';
+import { useSidebar } from './ui/sidebar';
+import { memo } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { UserIcon } from 'lucide-react';
 
 function PureChatHeader({
   chatId,
@@ -46,7 +46,7 @@ function PureChatHeader({
               variant="outline"
               className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
               onClick={() => {
-                router.push("/");
+                router.push('/');
                 router.refresh();
               }}
             >
