@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, LockIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { ToolArcadeAuthorizationLoading } from './tool-arcade-authorization-loading';
+import { ToolArcadeError } from './tool-arcade-error';
 import { Button, buttonVariants } from './ui/button';
 import {
   Card,
@@ -58,14 +59,22 @@ export const ToolArcadeAuthorization = ({
     }
   }, [isToolCall, authResponse?.url]);
 
-  useToolExecution({
+  const { error, isExecuting } = useToolExecution({
     toolInvocation,
     addToolResult,
     setAuthResponse,
   });
 
-  if (!authResponse) {
+  if (error) {
+    return <ToolArcadeError toolInvocation={toolInvocation} error={error} />;
+  }
+
+  if (!authResponse && isExecuting) {
     return <ToolArcadeAuthorizationLoading toolInvocation={toolInvocation} />;
+  }
+
+  if (!authResponse) {
+    return null;
   }
 
   const authProvider = getAuthProviderByProviderId(authResponse.provider_id);

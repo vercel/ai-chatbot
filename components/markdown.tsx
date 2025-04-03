@@ -3,6 +3,7 @@ import React, { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CodeBlock } from './code-block';
+import { cn } from '@/lib/utils';
 
 const components: Partial<Components> = {
   // @ts-expect-error
@@ -34,19 +35,6 @@ const components: Partial<Components> = {
       <span className="font-semibold" {...props}>
         {children}
       </span>
-    );
-  },
-  a: ({ node, children, ...props }) => {
-    return (
-      // @ts-expect-error
-      <Link
-        className="text-blue-500 hover:underline"
-        target="_blank"
-        rel="noreferrer"
-        {...props}
-      >
-        {children}
-      </Link>
     );
   },
   h1: ({ node, children, ...props }) => {
@@ -95,9 +83,43 @@ const components: Partial<Components> = {
 
 const remarkPlugins = [remarkGfm];
 
-const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+const NonMemoizedMarkdown = ({
+  children,
+  isUserMessage,
+}: {
+  children: string;
+  isUserMessage: boolean;
+}) => {
+  const componentsWithUserMessage = {
+    ...components,
+    a: ({
+      children,
+      ...props
+    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+      return (
+        // @ts-expect-error
+        <Link
+          className={cn(
+            'hover:underline transition-colors font-medium underline-offset-4',
+            isUserMessage
+              ? 'text-white hover:text-white/80'
+              : 'text-primary hover:text-primary/80',
+          )}
+          target="_blank"
+          rel="noreferrer"
+          {...props}
+        >
+          {children}
+        </Link>
+      );
+    },
+  };
+
   return (
-    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
+    <ReactMarkdown
+      remarkPlugins={remarkPlugins}
+      components={componentsWithUserMessage}
+    >
       {children}
     </ReactMarkdown>
   );

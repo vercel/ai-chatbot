@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect, useCallback, useMemo } from 'react';
+import { useRef, useLayoutEffect, useCallback, useMemo, useState } from 'react';
 import { formatOpenAIToolNameToArcadeToolName } from '@/lib/arcade/utils';
 import type { ToolInvocation } from 'ai';
 import { useDebounceCallback } from 'usehooks-ts';
@@ -26,6 +26,7 @@ export const useToolExecution = ({
   const isToolResult = toolInvocation.state === 'result';
   const hasStartedChecking = useRef<Set<string>>(new Set());
   const isExecuting = useRef<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const formattedToolName = useMemo(
     () => formatOpenAIToolNameToArcadeToolName(toolName),
@@ -40,6 +41,7 @@ export const useToolExecution = ({
     }
 
     isExecuting.current = true;
+    setError(null);
 
     try {
       const result = await executeTool.trigger({
@@ -49,6 +51,7 @@ export const useToolExecution = ({
 
       if (result.error) {
         console.error('Error executing tool:', result.error);
+        setError(JSON.stringify(result.error));
         return;
       }
 
@@ -69,6 +72,7 @@ export const useToolExecution = ({
 
           if (authResult.error) {
             console.error('Error waiting for auth:', authResult.error);
+            setError(JSON.stringify(authResult.error));
             return;
           }
 
@@ -89,6 +93,11 @@ export const useToolExecution = ({
           result: result.result,
         });
       }
+    } catch (error) {
+      console.error('Error in tool execution:', error);
+      setError(
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      );
     } finally {
       isExecuting.current = false;
     }
@@ -118,4 +127,9 @@ export const useToolExecution = ({
     setAuthResponse,
     debouncedExecute,
   ]);
+
+  return {
+    error,
+    isExecuting: isExecuting.current,
+  };
 };
