@@ -103,7 +103,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     isValidating,
     isLoading,
     mutate,
-    error,
   } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
     fallbackData: [],
   });
@@ -114,6 +113,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   const hasReachedEnd = paginatedChatHistories
     ? paginatedChatHistories.some((page) => page.hasMore === false)
+    : false;
+
+  const hasEmptyChatHistory = paginatedChatHistories
+    ? paginatedChatHistories.every((page) => page.chats.length === 0)
     : false;
 
   const handleDelete = async () => {
@@ -186,7 +189,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     );
   }
 
-  if (paginatedChatHistories?.length === 0) {
+  if (hasEmptyChatHistory) {
     return (
       <SidebarGroup>
         <SidebarGroupContent>
