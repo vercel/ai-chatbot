@@ -6,22 +6,33 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        {
+          error: 'Unauthorized',
+        },
+        {
+          status: 401,
+        },
+      );
     }
 
     const { toolName, args } = await request.json();
     if (!toolName || !args) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 },
-      );
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields',
+        instructions: 'STOP NEXT TOOL CALLS AND REPORT THIS ERROR TO THE USER',
+        status: 400,
+      });
     }
 
     if (!arcadeServer) {
-      return NextResponse.json(
-        { error: 'Arcade server not initialized' },
-        { status: 500 },
-      );
+      return NextResponse.json({
+        success: false,
+        error: 'Arcade not initialized in the server',
+        instructions: 'STOP NEXT TOOL CALLS AND REPORT THIS ERROR TO THE USER',
+        status: 500,
+      });
     }
 
     const result = await arcadeServer.executeTool({
@@ -31,18 +42,22 @@ export async function POST(request: Request) {
     });
 
     if (result.error) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: result.error === 'Tool not found' ? 404 : 500 },
-      );
+      return NextResponse.json({
+        success: false,
+        error: result.error,
+        instructions: 'STOP NEXT TOOL CALLS AND REPORT THIS ERROR TO THE USER',
+        status: result.error === 'Tool not found' ? 404 : 500,
+      });
     }
 
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error in tool execution endpoint', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Error in tool execution',
+      instructions: 'STOP NEXT TOOL CALLS AND REPORT THIS ERROR TO THE USER',
+      status: 500,
+    });
   }
 }

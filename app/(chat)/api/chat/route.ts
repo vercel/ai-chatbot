@@ -215,7 +215,9 @@ export async function POST(request: Request) {
       },
       onError: (error) => {
         console.error('Error:', error);
-        return 'Oops, an error occured!';
+        return error instanceof Error
+          ? JSON.stringify(error)
+          : 'Oops, an error occured!';
       },
     });
   } catch (error) {

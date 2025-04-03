@@ -53,7 +53,8 @@ export function Chat({
       mutate('/api/history');
     },
 
-    onError: () => {
+    onError: (error) => {
+      console.error('Error while generating response:', error);
       toast.error('An error occured, please try again!');
     },
   });
