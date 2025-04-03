@@ -36,6 +36,7 @@ function PureMultimodalInput({
   setMessages,
   append,
   handleSubmit,
+  isGuest,
   className,
 }: {
   chatId: string;
@@ -49,6 +50,7 @@ function PureMultimodalInput({
   setMessages: UseChatHelpers['setMessages'];
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
+  isGuest: boolean;
   className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -104,7 +106,9 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/chat/${chatId}`);
+    if (!isGuest) {
+      window.history.replaceState({}, '', `/chat/${chatId}`);
+    }
 
     handleSubmit(undefined, {
       experimental_attachments: attachments,
@@ -124,6 +128,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    isGuest,
   ]);
 
   const uploadFile = async (file: File) => {

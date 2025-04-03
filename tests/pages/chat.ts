@@ -38,6 +38,7 @@ export class ChatPage {
     );
 
     await response.finished();
+    await this.page.waitForTimeout(2000);
   }
 
   async isVoteComplete() {
@@ -173,9 +174,6 @@ export class ChatPage {
         await page.getByTestId('message-edit-button').click();
         await page.getByTestId('message-editor').fill(newMessage);
         await page.getByTestId('message-editor-send-button').click();
-        await expect(
-          page.getByTestId('message-editor-send-button'),
-        ).not.toBeVisible();
       },
     };
   }

@@ -7,17 +7,14 @@ import { defineConfig, devices } from '@playwright/test';
 import { config } from 'dotenv';
 
 config({
-  path: '.env.local',
+  path: ['.env.local', '.env.test'],
 });
-
-/* Use process.env.PORT by default and fallback to port 3000 */
-const PORT = process.env.PORT || 3000;
 
 /**
  * Set webServer.url and use.baseURL with the location
  * of the WebServer respecting the correct set port
  */
-const baseURL = `http://localhost:${PORT}`;
+const baseURL = `http://localhost`;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -44,9 +41,9 @@ export default defineConfig({
   },
 
   /* Configure global timeout for each test */
-  timeout: 60 * 1000, // 30 seconds
+  timeout: 15 * 1000, // 30 seconds
   expect: {
-    timeout: 60 * 1000,
+    timeout: 15 * 1000,
   },
 
   /* Configure projects */
@@ -61,6 +58,7 @@ export default defineConfig({
       dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
+        baseURL: `${baseURL}:3000`,
         storageState: 'playwright/.auth/session.json',
       },
     },
@@ -70,7 +68,16 @@ export default defineConfig({
       dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
+        baseURL: `${baseURL}:3000`,
         storageState: 'playwright/.auth/session.json',
+      },
+    },
+    {
+      name: 'chat (guest)',
+      testMatch: /chat.guest.test.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: `${baseURL}:3001`,
       },
     },
     {
@@ -80,6 +87,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.reasoning/session.json',
+        baseURL: `${baseURL}:3000`,
       },
     },
     {
@@ -88,6 +96,7 @@ export default defineConfig({
       dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
+        baseURL: `${baseURL}:3000`,
         storageState: 'playwright/.auth/session.json',
       },
     },
@@ -124,10 +133,18 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm dev',
-    url: baseURL,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'pnpm dev --port=3000',
+      url: `${baseURL}:3000`,
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'export ALLOW_GUEST_USAGE=True && pnpm dev --port=3001',
+      url: `${baseURL}:3001`,
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 });

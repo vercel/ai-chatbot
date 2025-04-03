@@ -17,13 +17,14 @@ test.describe('chat activity', () => {
     expect(assistantMessage.content).toContain("It's just green duh!");
   });
 
-  test('redirect to /chat/:id after submitting message', async () => {
+  test('do not redirect to /chat/:id after submitting message', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toContain("It's just green duh!");
-    await chatPage.hasChatIdInUrl();
+
+    expect(chatPage.getCurrentURL()).toBe('http://localhost:3001/');
   });
 
   test('send a user message from suggestion', async () => {
@@ -34,6 +35,12 @@ test.describe('chat activity', () => {
     expect(assistantMessage.content).toContain(
       'With Next.js, you can ship fast!',
     );
+  });
+
+  test('hide suggested actions after sending message', async () => {
+    await chatPage.isElementVisible('suggested-actions');
+    await chatPage.sendUserMessageFromSuggestion();
+    await chatPage.isElementNotVisible('suggested-actions');
   });
 
   test('toggle between send/stop button based on activity', async () => {
@@ -56,28 +63,6 @@ test.describe('chat activity', () => {
     await expect(chatPage.stopButton).toBeVisible();
     await chatPage.stopButton.click();
     await expect(chatPage.sendButton).toBeVisible();
-  });
-
-  test('edit user message and resubmit', async () => {
-    await chatPage.sendUserMessage('Why is grass green?');
-    await chatPage.isGenerationComplete();
-
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toContain("It's just green duh!");
-
-    const userMessage = await chatPage.getRecentUserMessage();
-    await userMessage.edit('Why is the sky blue?');
-
-    await chatPage.isGenerationComplete();
-
-    const updatedAssistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(updatedAssistantMessage.content).toContain("It's just blue duh!");
-  });
-
-  test('hide suggested actions after sending message', async () => {
-    await chatPage.isElementVisible('suggested-actions');
-    await chatPage.sendUserMessageFromSuggestion();
-    await chatPage.isElementNotVisible('suggested-actions');
   });
 
   test('upload file and send image attachment with message', async () => {
@@ -109,40 +94,29 @@ test.describe('chat activity', () => {
     );
   });
 
-  test('upvote message', async () => {
-    await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.isGenerationComplete();
-
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    await assistantMessage.upvote();
-    await chatPage.isVoteComplete();
-  });
-
-  test('downvote message', async () => {
-    await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.isGenerationComplete();
-
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    await assistantMessage.downvote();
-    await chatPage.isVoteComplete();
-  });
-
-  test('update vote', async () => {
-    await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.isGenerationComplete();
-
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    await assistantMessage.upvote();
-    await chatPage.isVoteComplete();
-
-    await assistantMessage.downvote();
-    await chatPage.isVoteComplete();
-  });
-
-  test('ensure visibility selector is mounted', async () => {
+  test('show toast after voting', async ({ page }) => {
     await chatPage.sendUserMessage("What's the weather in sf?");
     await chatPage.isGenerationComplete();
 
-    await chatPage.isElementVisible('visibility-selector');
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+
+    await assistantMessage.upvote();
+    await expect(page.getByTestId('toast')).toContainText(
+      'You must be logged in to upvote!',
+    );
+
+    await expect(page.getByTestId('toast')).toBeHidden();
+
+    await assistantMessage.downvote();
+    await expect(page.getByTestId('toast')).toContainText(
+      'You must be logged in to downvote!',
+    );
+  });
+
+  test('ensure visibility selector is hidden', async () => {
+    await chatPage.sendUserMessage("What's the weather in sf?");
+    await chatPage.isGenerationComplete();
+
+    await chatPage.isElementNotVisible('visibility-selector');
   });
 });

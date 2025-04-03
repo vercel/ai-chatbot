@@ -28,6 +28,7 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
+  isGuest,
 }: {
   chatId: string;
   message: UIMessage;
@@ -36,6 +37,7 @@ const PurePreviewMessage = ({
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
+  isGuest: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -214,15 +216,15 @@ const PurePreviewMessage = ({
               }
             })}
 
-            {!isReadonly && (
-              <MessageActions
-                key={`action-${message.id}`}
-                chatId={chatId}
-                message={message}
-                vote={vote}
-                isLoading={isLoading}
-              />
-            )}
+            <MessageActions
+              key={`action-${message.id}`}
+              chatId={chatId}
+              message={message}
+              vote={vote}
+              isLoading={isLoading}
+              isReadonly={isReadonly}
+              isGuest={isGuest}
+            />
           </div>
         </div>
       </motion.div>

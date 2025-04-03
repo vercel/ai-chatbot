@@ -1,10 +1,8 @@
 'use server';
 
 import { z } from 'zod';
-
 import { createUser, getUser } from '@/lib/db/queries';
-
-import { signIn } from './auth';
+import { auth, signIn } from './auth';
 
 const authFormSchema = z.object({
   email: z.string().email(),
@@ -81,4 +79,14 @@ export const register = async (
 
     return { status: 'failed' };
   }
+};
+
+export const isAuthenticated = async () => {
+  const session = await auth();
+  return Boolean(session?.user?.id);
+};
+
+export const getUserId = async () => {
+  const session = await auth();
+  return session?.user?.id;
 };

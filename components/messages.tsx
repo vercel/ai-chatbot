@@ -16,6 +16,7 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  isGuest: boolean;
 }
 
 function PureMessages({
@@ -26,6 +27,7 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
+  isGuest,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -51,6 +53,7 @@ function PureMessages({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          isGuest={isGuest}
         />
       ))}
 
