@@ -14,6 +14,9 @@ import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import type { Session } from 'next-auth';
+import { unstable_serialize } from 'swr/infinite';
+import { getChatHistoryPaginationKey } from './sidebar-history';
+
 export function Chat({
   id,
   initialMessages,
@@ -50,7 +53,7 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate('/api/history');
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
 
     onError: (error) => {
