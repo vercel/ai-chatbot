@@ -59,7 +59,7 @@ export const ToolArcadeAuthorization = ({
     }
   }, [isToolCall, authResponse?.url]);
 
-  const { error, isExecuting } = useToolExecution({
+  const { error } = useToolExecution({
     toolInvocation,
     addToolResult,
     setAuthResponse,
@@ -69,7 +69,7 @@ export const ToolArcadeAuthorization = ({
     return <ToolArcadeError toolInvocation={toolInvocation} error={error} />;
   }
 
-  if (!authResponse && isExecuting) {
+  if (!authResponse) {
     return <ToolArcadeAuthorizationLoading toolInvocation={toolInvocation} />;
   }
 

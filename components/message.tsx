@@ -21,7 +21,6 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { ToolArcadeAuthorization } from './tool-arcade-authorization';
 import { ToolResult } from './tool-result';
-import { SessionProvider } from 'next-auth/react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -69,7 +68,14 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div
+              className={cn(
+                'size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background',
+                {
+                  'animate-pulse': isLoading,
+                },
+              )}
+            >
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
               </div>
@@ -189,12 +195,10 @@ const PurePreviewMessage = ({
                           isReadonly={isReadonly}
                         />
                       ) : (
-                        <SessionProvider>
-                          <ToolArcadeAuthorization
-                            toolInvocation={toolInvocation}
-                            addToolResult={addToolResult}
-                          />
-                        </SessionProvider>
+                        <ToolArcadeAuthorization
+                          toolInvocation={toolInvocation}
+                          addToolResult={addToolResult}
+                        />
                       )}
                     </div>
                   );
