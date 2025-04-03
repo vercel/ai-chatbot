@@ -49,11 +49,7 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate(
-        unstable_serialize(
-          getChatHistoryPaginationKey(pageIndex, previousPageData),
-        ),
-      );
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: () => {
       toast.error('An error occured, please try again!');
