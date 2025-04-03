@@ -4,7 +4,7 @@ import type { AuthorizationResponse } from '@arcadeai/arcadejs/resources/shared.
 import type { ToolInvocation } from 'ai';
 import { AlertCircle, CheckCircle2, LockIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ToolArcadeAuthorizationLoading } from './tool-arcade-authorization-loading';
 import { Button, buttonVariants } from './ui/button';
 import {
@@ -33,18 +33,22 @@ export const ToolArcadeAuthorization = ({
 }: ToolArcadeAuthorizationProps) => {
   const { args } = toolInvocation;
   const isToolCall = toolInvocation.state === 'call';
+  const windowOpened = useRef<boolean>(false);
 
   const [authResponse, setAuthResponse] =
     useState<AuthorizationResponse | null>(null);
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
-    if (isToolCall && authResponse?.url) {
+    if (isToolCall && authResponse?.url && !windowOpened.current) {
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            window.open(authResponse.url, '_blank');
+            if (!windowOpened.current) {
+              window.open(authResponse.url, '_blank');
+              windowOpened.current = true;
+            }
             return 0;
           }
           return prev - 1;
@@ -194,7 +198,11 @@ export const ToolArcadeAuthorization = ({
             )}
           >
             <Icon className="size-4 mr-2" />
-            <span>Opening window in {countdown}s...</span>
+            <span>
+              {countdown > 0
+                ? `Opening window in ${countdown}s...`
+                : 'Waiting for authorization...'}
+            </span>
           </Link>
         </CardContent>
         <CardFooter className="justify-center">

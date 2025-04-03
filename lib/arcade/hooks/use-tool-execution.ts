@@ -25,6 +25,7 @@ export const useToolExecution = ({
   const { args, toolName } = toolInvocation;
   const isToolResult = toolInvocation.state === 'result';
   const hasStartedChecking = useRef<Set<string>>(new Set());
+  const isExecuting = useRef<boolean>(false);
 
   const formattedToolName = useMemo(
     () => formatOpenAIToolNameToArcadeToolName(toolName),
@@ -34,56 +35,62 @@ export const useToolExecution = ({
   const { executeTool, waitForAuth } = useToolExecutionApi();
 
   const executeToolCallback = useCallback(async () => {
-    if (isToolResult) {
+    if (isToolResult || isExecuting.current) {
       return;
     }
 
-    const result = await executeTool.trigger({
-      toolName,
-      args,
-    });
+    isExecuting.current = true;
 
-    if (result.error) {
-      console.error('Error executing tool:', result.error);
-      return;
-    }
-
-    if (result.authResponse) {
-      setAuthResponse(result.authResponse);
-
-      // If we've already started checking this ID, don't start again
-      if (
-        result.authResponse.id &&
-        !hasStartedChecking.current.has(result.authResponse.id)
-      ) {
-        hasStartedChecking.current.add(result.authResponse.id);
-        const authResult = await waitForAuth.trigger({
-          authId: result.authResponse.id,
-          toolName,
-          args,
-        });
-
-        if (authResult.error) {
-          console.error('Error waiting for auth:', authResult.error);
-          return;
-        }
-
-        if (authResult.result) {
-          addToolResult({
-            toolCallId: toolInvocation.toolCallId,
-            result: authResult.result,
-          });
-        }
-
-        if (authResult.authResponse) {
-          setAuthResponse(authResult.authResponse);
-        }
-      }
-    } else if (result.result) {
-      addToolResult({
-        toolCallId: toolInvocation.toolCallId,
-        result: result.result,
+    try {
+      const result = await executeTool.trigger({
+        toolName,
+        args,
       });
+
+      if (result.error) {
+        console.error('Error executing tool:', result.error);
+        return;
+      }
+
+      if (result.authResponse) {
+        setAuthResponse(result.authResponse);
+
+        // If we've already started checking this ID, don't start again
+        if (
+          result.authResponse.id &&
+          !hasStartedChecking.current.has(result.authResponse.id)
+        ) {
+          hasStartedChecking.current.add(result.authResponse.id);
+          const authResult = await waitForAuth.trigger({
+            authId: result.authResponse.id,
+            toolName,
+            args,
+          });
+
+          if (authResult.error) {
+            console.error('Error waiting for auth:', authResult.error);
+            return;
+          }
+
+          if (authResult.result) {
+            addToolResult({
+              toolCallId: toolInvocation.toolCallId,
+              result: authResult.result,
+            });
+          }
+
+          if (authResult.authResponse) {
+            setAuthResponse(authResult.authResponse);
+          }
+        }
+      } else if (result.result) {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result: result.result,
+        });
+      }
+    } finally {
+      isExecuting.current = false;
     }
   }, [
     isToolResult,
