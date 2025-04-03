@@ -85,10 +85,10 @@ const remarkPlugins = [remarkGfm];
 
 const NonMemoizedMarkdown = ({
   children,
-  isUserMessage,
+  isUserMessage = false,
 }: {
   children: string;
-  isUserMessage: boolean;
+  isUserMessage?: boolean;
 }) => {
   const componentsWithUserMessage = {
     ...components,
