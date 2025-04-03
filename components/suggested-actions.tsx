@@ -37,7 +37,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
     {
       title: 'Check Slack messages',
       subtitle: 'in the #general channel',
-      action: 'Check the Slack messages in the #general channel',
+      action: 'Check the last 10 Slack messages in the #general channel',
       icon: <Slack className="size-4 sm:size-5 " />,
       id: 'slack',
     },
