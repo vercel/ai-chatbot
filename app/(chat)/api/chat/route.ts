@@ -6,7 +6,7 @@ import {
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
-import { myProvider } from '@/lib/ai/models';
+import { myProvider, getLanguageModel } from '@/lib/ai/models';
 import { systemPrompt, enhancedKnowledgeSystemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
             }
             
             const result = streamText({
-              model: myProvider.languageModel(selectedChatModel),
+              model: getLanguageModel(selectedChatModel),
               system: systemPrompt({ selectedChatModel }),
               messages: enhancedMessages,
               maxSteps: 5,

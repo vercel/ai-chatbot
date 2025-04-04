@@ -960,7 +960,7 @@ async function sendChatMessage() {
       .filter(m => m.content && m.content !== '...' && !m.content.includes('...'));
     
     // Choose default model
-    const selectedChatModel = 'gpt-4o-mini';
+    const selectedChatModel = 'gpt-4o-mini-2024-07-18';
     
     // Stream response
     let assistantResponse = '';

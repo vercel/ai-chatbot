@@ -209,7 +209,7 @@ export async function createEmbeddingWithAPI(text: string): Promise<number[]> {
   try {
     console.log(`[DOCUMENT PROCESSOR] Generating embedding via OpenAI API`);
     const response = await openai.embeddings.create({
-      model: 'text-embedding-ada-002',
+      model: 'text-embedding-3-small',
       input: text,
     });
 
