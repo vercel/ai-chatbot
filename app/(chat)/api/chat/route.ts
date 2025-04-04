@@ -1,5 +1,6 @@
 import {
   type Message,
+  type DataStream,
   createDataStreamResponse,
   smoothStream,
   streamText,
@@ -81,9 +82,14 @@ export async function POST(request: Request) {
 
     // Track knowledge chunks used for this message
     let usedKnowledgeChunks: Array<{ id: string; content: string }> = [];
+    // Create a promise we can resolve later to synchronize reference creation
+    let referencesCreated: Promise<number> | null = null;
+    let resolveReferences: ((value: number) => void) | null = null;
+    // Flag to track if knowledge creation has completed
+    let referencesCompleted = false;
 
     return createDataStreamResponse({
-      execute: async (dataStream) => {
+      execute: async (dataStream: DataStream) => {
         try {
           console.log(`Streaming response for chat ${id} using model ${selectedChatModel}`);
           
@@ -105,19 +111,19 @@ export async function POST(request: Request) {
             });
 
             console.log('Knowledge search results:', 
-              knowledgeResults.count > 0 
-                ? `Found ${knowledgeResults.count} relevant chunks` 
+              (knowledgeResults?.count ?? 0) > 0 
+                ? `Found ${knowledgeResults?.count ?? 0} relevant chunks` 
                 : 'No relevant information found');
 
             // Now, invoke the chat model with enhanced context
             let enhancedMessages = [...messages];
             
               // If we found knowledge information, add it to the context
-              if (knowledgeResults.count > 0) {
+              if ((knowledgeResults?.count ?? 0) > 0) {
                 // Create a more explicit instruction for using knowledge
                 const knowledgeSystemMsg = {
                   id: generateUUID(),
-                  role: 'system',
+                  role: 'system' as 'system' | 'user' | 'assistant' | 'data',
                   content: enhancedKnowledgeSystemPrompt + knowledgeResults.relevantContent
                 };
               
@@ -132,7 +138,7 @@ export async function POST(request: Request) {
                 enhancedMessages.unshift(knowledgeSystemMsg);
               }
               
-              console.log(`Added knowledge context to messages with ${knowledgeResults.count} chunks`);
+              console.log(`Added knowledge context to messages with ${knowledgeResults?.count ?? 0} chunks`);
             } else {
               console.log('No knowledge context found, using regular messages');
             }
@@ -142,6 +148,7 @@ export async function POST(request: Request) {
               system: systemPrompt({ selectedChatModel }),
               messages: enhancedMessages,
               maxSteps: 5,
+              temperature: 0.3,
               experimental_transform: smoothStream({ chunking: 'word' }),
               experimental_generateMessageId: generateUUID,
               onFinish: async ({ response, reasoning }) => {
@@ -153,6 +160,7 @@ export async function POST(request: Request) {
                     const assistantMessage = response.messages.find(msg => msg.role === 'assistant');
                     if (!assistantMessage) {
                       console.error('No assistant message found in response');
+                      if (resolveReferences) resolveReferences(0);
                       return;
                     }
                     console.log(`Found assistant message with ID: ${assistantMessage.id}`);
@@ -166,6 +174,7 @@ export async function POST(request: Request) {
                     const sanitizedAssistantMessage = sanitizedResponseMessages.find(msg => msg.id === assistantMessage.id);
                     if (!sanitizedAssistantMessage) {
                       console.error('Assistant message was lost during sanitization');
+                      if (resolveReferences) resolveReferences(0);
                       return;
                     }
 
@@ -173,7 +182,7 @@ export async function POST(request: Request) {
                     const messagesToSave = sanitizedResponseMessages.map((message) => ({
                       id: message.id,
                       chatId: id,
-                      role: message.role,
+                      role: message.role as 'system' | 'user' | 'assistant' | 'data',
                       content: message.content,
                       createdAt: new Date(),
                     }));
@@ -193,6 +202,7 @@ export async function POST(request: Request) {
                       console.error(`Assistant message with ID ${assistantMessage.id} failed to save properly. Available messages:`, 
                         savedMessages.map(m => ({ id: m.id, role: m.role }))
                       );
+                      if (resolveReferences) resolveReferences(0);
                       return;
                     }
                     // Create knowledge references for the assistant message
@@ -220,24 +230,38 @@ export async function POST(request: Request) {
                             const insertedCount = await createBulkKnowledgeReferences(referenceObjects);
                             
                             console.log(`Successfully created ${insertedCount} knowledge references`);
+                            
+                            // Resolve the references promise to signal completion
+                            referencesCompleted = true;
+                            if (resolveReferences) {
+                              resolveReferences(insertedCount);
+                            }
                           } else {
                             console.log('No valid knowledge chunks to reference');
                           }
                         } catch (referenceError) {
-                          console.error('Error creating knowledge references:', referenceError);
+                          console.error('Error creating knowledge references:', 
+                            referenceError instanceof Error ? referenceError.message : String(referenceError));
                         }
                       } else {
                         console.log('No knowledge chunks used or no assistant message found, skipping reference creation');
+                        
+                        // Resolve with 0 if no references are needed
+                        referencesCompleted = true;
+                        if (resolveReferences) {
+                          resolveReferences(0);
+                        }
                       }
                   } catch (error) {
-                    console.error('Failed to save chat or create references:', error);
+                    console.error('Failed to save chat or create references:', 
+                      error instanceof Error ? error.message : String(error));
                   }
                 }
               },
               experimental_telemetry: {
                 isEnabled: true,
                 functionId: 'stream-text',
-              },
+              } as any,
             });
 
             result.consumeStream();
@@ -245,30 +269,76 @@ export async function POST(request: Request) {
             result.mergeIntoDataStream(dataStream, {
               sendReasoning: true,
             });
+            
+            // Create a promise to track reference creation
+            referencesCreated = new Promise<number>((resolve) => {
+              resolveReferences = resolve;
+            });
+            
+            // Wait for references to be created before finalizing response
+            // This gives frontend a better chance of finding references on first try
+            try {
+              // Wait a small amount of time for references to be created
+              // so the frontend has a better chance of finding them on the first try
+              if (!referencesCompleted && referencesCreated) {
+                console.log('Waiting for references to be created before completing stream...');
+                const referenceCount = await Promise.race([
+                  referencesCreated,
+                  // Timeout after 3 seconds to prevent hanging
+                  new Promise<number>((resolve) => setTimeout(() => {
+                    console.log('Reference creation wait timed out after 3 seconds');
+                    resolve(0);
+                  }, 3000))
+                ]);
+                
+                console.log(`Waited for ${referenceCount} references to be created before completing stream`);
+              } else if (referencesCompleted) {
+                console.log('References already created, no need to wait');
+              }
+            } catch (waitError) {
+              console.error('Error waiting for references:', 
+                waitError instanceof Error ? waitError.message : String(waitError));
+            }
           } catch (error) {
-            console.error('Error in stream processing:', error);
-            console.error('Detailed error in stream processing:', error);
+            console.error('Error in stream processing:', 
+              error instanceof Error ? error.message : String(error));
+            console.error('Detailed error in stream processing:', 
+              error instanceof Error ? error.stack : String(error));
+            // Write error to stream and close it
             dataStream.write(JSON.stringify({ error: 'An error occurred during processing' }));
-      dataStream.close();
+            
+            // Safely try to signal end of stream
+            const streamWriter = dataStream as { close?: () => void };
+            if (typeof streamWriter.close === 'function') {
+              streamWriter.close();
+            }
           }
         } catch (error) {
-          console.error('Error in stream processing:', error);
-          dataStream.close();
+          console.error('Error in stream processing:', 
+            error instanceof Error ? error.message : String(error));
+          
+          // Safely try to signal end of stream
+          const streamWriter = dataStream as { close?: () => void };
+          if (typeof streamWriter.close === 'function') {
+            streamWriter.close();
+          }
           throw error;
         }
       },
       onError: (error) => {
-        console.error('Chat API stream error:', error);
-        return `An error occurred: ${error.message || 'Unknown error'}. Please try again.`;
+        console.error('Chat API stream error:', 
+          error instanceof Error ? error.message : String(error));
+        return `An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
       },
     });
   } catch (error) {
-    console.error('Unhandled error in chat API:', error);
+    console.error('Unhandled error in chat API:', 
+      error instanceof Error ? error.message : String(error));
     return new Response(
       JSON.stringify({ 
         error: 'An unexpected error occurred', 
-        message: error.message || 'Unknown error',
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined
       }),
       { 
         status: 500,

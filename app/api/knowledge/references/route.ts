@@ -20,8 +20,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Add exponential backoff for retries
+    const retryAttemptNum = parseInt(retryAttempt) || 0;
     const references = await getReferencesByMessageId({ messageId });
-    console.log(`Retrieved ${references.length} knowledge references for message ID: ${messageId} (retry ${retryAttempt})`);
+    console.log(`Retrieved ${references.length} knowledge references for message ID: ${messageId} (retry ${retryAttempt})`);  
+    
+    // Add exponential backoff for retry header to guide the client
+    const retryAfterMs = retryAttemptNum > 0 ? Math.min(2000 * Math.pow(1.5, retryAttemptNum-1), 5000) : 1000;
+    console.log(`Setting retry delay to ${retryAfterMs}ms for retry attempt ${retryAttemptNum}`);
 
     // If no references are found, check if we can create some
     if (references.length === 0) {
@@ -42,7 +48,9 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, must-revalidate'
+        'Cache-Control': 'no-cache, must-revalidate',
+        'X-Retry-After': retryAfterMs.toString(),
+        'X-References-Count': references.length.toString()
       }
     });
   } catch (error) {

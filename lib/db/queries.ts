@@ -23,54 +23,37 @@ import {
 import { ArtifactKind } from '@/components/artifact';
 import { sql } from 'drizzle-orm';
 
-// Create multiple knowledge references in a single operation
+// Create multiple knowledge references in a single operation with improved handling
 export async function createBulkKnowledgeReferences(references: Array<{ messageId: string; chunkId: string; createdAt: Date }>) {
+  // Handle empty references array
+  if (!references || references.length === 0) {
+    console.log('No knowledge references to create');
+    return 0;
+  }
+
   try {
     console.log(`Creating ${references.length} knowledge references in bulk`);
     
-    // First verify all message IDs and chunk IDs exist
-    const messageIds = [...new Set(references.map(ref => ref.messageId))];
-    const chunkIds = [...new Set(references.map(ref => ref.chunkId))];
-    
-    // Check if all messages exist
-    const messagesExist = await db
-      .select({
-        id: message.id
-      })
-      .from(message)
-      .where(inArray(message.id, messageIds));
-    
-    if (messagesExist.length !== messageIds.length) {
-      console.error('Some message IDs do not exist in the database');
-      return 0;
+    // Insert all references in a single operation without pre-verification
+    // Let the database constraints handle validity to improve performance and reduce race conditions
+    try {
+      const result = await db
+        .insert(knowledgeReference)
+        .values(references)
+        .returning();
+      
+      console.log(`Successfully created ${result.length} knowledge references with IDs: ${result.map(r => r.id).join(', ')}`);
+      return result.length;
+    } catch (bulkError) {
+      // If bulk insert fails, try individual inserts as fallback
+      console.error(`Bulk insert failed: ${bulkError.message}. Trying individual inserts...`);
+      throw bulkError; // Propagate to fallback
     }
-    
-    // Check if all chunks exist
-    const chunksExist = await db
-      .select({
-        id: knowledgeChunk.id
-      })
-      .from(knowledgeChunk)
-      .where(inArray(knowledgeChunk.id, chunkIds));
-    
-    if (chunksExist.length !== chunkIds.length) {
-      console.error('Some chunk IDs do not exist in the database');
-      return 0;
-    }
-    
-    // Insert all references in a single operation
-    const result = await db
-      .insert(knowledgeReference)
-      .values(references)
-      .returning();
-    
-    console.log(`Successfully created ${result.length} knowledge references with IDs: ${result.map(r => r.id).join(', ')}`);
-    return result.length;
   } catch (error) {
     console.error(`Failed to create bulk knowledge references: ${error.message || error}`);
     
-    // Try to create each reference individually as a fallback
-    console.log('Trying fallback approach: creating references one by one');
+    // Fallback approach: insert one by one to maximize success
+    console.log('Using fallback approach: creating references one by one');
     let successCount = 0;
     
     for (const ref of references) {
@@ -82,10 +65,10 @@ export async function createBulkKnowledgeReferences(references: Array<{ messageI
         
         if (result.length > 0) {
           successCount++;
-          console.log(`Created reference ${successCount}: ${result[0].id}`);
         }
       } catch (innerError) {
-        console.error(`Failed to create individual reference: ${innerError.message || innerError}`);
+        // Just log and continue with next reference
+        console.error(`Failed to create reference for message=${ref.messageId.substring(0, 8)}...: ${innerError.message}`);
       }
     }
     

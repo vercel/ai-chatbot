@@ -62,7 +62,7 @@ const PurePreviewMessage = ({
   
   // Fetch knowledge references if they're not already included in the message
   const [referenceRetries, setReferenceRetries] = useState(0);
-  const maxRetries = 3;
+  const maxRetries = 5; // Increased from 3 to 5 for better reliability
   
   const { data: knowledgeReferences, error: referencesError } = useSWR(
     message.role === 'assistant' && !message.knowledgeReferences
@@ -73,38 +73,64 @@ const PurePreviewMessage = ({
       if (!response.ok) {
         throw new Error('Failed to fetch knowledge references');
       }
-      return response.json();
+      
+      // Get retry information from response headers
+      const retryAfter = response.headers.get('X-Retry-After');
+      const refCount = response.headers.get('X-References-Count');
+      const data = await response.json();
+      
+      // Add metadata to the response
+      return {
+        references: data,
+        metadata: {
+          retryAfterMs: retryAfter ? parseInt(retryAfter) : 2000,
+          referenceCount: refCount ? parseInt(refCount) : 0
+        }
+      };
     },
-    { refreshInterval: referenceRetries < maxRetries ? 1500 : 0 } // Retry every 1.5 seconds for up to 3 times
+    { 
+      refreshInterval: referenceRetries < maxRetries ? 2000 : 0, // Retry every 2 seconds with longer interval
+      errorRetryCount: 3, // Retry 3 times on error
+      dedupingInterval: 1000 // Avoid duplicate requests within 1 second
+    }
   );
 
   const { setReferences } = useReferencesSidebar();
 
   // Update the message with knowledge references if they were fetched
   useEffect(() => {
-    if (knowledgeReferences && knowledgeReferences.length > 0 && !message.knowledgeReferences) {
+    if (!knowledgeReferences) return;
+    
+    const references = knowledgeReferences.references || [];
+    const metadata = knowledgeReferences.metadata || { retryAfterMs: 2000, referenceCount: 0 };
+    
+    if (references.length > 0 && !message.knowledgeReferences) {
       // Update message with references
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === message.id
-            ? { ...msg, knowledgeReferences }
+            ? { ...msg, knowledgeReferences: references }
             : msg
         )
       );
       
       // Update reference sidebar state when references are available
       // Pass the message ID to make references unique per message
-      setReferences(knowledgeReferences, message.id);
+      setReferences(references, message.id);
       
       // Reset retry counter as we've found references
       setReferenceRetries(0);
-    } else if (knowledgeReferences && knowledgeReferences.length === 0 && referenceRetries < maxRetries) {
+      console.log(`Found ${references.length} references for message ${message.id}`);
+    } else if (references.length === 0 && referenceRetries < maxRetries) {
+      // Use the server-suggested retry delay if available
+      const retryDelay = metadata.retryAfterMs || 2000;
+      
       // Increment retry counter if no references found yet
       setTimeout(() => {
         setReferenceRetries(prev => prev + 1);
-      }, 500); // Small delay before incrementing
+      }, retryDelay); // Use server-suggested delay
       
-      console.log(`No references found for message ${message.id}, retry ${referenceRetries + 1}/${maxRetries}`);
+      console.log(`No references found for message ${message.id}, retry ${referenceRetries + 1}/${maxRetries} (waiting ${retryDelay}ms)`);
     }
   }, [knowledgeReferences, message.id, message.knowledgeReferences, setMessages, setReferences, referenceRetries, maxRetries]);
 

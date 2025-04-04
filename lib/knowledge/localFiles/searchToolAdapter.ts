@@ -2,6 +2,7 @@ import { type DataStream, type Session } from 'ai';
 import { searchKnowledgeLocal } from './localSearch';
 import { KnowledgeReference } from '@/components/knowledge-references';
 import { generateUUID } from '@/lib/utils';
+import { normalizeText, preprocessQuery } from '../../db/schemaAdapter';
 
 interface SearchKnowledgeParams {
   session: Session | null;
@@ -35,9 +36,21 @@ export function searchKnowledgeToolAdapter({
     }
 
     try {
-      // Use our local search implementation
+      // Normalize and preprocess query for better matching
+      const normalizedQuery = normalizeText(query);
+      const processedQuery = preprocessQuery(query);
+      
+      if (normalizedQuery !== query) {
+        console.log(`[SEARCH TOOL] Normalized query for better matching: "${normalizedQuery.substring(0, 50)}..."`);
+      }
+      
+      if (processedQuery !== normalizedQuery) {
+        console.log(`[SEARCH TOOL] Preprocessed query for better matching: "${processedQuery.substring(0, 50)}..."`);
+      }
+
+      // Use our local search implementation with normalized query
       console.log(`[SEARCH TOOL] Searching knowledge base...`);
-      const results = await searchKnowledgeLocal(query, session.user.id, Number(limit));
+      const results = await searchKnowledgeLocal(normalizedQuery, session.user.id, Number(limit));
       
       console.log(`[SEARCH TOOL] Found ${results.length} relevant chunks of information`);
 
@@ -64,8 +77,7 @@ export function searchKnowledgeToolAdapter({
       // Call the provided callback with the chunks
       onChunksUsed(usedChunks);
 
-      // Store knowledge references in the message but don't try to append them
-      // since dataStream.append is not reliably available
+      // Store knowledge references in the message
       const knowledgeReferences: KnowledgeReference[] = usedChunks.map((chunk: any, index: number) => ({
         id: chunk.id,
         title: chunk.title || `Source ${index + 1}`,
@@ -76,8 +88,7 @@ export function searchKnowledgeToolAdapter({
       
       console.log(`[SEARCH TOOL] Created ${knowledgeReferences.length} knowledge references for future use`);
 
-      // Format the results for the AI - use usedChunks now instead of results
-      // This ensures dummy content is included when necessary
+      // Format the results for the AI in a more readable way
       const formattedResults = usedChunks.map((chunk: any, index: number) => {
         return `[${index + 1}] ${chunk.content}`;
       }).join('\n\n');

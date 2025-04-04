@@ -1,0 +1,266 @@
+diff --git a/app/(chat)/api/chat/route.ts b/app/(chat)/api/chat/route.ts
+index 02abfb4..ea05d2a 100644
+--- a/app/(chat)/api/chat/route.ts
++++ b/app/(chat)/api/chat/route.ts
+@@ -137,6 +137,7 @@ export async function POST(request: Request) {
+               model: getLanguageModel(selectedChatModel),
+               system: systemPrompt({ selectedChatModel }),
+               messages: enhancedMessages,
++              temperature: 0.3, // Lower temperature for more deterministic knowledge-based responses
+               maxSteps: 5,
+               experimental_transform: smoothStream({ chunking: 'word' }),
+               experimental_generateMessageId: generateUUID,
+
+diff --git a/lib/db/schemaAdapter.ts b/lib/db/schemaAdapter.ts
+index 3a76e7e..b99782f 100644
+--- a/lib/db/schemaAdapter.ts
++++ b/lib/db/schemaAdapter.ts
+@@ -47,6 +47,42 @@ export function normalizeText(text: string): string {
+   }
+ }
+
++/**
++ * Preprocess query for better search results
++ * This extracts key terms and enhances search relevance
++ */
++export function preprocessQuery(query: string): string {
++  if (!query) return '';
++  
++  try {
++    // Normalize the query text first
++    const normalizedQuery = normalizeText(query);
++    
++    // Extract key terms for resume/CV specific queries
++    const roleMatches = normalizedQuery.match(/\b(role|position|title|job|work)\s+(at|in|with|for)\s+([\w\s&]+)\b/i);
++    if (roleMatches && roleMatches[3]) {
++      const company = roleMatches[3].trim();
++      return `${company} role position title job`;
++    }
++    
++    // Extract company name queries
++    const companyMatches = normalizedQuery.match(/\b(at|in|with|for)\s+([\w\s&]+)\b/i);
++    if (companyMatches && companyMatches[2]) {
++      const company = companyMatches[2].trim();
++      if (company.length > 2) { // Avoid matching short prepositions
++        return company;
++      }
++    }
++    
++    // Extract skill/experience queries
++    const skillMatches = normalizedQuery.match(/\b(skill|experience|expertise|knowledge)\s+(in|with|of)\s+([\w\s&]+)\b/i);
++    if (skillMatches && skillMatches[3]) {
++      return skillMatches[3].trim();
++    }
++    
++    // Default to the normalized query for other types
++    return normalizedQuery;
++  } catch (error) {
++    console.error('Error preprocessing query:', error);
++    return query; // Return original if preprocessing fails
++  }
++}
++
+ /**
+  * Execute a query with proper table name mapping
+  */
+@@ -78,37 +114,125 @@ export async function executeQuery(query: string, params: any[] = []): Promise<a
+
+ /**
+  * Does a basic search in the knowledge base without using vector search
++ * Enhanced with full-text search and query preprocessing
+  */
+ export async function basicKnowledgeSearch(
+   searchQuery: string,
+   userId: string,
+   limit: number = 5
+ ): Promise<any[]> {
+   try {
+     console.log(`Basic knowledge search: "${searchQuery.substring(0, 50)}..." for user ${userId}`);
+     
+-    // Normalize the search query for better matching
++    // Normalize and preprocess the search query for better matching
+     const normalizedQuery = normalizeText(searchQuery);
++    const processedQuery = preprocessQuery(searchQuery);
++    
+     console.log(`Normalized query: "${normalizedQuery.substring(0, 50)}..."`);
++    if (processedQuery !== normalizedQuery) {
++      console.log(`Preprocessed query: "${processedQuery.substring(0, 50)}..."`);
++    }
+     
+-    // Use Drizzle query builder instead of raw SQL
++    // Try full-text search first if available
+     try {
+-      const results = await db
++      // Check if content_tsv column exists using SQL metadata
++      const columnCheck = await db.execute(sql`
++        SELECT EXISTS (
++          SELECT 1 
++          FROM information_schema.columns 
++          WHERE table_name = 'KnowledgeChunk' 
++          AND column_name = 'content_tsv'
++        ) as has_column;
++      `);
++      
++      const hasTsvColumn = columnCheck[0]?.has_column === true;
++      
++      if (hasTsvColumn) {
++        console.log(`Using PostgreSQL full-text search with processed query`);
++        
++        // Create a proper tsquery from the processed query
++        // Replace spaces with & for AND logic in full-text search
++        const searchTerms = processedQuery.split(/\s+/).filter(term => term.length > 1);
++        const tsQueryString = searchTerms.join(' & ');
++        
++        if (tsQueryString) {
++          // Use full-text search with proper ranking
++          const results = await db.execute(sql`
++            SELECT 
++              kc.id,
++              kc."documentId", 
++              kd.title,
++              kc.content,
++              kd."sourceUrl" as url,
++              ts_rank(kc.content_tsv, to_tsquery('english', ${tsQueryString})) as score
++            FROM "KnowledgeChunk" kc
++            JOIN "KnowledgeDocument" kd ON kc."documentId" = kd.id
++            WHERE kd."userId" = ${userId}
++            AND kc.content_tsv @@ to_tsquery('english', ${tsQueryString})
++            ORDER BY score DESC
++            LIMIT ${limit}
++          `);
++          
++          if (results.length > 0) {
++            console.log(`Found ${results.length} results using full-text search`);
++            return results.map((chunk: any) => ({
++              id: chunk.id,
++              documentId: chunk.documentid,
++              title: chunk.title || 'Untitled Document',
++              content: chunk.content,
++              url: chunk.url || '',
++              score: parseFloat(chunk.score) || 0.7, // Use actual rank if available
++            }));
++          }
++        }
++      }
++      
++      // Fall back to ILIKE search if full-text search failed or returned no results
++      console.log(`Falling back to ILIKE text search`);
++      
++      // Try with the processed query first
++      const processedResults = await db
+         .select({
+           id: knowledgeChunk.id,
+           documentId: knowledgeChunk.documentId,
+           title: knowledgeDocument.title,
+           content: knowledgeChunk.content,
+           url: knowledgeDocument.sourceUrl,
+         })
+         .from(knowledgeChunk)
+         .innerJoin(
+           knowledgeDocument,
+           eq(knowledgeChunk.documentId, knowledgeDocument.id)
+         )
+         .where(
+           and(
+             eq(knowledgeDocument.userId, userId),
++            sql`${knowledgeChunk.content} ILIKE ${`%${processedQuery}%`}`
++          )
++        )
++        .orderBy(desc(knowledgeDocument.createdAt))
++        .limit(limit);
++      
++      if (processedResults.length > 0) {
++        console.log(`Found ${processedResults.length} results using processed query text search`);
++        return processedResults.map((chunk: any) => ({
++          id: chunk.id,
++          documentId: chunk.documentId,
++          title: chunk.title || 'Untitled Document',
++          content: chunk.content,
++          url: chunk.url || '',
++          score: 0.6, // Higher score for processed query matches
++        }));
++      }
++      
++      // If processed query failed, try the original normalized query
++      const normalizedResults = await db
++        .select({
++          id: knowledgeChunk.id,
++          documentId: knowledgeChunk.documentId,
++          title: knowledgeDocument.title,
++          content: knowledgeChunk.content,
++          url: knowledgeDocument.sourceUrl,
++        })
++        .from(knowledgeChunk)
++        .innerJoin(
++          knowledgeDocument,
++          eq(knowledgeChunk.documentId, knowledgeDocument.id)
++        )
++        .where(
++          and(
++            eq(knowledgeDocument.userId, userId),
+             sql`${knowledgeChunk.content} ILIKE ${`%${normalizedQuery}%`}`
+           )
+         )
+         .orderBy(desc(knowledgeDocument.createdAt))
+         .limit(limit);
+
+-      console.log(`Found ${results.length} results using text search`);
+-      
+-      if (results.length > 0) {
+-        return results.map((chunk: any) => ({
++      if (normalizedResults.length > 0) {
++        console.log(`Found ${normalizedResults.length} results using normalized text search`);
++        return normalizedResults.map((chunk: any) => ({
+           id: chunk.id,
+           documentId: chunk.documentId,
+           title: chunk.title || 'Untitled Document',
+           content: chunk.content,
+
+diff --git a/lib/knowledge/localFiles/localSearch.ts b/lib/knowledge/localFiles/localSearch.ts
+index 85aac7c..22a6c7a 100644
+--- a/lib/knowledge/localFiles/localSearch.ts
++++ b/lib/knowledge/localFiles/localSearch.ts
+@@ -4,7 +4,7 @@ import { knowledgeChunk, knowledgeDocument } from '../../db/schema';
+ import { drizzle } from 'drizzle-orm/postgres-js';
+ import postgres from 'postgres';
+ import { sql } from 'drizzle-orm';
+ import { getFallbackResults } from './fallbackResults';
+-import { basicKnowledgeSearch, normalizeText } from '../../db/schemaAdapter';
++import { basicKnowledgeSearch, normalizeText, preprocessQuery } from '../../db/schemaAdapter';
+
+ // Enable debug mode for detailed logging
+ const DEBUG_MODE = true;
+
+diff --git a/lib/knowledge/localFiles/searchToolAdapter.ts b/lib/knowledge/localFiles/searchToolAdapter.ts
+index 1aff9ca..31aaa66 100644
+--- a/lib/knowledge/localFiles/searchToolAdapter.ts
++++ b/lib/knowledge/localFiles/searchToolAdapter.ts
+@@ -1,7 +1,7 @@
+ import { type DataStream, type Session } from 'ai';
+ import { searchKnowledgeLocal } from './localSearch';
+ import { KnowledgeReference } from '@/components/knowledge-references';
+ import { generateUUID } from '@/lib/utils';
+-import { normalizeText } from '../../db/schemaAdapter';
++import { normalizeText, preprocessQuery } from '../../db/schemaAdapter';
+ 
+ interface SearchKnowledgeParams {
+   session: Session | null;
+@@ -35,10 +35,16 @@ export function searchKnowledgeToolAdapter({
+     }
+ 
+     try {
+-      // Normalize query for better matching of non-Latin scripts
++      // Normalize and preprocess query for better matching
+       const normalizedQuery = normalizeText(query);
++      const processedQuery = preprocessQuery(query);
++      
+       if (normalizedQuery !== query) {
+         console.log(`[SEARCH TOOL] Normalized query for better matching: "${normalizedQuery.substring(0, 50)}..."`);
++      }
++      
++      if (processedQuery !== normalizedQuery) {
++        console.log(`[SEARCH TOOL] Preprocessed query for better matching: "${processedQuery.substring(0, 50)}..."`);
+       }
+ 
+       // Use our local search implementation with normalized query
+       console.log(`[SEARCH TOOL] Searching knowledge base...`);

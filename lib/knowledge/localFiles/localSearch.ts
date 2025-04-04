@@ -5,7 +5,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 import { getFallbackResults } from './fallbackResults';
-import { basicKnowledgeSearch } from '../../db/schemaAdapter';
+import { basicKnowledgeSearch, normalizeText, preprocessQuery } from '../../db/schemaAdapter';
 
 // Enable debug mode for detailed logging
 const DEBUG_MODE = true;
@@ -60,31 +60,10 @@ export async function searchKnowledgeLocal(
   }
   
   try {
-    // First, try to use the database with vector search
-    console.log('[LOCAL SEARCH] Attempting to use database vector search');
-    
-    // Generate embedding for the query
-    let queryEmbedding: number[] = [];
-    try {
-      // Check if we already have an embedding for this query
-      queryEmbedding = getEmbedding(query) || [];
-      
-      // If not, generate a new one
-      if (!queryEmbedding.length) {
-        console.log('[LOCAL SEARCH] Generating new embedding for query');
-        const response = await openai.embeddings.create({
-          model: 'text-embedding-ada-002',
-          input: query,
-        });
-        queryEmbedding = response.data[0].embedding;
-        if (DEBUG_MODE) {
-          console.log(`[LOCAL SEARCH] Generated embedding with ${queryEmbedding.length} dimensions`);
-        }
-      } else {
-        console.log('[LOCAL SEARCH] Using cached embedding for query');
-      }
-    } catch (embError) {
-      console.error('[LOCAL SEARCH] Error generating embedding:', embError);
+    // Normalize the query text for better matching, especially for Arabic
+    const normalizedQuery = normalizeText(query);
+    if (normalizedQuery !== query) {
+      console.log(`[LOCAL SEARCH] Normalized query for better matching: "${normalizedQuery.substring(0, 50)}..."`);
     }
     
     // Log database connection info in debug mode
@@ -110,48 +89,12 @@ export async function searchKnowledgeLocal(
       }
     }
     
-    if (queryEmbedding.length > 0) {
-      try {
-        // First, try text search instead of vector search
-        console.log('[LOCAL SEARCH] Using text-based search');
-        
-        const textResults = await db.execute(sql`
-          SELECT 
-            kc.id,
-            kc.document_id AS "documentId", 
-            kd.title,
-            kc.content,
-            kd.source_url AS url
-          FROM knowledge_chunk kc
-          JOIN knowledge_document kd ON kc.document_id = kd.id
-          WHERE kd.user_id = ${userId}
-          AND kc.content ILIKE ${`%${query}%`}
-          LIMIT ${limit}
-        `);
-        
-        if (textResults.length > 0) {
-          console.log(`[LOCAL SEARCH] Found ${textResults.length} results using text search`);
-          
-          // Format results
-          return textResults.map((chunk: any) => ({
-            id: chunk.id,
-            documentId: chunk.documentid,
-            title: chunk.title || 'Untitled Document',
-            content: chunk.content,
-            url: chunk.url || '',
-            score: 0.5, // Default score for text matches
-          }));
-        }
-      } catch (dbError) {
-        console.error('[LOCAL SEARCH] Database vector search error:', dbError);
-        // Continue to fallback methods
-      }
-    }
-    
-    // Try using basic knowledge search with schema adapter
+    // Simplified search strategy: try direct schema adapter search first, then fallback
     try {
-      console.log('[LOCAL SEARCH] Trying direct schema adapter search');
-      const directResults = await basicKnowledgeSearch(query, userId, limit);
+      console.log('[LOCAL SEARCH] Using direct schema adapter search');
+      
+      // This will now use the normalized query and proper Drizzle ORM calls
+      const directResults = await basicKnowledgeSearch(normalizedQuery, userId, limit);
       
       if (directResults.length > 0) {
         console.log(`[LOCAL SEARCH] Found ${directResults.length} results using direct search`);
@@ -161,79 +104,27 @@ export async function searchKnowledgeLocal(
       console.error('[LOCAL SEARCH] Direct search error:', directError);
     }
     
-    // Fallback: Basic text search in the database
-    console.log('[LOCAL SEARCH] Falling back to basic text search');
-    try {
-      const textResults = await db.execute(sql`
-        SELECT 
-          kc.id,
-          kc.document_id AS "documentId", 
-          kd.title,
-          kc.content,
-          kd.source_url AS url
-        FROM knowledge_chunk kc
-        JOIN knowledge_document kd ON kc.document_id = kd.id
-        WHERE kd.user_id = ${userId}
-        AND kc.content ILIKE ${`%${query}%`}
-        LIMIT ${limit}
-      `);
-      
-      if (textResults.length > 0) {
-        console.log(`[LOCAL SEARCH] Found ${textResults.length} results using text search`);
-        
-        // Format results
-        return textResults.map((chunk: any) => ({
-          id: chunk.id,
-          documentId: chunk.documentid,
-          title: chunk.title || 'Untitled Document',
-          content: chunk.content,
-          url: chunk.url || '',
-          score: 0.5, // Default score for text matches
-        }));
-      }
-    } catch (textError) {
-      console.error('[LOCAL SEARCH] Text search error:', textError);
-    }
-    
-    // Final fallback: Get most recent documents
+    // Simple fallback to recent documents
     console.log('[LOCAL SEARCH] Falling back to recent documents');
     try {
-      const recentResults = await db.execute(sql`
-        SELECT 
-          kc.id,
-          kc.document_id AS "documentId", 
-          kd.title,
-          kc.content,
-          kd.source_url AS url
-        FROM knowledge_chunk kc
-        JOIN knowledge_document kd ON kc.document_id = kd.id
-        WHERE kd.user_id = ${userId}
-        ORDER BY kd.created_at DESC
-        LIMIT ${limit}
-      `);
+      // Use the improved basicKnowledgeSearch for fallback too - it already has recent docs fallback
+      const fallbackResults = await basicKnowledgeSearch('', userId, limit); // Empty query gets recent docs
       
-      console.log(`[LOCAL SEARCH] Returning ${recentResults.length} recent documents`);
-      
-      // Format results
-      return recentResults.map((chunk: any) => ({
-        id: chunk.id,
-        documentId: chunk.documentid,
-        title: chunk.title || 'Untitled Document',
-        content: chunk.content,
-        url: chunk.url || '',
-        score: 0.1, // Lower score for recent but not matching
-      }));
-    } catch (recentError) {
-      console.error('[LOCAL SEARCH] Recent documents error:', recentError);
+      if (fallbackResults.length > 0) {
+        console.log(`[LOCAL SEARCH] Returning ${fallbackResults.length} recent documents`);
+        return fallbackResults;
+      }
+    } catch (fallbackError) {
+      console.error('[LOCAL SEARCH] Fallback search error:', fallbackError);
     }
     
-    // Final fallback - use local files if nothing else works
+    // Last resort - use local files if nothing else works
     console.log('[LOCAL SEARCH] Using fallback local file search');
-    const fallbackResults = getFallbackResults(query, userId, limit);
+    const localFallbackResults = getFallbackResults(query, userId, limit);
     
-    if (fallbackResults.length > 0) {
-      console.log(`[LOCAL SEARCH] Found ${fallbackResults.length} results using fallback search`);
-      return fallbackResults;
+    if (localFallbackResults.length > 0) {
+      console.log(`[LOCAL SEARCH] Found ${localFallbackResults.length} results using local fallback search`);
+      return localFallbackResults;
     }
     
     // If all else fails, return empty array
@@ -241,6 +132,7 @@ export async function searchKnowledgeLocal(
     return [];
   } catch (error) {
     console.error('[LOCAL SEARCH] Error in knowledge search:', error);
-    throw error;
+    // Return empty array instead of throwing to improve resilience
+    return [];
   }
 }
