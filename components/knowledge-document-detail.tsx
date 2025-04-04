@@ -201,6 +201,19 @@ export function KnowledgeDocumentDetail({
                     </a>
                   </div>
                 )}
+                {(() => {
+                  try {
+                    return document.transcriptCharCount && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Characters:</span>
+                        <span>{document.transcriptCharCount}</span>
+                      </div>
+                    );
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
+                
                 {document.fileSize && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">File Size:</span>

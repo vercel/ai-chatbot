@@ -522,6 +522,7 @@ export async function updateKnowledgeDocument({
   description,
   status,
   processingError,
+  transcriptCharCount,
 }: {
   id: string;
   title?: string;
@@ -537,6 +538,7 @@ export async function updateKnowledgeDocument({
   if (description !== undefined) values.description = description;
   if (status !== undefined) values.status = status;
   if (processingError !== undefined) values.processingError = processingError;
+  if (transcriptCharCount !== undefined) values.transcriptCharCount = transcriptCharCount;
 
   const result = await db
     .update(knowledgeDocument)

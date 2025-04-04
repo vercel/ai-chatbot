@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import { KnowledgeDocument, KnowledgeChunk } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
+
+
 import { ArrowLeft, Trash2, FileIcon, ExternalLinkIcon, FileAudio, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -89,6 +91,62 @@ export default function KnowledgeDocumentPage({
     loadInitialData();
     // Only depend on id, not document which would cause extra fetches
   }, [id]);
+  
+  // Add effect to update transcript character count if needed
+  useEffect(() => {
+    if (transcript?.text && document?.sourceType === 'audio' && 
+        document?.status === 'completed') {
+      // Try to update the transcript character count, but won't fail if column doesn't exist
+      updateTranscriptCharCount();
+    }
+  }, [transcript, document, id]);
+  
+  // Function to update transcript character count if missing
+  const updateTranscriptCharCount = async () => {
+    try {
+      // Check if document is audio and has transcript but no character count
+      if (document?.sourceType === 'audio' && 
+          document?.status === 'completed' && 
+          transcript?.text) {
+        
+        // Check if transcriptCharCount exists (might be undefined before migration)
+        let needsUpdate = false;
+        try {
+          needsUpdate = !document.transcriptCharCount;
+        } catch (e) {
+          needsUpdate = true; // Column doesn't exist yet
+        }
+        
+        if (needsUpdate) {
+          const charCount = `${transcript.text.length.toLocaleString()} chars`;
+          try {
+            const response = await fetch(`/api/knowledge/${id}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                transcriptCharCount: charCount
+              }),
+            });
+    
+            if (response.ok) {
+              console.log('Updated transcript character count successfully');
+              setDocument(prev => prev ? {
+                ...prev, 
+                transcriptCharCount: charCount
+              } : null);
+            }
+          } catch (error) {
+            // If this fails, it's likely because the column doesn't exist yet
+            console.error('Error updating transcript character count:', error);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error in updateTranscriptCharCount:', e);
+    }
+  };
   
   // Function to refresh document data
   const refreshDocument = async () => {
@@ -307,7 +365,20 @@ export default function KnowledgeDocumentPage({
           {/* Transcript Viewer for Voice Notes - Removed */}
           {document.sourceType === 'audio' && transcript && (
             <div className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Transcript</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Transcript</h2>
+                {transcript.text && (
+                  <span className="text-sm text-muted-foreground">
+                    {(() => {
+                      try {
+                        return document.transcriptCharCount || `${transcript.text.length.toLocaleString()} chars`;
+                      } catch (e) {
+                        return `${transcript.text.length.toLocaleString()} chars`;
+                      }
+                    })()}
+                  </span>
+                )}
+              </div>
               <div className="bg-muted p-4 rounded-md">
                 <pre className="whitespace-pre-wrap">{transcript.text}</pre>
               </div>

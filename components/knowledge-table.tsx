@@ -36,12 +36,28 @@ export function KnowledgeTable({ initialDocuments, chunks = {} }: KnowledgeTable
   const getTotalCharCount = () => {
     let total = 0;
     documents.forEach(doc => {
-      const size = getDocumentSize(doc, false);
-      if (typeof size === 'number') {
-        total += size;
+      // For audio files, only include those with processed transcripts
+      if (doc.sourceType === 'audio') {
+        try {
+          if (doc.transcriptCharCount) {
+            // Extract number from "X chars" format
+            const match = doc.transcriptCharCount.match(/(\d+)\s*chars/);
+            if (match && match[1]) {
+              total += parseInt(match[1], 10);
+            }
+          }
+        } catch (e) {
+          // Column might not exist yet, ignore
+        }
+      } else {
+        // For non-audio files, count as before
+        const size = getDocumentSize(doc, false);
+        if (typeof size === 'number') {
+          total += size;
+        }
       }
     });
-    return total.toLocaleString();
+    return `${total.toLocaleString()} chars`;
   };
   
   // Get character count for a single document
@@ -54,20 +70,34 @@ export function KnowledgeTable({ initialDocuments, chunks = {} }: KnowledgeTable
       docChunks.forEach(chunk => {
         size += chunk.content.length;
       });
-    } else {
-      // Parse the fileSize field if it contains a number followed by 'chars'
-      if (doc.fileSize && doc.fileSize.includes('chars')) {
-        const match = doc.fileSize.match(/(\d+)\s*chars/);
-        if (match && match[1]) {
-          size = parseInt(match[1], 10);
+      return formatted ? `${size.toLocaleString()} chars` : size;
+    } else if (doc.sourceType === 'audio') {
+      // For audio files, show transcript character count if available, otherwise show file size
+      // Handle both with and without transcriptCharCount column (before migration)
+      try {
+        if (doc.transcriptCharCount) {
+          return doc.transcriptCharCount; // Already formatted as "X chars"
         }
-      } else {
-        // Fallback to approximation if no fileSize information
-        size = doc.description?.length || 0;
+      } catch (e) {
+        // Column might not exist yet, ignore
       }
+      // If transcript char count isn't available yet (e.g. processing), show file size
+      return doc.fileSize;
+    } else if (doc.fileSize && doc.fileSize.includes('chars')) {
+      // Parse the fileSize field if it contains a number followed by 'chars'
+      const match = doc.fileSize.match(/(\d+)\s*chars/);
+      if (match && match[1]) {
+        size = parseInt(match[1], 10);
+        return formatted ? `${size.toLocaleString()} chars` : size;
+      }
+    } else {
+      // Fallback to approximation if no fileSize information
+      size = doc.description?.length || 0;
+      return formatted ? `${size.toLocaleString()} chars` : size;
     }
     
-    return formatted ? size.toLocaleString() : size;
+    // Default fallback
+    return formatted ? `${size.toLocaleString()} chars` : size;
   };
   
   // Get source type icon
@@ -117,9 +147,66 @@ export function KnowledgeTable({ initialDocuments, chunks = {} }: KnowledgeTable
           comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
         case 'size':
-        const sizeA = getDocumentSize(a, false) as number;
-        const sizeB = getDocumentSize(b, false) as number;
-        comparison = sizeA - sizeB;
+        // Special handling for audio files - they should sort by transcript char count if available
+        if (a.sourceType === 'audio' && b.sourceType === 'audio') {
+          try {
+            if (a.transcriptCharCount && b.transcriptCharCount) {
+              // Extract char counts from both and compare
+              const countA = parseInt(a.transcriptCharCount.match(/(\d+)\s*chars/)?.[1] || '0', 10);
+              const countB = parseInt(b.transcriptCharCount.match(/(\d+)\s*chars/)?.[1] || '0', 10);
+              comparison = countA - countB;
+            } else if (a.transcriptCharCount) {
+              comparison = 1; // a has char count, b doesn't - a should be higher
+            } else if (b.transcriptCharCount) {
+              comparison = -1; // b has char count, a doesn't - b should be higher
+            } else {
+              // Neither has char count, fall back to KB values
+              const kbA = parseFloat(a.fileSize?.replace(' KB', '') || '0');
+              const kbB = parseFloat(b.fileSize?.replace(' KB', '') || '0');
+              comparison = kbA - kbB;
+            }
+          } catch (e) {
+            // Column might not exist yet, fall back to file size
+            const kbA = parseFloat(a.fileSize?.replace(' KB', '') || '0');
+            const kbB = parseFloat(b.fileSize?.replace(' KB', '') || '0');
+            comparison = kbA - kbB;
+          }
+        } else if (a.sourceType === 'audio') {
+          try {
+            if (a.transcriptCharCount) {
+              // Use a's char count for comparison
+              const countA = parseInt(a.transcriptCharCount.match(/(\d+)\s*chars/)?.[1] || '0', 10);
+              const sizeB = getDocumentSize(b, false) as number;
+              comparison = countA - sizeB;
+            } else {
+              // No char count, audio files without transcripts should come before text
+              comparison = -1;
+            }
+          } catch (e) {
+            // Column might not exist yet
+            comparison = -1;
+          }
+        } else if (b.sourceType === 'audio') {
+          try {
+            if (b.transcriptCharCount) {
+              // Use b's char count for comparison
+              const countB = parseInt(b.transcriptCharCount.match(/(\d+)\s*chars/)?.[1] || '0', 10);
+              const sizeA = getDocumentSize(a, false) as number;
+              comparison = sizeA - countB;
+            } else {
+              // No char count, audio files without transcripts should come before text
+              comparison = 1;
+            }
+          } catch (e) {
+            // Column might not exist yet
+            comparison = 1;
+          }
+        } else {
+          // Normal comparison for non-audio files
+          const sizeA = getDocumentSize(a, false) as number;
+          const sizeB = getDocumentSize(b, false) as number;
+          comparison = sizeA - sizeB;
+        }
         break;
       }
       

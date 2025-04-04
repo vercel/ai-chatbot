@@ -146,6 +146,7 @@ export const knowledgeDocument = pgTable('KnowledgeDocument', {
     enum: ['processing', 'completed', 'failed']
   }).notNull().default('processing'),
   processingError: text('processingError'),
+  transcriptCharCount: varchar('transcriptCharCount', { length: 50 }),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });

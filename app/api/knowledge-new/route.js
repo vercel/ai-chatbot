@@ -248,31 +248,37 @@ export async function POST(req) {
       const audioFile = formData.get('file');
       const audioBlob = formData.get('audioBlob');
       if (audioFile) {
-        const estimatedChars = Math.round((audioFile.size / 1024) * 500);
-        fileSize = `${estimatedChars} chars`;
+        // Format file size in KB for consistency with other routes
+        fileSize = `${(audioFile.size / 1024).toFixed(2)} KB`;
         fileType = audioFile.type || 'audio/webm';
       } else if (audioBlob) {
-        const estimatedChars = Math.round((audioBlob.size / 1024) * 500);
-        fileSize = `${estimatedChars} chars`;
+        // Format file size in KB for consistency with other routes
+        fileSize = `${(audioBlob.size / 1024).toFixed(2)} KB`;
         fileType = 'audio/webm';
       } else {
-        fileSize = '2000 chars';
+        fileSize = '0 KB';
         fileType = 'audio/webm';
       }
     }
     
     // Create a document in the database
-    const document = await createKnowledgeDocument({
-      userId,
-      title,
-      description,
-      sourceType,
-      sourceUrl: sourceUrl || '',
-      fileSize,
-      fileType,
-    });
-    
-    console.log(`[KNOWLEDGE-NEW] Document created with ID: ${document.id}`);
+    let document;
+    try {
+      document = await createKnowledgeDocument({
+        userId,
+        title,
+        description,
+        sourceType,
+        sourceUrl: sourceUrl || '',
+        fileSize,
+        fileType,
+      });
+      
+      console.log(`[KNOWLEDGE-NEW] Document created with ID: ${document.id}`);
+    } catch (createError) {
+      console.error('[KNOWLEDGE-NEW] Error creating document:', createError);
+      throw createError;
+    }
 
     // Handle text content - create basic chunks
     if (sourceType === 'text') {

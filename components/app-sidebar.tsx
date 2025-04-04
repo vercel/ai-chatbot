@@ -12,7 +12,7 @@ import {
   SidebarFooter, 
   SidebarProvider
 } from '@/components/ui/sidebar';
-import { BookOpen, MessageSquare, Menu, Plus } from 'lucide-react';
+import { BookOpen, MessageSquare, Menu, Plus, Mic } from 'lucide-react';
 import { IconWrapper } from './ui/icon-wrapper';
 import { SidebarUserNav } from './sidebar-user-nav';
 import { Button } from './ui/button';
@@ -31,7 +31,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | null>(null);
+  const [activeSection, setActiveSection] = useState<'threads' | 'knowledge' | 'recorder' | null>(null);
   
   // Check if mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -63,6 +63,8 @@ export function AppSidebar({
       setActiveSection('threads');
     } else if (pathname.startsWith('/knowledge')) {
       setActiveSection('knowledge');
+    } else if (pathname.startsWith('/recorder')) {
+      setActiveSection('recorder');
     } else {
       setActiveSection(null);
     }
@@ -116,6 +118,8 @@ export function AppSidebar({
         return 'Wizzo Chat';
       case 'knowledge':
         return 'Knowledge Base';
+      case 'recorder':
+        return 'Audio Recorder';
       default:
         return 'Wizzo';
     }
@@ -140,7 +144,7 @@ export function AppSidebar({
             className="md:hidden fixed top-3 left-3 z-50 p-2 rounded-md bg-[#2A5B34] shadow-sm border border-white/10"
             onClick={toggleSidebar}
           >
-            <Menu className="h-5 w-5 text-white" />
+            <Menu className="size-5 text-white" />
           </button>
         )}
         
@@ -152,7 +156,7 @@ export function AppSidebar({
               onClick={handleNewChat}
               className="flex w-full items-center rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium shadow-sm hover:bg-white/20 transition-colors group"
             >
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 size-4" />
               <span className={`${isMobile || isSidebarOpen ? 'block' : 'hidden'} flex-1 text-left`}>New chat</span>
               {/* Removed redundant sidebar toggle */}
             </button>
@@ -160,7 +164,7 @@ export function AppSidebar({
 
           {/* History list */}
           <div className={`flex-1 overflow-hidden ${isMobile || isSidebarOpen ? 'block' : 'hidden'}`}>
-            <ScrollArea className="h-full px-2">
+            <ScrollArea className="h-full size-full px-2">
               {user && <SidebarHistory user={user} />}
             </ScrollArea>
           </div>
@@ -177,7 +181,7 @@ export function AppSidebar({
                 }`}
                 onClick={() => handleNavigation('/')}
               >
-                <MessageSquare className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                <MessageSquare className={`size-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
                 {(isMobile || isSidebarOpen) && <span>Chats</span>}
               </button>
               
@@ -189,8 +193,20 @@ export function AppSidebar({
                 }`}
                 onClick={() => handleNavigation('/knowledge')}
               >
-                <BookOpen className={`h-4 w-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                <BookOpen className={`size-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
                 {(isMobile || isSidebarOpen) && <span>Knowledge</span>}
+              </button>
+              
+              <button
+                className={`flex items-center rounded-md px-3 py-2 text-sm ${isMobile || isSidebarOpen ? 'justify-start w-full' : 'justify-center'} ${
+                  activeSection === 'recorder' 
+                    ? 'bg-white/20 text-white font-medium' 
+                    : 'text-white/80 hover:bg-white/10'
+                }`}
+                onClick={() => handleNavigation('/recorder')}
+              >
+                <Mic className={`size-4 ${isMobile || isSidebarOpen ? 'mr-2' : ''}`} />
+                {(isMobile || isSidebarOpen) && <span>Recorder</span>}
               </button>
             </div>
             

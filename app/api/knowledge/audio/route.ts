@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       description,
       sourceType: 'audio',
       sourceUrl: '',
-      fileSize: (audioFile.size / 1024).toFixed(2) + ' KB',
+      fileSize: (audioFile.size / 1024).toFixed(2) + ' KB', // Store file size in KB format
       fileType: audioFile.type,
     });
     

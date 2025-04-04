@@ -229,3 +229,12 @@ export function getDocumentTimestampByIndex(
 
   return documents[index].createdAt;
 }
+
+/**
+ * Format seconds into mm:ss format
+ */
+export function formatDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
