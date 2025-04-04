@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Pause, Play, Save, StopCircle, Trash2 } from 'lucide-react';
+import { Mic, Pause, Play, Save, StopCircle, Trash2, Download, FileVideo } from 'lucide-react';
 
 interface AudioControlsProps {
   isRecording: boolean;
@@ -15,6 +15,7 @@ interface AudioControlsProps {
   resumeRecording: () => void;
   stopRecording: () => void;
   saveRecording: () => void;
+  saveRecordingAsMP4: () => void;
   discardRecording: () => void;
 }
 
@@ -29,6 +30,7 @@ export function AudioControls({
   resumeRecording,
   stopRecording,
   saveRecording,
+  saveRecordingAsMP4,
   discardRecording
 }: AudioControlsProps) {
   return (
@@ -113,6 +115,19 @@ export function AudioControls({
               <>
                 <Save className="mr-2 h-4 w-4" />
                 Save Recording
+              </>
+            )}
+          </Button>
+
+          <Button 
+            onClick={saveRecordingAsMP4}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Processing...' : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Download as MP3
               </>
             )}
           </Button>

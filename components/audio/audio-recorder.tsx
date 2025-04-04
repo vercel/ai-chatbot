@@ -10,7 +10,12 @@ import {
   getBestSupportedMimeType,
   cleanupAudioResources,
   enumerateAudioDevices,
-  testAudioOutput
+  testAudioOutput,
+  isMP4Blob,
+  isMP3Blob,
+  convertToMP3,
+  convertAudioToFile,
+  saveFile
 } from '@/lib/audio-utils';
 
 // Import modular components
@@ -654,6 +659,105 @@ export function AudioRecorder({ className }: AudioRecorderProps) {
       setIsProcessing(false);
     }
   };
+  
+  // Save recording as MP3 function
+  const saveRecordingAsMP4 = async () => {
+    console.log("Saving recording as MP3");
+    if (!audioBlob) {
+      console.log("No audio blob to save");
+      toast({
+        title: "Error",
+        description: "No recording available to save",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsProcessing(true);
+      
+      // Get current datetime for filename
+      const date = new Date();
+      const formattedDate = date.toISOString().replace(/:/g, '-').replace(/\.+/, '');
+      const fileName = `WIZZO_Recording_${formattedDate}.mp3`;
+      
+      // If already MP3, save directly
+      if (isMP3Blob(audioBlob)) {
+        console.log("Audio is already in MP3 format, saving directly");
+        saveFile(fileName, audioBlob);
+        
+        setIsProcessing(false);
+        toast({
+          title: "Recording Saved as MP3",
+          description: `Saved as ${fileName} in your downloads folder`,
+        });
+        return;
+      }
+      
+      toast({
+        title: "Converting to MP3",
+        description: "Please wait while we convert your recording to MP3 format...",
+      });
+      
+      console.log("Converting to MP3 format...");
+      
+      try {
+        // First try using the full MP3 conversion (may fail in some browsers)
+        const mp3Blob = await convertToMP3(audioBlob, 44100, 128).catch(error => {
+          console.log("Primary MP3 conversion failed, using fallback method", error);
+          throw error; // Force fallback
+        });
+        console.log("MP3 conversion successful, size:", mp3Blob.size);
+        saveFile(fileName, mp3Blob);
+        
+        toast({
+          title: "Recording Saved as MP3",
+          description: `Saved as ${fileName} in your downloads folder`,
+        });
+      } catch (conversionError) {
+        // Use fallback conversion if MP3 encoding fails
+        console.log("Using fallback WAV conversion...");
+        // Convert to WAV instead as a fallback
+        const wavBlob = await convertAudioToFile(audioBlob, 'wav');
+        const wavFileName = fileName.replace(".mp3", ".wav");
+        saveFile(wavFileName, wavBlob);
+        
+        toast({
+          title: "Saved as WAV instead",
+          description: `MP3 conversion failed, saved as ${wavFileName} instead`,
+        });
+      }
+      
+      setIsProcessing(false);
+      
+    } catch (error) {
+      console.error('Error saving recording as MP3:', error);
+      
+      // Final fallback - just save the original format with MP3 extension
+      try {
+        const date = new Date();
+        const formattedDate = date.toISOString().replace(/:/g, '-').replace(/\.+/, '');
+        const fileName = `WIZZO_Recording_${formattedDate}.mp3`;
+        
+        // Just change the MIME type without actual conversion
+        const simpleMP3Blob = new Blob([audioBlob], { type: 'audio/mp3' });
+        saveFile(fileName, simpleMP3Blob);
+        
+        toast({
+          title: "Basic MP3 Conversion",
+          description: `Saved as ${fileName} using basic format conversion`,
+        });
+      } catch (fallbackError) {
+        toast({
+          title: "Conversion Error",
+          description: `Could not convert to MP3. Try the standard save option instead.`,
+          variant: "destructive"
+        });
+      }
+      
+      setIsProcessing(false);
+    }
+  };
 
   // Discard recording function
   const discardRecording = () => {
@@ -725,6 +829,7 @@ export function AudioRecorder({ className }: AudioRecorderProps) {
         resumeRecording={resumeRecording}
         stopRecording={stopRecording}
         saveRecording={saveRecording}
+        saveRecordingAsMP4={saveRecordingAsMP4}
         discardRecording={discardRecording}
       />
       

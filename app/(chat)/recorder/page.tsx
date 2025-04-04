@@ -25,7 +25,7 @@ export default function RecorderPage() {
             <CardHeader>
               <CardTitle>WIZZO Audio Recorder</CardTitle>
               <CardDescription>
-                Record high-quality audio and visualize the waveform in real-time.
+              Record high-quality audio, visualize the waveform in real-time, and download in MP3 format.
               </CardDescription>
             </CardHeader>
             <CardContent>

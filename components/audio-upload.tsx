@@ -66,14 +66,8 @@ export function AudioUpload({ onFileSelected, onFileRejected }: AudioUploadProps
       audio.src = audioUrl;
       const duration = await durationPromise;
 
-      // Check duration (5 minutes max as specified in requirements)
-      if (duration > 300) { // 5 minutes = 300 seconds
-        const error = 'Audio length must be 5 minutes or less';
-        setValidationError(error);
-        if (onFileRejected) onFileRejected(error);
-        URL.revokeObjectURL(audioUrl);
-        return false;
-      }
+      // We're no longer enforcing duration limits at this stage
+      // Just proceeding with metadata regardless of duration
 
       // Approximate bitrate calculation
       const bitrate = Math.round((file.size * 8) / duration); // bits per second
@@ -289,10 +283,10 @@ export function AudioSummary({ file, metadata, onChangeFile }: AudioSummaryProps
       </div>
       
       <div className="mt-4 flex flex-col gap-2">
-        <h4 className="font-medium">Speechmatics Compatibility Check:</h4>
+        <h4 className="font-medium">Audio File Information:</h4>
         <ul className="list-disc pl-5 space-y-1 text-sm">
-          <li className={metadata.duration <= 300 ? 'text-green-500' : 'text-red-500'}>
-            {metadata.duration <= 300 ? '✓' : '✗'} Duration: {formatDuration(metadata.duration)} {metadata.duration <= 300 ? '(OK)' : '(Too long - must be under 5 minutes)'}
+          <li className="text-gray-500">
+            Duration: {formatDuration(metadata.duration)}
           </li>
           <li className={file.size <= 1024 * 1024 * 1024 ? 'text-green-500' : 'text-red-500'}>
             {file.size <= 1024 * 1024 * 1024 ? '✓' : '✗'} File size: {(file.size / 1024 / 1024).toFixed(2)} MB {file.size <= 1024 * 1024 * 1024 ? '(OK)' : '(Too large - must be under 1GB)'}

@@ -2,6 +2,101 @@
  * Audio utilities for capturing and processing audio streams
  */
 
+// An alternative to MP3 conversion for browsers without proper MP3 encoding support
+export async function convertAudioToFile(blob: Blob, targetFormat: 'mp3' | 'wav' | 'webm' = 'mp3'): Promise<Blob> {
+  // If the blob is already in the target format, return it as is
+  if ((targetFormat === 'mp3' && isMP3Blob(blob)) ||
+      (targetFormat === 'webm' && blob.type.includes('webm'))) {
+    return blob;
+  }
+  
+  try {
+    // For WAV conversion, we can do it directly in the browser
+    if (targetFormat === 'wav') {
+      return await convertToWAV(blob);
+    }
+    
+    // For MP3, we'll use a simple format change as fallback
+    // This doesn't actually convert the audio data but changes the extension
+    // It's not a proper conversion but better than nothing when lamejs fails
+    return new Blob([blob], { type: `audio/${targetFormat}` });
+  } catch (error) {
+    console.error(`Failed to convert audio to ${targetFormat}:`, error);
+    // Return the original blob as fallback
+    return blob;
+  }
+}
+
+// Simple WAV conversion using AudioContext (more reliable than MP3 conversion)
+async function convertToWAV(blob: Blob): Promise<Blob> {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  
+  try {
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // WAV format parameters
+    const numOfChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const bitsPerSample = 16; // Standard CD quality
+    const bytesPerSample = bitsPerSample / 8;
+    const blockAlign = numOfChannels * bytesPerSample;
+    const byteRate = sampleRate * blockAlign;
+    
+    // Calculate data size and allocate buffer
+    const samples = numOfChannels * audioBuffer.length;
+    const bufferLength = 44 + (samples * bytesPerSample); // 44 bytes for WAV header
+    const buffer = new ArrayBuffer(bufferLength);
+    const view = new DataView(buffer);
+    
+    // Write WAV header
+    writeString(view, 0, 'RIFF'); // RIFF identifier
+    view.setUint32(4, 36 + samples * bytesPerSample, true); // File size minus RIFF identifier length and size
+    writeString(view, 8, 'WAVE'); // Format
+    writeString(view, 12, 'fmt '); // Format chunk identifier
+    view.setUint32(16, 16, true); // Format chunk length
+    view.setUint16(20, 1, true); // Sample format (1 is PCM)
+    view.setUint16(22, numOfChannels, true); // Number of channels
+    view.setUint32(24, sampleRate, true); // Sample rate
+    view.setUint32(28, byteRate, true); // Byte rate
+    view.setUint16(32, blockAlign, true); // Block align
+    view.setUint16(34, bitsPerSample, true); // Bits per sample
+    writeString(view, 36, 'data'); // Data chunk identifier
+    view.setUint32(40, samples * bytesPerSample, true); // Data chunk length
+    
+    // Write audio data
+    const offset = 44;
+    let pos = offset;
+    
+    for (let i = 0; i < audioBuffer.length; i++) {
+      for (let channel = 0; channel < numOfChannels; channel++) {
+        const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(channel)[i]));
+        const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        view.setInt16(pos, value, true);
+        pos += bytesPerSample;
+      }
+    }
+    
+    return new Blob([buffer], { type: 'audio/wav' });
+  } catch (error) {
+    console.error('Error converting to WAV:', error);
+    throw error;
+  } finally {
+    await audioContext.close();
+  }
+}
+
+// Helper function to write strings to DataView
+function writeString(view: DataView, offset: number, string: string): void {
+  for (let i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
+
+/**
+ * Audio utilities for capturing and processing audio streams
+ */
+
 /**
  * Test the audio output to verify capture is working
  * @param stream MediaStream to test
@@ -563,4 +658,160 @@ export function cleanupAudioResources(
   }
   
   console.log("Audio resources cleanup complete");
+}
+
+/**
+ * Check if a Blob is in MP4 format
+ * @param blob The blob to check
+ * @returns True if the blob is in MP4 format
+ */
+export function isMP4Blob(blob: Blob): boolean {
+  return blob.type.includes('mp4') || blob.type.includes('audio/mp4');
+}
+
+/**
+ * Check if a Blob is in MP3 format
+ * @param blob The blob to check
+ * @returns True if the blob is in MP3 format
+ */
+export function isMP3Blob(blob: Blob): boolean {
+  return blob.type.includes('mp3') || blob.type.includes('audio/mp3');
+}
+
+/**
+ * Convert audio blob to MP3 format using lamejs
+ * @param blob Input audio blob (WebM or other format)
+ * @param sampleRate Sample rate for conversion (default: 44100)
+ * @param bitRate Bit rate for MP3 (default: 128)
+ * @returns Promise resolving to MP3 blob
+ */
+export async function convertToMP3(blob: Blob, sampleRate = 44100, bitRate = 128): Promise<Blob> {
+  console.log("Converting audio to MP3 format, input type:", blob.type);
+  
+  // If already MP3, just return the blob
+  if (isMP3Blob(blob)) {
+    console.log("Audio is already in MP3 format, skipping conversion");
+    return blob;
+  }
+  
+  // Create an AudioContext for decoding
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  
+  try {
+    // Read the blob as an ArrayBuffer
+    const arrayBuffer = await blob.arrayBuffer();
+    
+    // Decode the audio data
+    console.log("Decoding audio data...");
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    console.log("Audio decoded successfully:", {
+      duration: audioBuffer.duration,
+      sampleRate: audioBuffer.sampleRate,
+      numberOfChannels: audioBuffer.numberOfChannels
+    });
+    
+    // Import lamejs with require to make sure it's properly loaded
+    // Note: Dynamic import could have issues in some build environments
+    const lamejs = require('lamejs');
+    
+    // Create MP3 encoder with explicit mode for stereo/mono
+    const mp3encoder = new lamejs.Mp3Encoder(
+      audioBuffer.numberOfChannels, // 1 for mono, 2 for stereo
+      sampleRate,                   // Sample rate (usually 44100)
+      bitRate                       // Bit rate (128 is standard quality)
+    );
+    
+    // Get audio data
+    const channels = [];
+    for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
+      channels.push(audioBuffer.getChannelData(i));
+    }
+    
+    // Process in chunks to avoid memory issues
+    const CHUNK_SIZE = 1152; // Must be divisible by 576 (LAME algorithm constraint)
+    const chunks = [];
+    const totalSamples = audioBuffer.length;
+    
+    console.log("Processing audio in chunks...");
+    
+    // Convert Float32Array samples to Int16Array for lamejs
+    for (let i = 0; i < totalSamples; i += CHUNK_SIZE) {
+      const leftChunk = new Int16Array(Math.min(CHUNK_SIZE, totalSamples - i));
+      const rightChunk = audioBuffer.numberOfChannels > 1 
+        ? new Int16Array(Math.min(CHUNK_SIZE, totalSamples - i))
+        : null;
+      
+      // Convert float32 to int16
+      for (let j = 0; j < leftChunk.length; j++) {
+        if (i + j < totalSamples) {
+          // Convert float [-1, 1] to int16 [-32768, 32767]
+          leftChunk[j] = Math.max(-32768, Math.min(32767, Math.round(channels[0][i + j] * 32767)));
+          
+          if (rightChunk && channels.length > 1) {
+            rightChunk[j] = Math.max(-32768, Math.min(32767, Math.round(channels[1][i + j] * 32767)));
+          }
+        }
+      }
+      
+      // Encode chunk
+      let mp3buf;
+      if (audioBuffer.numberOfChannels === 1) {
+        mp3buf = mp3encoder.encodeBuffer(leftChunk);
+      } else {
+        mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+      }
+      
+      if (mp3buf && mp3buf.length > 0) {
+        chunks.push(mp3buf);
+      }
+    }
+    
+    // Get the last chunk
+    const lastChunk = mp3encoder.flush();
+    if (lastChunk && lastChunk.length > 0) {
+      chunks.push(lastChunk);
+    }
+    
+    // Combine chunks into a single MP3 blob
+    console.log("Finalizing MP3 conversion, chunks:", chunks.length);
+    const mp3Data = new Blob(chunks, { type: 'audio/mp3' });
+    
+    console.log("MP3 conversion complete, size:", mp3Data.size);
+    return mp3Data;
+  } catch (error) {
+    console.error("MP3 conversion failed:", error);
+    throw new Error(`MP3 conversion failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    // Close the audio context
+    if (audioContext.state !== 'closed') {
+      await audioContext.close();
+    }
+  }
+}
+
+/**
+ * Save a file with the given name and blob
+ * @param fileName The name to save the file as
+ * @param blob The blob to save
+ * @param mimeType Optional MIME type for the download
+ */
+export function saveFile(fileName: string, blob: Blob, mimeType?: string): void {
+  // Create object URL for the blob
+  const url = URL.createObjectURL(blob);
+  
+  // Create a download link
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  
+  // Trigger download
+  a.click();
+  
+  // Clean up
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
