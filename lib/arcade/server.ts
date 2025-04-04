@@ -2,6 +2,19 @@ import '@arcadeai/arcadejs/shims/web';
 import { Arcade, PermissionDeniedError } from '@arcadeai/arcadejs';
 import { formatOpenAIToolNameToArcadeToolName } from './utils';
 import type { AuthorizationResponse } from '@arcadeai/arcadejs/resources/shared.mjs';
+import { jsonSchema, type ToolSet } from 'ai';
+
+type FormattedTool = {
+  function: {
+    name: string;
+    parameters: any;
+    description: string;
+  };
+};
+
+type FormattedToolList = {
+  items: FormattedTool[];
+};
 
 export type ExecuteToolResult = {
   result?: any;
@@ -94,6 +107,101 @@ class ArcadeServer {
     } catch (error) {
       console.error('Error waiting for auth and executing tool', error);
       return { error: 'Failed to complete authorization and execute tool' };
+    }
+  }
+
+  public async getTools({
+    userId,
+    toolkit,
+  }: { userId: string; toolkit?: string }): Promise<ToolSet> {
+    try {
+      const arcadeTools = await this.client.tools.list({
+        limit: 1000,
+        ...(toolkit && { toolkit }),
+      });
+
+      const formattedTools = (await this.client.tools.formatted.list({
+        limit: 1000,
+        format: 'openai',
+        ...(toolkit && { toolkit }),
+      })) as FormattedToolList;
+
+      // Create maps for arcadeTools and formattedTools using their names as keys
+      const arcadeToolsMap = new Map(
+        arcadeTools.items.map((tool) => [
+          `${tool.toolkit.name}.${tool.name}`,
+          tool,
+        ]),
+      );
+      const formattedToolsMap = new Map(
+        formattedTools.items.map((tool) => [
+          formatOpenAIToolNameToArcadeToolName(tool.function.name),
+          tool,
+        ]),
+      );
+
+      // Traverse the arcadeToolsMap and create a valid ToolSet
+      const tools: ToolSet = {};
+      arcadeToolsMap.forEach((arcadeTool, name) => {
+        const formattedTool = formattedToolsMap.get(name);
+        const needsAuth = Boolean(arcadeTool.requirements?.authorization);
+        if (formattedTool) {
+          tools[formattedTool.function.name] = {
+            parameters: jsonSchema(formattedTool.function.parameters),
+            description: formattedTool.function.description,
+            execute: needsAuth
+              ? undefined
+              : async (input: any) => {
+                  return await this.client.tools.execute({
+                    tool_name: name,
+                    input,
+                    user_id: userId,
+                  });
+                },
+          };
+        }
+      });
+
+      return tools;
+    } catch (error) {
+      console.error('Error in getTools', error);
+      return {} as ToolSet;
+    }
+  }
+
+  public async getToolkits({ userId }: { userId: string }): Promise<string[]> {
+    const tools = await this.client.tools.list({
+      limit: 1000,
+    });
+    const toolkitSet = new Set<string>();
+    for (const tool of tools.items) {
+      toolkitSet.add(tool.toolkit.name);
+    }
+    return Array.from(toolkitSet);
+  }
+
+  public async getToolsByToolkits({
+    userId,
+    toolkits,
+  }: { userId: string; toolkits: string[] }): Promise<ToolSet> {
+    if (!toolkits || toolkits.length === 0) {
+      return this.getTools({ userId });
+    }
+
+    const tools: ToolSet = {};
+    try {
+      const toolkitPromises = toolkits.map((toolkit) =>
+        this.getTools({ userId, toolkit }),
+      );
+      const toolkitResults = await Promise.all(toolkitPromises);
+
+      for (const toolkitTools of toolkitResults) {
+        Object.assign(tools, toolkitTools);
+      }
+      return tools;
+    } catch (error) {
+      console.error('Error fetching tools by toolkits:', error);
+      return tools;
     }
   }
 }

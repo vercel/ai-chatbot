@@ -58,7 +58,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         throw new Error(`No document handler found for kind: ${kind}`);
       }
 
-      await documentHandler.onCreateDocument({
+      const draftContent = await documentHandler.onCreateDocument({
         id,
         title,
         dataStream,
@@ -72,7 +72,8 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         id,
         title,
         kind,
-        content: 'A document was created and is now visible to the user.',
+        content: 'Document created successfully.',
+        documentContent: draftContent,
       };
     },
   });

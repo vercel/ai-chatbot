@@ -8,7 +8,10 @@ import {
   X,
   Zoom,
   Discord,
+  Codesandbox,
 } from '@/components/icons/index';
+
+import { Ruler, Search } from 'lucide-react';
 
 type AuthProvider = {
   provider_id: string;
@@ -50,7 +53,7 @@ export const AuthProviders: AuthProvider[] = [
   },
   {
     provider_id: 'arcade-notion',
-    toolkit_id: 'notion',
+    toolkit_id: 'notiontoolkit',
     name: 'Notion',
     icon: Notion,
   },
@@ -71,6 +74,24 @@ export const AuthProviders: AuthProvider[] = [
     toolkit_id: 'discord',
     name: 'Discord',
     icon: Discord,
+  },
+  {
+    provider_id: 'arcade-codesandbox',
+    toolkit_id: 'codesandbox',
+    name: 'Codesandbox',
+    icon: Codesandbox,
+  },
+  {
+    provider_id: 'arcade-math',
+    toolkit_id: 'math',
+    name: 'Math',
+    icon: Ruler,
+  },
+  {
+    provider_id: 'arcade-search',
+    toolkit_id: 'search',
+    name: 'Search',
+    icon: Search,
   },
 ];
 

@@ -13,7 +13,7 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
       model: myProvider.languageModel('artifact-model'),
       system: sheetPrompt,
       prompt: initialContent
-        ? `Title: ${title}\n\nInitial Content:\n${initialContent}\n\nPlease continue working with this data, maintaining the same format and expanding upon it based on the title.`
+        ? `Title: ${title}\n\nInitial Content:\n${initialContent}\n\n`
         : title,
       schema: z.object({
         csv: z.string().describe('CSV data'),

@@ -14,7 +14,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
         'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
       experimental_transform: smoothStream({ chunking: 'word' }),
       prompt: initialContent
-        ? `Title: ${title}\n\nInitial Content:\n${initialContent}\n\nPlease continue writing and expand upon this content, maintaining the style and incorporating the initial content seamlessly.`
+        ? `Title: ${title}\n\nInitial Content:\n${initialContent}\n\n`
         : title,
       experimental_providerMetadata: initialContent
         ? {

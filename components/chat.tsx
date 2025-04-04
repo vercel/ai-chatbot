@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import type { Session } from 'next-auth';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { useLocalStorage } from 'usehooks-ts';
 
 export function Chat({
   id,
@@ -33,6 +34,7 @@ export function Chat({
   user: Session['user'] | undefined;
 }) {
   const { mutate } = useSWRConfig();
+  const [selectedToolkits] = useLocalStorage<string[]>('selected-toolkits', []);
 
   const {
     messages,
@@ -47,7 +49,7 @@ export function Chat({
     addToolResult,
   } = useChat({
     id,
-    body: { id, selectedChatModel: selectedChatModel },
+    body: { id, selectedChatModel: selectedChatModel, selectedToolkits },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,

@@ -8,3 +8,4 @@ export { default as Discord } from './discord';
 export { default as Notion } from './notion';
 export { default as X } from './x';
 export { default as Zoom } from './zoom';
+export { default as Codesandbox } from './codesandbox';

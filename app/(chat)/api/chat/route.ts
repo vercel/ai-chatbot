@@ -26,7 +26,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { readDocument } from '@/lib/ai/tools/read-document';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { getTools } from '@/lib/arcade/utils';
+import { arcadeServer } from '@/lib/arcade/server';
 
 export const maxDuration = 60;
 
@@ -36,10 +36,12 @@ export async function POST(request: Request) {
       id,
       messages,
       selectedChatModel,
+      selectedToolkits,
     }: {
       id: string;
       messages: Array<UIMessage>;
       selectedChatModel: string;
+      selectedToolkits: string[];
     } = await request.json();
 
     const session = await auth();
@@ -104,7 +106,11 @@ export async function POST(request: Request) {
       });
     }
 
-    const arcadeTools = await getTools({ userId: session.user.id });
+    const arcadeTools =
+      (await arcadeServer?.getToolsByToolkits({
+        userId: session.user.id,
+        toolkits: selectedToolkits,
+      })) ?? {};
 
     return createDataStreamResponse({
       execute: (dataStream) => {

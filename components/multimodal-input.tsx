@@ -23,6 +23,7 @@ import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { ToolkitSelector } from './toolkit-selector';
 
 function PureMultimodalInput({
   chatId,
@@ -248,8 +249,9 @@ function PureMultimodalInput({
         }}
       />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start gap-2">
         <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <ToolkitSelector />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
