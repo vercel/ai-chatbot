@@ -23,10 +23,17 @@ export function KnowledgeSelectionButton({ chatId, disabled = false }: Knowledge
   const [countBadge, setCountBadge] = useState(0);
 
   // Only run after component mounts on client
+  // Set hasMounted only once after initial render
   useEffect(() => {
     setHasMounted(true);
-    setCountBadge(selectedKnowledgeIds.length);
-  }, [selectedKnowledgeIds.length]);
+  }, []);
+  
+  // Update badge count whenever selected IDs change or after mounting
+  useEffect(() => {
+    if (hasMounted) {
+      setCountBadge(selectedKnowledgeIds.length);
+    }
+  }, [selectedKnowledgeIds.length, hasMounted]);
 
   const handleSelectKnowledge = (selectedIds: string[]) => {
     setSelectedKnowledgeIds(selectedIds);
@@ -37,7 +44,7 @@ export function KnowledgeSelectionButton({ chatId, disabled = false }: Knowledge
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            className={`rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 ml-1 relative ${selectedKnowledgeIds.length === 0 ? 'text-red-500' : ''}`}
+            className={`rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 ml-1 relative ${hasMounted && selectedKnowledgeIds.length === 0 ? 'text-red-500' : ''}`}
             onClick={(event) => {
               event.preventDefault();
               setIsModalOpen(true);
@@ -55,7 +62,7 @@ export function KnowledgeSelectionButton({ chatId, disabled = false }: Knowledge
           </Button>
         </TooltipTrigger>
         <TooltipContent side="top">
-          {hasMounted && (selectedKnowledgeIds.length === 0 ? 'No knowledge sources selected' : `${selectedKnowledgeIds.length} knowledge source${selectedKnowledgeIds.length === 1 ? '' : 's'} selected`)}
+          {!hasMounted ? 'Loading...' : (selectedKnowledgeIds.length === 0 ? 'No knowledge sources selected' : `${selectedKnowledgeIds.length} knowledge source${selectedKnowledgeIds.length === 1 ? '' : 's'} selected`)}
         </TooltipContent>
       </Tooltip>
 

@@ -22,10 +22,9 @@ export async function GET(req: NextRequest) {
     }));
     
     // Filter out documents that are not completed (still processing or failed)
-    // and limit to 10 most recent completed documents
+    // Return all completed documents, sorted from newest to oldest (already done by getKnowledgeDocumentsByUserId)
     const completedDocuments = formattedDocuments
-      .filter(doc => doc.status === 'completed')
-      .slice(0, 10);
+      .filter(doc => doc.status === 'completed');
     
     return NextResponse.json(completedDocuments);
   } catch (error) {
