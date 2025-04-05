@@ -10,17 +10,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { query, limit = 5 } = await req.json();
+    const { query, limit = 5, documentIds } = await req.json();
 
-    console.log(`Knowledge search API: Query="${query?.substring(0, 50)}...", User=${session.user.id}`);
+    console.log(`Knowledge search API: Query="${query?.substring(0, 50)}...", User=${session.user.id}, Filtered to ${documentIds ? documentIds.length : 'all'} documents`);
 
     if (!query) {
       console.error('Missing query parameter in knowledge search');
       return NextResponse.json({ error: 'Missing query parameter' }, { status: 400 });
     }
 
-    // Use our local search implementation
-    const results = await searchKnowledgeLocal(query, session.user.id, limit);
+    // Use our local search implementation with optional document filtering
+    const results = await searchKnowledgeLocal(query, session.user.id as string, limit, documentIds);
     
     console.log(`Knowledge search found ${results.length} results`);
     return NextResponse.json(results);

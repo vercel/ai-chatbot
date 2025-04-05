@@ -52,9 +52,13 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
 export async function searchKnowledgeLocal(
   query: string,
   userId: string,
-  limit: number = 5
+  limit: number = 5,
+  documentIds?: string[] // Add filter by document IDs
 ): Promise<any[]> {
   console.log(`[LOCAL SEARCH] Searching knowledge for query: "${query.substring(0, 50)}..."`);
+  if (DEBUG_MODE) {
+    console.log(`[LOCAL SEARCH] Search details:\n- User ID: ${userId}\n- Limit: ${limit}\n- Document filter: ${documentIds ? `${documentIds.length} docs` : 'none'}\n- Full query: ${query}`);
+  }
   if (DEBUG_MODE) {
     console.log(`[LOCAL SEARCH] Search details:\n- User ID: ${userId}\n- Limit: ${limit}\n- Full query: ${query}`);
   }
@@ -94,7 +98,7 @@ export async function searchKnowledgeLocal(
       console.log('[LOCAL SEARCH] Using direct schema adapter search');
       
       // This will now use the normalized query and proper Drizzle ORM calls
-      const directResults = await basicKnowledgeSearch(normalizedQuery, userId, limit);
+      const directResults = await basicKnowledgeSearch(normalizedQuery, userId, limit, documentIds);
       
       if (directResults.length > 0) {
         console.log(`[LOCAL SEARCH] Found ${directResults.length} results using direct search`);

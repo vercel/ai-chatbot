@@ -5,7 +5,7 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { sql, desc, eq, and } from 'drizzle-orm';
+import { sql, desc, eq, and, inArray } from 'drizzle-orm';
 import { knowledgeChunk, knowledgeDocument } from './schema';
 
 // Initialize database client
@@ -174,10 +174,11 @@ export async function executeQuery(query: string, params: any[] = []): Promise<a
 export async function basicKnowledgeSearch(
   searchQuery: string,
   userId: string,
-  limit: number = 5
+  limit: number = 5,
+  documentIds?: string[] // Add optional document filtering
 ): Promise<any[]> {
   try {
-    console.log(`Basic knowledge search: "${searchQuery.substring(0, 50)}..." for user ${userId}`);
+    console.log(`Basic knowledge search: "${searchQuery.substring(0, 50)}..." for user ${userId}${documentIds ? `, filtered to ${documentIds.length} docs` : ''}`);
     
     // Normalize and preprocess the search query for better matching
     const normalizedQuery = normalizeText(searchQuery);
@@ -212,21 +213,30 @@ export async function basicKnowledgeSearch(
         
         if (tsQueryString) {
           // Use full-text search with proper ranking
-          const results = await db.execute(sql`
-            SELECT 
-              kc.id,
-              kc."documentId", 
-              kd.title,
-              kc.content,
-              kd."sourceUrl" as url,
-              ts_rank(kc.content_tsv, to_tsquery('english', ${tsQueryString})) as score
-            FROM "KnowledgeChunk" kc
-            JOIN "KnowledgeDocument" kd ON kc."documentId" = kd.id
-            WHERE kd."userId" = ${userId}
-            AND kc.content_tsv @@ to_tsquery('english', ${tsQueryString})
-            ORDER BY score DESC
-            LIMIT ${limit}
-          `);
+          // Build the SQL query with optional document filtering
+        let query = sql`
+          SELECT 
+            kc.id,
+            kc."documentId", 
+            kd.title,
+            kc.content,
+            kd."sourceUrl" as url,
+            ts_rank(kc.content_tsv, to_tsquery('english', ${tsQueryString})) as score
+          FROM "KnowledgeChunk" kc
+          JOIN "KnowledgeDocument" kd ON kc."documentId" = kd.id
+          WHERE kd."userId" = ${userId}
+          AND kc.content_tsv @@ to_tsquery('english', ${tsQueryString})
+        `;
+        
+        // Add document filtering if provided
+        if (documentIds && documentIds.length > 0) {
+          query = sql`${query} AND kd.id IN (${sql.join(documentIds, sql`, `)})`;  
+        }
+        
+        // Add ordering and limit
+        query = sql`${query} ORDER BY score DESC LIMIT ${limit}`;
+        
+        const results = await db.execute(query);
           
           if (results.length > 0) {
             console.log(`Found ${results.length} results using full-text search`);
@@ -246,7 +256,7 @@ export async function basicKnowledgeSearch(
       console.log(`Falling back to ILIKE text search`);
       
       // Try with the processed query first
-      const processedResults = await db
+      let processedResultsQuery = db
         .select({
           id: knowledgeChunk.id,
           documentId: knowledgeChunk.documentId,
@@ -264,7 +274,17 @@ export async function basicKnowledgeSearch(
             eq(knowledgeDocument.userId, userId),
             sql`${knowledgeChunk.content} ILIKE ${`%${processedQuery}%`}`
           )
-        )
+        );
+        
+      // Add document filtering if provided
+      if (documentIds && documentIds.length > 0) {
+        processedResultsQuery = processedResultsQuery.where(
+          inArray(knowledgeDocument.id, documentIds)
+        );
+      }
+      
+      // Complete the query with ordering and limit
+      const processedResults = await processedResultsQuery
         .orderBy(desc(knowledgeDocument.createdAt))
         .limit(limit);
       
@@ -281,7 +301,7 @@ export async function basicKnowledgeSearch(
       }
       
       // If processed query failed, try the original normalized query
-      const normalizedResults = await db
+      let normalizedResultsQuery = db
         .select({
           id: knowledgeChunk.id,
           documentId: knowledgeChunk.documentId,
@@ -299,7 +319,17 @@ export async function basicKnowledgeSearch(
             eq(knowledgeDocument.userId, userId),
             sql`${knowledgeChunk.content} ILIKE ${`%${normalizedQuery}%`}`
           )
-        )
+        );
+        
+      // Add document filtering if provided
+      if (documentIds && documentIds.length > 0) {
+        normalizedResultsQuery = normalizedResultsQuery.where(
+          inArray(knowledgeDocument.id, documentIds)
+        );
+      }
+      
+      // Complete the query with ordering and limit
+      const normalizedResults = await normalizedResultsQuery
         .orderBy(desc(knowledgeDocument.createdAt))
         .limit(limit);
 
@@ -322,7 +352,7 @@ export async function basicKnowledgeSearch(
     // If no text matches, return most recent documents as a fallback
     console.log('Falling back to recent documents');
     try {
-      const recentResults = await db
+      let recentResultsQuery = db
         .select({
           id: knowledgeChunk.id,
           documentId: knowledgeChunk.documentId,
@@ -335,7 +365,17 @@ export async function basicKnowledgeSearch(
           knowledgeDocument,
           eq(knowledgeChunk.documentId, knowledgeDocument.id)
         )
-        .where(eq(knowledgeDocument.userId, userId))
+        .where(eq(knowledgeDocument.userId, userId));
+        
+      // Add document filtering if provided
+      if (documentIds && documentIds.length > 0) {
+        recentResultsQuery = recentResultsQuery.where(
+          inArray(knowledgeDocument.id, documentIds)
+        );
+      }
+      
+      // Complete the query with ordering and limit
+      const recentResults = await recentResultsQuery
         .orderBy(desc(knowledgeDocument.createdAt))
         .limit(limit);
 

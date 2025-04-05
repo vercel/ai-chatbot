@@ -1,6 +1,5 @@
 import {
   type Message,
-  type DataStream,
   createDataStreamResponse,
   smoothStream,
   streamText,
@@ -36,10 +35,11 @@ export async function POST(request: Request) {
   try {
     // Parse JSON once and validate required fields
     const data = await request.json();
-    const { id, messages, selectedChatModel } = data as { 
+    const { id, messages, selectedChatModel, selectedKnowledgeIds } = data as { 
       id: string; 
       messages: Array<Message>; 
-      selectedChatModel: string 
+      selectedChatModel: string;
+      selectedKnowledgeIds?: string[];
     };
     
     if (!id || !messages || !selectedChatModel) {
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`Chat API called - Chat ID: ${id}, Model: ${selectedChatModel}`);
+    console.log(`Chat API called - Chat ID: ${id}, Model: ${selectedChatModel}, Selected knowledge: ${selectedKnowledgeIds ? `${selectedKnowledgeIds.length} items` : 'all'}`);
     
     const session = await auth();
 
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     let referencesCompleted = false;
 
     return createDataStreamResponse({
-      execute: async (dataStream: DataStream) => {
+      execute: async (dataStream) => {
         try {
           console.log(`Streaming response for chat ${id} using model ${selectedChatModel}`);
           
@@ -108,6 +108,7 @@ export async function POST(request: Request) {
             const knowledgeResults = await searchTool({
               query: userMessage.content.toString(),
               limit: 5,
+              documentIds: selectedKnowledgeIds, // Pass selected knowledge IDs for filtering
             });
 
             console.log('Knowledge search results:', 
@@ -258,10 +259,11 @@ export async function POST(request: Request) {
                   }
                 }
               },
-              experimental_telemetry: {
-                isEnabled: true,
-                functionId: 'stream-text',
-              } as any,
+              // Removing experimental telemetry that's causing TypeScript errors
+              // experimental_telemetry: {
+              //   isEnabled: true,
+              //   functionId: 'stream-text',
+              // } as any,
             });
 
             result.consumeStream();

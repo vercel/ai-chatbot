@@ -2,8 +2,9 @@
 
 import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useEffect } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { useLocalStorage } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -34,6 +35,12 @@ export const Chat = memo(function Chat({
 }) {
   const { mutate } = useSWRConfig();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  // Track selected knowledge IDs for filtering search results
+  const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useLocalStorage<string[]>(
+    `chat-${id}-knowledge-selection`,
+    [] // Empty array means all knowledge is selected (default)
+  );
 
   const {
     messages,
@@ -47,7 +54,11 @@ export const Chat = memo(function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, selectedChatModel: selectedChatModel },
+    body: { 
+      id, 
+      selectedChatModel: selectedChatModel,
+      selectedKnowledgeIds: selectedKnowledgeIds.length > 0 ? selectedKnowledgeIds : undefined
+    },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -94,7 +105,7 @@ export const Chat = memo(function Chat({
 
   // Memoize expensive callbacks
   const handleSubmitMemoized = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    (e: React.FormEvent<HTMLFormElement> | { preventDefault?: () => void }) => {
       handleSubmit(e);
     },
     [handleSubmit]

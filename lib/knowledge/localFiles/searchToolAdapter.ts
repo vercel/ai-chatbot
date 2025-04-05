@@ -1,4 +1,9 @@
-import { type DataStream, type Session } from 'ai';
+import type { Session } from 'next-auth';
+
+// Create a simplified DataStream type since we can't import it
+type DataStream = {
+  write: (chunk: string) => void;
+};
 import { searchKnowledgeLocal } from './localSearch';
 import { KnowledgeReference } from '@/components/knowledge-references';
 import { generateUUID } from '@/lib/utils';
@@ -22,9 +27,11 @@ export function searchKnowledgeToolAdapter({
   return async function ({
     query,
     limit = 5,
+    documentIds,
   }: {
     query: string;
     limit?: number;
+    documentIds?: string[];
   }) {
     console.log(`\n[SEARCH TOOL] Query: "${query.substring(0, 50)}...", Limit: ${limit}`);
     
@@ -49,8 +56,8 @@ export function searchKnowledgeToolAdapter({
       }
 
       // Use our local search implementation with normalized query
-      console.log(`[SEARCH TOOL] Searching knowledge base...`);
-      const results = await searchKnowledgeLocal(normalizedQuery, session.user.id, Number(limit));
+      console.log(`[SEARCH TOOL] Searching knowledge base${documentIds ? ` with filter (${documentIds.length} docs)` : ''}...`);
+      const results = await searchKnowledgeLocal(normalizedQuery, session.user.id as string, Number(limit), documentIds);
       
       console.log(`[SEARCH TOOL] Found ${results.length} relevant chunks of information`);
 
@@ -110,7 +117,7 @@ export function searchKnowledgeToolAdapter({
           message: "No information found in the knowledge base. Please respond based on your general knowledge only."
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('[SEARCH TOOL] Error searching knowledge base:', error);
       // Return a more detailed error message
       return {
