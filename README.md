@@ -1,61 +1,113 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Next.js AI Chatbot</h1>
-</a>
+
+<div align="center">
+<p align="center">
+  <a href="https://arcade.dev/">
+    <h1 align="center">Arcade Chatbot</h1>
+  </a>
+</p>
+<img width="700" height="500" alt="Screenshot 2025-04-05 at 1 58 21 PM" src="https://github.com/user-attachments/assets/b6251cab-d17a-40a6-b052-b4c989340ca6" />
+</div>
 
 <p align="center">
-  An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.
+  A chatbot interface for Arcade tools, built with Next.js and the Arcade SDK.
+  Based on the <a href="https://github.com/vercel/ai-chatbot">Vercel AI Chatbot</a> template.
 </p>
 
+
+
 <p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
+  <a href="#features">Features</a> •
+  <a href="#prerequisites">Prerequisites</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#configuration">Configuration</a> •
+  <a href="#development">Development</a> •
+  <a href="#deployment">Deployment</a>
 </p>
-<br/>
 
 ## Features
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://sdk.vercel.ai/docs)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Vercel Postgres powered by Neon](https://vercel.com/storage/postgres) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [NextAuth.js](https://github.com/nextauthjs/next-auth)
-  - Simple and secure authentication
+- 🤖 Interactive chatbot interface for Arcade tools
+- ⚡️ Built with Next.js for optimal performance
+- 🛠 Seamless integration with Arcade SDK
+- 🔄 Support for both cloud and local development environments
+- 💬 Real-time chat interactions
+- 🎨 Clean and intuitive user interface
 
-## Model Providers
+## Prerequisites
 
-This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat model. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+Before you begin, ensure you have installed:
 
-## Deploy Your Own
+- Node.js 18.x or later
+- pnpm (recommended) or another package manager
+- An Arcade account with API access
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+## Installation
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Generate%20a%20random%20secret%20to%20use%20for%20authentication&envLink=https%3A%2F%2Fgenerate-secret.vercel.app%2F32&project-name=my-awesome-chatbot&repository-name=my-awesome-chatbot&demo-title=AI%20Chatbot&demo-description=An%20Open-Source%20AI%20Chatbot%20Template%20Built%20With%20Next.js%20and%20the%20AI%20SDK%20by%20Vercel&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22api-key%22%2C%22integrationSlug%22%3A%22groq%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
+1. Clone the repository:
 
-## Running locally
+```bash
+git clone https://github.com/arcadeai/arcade-chatbot.git
+cd arcade-chatbot
+```
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
-
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+2. Install dependencies:
 
 ```bash
 pnpm install
+```
+
+## Configuration
+
+### Environment Variables
+
+Copy the [`.env.example`](.env.example) file to create your own `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Configure the following environment variables:
+
+| Variable            | Required | Default   | Description                 |
+| ------------------- | -------- | --------- | --------------------------- |
+| `ARCADE_API_KEY`    | Yes      | -         | Your Arcade API key      |
+| `ARCADE_ENGINE_URL` | No       | Cloud URL | Engine URL (Local or Cloud) |
+| `ARCADE_USER_ID`    | No       | 'dev'     | Your Arcade user ID         |
+
+> ⚠️ **Security Note**: Never commit your `.env` file to version control. It contains sensitive API keys that should remain private.
+
+## Development
+
+### Running Locally
+
+1. Start the development server:
+
+```bash
 pnpm dev
 ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000/).
+2. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Local Toolkit Development
+
+To develop and test your own tools:
+
+1. Follow the [Arcade documentation](https://docs.arcade.dev/home/build-tools/create-a-toolkit) to create your toolkit
+
+2. Start the local engine and actor:
+
+```bash
+arcade dev
+```
+
+3. Update `ARCADE_ENGINE_URL` in your `.env` to point to your local endpoint
+
+4. Run the development server:
+
+```bash
+pnpm dev
+```
+
+## Deployment
+
+The application can be deployed to any platform that supports Next.js applications. Follow the standard deployment procedures for your chosen platform.
