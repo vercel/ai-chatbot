@@ -68,24 +68,7 @@ function PureChatHeader({
         />
       )}
 
-      <div className="flex items-center gap-2 order-4">
-        <ReferencesSidebarToggle />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              className="size-8 p-0"
-              onClick={() => {
-                router.push('/knowledge');
-              }}
-            >
-              <BookIcon size={20} />
-              <span className="sr-only">Knowledge Base</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Knowledge Base</TooltipContent>
-        </Tooltip>
-      </div>
+      {/* The References and Knowledge buttons have been removed */}
 
       <Button
         className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-5 md:ml-auto"

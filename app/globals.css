@@ -1,3 +1,39 @@
+/* Code block styling to prevent hydration errors */
+.codeblock-wrapper {
+  display: block !important;
+  margin: 1rem 0;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+/* Ensure code blocks get proper styling within paragraphs */
+p > .codeblock-wrapper {
+  margin: 1rem 0;
+}
+
+/* For code blocks, ensure they have proper spacing */
+.codeblock-wrapper > span {
+  display: block;
+  position: relative;
+}
+
+/* Ensure copy button appears on hover */
+.codeblock-wrapper:hover button {
+  opacity: 1 !important;
+}
+
+/* Force paragraph reset for any nested paragraphs */
+.text-message-assistant p p {
+  display: contents !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Cleanup any text-message styling */
+.text-message-assistant code {
+  font-family: monospace;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -169,6 +205,52 @@
 .cm-editor,
 .cm-gutters {
     @apply bg-background dark:bg-hunter_green-400 outline-none selection:bg-asparagus-200 dark:selection:bg-asparagus-700 !important;
+}
+
+/* Ensure consistent message colors across themes */
+.text-message-assistant {
+  color: #FEFAE1 !important;
+}
+
+.bg-message-user {
+  background-color: #FEFAE1 !important;
+  color: #2A5B34 !important;
+}
+
+.dark .bg-message-user {
+  background-color: #2A5B34 !important;
+  color: #FEFAE1 !important;
+}
+
+.bg-message-assistant {
+  background-color: transparent !important;
+  color: #FEFAE1 !important;
+}
+
+/* RTL Support */
+.rtl-text {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+.rtl-bubble {
+  flex-direction: row-reverse !important;
+}
+
+.rtl-bubble > *:first-child {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.rtl-bubble > *:last-child {
+  margin-right: 0 !important;
+  margin-left: auto !important;
+}
+
+/* Ensure selected chat text has the proper color by overriding element-specific styles */
+.chatgpt-sidebar span, 
+.chatgpt-sidebar .text-sm {
+  color: inherit !important;
 }
 
 /* ChatGPT-like sidebar styling */

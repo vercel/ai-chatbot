@@ -29,6 +29,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { KnowledgeReferences, KnowledgeReference } from './knowledge-references';
+import { containsArabic } from '@/lib/utils';
 
 // Extend the Message type to include knowledge references
 declare module 'ai' {
@@ -134,6 +135,12 @@ const PurePreviewMessage = ({
     }
   }, [knowledgeReferences, message.id, message.knowledgeReferences, setMessages, setReferences, referenceRetries, maxRetries]);
 
+  // Check if message content contains Arabic text
+  const isRTL = useMemo(() => {
+    if (typeof message.content !== 'string') return false;
+    return containsArabic(message.content);
+  }, [message.content]);
+  
   return (
     <AnimatePresence>
       <motion.div
@@ -148,6 +155,7 @@ const PurePreviewMessage = ({
             {
               'w-full': mode === 'edit',
               'group-data-[role=user]/message:w-fit': mode !== 'edit',
+              'rtl-bubble': isRTL,
             },
           )}
         >
@@ -199,22 +207,24 @@ const PurePreviewMessage = ({
 
                 <div
                   className={cn('flex flex-col gap-4', {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                    'bg-message-user px-3 py-2 rounded-xl text-[#2A5B34]':
                       message.role === 'user',
+                    'text-message-assistant':
+                      message.role === 'assistant',
+                    'rtl-text': isRTL
                   })}
                 >
                   {message.role === 'assistant' && message.knowledgeReferences && message.knowledgeReferences.length > 0 ? (
-                    <div>
-                      <ReferenceMarkdown references={message.knowledgeReferences}>
+                    <div className={cn('text-message-assistant', { 'rtl-text': isRTL })}>
+                      <ReferenceMarkdown references={message.knowledgeReferences} isRTL={isRTL}>
                         {message.content as string}
                       </ReferenceMarkdown>
-                      {/* Show a debug message during development */}
-                      <div className="text-xs text-muted-foreground mt-2">
-                        {message.knowledgeReferences.length} reference(s) available - click citations like [1] to view
-                      </div>
+                      {/* Debug message removed */}
                     </div>
                   ) : (
-                    <Markdown>{message.content as string}</Markdown>
+                    <div className={cn('text-message-assistant', { 'rtl-text': isRTL })}>
+                      <Markdown isRTL={isRTL}>{message.content as string}</Markdown>
+                    </div>
                   )}
                 </div>
               </div>
@@ -359,6 +369,7 @@ export const ThinkingMessage = () => {
           'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
           {
             'group-data-[role=user]/message:bg-muted': true,
+            'bg-message-assistant px-3 py-2': true,
           },
         )}
       >
@@ -367,7 +378,7 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
+          <div className="flex flex-col gap-4 text-message-assistant">
             Thinking...
           </div>
         </div>

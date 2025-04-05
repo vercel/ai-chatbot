@@ -6,14 +6,16 @@ import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { KnowledgeReference } from './knowledge-references';
 import { useReferencesSidebar } from '@/hooks/use-references-sidebar';
+import { CodeBlock } from './code-block';
 
 interface ReferenceMarkdownProps {
   children: string;
   className?: string;
   references?: KnowledgeReference[];
+  isRTL?: boolean;
 }
 
-export function ReferenceMarkdown({ children, className, references = [] }: ReferenceMarkdownProps) {
+export function ReferenceMarkdown({ children, className, references = [], isRTL = false }: ReferenceMarkdownProps) {
   const { setActiveReference } = useReferencesSidebar();
 
   // Custom renderer component for matching citation patterns like [1], [2], etc.
@@ -100,12 +102,26 @@ export function ReferenceMarkdown({ children, className, references = [] }: Refe
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
-      className={cn('prose dark:prose-invert max-w-none', className)}
+      className={cn('text-message-assistant max-w-none', className, isRTL ? 'rtl-text' : '')}
       components={{
         // Override the default text components to handle citations
-        text: TextWithCitations,
-        // We no longer need custom handlers for each element type
-        // since we're handling all text nodes directly
+        text: TextWithCitations as any,
+        // Handle pre elements to avoid nesting issues
+        pre: ({ children }: any) => <>{children}</>,
+        // Use the same CodeBlock component as the regular markdown
+        code: ({ node, inline, className, children, ...props }: any) => {
+          const match = /language-(\w+)/.exec(className || '');
+          return (
+            <CodeBlock
+              node={node}
+              inline={inline}
+              className={className || ''}
+              {...props}
+            >
+              {children}
+            </CodeBlock>
+          );
+        },
       }}
     >
       {children}

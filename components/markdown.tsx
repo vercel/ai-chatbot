@@ -3,11 +3,24 @@ import React, { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CodeBlock } from './code-block';
+import { cn } from '@/lib/utils';
 
 const components: Partial<Components> = {
-  // @ts-expect-error
-  code: CodeBlock,
-  pre: ({ children }) => <>{children}</>,
+  code: ({ node, inline, className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || '');
+    return (
+      <CodeBlock
+        node={node}
+        inline={inline}
+        className={className || ''}
+        {...props}
+      >
+        {children}
+      </CodeBlock>
+    );
+  },
+  // Don't wrap in pre tags
+  pre: ({ children }: any) => <>{children}</>,
   ol: ({ node, children, ...props }) => {
     return (
       <ol className="list-decimal list-outside ml-4" {...props}>
@@ -95,9 +108,13 @@ const components: Partial<Components> = {
 
 const remarkPlugins = [remarkGfm];
 
-const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+const NonMemoizedMarkdown = ({ children, isRTL = false }: { children: string, isRTL?: boolean }) => {
   return (
-    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
+    <ReactMarkdown 
+      remarkPlugins={remarkPlugins} 
+      components={components}
+      className={cn(isRTL ? 'rtl-text' : '')}
+    >
       {children}
     </ReactMarkdown>
   );

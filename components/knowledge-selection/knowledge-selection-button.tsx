@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Database } from 'lucide-react';
+import { BookIcon } from '@/components/icons';
 import { KnowledgeSelectionModal } from './knowledge-selection-modal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLocalStorage } from 'usehooks-ts';
@@ -18,6 +18,15 @@ export function KnowledgeSelectionButton({ chatId, disabled = false }: Knowledge
     `chat-${chatId}-knowledge-selection`,
     []
   );
+  // Use client-side-only state to prevent hydration mismatch
+  const [hasMounted, setHasMounted] = useState(false);
+  const [countBadge, setCountBadge] = useState(0);
+
+  // Only run after component mounts on client
+  useEffect(() => {
+    setHasMounted(true);
+    setCountBadge(selectedKnowledgeIds.length);
+  }, [selectedKnowledgeIds.length]);
 
   const handleSelectKnowledge = (selectedIds: string[]) => {
     setSelectedKnowledgeIds(selectedIds);
@@ -28,7 +37,7 @@ export function KnowledgeSelectionButton({ chatId, disabled = false }: Knowledge
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 ml-1"
+            className={`rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 ml-1 relative ${selectedKnowledgeIds.length === 0 ? 'text-red-500' : ''}`}
             onClick={(event) => {
               event.preventDefault();
               setIsModalOpen(true);
@@ -37,11 +46,16 @@ export function KnowledgeSelectionButton({ chatId, disabled = false }: Knowledge
             variant="ghost"
             aria-label="Select knowledge sources"
           >
-            <Database size={14} />
+            <BookIcon size={18} />
+            {hasMounted && countBadge > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#2A5B34] text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
+                {countBadge}
+              </span>
+            )}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="top">
-          Select knowledge sources
+          {hasMounted && (selectedKnowledgeIds.length === 0 ? 'No knowledge sources selected' : `${selectedKnowledgeIds.length} knowledge source${selectedKnowledgeIds.length === 1 ? '' : 's'} selected`)}
         </TooltipContent>
       </Tooltip>
 
