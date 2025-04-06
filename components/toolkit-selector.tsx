@@ -75,18 +75,22 @@ export function ToolkitSelector() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-md p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 relative"
+          variant="outline"
+          size="sm"
+          className="rounded-md h-8 bg-transparent border-input flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors px-3"
+          aria-label={`Toolkits: ${selectedToolkits.length === 0 ? 'All' : `${selectedToolkits.length} selected`}`}
         >
-          <Wrench className="size-4" />
-          {selectedToolkits.length > 0 && (
-            <Badge className="absolute -top-1 -right-1 size-4 p-0 flex items-center justify-center text-xs">
+          <Wrench className="size-4 text-muted-foreground" />
+          <span className="text-sm font-medium ">Toolkits</span>
+          {selectedToolkits.length > 0 ? (
+            <Badge className="ml-1 size-4 px-1.5 flex items-center justify-center text-xs font-medium bg-primary text-primary-foreground">
               {selectedToolkits.length}
             </Badge>
-          )}
-          {selectedToolkits.length === 0 && (
-            <Badge className="absolute -top-1.5 -right-4 py-0 px-1.5 flex items-center justify-center text-xs">
+          ) : (
+            <Badge
+              variant="outline"
+              className="ml-1 py-0.5 px-2 flex items-center justify-center text-xs font-medium"
+            >
               All
             </Badge>
           )}

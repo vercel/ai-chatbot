@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { arcadeServer } from '@/lib/arcade/server';
-import { formatOpenAIToolNameToArcadeToolName } from '@/lib/arcade/utils';
+
+export const maxDuration = 120;
 
 export async function POST(request: Request) {
   try {
@@ -10,9 +11,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { toolName } = await request.json();
-    if (!toolName) {
-      return NextResponse.json({ error: 'Missing tool name' }, { status: 400 });
+    const { authId } = await request.json();
+    if (!authId) {
+      return NextResponse.json({ error: 'Missing auth ID' }, { status: 400 });
     }
 
     if (!arcadeServer) {
@@ -22,11 +23,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const formattedToolName = formatOpenAIToolNameToArcadeToolName(toolName);
-    const authResponse = await arcadeServer.client.tools.authorize({
-      tool_name: formattedToolName,
-      user_id: session.user.id,
-    });
+    const authResponse =
+      await arcadeServer.client.auth.waitForCompletion(authId);
 
     return NextResponse.json(authResponse);
   } catch (error) {

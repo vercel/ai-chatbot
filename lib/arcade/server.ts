@@ -84,32 +84,6 @@ class ArcadeServer {
     }
   }
 
-  public async waitForAuthAndExecute({
-    authId,
-    toolName,
-    args,
-    userId,
-  }: {
-    authId: string;
-    toolName: string;
-    args: any;
-    userId: string;
-  }): Promise<ExecuteToolResult> {
-    try {
-      const auth = await this.client.auth.waitForCompletion({ id: authId });
-      const result = await this.client.tools.execute({
-        tool_name: formatOpenAIToolNameToArcadeToolName(toolName),
-        input: args,
-        user_id: userId,
-      });
-
-      return { result, authResponse: auth };
-    } catch (error) {
-      console.error('Error waiting for auth and executing tool', error);
-      return { error: 'Failed to complete authorization and execute tool' };
-    }
-  }
-
   public async getTools({
     userId,
     toolkit,
@@ -169,7 +143,7 @@ class ArcadeServer {
     }
   }
 
-  public async getToolkits({ userId }: { userId: string }): Promise<string[]> {
+  public async getToolkits(): Promise<string[]> {
     const tools = await this.client.tools.list({
       limit: 1000,
     });

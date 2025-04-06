@@ -55,7 +55,8 @@ function PureMessages({
           message={message}
           isLoading={
             (status === 'streaming' || status === 'submitted') &&
-            messages.length - 1 === index
+            index === messages.length - 1 &&
+            message.role === 'assistant'
           }
           vote={
             votes

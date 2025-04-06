@@ -4,7 +4,7 @@ import type { AuthorizationResponse } from '@arcadeai/arcadejs/resources/shared.
 import type { ToolInvocation } from 'ai';
 import { AlertCircle, CheckCircle2, LockIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { ToolArcadeAuthorizationLoading } from './tool-arcade-authorization-loading';
 import { ToolArcadeError } from './tool-arcade-error';
 import { Button, buttonVariants } from './ui/button';
@@ -16,6 +16,10 @@ import {
   CardTitle,
 } from './ui/card';
 import { useToolExecution } from '@/lib/arcade/hooks/use-tool-execution';
+import {
+  ARCADE_TOOLS_WITH_HUMAN_IN_THE_LOOP,
+  ToolCallArcadeTool,
+} from './arcade-tool-calls/tool-call-arcade-tool';
 
 type ToolArcadeAuthorizationProps = {
   toolInvocation: ToolInvocation;
@@ -33,15 +37,27 @@ export const ToolArcadeAuthorization = ({
   addToolResult,
 }: ToolArcadeAuthorizationProps) => {
   const { args } = toolInvocation;
-  const isToolCall = toolInvocation.state === 'call';
+  const needsHumanInTheLoop = ARCADE_TOOLS_WITH_HUMAN_IN_THE_LOOP.includes(
+    toolInvocation.toolName,
+  );
   const windowOpened = useRef<boolean>(false);
-
   const [authResponse, setAuthResponse] =
     useState<AuthorizationResponse | null>(null);
   const [countdown, setCountdown] = useState(3);
 
-  useEffect(() => {
-    if (isToolCall && authResponse?.url && !windowOpened.current) {
+  const { error } = useToolExecution({
+    toolInvocation,
+    addToolResult,
+    setAuthResponse,
+    needsHumanInTheLoop,
+  });
+
+  useLayoutEffect(() => {
+    if (
+      authResponse?.status === 'pending' &&
+      authResponse?.url &&
+      !windowOpened.current
+    ) {
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -57,13 +73,16 @@ export const ToolArcadeAuthorization = ({
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [isToolCall, authResponse?.url]);
+  }, [authResponse?.url, authResponse?.status]);
 
-  const { error } = useToolExecution({
-    toolInvocation,
-    addToolResult,
-    setAuthResponse,
-  });
+  if (needsHumanInTheLoop) {
+    return (
+      <ToolCallArcadeTool
+        toolInvocation={toolInvocation}
+        addToolResult={addToolResult}
+      />
+    );
+  }
 
   if (error) {
     return <ToolArcadeError toolInvocation={toolInvocation} error={error} />;
@@ -71,10 +90,6 @@ export const ToolArcadeAuthorization = ({
 
   if (!authResponse) {
     return <ToolArcadeAuthorizationLoading toolInvocation={toolInvocation} />;
-  }
-
-  if (!authResponse) {
-    return null;
   }
 
   const authProvider = getAuthProviderByProviderId(authResponse.provider_id);
@@ -173,7 +188,7 @@ export const ToolArcadeAuthorization = ({
     );
   }
 
-  if (isToolCall) {
+  if (authResponse.status === 'pending') {
     return (
       <Card key={`auth-card-${toolInvocation.toolCallId}`}>
         <CardHeader>

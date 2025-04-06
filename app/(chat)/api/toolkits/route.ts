@@ -16,9 +16,7 @@ export async function GET() {
       );
     }
 
-    const toolkits = await arcadeServer.getToolkits({
-      userId: session.user.id,
-    });
+    const toolkits = await arcadeServer.getToolkits();
 
     return NextResponse.json(toolkits);
   } catch (error) {
