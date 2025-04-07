@@ -4,6 +4,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
+
 import { auth } from '@/app/(auth)/auth';
 import { myProvider } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
@@ -18,6 +19,7 @@ import {
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from '@/lib/utils';
+
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
@@ -74,7 +76,7 @@ export async function POST(request: Request) {
     execute: (dataStream) => {
       const result = streamText({
         model: myProvider.languageModel(selectedChatModelId),
-        system: systemPrompt({ selectedChatModelId }),
+        system: systemPrompt({ selectedChatModelId, geoLocation }),
         messages,
         maxSteps: 5,
         experimental_activeTools:
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
         experimental_transform: smoothStream({ chunking: 'word' }),
         experimental_generateMessageId: generateUUID,
         tools: {
-          getWeather: getWeather({ geoLocation }),
+          getWeather: getWeather,
           createDocument: createDocument({ session, dataStream }),
           updateDocument: updateDocument({ session, dataStream }),
           requestSuggestions: requestSuggestions({

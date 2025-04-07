@@ -1,4 +1,5 @@
-import { BlockKind } from '@/components/block';
+import type { BlockKind } from '@/components/block';
+import type { Geo } from '@vercel/functions';
 
 export const blocksPrompt = `
 Blocks is a special user interface mode that helps users with writing, editing, and other content creation tasks. When block is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the blocks and visible to the user.
@@ -36,11 +37,19 @@ export const regularPrompt =
 
 export const systemPrompt = ({
   selectedChatModelId,
+  geoLocation,
 }: {
   selectedChatModelId: string;
+  geoLocation: Geo;
 }) => {
   if (selectedChatModelId === 'chat-model-reasoning') {
-    return regularPrompt;
+    return `\
+${regularPrompt}
+\n\n
+
+About the user's request:
+${JSON.stringify(geoLocation)}
+`;
   } else {
     return `${regularPrompt}\n\n${blocksPrompt}`;
   }
