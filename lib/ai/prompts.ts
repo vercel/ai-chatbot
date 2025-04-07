@@ -35,6 +35,14 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
+export const requestPrompt = (geoLocation: Geo) => `\
+About the origin of user's request:
+lat: ${geoLocation.latitude}
+lon: ${geoLocation.longitude}
+city: ${geoLocation.city}
+country: ${geoLocation.country}
+`;
+
 export const systemPrompt = ({
   selectedChatModelId,
   geoLocation,
@@ -43,15 +51,9 @@ export const systemPrompt = ({
   geoLocation: Geo;
 }) => {
   if (selectedChatModelId === 'chat-model-reasoning') {
-    return `\
-${regularPrompt}
-\n\n
-
-About the user's request:
-${JSON.stringify(geoLocation)}
-`;
+    return `${regularPrompt}\n\n${requestPrompt(geoLocation)}`;
   } else {
-    return `${regularPrompt}\n\n${blocksPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt(geoLocation)}\n\n${blocksPrompt}`;
   }
 };
 
