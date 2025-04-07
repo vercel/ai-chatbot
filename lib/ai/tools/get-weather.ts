@@ -2,7 +2,7 @@ import type { Geo } from '@vercel/functions';
 import { tool } from 'ai';
 import { z } from 'zod';
 
-export const getWeather = (geoLocation: Geo) =>
+export const getWeather = ({ geoLocation }: { geoLocation: Geo }) =>
   tool({
     description: 'Get the current weather at a location',
     parameters: z.object({}),
