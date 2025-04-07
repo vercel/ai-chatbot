@@ -25,6 +25,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { geolocation } from '@vercel/functions';
 
 export const maxDuration = 60;
 
@@ -69,11 +70,13 @@ export async function POST(request: Request) {
     });
   }
 
+  const geoLocation = geolocation(request);
+
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
         model: myProvider.languageModel(selectedChatModelId),
-        system: systemPrompt({ selectedChatModelId }),
+        system: systemPrompt({ selectedChatModelId, geoLocation }),
         messages,
         maxSteps: 5,
         experimental_activeTools:
