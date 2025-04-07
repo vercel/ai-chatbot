@@ -4,7 +4,6 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
-
 import { auth } from '@/app/(auth)/auth';
 import { myProvider } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
@@ -19,12 +18,12 @@ import {
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from '@/lib/utils';
-
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { geolocation } from '@vercel/functions';
 
 export const maxDuration = 60;
 
@@ -69,6 +68,8 @@ export async function POST(request: Request) {
     });
   }
 
+  const geoLocation = geolocation(request);
+
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
         experimental_transform: smoothStream({ chunking: 'word' }),
         experimental_generateMessageId: generateUUID,
         tools: {
-          getWeather,
+          getWeather: getWeather({ geoLocation }),
           createDocument: createDocument({ session, dataStream }),
           updateDocument: updateDocument({ session, dataStream }),
           requestSuggestions: requestSuggestions({
