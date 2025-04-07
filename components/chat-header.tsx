@@ -26,6 +26,7 @@ function PureChatHeader({
 }) {
   const router = useRouter();
   const { open } = useSidebar();
+  const agentId = process.env.NEXT_PUBLIC_CONVAI_AGENT_ID;
 
   const { width: windowWidth } = useWindowSize();
 
@@ -38,36 +39,63 @@ function PureChatHeader({
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
+              className="order-2 md:order-1 md:px-2 hidden md:flex px-2 md:h-fit"
               onClick={() => {
                 router.push('/');
                 router.refresh();
               }}
             >
               <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
+              {/* <span className="md:sr-only">New Chat</span> */}
             </Button>
           </TooltipTrigger>
           <TooltipContent>New Chat</TooltipContent>
         </Tooltip>
       )}
 
-      {!isReadonly && (
+      {/* {!isReadonly && (
         <ModelSelector
           selectedModelId={selectedModelId}
           className="order-1 md:order-2"
         />
-      )}
+      )} */}
 
-      {!isReadonly && (
+      {/* {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
           selectedVisibilityType={selectedVisibilityType}
           className="order-1 md:order-3"
         />
-      )}
+      )} */}
 
-      <Button
+      {/* <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            // variant="outline"
+            className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 flex py-1.5 px-2 h-fit md:h-[34px] order-4 ml-auto"
+            onClick={() => {
+              router.push('/');
+              router.refresh();
+            }}
+          >
+            <VercelIcon size={16} />
+            Talk with CoCo
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Talk with CoCo</TooltipContent>
+      </Tooltip> */}
+
+      <elevenlabs-convai agent-id={agentId} style={{ position: 'fixed', top: '-52px', right: '-4px', padding: '0.375rem 0.5rem', height: 'fit-content', marginLeft: 'auto'}}></elevenlabs-convai>
+      <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+
+      {/* <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
+        <h1 className="text-4xl font-bold mb-8 text-center">
+          ElevenLabs Conversational AI
+        </h1>
+        <Conversation />
+      </div> */}
+
+      {/* <Button
         className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-4 md:ml-auto"
         asChild
       >
@@ -78,7 +106,7 @@ function PureChatHeader({
           <VercelIcon size={16} />
           Deploy with Vercel
         </Link>
-      </Button>
+      </Button> */}
     </header>
   );
 }

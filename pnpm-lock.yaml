@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@11labs/react':
+        specifier: ^0.1.0
+        version: 0.1.0(react@19.0.0-rc-45804af1-20241021)
       '@ai-sdk/groq':
         specifier: ^1.2.3
         version: 1.2.3(zod@3.24.2)
@@ -260,6 +263,14 @@ importers:
         version: 5.8.2
 
 packages:
+
+  '@11labs/client@0.1.0':
+    resolution: {integrity: sha512-6fFU25BehyFkzjItt/SeZTBGnm8vBar1yF/fCkuY5kpa7nSEhNmo99brPDaheX6D6/oMqXfKs8C+oTHSUmKvTw==}
+
+  '@11labs/react@0.1.0':
+    resolution: {integrity: sha512-KsedGuGjqNvHboeu4+cZBg+4Vnf63zBYtTP14KoTRRJS0lIs4CuruIb+QypzIsWCQo9ieHvWLB0O9Lwj696oaA==}
+    peerDependencies:
+      react: '>=16.8.0'
 
   '@ai-sdk/groq@1.2.3':
     resolution: {integrity: sha512-MGPo+ROdJfavrkI4SgJSUOtT6cFjEZEyu7sKKI1PWE3FBTp0oYxSfsmAFWebXGI1G+v70XPFiH9IObBYUiEMvQ==}
@@ -3876,6 +3887,13 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@11labs/client@0.1.0': {}
+
+  '@11labs/react@0.1.0(react@19.0.0-rc-45804af1-20241021)':
+    dependencies:
+      '@11labs/client': 0.1.0
+      react: 19.0.0-rc-45804af1-20241021
 
   '@ai-sdk/groq@1.2.3(zod@3.24.2)':
     dependencies:
