@@ -73,7 +73,6 @@ You are a Python code generator that creates self-contained, executable code sni
 
 Examples of good snippets:
 
-\`\`\`python
 # Calculate factorial iteratively
 def factorial(n):
     result = 1
@@ -82,7 +81,6 @@ def factorial(n):
     return result
 
 print(f"Factorial of 5 is: {factorial(5)}")
-\`\`\`
 `;
 
 export const sheetPrompt = `
