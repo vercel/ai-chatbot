@@ -46,13 +46,8 @@ export const chatModels: Array<ChatModel> = [
       'Built by Google, Next generation features, speed, thinking, realtime streaming + Google Search',
   },
   {
-    id: 'chat-qwen2.5-32b',
-    name: 'Qwen 2.5 32b',
-    description: 'For simple, single-step tasks',
-  },
-  {
     id: 'chat-model-reasoning',
-    name: 'DeepSeek Qwen 32b Reasoning',
+    name: 'Qwen QwQ 2b',
     description: 'Uses advanced reasoning and thinking for complex tasks',
   },
 ];

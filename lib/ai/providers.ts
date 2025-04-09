@@ -28,7 +28,6 @@ export const myProvider = isTestEnvironment
       languageModels: {
         'chat-llama3-70b': groq('llama3-70b-8192'),
         'chat-llama3.3-70b-versatile': groq('llama-3.3-70b-versatile'),
-        'chat-qwen2.5-32b': groq('qwen-2.5-32b'),
         'chat-llama-4-scout-17b': groq(
           'meta-llama/llama-4-scout-17b-16e-instruct',
         ),
@@ -39,10 +38,10 @@ export const myProvider = isTestEnvironment
           useSearchGrounding: true,
         }),
         'chat-model-reasoning': wrapLanguageModel({
-          model: groq('deepseek-r1-distill-qwen-32b'),
+          model: groq('qwen-qwq-32b'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': groq('qwen-2.5-32b'),
+        'title-model': google('gemini-2.0-flash-lite'),
         'artifact-model': google('gemini-2.0-flash-lite'),
       },
       imageModels: {},
