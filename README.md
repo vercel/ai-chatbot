@@ -29,9 +29,9 @@
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
 - Data Persistence
-  - [Vercel Postgres powered by Neon](https://vercel.com/storage/postgres) for saving chat history and user data
+  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
   - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [NextAuth.js](https://github.com/nextauthjs/next-auth)
+- [Auth.js](https://authjs.dev)
   - Simple and secure authentication
 
 ## Model Providers
