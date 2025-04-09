@@ -29,6 +29,7 @@ export const {
         const passwordsMatch = await compare(password, user.password);
 
         if (!passwordsMatch) return null;
+
         return user;
       },
     }),

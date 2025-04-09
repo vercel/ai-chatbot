@@ -1,7 +1,6 @@
-import NextAuth from 'next-auth';
 import { auth } from './app/(auth)/auth';
-import { authConfig } from './app/(auth)/auth.config';
 import { NextResponse, type NextRequest } from 'next/server';
+import { anonymousRegex } from './lib/constants';
 
 export async function middleware(request: NextRequest) {
   // Skip the check for the guest auth endpoint to avoid infinite loops.
@@ -16,11 +15,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/api/auth/guest', request.url));
   }
 
+  const isLoggedIn = session.user;
+  const isAnonymousUser = anonymousRegex.test(session.user?.email ?? '');
+
+  const isOnLoginPage = request.nextUrl.pathname.startsWith('/login');
+  const isOnRegisterPage = request.nextUrl.pathname.startsWith('/register');
+
+  // If the user is logged in and not an anonymous user, redirect to the home page
+  if (isLoggedIn && !isAnonymousUser && (isOnLoginPage || isOnRegisterPage)) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
   // Otherwise, continue handling the request.
   return NextResponse.next();
 }
-
-export default NextAuth(authConfig).auth;
 
 export const config = {
   matcher: [

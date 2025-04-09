@@ -43,7 +43,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                     Loading auth status
                   </span>
                 </div>
-                <div className="animate-spin text-zinc-500/30">
+                <div className="animate-spin text-zinc-500">
                   <LoaderIcon />
                 </div>
               </SidebarMenuButton>
