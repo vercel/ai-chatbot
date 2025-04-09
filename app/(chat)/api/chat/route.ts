@@ -1,5 +1,5 @@
 import {
-  UIMessage,
+  type UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
@@ -10,6 +10,7 @@ import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
+  getMessageCountByUserId,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
@@ -23,8 +24,12 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
+import { anonymousRegex, isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import {
+  entitlementsByMembershipTier,
+  type MembershipTier,
+} from '@/lib/ai/capabilities';
 
 export const maxDuration = 60;
 
@@ -42,8 +47,31 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });
+    }
+
+    const membershipTier: MembershipTier = anonymousRegex.test(
+      session.user.email ?? '',
+    )
+      ? 'guest'
+      : 'free';
+
+    const messageCount = await getMessageCountByUserId({
+      id: session.user.id,
+      differenceInHours: 24,
+    });
+
+    if (
+      messageCount >
+      entitlementsByMembershipTier[membershipTier].maxMessagesPerDay
+    ) {
+      return new Response(
+        'You have exceeded your maximum number of messages for the day',
+        {
+          status: 429,
+        },
+      );
     }
 
     const userMessage = getMostRecentUserMessage(messages);
