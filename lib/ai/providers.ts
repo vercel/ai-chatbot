@@ -3,7 +3,6 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { groq } from '@ai-sdk/groq';
 import { xai } from '@ai-sdk/xai';
 import { isTestEnvironment } from '../constants';
 import {
@@ -26,7 +25,7 @@ export const myProvider = isTestEnvironment
       languageModels: {
         'chat-model': xai('grok-2-1212'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: groq('deepseek-r1-distill-llama-70b'),
+          model: xai('grok-3-mini-beta'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
         'title-model': xai('grok-2-1212'),
