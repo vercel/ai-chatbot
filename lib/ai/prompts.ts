@@ -76,6 +76,11 @@ print(f"Factorial of 5 is: {factorial(5)}")
 
 export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
+
+IMPORTANT CSV FORMATTING RULES:
+1. NEVER use commas (,) within cell contents as they will break the CSV format
+2. For numbers over 999, do not use any thousand separators (write as: 10000 not 10,000)
+3. Use semicolons (;) or spaces to separate multiple items in a cell
 `;
 
 export const updateDocumentPrompt = (
