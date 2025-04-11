@@ -1,5 +1,6 @@
 import {
   type Message,
+  createDataStream,
   createDataStreamResponse,
   formatDataStreamPart,
   smoothStream,
@@ -181,12 +182,76 @@ export async function POST(request: Request) {
     messages: [{ ...userMessage, createdAt: new Date(), chatId: id }]
   })
 
-  const result = streamText({
-    model: myProvider.languageModel(selectedChatModel),
-    messages
+  const soneto = `
+    Oh Marte rojo, astro de aridez,
+    Desierto eterno bajo el cielo frío,
+    Tu rostro escarlata es un desafío,
+    Un sueño antiguo de la humanidad es.
+
+    Tus cañones vastos cuentan su vejez,
+    Y tus montañas hablan de heroísmo,
+    Mas tu silencio guarda un abismo,
+    Un eco mudo de lo que tal vez fue.
+
+    Oh Marte, promesa de un futuro audaz,
+    Tu polvo rojo clama por pisadas,
+    Por huellas nuevas en tu soledad.
+
+    Que el hombre, en busca de tierras soñadas,
+    Haga de ti su hogar, su nuevo Edén,
+    Y en tus arenas grabe su vaivén.
+  `
+
+  const stream = createDataStream({
+    async execute(dataStream) {
+      // Write the message start
+      dataStream.write(
+        formatDataStreamPart('start_step', { messageId: generateUUID() })
+      )
+
+      // Split the soneto into words and stream each word with a small delay
+      const words = soneto.split(/\s+/)
+      for (const word of words) {
+        dataStream.write(formatDataStreamPart('text', `${word} `))
+        // Add a small delay between words (50ms)
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      }
+
+      // Write the message end
+      dataStream.write(
+        formatDataStreamPart('finish_message', {
+          finishReason: 'stop',
+          usage: { promptTokens: 55, completionTokens: 20 }
+        })
+      )
+    },
+    onError: (error: unknown) =>
+      `Custom error: ${error instanceof Error ? error.message : String(error)}`
   })
 
-  return result.toDataStreamResponse()
+  // Create the HTTP Response.
+  const responseStream = stream.pipeThrough(new TextEncoderStream())
+
+  // Create the HTTP Response.
+  const response = new Response(responseStream, {
+    status: 200,
+    statusText: 'OK',
+    headers: prepareResponseHeaders(
+      {},
+      {
+        contentType: 'text/plain; charset=utf-8',
+        dataStreamVersion: 'v1'
+      }
+    )
+  })
+  return response
+
+  // const result = streamText({
+  //   model: myProvider.languageModel(selectedChatModel),
+  //   messages
+  // })
+
+  // return result.toDataStreamResponse()
 
   // const llm = new ChatOpenAI({
   //   apiKey: process.env.OPENAI_API_KEY,
@@ -200,72 +265,6 @@ export async function POST(request: Request) {
   // const result = await llm.stream(formattedMessages)
   // console.log('\nGenerating stream: ', result, '\n')
   // return LangChainAdapter.toDataStreamResponse(result)
-
-  // return createDataStreamResponse({
-  //   execute: (dataStream) => {
-  //     const result = streamText({
-  //       model: myProvider.languageModel(selectedChatModel),
-  //       system: systemPrompt({ selectedChatModel }),
-  //       messages,
-  //       maxSteps: 5,
-  //       experimental_activeTools:
-  //         selectedChatModel === 'chat-model-reasoning'
-  //           ? []
-  //           : [
-  //               'getWeather',
-  //               'createDocument',
-  //               'updateDocument',
-  //               'requestSuggestions',
-  //             ],
-  //       experimental_transform: smoothStream({ chunking: 'word' }),
-  //       experimental_generateMessageId: generateUUID,
-  //       tools: {
-  //         getWeather,
-  //         createDocument: createDocument({ session, dataStream }),
-  //         updateDocument: updateDocument({ session, dataStream }),
-  //         requestSuggestions: requestSuggestions({
-  //           session,
-  //           dataStream,
-  //         }),
-  //       },
-  //       onFinish: async ({ response, reasoning }) => {
-  //         if (session.user?.id) {
-  //           try {
-  //             const sanitizedResponseMessages = sanitizeResponseMessages({
-  //               messages: response.messages,
-  //               reasoning,
-  //             });
-
-  //             await saveMessages({
-  //               messages: sanitizedResponseMessages.map((message) => {
-  //                 return {
-  //                   id: message.id,
-  //                   chatId: id,
-  //                   role: message.role,
-  //                   content: message.content,
-  //                   createdAt: new Date(),
-  //                 };
-  //               }),
-  //             });
-  //           } catch (error) {
-  //             console.error('Failed to save chat');
-  //           }
-  //         }
-  //       },
-  //       experimental_telemetry: {
-  //         isEnabled: true,
-  //         functionId: 'stream-text',
-  //       },
-  //     });
-
-  //     result.mergeIntoDataStream(dataStream, {
-  //       sendReasoning: true,
-  //     });
-  //   },
-  //   onError: () => {
-  //     return 'Oops, an error occured!';
-  //   },
-  // });
 
   // console.log('Starting the model...')
   // const client = new Client({ apiUrl: 'http://localhost:2024' })

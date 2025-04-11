@@ -59,3 +59,107 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
+
+## Streaming Pre-defined Text
+
+You can simulate AI-like streaming responses with pre-defined text using the Vercel AI SDK. This is useful for testing or when you want to stream static content with controlled pacing.
+
+### Basic Implementation
+
+```typescript
+const stream = createDataStream({
+  async execute(dataStream) {
+    // Start the message stream
+    dataStream.write(
+      formatDataStreamPart('start_step', { messageId: generateUUID() })
+    )
+
+    // Split text into words and stream each with a delay
+    const words = text.split(/\s+/)
+    for (const word of words) {
+      dataStream.write(formatDataStreamPart('text', `${word} `))
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
+
+    // End the message stream
+    dataStream.write(
+      formatDataStreamPart('finish_message', {
+        finishReason: 'stop',
+        usage: { promptTokens: 55, completionTokens: 20 }
+      })
+    )
+  }
+})
+```
+
+### Advanced Implementation with Natural Pacing
+
+For a more natural reading experience, you can stream text with different delays based on punctuation:
+
+```typescript
+async function streamWithPacing(text: string, dataStream: any) {
+  // Split by sentences and punctuation
+  const sentences = text.split(/([.!?,;\n]+)/)
+
+  for (const part of sentences) {
+    dataStream.write(formatDataStreamPart('text', part))
+
+    // Dynamic delays based on punctuation
+    if (part includes('\n')) {
+      await new Promise(resolve => setTimeout(resolve, 400)) // Line break
+    } else if (/[.!?]/.test(part)) {
+      await new Promise(resolve => setTimeout(resolve, 200)) // End of sentence
+    } else if (/[,;]/.test(part)) {
+      await new Promise(resolve => setTimeout(resolve, 100)) // Mid-sentence pause
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 50))  // Word spacing
+    }
+  }
+}
+```
+
+### Usage Example
+
+```typescript
+const soneto = `
+    Oh Marte rojo, astro de aridez,
+    Desierto eterno bajo el cielo frío,
+    Tu rostro escarlata es un desafío,
+    Un sueño antiguo de la humanidad es.
+`
+
+const stream = createDataStream({
+  async execute(dataStream) {
+    dataStream.write(
+      formatDataStreamPart('start_step', { messageId: generateUUID() })
+    )
+
+    await streamWithPacing(soneto, dataStream)
+
+    dataStream.write(
+      formatDataStreamPart('finish_message', {
+        finishReason: 'stop',
+        usage: { promptTokens: 55, completionTokens: 20 }
+      })
+    )
+  }
+})
+
+// Create response stream
+const responseStream = stream.pipeThrough(new TextEncoderStream())
+return new Response(responseStream, {
+  headers: {
+    'Content-Type': 'text/plain; charset=utf-8',
+    'X-Vercel-AI-Data-Stream': 'v1'
+  }
+})
+```
+
+This implementation allows you to:
+
+- Stream text word by word or sentence by sentence
+- Add natural pacing with different delays
+- Maintain proper streaming format compatible with Vercel AI SDK
+- Control the streaming speed by adjusting delay values
+
+Note: Adjust the delay times (in milliseconds) to achieve the desired reading pace for your application.
