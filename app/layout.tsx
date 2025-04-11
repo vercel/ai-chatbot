@@ -1,3 +1,5 @@
+import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';

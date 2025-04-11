@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';

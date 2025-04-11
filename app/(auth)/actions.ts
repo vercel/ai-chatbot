@@ -1,84 +1,57 @@
-'use server';
+'use server'
 
-import { z } from 'zod';
+// This file contains placeholder server actions since we're using client-side Google OAuth
+// All auth logic is now in the respective components using Google OAuth
 
-import { createUser, getUser } from '@/lib/db/queries';
-
-import { signIn } from './auth';
-
-const authFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
-export interface LoginActionState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';
-}
-
-export const login = async (
-  _: LoginActionState,
-  formData: FormData,
-): Promise<LoginActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
-
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
-
-    return { status: 'success' };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: 'invalid_data' };
-    }
-
-    return { status: 'failed' };
-  }
+export type AuthActionState = {
+  status: 'idle' | 'error' | 'success';
+  message?: string;
 };
 
-export interface RegisterActionState {
-  status:
-    | 'idle'
-    | 'in_progress'
-    | 'success'
-    | 'failed'
-    | 'user_exists'
-    | 'invalid_data';
+/**
+ * Placeholder login action for Google OAuth
+ * @param formData Form data containing email and password
+ * @returns AuthActionState indicating the action status
+ */
+export async function login(formData: FormData): Promise<AuthActionState> {
+  'use server';
+  
+  // This is a placeholder since we're using client-side Google OAuth
+  // The actual auth logic is in the AuthForm component
+  return {
+    status: 'idle',
+    message: undefined
+  };
 }
 
-export const register = async (
-  _: RegisterActionState,
-  formData: FormData,
-): Promise<RegisterActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
+/**
+ * Placeholder register action for Google OAuth
+ * @param formData Form data containing email and password
+ * @returns AuthActionState indicating the action status
+ */
+export async function register(formData: FormData): Promise<AuthActionState> {
+  'use server';
+  
+  // This is a placeholder since we're using client-side Google OAuth
+  // The actual auth logic is in the AuthForm component
+  return {
+    status: 'idle',
+    message: undefined
+  };
+}
 
-    const [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
-    }
-    await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
-
-    return { status: 'success' };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: 'invalid_data' };
-    }
-
-    return { status: 'failed' };
-  }
-};
+/**
+ * Placeholder forgot password action for Google OAuth
+ * @param formData Form data containing email
+ * @returns AuthActionState indicating the action status
+ */
+export async function forgotPassword(formData: FormData): Promise<AuthActionState> {
+  'use server';
+  
+  // This is a placeholder since we're using client-side Google OAuth
+  // The actual auth logic is in the AuthForm component
+  return {
+    status: 'idle',
+    message: undefined
+  };
+} 
