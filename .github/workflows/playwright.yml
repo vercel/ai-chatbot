@@ -13,6 +13,8 @@ jobs:
       AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
       POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
 
     steps:
       - uses: actions/checkout@v4

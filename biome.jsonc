@@ -116,7 +116,7 @@
     "formatter": { "enabled": false },
     "linter": { "enabled": false }
   },
-  "organizeImports": { "enabled": false },
+  "organizeImports": { "enabled": true },
   "overrides": [
     // Playwright requires an object destructure, even if empty
     // https://github.com/microsoft/playwright/issues/30007

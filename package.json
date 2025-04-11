@@ -16,7 +16,7 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
+    "test": "pnpm tsx tests/run-tests"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.8",
@@ -92,6 +92,7 @@
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/wait-on": "^5.3.4",
     "drizzle-kit": "^0.25.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.5",
@@ -101,7 +102,8 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "wait-on": "^8.0.3"
   },
   "packageManager": "pnpm@9.12.3"
 }
