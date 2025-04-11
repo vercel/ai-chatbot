@@ -163,3 +163,138 @@ This implementation allows you to:
 - Control the streaming speed by adjusting delay values
 
 Note: Adjust the delay times (in milliseconds) to achieve the desired reading pace for your application.
+
+# LangGraph Integration with Vercel AI SDK
+
+This project demonstrates how to integrate LangGraph with Vercel AI SDK using a custom adapter. The implementation allows streaming responses from LangGraph workflows while maintaining compatibility with Vercel's AI SDK data streaming format.
+
+## Setup
+
+### 1. Install Dependencies
+
+```bash
+npm install @langchain/langgraph-sdk ai
+```
+
+### 2. Custom LangGraph Adapter
+
+Create a custom adapter to handle the streaming responses from LangGraph and convert them to Vercel AI SDK's format. The adapter is implemented in two files:
+
+```typescript
+// lib/langgraph_adapter/types.ts
+export interface LangGraphStreamCallbacks {
+  onStart?: (messageId: string, threadId: string) => void
+  onToken?: (token: string) => void
+  onError?: (error: any) => void
+  onFinish?: (
+    stats: { finishReason: string; usage: any },
+    threadId: string,
+    client: Client
+  ) => void
+}
+
+export type LangGraphStreamEvent = {
+  event: string
+  data: any
+}
+```
+
+The adapter handles:
+
+- Stream events (start, token, finish)
+- Usage statistics tracking
+- Tool calls processing
+- Error handling
+
+### 3. Usage Example
+
+Here's how to use the adapter in your API route:
+
+```typescript
+// app/api/chat/route.ts
+import { Client } from '@langchain/langgraph-sdk'
+import { LangGraphAdapter } from '@/lib/langgraph_adapter'
+import { LangGraphStreamCallbacks } from '@/lib/langgraph_adapter/types'
+
+export async function POST(request: Request) {
+  // Initialize LangGraph client
+  const client = new Client({
+    apiUrl: process.env.LANGGRAPH_API_URL,
+    apiKey: process.env.LANGGRAPH_API_KEY
+  })
+
+  // Create thread and get assistant
+  const thread = await client.threads.create()
+  const assistant = await client.assistants.create({ graphId: 'your-graph-id' })
+
+  // Setup stream callbacks
+  const streamCallbacks: LangGraphStreamCallbacks = {
+    onStart: (messageId, threadId) => {
+      console.log(`Stream started: ${messageId} for thread ${threadId}`)
+    },
+    onToken: (token) => {
+      // Handle streaming tokens
+    },
+    onFinish: (stats) => {
+      console.log(`Stream finished: ${stats.finishReason}`)
+    }
+  }
+
+  // Stream the response
+  const streamResponse = client.runs.stream(
+    thread.thread_id,
+    assistant.assistant_id,
+    {
+      input: { messages: [userMessage] },
+      streamMode: 'messages'
+    }
+  )
+
+  // Convert to Vercel AI SDK compatible stream
+  return LangGraphAdapter.toDataStreamResponse(
+    streamResponse,
+    streamCallbacks,
+    thread.thread_id,
+    client
+  )
+}
+```
+
+## Features
+
+The LangGraph adapter supports:
+
+1. **Streaming Responses**: Real-time token streaming compatible with Vercel AI SDK
+2. **Tool Calls**: Handling LangGraph tool calls and responses
+3. **Usage Tracking**: Token usage statistics for both prompt and completion
+4. **Error Handling**: Comprehensive error handling with callback support
+5. **Metadata Support**: Preserves LangGraph metadata and execution information
+
+## Event Flow
+
+1. `messages/metadata`: Initial metadata about the run
+2. `messages/partial`: Incremental updates during generation
+3. `messages/complete`: Final message with usage statistics
+4. Tool calls (if any) are processed and formatted as markdown
+5. Completion tokens are streamed as they arrive
+
+## Environment Variables
+
+```env
+LANGGRAPH_API_URL=your-langgraph-url
+LANGGRAPH_API_KEY=your-langgraph-api-key
+```
+
+## Error Handling
+
+The adapter includes comprehensive error handling through callbacks:
+
+```typescript
+const streamCallbacks: LangGraphStreamCallbacks = {
+  onError: (error) => {
+    console.error('Stream error:', error)
+  }
+}
+```
+
+For more information about LangGraph, visit [LangGraph Documentation](https://python.langchain.com/docs/langgraph).

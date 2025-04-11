@@ -7,7 +7,6 @@ import {
   streamText
 } from 'ai'
 import { ChatOpenAI } from '@langchain/openai'
-import { LangChainAdapter } from 'ai'
 import { auth } from '@/app/(auth)/auth'
 import { myProvider } from '@/lib/ai/models'
 import { systemPrompt } from '@/lib/ai/prompts'
@@ -24,12 +23,10 @@ import {
 } from '@/lib/utils'
 
 import { generateTitleFromUserMessage } from '../../actions'
-import { createDocument } from '@/lib/ai/tools/create-document'
-import { updateDocument } from '@/lib/ai/tools/update-document'
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions'
-import { getWeather } from '@/lib/ai/tools/get-weather'
-import { m } from 'framer-motion'
-import { Client } from '@langchain/langgraph-sdk'
+import { ThreadState, Client } from '@langchain/langgraph-sdk'
+import { LangGraphAdapter } from '@/lib/langgraph_adapter'
+import { LangGraphStreamCallbacks } from '@/lib/langgraph_adapter/types'
+
 import { console } from 'inspector'
 
 export const maxDuration = 60
@@ -182,69 +179,130 @@ export async function POST(request: Request) {
     messages: [{ ...userMessage, createdAt: new Date(), chatId: id }]
   })
 
-  const soneto = `
-    Oh Marte rojo, astro de aridez,
-    Desierto eterno bajo el cielo frío,
-    Tu rostro escarlata es un desafío,
-    Un sueño antiguo de la humanidad es.
+  console.log('Starting the model...')
+  const client = new Client({
+    apiUrl: process.env.LANGGRAPH_API_URL,
+    apiKey: process.env.LANGGRAPH_API_KEY
+  })
+  console.log('Client created...')
+  // get default assistant
+  const assistants = await client.assistants.search()
+  //console.log(assistants)
+  let assistant = assistants.find((a) => a.graph_id === 'researcher')
+  if (!assistant) {
+    assistant = await client.assistants.create({ graphId: 'researcher' })
+    // throw new Error('No assistant found')
+  }
+  // create thread
+  const thread = await client.threads.create()
+  const threadId = thread['thread_id']
+  console.log('Thread: ', thread)
 
-    Tus cañones vastos cuentan su vejez,
-    Y tus montañas hablan de heroísmo,
-    Mas tu silencio guarda un abismo,
-    Un eco mudo de lo que tal vez fue.
+  const input = {
+    messages: [userMessage]
+  }
 
-    Oh Marte, promesa de un futuro audaz,
-    Tu polvo rojo clama por pisadas,
-    Por huellas nuevas en tu soledad.
+  const streamResponse = client.runs.stream(
+    thread['thread_id'],
+    assistant['assistant_id'],
+    {
+      input,
+      streamMode: 'messages'
+    }
+  )
 
-    Que el hombre, en busca de tierras soñadas,
-    Haga de ti su hogar, su nuevo Edén,
-    Y en tus arenas grabe su vaivén.
-  `
-
-  const stream = createDataStream({
-    async execute(dataStream) {
-      // Write the message start
-      dataStream.write(
-        formatDataStreamPart('start_step', { messageId: generateUUID() })
-      )
-
-      // Split the soneto into words and stream each word with a small delay
-      const words = soneto.split(/\s+/)
-      for (const word of words) {
-        dataStream.write(formatDataStreamPart('text', `${word} `))
-        // Add a small delay between words (50ms)
-        await new Promise((resolve) => setTimeout(resolve, 10))
-      }
-
-      // Write the message end
-      dataStream.write(
-        formatDataStreamPart('finish_message', {
-          finishReason: 'stop',
-          usage: { promptTokens: 55, completionTokens: 20 }
-        })
+  const streamCallbacks: LangGraphStreamCallbacks = {
+    onStart: (messageId) => {
+      console.log(
+        `Stream started with message ID: ${messageId} for thread ${threadId}`
       )
     },
-    onError: (error: unknown) =>
-      `Custom error: ${error instanceof Error ? error.message : String(error)}`
-  })
+    onToken: (token) => {
+      // For performance reasons, token logging is commented out
+      // console.log(`Token received: ${token}`);
+    },
+    onError: (error) => {
+      console.error(`Stream error occurred:`, error)
+    },
+    onFinish: async (stats) => {
+      console.log(`Stream finished with reason: ${stats.finishReason}`)
+      console.log(`Usage stats:`, stats.usage)
 
-  // Create the HTTP Response.
-  const responseStream = stream.pipeThrough(new TextEncoderStream())
+      // Just log the thread ID and fetch the thread state
+    }
+  }
 
-  // Create the HTTP Response.
-  const response = new Response(responseStream, {
-    status: 200,
-    statusText: 'OK',
-    headers: prepareResponseHeaders(
-      {},
-      {
-        contentType: 'text/plain; charset=utf-8',
-        dataStreamVersion: 'v1'
-      }
-    )
-  })
-  return response
+  // Pass the required parameters to access thread data in callbacks
+  return LangGraphAdapter.toDataStreamResponse(
+    streamResponse,
+    streamCallbacks,
+    threadId,
+    client
+  )
+
+  // const soneto = `
+  //   Oh Marte rojo, astro de aridez,
+  //   Desierto eterno bajo el cielo frío,
+  //   Tu rostro escarlata es un desafío,
+  //   Un sueño antiguo de la humanidad es.
+
+  //   Tus cañones vastos cuentan su vejez,
+  //   Y tus montañas hablan de heroísmo,
+  //   Mas tu silencio guarda un abismo,
+  //   Un eco mudo de lo que tal vez fue.
+
+  //   Oh Marte, promesa de un futuro audaz,
+  //   Tu polvo rojo clama por pisadas,
+  //   Por huellas nuevas en tu soledad.
+
+  //   Que el hombre, en busca de tierras soñadas,
+  //   Haga de ti su hogar, su nuevo Edén,
+  //   Y en tus arenas grabe su vaivén.
+  // `
+
+  // const stream = createDataStream({
+  //   async execute(dataStream) {
+  //     // Write the message start
+  //     dataStream.write(
+  //       formatDataStreamPart('start_step', { messageId: generateUUID() })
+  //     )
+
+  //     // Split the soneto into words and stream each word with a small delay
+  //     const words = soneto.split(/\s+/)
+  //     for (const word of words) {
+  //       dataStream.write(formatDataStreamPart('text', `${word} `))
+  //       // Add a small delay between words (50ms)
+  //       await new Promise((resolve) => setTimeout(resolve, 10))
+  //     }
+
+  //     // Write the message end
+  //     dataStream.write(
+  //       formatDataStreamPart('finish_message', {
+  //         finishReason: 'stop',
+  //         usage: { promptTokens: 55, completionTokens: 20 }
+  //       })
+  //     )
+  //   },
+  //   onError: (error: unknown) =>
+  //     `Custom error: ${error instanceof Error ? error.message : String(error)}`
+  // })
+
+  // // Create the HTTP Response.
+  // const responseStream = stream.pipeThrough(new TextEncoderStream())
+
+  // // Create the HTTP Response.
+  // const response = new Response(responseStream, {
+  //   status: 200,
+  //   statusText: 'OK',
+  //   headers: prepareResponseHeaders(
+  //     {},
+  //     {
+  //       contentType: 'text/plain; charset=utf-8',
+  //       dataStreamVersion: 'v1'
+  //     }
+  //   )
+  // })
+  // return response
 
   // const result = streamText({
   //   model: myProvider.languageModel(selectedChatModel),
@@ -265,34 +323,6 @@ export async function POST(request: Request) {
   // const result = await llm.stream(formattedMessages)
   // console.log('\nGenerating stream: ', result, '\n')
   // return LangChainAdapter.toDataStreamResponse(result)
-
-  // console.log('Starting the model...')
-  // const client = new Client({ apiUrl: 'http://localhost:2024' })
-  // console.log('Client created...')
-  // // get default assistant
-  // const assistants = await client.assistants.search()
-  // //console.log(assistants)
-  // let assistant = assistants.find((a) => a.graph_id === 'researcher')
-  // if (!assistant) {
-  //   assistant = await client.assistants.create({ graphId: 'researcher' })
-  //   // throw new Error('No assistant found')
-  // }
-  // // create thread
-  // const thread = await client.threads.create()
-  // console.log('Thread: ', thread)
-
-  // const input = {
-  //   messages: [userMessage]
-  // }
-
-  // const streamResponse = client.runs.stream(
-  //   thread['thread_id'],
-  //   assistant['assistant_id'],
-  //   {
-  //     input,
-  //     streamMode: 'messages'
-  //   }
-  // )
 
   // console.log('\nStreaming response...\n\n')
   // // Create our full data stream generator (start, delta, finish events).
