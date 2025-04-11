@@ -2,6 +2,7 @@ import { formatDataStreamPart } from '@ai-sdk/ui-utils'
 import { Client } from '@langchain/langgraph-sdk'
 import { LangGraphStreamCallbacks, LangGraphStreamEvent } from './types'
 import { generateUUID } from '../utils'
+import { object } from 'zod'
 
 // Remove the null option from our type to avoid the null assignment error
 type FinishReason = 'stop' | 'length' | 'content_filter' | 'tool_calls'
@@ -21,16 +22,30 @@ export class LangGraphAdapter {
     let usage = undefined
     let pendingToolCall: any = null
     let toolCalls: Array<{ action: any; observation: string }> = []
+    let langgraph_node = ''
+    let key_type = 'chat'
 
     for await (const message of streamResponse) {
       // Log each message to inspect structure
-      console.log('LangGraph message event:', message.event)
-      console.log(
-        'LangGraph message data:',
-        JSON.stringify(message.data, null, 2)
-      )
 
-      if (message.event === 'messages/complete') {
+      if (message.event === 'messages/metadata') {
+        console.log('LangGraph message event:', message.event)
+        // console.log(
+        //   'LangGraph message data:',
+        //   JSON.stringify(message.data, null, 2)
+        // )
+        // Get the first key of the object if it exists
+        const key = message.data ? Object.keys(message.data)[0] : undefined
+        console.log('LangGraph message key:', key)
+        key_type = key?.startsWith('run') ? 'run' : 'chat'
+        const metadata = key ? message.data[key] : undefined
+        langgraph_node = metadata?.node || ''
+
+        console.log(
+          'LangGraph message metadata:',
+          JSON.stringify(metadata, null, 2)
+        )
+      } else if (message.event === 'messages/complete') {
         const data = message.data?.[0]
 
         // Check if this is an AI message with tool calls
@@ -101,16 +116,18 @@ export class LangGraphAdapter {
           }
         }
       } else if (message.event === 'messages/partial') {
-        const msg = message.data?.[0]
-        if (msg?.content && !pendingToolCall) {
-          const current = msg.content
-          const delta = current.substring(lastOutput.length)
-          lastOutput = current
-          if (delta) {
-            if (callbacks?.onToken) {
-              callbacks.onToken(delta)
+        if (key_type === 'chat') {
+          const msg = message.data?.[0]
+          if (msg?.content && !pendingToolCall) {
+            const current = msg.content
+            const delta = current.substring(lastOutput.length)
+            lastOutput = current
+            if (delta) {
+              if (callbacks?.onToken) {
+                callbacks.onToken(delta)
+              }
+              yield formatDataStreamPart('text', delta)
             }
-            yield formatDataStreamPart('text', delta)
           }
         }
       }

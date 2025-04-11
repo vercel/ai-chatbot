@@ -188,9 +188,11 @@ export async function POST(request: Request) {
   // get default assistant
   const assistants = await client.assistants.search()
   //console.log(assistants)
-  let assistant = assistants.find((a) => a.graph_id === 'researcher')
+  let assistant = assistants.find((a) => a.graph_id === 'intellidoctor_Agent')
   if (!assistant) {
-    assistant = await client.assistants.create({ graphId: 'researcher' })
+    assistant = await client.assistants.create({
+      graphId: 'intellidoctor_Agent'
+    })
     // throw new Error('No assistant found')
   }
   // create thread
