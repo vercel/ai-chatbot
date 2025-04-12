@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
+// Import the Drizzle query function
+import { getChatsByUserId } from '@/lib/db/queries';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -21,26 +23,23 @@ export async function GET(req: Request) {
   const userId = user.id; // Get user ID
 
   try {
-    // Database query (we know this needs fixing later, but leave as is for now)
-    const { data: chats, error } = await supabase
-      .from('chats')
-      .select('id, payload') // Select the potentially incorrect column for now
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    // Use the Drizzle query function instead of direct Supabase query
+    const result = await getChatsByUserId({
+      id: userId,
+      limit,
+      startingAfter: null, // Add pagination params (can be enhanced later)
+      endingBefore: null,
+    });
 
-    if (error) {
-      console.error('Error fetching chat history:', error);
-      // Keep the specific error logging for the DB query
-      return Response.json(
-        { error: 'Error fetching history', details: error.message },
-        { status: 500 },
-      );
-    }
-
-    return Response.json(chats || []);
+    // Check if the query function returned an error (it throws, so catch block handles it)
+    // The function returns an object { chats: Array<Chat>, hasMore: boolean }
+    // Return the full result object, not just the chats array
+    return Response.json(result);
   } catch (err: any) {
-    console.error('Unexpected error in /api/history:', err);
-    return Response.json({ error: err.message }, { status: 500 });
+    console.error('Error fetching chat history:', err); // Log the actual error
+    return Response.json(
+      { error: 'Error fetching history', details: err.message },
+      { status: 500 },
+    );
   }
 }

@@ -9,6 +9,9 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  array,
+  pgArray,
+  PgArray,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -108,12 +111,14 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
+    kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
+    tags: text('tags').array(),
+    modifiedAt: timestamp('modifiedAt', { withTimezone: true }),
   },
   (table) => {
     return {

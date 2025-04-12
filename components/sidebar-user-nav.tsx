@@ -52,7 +52,7 @@ export function SidebarUserNav({ user }: { user: any }) {
               Toggle theme
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
+            <DropdownMenuItem onClick={handleSignOut}>
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

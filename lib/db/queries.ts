@@ -238,6 +238,16 @@ export async function saveDocument({
   userId: string;
 }) {
   try {
+    // Log the values being inserted
+    console.log('Attempting to save document with values:', {
+      id,
+      title,
+      kind,
+      content: content ? content.substring(0, 50) + '...' : null, // Log snippet of content
+      userId,
+      createdAt: new Date(),
+    });
+
     return await db.insert(document).values({
       id,
       title,
@@ -247,7 +257,7 @@ export async function saveDocument({
       createdAt: new Date(),
     });
   } catch (error) {
-    console.error('Failed to save document in database');
+    console.error('Failed to save document in database:', error);
     throw error;
   }
 }

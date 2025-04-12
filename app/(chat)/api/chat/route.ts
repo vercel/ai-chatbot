@@ -1,5 +1,5 @@
+import type { UIMessage } from 'ai';
 import {
-  UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
@@ -12,6 +12,8 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  getUser,
+  createUser,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -51,6 +53,20 @@ export async function POST(request: Request) {
     }
 
     const userId = user.id;
+
+    // --- BEGIN: Ensure user exists in our DB ---
+    try {
+      const dbUser = await getUser(user.email ?? ''); // Use email to check
+      if (dbUser.length === 0 && user.email) {
+        // User exists in Supabase Auth but not in our DB, create them
+        await createUser(user.email, userId);
+        console.log(`Created user ${userId} in local DB.`);
+      }
+    } catch (dbError) {
+      console.error('Failed to check/create user in DB:', dbError);
+      return new Response('Database error checking user', { status: 500 });
+    }
+    // --- END: Ensure user exists in our DB ---
 
     const userMessage = getMostRecentUserMessage(messages);
 
@@ -105,10 +121,10 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
-            createDocument: createDocument({ userId, dataStream }),
-            updateDocument: updateDocument({ userId, dataStream }),
+            createDocument: createDocument({ user, dataStream }),
+            updateDocument: updateDocument({ user, dataStream }),
             requestSuggestions: requestSuggestions({
-              userId,
+              user,
               dataStream,
             }),
           },
@@ -165,8 +181,10 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    // Log the actual error for debugging
+    console.error('Error in POST /api/chat:', error);
     return new Response('An error occurred while processing your request!', {
-      status: 404,
+      status: 500, // Return 500 for internal server errors
     });
   }
 }

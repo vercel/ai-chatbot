@@ -1,5 +1,5 @@
-import { auth } from '@/app/(auth)/auth';
-import { ArtifactKind } from '@/components/artifact';
+import { createClient } from '@/lib/supabase/server';
+import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
@@ -14,11 +14,17 @@ export async function GET(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const session = await auth();
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-  if (!session || !session.user) {
+  if (authError || !user) {
     return new Response('Unauthorized', { status: 401 });
   }
+
+  const userId = user.id;
 
   const documents = await getDocumentsById({ id });
 
@@ -28,7 +34,7 @@ export async function GET(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -43,11 +49,17 @@ export async function POST(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const session = await auth();
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (authError || !user) {
     return new Response('Unauthorized', { status: 401 });
   }
+
+  const userId = user.id;
 
   const {
     content,
@@ -56,19 +68,15 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: ArtifactKind } =
     await request.json();
 
-  if (session.user?.id) {
-    const document = await saveDocument({
-      id,
-      content,
-      title,
-      kind,
-      userId: session.user.id,
-    });
+  const document = await saveDocument({
+    id,
+    content,
+    title,
+    kind,
+    userId: userId,
+  });
 
-    return Response.json(document, { status: 200 });
-  }
-
-  return new Response('Unauthorized', { status: 401 });
+  return Response.json(document, { status: 200 });
 }
 
 export async function PATCH(request: Request) {
@@ -81,17 +89,23 @@ export async function PATCH(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const session = await auth();
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-  if (!session || !session.user) {
+  if (authError || !user) {
     return new Response('Unauthorized', { status: 401 });
   }
+
+  const userId = user.id;
 
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
