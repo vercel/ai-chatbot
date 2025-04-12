@@ -72,3 +72,12 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      - name: Process test result
+        if: always()
+        run: |
+          if [[ "${{ steps.run-tests.outputs.tests-passed }}" == "true" ]]; then
+            echo "All tests passed!"
+          else
+            echo "Some tests failed"
+          fi

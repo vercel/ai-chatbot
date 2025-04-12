@@ -1,4 +1,5 @@
 import { type ChildProcess, execSync, spawn } from 'node:child_process';
+import fs from 'node:fs';
 import { config } from 'dotenv';
 import waitOn from 'wait-on';
 
@@ -70,6 +71,7 @@ async function deleteBranch(branchId: string) {
 async function main(): Promise<void> {
   let createdBranchId: string | null = null;
   let serverProcess: ChildProcess | null = null;
+  let testFailed = false;
 
   try {
     console.log(`Creating database branch...`);
@@ -99,13 +101,31 @@ async function main(): Promise<void> {
     await waitOn({ resources: ['http://localhost:3000'] });
 
     console.log('Running Playwright tests...');
-    execSync('pnpm playwright test --reporter=line', {
-      stdio: 'inherit',
-      env: { ...process.env, POSTGRES_URL: branchConnectionUri },
-    });
+    try {
+      if (!fs.existsSync('playwright-report')) {
+        fs.mkdirSync('playwright-report', { recursive: true });
+      }
+
+      execSync('pnpm playwright test --reporter=line,html,junit', {
+        stdio: 'inherit',
+        env: { ...process.env, POSTGRES_URL: branchConnectionUri },
+      });
+
+      console.log('✅ All tests passed!');
+    } catch (testError) {
+      testFailed = true;
+      const exitCode = (testError as any).status || 1;
+      console.error(`❌ Tests failed with exit code: ${exitCode}`);
+
+      if (process.env.GITHUB_ACTIONS === 'true') {
+        console.log(
+          '::error::Playwright tests failed. See report for details.',
+        );
+      }
+    }
   } catch (error) {
     console.error('Error during test setup or execution:', error);
-    process.exit(1);
+    testFailed = true;
   } finally {
     if (serverProcess) {
       console.log('Shutting down server...');
@@ -118,11 +138,16 @@ async function main(): Promise<void> {
       } else {
         console.log(`Cleaning up: deleting branch ${createdBranchId}`);
         await deleteBranch(createdBranchId);
-
         console.log('Branch deleted successfully');
       }
     } catch (cleanupError) {
       console.error('Error during cleanup:', cleanupError);
+    }
+
+    if (testFailed) {
+      process.exit(1);
+    } else {
+      process.exit(0);
     }
   }
 }
