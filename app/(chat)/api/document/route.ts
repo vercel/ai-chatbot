@@ -1,23 +1,24 @@
 import { auth } from '@/app/(auth)/auth';
-import { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
+import { apiErrors, successResponse } from '@/lib/responses';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return apiErrors.missingParameter();
   }
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user?.id) {
+    return apiErrors.unauthorized();
   }
 
   const documents = await getDocumentsById({ id });
@@ -25,14 +26,14 @@ export async function GET(request: Request) {
   const [document] = documents;
 
   if (!document) {
-    return new Response('Not Found', { status: 404 });
+    return apiErrors.documentNotFound();
   }
 
   if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return apiErrors.documentForbidden();
   }
 
-  return Response.json(documents, { status: 200 });
+  return successResponse(documents);
 }
 
 export async function POST(request: Request) {
@@ -40,13 +41,13 @@ export async function POST(request: Request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return apiErrors.missingParameter();
   }
 
   const session = await auth();
 
   if (!session) {
-    return new Response('Unauthorized', { status: 401 });
+    return apiErrors.unauthorized();
   }
 
   const {
@@ -56,35 +57,48 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: ArtifactKind } =
     await request.json();
 
-  if (session.user?.id) {
-    const document = await saveDocument({
-      id,
-      content,
-      title,
-      kind,
-      userId: session.user.id,
-    });
-
-    return Response.json(document, { status: 200 });
+  if (!session?.user?.id) {
+    return apiErrors.unauthorized();
   }
 
-  return new Response('Unauthorized', { status: 401 });
+  const documents = await getDocumentsById({ id: id });
+
+  if (documents.length > 0) {
+    const [document] = documents;
+
+    if (document.userId !== session.user.id) {
+      return apiErrors.documentForbidden();
+    }
+  }
+
+  const [createdDocument] = await saveDocument({
+    id,
+    content,
+    title,
+    kind,
+    userId: session.user.id,
+  });
+
+  return successResponse(createdDocument);
 }
 
-export async function PATCH(request: Request) {
+export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-
-  const { timestamp }: { timestamp: string } = await request.json();
+  const timestamp = searchParams.get('timestamp');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return apiErrors.missingParameter();
+  }
+
+  if (!timestamp) {
+    return apiErrors.missingParameter();
   }
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user?.id) {
+    return apiErrors.unauthorized();
   }
 
   const documents = await getDocumentsById({ id });
@@ -92,13 +106,13 @@ export async function PATCH(request: Request) {
   const [document] = documents;
 
   if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return apiErrors.documentForbidden();
   }
 
-  await deleteDocumentsByIdAfterTimestamp({
+  const deletedDocuments = await deleteDocumentsByIdAfterTimestamp({
     id,
     timestamp: new Date(timestamp),
   });
 
-  return new Response('Deleted', { status: 200 });
+  return successResponse(deletedDocuments);
 }
