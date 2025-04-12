@@ -51,7 +51,7 @@ const PureFilesItem = ({
         `Navigating using direct chat_id: ${document.chat_id} for document ${document.id}`,
       );
       setOpenMobile(false);
-      router.push(`/chat/${document.chat_id}`);
+      router.push(`/chat/${document.chat_id}?showArtifact=${document.id}`);
       setIsFindingChat(false); // Navigation initiated
       return; // Exit early
     } else {

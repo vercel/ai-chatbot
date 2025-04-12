@@ -53,25 +53,29 @@ const PureAllItem = ({ item, isActive }: SidebarAllItemProps) => {
     item.type === 'chat'
       ? `/chat/${item.id}`
       : item.chat_id
-        ? `/chat/${item.chat_id}`
-        : '#'; // Link to chat directly
+        ? `/chat/${item.chat_id}?showArtifact=${item.id}`
+        : '#';
 
   const handleNavigate = (e: React.MouseEvent) => {
+    const targetHref = href;
     if (item.type === 'document' && !item.chat_id) {
-      e.preventDefault(); // Prevent link click if no chat_id
+      e.preventDefault();
       toast.error(`Document "${item.title}" is not linked to a chat.`);
       return;
     }
-    setOpenMobile(false); // Close mobile sidebar on any valid click
-    // Navigation is handled by the Link component's href
+
+    if (targetHref === '#') {
+      e.preventDefault();
+    } else {
+      setOpenMobile(false);
+    }
   };
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} onClick={handleNavigate}>
         <Link href={href}>
-          <IconComponent className="size-4 mr-2 shrink-0" aria-hidden="true" />{' '}
-          {/* Add Icon */}
+          <IconComponent className="size-4 mr-0 shrink-0" aria-hidden="true" />
           <span className="truncate">{item.title}</span>
         </Link>
       </SidebarMenuButton>

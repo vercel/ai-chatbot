@@ -2,7 +2,8 @@
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -11,10 +12,11 @@ import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { createClient } from '@/lib/supabase/client';
 
 export function Chat({
   id,
@@ -63,6 +65,50 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+
+  const { setArtifact } = useArtifact();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const artifactToShow = searchParams.get('showArtifact');
+    if (artifactToShow) {
+      console.log('Found showArtifact param:', artifactToShow);
+      const showArtifact = async (documentId: string) => {
+        const supabase = createClient();
+        const { data: doc, error } = await supabase
+          .from('Document')
+          .select('id, title, kind, content')
+          .eq('id', documentId)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching document details for artifact:', error);
+          toast.error('Could not load the requested document.');
+        } else if (doc) {
+          console.log('Setting artifact visible for:', doc.id);
+          setArtifact({
+            isVisible: true,
+            documentId: doc.id,
+            title: doc.title,
+            kind: doc.kind as any,
+            content: doc.content || '',
+            status: 'idle',
+            boundingBox: {
+              top: 100,
+              left: window.innerWidth / 2,
+              width: 300,
+              height: 200,
+            },
+          });
+        } else {
+          toast.error('Requested document not found.');
+        }
+        router.replace(`/chat/${id}`, { scroll: false });
+      };
+      showArtifact(artifactToShow);
+    }
+  }, [searchParams]);
 
   return (
     <>
