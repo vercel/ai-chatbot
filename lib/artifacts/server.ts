@@ -19,6 +19,7 @@ export interface SaveDocumentProps {
 export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
+  chatId: string;
   dataStream: DataStreamWriter;
   user: User;
 }
@@ -68,6 +69,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           content: draftContent,
           kind: config.kind,
           userId: args.user.id,
+          chatId: args.chatId,
         });
       }
 

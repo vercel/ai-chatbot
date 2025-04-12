@@ -15,8 +15,10 @@ import {
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { SidebarFiles } from './sidebar-files';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -59,7 +61,25 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarHistory user={user} />
+        <Tabs
+          defaultValue="chats"
+          className="flex-1 flex flex-col overflow-hidden"
+        >
+          <TabsList className="shrink-0 mx-4 my-2">
+            <TabsTrigger value="chats" className="flex-1">
+              Chats
+            </TabsTrigger>
+            <TabsTrigger value="files" className="flex-1">
+              Files
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="chats" className="flex-1 overflow-y-auto">
+            <SidebarHistory user={user} />
+          </TabsContent>
+          <TabsContent value="files" className="flex-1 overflow-y-auto">
+            <SidebarFiles user={user} />
+          </TabsContent>
+        </Tabs>
       </SidebarContent>
       <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
     </Sidebar>

@@ -224,38 +224,56 @@ export async function getVotesByChatId({ id }: { id: string }) {
   }
 }
 
+export interface SaveDocumentProps {
+  id: string;
+  title: string;
+  content: string;
+  kind: ArtifactKind;
+  userId: string;
+  chatId: string;
+}
+
 export async function saveDocument({
   id,
   title,
-  kind,
   content,
+  kind,
   userId,
-}: {
-  id: string;
-  title: string;
-  kind: ArtifactKind;
-  content: string;
-  userId: string;
-}) {
+  chatId,
+}: SaveDocumentProps) {
   try {
     // Log the values being inserted
-    console.log('Attempting to save document with values:', {
+    console.log('Saving document with values:', {
       id,
       title,
+      content: content ? `${content.substring(0, 50)}...` : null,
       kind,
-      content: content ? content.substring(0, 50) + '...' : null, // Log snippet of content
       userId,
+      chatId,
       createdAt: new Date(),
     });
 
-    return await db.insert(document).values({
+    const valuesToInsert = {
       id,
       title,
-      kind,
       content,
+      kind,
       userId,
+      chatId: chatId,
       createdAt: new Date(),
-    });
+    };
+
+    return await db
+      .insert(document)
+      .values(valuesToInsert)
+      .onConflictDoUpdate({
+        target: document.id,
+        set: {
+          content,
+          title,
+          modifiedAt: new Date(),
+        },
+      });
   } catch (error) {
     console.error('Failed to save document in database:', error);
     throw error;

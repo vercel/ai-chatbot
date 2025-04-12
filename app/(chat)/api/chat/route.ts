@@ -5,7 +5,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -36,13 +36,15 @@ export async function POST(request: Request) {
       id,
       messages,
       selectedChatModel,
+      documentId,
     }: {
       id: string;
       messages: Array<UIMessage>;
       selectedChatModel: string;
+      documentId?: string;
     } = await request.json();
 
-    const supabase = await createClient();
+    const supabase = await createServerClient();
     const {
       data: { user },
       error: authError,
@@ -76,12 +78,76 @@ export async function POST(request: Request) {
 
     const chat = await getChatById({ id });
 
-    if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message: userMessage,
-      });
+    let finalChatId = id;
+    let finalTitle = '';
 
-      await saveChat({ id, userId: userId, title });
+    if (!chat) {
+      let newChatTitle = '';
+
+      if (documentId) {
+        const { data: documentData, error: docError } = await supabase
+          .from('Document')
+          .select('title')
+          .eq('id', documentId)
+          .eq('userId', userId)
+          .maybeSingle();
+
+        if (docError) {
+          console.error('Error fetching document title:', docError);
+          return new Response('Error fetching document details', {
+            status: 500,
+          });
+        }
+        if (!documentData) {
+          console.error(
+            `Document not found or permission denied for documentId: ${documentId}`,
+          );
+          return new Response('Document not found or access denied', {
+            status: 404,
+          });
+        }
+        newChatTitle = documentData.title;
+        console.log(`Using document title for new chat: "${newChatTitle}"`);
+      } else {
+        newChatTitle = await generateTitleFromUserMessage({
+          message: userMessage,
+        });
+        console.log(`Generated title for new chat: "${newChatTitle}"`);
+      }
+
+      finalTitle = newChatTitle;
+
+      try {
+        await saveChat({ id: finalChatId, userId: userId, title: finalTitle });
+        console.log(
+          `Saved new chat with ID: ${finalChatId} and Title: "${finalTitle}"`,
+        );
+
+        if (documentId) {
+          console.log(
+            `Attempting to link document ${documentId} to chat ${finalChatId}`,
+          );
+          const { error: updateError } = await supabase
+            .from('Document')
+            .update({ chat_id: finalChatId })
+            .eq('id', documentId)
+            .eq('userId', userId);
+
+          if (updateError) {
+            console.error(
+              `Failed to update document ${documentId} with chat_id ${finalChatId}:`,
+              updateError,
+            );
+          } else {
+            console.log(
+              `Successfully linked document ${documentId} to chat ${finalChatId}`,
+            );
+          }
+        }
+      } catch (saveError) {
+        console.error('Failed to save chat:', saveError);
+        return new Response('Failed to save chat', { status: 500 });
+      }
     } else {
       if (chat.userId !== userId) {
         return new Response('Unauthorized', { status: 401 });
@@ -91,7 +157,7 @@ export async function POST(request: Request) {
     await saveMessages({
       messages: [
         {
-          chatId: id,
+          chatId: finalChatId,
           id: userMessage.id,
           role: 'user',
           parts: userMessage.parts,
@@ -121,7 +187,11 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
-            createDocument: createDocument({ user, dataStream }),
+            createDocument: createDocument({
+              user,
+              dataStream,
+              chatId: finalChatId,
+            }),
             updateDocument: updateDocument({ user, dataStream }),
             requestSuggestions: requestSuggestions({
               user,
@@ -150,7 +220,7 @@ export async function POST(request: Request) {
                   messages: [
                     {
                       id: assistantId,
-                      chatId: id,
+                      chatId: finalChatId,
                       role: assistantMessage.role,
                       parts: assistantMessage.parts,
                       attachments:
@@ -197,7 +267,7 @@ export async function DELETE(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
     error: authError,

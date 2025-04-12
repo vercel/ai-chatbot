@@ -1,10 +1,10 @@
-import { createClient } from '../../lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
-} from '../../lib/db/queries';
+} from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
