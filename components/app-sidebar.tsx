@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { SidebarFiles } from './sidebar-files';
+import { SidebarAll } from './sidebar-all';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -62,10 +63,13 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       </SidebarHeader>
       <SidebarContent>
         <Tabs
-          defaultValue="chats"
+          defaultValue="all"
           className="flex-1 flex flex-col overflow-hidden"
         >
           <TabsList className="shrink-0 mx-4 my-2">
+            <TabsTrigger value="all" className="flex-1">
+              All
+            </TabsTrigger>
             <TabsTrigger value="chats" className="flex-1">
               Chats
             </TabsTrigger>
@@ -73,6 +77,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               Files
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="all" className="flex-1 overflow-y-auto">
+            <SidebarAll user={user} />
+          </TabsContent>
           <TabsContent value="chats" className="flex-1 overflow-y-auto">
             <SidebarHistory user={user} />
           </TabsContent>

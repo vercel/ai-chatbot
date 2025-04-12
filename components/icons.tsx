@@ -1,6 +1,5 @@
 import {
   Loader2,
-  LucideProps,
   Trash,
   Undo,
   Redo,
@@ -36,6 +35,7 @@ import {
   ChevronDown,
   Sparkle as Summarize,
 } from 'lucide-react';
+import type { LucideProps } from 'lucide-react';
 
 export type IconProps = LucideProps;
 
