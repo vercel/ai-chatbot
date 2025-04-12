@@ -106,16 +106,16 @@ async function main(): Promise<void> {
         fs.mkdirSync('playwright-report', { recursive: true });
       }
 
-      execSync('pnpm playwright test --reporter=line,html,junit', {
+      execSync('pnpm playwright test --reporter=line', {
         stdio: 'inherit',
         env: { ...process.env, POSTGRES_URL: branchConnectionUri },
       });
 
-      console.log('✅ All tests passed!');
+      console.log('All tests passed!');
     } catch (testError) {
       testFailed = true;
       const exitCode = (testError as any).status || 1;
-      console.error(`❌ Tests failed with exit code: ${exitCode}`);
+      console.error(`Tests failed with exit code: ${exitCode}`);
 
       if (process.env.GITHUB_ACTIONS === 'true') {
         console.log(
