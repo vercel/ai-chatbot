@@ -73,6 +73,20 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+      - name: Upload JUnit test results
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-results
+          path: junit.xml
+          retention-days: 7
+
+      - name: Publish Test Results
+        if: always() && !cancelled()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: junit.xml
+
       - name: Process test result
         if: always()
         run: |
