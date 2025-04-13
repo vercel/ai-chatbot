@@ -1,6 +1,5 @@
 import Form from 'next/form';
-
-import { signOut } from '@/app/(auth)/auth';
+import { createClient } from '@/lib/supabase/client';
 
 export const SignOutForm = () => {
   return (
@@ -9,9 +8,15 @@ export const SignOutForm = () => {
       action={async () => {
         'use server';
 
-        await signOut({
-          redirectTo: '/',
+        const supabase = createClient();
+        await supabase.auth.signOut({
+          // options can be added here if needed, e.g., scope
         });
+
+        // Redirecting is usually handled client-side after sign-out
+        // or via middleware based on auth state.
+        // The previous `redirectTo` was likely for an older auth system.
+        // We might need to adjust redirection logic elsewhere.
       }}
     >
       <button

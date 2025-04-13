@@ -6,6 +6,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from './ui/sidebar';
 import {
   DropdownMenu,
@@ -14,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { MoreHorizontalIcon, ShareIcon, TrashIcon } from './icons';
-import { useSidebar } from './ui/sidebar'; // To close mobile sidebar on click
 import { useRouter } from 'next/navigation'; // To navigate
 import { createClient } from '@/lib/supabase/client'; // To find chat ID
 import { toast } from 'sonner'; // Correct import for toast

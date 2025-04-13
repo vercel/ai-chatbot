@@ -108,7 +108,7 @@ export function Chat({
       };
       showArtifact(artifactToShow);
     }
-  }, [searchParams]);
+  }, [searchParams, id, router, setArtifact]);
 
   return (
     <>

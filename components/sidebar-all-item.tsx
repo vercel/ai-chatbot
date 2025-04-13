@@ -6,6 +6,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from './ui/sidebar';
 import {
   DropdownMenu,
@@ -18,7 +19,6 @@ import {
   MoreHorizontalIcon,
   // ... other icons for actions ...
 } from './icons';
-import { useSidebar } from './ui/sidebar';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
