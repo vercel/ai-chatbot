@@ -1,5 +1,5 @@
-import { createClient } from '../../lib/supabase/server';
-import { getSuggestionsByDocumentId } from '../../lib/db/queries';
+import { createClient } from '../../../../lib/supabase/server';
+import { getSuggestionsByDocumentId } from '../../../../lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
