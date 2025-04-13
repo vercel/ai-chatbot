@@ -9,14 +9,7 @@ export const SignOutForm = () => {
         'use server';
 
         const supabase = createClient();
-        await supabase.auth.signOut({
-          // options can be added here if needed, e.g., scope
-        });
-
-        // Redirecting is usually handled client-side after sign-out
-        // or via middleware based on auth state.
-        // The previous `redirectTo` was likely for an older auth system.
-        // We might need to adjust redirection logic elsewhere.
+        await supabase.auth.signOut();
       }}
     >
       <button

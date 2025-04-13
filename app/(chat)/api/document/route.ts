@@ -65,7 +65,8 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-  }: { content: string; title: string; kind: ArtifactKind } =
+    chatId,
+  }: { content: string; title: string; kind: ArtifactKind; chatId: string } =
     await request.json();
 
   const document = await saveDocument({
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
     title,
     kind,
     userId: userId,
+    chatId: chatId,
   });
 
   return Response.json(document, { status: 200 });
