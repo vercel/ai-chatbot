@@ -1,30 +1,31 @@
 'use client';
 
-import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
+import type { Attachment, UIMessage } from 'ai';
+import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
-
-import { Block } from './block';
+import { fetcher, generateUUID } from '@/lib/utils';
+import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import { VisibilityType } from './visibility-selector';
-import { useBlockSelector } from '@/hooks/use-block';
+import type { VisibilityType } from './visibility-selector';
+import { useArtifactSelector } from '@/hooks/use-artifact';
+import { toast } from 'sonner';
+import { unstable_serialize } from 'swr/infinite';
+import { getChatHistoryPaginationKey } from './sidebar-history';
 
 export function Chat({
   id,
   initialMessages,
-  selectedModelId,
+  selectedChatModel,
   selectedVisibilityType,
   isReadonly,
 }: {
   id: string;
-  initialMessages: Array<Message>;
-  selectedModelId: string;
+  initialMessages: Array<UIMessage>;
+  selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
@@ -37,46 +38,51 @@ export function Chat({
     input,
     setInput,
     append,
-    isLoading,
+    status,
     stop,
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id, selectedChatModel: selectedChatModel },
     initialMessages,
     experimental_throttle: 100,
+    sendExtraMessageFields: true,
+    generateId: generateUUID,
     onFinish: () => {
-      mutate('/api/history');
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
+    },
+    onError: () => {
+      toast.error('An error occurred, please try again!');
     },
   });
 
   const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
+    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isBlockVisible = useBlockSelector((state) => state.isVisible);
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={selectedModelId}
+          selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />
 
         <Messages
           chatId={id}
-          isLoading={isLoading}
+          status={status}
           votes={votes}
           messages={messages}
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
-          isBlockVisible={isBlockVisible}
+          isArtifactVisible={isArtifactVisible}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -86,7 +92,7 @@ export function Chat({
               input={input}
               setInput={setInput}
               handleSubmit={handleSubmit}
-              isLoading={isLoading}
+              status={status}
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
@@ -98,12 +104,12 @@ export function Chat({
         </form>
       </div>
 
-      <Block
+      <Artifact
         chatId={id}
         input={input}
         setInput={setInput}
         handleSubmit={handleSubmit}
-        isLoading={isLoading}
+        status={status}
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}

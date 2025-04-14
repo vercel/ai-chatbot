@@ -10,7 +10,7 @@ import type { Suggestion } from '@/lib/db/schema';
 
 type EditorProps = {
   content: string;
-  saveContent: (updatedContent: string, debounce: boolean) => void;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
@@ -61,10 +61,12 @@ function PureCodeEditor({ content, saveContent, status, isReadonly }: EditorProp
 
           if (transaction) {
             const newContent = update.state.doc.toString();
-            saveContent(newContent, true);
+            onSaveContent(newContent, true);
           }
         }
       });
+
+      const currentSelection = editorRef.current.state.selection;
 
       const newState = EditorState.create({
         doc: editorRef.current.state.doc,

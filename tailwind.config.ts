@@ -8,11 +8,14 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    fontFamily: {
-      sans: ['geist'],
-      mono: ['geist-mono'],
-    },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-geist)'],
+        mono: ['var(--font-geist-mono)'],
+      },
+      screens: {
+        'toast-mobile': '600px',
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

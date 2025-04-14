@@ -25,7 +25,7 @@ import {
 
 type EditorProps = {
   content: string;
-  saveContent: (updatedContent: string, debounce: boolean) => void;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
   status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
@@ -35,7 +35,7 @@ type EditorProps = {
 
 function PureEditor({
   content,
-  saveContent,
+  onSaveContent,
   suggestions,
   status,
   isReadonly,
@@ -84,7 +84,11 @@ function PureEditor({
       editorRef.current.setProps({
         editable: () => !isReadonly,
         dispatchTransaction: (transaction) => {
-          handleTransaction({ transaction, editorRef, saveContent });
+          handleTransaction({
+            transaction,
+            editorRef,
+            onSaveContent,
+          });
         },
       });
     }

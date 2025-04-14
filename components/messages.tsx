@@ -1,29 +1,26 @@
-import { ChatRequestOptions, Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
-import { Overview } from './overview';
+import { Greeting } from './greeting';
 import { memo } from 'react';
-import { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 interface MessagesProps {
   chatId: string;
-  isLoading: boolean;
+  status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<Message>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  messages: Array<UIMessage>;
+  setMessages: UseChatHelpers['setMessages'];
+  reload: UseChatHelpers['reload'];
   isReadonly: boolean;
-  isBlockVisible: boolean;
+  isArtifactVisible: boolean;
 }
 
 function PureMessages({
   chatId,
-  isLoading,
+  status,
   votes,
   messages,
   setMessages,
@@ -38,14 +35,14 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {/* {messages.length === 0 && <Overview />} */}
+      {messages.length === 0 && <Greeting />}
 
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
           chatId={chatId}
           message={message}
-          isLoading={isLoading && messages.length - 1 === index}
+          isLoading={status === 'streaming' && messages.length - 1 === index}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -57,7 +54,7 @@ function PureMessages({
         />
       ))}
 
-      {isLoading &&
+      {status === 'submitted' &&
         messages.length > 0 &&
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
@@ -70,11 +67,12 @@ function PureMessages({
 }
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.isBlockVisible && nextProps.isBlockVisible) return true;
+  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
 
-  if (prevProps.isLoading !== nextProps.isLoading) return false;
-  if (prevProps.isLoading && nextProps.isLoading) return false;
+  if (prevProps.status !== nextProps.status) return false;
+  if (prevProps.status && nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
+  if (!equal(prevProps.messages, nextProps.messages)) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
 
   return true;

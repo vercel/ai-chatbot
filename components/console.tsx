@@ -8,8 +8,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ConsoleOutput } from './block';
 import { cn } from '@/lib/utils';
+import { useArtifactSelector } from '@/hooks/use-artifact';
+
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
+export interface ConsoleOutput {
+  id: string;
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
+}
 
 interface ConsoleProps {
   consoleOutputs: Array<ConsoleOutput>;
@@ -20,6 +31,8 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState(false);
   const consoleEndRef = useRef<HTMLDivElement>(null);
+
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   const minHeight = 100;
   const maxHeight = 800;
@@ -57,6 +70,12 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [consoleOutputs]);
 
+  useEffect(() => {
+    if (!isArtifactVisible) {
+      setConsoleOutputs([]);
+    }
+  }, [isArtifactVisible, setConsoleOutputs]);
+
   return consoleOutputs.length > 0 ? (
     <>
       <div
@@ -69,7 +88,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
 
       <div
         className={cn(
-          'fixed flex flex-col bottom-0 dark:bg-zinc-900 bg-zinc-50 w-full border-t z-40 overflow-y-scroll dark:border-zinc-700 border-zinc-200',
+          'fixed flex flex-col bottom-0 dark:bg-zinc-900 bg-zinc-50 w-full border-t z-40 overflow-y-scroll overflow-x-hidden dark:border-zinc-700 border-zinc-200',
           {
             'select-none': isResizing,
           },
@@ -101,21 +120,53 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
             >
               <div
                 className={cn('w-12 shrink-0', {
-                  'text-muted-foreground':
-                    consoleOutput.status === 'in_progress',
+                  'text-muted-foreground': [
+                    'in_progress',
+                    'loading_packages',
+                  ].includes(consoleOutput.status),
                   'text-emerald-500': consoleOutput.status === 'completed',
                   'text-red-400': consoleOutput.status === 'failed',
                 })}
               >
                 [{index + 1}]
               </div>
-              {consoleOutput.status === 'in_progress' ? (
-                <div className="animate-spin size-fit self-center">
-                  <LoaderIcon />
+              {['in_progress', 'loading_packages'].includes(
+                consoleOutput.status,
+              ) ? (
+                <div className="flex flex-row gap-2">
+                  <div className="animate-spin size-fit self-center mb-auto mt-0.5">
+                    <LoaderIcon />
+                  </div>
+                  <div className="text-muted-foreground">
+                    {consoleOutput.status === 'in_progress'
+                      ? 'Initializing...'
+                      : consoleOutput.status === 'loading_packages'
+                        ? consoleOutput.contents.map((content) =>
+                            content.type === 'text' ? content.value : null,
+                          )
+                        : null}
+                  </div>
                 </div>
               ) : (
-                <div className="dark:text-zinc-50 text-zinc-900 whitespace-pre-line">
-                  {consoleOutput.content}
+                <div className="dark:text-zinc-50 text-zinc-900 w-full flex flex-col gap-2 overflow-x-scroll">
+                  {consoleOutput.contents.map((content, index) =>
+                    content.type === 'image' ? (
+                      <picture key={`${consoleOutput.id}-${index}`}>
+                        <img
+                          src={content.value}
+                          alt="output"
+                          className="rounded-md max-w-screen-toast-mobile w-full"
+                        />
+                      </picture>
+                    ) : (
+                      <div
+                        key={`${consoleOutput.id}-${index}`}
+                        className="whitespace-pre-line break-words w-full"
+                      >
+                        {content.value}
+                      </div>
+                    ),
+                  )}
                 </div>
               )}
             </div>

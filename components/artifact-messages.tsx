@@ -1,35 +1,32 @@
 import { PreviewMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Vote } from '@/lib/db/schema';
-import { ChatRequestOptions, Message } from 'ai';
+import { UIMessage } from 'ai';
 import { memo } from 'react';
 import equal from 'fast-deep-equal';
-import { UIBlock } from './block';
+import { UIArtifact } from './artifact';
+import { UseChatHelpers } from '@ai-sdk/react';
 
-interface BlockMessagesProps {
+interface ArtifactMessagesProps {
   chatId: string;
-  isLoading: boolean;
+  status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<Message>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  messages: Array<UIMessage>;
+  setMessages: UseChatHelpers['setMessages'];
+  reload: UseChatHelpers['reload'];
   isReadonly: boolean;
-  blockStatus: UIBlock['status'];
+  artifactStatus: UIArtifact['status'];
 }
 
-function PureBlockMessages({
+function PureArtifactMessages({
   chatId,
-  isLoading,
+  status,
   votes,
   messages,
   setMessages,
   reload,
   isReadonly,
-}: BlockMessagesProps) {
+}: ArtifactMessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
@@ -43,7 +40,7 @@ function PureBlockMessages({
           chatId={chatId}
           key={message.id}
           message={message}
-          isLoading={isLoading && index === messages.length - 1}
+          isLoading={status === 'streaming' && index === messages.length - 1}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -64,21 +61,21 @@ function PureBlockMessages({
 }
 
 function areEqual(
-  prevProps: BlockMessagesProps,
-  nextProps: BlockMessagesProps,
+  prevProps: ArtifactMessagesProps,
+  nextProps: ArtifactMessagesProps,
 ) {
   if (
-    prevProps.blockStatus === 'streaming' &&
-    nextProps.blockStatus === 'streaming'
+    prevProps.artifactStatus === 'streaming' &&
+    nextProps.artifactStatus === 'streaming'
   )
     return true;
 
-  if (prevProps.isLoading !== nextProps.isLoading) return false;
-  if (prevProps.isLoading && nextProps.isLoading) return false;
+  if (prevProps.status !== nextProps.status) return false;
+  if (prevProps.status && nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
 
   return true;
 }
 
-export const BlockMessages = memo(PureBlockMessages, areEqual);
+export const ArtifactMessages = memo(PureArtifactMessages, areEqual);
