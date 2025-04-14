@@ -91,6 +91,14 @@ export default defineConfig({
         storageState: 'playwright/.auth/session.json',
       },
     },
+    {
+      name: 'routes',
+      testMatch: /routes\/.*.test.ts/,
+      dependencies: [],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
 
     // {
     //   name: 'firefox',

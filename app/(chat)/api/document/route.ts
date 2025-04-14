@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   const session = await auth();
 
-  if (!session || !session.user) {
+  if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -25,11 +25,11 @@ export async function GET(request: Request) {
   const [document] = documents;
 
   if (!document) {
-    return new Response('Not Found', { status: 404 });
+    return new Response('Not found', { status: 404 });
   }
 
   if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Forbidden', { status: 403 });
   }
 
   return Response.json(documents, { status: 200 });
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: ArtifactKind } =
     await request.json();
 
-  const documents = await getDocumentsById({ id: id });
+  const documents = await getDocumentsById({ id });
 
   if (documents.length > 0) {
     const [document] = documents;
@@ -104,10 +104,10 @@ export async function DELETE(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  await deleteDocumentsByIdAfterTimestamp({
+  const documentsDeleted = await deleteDocumentsByIdAfterTimestamp({
     id,
     timestamp: new Date(timestamp),
   });
 
-  return new Response('Deleted', { status: 200 });
+  return Response.json(documentsDeleted, { status: 200 });
 }
