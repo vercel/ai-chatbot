@@ -10,7 +10,7 @@ import {
   chatModel,
   reasoningModel,
   titleModel,
-} from './models.test';
+} from '@/tests/mocks/models';
 
 export const myProvider = isTestEnvironment
   ? customProvider({
