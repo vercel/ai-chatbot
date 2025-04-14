@@ -146,8 +146,8 @@ function PureArtifact({
               body: JSON.stringify({
                 title: artifact.title,
                 content: updatedContent,
-                kind: block.kind,
-                chatId: block.chatId,
+                kind: artifact.kind,
+                chatId: artifact.chatId,
               }),
             });
 

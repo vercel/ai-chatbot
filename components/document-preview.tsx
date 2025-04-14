@@ -94,7 +94,7 @@ export function DocumentPreview({
           id: artifact.documentId,
           createdAt: new Date(),
           userId: 'noop',
-          chatId: block.chatId,
+          chatId: artifact.chatId,
         }
       : null;
 
