@@ -269,14 +269,17 @@ export async function saveDocument({
   userId: string;
 }) {
   try {
-    return await db.insert(document).values({
-      id,
-      title,
-      kind,
-      content,
-      userId,
-      createdAt: new Date(),
-    });
+    return await db
+      .insert(document)
+      .values({
+        id,
+        title,
+        kind,
+        content,
+        userId,
+        createdAt: new Date(),
+      })
+      .returning();
   } catch (error) {
     console.error('Failed to save document in database');
     throw error;
@@ -332,7 +335,8 @@ export async function deleteDocumentsByIdAfterTimestamp({
 
     return await db
       .delete(document)
-      .where(and(eq(document.id, id), gt(document.createdAt, timestamp)));
+      .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
+      .returning();
   } catch (error) {
     console.error(
       'Failed to delete documents by id after timestamp from database',

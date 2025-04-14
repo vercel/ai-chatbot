@@ -57,15 +57,15 @@ export const VersionFooter = ({
 
             mutate(
               `/api/document?id=${artifact.documentId}`,
-              await fetch(`/api/document?id=${artifact.documentId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  timestamp: getDocumentTimestampByIndex(
-                    documents,
-                    currentVersionIndex,
-                  ),
-                }),
-              }),
+              await fetch(
+                `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
+                  documents,
+                  currentVersionIndex,
+                )}`,
+                {
+                  method: 'DELETE',
+                },
+              ),
               {
                 optimisticData: documents
                   ? [
