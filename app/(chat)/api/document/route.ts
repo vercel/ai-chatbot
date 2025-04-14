@@ -1,5 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
-  if (!session) {
+  if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -56,19 +56,25 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: ArtifactKind } =
     await request.json();
 
-  if (session.user?.id) {
-    const document = await saveDocument({
-      id,
-      content,
-      title,
-      kind,
-      userId: session.user.id,
-    });
+  const documents = await getDocumentsById({ id: id });
 
-    return Response.json(document, { status: 200 });
+  if (documents.length > 0) {
+    const [document] = documents;
+
+    if (document.userId !== session.user.id) {
+      return new Response('Forbidden', { status: 403 });
+    }
   }
 
-  return new Response('Unauthorized', { status: 401 });
+  const document = await saveDocument({
+    id,
+    content,
+    title,
+    kind,
+    userId: session.user.id,
+  });
+
+  return Response.json(document, { status: 200 });
 }
 
 export async function PATCH(request: Request) {
