@@ -15,6 +15,7 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { AttachmentPreview } from './attachment-preview';
 
 export function Chat({
   id,
@@ -85,7 +86,22 @@ export function Chat({
           isArtifactVisible={isArtifactVisible}
         />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <form className="flex flex-col mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {attachments.map((attachment, index) => (
+                <AttachmentPreview
+                  key={`attachment-${index}`}
+                  attachment={attachment}
+                  onRemove={() => {
+                    const newAttachments = [...attachments];
+                    newAttachments.splice(index, 1);
+                    setAttachments(newAttachments);
+                  }}
+                />
+              ))}
+            </div>
+          )}
           {!isReadonly && (
             <MultimodalInput
               chatId={id}
