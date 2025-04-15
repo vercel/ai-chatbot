@@ -5,6 +5,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
+import { NextResponse, after } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -106,41 +107,41 @@ export async function POST(request: Request) {
               dataStream,
             }),
           },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
+          onFinish: async ({ response, reasoning }) => {
+            after(async () => {
+              if (session.user?.id) {
+                try {
+                  const assistantId = getTrailingMessageId({
+                    messages: response.messages.filter(
+                      (message) => message.role === 'assistant',
+                    ),
+                  });
+                  if (!assistantId) {
+                    throw new Error('No assistant message found!');
+                  }
+                  const [, assistantMessage] = appendResponseMessages({
+                      messages: [userMessage],
+                      responseMessages: response.messages,
+                    });
 
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
+                  await saveMessages({
+                    messages: [
+                      {
+                        id: assistantId,
+                        chatId: id,
+                        role: assistantMessage.role,
+                        parts: assistantMessage.parts,
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
+                } catch (_) {
+                  console.error('Failed to save chat');
                 }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [userMessage],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
               }
-            }
+            });
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
