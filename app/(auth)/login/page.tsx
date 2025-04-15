@@ -38,7 +38,7 @@ export default function Page() {
       setIsSuccessful(true);
       router.refresh();
     }
-  }, [state.status, router]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);
