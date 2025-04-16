@@ -44,18 +44,50 @@ You can deploy your own version of the Next.js AI Chatbot to Vercel with one cli
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Generate%20a%20random%20secret%20to%20use%20for%20authentication&envLink=https%3A%2F%2Fgenerate-secret.vercel.app%2F32&project-name=my-awesome-chatbot&repository-name=my-awesome-chatbot&demo-title=AI%20Chatbot&demo-description=An%20Open-Source%20AI%20Chatbot%20Template%20Built%20With%20Next.js%20and%20the%20AI%20SDK%20by%20Vercel&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
 
-## Running locally
+## Setup
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+You will need to set the environment variables from [`.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env.local` file is all that is necessary.
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+> Note: You should not commit your `.env.local` file or it will expose secrets that will give others access to your various AI and authentication provider accounts.
+
+### Setup Option 1 (Vercel CLI)
 
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
 
+### Setup Option 2 (local PostgreSQL, manual environment variables setup)
+
+1. Install PostgreSQL locally
+2. Create a database and user:
+
+   ```bash
+   psql -U postgres # Windows
+   psql postgres # macOS
+   sudo -u postgres psql # Linux
+
+   CREATE DATABASE vercel_chat_sdk;
+   CREATE USER vercel_chat_sdk WITH ENCRYPTED PASSWORD 'vercel_chat_sdk';
+   ALTER USER vercel_chat_sdk WITH SUPERUSER;
+   GRANT ALL PRIVILEGES ON DATABASE vercel_chat_sdk TO vercel_chat_sdk;
+   \q
+   ```
+
+3. Create the `.env.local` file:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. Update `.env.local` with your database connection string:
+   ```bash
+   POSTGRES_URL=postgres://vercel_chat_sdk:vercel_chat_sdk@localhost:5432/vercel_chat_sdk
+   ```
+5. Update `.env.local` with any other environment variables required
+
+## Run the app
+
 ```bash
 pnpm install
+pnpm db:migrate
 pnpm dev
 ```
 
