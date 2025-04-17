@@ -27,12 +27,14 @@ import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { sliderArtifact } from '@/artifacts/slider/client';
 
 export const artifactDefinitions = [
   textArtifact,
   codeArtifact,
   imageArtifact,
   sheetArtifact,
+  sliderArtifact
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 

@@ -7,6 +7,7 @@ import { DataStreamWriter } from 'ai';
 import { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
 import { Session } from 'next-auth';
+import { sliderDocumentHandler } from '@/artifacts/slider/server';
 
 export interface SaveDocumentProps {
   id: string;
@@ -94,6 +95,7 @@ export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   codeDocumentHandler,
   imageDocumentHandler,
   sheetDocumentHandler,
+  sliderDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = ['text', 'code', 'image', 'sheet', 'slider'] as const;
