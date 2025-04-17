@@ -28,6 +28,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { chatModels } from '@/lib/ai/models';
+import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 
 export const maxDuration = 60;
 
@@ -189,97 +190,94 @@ export async function POST(request: Request) {
         return new Response('Assistant configuration error', { status: 500 });
       }
 
-      try {
-        console.log(
-          `Routing to n8n webhook: ${webhookUrl} for model: ${selectedChatModel}`,
-        );
-        const n8nResponse = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add authentication headers if your webhook requires them
-          },
-          body: JSON.stringify({
+      // *** Instantiate the N8nLanguageModel ***
+      const n8nModel = new N8nLanguageModel({
+        webhookUrl: webhookUrl,
+        modelId: selectedChatModel,
+      });
+
+      // *** USE createDataStreamResponse with streamText and the n8nModel ***
+      return createDataStreamResponse({
+        execute: (dataStream) => {
+          const result = streamText({
+            model: n8nModel, // Use the adapter model here
+            messages, // Pass the message history
+            // Pass necessary context like chatId and userId via settings
+            // These will be accessible in n8nModel.doStream
             chatId: finalChatId,
             userId: userId,
-            userMessage: userMessage,
-            history: messages.slice(0, -1), // Previous messages
-          }),
-        });
+            // Remove system prompt if not applicable to n8n
+            // system: systemPrompt({ selectedChatModel }),
+            // Remove tools as n8n handles its own logic
+            // tools: { ... },
+            // experimental_activeTools: [],
 
-        if (!n8nResponse.ok) {
-          const errorBody = await n8nResponse.text();
-          console.error(
-            `n8n webhook call failed (${n8nResponse.status}): ${errorBody}`,
-          );
-          throw new Error(
-            `n8n assistant communication failed (${n8nResponse.status})`,
-          );
-        }
+            // Keep common settings
+            maxSteps: 5, // Adjust if needed
+            experimental_transform: smoothStream({ chunking: 'word' }),
+            experimental_generateMessageId: generateUUID,
 
-        // Parse n8n response
-        const n8nData = await n8nResponse.json();
-        console.log('n8n response data:', JSON.stringify(n8nData));
+            // onFinish should now work correctly to save the final message
+            onFinish: async ({ response }) => {
+              if (userId) {
+                try {
+                  // Get the assistant message constructed by streamText
+                  const assistantId = getTrailingMessageId({
+                    messages: response.messages.filter(
+                      (message) => message.role === 'assistant',
+                    ),
+                  });
 
-        // Handle both array and direct object response formats
-        const assistantReplyText =
-          // If response is an array with responseMessage in first item
-          Array.isArray(n8nData) &&
-          n8nData.length > 0 &&
-          n8nData[0].responseMessage
-            ? n8nData[0].responseMessage
-            : // If response is a direct object with responseMessage
-              n8nData && n8nData.responseMessage
-              ? n8nData.responseMessage
-              : 'Received response from assistant.';
+                  if (!assistantId) {
+                    throw new Error(
+                      'No assistant message found after n8n stream!',
+                    );
+                  }
 
-        console.log('Using assistant reply text:', assistantReplyText);
+                  const [, assistantMessage] = appendResponseMessages({
+                    messages: [userMessage],
+                    responseMessages: response.messages,
+                  });
 
-        // Create and save assistant message
-        const assistantId = generateUUID();
-        const assistantMessage = {
-          id: assistantId,
-          role: 'assistant' as const,
-          parts: [{ type: 'text', value: assistantReplyText }],
-          createdAt: new Date(),
-        };
-
-        await saveMessages({
-          messages: [
-            {
-              id: assistantId,
-              chatId: finalChatId,
-              role: assistantMessage.role,
-              parts: assistantMessage.parts,
-              attachments: [],
-              createdAt: assistantMessage.createdAt,
+                  // Save the final message (including the parts field used by DB)
+                  await saveMessages({
+                    messages: [
+                      {
+                        id: assistantId, // Use the ID generated by streamText
+                        chatId: finalChatId,
+                        role: assistantMessage.role,
+                        parts: assistantMessage.parts, // Should contain the text from n8n
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
+                  console.log(
+                    `Saved final n8n message (ID: ${assistantId}) for chat ${finalChatId}`,
+                  );
+                } catch (saveError) {
+                  console.error('Failed to save n8n chat message:', saveError);
+                }
+              }
             },
-          ],
-        });
+            experimental_telemetry: {
+              isEnabled: isProductionEnvironment,
+              functionId: 'stream-text-n8n', // Differentiate telemetry
+            },
+          });
 
-        // Return response in a format compatible with the frontend expectations
-        // Creating a simple stream with just the assistant message
-        const stream = new ReadableStream({
-          start(controller) {
-            // Format to exactly match what createDataStreamResponse produces
-            // The specific stream format is crucial for the UI to render properly
-            controller.enqueue(
-              `0:${JSON.stringify({ role: 'assistant', content: assistantReplyText, id: assistantId })}\n`,
-            );
-            controller.close();
-          },
-        });
-
-        return new Response(stream, {
-          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-        });
-      } catch (n8nError: any) {
-        console.error('Error calling n8n webhook:', n8nError);
-        return new Response(
-          `Failed to communicate with the assistant: ${n8nError.message}`,
-          { status: 500 },
-        );
-      }
+          // Standard stream consumption
+          result.consumeStream();
+          result.mergeIntoDataStream(dataStream, {
+            sendReasoning: false, // No reasoning for n8n model
+          });
+        },
+        onError: (error) => {
+          console.error('Error in streamText with n8nModel:', error);
+          return 'Oops, an error occurred communicating with the assistant!';
+        },
+      });
     }
 
     // Original code for standard models
