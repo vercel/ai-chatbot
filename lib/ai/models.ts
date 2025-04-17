@@ -4,6 +4,7 @@ interface ChatModel {
   id: string;
   name: string;
   description: string;
+  isN8n?: boolean;
 }
 
 export const chatModels: Array<ChatModel> = [
@@ -16,5 +17,11 @@ export const chatModels: Array<ChatModel> = [
     id: 'chat-model-reasoning',
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
+  },
+  {
+    id: 'n8n-assistant',
+    name: 'n8n Assistant',
+    description: 'n8n AI',
+    isN8n: true,
   },
 ];

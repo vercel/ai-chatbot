@@ -27,8 +27,17 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import { chatModels } from '@/lib/ai/models';
 
 export const maxDuration = 60;
+
+// Define n8n webhook URLs from environment variables
+const n8nWebhookUrls: Record<string, string> = {
+  'n8n-assistant':
+    'https://n8n-naps.onrender.com/webhook/05af71c4-23a8-44fb-bfd6-3536345edbac',
+  'n8n-assistant-1': process.env.N8N_ASSISTANT_1_WEBHOOK_URL || '',
+  'n8n-assistant-2': process.env.N8N_ASSISTANT_2_WEBHOOK_URL || '',
+};
 
 export async function POST(request: Request) {
   try {
@@ -78,7 +87,7 @@ export async function POST(request: Request) {
 
     const chat = await getChatById({ id });
 
-    let finalChatId = id;
+    const finalChatId = id;
     let finalTitle = '';
 
     if (!chat) {
@@ -167,6 +176,116 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Check if selected model is an n8n assistant
+    const selectedModelInfo = chatModels.find(
+      (m) => m.id === selectedChatModel,
+    );
+    if (selectedModelInfo?.isN8n) {
+      const webhookUrl = n8nWebhookUrls[selectedChatModel];
+      if (!webhookUrl) {
+        console.error(
+          `Webhook URL for n8n assistant "${selectedChatModel}" is not configured.`,
+        );
+        return new Response('Assistant configuration error', { status: 500 });
+      }
+
+      try {
+        console.log(
+          `Routing to n8n webhook: ${webhookUrl} for model: ${selectedChatModel}`,
+        );
+        const n8nResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add authentication headers if your webhook requires them
+          },
+          body: JSON.stringify({
+            chatId: finalChatId,
+            userId: userId,
+            userMessage: userMessage,
+            history: messages.slice(0, -1), // Previous messages
+          }),
+        });
+
+        if (!n8nResponse.ok) {
+          const errorBody = await n8nResponse.text();
+          console.error(
+            `n8n webhook call failed (${n8nResponse.status}): ${errorBody}`,
+          );
+          throw new Error(
+            `n8n assistant communication failed (${n8nResponse.status})`,
+          );
+        }
+
+        // Parse n8n response
+        const n8nData = await n8nResponse.json();
+        console.log('n8n response data:', JSON.stringify(n8nData));
+
+        // Handle both array and direct object response formats
+        const assistantReplyText =
+          // If response is an array with responseMessage in first item
+          Array.isArray(n8nData) &&
+          n8nData.length > 0 &&
+          n8nData[0].responseMessage
+            ? n8nData[0].responseMessage
+            : // If response is a direct object with responseMessage
+              n8nData && n8nData.responseMessage
+              ? n8nData.responseMessage
+              : 'Received response from assistant.';
+
+        console.log('Using assistant reply text:', assistantReplyText);
+
+        // Create and save assistant message
+        const assistantId = generateUUID();
+        const assistantMessage = {
+          id: assistantId,
+          role: 'assistant' as const,
+          parts: [{ type: 'text', value: assistantReplyText }],
+          createdAt: new Date(),
+        };
+
+        await saveMessages({
+          messages: [
+            {
+              id: assistantId,
+              chatId: finalChatId,
+              role: assistantMessage.role,
+              parts: assistantMessage.parts,
+              attachments: [],
+              createdAt: assistantMessage.createdAt,
+            },
+          ],
+        });
+
+        // Return response in a format compatible with the frontend expectations
+        // Creating a simple stream with just the assistant message
+        const stream = new ReadableStream({
+          start(controller) {
+            // Format to match the Vercel AI SDK streaming format
+            // The format is "event: message\ndata: {\"type\":\"message\",\"message\":{...}}\n\n"
+            controller.enqueue(
+              `event: message\ndata: ${JSON.stringify({
+                type: 'message',
+                message: assistantMessage,
+              })}\n\n`,
+            );
+            controller.close();
+          },
+        });
+
+        return new Response(stream, {
+          headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
+        });
+      } catch (n8nError: any) {
+        console.error('Error calling n8n webhook:', n8nError);
+        return new Response(
+          `Failed to communicate with the assistant: ${n8nError.message}`,
+          { status: 500 },
+        );
+      }
+    }
+
+    // Original code for standard models
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
