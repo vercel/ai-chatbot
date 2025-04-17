@@ -230,7 +230,7 @@ export interface SaveDocumentProps {
   content: string;
   kind: ArtifactKind;
   userId: string;
-  chatId: string;
+  chatId?: string;
 }
 
 export async function saveDocument({
