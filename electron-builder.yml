@@ -1,0 +1,20 @@
+appId: electron.chat-sdk.ai-chatbot
+productName: Chat SDK AI Chatbot
+
+directories:
+  output: dist
+  buildResources: assets
+
+asar: true
+
+files:
+  - build
+  - '.next/standalone/**/*'
+  - '.next/standalone/**/node_modules/**'
+
+mac:
+  category: public.app-category.developer-tools
+  target:
+    target: dir
+    arch:
+      - arm64
