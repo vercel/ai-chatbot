@@ -194,6 +194,8 @@ export async function POST(request: Request) {
       const n8nModel = new N8nLanguageModel({
         webhookUrl: webhookUrl,
         modelId: selectedChatModel,
+        chatId: finalChatId,
+        userId: userId,
       });
 
       // *** USE createDataStreamResponse with streamText and the n8nModel ***
@@ -202,13 +204,11 @@ export async function POST(request: Request) {
           const result = streamText({
             model: n8nModel, // Use the adapter model here
             messages, // Pass the message history
-            // Pass necessary context like chatId and userId via settings
-            // These will be accessible in n8nModel.doStream
-            chatId: finalChatId,
-            userId: userId,
-            // Remove system prompt if not applicable to n8n
+            // REMOVED context from here:
+            // chatId: finalChatId,
+            // userId: userId,
+            // REMOVED system prompt and tools:
             // system: systemPrompt({ selectedChatModel }),
-            // Remove tools as n8n handles its own logic
             // tools: { ... },
             // experimental_activeTools: [],
 

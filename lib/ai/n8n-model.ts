@@ -1,13 +1,13 @@
 'use strict';
 
-import {
+import type {
   LanguageModelV1,
   LanguageModelV1CallOptions,
   LanguageModelV1Prompt,
   LanguageModelV1StreamPart,
-  UnsupportedFunctionalityError,
 } from 'ai';
-import { simulateReadableStream } from 'ai/test'; // Using simulateReadableStream for simplicity
+import { UnsupportedFunctionalityError } from 'ai';
+import { simulateReadableStream } from 'ai/test';
 
 // Define the expected structure of the message payload sent to n8n
 interface N8nPayload {
@@ -18,40 +18,47 @@ interface N8nPayload {
 }
 
 // Define the expected structure of the n8n webhook response
-// Adjust based on actual response (can handle array or object)
 type N8nResponse =
   | { responseMessage?: string }
   | Array<{ responseMessage?: string }>;
 
 export class N8nLanguageModel implements LanguageModelV1 {
   readonly specificationVersion = 'v1';
-  readonly defaultObjectGenerationMode = undefined; // Not applicable
-  readonly provider = 'custom-n8n'; // Custom provider name
+  readonly defaultObjectGenerationMode = undefined;
+  readonly provider = 'custom-n8n';
   readonly modelId: string;
   private webhookUrl: string;
+  private chatId: string;
+  private userId: string;
 
-  constructor(config: { webhookUrl: string; modelId: string }) {
+  constructor(config: {
+    webhookUrl: string;
+    modelId: string;
+    chatId: string;
+    userId: string;
+  }) {
     this.webhookUrl = config.webhookUrl;
-    this.modelId = config.modelId; // e.g., 'n8n-assistant'
+    this.modelId = config.modelId;
+    this.chatId = config.chatId;
+    this.userId = config.userId;
   }
 
-  // doGenerate is not suitable for streaming, throw error
   async doGenerate(
-    options: LanguageModelV1CallOptions<LanguageModelV1Prompt>,
+    options: LanguageModelV1CallOptions, // Corrected: Not generic
   ): Promise<any> {
     throw new UnsupportedFunctionalityError({
-      provider: this.provider,
-      modelId: this.modelId,
-      functionality: 'doGenerate',
+      functionality: 'doGenerate', // Corrected: only accepts functionality
     });
   }
 
-  // doStream handles the actual call to the n8n webhook
   async doStream(
-    options: LanguageModelV1CallOptions<LanguageModelV1Prompt>,
+    options: LanguageModelV1CallOptions, // Corrected: Not generic
   ): Promise<{
     stream: ReadableStream<LanguageModelV1StreamPart>;
-    rawCall: { rawPrompt: any; rawSettings: Record<string, unknown> };
+    rawCall: {
+      rawPrompt: LanguageModelV1Prompt;
+      rawSettings: Record<string, unknown>;
+    };
     rawResponse?: { headers?: Record<string, string> };
     finishReason:
       | 'stop'
@@ -65,24 +72,18 @@ export class N8nLanguageModel implements LanguageModelV1 {
       completionTokens: number;
       totalTokens: number;
     };
-    logprobs?: Array<any>; // Adjust type as needed
+    logprobs?: Array<any>;
   }> {
     const { prompt, mode, ...settings } = options;
+    const messages = prompt as any[]; // Cast for now
 
-    // Extract messages - assuming prompt is an array of messages
-    // The actual structure depends on how streamText formats it.
-    // We expect the full message history here.
-    const messages = prompt as any[]; // Cast for now, refine if needed
-
-    // Construct payload for n8n (adapt based on actual needs)
-    // This requires careful handling of message structure and context.
-    // Placeholder: assuming the last message is the user's current one.
     const userMessage = messages[messages.length - 1];
     const history = messages.slice(0, -1);
-    // We might need chatId and userId passed differently, perhaps via settings?
+
+    // Use stored chatId and userId
     const payload: N8nPayload = {
-      chatId: (settings as any).chatId || 'unknown-chat', // Get from settings if passed
-      userId: (settings as any).userId || 'unknown-user', // Get from settings if passed
+      chatId: this.chatId,
+      userId: this.userId,
       userMessage: userMessage,
       history: history,
     };
@@ -98,23 +99,18 @@ export class N8nLanguageModel implements LanguageModelV1 {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       responseHeaders = Object.fromEntries(n8nResponse.headers.entries());
-
       if (!n8nResponse.ok) {
         const errorBody = await n8nResponse.text();
         console.error(
           `[N8nLanguageModel] Webhook call failed (${n8nResponse.status}): ${errorBody}`,
         );
         assistantReplyText = `Assistant communication failed (${n8nResponse.status})`;
-        // Keep finishReason as 'error'
       } else {
         const n8nData: N8nResponse = await n8nResponse.json();
         console.log(
           `[N8nLanguageModel] Raw response data: ${JSON.stringify(n8nData)}`,
         );
-
-        // Parse response (handle array or object)
         assistantReplyText =
           Array.isArray(n8nData) && n8nData[0]?.responseMessage
             ? n8nData[0].responseMessage
@@ -124,24 +120,27 @@ export class N8nLanguageModel implements LanguageModelV1 {
               ? (n8nData.responseMessage ??
                 'Assistant responded without message.')
               : 'Assistant response format unknown.';
-        finishReason = 'stop'; // Success
+        finishReason = 'stop';
       }
     } catch (error: any) {
       console.error('[N8nLanguageModel] Fetch error:', error);
       assistantReplyText = `Error contacting assistant: ${error.message}`;
-      // Keep finishReason as 'error'
     }
 
-    // Create a stream that yields a single text delta with the full response
+    // Create a stream that yields a single text delta
+    const streamChunk: LanguageModelV1StreamPart = {
+      // Explicitly type the chunk
+      type: 'text-delta',
+      textDelta: assistantReplyText,
+    };
     const stream = simulateReadableStream({
-      chunks: [{ type: 'text-delta', textDelta: assistantReplyText }],
+      chunks: [streamChunk],
     });
 
-    // Return structure matching LanguageModelV1DoStreamResult
     return {
       stream,
       finishReason,
-      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }, // Usage is unknown
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
       rawCall: { rawPrompt: prompt, rawSettings: settings },
       rawResponse: { headers: responseHeaders },
     };
