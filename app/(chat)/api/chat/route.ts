@@ -261,20 +261,17 @@ export async function POST(request: Request) {
         // Creating a simple stream with just the assistant message
         const stream = new ReadableStream({
           start(controller) {
-            // Format to match the Vercel AI SDK streaming format
-            // The format is "event: message\ndata: {\"type\":\"message\",\"message\":{...}}\n\n"
+            // Format to exactly match what createDataStreamResponse produces
+            // The specific stream format is crucial for the UI to render properly
             controller.enqueue(
-              `event: message\ndata: ${JSON.stringify({
-                type: 'message',
-                message: assistantMessage,
-              })}\n\n`,
+              `0:${JSON.stringify({ role: 'assistant', content: assistantReplyText, id: assistantId })}\n`,
             );
             controller.close();
           },
         });
 
         return new Response(stream, {
-          headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         });
       } catch (n8nError: any) {
         console.error('Error calling n8n webhook:', n8nError);
