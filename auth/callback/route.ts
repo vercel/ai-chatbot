@@ -10,8 +10,26 @@ export async function GET(request: Request) {
     const supabase = await createClient();
 
     // Exchange code for session
+    console.log('Auth Callback: Attempting code exchange...'); // Log before exchange
     const { data: sessionData, error: exchangeError } =
       await supabase.auth.exchangeCodeForSession(code);
+
+    // --- VERY IMPORTANT: Log token presence immediately after exchange ---
+    console.log('Auth Callback: Code exchange completed.');
+    console.log(`Auth Callback: Has sessionData? ${!!sessionData}`);
+    console.log(
+      `Auth Callback: Has sessionData.session? ${!!sessionData?.session}`,
+    );
+    console.log(
+      `Auth Callback: provider_token present? ${!!sessionData?.session?.provider_token}`,
+    );
+    console.log(
+      `Auth Callback: provider_refresh_token present? ${!!sessionData?.session?.provider_refresh_token}`,
+    );
+    console.log(
+      `Auth Callback: Error during exchange? ${exchangeError?.message ?? 'No'}`,
+    );
+    // --- End of critical token logging ---
 
     if (exchangeError) {
       console.error(
