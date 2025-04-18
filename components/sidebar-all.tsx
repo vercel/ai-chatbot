@@ -191,18 +191,25 @@ export function SidebarAll({ user }: SidebarAllProps) {
                 {/* --- Render grouped items --- */}
                 {Object.entries(groupedItems).map(([groupName, items]) => {
                   if (items.length === 0) return null;
-                  // Simple group name mapping for display
+
+                  // *** CORRECTED: Use a map for display names ***
+                  const groupNameMap: Record<string, string> = {
+                    today: 'Today',
+                    yesterday: 'Yesterday',
+                    lastWeek: 'Last 7 Days',
+                    lastMonth: 'Last 30 Days',
+                    older: 'Older',
+                  };
+
+                  // Use the map, fallback to capitalized groupName if key not found (shouldn't happen)
                   const displayGroupName =
-                    groupName.charAt(0).toUpperCase() +
-                    groupName
-                      .slice(1)
-                      .replace('lastWeek', 'Previous 7 Days')
-                      .replace('lastMonth', 'Previous 30 Days');
+                    groupNameMap[groupName] ||
+                    groupName.charAt(0).toUpperCase() + groupName.slice(1);
 
                   return (
                     <div key={groupName}>
                       <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                        {displayGroupName}
+                        {displayGroupName} {/* Use the mapped name */}
                       </div>
                       {items.map((item) => (
                         <SidebarAllItem

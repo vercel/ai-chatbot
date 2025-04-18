@@ -242,7 +242,7 @@ export function SidebarFiles({ user }: SidebarFilesProps) {
                 {groupedDocuments.lastWeek.length > 0 && (
                   <div>
                     <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                      Previous 7 Days
+                      Last 7 Days
                     </div>
                     {groupedDocuments.lastWeek.map((doc) => (
                       <SidebarFilesItem
@@ -257,7 +257,7 @@ export function SidebarFiles({ user }: SidebarFilesProps) {
                 {groupedDocuments.lastMonth.length > 0 && (
                   <div>
                     <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                      Previous 30 Days
+                      Last 30 Days
                     </div>
                     {groupedDocuments.lastMonth.map((doc) => (
                       <SidebarFilesItem
