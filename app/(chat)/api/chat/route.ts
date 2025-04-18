@@ -343,8 +343,8 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-              } catch (_) {
-                console.error('Failed to save chat');
+              } catch (error) {
+                console.error('Error during streamText execution:', error);
               }
             }
           },
@@ -360,7 +360,8 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: () => {
+      onError: (error) => {
+        console.error('Error during streamText execution:', error);
         return 'Oops, an error occurred!';
       },
     });

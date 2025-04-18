@@ -31,13 +31,12 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': openai('gpt-4.1-2025-04-14'),
-        // 'chat-model-reasoning': wrapLanguageModel({
-        //   model: fireworks('accounts/fireworks/models/deepseek-r1'),
-        //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        // }),
-        'chat-model-reasoning': openai('o3'),
-        'title-model': openai('gpt-4.1-mini-2025-04-14'),
+        'chat-model': openai('gpt-4.1'),
+        'chat-model-reasoning': wrapLanguageModel({
+          model: fireworks('accounts/fireworks/models/deepseek-r1'),
+          middleware: extractReasoningMiddleware({ tagName: 'think' }),
+        }),
+        'title-model': openai('gpt-4.1-mini'),
         'artifact-model': google('gemini-2.5-pro-exp-03-25'),
       },
       imageModels: {
