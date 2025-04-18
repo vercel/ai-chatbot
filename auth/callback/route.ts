@@ -50,10 +50,16 @@ export async function GET(request: Request) {
 
   if (code) {
     try {
+      // --- Log attempt *before* code exchange ---
+      logEntry.notes =
+        'Callback initiated, attempting first log before exchange';
+      await logToSupabase(supabase, { ...logEntry });
+      // --- End pre-exchange log ---
+
       // Wrap main logic in try-catch for logging
       // Exchange code for session
-      logEntry.notes = 'Attempting code exchange...';
-      // await logToSupabase(supabase, logEntry); // Optional: Log before exchange
+      // logEntry.notes = 'Attempting code exchange...'; // Note updated below
+      // await logToSupabase(supabase, logEntry); // Optional: Log before exchange - MOVED EARLIER
 
       const { data: sessionData, error: exchangeError } =
         await supabase.auth.exchangeCodeForSession(code);
