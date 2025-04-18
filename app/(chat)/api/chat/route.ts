@@ -360,8 +360,7 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: (error) => {
-        console.error('Error during streamText execution:', error);
+      onError: () => {
         return 'Oops, an error occurred!';
       },
     });
