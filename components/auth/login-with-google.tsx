@@ -9,9 +9,9 @@ import { toast } from 'sonner';
 
 export function LoginWithGoogle() {
   const [isLoading, setIsLoading] = React.useState(false);
+  const supabase = createClient();
 
   const handleGoogleLogin = async () => {
-    const supabase = createClient();
     setIsLoading(true);
 
     try {
