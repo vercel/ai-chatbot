@@ -10,13 +10,18 @@ import {
   foreignKey,
   boolean,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
-export const user = pgTable('User', {
+import type { UIMessage } from 'ai';
+
+export const userProfiles = pgTable('User_Profiles', {
   id: uuid('id').primaryKey().notNull(),
-  email: varchar('email', { length: 64 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  modifiedAt: timestamp('modified_at', { withTimezone: true }).defaultNow(),
+  googleRefreshToken: text('google_refresh_token'),
 });
 
-export type User = InferSelectModel<typeof user>;
+export type UserProfile = InferSelectModel<typeof userProfiles>;
 
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -24,13 +29,22 @@ export const chat = pgTable('Chat', {
   title: text('title').notNull(),
   userId: uuid('userId')
     .notNull()
-    .references(() => user.id),
+    .references(() => userProfiles.id),
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
 });
 
-export type Chat = InferSelectModel<typeof chat>;
+export type Chat = typeof chat.$inferSelect;
+
+export const chatRelations = relations(chat, ({ many, one }) => ({
+  messages: many(message),
+  votes: many(vote),
+  userProfile: one(userProfiles, {
+    fields: [chat.userId],
+    references: [userProfiles.id],
+  }),
+}));
 
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://github.com/vercel/ai-chatbot/blob/main/docs/04-migrate-to-parts.md
@@ -113,9 +127,10 @@ export const document = pgTable(
       .default('text'),
     userId: uuid('userId')
       .notNull()
-      .references(() => user.id),
+      .references(() => userProfiles.id),
     tags: text('tags').array(),
     modifiedAt: timestamp('modifiedAt', { withTimezone: true }),
+    chatId: uuid('chat_id').references(() => chat.id),
   },
   (table) => {
     return {
@@ -138,7 +153,7 @@ export const suggestion = pgTable(
     isResolved: boolean('isResolved').notNull().default(false),
     userId: uuid('userId')
       .notNull()
-      .references(() => user.id),
+      .references(() => userProfiles.id),
     createdAt: timestamp('createdAt').notNull(),
   },
   (table) => ({

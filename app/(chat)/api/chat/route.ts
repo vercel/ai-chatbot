@@ -66,20 +66,6 @@ export async function POST(request: Request) {
 
     const userId = user.id;
 
-    // --- BEGIN: Ensure user exists in our DB ---
-    try {
-      const dbUser = await getUser(user.email ?? ''); // Use email to check
-      if (dbUser.length === 0 && user.email) {
-        // User exists in Supabase Auth but not in our DB, create them
-        await createUser(user.email, userId);
-        console.log(`Created user ${userId} in local DB.`);
-      }
-    } catch (dbError) {
-      console.error('Failed to check/create user in DB:', dbError);
-      return new Response('Database error checking user', { status: 500 });
-    }
-    // --- END: Ensure user exists in our DB ---
-
     const userMessage = getMostRecentUserMessage(messages);
 
     if (!userMessage) {
