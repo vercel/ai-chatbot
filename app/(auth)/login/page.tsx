@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useActionState } from '@/hooks/use-action-state';
 import { toast } from '@/components/toast';
 
@@ -47,9 +48,17 @@ export default function LoginPage() {
     <div className="flex h-[calc(100vh-theme(spacing.16))] items-center justify-center py-10">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome</h1>
+          <h1 className="text-2xl font-semibold tracking-tight flex justify-center">
+            <Image
+              src="/images/superchat_logo.svg"
+              alt="logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to get started
+            Sign in to fucking be somebody
           </p>
         </div>
         <AuthForm type="login" />
