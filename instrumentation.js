@@ -9,7 +9,7 @@ export function register() {
   console.log('[Instrumentation] Registering OpenTelemetry with Langsmith...');
   registerOTel({
     serviceName: process.env.VERCEL_PROJECT_NAME || 'ai-chatbot',
-    traceExporter: new AISDKExporter(),
+    traceExporter: new AISDKExporter({ debug: true }),
   });
   console.log('[Instrumentation] OpenTelemetry registration attempted.');
 }
