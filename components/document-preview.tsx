@@ -96,6 +96,7 @@ export function DocumentPreview({
           userId: 'noop',
           tags: null,
           modifiedAt: null,
+          chatId: null,
         }
       : null;
 
