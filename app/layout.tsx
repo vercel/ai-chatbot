@@ -17,13 +17,13 @@ export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
-const geist = Manrope({
+const manrope = Manrope({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-manrope',
 });
 
-const geistMono = Fira_Code({
+const fira_code = Fira_Code({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-fira-code',
@@ -62,7 +62,7 @@ export default async function RootLayout({
       // prop is necessary to avoid the React hydration mismatch warning.
       // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
       suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable}`}
+      className={`${manrope.variable} ${fira_code.variable}`}
     >
       <head>
         <script
