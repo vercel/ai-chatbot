@@ -27,7 +27,10 @@ const PurePreviewMessage = ({
   isLoading,
   setMessages,
   reload,
+  status,
+  messages,
   isReadonly,
+  index,
 }: {
   chatId: string;
   message: UIMessage;
@@ -35,7 +38,10 @@ const PurePreviewMessage = ({
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
+  status: UseChatHelpers['status'];
+  messages: UIMessage[];
   isReadonly: boolean;
+  index: number;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -58,7 +64,7 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background hidden">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
               </div>
@@ -118,10 +124,13 @@ const PurePreviewMessage = ({
 
                       <div
                         data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                            message.role === 'user',
-                        })}
+                        className={cn(
+                          'flex flex-col gap-4 px-3 py-2 rounded-xl',
+                          {
+                            'bg-sidebar-accent text-sidebar-foreground':
+                              message.role === 'user',
+                          },
+                        )}
                       >
                         <Markdown>{part.text}</Markdown>
                       </div>
@@ -221,6 +230,10 @@ const PurePreviewMessage = ({
                 message={message}
                 vote={vote}
                 isLoading={isLoading}
+                reload={reload}
+                status={status}
+                index={index}
+                messageCount={messages.length}
               />
             )}
           </div>

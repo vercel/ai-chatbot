@@ -1,10 +1,11 @@
 import type { Message } from 'ai';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 import type { Vote } from '@/lib/db/schema';
 
-import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
+import { CopyIcon, ThumbDownIcon, ThumbUpIcon, RefreshIcon } from './icons';
 import { Button } from './ui/button';
 import {
   Tooltip,
@@ -21,17 +22,27 @@ export function PureMessageActions({
   message,
   vote,
   isLoading,
+  reload,
+  status,
+  index,
+  messageCount,
 }: {
   chatId: string;
   message: Message;
   vote: Vote | undefined;
   isLoading: boolean;
+  reload: UseChatHelpers['reload'];
+  status: UseChatHelpers['status'];
+  index: number;
+  messageCount: number;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
   if (message.role === 'user') return null;
+
+  const isLastMessage = index === messageCount - 1;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -168,6 +179,23 @@ export function PureMessageActions({
           </TooltipTrigger>
           <TooltipContent>Downvote Response</TooltipContent>
         </Tooltip>
+
+        {isLastMessage && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                data-testid="message-regenerate"
+                className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+                variant="outline"
+                disabled={status !== 'ready'}
+                onClick={() => reload()}
+              >
+                <RefreshIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Regenerate Response</TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </TooltipProvider>
   );

@@ -26,6 +26,7 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
+  isArtifactVisible,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -42,6 +43,7 @@ function PureMessages({
           key={message.id}
           chatId={chatId}
           message={message}
+          messages={messages}
           isLoading={status === 'streaming' && messages.length - 1 === index}
           vote={
             votes
@@ -50,7 +52,9 @@ function PureMessages({
           }
           setMessages={setMessages}
           reload={reload}
+          status={status}
           isReadonly={isReadonly}
+          index={index}
         />
       ))}
 

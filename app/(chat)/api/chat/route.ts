@@ -53,6 +53,12 @@ export async function POST(request: Request) {
       documentId?: string;
     } = await request.json();
 
+    // Log the received messages array immediately
+    console.log(
+      '[API /api/chat] Received messages:',
+      JSON.stringify(messages, null, 2),
+    );
+
     const supabase = await createServerClient();
     const {
       data: { user },

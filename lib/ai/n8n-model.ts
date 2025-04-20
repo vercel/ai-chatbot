@@ -80,13 +80,49 @@ export class N8nLanguageModel implements LanguageModelV1 {
     const userMessage = messages[messages.length - 1];
     const history = messages.slice(0, -1);
 
+    // Prepare payload fields, handling potentially missing properties on userMessage
+    let userMessageText = '';
+    let userMessageParts: any[] | null = null;
+
+    // Check if content exists and is an array
+    if (userMessage.content && Array.isArray(userMessage.content)) {
+      userMessageParts = userMessage.content; // Assign the content array to userMessageParts
+      userMessageText = (userMessageParts ?? [])
+        .filter((part: any) => part.type === 'text')
+        .map((part: any) => part.text)
+        .join('\n')
+        .trim();
+    } else if (typeof userMessage.content === 'string') {
+      // Fallback if content is just a string (less likely based on history)
+      userMessageText = userMessage.content.trim();
+      userMessageParts = [{ type: 'text', text: userMessageText }];
+    }
+
+    const messageId = userMessage.id ?? null;
+    const userMessageDatetime = userMessage.createdAt ?? null;
+
+    if (!messageId) {
+      console.warn(
+        '[N8nLanguageModel] Warning: userMessage.id is missing or null.',
+      );
+    }
+
     // Use stored chatId and userId
-    const payload: N8nPayload = {
+    const payload = {
       chatId: this.chatId,
       userId: this.userId,
-      userMessage: userMessage,
+      messageId: messageId,
+      userMessage: userMessageText,
+      userMessageParts: userMessageParts,
+      userMessageDatetime: userMessageDatetime,
       history: history,
     };
+
+    // Log the exact payload being sent
+    console.log(
+      '[N8nLanguageModel] Sending payload:',
+      JSON.stringify(payload, null, 2),
+    );
 
     let assistantReplyText = 'Error fetching response from assistant.';
     let finishReason: 'stop' | 'error' = 'error';
@@ -107,20 +143,31 @@ export class N8nLanguageModel implements LanguageModelV1 {
         );
         assistantReplyText = `Assistant communication failed (${n8nResponse.status})`;
       } else {
-        const n8nData: N8nResponse = await n8nResponse.json();
-        console.log(
-          `[N8nLanguageModel] Raw response data: ${JSON.stringify(n8nData)}`,
-        );
-        assistantReplyText =
-          Array.isArray(n8nData) && n8nData[0]?.responseMessage
-            ? n8nData[0].responseMessage
-            : typeof n8nData === 'object' &&
-                n8nData !== null &&
-                'responseMessage' in n8nData
-              ? (n8nData.responseMessage ??
-                'Assistant responded without message.')
-              : 'Assistant response format unknown.';
-        finishReason = 'stop';
+        // Log the raw response text before parsing
+        const responseText = await n8nResponse.text();
+        console.log(`[N8nLanguageModel] Raw response text: ${responseText}`);
+
+        // Attempt to parse the logged text
+        try {
+          const n8nData: N8nResponse = JSON.parse(responseText);
+          console.log(
+            `[N8nLanguageModel] Parsed response data: ${JSON.stringify(n8nData)}`,
+          );
+          assistantReplyText =
+            Array.isArray(n8nData) && n8nData[0]?.responseMessage
+              ? n8nData[0].responseMessage
+              : typeof n8nData === 'object' &&
+                  n8nData !== null &&
+                  'responseMessage' in n8nData
+                ? (n8nData.responseMessage ??
+                  'Assistant responded without message.')
+                : 'Assistant response format unknown.';
+          finishReason = 'stop';
+        } catch (parseError: any) {
+          console.error('[N8nLanguageModel] JSON parse error:', parseError);
+          assistantReplyText = `Error parsing assistant response: ${parseError.message}`;
+          finishReason = 'error'; // Set finishReason to error on parse fail
+        }
       }
     } catch (error: any) {
       console.error('[N8nLanguageModel] Fetch error:', error);

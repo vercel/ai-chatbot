@@ -34,6 +34,8 @@ import {
   PanelLeftClose as SidebarLeft,
   ChevronDown,
   Sparkle as Summarize,
+  User,
+  RotateCcw,
 } from 'lucide-react';
 import type { LucideProps } from 'lucide-react';
 
@@ -106,3 +108,11 @@ export function VercelIcon(props: IconProps) {
     </svg>
   );
 }
+
+export const UserIcon = ({ size = 16 }: { size?: number }) => {
+  return <User size={size} />;
+};
+
+export const RefreshIcon = ({ size = 16 }: { size?: number }) => {
+  return <RotateCcw size={size} />;
+};

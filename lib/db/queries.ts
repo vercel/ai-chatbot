@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { type genSaltSync, type hashSync } from 'bcrypt-ts';
 import {
   and,
   asc,
@@ -11,6 +10,7 @@ import {
   inArray,
   lt,
   type SQL,
+  sql,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -153,7 +153,21 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }) {
   try {
-    return await db.insert(message).values(messages);
+    // Perform an upsert operation: Insert new messages, or update existing ones on conflict (based on ID)
+    return await db
+      .insert(message)
+      .values(messages)
+      .onConflictDoUpdate({
+        target: message.id,
+        set: {
+          // Specify which fields to update if the message ID already exists
+          role: sql`excluded.role`,
+          parts: sql`excluded.parts`,
+          attachments: sql`excluded.attachments`,
+          // Optionally update createdAt, or keep the original creation time
+          // createdAt: sql`excluded.created_at`,
+        },
+      });
   } catch (error) {
     console.error('Failed to save messages in database', error);
     throw error;
