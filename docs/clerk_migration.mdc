@@ -9,7 +9,7 @@ alwaysApply: false
 - Migrate authentication from Supabase Auth to Clerk Auth, preserving our existing Supabase data model and migrating three existing users.
 
 ## Prerequisites
-- Install Clerk packages: `npm install @clerk/nextjs @clerk/clerk-sdk-node`
+- Install Clerk packages: `pnpm install @clerk/nextjs @clerk/clerk-sdk-node`
 - Add environment variables:
   - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   - CLERK_SECRET_KEY
