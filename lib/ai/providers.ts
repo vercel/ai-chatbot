@@ -34,6 +34,7 @@ export const myProvider = isTestEnvironment
   : customProvider({
       languageModels: {
         'chat-model': openai('gpt-4.1'),
+        // 'chat-model': google('gemini-2.5-flash-preview-04-17'),
         'chat-model-reasoning': wrapLanguageModel({
           model: fireworks('accounts/fireworks/models/deepseek-r1'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
