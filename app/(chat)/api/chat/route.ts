@@ -182,11 +182,23 @@ export async function POST(request: Request) {
       }
 
       // *** Instantiate the N8nLanguageModel ***
+      // Ensure userMessage is defined before accessing its properties
+      const lastUserMessageId = userMessage?.id ?? null;
+      const lastUserMessageCreatedAt = userMessage?.createdAt ?? null;
+
+      if (!lastUserMessageId) {
+        console.warn(
+          '[API Route] Warning: lastUserMessageId is null before passing to N8nModel.',
+        );
+      }
+
       const n8nModel = new N8nLanguageModel({
         webhookUrl: webhookUrl,
         modelId: selectedChatModel,
         chatId: finalChatId,
         userId: userId,
+        messageId: lastUserMessageId, // Pass the ID
+        datetime: lastUserMessageCreatedAt, // Pass the timestamp
       });
 
       // *** USE createDataStreamResponse with streamText and the n8nModel ***

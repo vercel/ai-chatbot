@@ -5,6 +5,7 @@ import type {
   LanguageModelV1CallOptions,
   LanguageModelV1Prompt,
   LanguageModelV1StreamPart,
+  CoreMessage,
 } from 'ai';
 import { UnsupportedFunctionalityError } from 'ai';
 import { simulateReadableStream } from 'ai/test';
@@ -30,17 +31,23 @@ export class N8nLanguageModel implements LanguageModelV1 {
   private webhookUrl: string;
   private chatId: string;
   private userId: string;
+  private messageId: string | null;
+  private datetime: Date | null;
 
   constructor(config: {
     webhookUrl: string;
     modelId: string;
     chatId: string;
     userId: string;
+    messageId: string | null;
+    datetime: Date | null;
   }) {
     this.webhookUrl = config.webhookUrl;
     this.modelId = config.modelId;
     this.chatId = config.chatId;
     this.userId = config.userId;
+    this.messageId = config.messageId;
+    this.datetime = config.datetime;
   }
 
   async doGenerate(
@@ -75,46 +82,44 @@ export class N8nLanguageModel implements LanguageModelV1 {
     logprobs?: Array<any>;
   }> {
     const { prompt, mode, ...settings } = options;
-    const messages = prompt as any[]; // Cast for now
+    const coreMessages = prompt as CoreMessage[];
 
-    const userMessage = messages[messages.length - 1];
-    const history = messages.slice(0, -1);
+    const userMessage =
+      coreMessages.length > 0 ? coreMessages[coreMessages.length - 1] : null;
 
-    // Prepare payload fields, handling potentially missing properties on userMessage
-    let userMessageText = '';
-    let userMessageParts: any[] | null = null;
+    // --- Corrected Payload Extraction based on CoreMessage structure ---
+    let userMessageParts: Array<{ type: string; text: string }> | null = null;
+    let userMessageText = ''; // Define userMessageText here
 
-    // Check if content exists and is an array
-    if (userMessage.content && Array.isArray(userMessage.content)) {
-      userMessageParts = userMessage.content; // Assign the content array to userMessageParts
-      userMessageText = (userMessageParts ?? [])
-        .filter((part: any) => part.type === 'text')
-        .map((part: any) => part.text)
-        .join('\n')
-        .trim();
-    } else if (typeof userMessage.content === 'string') {
-      // Fallback if content is just a string (less likely based on history)
+    if (userMessage?.content && Array.isArray(userMessage.content)) {
+      // Content is likely an array of parts for multimodal
+      userMessageParts = userMessage.content as Array<{
+        type: string;
+        text: string;
+      }>; // Assuming structure {type: 'text', text: '...'}
+      if (userMessageParts) {
+        userMessageText = userMessageParts
+          .filter((part: any) => part.type === 'text')
+          .map((part: any) => part.text)
+          .join('\n')
+          .trim();
+      }
+    } else if (typeof userMessage?.content === 'string') {
+      // Content is just a string
       userMessageText = userMessage.content.trim();
-      userMessageParts = [{ type: 'text', text: userMessageText }];
+      userMessageParts = [{ type: 'text', text: userMessageText }]; // Create a simple parts array
     }
 
-    const messageId = userMessage.id ?? null;
-    const userMessageDatetime = userMessage.createdAt ?? null;
+    const history = coreMessages.length > 1 ? coreMessages.slice(0, -1) : [];
 
-    if (!messageId) {
-      console.warn(
-        '[N8nLanguageModel] Warning: userMessage.id is missing or null.',
-      );
-    }
-
-    // Use stored chatId and userId
+    // Use stored chatId, userId, messageId, and datetime
     const payload = {
       chatId: this.chatId,
       userId: this.userId,
-      messageId: messageId,
+      messageId: this.messageId,
       userMessage: userMessageText,
       userMessageParts: userMessageParts,
-      userMessageDatetime: userMessageDatetime,
+      userMessageDatetime: this.datetime,
       history: history,
     };
 
@@ -143,16 +148,9 @@ export class N8nLanguageModel implements LanguageModelV1 {
         );
         assistantReplyText = `Assistant communication failed (${n8nResponse.status})`;
       } else {
-        // Log the raw response text before parsing
-        const responseText = await n8nResponse.text();
-        console.log(`[N8nLanguageModel] Raw response text: ${responseText}`);
-
         // Attempt to parse the logged text
         try {
-          const n8nData: N8nResponse = JSON.parse(responseText);
-          console.log(
-            `[N8nLanguageModel] Parsed response data: ${JSON.stringify(n8nData)}`,
-          );
+          const n8nData: N8nResponse = JSON.parse(await n8nResponse.text());
           assistantReplyText =
             Array.isArray(n8nData) && n8nData[0]?.responseMessage
               ? n8nData[0].responseMessage

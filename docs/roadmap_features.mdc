@@ -23,6 +23,10 @@ alwaysApply: false
 - Change font
 - Fix AI suggestions and make personalized based on user data in database
 - Implement automated testing with Jest etc
+- Add image handling in n8n
+- Add other file handling in n8n
+- Implement LangSmith (code applied but nothing showing up in LangSmith)
+- Switch auth to Clerk
 
 ### Long-Term
 - Streaming interruption (https://upstash.com/blog/resumable-llm-streams)
