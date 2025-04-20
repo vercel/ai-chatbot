@@ -6,8 +6,10 @@ import { AISDKExporter } from 'langsmith/vercel';
  * This file will be loaded on the server at build time.
  */
 export function register() {
+  console.log('[Instrumentation] Registering OpenTelemetry with Langsmith...');
   registerOTel({
     serviceName: process.env.VERCEL_PROJECT_NAME || 'ai-chatbot',
     traceExporter: new AISDKExporter(),
   });
+  console.log('[Instrumentation] OpenTelemetry registration attempted.');
 }

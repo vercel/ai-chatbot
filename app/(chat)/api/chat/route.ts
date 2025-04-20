@@ -249,7 +249,9 @@ export async function POST(request: Request) {
             experimental_telemetry: AISDKExporter.getSettings(),
           });
 
-          // Standard stream consumption
+          console.log(
+            `[API Route] Calling streamText for chat ${finalChatId} with Langsmith telemetry enabled.`,
+          );
           result.consumeStream();
           result.mergeIntoDataStream(dataStream, {
             sendReasoning: false, // No reasoning for n8n model
@@ -333,8 +335,10 @@ export async function POST(request: Request) {
           experimental_telemetry: AISDKExporter.getSettings(),
         });
 
+        console.log(
+          `[API Route] Calling streamText for n8n chat ${finalChatId} with Langsmith telemetry enabled.`,
+        );
         result.consumeStream();
-
         result.mergeIntoDataStream(dataStream, {
           sendReasoning: true,
         });
