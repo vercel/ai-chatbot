@@ -20,8 +20,9 @@ export const chatModels: Array<ChatModel> = [
   },
   {
     id: 'n8n-assistant',
-    name: 'n8n Assistant',
-    description: 'n8n AI',
+    name: 'Y-1',
+    description:
+      'Y-1 proprietary model with advanced tool-calling and user context',
     isN8n: true,
   },
 ];

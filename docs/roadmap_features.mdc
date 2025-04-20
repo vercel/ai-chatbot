@@ -10,6 +10,7 @@ alwaysApply: false
 ## New Features 
 
 ### Near-Term
+- Rename chat titles, if necessary, after every 6 messages
 - Run n8n workflow in background on sign-up to personalize experience (e.g. save files of research to Supabase for user, create personalization to inject into prompt context window for interactions, etc)
 - In artifact view, move chat to the right like Cursor and still show sidebar on left
 - Auto-select tools/MCPs based on user job title
@@ -17,7 +18,7 @@ alwaysApply: false
 - Enable artifact creation in external services like Google Docs & Google Sheets
 - AI suggested prompts should be personalized based on user context & recent actions in third-party services (email, meetings, etc)
 - Better system prompt (e.g. https://github.com/elder-plinius/CL4R1T4S/blob/main/OPENAI/ChatGPT/ChatGPT-04-16-2025)
-- More compact UI
+- More compact UI$$
 - More personality in system prompt (maybe the AI is a hater?)
 - Change font
 - Fix AI suggestions and make personalized based on user data in database
