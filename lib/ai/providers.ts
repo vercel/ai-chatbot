@@ -12,6 +12,8 @@ import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { fireworks } from '@ai-sdk/fireworks';
 import { replicate } from '@ai-sdk/replicate';
+import { elevenlabs } from '@ai-sdk/elevenlabs';
+import { deepgram } from '@ai-sdk/deepgram';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,

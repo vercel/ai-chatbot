@@ -47,9 +47,9 @@ export default function LoginPage() {
     <div className="flex h-[calc(100vh-theme(spacing.16))] items-center justify-center py-10">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your email to sign in to your account
+            Sign in to get started
           </p>
         </div>
         <AuthForm type="login" />

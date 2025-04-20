@@ -16,12 +16,23 @@ alwaysApply: false
 - Create templates for artifacts, like PRD, job description, etc; flag which ones are relevant based on user job title
 - Enable artifact creation in external services like Google Docs & Google Sheets
 - AI suggested prompts should be personalized based on user context & recent actions in third-party services (email, meetings, etc)
+- Better system prompt (e.g. https://github.com/elder-plinius/CL4R1T4S/blob/main/OPENAI/ChatGPT/ChatGPT-04-16-2025)
+- More compact UI
+- AI can send you messages when you're not on the website and these are marked as new with a dot like iMessage
+- More personality in system prompt (maybe the AI is a hater?)
+- Change font
+- Fix AI suggestions and make personalized based on user data in database
+- Implement automated testing with Jest etc
 
 ### Long-Term
+- Streaming interruption (https://upstash.com/blog/resumable-llm-streams)
 - Implement more complex memory solution like Zep or custom one
-- Deep research
+- Deep research tool
 - Tool selection UI
 - Use TanStack table for spreadsheet artifact (maybe)
+- MacOS app
+- More model selection options
+- Automatic prompt correction and/or step-by-step elicitation for complex prompts
 
 ---
 

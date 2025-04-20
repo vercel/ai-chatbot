@@ -24,46 +24,61 @@ export async function GET(request: Request) {
       const userEmail = user.email; // Assuming email is available
 
       console.log(
-        `Auth Callback [Correct File]: Processing successful exchange for user ${userId} (${userEmail})`,
+        `Auth Callback: Processing successful exchange for user ${userId} (${userEmail})`,
       );
+      // DETAILED LOG: Check if refresh token exists in session
+      console.log(
+        `Auth Callback DEBUG: Refresh Token present in session for user ${userId}?`,
+        !!refreshToken,
+      );
+      if (refreshToken) {
+        // Optionally log the first few chars of the token for verification, but be careful with logging sensitive data
+        // console.log(`Auth Callback DEBUG: Refresh Token starts with: ${refreshToken.substring(0, 5)}...`);
+      }
 
-      // 1. Save Provider Tokens (if they exist)
-      if (providerToken || refreshToken) {
+      // 1. Save Google Refresh Token to User Profile (if it exists)
+      if (refreshToken) {
+        // DETAILED LOG: Log the length of the token before attempting to save
+        console.log(
+          `Auth Callback DEBUG: Refresh Token received. Length: ${refreshToken.length}. Attempting save for user ${userId}`,
+        );
+        console.log(
+          `Auth Callback DEBUG: Attempting to update User_Profiles for user ${userId}`,
+        );
         try {
-          const { error: dbError } = await supabase
-            .from('user_provider_tokens') // Use the public table name
-            .upsert(
-              {
-                user_id: userId,
-                provider: 'google', // Assuming google for now
-                email: userEmail,
-                access_token: providerToken,
-                refresh_token: refreshToken,
-              },
-              { onConflict: 'user_id, provider' }, // Adjust if your constraint differs
-            );
+          const { data: updateData, error: profileUpdateError } = await supabase
+            .from('User_Profiles') // Target the User_Profiles table
+            .update({ google_refresh_token: refreshToken }) // Update the specific column
+            .eq('id', userId) // Match the user ID using the 'id' column
+            .select(); // Add .select() to potentially get more info on error/success
 
-          if (dbError) {
+          // DETAILED LOG: Log the outcome of the update attempt
+          console.log(
+            `Auth Callback DEBUG: Update result for user ${userId}:`,
+            { updateData, profileUpdateError },
+          );
+
+          if (profileUpdateError) {
             console.error(
-              `Auth Callback [Correct File] Error - Saving Tokens for user ${userId}:`,
-              dbError,
+              `Auth Callback Error - Saving Refresh Token to Profile for user ${userId}:`,
+              profileUpdateError,
             );
             // Log error but continue
           } else {
             console.log(
-              `Auth Callback [Correct File]: Successfully saved provider tokens for user ${userId}.`,
+              `Auth Callback: Successfully saved Google refresh token to profile for user ${userId}.`,
             );
           }
-        } catch (dbCatchError) {
+        } catch (profileUpdateCatchError) {
           console.error(
-            `Auth Callback [Correct File] EXCEPTION - Saving Tokens for user ${userId}:`,
-            dbCatchError,
+            `Auth Callback EXCEPTION - Saving Refresh Token to Profile for user ${userId}:`,
+            profileUpdateCatchError,
           );
           // Log error but continue
         }
       } else {
         console.log(
-          `Auth Callback [Correct File]: No provider_token or provider_refresh_token found in session for user ${userId}. Skipping token save.`,
+          `Auth Callback: No provider_refresh_token found in session for user ${userId}. Skipping profile update.`,
         );
       }
 

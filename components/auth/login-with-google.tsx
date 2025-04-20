@@ -18,6 +18,7 @@ export function LoginWithGoogle() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          scopes: 'openid email https://www.googleapis.com/auth/userinfo.email',
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',

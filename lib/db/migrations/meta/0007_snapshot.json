@@ -1,5 +1,5 @@
 {
-  "id": "f9d01fdf-3d3e-4726-9e87-f020428fcfe2",
+  "id": "63b80060-ebfe-4977-b079-e5f679a53219",
   "prevId": "c6c102e6-b64e-4f0c-a7a6-32df758de437",
   "version": "7",
   "dialect": "postgresql",
@@ -43,10 +43,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "Chat_userId_User_id_fk": {
-          "name": "Chat_userId_User_id_fk",
+        "Chat_userId_User_Profiles_id_fk": {
+          "name": "Chat_userId_User_Profiles_id_fk",
           "tableFrom": "Chat",
-          "tableTo": "User",
+          "tableTo": "User_Profiles",
           "columnsFrom": [
             "userId"
           ],
@@ -89,8 +89,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "text": {
-          "name": "text",
+        "kind": {
+          "name": "kind",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true,
@@ -101,16 +101,47 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "modifiedAt": {
+          "name": "modifiedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "Document_userId_User_id_fk": {
-          "name": "Document_userId_User_id_fk",
+        "Document_userId_User_Profiles_id_fk": {
+          "name": "Document_userId_User_Profiles_id_fk",
           "tableFrom": "Document",
-          "tableTo": "User",
+          "tableTo": "User_Profiles",
           "columnsFrom": [
             "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Document_chat_id_Chat_id_fk": {
+          "name": "Document_chat_id_Chat_id_fk",
+          "tableFrom": "Document",
+          "tableTo": "Chat",
+          "columnsFrom": [
+            "chat_id"
           ],
           "columnsTo": [
             "id"
@@ -309,10 +340,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "Suggestion_userId_User_id_fk": {
-          "name": "Suggestion_userId_User_id_fk",
+        "Suggestion_userId_User_Profiles_id_fk": {
+          "name": "Suggestion_userId_User_Profiles_id_fk",
           "tableFrom": "Suggestion",
-          "tableTo": "User",
+          "tableTo": "User_Profiles",
           "columnsFrom": [
             "userId"
           ],
@@ -348,8 +379,8 @@
       },
       "uniqueConstraints": {}
     },
-    "public.User": {
-      "name": "User",
+    "public.User_Profiles": {
+      "name": "User_Profiles",
       "schema": "",
       "columns": {
         "id": {
@@ -358,11 +389,25 @@
           "primaryKey": true,
           "notNull": true
         },
-        "email": {
-          "name": "email",
-          "type": "varchar(64)",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": "now()"
+        },
+        "modified_at": {
+          "name": "modified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "google_refresh_token": {
+          "name": "google_refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
