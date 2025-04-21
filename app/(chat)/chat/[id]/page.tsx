@@ -6,10 +6,15 @@ import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import type { DBMessage } from '@/lib/db/schema';
+import type { DBMessage, Document } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
+  // --- Start Timer ---
+  const pageId = (await props.params).id; // Resolve id early for logging
+  console.time(`Page Component - Chat ${pageId}`);
+  // --- End Start Timer ---
+
   const params = await props.params;
   const { id } = params;
   const chat = await getChatById({ id });
@@ -37,6 +42,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     id,
   });
 
+  const { data: associatedDocument, error: docError } = await supabase
+    .from('Document')
+    .select('id, title, kind, content')
+    .eq('chat_id', id)
+    .limit(1)
+    .maybeSingle();
+
+  if (docError) {
+    console.error(
+      `Error fetching associated document for chat ${id}:`,
+      docError,
+    );
+  }
+
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
     return messages.map((message) => ({
       id: message.id,
@@ -52,32 +71,24 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
+  const selectedModel = chatModelFromCookie?.value || DEFAULT_CHAT_MODEL;
 
-  if (!chatModelFromCookie) {
-    return (
-      <>
-        <Chat
-          id={chat.id}
-          initialMessages={convertToUIMessages(messagesFromDb)}
-          selectedChatModel={DEFAULT_CHAT_MODEL}
-          selectedVisibilityType={chat.visibility}
-          isReadonly={user?.id !== chat.userId}
-        />
-        <DataStreamHandler id={id} />
-      </>
-    );
-  }
-
-  return (
+  const result = (
     <>
       <Chat
         id={chat.id}
         initialMessages={convertToUIMessages(messagesFromDb)}
-        selectedChatModel={chatModelFromCookie.value}
+        initialAssociatedDocument={associatedDocument ?? null}
+        selectedChatModel={selectedModel}
         selectedVisibilityType={chat.visibility}
         isReadonly={user?.id !== chat.userId}
       />
       <DataStreamHandler id={id} />
     </>
   );
+
+  // --- End Timer ---
+  console.timeEnd(`Page Component - Chat ${id}`);
+  // --- End End Timer ---
+  return result;
 }

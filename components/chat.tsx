@@ -6,27 +6,40 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
+import type { Vote, Document as DBDocument } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact';
+import {
+  useArtifact,
+  useArtifactSelector,
+  initialArtifactData,
+} from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { createClient } from '@/lib/supabase/client';
 
+// Define the shape of the document prop expected from the server
+// Use a subset matching what's selected in page.tsx
+type InitialDocumentProp = Pick<
+  DBDocument,
+  'id' | 'title' | 'kind' | 'content'
+> | null;
+
 export function Chat({
   id,
   initialMessages,
+  initialAssociatedDocument,
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
+  initialAssociatedDocument: InitialDocumentProp;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
@@ -71,44 +84,27 @@ export function Chat({
   const router = useRouter();
 
   useEffect(() => {
-    const artifactToShow = searchParams.get('showArtifact');
-    if (artifactToShow) {
-      console.log('Found showArtifact param:', artifactToShow);
-      const showArtifact = async (documentId: string) => {
-        const supabase = createClient();
-        const { data: doc, error } = await supabase
-          .from('Document')
-          .select('id, title, kind, content')
-          .eq('id', documentId)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching document details for artifact:', error);
-          toast.error('Could not load the requested document.');
-        } else if (doc) {
-          console.log('Setting artifact visible for:', doc.id);
-          setArtifact({
-            isVisible: true,
-            documentId: doc.id,
-            title: doc.title,
-            kind: doc.kind as any,
-            content: doc.content || '',
-            status: 'idle',
-            boundingBox: {
-              top: 100,
-              left: window.innerWidth / 2,
-              width: 300,
-              height: 200,
-            },
-          });
-        } else {
-          toast.error('Requested document not found.');
-        }
-        router.replace(`/chat/${id}`, { scroll: false });
-      };
-      showArtifact(artifactToShow);
+    if (initialAssociatedDocument) {
+      console.log(
+        'Setting initial artifact from server prop:',
+        initialAssociatedDocument.id,
+      );
+      setArtifact({
+        isVisible: true,
+        documentId: initialAssociatedDocument.id,
+        title: initialAssociatedDocument.title,
+        kind: initialAssociatedDocument.kind as any,
+        content: initialAssociatedDocument.content || '',
+        status: 'idle',
+        boundingBox: initialArtifactData.boundingBox,
+      });
+    } else {
+      console.log(
+        'No initial artifact associated with this chat, ensuring artifact is hidden.',
+      );
+      setArtifact({ ...initialArtifactData, isVisible: false });
     }
-  }, [searchParams, id, router, setArtifact]);
+  }, [initialAssociatedDocument, setArtifact]);
 
   return (
     <>
@@ -150,22 +146,24 @@ export function Chat({
         </form>
       </div>
 
-      <Artifact
-        chatId={id}
-        input={input}
-        setInput={setInput}
-        handleSubmit={handleSubmit}
-        status={status}
-        stop={stop}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        append={append}
-        messages={messages}
-        setMessages={setMessages}
-        reload={reload}
-        votes={votes}
-        isReadonly={isReadonly}
-      />
+      {isArtifactVisible && (
+        <Artifact
+          chatId={id}
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+          status={status}
+          stop={stop}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          append={append}
+          messages={messages}
+          setMessages={setMessages}
+          reload={reload}
+          votes={votes}
+          isReadonly={isReadonly}
+        />
+      )}
     </>
   );
 }
