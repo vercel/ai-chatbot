@@ -1,6 +1,6 @@
 import { generateId } from 'ai';
 import { getUnixTime } from 'date-fns';
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
