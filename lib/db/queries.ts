@@ -14,6 +14,7 @@ import {
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { unstable_cache } from 'next/cache';
 
 import {
   chat,
@@ -25,7 +26,7 @@ import {
   type DBMessage,
   type Chat,
 } from './schema';
-import { type ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -138,13 +139,37 @@ export async function getChatsByUserId({
 }
 
 export async function getChatById({ id }: { id: string }) {
-  try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
-    return selectedChat;
-  } catch (error) {
-    console.error('Failed to get chat by id from database');
-    throw error;
-  }
+  // Define the cached function
+  const getChatByIdCached = unstable_cache(
+    async (chatId: string) => {
+      console.log(`Cache miss: Fetching chat ${chatId} from DB`);
+      try {
+        // Original database query logic
+        const [selectedChat] = await db
+          .select()
+          .from(chat)
+          .where(eq(chat.id, chatId));
+        return selectedChat;
+      } catch (error) {
+        console.error(
+          `Failed to get chat by id ${chatId} from database`,
+          error,
+        );
+        // Decide how to handle errors: return null, re-throw, etc.
+        // Returning null might prevent page load if chat is expected.
+        // Re-throwing might be better if the page should error out.
+        throw error; // Re-throwing for now, adjust if needed
+      }
+    },
+    ['get-chat-by-id'], // Base key for the cache
+    {
+      tags: [`chat-${id}`], // Tag for potential revalidation
+      revalidate: 3600, // Revalidate cache every hour (adjust as needed)
+    },
+  );
+
+  // Call the cached function
+  return getChatByIdCached(id);
 }
 
 export async function saveMessages({
