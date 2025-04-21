@@ -10,6 +10,11 @@ import type { DBMessage, Document } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
+  // --- Start Timer ---
+  const pageId = (await props.params).id; // Resolve id early for logging
+  console.time(`Page Component - Chat ${pageId}`);
+  // --- End Start Timer ---
+
   const params = await props.params;
   const { id } = params;
   const chat = await getChatById({ id });
@@ -68,7 +73,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const chatModelFromCookie = cookieStore.get('chat-model');
   const selectedModel = chatModelFromCookie?.value || DEFAULT_CHAT_MODEL;
 
-  return (
+  const result = (
     <>
       <Chat
         id={chat.id}
@@ -81,4 +86,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <DataStreamHandler id={id} />
     </>
   );
+
+  // --- End Timer ---
+  console.timeEnd(`Page Component - Chat ${id}`);
+  // --- End End Timer ---
+  return result;
 }
