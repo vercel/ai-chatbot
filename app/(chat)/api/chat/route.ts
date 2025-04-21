@@ -1,7 +1,7 @@
 import {
-  UIMessage,
+  type UIMessage,
   appendResponseMessages,
-  createDataStreamResponse,
+  createDataStream,
   smoothStream,
   streamText,
 } from 'ai';
@@ -25,6 +25,7 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import { createResumableStream } from '@/lib/resumable-stream';
 
 export const maxDuration = 60;
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });
     }
 
@@ -62,7 +63,17 @@ export async function POST(request: Request) {
       await saveChat({ id, userId: session.user.id, title });
     } else {
       if (chat.userId !== session.user.id) {
-        return new Response('Unauthorized', { status: 401 });
+        return new Response('Forbidden', { status: 403 });
+      }
+    }
+
+    if (userMessage.content === 'ping') {
+      const resumableStream = await createResumableStream({ chatId: id });
+
+      if (resumableStream) {
+        return new Response(resumableStream, { status: 200 });
+      } else {
+        return new Response(null, { status: 204 });
       }
     }
 
@@ -79,12 +90,16 @@ export async function POST(request: Request) {
       ],
     });
 
-    return createDataStreamResponse({
+    const messagesWithoutPings = messages.filter(
+      (message) => message.content !== 'ping',
+    );
+
+    const stream = createDataStream({
       execute: (dataStream) => {
-        const result = streamText({
+        const textStream = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
-          messages,
+          messages: messagesWithoutPings,
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
@@ -148,9 +163,9 @@ export async function POST(request: Request) {
           },
         });
 
-        result.consumeStream();
+        textStream.consumeStream();
 
-        result.mergeIntoDataStream(dataStream, {
+        textStream.mergeIntoDataStream(dataStream, {
           sendReasoning: true,
         });
       },
@@ -158,9 +173,14 @@ export async function POST(request: Request) {
         return 'Oops, an error occurred!';
       },
     });
+
+    return new Response(await createResumableStream({ chatId: id, stream }), {
+      status: 200,
+    });
   } catch (error) {
+    console.log(error);
     return new Response('An error occurred while processing your request!', {
-      status: 404,
+      status: 500,
     });
   }
 }
@@ -170,12 +190,12 @@ export async function DELETE(request: Request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response('Not found', { status: 404 });
   }
 
   const session = await auth();
 
-  if (!session || !session.user) {
+  if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -183,7 +203,7 @@ export async function DELETE(request: Request) {
     const chat = await getChatById({ id });
 
     if (chat.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response('Forbidden', { status: 403 });
     }
 
     await deleteChatById({ id });

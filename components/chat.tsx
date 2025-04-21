@@ -2,7 +2,7 @@
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -56,6 +56,15 @@ export function Chat({
     },
   });
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      append({
+        role: 'user',
+        content: 'ping',
+      });
+    }
+  }, []);
+
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
@@ -63,6 +72,10 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+
+  const messagesWithoutPings = messages.filter(
+    (message) => message.content !== 'ping',
+  );
 
   return (
     <>
@@ -78,7 +91,7 @@ export function Chat({
           chatId={id}
           status={status}
           votes={votes}
-          messages={messages}
+          messages={messagesWithoutPings}
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
@@ -96,7 +109,7 @@ export function Chat({
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
-              messages={messages}
+              messages={messagesWithoutPings}
               setMessages={setMessages}
               append={append}
             />
@@ -114,7 +127,7 @@ export function Chat({
         attachments={attachments}
         setAttachments={setAttachments}
         append={append}
-        messages={messages}
+        messages={messagesWithoutPings}
         setMessages={setMessages}
         reload={reload}
         votes={votes}
