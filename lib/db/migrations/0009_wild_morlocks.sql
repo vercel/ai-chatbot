@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "document_chat_id_idx" ON "Document" USING btree ("chat_id");

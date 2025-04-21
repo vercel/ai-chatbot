@@ -144,6 +144,7 @@ export const document = pgTable(
   (table) => {
     return {
       pk: primaryKey({ columns: [table.id, table.createdAt] }),
+      documentChatIdIdx: index('document_chat_id_idx').on(table.chatId),
     };
   },
 );

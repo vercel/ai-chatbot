@@ -13,20 +13,24 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   // --- Start Timer ---
   const pageId = (await props.params).id; // Resolve id early for logging
   console.time(`Page Component - Chat ${pageId}`);
+  console.time(`Page Component - Chat ${pageId} - Step 1: Get Chat`);
   // --- End Start Timer ---
 
   const params = await props.params;
   const { id } = params;
   const chat = await getChatById({ id });
+  console.timeEnd(`Page Component - Chat ${pageId} - Step 1: Get Chat`);
 
   if (!chat) {
     notFound();
   }
 
+  console.time(`Page Component - Chat ${pageId} - Step 2: Get User`);
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.timeEnd(`Page Component - Chat ${pageId} - Step 2: Get User`);
 
   if (chat.visibility === 'private') {
     if (!user) {
@@ -38,16 +42,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     }
   }
 
+  console.time(`Page Component - Chat ${pageId} - Step 3: Get Messages`);
   const messagesFromDb = await getMessagesByChatId({
     id,
   });
+  console.timeEnd(`Page Component - Chat ${pageId} - Step 3: Get Messages`);
 
+  console.time(`Page Component - Chat ${pageId} - Step 4: Get Document`);
   const { data: associatedDocument, error: docError } = await supabase
     .from('Document')
     .select('id, title, kind, content')
     .eq('chat_id', id)
     .limit(1)
     .maybeSingle();
+  console.timeEnd(`Page Component - Chat ${pageId} - Step 4: Get Document`);
 
   if (docError) {
     console.error(
@@ -56,6 +64,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     );
   }
 
+  console.time(
+    `Page Component - Chat ${pageId} - Step 5: Convert Messages & Cookies`,
+  );
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
     return messages.map((message) => ({
       id: message.id,
@@ -68,16 +79,21 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         (message.attachments as Array<Attachment>) ?? [],
     }));
   }
+  const processedMessages = convertToUIMessages(messagesFromDb); // Process messages
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
   const selectedModel = chatModelFromCookie?.value || DEFAULT_CHAT_MODEL;
+  console.timeEnd(
+    `Page Component - Chat ${pageId} - Step 5: Convert Messages & Cookies`,
+  );
 
+  console.time(`Page Component - Chat ${pageId} - Step 6: Render`);
   const result = (
     <>
       <Chat
         id={chat.id}
-        initialMessages={convertToUIMessages(messagesFromDb)}
+        initialMessages={processedMessages}
         initialAssociatedDocument={associatedDocument ?? null}
         selectedChatModel={selectedModel}
         selectedVisibilityType={chat.visibility}
@@ -86,9 +102,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <DataStreamHandler id={id} />
     </>
   );
+  console.timeEnd(`Page Component - Chat ${pageId} - Step 6: Render`);
 
-  // --- End Timer ---
   console.timeEnd(`Page Component - Chat ${id}`);
-  // --- End End Timer ---
   return result;
 }
