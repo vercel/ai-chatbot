@@ -1,16 +1,15 @@
-import type {
-  CoreAssistantMessage,
-  CoreToolMessage,
-  Message,
-  TextStreamPart,
-  ToolInvocation,
-  ToolSet,
-  UIMessage,
+import {
+  generateId,
+  type CoreAssistantMessage,
+  type CoreToolMessage,
+  type Message,
+  type UIMessage,
 } from 'ai';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { DBMessage, Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/db/schema';
+import { genSaltSync, hashSync } from 'bcrypt-ts';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -162,4 +161,13 @@ export function getTrailingMessageId({
   if (!trailingMessage) return null;
 
   return trailingMessage.id;
+}
+
+export function generateDummyPassword() {
+  const password = generateId(12);
+
+  const salt = genSaltSync(10);
+  const hash = hashSync(password, salt);
+
+  return hash;
 }
