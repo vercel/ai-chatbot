@@ -29,7 +29,7 @@ export class LangGraphAdapter {
       // Log each message to inspect structure
 
       if (message.event === 'messages/metadata') {
-        console.log('LangGraph message event:', message.event)
+        console.log('\nLangGraph message event:', message.event)
         // console.log(
         //   'LangGraph message data:',
         //   JSON.stringify(message.data, null, 2)
