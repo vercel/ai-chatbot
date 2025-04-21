@@ -71,6 +71,13 @@
       "when": 1745216978317,
       "tag": "0009_wild_morlocks",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1745217998638,
+      "tag": "0010_mysterious_silvermane",
+      "breakpoints": true
     }
   ]
 }

@@ -15,6 +15,10 @@ import { relations } from 'drizzle-orm';
 
 import type { UIMessage } from 'ai';
 
+// ADDED:
+import { jsonb } from 'drizzle-orm/pg-core';
+// --- END ADDED
+
 export const userProfiles = pgTable('User_Profiles', {
   id: uuid('id').primaryKey().notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
@@ -24,17 +28,25 @@ export const userProfiles = pgTable('User_Profiles', {
 
 export type UserProfile = InferSelectModel<typeof userProfiles>;
 
-export const chat = pgTable('Chat', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  createdAt: timestamp('createdAt').notNull(),
-  title: text('title').notNull(),
-  userId: uuid('userId')
-    .notNull()
-    .references(() => userProfiles.id),
-  visibility: varchar('visibility', { enum: ['public', 'private'] })
-    .notNull()
-    .default('private'),
-});
+export const chat = pgTable(
+  'Chat',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    createdAt: timestamp('createdAt').notNull(),
+    title: text('title').notNull(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => userProfiles.id),
+    visibility: varchar('visibility', { enum: ['public', 'private'] })
+      .notNull()
+      .default('private'),
+  },
+  (table) => {
+    return {
+      chatUserIdIdx: index('chat_user_id_idx').on(table.userId),
+    };
+  },
+);
 
 export type Chat = typeof chat.$inferSelect;
 
@@ -68,14 +80,16 @@ export const message = pgTable(
     chatId: uuid('chatId')
       .notNull()
       .references(() => chat.id),
-    role: varchar('role').notNull(),
+    role: text('role', { enum: ['user', 'assistant'] }).notNull(),
     parts: json('parts').notNull(),
     attachments: json('attachments').notNull(),
     createdAt: timestamp('createdAt').notNull(),
   },
   (table) => {
     return {
-      chatIdIdx: index('message_v2_chat_id_idx').on(table.chatId),
+      pk: primaryKey({ columns: [table.id, table.createdAt] }),
+      messageChatIdIdx: index('message_v2_chat_id_idx').on(table.chatId),
+      messageCreatedAtIdx: index('message_created_at_idx').on(table.createdAt),
     };
   },
 );
