@@ -78,6 +78,13 @@
       "when": 1745217998638,
       "tag": "0010_mysterious_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1745219259459,
+      "tag": "0011_far_daredevil",
+      "breakpoints": true
     }
   ]
 }
