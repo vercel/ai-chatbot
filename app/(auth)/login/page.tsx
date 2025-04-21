@@ -12,6 +12,8 @@ import { SubmitButton } from '@/components/submit-button';
 
 import { login, type AuthActionState } from '../actions';
 
+import { SparklesText } from '@/components/ui/sparkles-text';
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -57,10 +59,9 @@ export default function LoginPage() {
               className="w-10 h-10"
             />
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in to fucking be somebody
-          </p>
+          <p className="text-sm text-muted-foreground hidden">Sign in</p>
         </div>
+
         <AuthForm type="login" />
       </div>
     </div>

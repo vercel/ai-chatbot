@@ -10,19 +10,19 @@ interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model',
-    name: 'Chat model',
+    name: 'GPT 4.1',
     description: 'Primary model for all-purpose chat',
   },
   {
     id: 'chat-model-reasoning',
-    name: 'Reasoning model',
+    name: 'o3',
     description: 'Uses advanced reasoning',
   },
   {
     id: 'n8n-assistant',
     name: 'Y-1',
     description:
-      'Y-1 proprietary model with advanced tool-calling and user context',
+      'Proprietary model with advanced tool-calling and user context',
     isN8n: true,
   },
 ];
