@@ -143,21 +143,28 @@ export async function getChatById({ id }: { id: string }) {
   const getChatByIdCached = unstable_cache(
     async (chatId: string) => {
       console.log(`Cache miss: Fetching chat ${chatId} from DB`);
+      // --- Start inner timer ---
+      console.time(`getChatById DB Query - Chat ${chatId}`);
+      // --- End inner timer ---
       try {
         // Original database query logic
         const [selectedChat] = await db
           .select()
           .from(chat)
           .where(eq(chat.id, chatId));
+        // --- Start inner timer ---
+        console.timeEnd(`getChatById DB Query - Chat ${chatId}`);
+        // --- End inner timer ---
         return selectedChat;
       } catch (error) {
+        // --- Start inner timer ---
+        // Ensure timer ends even on error
+        console.timeEnd(`getChatById DB Query - Chat ${chatId}`);
+        // --- End inner timer ---
         console.error(
           `Failed to get chat by id ${chatId} from database`,
           error,
         );
-        // Decide how to handle errors: return null, re-throw, etc.
-        // Returning null might prevent page load if chat is expected.
-        // Re-throwing might be better if the page should error out.
         throw error; // Re-throwing for now, adjust if needed
       }
     },
