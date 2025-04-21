@@ -2,11 +2,8 @@ import {
   UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
-  smoothStream,
-  streamText,
 } from 'ai';
 import { auth } from '@/app/(auth)/auth';
-import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
@@ -19,12 +16,6 @@ import {
   getTrailingMessageId,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
-import { myProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60;
 
@@ -47,13 +38,11 @@ export async function POST(request: Request) {
     }
 
     const userMessage = getMostRecentUserMessage(messages);
-
     if (!userMessage) {
       return new Response('No user message found', { status: 400 });
     }
 
     const chat = await getChatById({ id });
-
     if (!chat) {
       const title = await generateTitleFromUserMessage({
         message: userMessage,
@@ -80,86 +69,46 @@ export async function POST(request: Request) {
     });
 
     return createDataStreamResponse({
-      execute: (dataStream) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
-          messages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+      execute: async (dataStream) => {
+        const response = await fetch('https://api.dify.ai/v1/chat-messages', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer app-XYdKiP9cJTP1KkIja2bAjwMg',
+            'Content-Type': 'application/json',
           },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
-
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [userMessage],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
-              }
-            }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
+          body: JSON.stringify({
+            inputs: {},
+            query: userMessage.parts[0].text,
+            response_mode: 'streaming',
+            user: session.user.id,
+          }),
         });
 
-        result.consumeStream();
+        if (!response.ok || !response.body) {
+          dataStream.write(`Erro ao conectar com o agente da Dify.`);
+          dataStream.end();
+          return;
+        }
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          dataStream.write(chunk);
+        }
+
+        dataStream.end();
       },
+
       onError: () => {
-        return 'Oops, an error occurred!';
+        return 'Oops, ocorreu um erro com o agente Dify!';
       },
     });
   } catch (error) {
-    return new Response('An error occurred while processing your request!', {
+    return new Response('Ocorreu um erro ao processar a solicitação!', {
       status: 404,
     });
   }
@@ -174,7 +123,6 @@ export async function DELETE(request: Request) {
   }
 
   const session = await auth();
-
   if (!session || !session.user) {
     return new Response('Unauthorized', { status: 401 });
   }
@@ -187,10 +135,9 @@ export async function DELETE(request: Request) {
     }
 
     await deleteChatById({ id });
-
     return new Response('Chat deleted', { status: 200 });
   } catch (error) {
-    return new Response('An error occurred while processing your request!', {
+    return new Response('Erro ao deletar o chat', {
       status: 500,
     });
   }
