@@ -10,6 +10,16 @@ export async function GET(request: Request) {
   const origin = requestUrl.origin;
   const supabase = await createClient(); // Create client once
 
+  // --- Get IP Address ---
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ipAddress = forwarded
+    ? forwarded.split(/, /)[0]
+    : request.headers.get('x-real-ip'); // Fallback to x-real-ip or request.ip could be used
+  console.log(
+    `Auth Callback: Request IP Address detected: ${ipAddress ?? 'Not Found'}`,
+  );
+  // --- End Get IP Address ---
+
   if (code) {
     const { data: sessionData, error: exchangeError } =
       await supabase.auth.exchangeCodeForSession(code);
@@ -35,6 +45,42 @@ export async function GET(request: Request) {
         // Optionally log the first few chars of the token for verification, but be careful with logging sensitive data
         // console.log(`Auth Callback DEBUG: Refresh Token starts with: ${refreshToken.substring(0, 5)}...`);
       }
+
+      // --- Check if User is New ---
+      let isNewUser = false;
+      try {
+        const { data: existingProfile, error: profileCheckError } =
+          await supabase
+            .from('User_Profiles')
+            .select('id', { count: 'exact', head: true }) // More efficient: only check existence
+            .eq('id', userId)
+            .limit(1); // Ensure only one row is checked
+
+        if (profileCheckError) {
+          console.error(
+            `Auth Callback Error - Checking User_Profiles existence for ${userId}:`,
+            profileCheckError,
+          );
+          // Cannot determine if new, assume not new to be safe and avoid duplicate webhooks
+          isNewUser = false;
+        } else {
+          // If count is 0, the user profile doesn't exist yet.
+          // Note: This relies on the profile being created very shortly after Supabase auth user creation.
+          // A safer check might be comparing user.created_at with current time or a dedicated flag.
+          // For simplicity, we use profile existence check.
+          isNewUser = !existingProfile;
+          console.log(
+            `Auth Callback: User ${userId} is determined to be ${isNewUser ? 'NEW' : 'EXISTING'} based on profile check.`,
+          );
+        }
+      } catch (profileCheckCatchError) {
+        console.error(
+          `Auth Callback EXCEPTION - Checking User_Profiles existence for ${userId}:`,
+          profileCheckCatchError,
+        );
+        isNewUser = false; // Assume not new on error
+      }
+      // --- End Check if User is New ---
 
       // 1. Save Google Refresh Token to User Profile (if it exists)
       if (refreshToken) {
@@ -82,58 +128,66 @@ export async function GET(request: Request) {
         );
       }
 
-      // 2. Call Webhook
-      try {
-        const webhookUrl =
-          'https://n8n-naps.onrender.com/webhook/64fc6422-135f-4e81-bd23-8fc61daee99e';
-        const payload = {
-          user_id: userId,
-          email: userEmail,
-          phone: user.phone ?? null,
-          created_at: user.created_at,
-          updated_at: user.updated_at,
-          raw_user_meta_data: user.user_metadata ?? {},
-          raw_app_meta_data: user.app_metadata ?? {},
-          provider_tokens: {
-            access_token: providerToken,
-            refresh_token: refreshToken,
-          },
-        };
-
+      // 2. Call Webhook - ONLY IF isNewUser is true
+      if (isNewUser) {
         console.log(
-          `Auth Callback [Correct File]: Calling webhook for user ${userId}...`,
+          `Auth Callback: Attempting to call SIGNUP webhook for NEW user ${userId}.`,
         );
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        try {
+          const webhookUrl =
+            process.env.SIGNUP_WEBHOOK_URL ||
+            'https://n8n-naps.onrender.com/webhook/64fc6422-135f-4e81-bd23-8fc61daee99e'; // Use env variable, fallback for safety
+          const payload = {
+            user_id: userId,
+            email: userEmail,
+            phone: user.phone ?? null,
+            created_at: user.created_at,
+            updated_at: user.updated_at, // Should be same as created_at for new user
+            ip_address: ipAddress, // Add the IP address
+            raw_user_meta_data: user.user_metadata ?? {},
+            raw_app_meta_data: user.app_metadata ?? {},
+            provider_tokens: {
+              access_token: providerToken,
+              // Only include refresh token if it exists, might not always be present
+              refresh_token: refreshToken ?? undefined,
+            },
+          };
 
-        if (!response.ok) {
-          const errorBody = await response.text();
-          console.error(
-            `Auth Callback [Correct File] Error - Webhook failed for user ${userId}: ${response.status} ${response.statusText}`,
-            errorBody,
-          );
-          // Log webhook failure but continue
-        } else {
           console.log(
-            `Auth Callback [Correct File]: Successfully sent webhook for user ${userId}. Status: ${response.status}`,
+            `Auth Callback: Calling SIGNUP webhook for user ${userId} with IP ${ipAddress}. URL: ${webhookUrl}`,
+          );
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.text();
+            console.error(
+              `Auth Callback Error - SIGNUP Webhook failed for user ${userId}: ${response.status} ${response.statusText}`,
+              errorBody,
+            );
+          } else {
+            console.log(
+              `Auth Callback: Successfully sent SIGNUP webhook for user ${userId}. Status: ${response.status}`,
+            );
+          }
+        } catch (webhookCatchError) {
+          console.error(
+            `Auth Callback EXCEPTION - Calling SIGNUP webhook for user ${userId}:`,
+            webhookCatchError,
           );
         }
-      } catch (webhookCatchError) {
-        console.error(
-          `Auth Callback [Correct File] EXCEPTION - Calling webhook for user ${userId}:`,
-          webhookCatchError,
+      } else {
+        console.log(
+          `Auth Callback: Skipping SIGNUP webhook for returning user ${userId}.`,
         );
-        // Log webhook exception but continue
       }
-      // --- END: Added Logic for Token Saving and Webhook ---
+      // --- END: Modified Webhook Logic ---
 
       // URL to redirect to after sign in process completes
-      console.log(
-        `Auth Callback [Correct File]: Redirecting user ${userId} to ${origin}/`,
-      );
+      console.log(`Auth Callback: Redirecting user ${userId} to ${origin}/`);
       return NextResponse.redirect(`${origin}/`); // Redirect to home page on success
     } else if (exchangeError) {
       // Handle case where exchange failed
