@@ -28,6 +28,7 @@ import { myProvider } from '@/lib/ai/providers';
 import { chatModels } from '@/lib/ai/models';
 import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
+import { nanoid } from 'nanoid';
 
 export const maxDuration = 60;
 
@@ -311,40 +312,36 @@ export async function POST(request: Request) {
               dataStream,
             }),
           },
-          onFinish: async ({ response }) => {
-            if (userId) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
+          experimental_onToolCall: async (
+            toolCalls: Array<ToolCallPayload>, // Changed from `toolCall`
+            appendToolCallMessage: AppendToolCallMessage,
+          ) => {
+            for (const toolCall of toolCalls) {
+              await handleToolCall(toolCall, appendToolCallMessage);
+            }
+          },
+          onFinal: async (completion) => {
+            console.log('Stream finished.');
+            const finalChatId = getChatId();
+            const assistantId = nanoid();
 
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [userMessage],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: finalChatId,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts ?? [],
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (error) {
-                console.error('Error during streamText execution:', error);
-              }
+            // Ensure the final message role is 'assistant' before saving
+            if (assistantMessage.role === 'assistant') {
+              const dbAssistantMessage = {
+                id: assistantId,
+                chatId: finalChatId,
+                role: assistantMessage.role, // This is now guaranteed to be 'assistant'
+                parts: assistantMessage.parts ?? [],
+                attachments: assistantMessage.experimental_attachments ?? [],
+                createdAt: new Date(),
+              };
+              await saveMessages({ messages: [dbAssistantMessage] });
+              console.log('Saved final assistant message to DB');
+            } else {
+              // Log a warning if the final message has an unexpected role
+              console.warn(
+                `Final message role was '${assistantMessage.role}', expected 'assistant'. Skipping DB save.`,
+              );
             }
           },
           experimental_telemetry: AISDKExporter.getSettings(),
