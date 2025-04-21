@@ -37,16 +37,17 @@ export const myProvider = isTestEnvironment
         'chat-model': openai('gpt-4.1'),
         'chat-model-reasoning': openai('o3'),
         // 'chat-model': google('gemini-2.5-flash-preview-04-17'),
-       // 'chat-model-reasoning': wrapLanguageModel({
-       //   model: fireworks('accounts/fireworks/models/deepseek-r1'),
-       //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
-       // }),
+        // 'chat-model-reasoning': wrapLanguageModel({
+        //   model: fireworks('accounts/fireworks/models/deepseek-r1'),
+        //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
+        // }),
         'title-model': openai('gpt-4.1-mini'),
         'artifact-model': google('gemini-2.5-pro-exp-03-25'),
         'gemini-2.5-pro-exp-03-25': google('gemini-2.5-pro-exp-03-25'),
-        'gemini-2.5-flash-preview-04-17': google('gemini-2.5-flash-preview-04-17',
-        'o4-mini': openai('o4-mini'),
+        'gemini-2.5-flash-preview-04-17': google(
+          'gemini-2.5-flash-preview-04-17',
         ),
+        'o4-mini': openai('o4-mini'),
       },
       imageModels: {
         'small-model': fal.image('fal-ai/recraft-v3'),
