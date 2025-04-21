@@ -6,7 +6,7 @@ import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import type { DBMessage } from '@/lib/db/schema';
+import type { DBMessage, Document } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -37,6 +37,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     id,
   });
 
+  const { data: associatedDocument, error: docError } = await supabase
+    .from('Document')
+    .select('id, title, kind, content')
+    .eq('chat_id', id)
+    .limit(1)
+    .maybeSingle();
+
+  if (docError) {
+    console.error(
+      `Error fetching associated document for chat ${id}:`,
+      docError,
+    );
+  }
+
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
     return messages.map((message) => ({
       id: message.id,
@@ -52,28 +66,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
-
-  if (!chatModelFromCookie) {
-    return (
-      <>
-        <Chat
-          id={chat.id}
-          initialMessages={convertToUIMessages(messagesFromDb)}
-          selectedChatModel={DEFAULT_CHAT_MODEL}
-          selectedVisibilityType={chat.visibility}
-          isReadonly={user?.id !== chat.userId}
-        />
-        <DataStreamHandler id={id} />
-      </>
-    );
-  }
+  const selectedModel = chatModelFromCookie?.value || DEFAULT_CHAT_MODEL;
 
   return (
     <>
       <Chat
         id={chat.id}
         initialMessages={convertToUIMessages(messagesFromDb)}
-        selectedChatModel={chatModelFromCookie.value}
+        initialAssociatedDocument={associatedDocument ?? null}
+        selectedChatModel={selectedModel}
         selectedVisibilityType={chat.visibility}
         isReadonly={user?.id !== chat.userId}
       />
