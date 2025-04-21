@@ -14,6 +14,7 @@ import {
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { unstable_cache } from 'next/cache';
 
 import {
   chat,
@@ -25,14 +26,18 @@ import {
   type DBMessage,
   type Chat,
 } from './schema';
-import { type ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
 // biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+const connectionString = process.env.POSTGRES_URL!;
+
+// Consider adding connection options if needed, e.g.:
+// const client = postgres(connectionString, { /* options */ });
+const client = postgres(connectionString);
 const db = drizzle(client);
 
 export async function saveChat({
@@ -138,13 +143,29 @@ export async function getChatsByUserId({
 }
 
 export async function getChatById({ id }: { id: string }) {
-  try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
-    return selectedChat;
-  } catch (error) {
-    console.error('Failed to get chat by id from database');
-    throw error;
-  }
+  const getChatByIdCached = unstable_cache(
+    async (chatId: string) => {
+      console.log(`Cache miss: Fetching chat ${chatId} from DB`);
+      try {
+        const [selectedChat] = await db
+          .select()
+          .from(chat)
+          .where(eq(chat.id, chatId));
+        return selectedChat;
+      } catch (error) {
+        console.error(`Failed to get chat by id ${chatId} from database`);
+        // Return null or re-throw, depending on how you want to handle DB errors in cached function
+        return null;
+      }
+    },
+    ['get-chat-by-id'], // Cache key prefix
+    {
+      tags: [`chat-${id}`], // Tag for revalidation
+      revalidate: 3600, // Optional: Revalidate every hour, or rely on on-demand revalidation
+    },
+  );
+
+  return getChatByIdCached(id);
 }
 
 export async function saveMessages({
