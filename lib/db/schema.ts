@@ -9,6 +9,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -60,16 +61,24 @@ export const messageDeprecated = pgTable('Message', {
 
 export type MessageDeprecated = InferSelectModel<typeof messageDeprecated>;
 
-export const message = pgTable('Message_v2', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  chatId: uuid('chatId')
-    .notNull()
-    .references(() => chat.id),
-  role: varchar('role').notNull(),
-  parts: json('parts').notNull(),
-  attachments: json('attachments').notNull(),
-  createdAt: timestamp('createdAt').notNull(),
-});
+export const message = pgTable(
+  'Message_v2',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    chatId: uuid('chatId')
+      .notNull()
+      .references(() => chat.id),
+    role: varchar('role').notNull(),
+    parts: json('parts').notNull(),
+    attachments: json('attachments').notNull(),
+    createdAt: timestamp('createdAt').notNull(),
+  },
+  (table) => {
+    return {
+      chatIdIdx: index('message_v2_chat_id_idx').on(table.chatId),
+    };
+  },
+);
 
 export type DBMessage = InferSelectModel<typeof message>;
 

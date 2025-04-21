@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "message_v2_chat_id_idx" ON "Message_v2" USING btree ("chatId");
