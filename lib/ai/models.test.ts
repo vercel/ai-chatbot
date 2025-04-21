@@ -11,8 +11,8 @@ export const chatModel = new MockLanguageModelV1({
   }),
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
-      chunkDelayInMs: 50,
-      initialDelayInMs: 100,
+      chunkDelayInMs: 500,
+      initialDelayInMs: 1000,
       chunks: getResponseChunksByPrompt(prompt),
     }),
     rawCall: { rawPrompt: null, rawSettings: {} },
@@ -28,8 +28,8 @@ export const reasoningModel = new MockLanguageModelV1({
   }),
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
-      chunkDelayInMs: 50,
-      initialDelayInMs: 500,
+      chunkDelayInMs: 500,
+      initialDelayInMs: 1000,
       chunks: getResponseChunksByPrompt(prompt, true),
     }),
     rawCall: { rawPrompt: null, rawSettings: {} },
@@ -45,8 +45,8 @@ export const titleModel = new MockLanguageModelV1({
   }),
   doStream: async () => ({
     stream: simulateReadableStream({
-      chunkDelayInMs: 50,
-      initialDelayInMs: 100,
+      chunkDelayInMs: 500,
+      initialDelayInMs: 1000,
       chunks: [
         { type: 'text-delta', textDelta: 'This is a test title' },
         {
