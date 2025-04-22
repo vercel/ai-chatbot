@@ -5,6 +5,8 @@ import { format, isWithinInterval } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 interface WeatherAtLocation {
+  error?: string;
+  reason?: string;
   latitude: number;
   longitude: number;
   generationtime_ms: number;
@@ -42,7 +44,7 @@ interface WeatherAtLocation {
   };
 }
 
-const SAMPLE = {
+export const SAMPLE = {
   latitude: 37.763283,
   longitude: -122.41286,
   generationtime_ms: 0.027894973754882812,
@@ -206,6 +208,11 @@ export function Weather({
 }: {
   weatherAtLocation?: WeatherAtLocation;
 }) {
+  if (weatherAtLocation.error) {
+    console.error('Failed to get weather', weatherAtLocation.reason);
+    return null;
+  }
+
   const currentHigh = Math.max(
     ...weatherAtLocation.hourly.temperature_2m.slice(0, 24),
   );
