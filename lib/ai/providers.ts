@@ -47,6 +47,8 @@ export const myProvider = isTestEnvironment
         'gemini-2.5-flash-preview-04-17': google(
           'gemini-2.5-flash-preview-04-17',
         ),
+        'deepseek-v3': togetherai('deepseek-ai/DeepSeek-V3'),
+        'deepseek-r1': togetherai('deepseek-ai/DeepSeek-R1'),
         'o4-mini': openai('o4-mini'),
       },
       imageModels: {

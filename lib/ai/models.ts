@@ -45,4 +45,16 @@ export const chatModels: Array<ChatModel> = [
     description:
       'Best intelligence for speed and cost tradeoff; great for simple tasks, questions, and chat • Context: 1m tokens',
   },
+  {
+    id: 'deepseek-ai/DeepSeek-V3',
+    name: 'DeepSeek V3',
+    description:
+      'Best intelligence for speed and cost tradeoff; great for simple tasks, questions, and chat • Context: 1m tokens',
+  },
+  {
+    id: 'deepseek-ai/DeepSeek-R1',
+    name: 'DeepSeek R1',
+    description:
+      'Best intelligence for speed and cost tradeoff; great for simple tasks, questions, and chat • Context: 1m tokens',
+  },
 ];
