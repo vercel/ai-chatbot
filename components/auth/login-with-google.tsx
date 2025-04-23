@@ -22,7 +22,7 @@ export function LoginWithGoogle() {
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'consent select_account',
           },
         },
       });

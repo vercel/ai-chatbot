@@ -36,7 +36,7 @@ export const chat = pgTable(
     title: text('title').notNull(),
     userId: uuid('userId')
       .notNull()
-      .references(() => userProfiles.id),
+      .references(() => userProfiles.id, { onDelete: 'cascade' }),
     visibility: varchar('visibility', { enum: ['public', 'private'] })
       .notNull()
       .default('private'),
@@ -114,7 +114,7 @@ export const document = pgTable(
       .default('text'),
     userId: uuid('userId')
       .notNull()
-      .references(() => userProfiles.id),
+      .references(() => userProfiles.id, { onDelete: 'cascade' }),
     tags: text('tags').array(),
     modifiedAt: timestamp('modifiedAt', { withTimezone: true }),
     chatId: uuid('chat_id').references(() => chat.id),
