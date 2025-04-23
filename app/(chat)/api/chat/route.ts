@@ -1,5 +1,6 @@
 import {
   type UIMessage,
+  appendClientMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
@@ -10,14 +11,11 @@ import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
+  getMessagesByChatId,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import {
-  generateUUID,
-  getMostRecentUserMessage,
-  getTrailingMessageId,
-} from '@/lib/utils';
+import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
@@ -32,11 +30,11 @@ export async function POST(request: Request) {
   try {
     const {
       id,
-      messages,
+      message,
       selectedChatModel,
     }: {
       id: string;
-      messages: Array<UIMessage>;
+      message: UIMessage;
       selectedChatModel: string;
     } = await request.json();
 
@@ -46,9 +44,7 @@ export async function POST(request: Request) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const userMessage = getMostRecentUserMessage(messages);
-
-    if (!userMessage) {
+    if (!message) {
       return new Response('No user message found', { status: 400 });
     }
 
@@ -56,7 +52,7 @@ export async function POST(request: Request) {
 
     if (!chat) {
       const title = await generateTitleFromUserMessage({
-        message: userMessage,
+        message,
       });
 
       await saveChat({ id, userId: session.user.id, title });
@@ -66,14 +62,22 @@ export async function POST(request: Request) {
       }
     }
 
+    const previousMessages = await getMessagesByChatId({ id });
+
+    const messages = appendClientMessage({
+      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
+      messages: previousMessages,
+      message,
+    });
+
     await saveMessages({
       messages: [
         {
           chatId: id,
-          id: userMessage.id,
+          id: message.id,
           role: 'user',
-          parts: userMessage.parts,
-          attachments: userMessage.experimental_attachments ?? [],
+          parts: message.parts,
+          attachments: message.experimental_attachments ?? [],
           createdAt: new Date(),
         },
       ],
@@ -120,7 +124,7 @@ export async function POST(request: Request) {
                 }
 
                 const [, assistantMessage] = appendResponseMessages({
-                  messages: [userMessage],
+                  messages: [message],
                   responseMessages: response.messages,
                 });
 
@@ -158,7 +162,7 @@ export async function POST(request: Request) {
         return 'Oops, an error occurred!';
       },
     });
-  } catch (error) {
+  } catch (_) {
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });
