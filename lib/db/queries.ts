@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { genSaltSync, hashSync } from 'bcrypt-ts';
 import {
   and,
   asc,
@@ -28,6 +27,7 @@ import {
   type Chat,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
+import { generateHashedPassword } from './utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -47,11 +47,10 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
-  const salt = genSaltSync(10);
-  const hash = hashSync(password, salt);
+  const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    return await db.insert(user).values({ email, password: hashedPassword });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;

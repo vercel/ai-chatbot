@@ -1,4 +1,4 @@
-import { generateDummyPassword } from './utils';
+import { generateDummyPassword } from './db/utils';
 
 export const isProductionEnvironment = process.env.NODE_ENV === 'production';
 
