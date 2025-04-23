@@ -28,6 +28,7 @@ import { myProvider } from '@/lib/ai/providers';
 import { chatModels } from '@/lib/ai/models';
 import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
+import { revalidateTag } from 'next/cache';
 
 export const maxDuration = 60;
 
@@ -53,7 +54,6 @@ export async function POST(request: Request) {
       documentId?: string;
     } = await request.json();
 
-    // Log the received messages array immediately
     console.log(
       '[API /api/chat] Received messages:',
       JSON.stringify(messages, null, 2),
@@ -70,21 +70,22 @@ export async function POST(request: Request) {
     }
 
     const userId = user.id;
+    const finalChatId = id;
 
     const userMessage = getMostRecentUserMessage(messages);
-
     if (!userMessage) {
       return new Response('No user message found', { status: 400 });
     }
 
-    const chat = await getChatById({ id });
+    // --- RESTORING CHAT CREATION/CHECK LOGIC ---
+    const isNewChatAttempt =
+      messages.length === 1 && messages[0].role === 'user';
 
-    const finalChatId = id;
-    let finalTitle = '';
-
-    if (!chat) {
+    if (isNewChatAttempt) {
+      console.log(`Attempting to save as new chat (ID: ${finalChatId})...`);
       let newChatTitle = '';
 
+      // Generate title only for new chats
       if (documentId) {
         const { data: documentData, error: docError } = await supabase
           .from('Document')
@@ -116,14 +117,19 @@ export async function POST(request: Request) {
         console.log(`Generated title for new chat: "${newChatTitle}"`);
       }
 
-      finalTitle = newChatTitle;
-
+      // Attempt to save the new chat record
       try {
-        await saveChat({ id: finalChatId, userId: userId, title: finalTitle });
+        await saveChat({
+          id: finalChatId,
+          userId: userId,
+          title: newChatTitle,
+        });
+        revalidateTag(`chat-${finalChatId}`); // Revalidate cache on successful save
         console.log(
-          `Saved new chat with ID: ${finalChatId} and Title: "${finalTitle}"`,
+          `Saved new chat with ID: ${finalChatId} and Title: "${newChatTitle}"`,
         );
 
+        // Link document if needed
         if (documentId) {
           console.log(
             `Attempting to link document ${documentId} to chat ${finalChatId}`,
@@ -145,28 +151,81 @@ export async function POST(request: Request) {
             );
           }
         }
-      } catch (saveError) {
-        console.error('Failed to save chat:', saveError);
-        return new Response('Failed to save chat', { status: 500 });
+      } catch (saveError: any) {
+        // Handle duplicate key error gracefully (race condition)
+        if (saveError.code === '23505') {
+          console.warn(
+            `Chat (ID: ${finalChatId}) already exists, likely due to race condition. Proceeding.`,
+          );
+          revalidateTag(`chat-${finalChatId}`); // Still revalidate
+        } else {
+          // For other errors, log and return 500
+          console.error('Failed to save chat:', saveError);
+          return new Response('Failed to save chat', { status: 500 });
+        }
       }
     } else {
+      // For existing chats, just verify ownership
+      console.log(
+        `Verifying ownership for existing chat (ID: ${finalChatId})...`,
+      );
+      const chat = await getChatById({ id: finalChatId }); // Fetch for ownership check
+      if (!chat) {
+        // This case means the chat ID exists in the URL/request but not the DB.
+        // This could happen if a chat was deleted between requests.
+        console.error(
+          `Existing chat check failed: Chat (ID: ${finalChatId}) not found in DB.`,
+        );
+        return new Response('Chat not found', { status: 404 });
+      }
       if (chat.userId !== userId) {
+        console.warn(
+          `Unauthorized attempt to access chat (ID: ${finalChatId}) by user ${userId}.`,
+        );
         return new Response('Unauthorized', { status: 401 });
       }
+      console.log(`Ownership verified for chat (ID: ${finalChatId}).`);
     }
+    // --- END OF RESTORED LOGIC ---
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: finalChatId,
-          id: userMessage.id,
-          role: 'user',
-          parts: userMessage.parts ?? [],
-          attachments: userMessage.experimental_attachments ?? [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    // Save the current user message (this runs for both new and existing chats AFTER the above block)
+    try {
+      await saveMessages({
+        messages: [
+          {
+            chatId: finalChatId,
+            id: userMessage.id,
+            role: 'user',
+            parts: userMessage.parts ?? [],
+            attachments: userMessage.experimental_attachments ?? [],
+            createdAt: new Date(),
+          },
+        ],
+      });
+      console.log(
+        `Saved user message (ID: ${userMessage.id}) for chat ${finalChatId}`,
+      );
+    } catch (error: any) {
+      // Handle potential foreign key violation if saveChat failed *and* the duplicate catch didn't run (should be rare)
+      if (error.code === '23503') {
+        // Foreign key violation
+        console.error(
+          `Failed to save message: Chat (ID: ${finalChatId}) does not exist. This might indicate an issue syncing chat creation.`,
+          error,
+        );
+        // Return a specific error, maybe 404 or 500 depending on desired behavior
+        return new Response('Chat record not found for message', {
+          status: 404,
+        });
+      } else {
+        console.error(
+          `Failed to save user message (ID: ${userMessage.id}) for chat ${finalChatId}:`,
+          error,
+        );
+        // Optionally return 500 here, or let streaming proceed despite message save failure
+        return new Response('Failed to save message', { status: 500 });
+      }
+    }
 
     // Check if selected model is an n8n assistant
     const selectedModelInfo = chatModels.find(
