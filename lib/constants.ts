@@ -1,3 +1,5 @@
+import { generateDummyPassword } from './db/utils';
+
 export const isProductionEnvironment = process.env.NODE_ENV === 'production';
 
 export const isTestEnvironment = Boolean(
@@ -7,3 +9,5 @@ export const isTestEnvironment = Boolean(
 );
 
 export const anonymousRegex = /^anonymous-\d+$/;
+
+export const DUMMY_PASSWORD = generateDummyPassword();

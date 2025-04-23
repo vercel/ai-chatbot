@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { genSaltSync, hashSync } from 'bcrypt-ts';
 import {
   and,
   asc,
@@ -30,6 +29,7 @@ import {
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
+import { generateHashedPassword } from './utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -49,11 +49,10 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
-  const salt = genSaltSync(10);
-  const hash = hashSync(password, salt);
+  const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    return await db.insert(user).values({ email, password: hashedPassword });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
@@ -61,12 +60,11 @@ export async function createUser(email: string, password: string) {
 }
 
 export async function createAnonymousUser() {
-  const salt = genSaltSync(10);
-  const hash = hashSync(generateUUID(), salt);
   const email = `anonymous-${Date.now()}`;
+  const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password: hash }).returning({
+    return await db.insert(user).values({ email, password }).returning({
       id: user.id,
       email: user.email,
     });
@@ -103,7 +101,11 @@ export async function deleteChatById({ id }: { id: string }) {
     await db.delete(vote).where(eq(vote.chatId, id));
     await db.delete(message).where(eq(message.chatId, id));
 
-    return await db.delete(chat).where(eq(chat.id, id));
+    const [chatsDeleted] = await db
+      .delete(chat)
+      .where(eq(chat.id, id))
+      .returning();
+    return chatsDeleted;
   } catch (error) {
     console.error('Failed to delete chat by id from database');
     throw error;

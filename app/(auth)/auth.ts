@@ -5,6 +5,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { createAnonymousUser, getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
+import { DUMMY_PASSWORD } from '@/lib/constants';
 
 interface ExtendedSession extends Session {
   user: User;
@@ -21,16 +22,25 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
-        const [user] = await getUser(email);
+        const users = await getUser(email);
 
-        if (!user) return null;
-        if (!user.password) return null;
+        if (users.length === 0) {
+          await compare(password, DUMMY_PASSWORD);
+          return null;
+        }
+
+        const [user] = users;
+
+        if (!user.password) {
+          await compare(password, DUMMY_PASSWORD);
+          return null;
+        }
 
         const passwordsMatch = await compare(password, user.password);
 
         if (!passwordsMatch) return null;
 
-        return user;
+        return user as any;
       },
     }),
     Credentials({
