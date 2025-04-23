@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
-
 export async function GET(request: Request) {
-  // The /auth/callback route is required for the server-side auth flow implemented
+  // The `/auth/callback` route is required for the server-side auth flow implemented
   // by the Auth Helpers package. It exchanges an auth code for the user's session.
   // https://supabase.com/docs/guides/auth/auth-helpers/nextjs#managing-sign-in-with-code-exchange
   const requestUrl = new URL(request.url);
@@ -17,7 +16,7 @@ export async function GET(request: Request) {
     ? forwarded.split(/, /)[0]
     : request.headers.get('x-real-ip'); // Fallback to x-real-ip or request.ip could be used
   console.log(
-    Auth Callback: Request IP Address detected: ${ipAddress ?? 'Not Found'},
+    `Auth Callback: Request IP Address detected: ${ipAddress ?? 'Not Found'}`,
   );
   // --- End Get IP Address ---
 
@@ -35,16 +34,16 @@ export async function GET(request: Request) {
       const userEmail = user.email; // Assuming email is available
 
       console.log(
-        Auth Callback: Processing successful exchange for user ${userId} (${userEmail}),
+        `Auth Callback: Processing successful exchange for user ${userId} (${userEmail})`,
       );
       // DETAILED LOG: Check if refresh token exists in session
       console.log(
-        Auth Callback DEBUG: Refresh Token present in session for user ${userId}?,
+        `Auth Callback DEBUG: Refresh Token present in session for user ${userId}?`,
         !!refreshToken,
       );
       if (refreshToken) {
         // Optionally log the first few chars of the token for verification, but be careful with logging sensitive data
-        // console.log(Auth Callback DEBUG: Refresh Token starts with: ${refreshToken.substring(0, 5)}...);
+        // console.log(`Auth Callback DEBUG: Refresh Token starts with: ${refreshToken.substring(0, 5)}...`);
       }
 
       // --- Check if User is New ---
@@ -59,7 +58,7 @@ export async function GET(request: Request) {
 
         if (profileCheckError) {
           console.error(
-            Auth Callback Error - Checking User_Profiles existence for ${userId}:,
+            `Auth Callback Error - Checking User_Profiles existence for ${userId}:`,
             profileCheckError,
           );
           // Cannot determine if new, assume not new to be safe and avoid duplicate webhooks
@@ -71,12 +70,12 @@ export async function GET(request: Request) {
           // For simplicity, we use profile existence check.
           isNewUser = !existingProfile;
           console.log(
-            Auth Callback: User ${userId} is determined to be ${isNewUser ? 'NEW' : 'EXISTING'} based on profile check.,
+            `Auth Callback: User ${userId} is determined to be ${isNewUser ? 'NEW' : 'EXISTING'} based on profile check.`,
           );
         }
       } catch (profileCheckCatchError) {
         console.error(
-          Auth Callback EXCEPTION - Checking User_Profiles existence for ${userId}:,
+          `Auth Callback EXCEPTION - Checking User_Profiles existence for ${userId}:`,
           profileCheckCatchError,
         );
         isNewUser = false; // Assume not new on error
@@ -87,10 +86,10 @@ export async function GET(request: Request) {
       if (refreshToken) {
         // DETAILED LOG: Log the length of the token before attempting to save
         console.log(
-          Auth Callback DEBUG: Refresh Token received. Length: ${refreshToken.length}. Attempting save for user ${userId},
+          `Auth Callback DEBUG: Refresh Token received. Length: ${refreshToken.length}. Attempting save for user ${userId}`,
         );
         console.log(
-          Auth Callback DEBUG: Attempting to update User_Profiles for user ${userId},
+          `Auth Callback DEBUG: Attempting to update User_Profiles for user ${userId}`,
         );
         try {
           const { data: updateData, error: profileUpdateError } = await supabase
@@ -101,38 +100,38 @@ export async function GET(request: Request) {
 
           // DETAILED LOG: Log the outcome of the update attempt
           console.log(
-            Auth Callback DEBUG: Update result for user ${userId}:,
+            `Auth Callback DEBUG: Update result for user ${userId}:`,
             { updateData, profileUpdateError },
           );
 
           if (profileUpdateError) {
             console.error(
-              Auth Callback Error - Saving Refresh Token to Profile for user ${userId}:,
+              `Auth Callback Error - Saving Refresh Token to Profile for user ${userId}:`,
               profileUpdateError,
             );
             // Log error but continue
           } else {
             console.log(
-              Auth Callback: Successfully saved Google refresh token to profile for user ${userId}.,
+              `Auth Callback: Successfully saved Google refresh token to profile for user ${userId}.`,
             );
           }
         } catch (profileUpdateCatchError) {
           console.error(
-            Auth Callback EXCEPTION - Saving Refresh Token to Profile for user ${userId}:,
+            `Auth Callback EXCEPTION - Saving Refresh Token to Profile for user ${userId}:`,
             profileUpdateCatchError,
           );
           // Log error but continue
         }
       } else {
         console.log(
-          Auth Callback: No provider_refresh_token found in session for user ${userId}. Skipping profile update.,
+          `Auth Callback: No provider_refresh_token found in session for user ${userId}. Skipping profile update.`,
         );
       }
 
       // 2. Call Webhook - ONLY IF isNewUser is true
       if (isNewUser) {
         console.log(
-          Auth Callback: Attempting to call SIGNUP webhook for NEW user ${userId}.,
+          `Auth Callback: Attempting to call SIGNUP webhook for NEW user ${userId}.`,
         );
         try {
           const webhookUrl =
@@ -155,7 +154,7 @@ export async function GET(request: Request) {
           };
 
           console.log(
-            Auth Callback: Calling SIGNUP webhook for user ${userId} with IP ${ipAddress}. URL: ${webhookUrl},
+            `Auth Callback: Calling SIGNUP webhook for user ${userId} with IP ${ipAddress}. URL: ${webhookUrl}`,
           );
           const response = await fetch(webhookUrl, {
             method: 'POST',
@@ -166,30 +165,30 @@ export async function GET(request: Request) {
           if (!response.ok) {
             const errorBody = await response.text();
             console.error(
-              Auth Callback Error - SIGNUP Webhook failed for user ${userId}: ${response.status} ${response.statusText},
+              `Auth Callback Error - SIGNUP Webhook failed for user ${userId}: ${response.status} ${response.statusText}`,
               errorBody,
             );
           } else {
             console.log(
-              Auth Callback: Successfully sent SIGNUP webhook for user ${userId}. Status: ${response.status},
+              `Auth Callback: Successfully sent SIGNUP webhook for user ${userId}. Status: ${response.status}`,
             );
           }
         } catch (webhookCatchError) {
           console.error(
-            Auth Callback EXCEPTION - Calling SIGNUP webhook for user ${userId}:,
+            `Auth Callback EXCEPTION - Calling SIGNUP webhook for user ${userId}:`,
             webhookCatchError,
           );
         }
       } else {
         console.log(
-          Auth Callback: Skipping SIGNUP webhook for returning user ${userId}.,
+          `Auth Callback: Skipping SIGNUP webhook for returning user ${userId}.`,
         );
       }
       // --- END: Modified Webhook Logic ---
 
       // URL to redirect to after sign in process completes
-      console.log(Auth Callback: Redirecting user ${userId} to ${origin}/);
-      return NextResponse.redirect(${origin}/); // Redirect to home page on success
+      console.log(`Auth Callback: Redirecting user ${userId} to ${origin}/`);
+      return NextResponse.redirect(`${origin}/`); // Redirect to home page on success
     } else if (exchangeError) {
       // Handle case where exchange failed
       console.error(
@@ -217,6 +216,6 @@ export async function GET(request: Request) {
     supabaseError ?? 'Could not authenticate user (no specific error in URL)',
   );
   return NextResponse.redirect(
-    ${origin}/login?error=${encodeURIComponent(supabaseError ?? 'Could not authenticate user')},
+    `${origin}/login?error=${encodeURIComponent(supabaseError ?? 'Could not authenticate user')}`,
   ); // Redirect back to login on error
 }
