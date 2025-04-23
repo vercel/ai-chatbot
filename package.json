@@ -1,6 +1,6 @@
 {
   "name": "ai-chatbot",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -16,7 +16,7 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
+    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.8",
