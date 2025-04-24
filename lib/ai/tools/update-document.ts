@@ -1,15 +1,21 @@
-import { DataStreamWriter, tool } from 'ai';
-import type { User } from '@supabase/supabase-js';
+import { tool } from 'ai';
+import type { DataStreamWriter } from 'ai';
+// import type { User } from '@supabase/supabase-js'; // Remove Supabase User import
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 
 interface UpdateDocumentProps {
-  user: User;
+  // user: User; // Change user object to userId string (profile UUID)
+  userId: string;
   dataStream: DataStreamWriter;
 }
 
-export const updateDocument = ({ user, dataStream }: UpdateDocumentProps) =>
+export const updateDocument = ({
+  // user, // Destructure userId instead of user
+  userId,
+  dataStream,
+}: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
     parameters: z.object({
@@ -27,9 +33,20 @@ export const updateDocument = ({ user, dataStream }: UpdateDocumentProps) =>
         };
       }
 
+      // Ownership Check: Ensure the userId passed to the tool matches the document's userId
+      if (document.userId !== userId) {
+        console.warn(
+          `Unauthorized attempt to update document ${id} by user ${userId}. Owner is ${document.userId}`,
+        );
+        // Return an error or throw, depending on desired behavior for tool errors
+        return {
+          error: 'Unauthorized',
+        };
+      }
+
       dataStream.writeData({
         type: 'clear',
-        content: document.title,
+        content: document.title, // Keep existing title initially
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -45,7 +62,8 @@ export const updateDocument = ({ user, dataStream }: UpdateDocumentProps) =>
         document,
         description,
         dataStream,
-        user,
+        // user, // Pass userId string
+        userId: userId,
       });
 
       dataStream.writeData({ type: 'finish', content: '' });

@@ -18,7 +18,7 @@ import {
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
-export type VisibilityType = 'private' | 'public';
+export type VisibilityType = 'private' | 'public' | 'unlisted';
 
 const visibilities: Array<{
   id: VisibilityType;

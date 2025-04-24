@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import Link from 'next/link';
 import {
   SidebarMenuAction,
@@ -16,19 +16,24 @@ import {
 } from './ui/dropdown-menu';
 import { MoreHorizontalIcon, ShareIcon, TrashIcon } from './icons';
 import { useRouter } from 'next/navigation'; // To navigate
-import { createClient } from '@/lib/supabase/client'; // To find chat ID
 import { toast } from 'sonner'; // Correct import for toast
+import { FileIcon } from './icons';
 
+// UPDATED Interface to match API response
 interface DocumentItem {
   id: string;
   title: string;
   modifiedAt: string;
-  chat_id: string | null;
+  // chat_id: string | null; // OLD
+  chatId: string | null; // NEW
+  createdAt: string;
+  // Should match the type used in SidebarFiles.tsx and returned by API
+  type?: 'document'; // Optional type field
 }
 
 interface SidebarFilesItemProps {
   document: DocumentItem;
-  isActive: boolean; // Placeholder for now, logic TBD
+  isActive: boolean;
   onDelete: (documentId: string) => void;
 }
 
@@ -39,28 +44,33 @@ const PureFilesItem = ({
 }: SidebarFilesItemProps) => {
   const { setOpenMobile } = useSidebar();
   const router = useRouter();
-  const [isFindingChat, setIsFindingChat] = useState(false);
+  // REMOVED: const [isFindingChat, setIsFindingChat] = useState(false);
 
-  // Function to find chat ID based on document title and navigate
-  const handleNavigate = async () => {
-    setIsFindingChat(true); // Keep loading indicator
+  // UPDATED: Simplified navigation using document.chatId
+  const handleNavigate = () => {
+    // setIsFindingChat(true); // No longer needed? Navigation is sync
 
-    if (document.chat_id) {
-      // Preferred path: Use the direct chat_id
+    // if (document.chat_id) { // OLD
+    if (document.chatId) {
+      // NEW
+      // Preferred path: Use the direct chatId
       console.log(
-        `Navigating using direct chat_id: ${document.chat_id} for document ${document.id}`,
+        // `Navigating using direct chat_id: ${document.chat_id} for document ${document.id}`,
+        `Navigating using direct chatId: ${document.chatId} for document ${document.id}`,
       );
       setOpenMobile(false);
-      router.push(`/chat/${document.chat_id}?showArtifact=${document.id}`);
-      setIsFindingChat(false); // Navigation initiated
+      // router.push(`/chat/${document.chat_id}?showArtifact=${document.id}`); // OLD
+      router.push(`/chat/${document.chatId}?showArtifact=${document.id}`); // NEW
+      // setIsFindingChat(false); // No longer needed
       return; // Exit early
     } else {
-      // Fallback / Error path: No chat_id stored for this document
+      // Fallback / Error path: No chatId stored for this document
       console.warn(
-        `Document "${document.title}" (ID: ${document.id}) has no associated chat_id.`,
+        // `Document "${document.title}" (ID: ${document.id}) has no associated chat_id.`,
+        `Document "${document.title}" (ID: ${document.id}) has no associated chatId.`,
       );
       toast.error(`This document is not linked to a specific chat thread.`);
-      setIsFindingChat(false); // Stop loading
+      // setIsFindingChat(false); // No longer needed
       return; // Do not navigate
     }
   };
@@ -69,25 +79,22 @@ const PureFilesItem = ({
   const handleShare = () => {
     // TODO: Implement document sharing logic if needed
     console.log('Share document:', document.id);
-    // Example: copy share link to clipboard?
   };
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        asChild // Use asChild to allow the Link to handle navigation
+        asChild
         isActive={isActive}
-        disabled={isFindingChat} // Disable button while finding chat
+        // REMOVED: disabled={isFindingChat}
         onClick={(e) => {
-          // Prevent default Link behavior if we are handling click manually
           e.preventDefault();
           handleNavigate();
         }}
       >
-        {/* Use a placeholder href, actual navigation happens in handleNavigate */}
         <Link href="#">
+          <FileIcon className="size-4 mr-2 shrink-0" aria-hidden="true" />
           <span className="truncate max-w-[180px]">{document.title}</span>
-          {isFindingChat && <span className="ml-2">...</span>}
         </Link>
       </SidebarMenuButton>
 

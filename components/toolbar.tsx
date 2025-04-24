@@ -11,7 +11,7 @@ import {
 import {
   type Dispatch,
   memo,
-  ReactNode,
+  type ReactNode,
   type SetStateAction,
   useEffect,
   useRef,
@@ -27,9 +27,9 @@ import {
 } from '@/components/ui/tooltip';
 
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
-import { artifactDefinitions, ArtifactKind } from './artifact';
-import { ArtifactToolbarItem } from './create-artifact';
-import { UseChatHelpers } from '@ai-sdk/react';
+import { artifactDefinitions, type ArtifactKind } from './artifact';
+import type { ArtifactToolbarItem } from './create-artifact';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 type ToolProps = {
   description: string;
@@ -99,7 +99,7 @@ const Tool = ({
           onHoverEnd={() => {
             if (selectedTool !== description) setIsHovered(false);
           }}
-          onKeyDown={(event) => {
+          onKeyDown={(event: React.KeyboardEvent) => {
             if (event.key === 'Enter') {
               handleSelect();
             }
@@ -160,7 +160,7 @@ const ReadingLevelSelector = ({
     useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = yToLevel.on('change', (latest) => {
+    const unsubscribe = yToLevel.on('change', (latest: number) => {
       const level = Math.min(5, Math.max(0, Math.round(Math.abs(latest))));
       setCurrentLevel(level);
     });
@@ -314,12 +314,12 @@ const PureToolbar = ({
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useOnClickOutside(toolbarRef, () => {
+  useOnClickOutside(toolbarRef as React.RefObject<HTMLElement>, () => {
     setIsToolbarVisible(false);
     setSelectedTool(null);
   });
@@ -423,7 +423,7 @@ const PureToolbar = ({
             className="p-3"
             onClick={() => {
               stop();
-              setMessages((messages) => messages);
+              setMessages((messages: Message[]) => messages);
             }}
           >
             <StopIcon />
@@ -452,7 +452,7 @@ const PureToolbar = ({
   );
 };
 
-export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
+export const Toolbar = memo(PureToolbar, (prevProps: any, nextProps: any) => {
   if (prevProps.status !== nextProps.status) return false;
   if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
   if (prevProps.artifactKind !== nextProps.artifactKind) return false;

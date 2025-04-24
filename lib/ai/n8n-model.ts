@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   LanguageModelV1,
   LanguageModelV1CallOptions,
@@ -132,6 +130,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
     let assistantReplyText = 'Error fetching response from assistant.';
     let finishReason: 'stop' | 'error' = 'error';
     let responseHeaders: Record<string, string> | undefined = undefined;
+    let rawResponseBody: string | undefined = undefined; // Variable to store raw response
 
     try {
       console.log(`[N8nLanguageModel] Calling webhook: ${this.webhookUrl}`);
@@ -141,16 +140,36 @@ export class N8nLanguageModel implements LanguageModelV1 {
         body: JSON.stringify(payload),
       });
       responseHeaders = Object.fromEntries(n8nResponse.headers.entries());
-      if (!n8nResponse.ok) {
-        const errorBody = await n8nResponse.text();
+
+      // LOG RAW RESPONSE BODY
+      try {
+        rawResponseBody = await n8nResponse.text();
+        console.log(
+          '[N8nLanguageModel] Received raw response body:',
+          rawResponseBody,
+        );
+      } catch (textError) {
         console.error(
-          `[N8nLanguageModel] Webhook call failed (${n8nResponse.status}): ${errorBody}`,
+          '[N8nLanguageModel] Error reading raw response body:',
+          textError,
+        );
+        rawResponseBody = '[Error reading response body]';
+      }
+
+      if (!n8nResponse.ok) {
+        console.error(
+          `[N8nLanguageModel] Webhook call failed (${n8nResponse.status}): ${rawResponseBody}`,
         );
         assistantReplyText = `Assistant communication failed (${n8nResponse.status})`;
       } else {
         // Attempt to parse the logged text
         try {
-          const n8nData: N8nResponse = JSON.parse(await n8nResponse.text());
+          // LOG BEFORE PARSING
+          console.log('[N8nLanguageModel] Attempting to parse JSON response.');
+          const n8nData: N8nResponse = JSON.parse(rawResponseBody); // Parse the stored raw text
+          // LOG AFTER PARSING
+          console.log('[N8nLanguageModel] Successfully parsed JSON:', n8nData);
+
           assistantReplyText =
             Array.isArray(n8nData) && n8nData[0]?.responseMessage
               ? n8nData[0].responseMessage
@@ -161,10 +180,13 @@ export class N8nLanguageModel implements LanguageModelV1 {
                   'Assistant responded without message.')
                 : 'Assistant response format unknown.';
           finishReason = 'stop';
+          console.log(
+            `[N8nLanguageModel] Extracted reply: "${assistantReplyText}"`,
+          ); // LOG EXTRACTED TEXT
         } catch (parseError: any) {
           console.error('[N8nLanguageModel] JSON parse error:', parseError);
           assistantReplyText = `Error parsing assistant response: ${parseError.message}`;
-          finishReason = 'error'; // Set finishReason to error on parse fail
+          finishReason = 'error';
         }
       }
     } catch (error: any) {
@@ -172,9 +194,13 @@ export class N8nLanguageModel implements LanguageModelV1 {
       assistantReplyText = `Error contacting assistant: ${error.message}`;
     }
 
+    // LOG BEFORE RETURNING
+    console.log(
+      `[N8nLanguageModel] Preparing to return simulated stream. FinishReason: ${finishReason}, ReplyText: "${assistantReplyText}"`,
+    );
+
     // Create a stream that yields a single text delta
     const streamChunk: LanguageModelV1StreamPart = {
-      // Explicitly type the chunk
       type: 'text-delta',
       textDelta: assistantReplyText,
     };

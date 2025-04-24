@@ -1,20 +1,19 @@
 import { generateUUID } from '@/lib/utils';
 import { DataStreamWriter, tool } from 'ai';
 import { z } from 'zod';
-import type { User } from '@supabase/supabase-js';
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
 } from '@/lib/artifacts/server';
 
 interface CreateDocumentProps {
-  user: User;
+  userId: string;
   dataStream: DataStreamWriter;
   chatId: string;
 }
 
 export const createDocument = ({
-  user,
+  userId,
   dataStream,
   chatId,
 }: CreateDocumentProps) =>
@@ -62,7 +61,7 @@ export const createDocument = ({
         title,
         chatId,
         dataStream,
-        user,
+        userId: userId,
       });
 
       dataStream.writeData({ type: 'finish', content: '' });

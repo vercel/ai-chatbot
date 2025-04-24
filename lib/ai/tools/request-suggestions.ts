@@ -1,18 +1,18 @@
 import { z } from 'zod';
-import type { User } from '@supabase/supabase-js';
-import { DataStreamWriter, streamObject, tool } from 'ai';
+import { streamObject, tool } from 'ai';
+import type { DataStreamWriter } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 import { generateUUID } from '@/lib/utils';
 import { myProvider } from '../providers';
 
 interface RequestSuggestionsProps {
-  user: User;
+  userId: string;
   dataStream: DataStreamWriter;
 }
 
 export const requestSuggestions = ({
-  user,
+  userId,
   dataStream,
 }: RequestSuggestionsProps) =>
   tool({
@@ -66,11 +66,11 @@ export const requestSuggestions = ({
         suggestions.push(suggestion);
       }
 
-      if (user?.id) {
+      if (userId) {
         await saveSuggestions({
           suggestions: suggestions.map((suggestion) => ({
             ...suggestion,
-            userId: user.id,
+            userId: userId,
             createdAt: new Date(),
             documentCreatedAt: document.createdAt,
           })),

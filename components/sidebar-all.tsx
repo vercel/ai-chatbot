@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@clerk/nextjs';
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import { useParams } from 'next/navigation';
 import {
@@ -12,32 +11,36 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { toast } from 'sonner';
-import { Skeleton } from './ui/skeleton'; // Use skeleton for loading
-import { SidebarAllItem } from './sidebar-all-item'; // Import the new item component
+import { Skeleton } from './ui/skeleton';
+import { SidebarAllItem } from './sidebar-all-item';
+import { fetcher } from '@/lib/utils';
 
-// Interfaces for fetched data
+// Interfaces matching the API response for /api/history?type=all
 interface ChatItemData {
   id: string;
   title: string;
-  createdAt: string; // Use createdAt for sorting chats
+  createdAt: string;
   type: 'chat';
 }
 
 interface DocumentItemData {
   id: string;
   title: string;
-  modifiedAt: string; // Use modifiedAt for sorting documents
-  chat_id: string | null; // Needed for navigation
+  modifiedAt: string;
+  chatId: string | null;
   type: 'document';
+  createdAt: string;
 }
 
 type CombinedItem = ChatItemData | DocumentItemData;
 
-interface SidebarAllProps {
-  user: User | undefined;
+// API Response structure
+interface AllItemsApiResponse {
+  items: CombinedItem[];
+  hasMore: boolean;
 }
 
-// --- Add grouped items type ---
+// Grouped items type
 type GroupedItems = {
   today: CombinedItem[];
   yesterday: CombinedItem[];
@@ -45,20 +48,15 @@ type GroupedItems = {
   lastMonth: CombinedItem[];
   older: CombinedItem[];
 };
-// --- End Add ---
 
-// --- Add grouping function ---
+// Grouping function (should work with API response structure)
 const groupItemsByDate = (items: CombinedItem[]): GroupedItems => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
   const oneMonthAgo = subMonths(now, 1);
 
-  // Sort items first (newest first)
-  items.sort((a, b) => {
-    const dateA = new Date(a.type === 'chat' ? a.createdAt : a.modifiedAt);
-    const dateB = new Date(b.type === 'chat' ? b.createdAt : b.modifiedAt);
-    return dateB.getTime() - dateA.getTime(); // Descending order
-  });
+  // API route now sorts, so no need to sort here unless API changes
+  // items.sort((a, b) => { ... });
 
   return items.reduce(
     (groups, item) => {
@@ -91,71 +89,54 @@ const groupItemsByDate = (items: CombinedItem[]): GroupedItems => {
     } as GroupedItems,
   );
 };
-// --- End Add ---
 
-export function SidebarAll({ user }: SidebarAllProps) {
-  const [combinedItems, setCombinedItems] = useState<CombinedItem[]>([]);
+export function SidebarAll() {
+  const { isSignedIn } = useUser();
+  const { id: activeChatId } = useParams();
+
+  // State for fetched data
+  const [fetchedData, setFetchedData] = useState<AllItemsApiResponse | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const { id: activeChatId } = useParams(); // For isActive check
-  // TODO: Add state/logic for deletion dialog if needed in this combined view
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      setCombinedItems([]);
+    if (!isSignedIn) {
+      setFetchedData(null);
+      setError(null);
+      setIsLoading(false);
       return;
     }
 
     const fetchAllItems = async () => {
       setIsLoading(true);
-      const supabase = createClient();
-      const userId = user.id;
-
+      setError(null);
       try {
-        // Fetch chats
-        const { data: chatsData, error: chatsError } = await supabase
-          .from('Chat')
-          .select('id, title, createdAt')
-          .eq('userId', userId)
-          .order('createdAt', { ascending: false }); // Initial sort helps if needed elsewhere
-
-        if (chatsError) throw chatsError;
-
-        const chats: ChatItemData[] = (chatsData || []).map((c) => ({
-          ...c,
-          type: 'chat',
-        }));
-
-        // Fetch documents
-        const { data: documentsData, error: documentsError } = await supabase
-          .from('Document')
-          .select('id, title, modifiedAt, chat_id')
-          .eq('userId', userId)
-          .order('modifiedAt', { ascending: false }); // Initial sort
-
-        if (documentsError) throw documentsError;
-
-        const documents: DocumentItemData[] = (documentsData || []).map(
-          (d) => ({ ...d, type: 'document' }),
+        // Fetch combined items from the API route
+        const data: AllItemsApiResponse = await fetcher(
+          '/api/history?type=all',
         );
-
-        // Combine and set state
-        setCombinedItems([...chats, ...documents]);
-      } catch (error: any) {
-        console.error('Error fetching combined items:', error);
-        toast.error(`Failed to load items: ${error.message}`);
-        setCombinedItems([]); // Clear on error
+        console.log('[SidebarAll] Fetched data:', data);
+        setFetchedData(data);
+      } catch (err: any) {
+        console.error('Error fetching combined items:', err);
+        setError(err);
+        toast.error(`Failed to load items: ${err.message}`);
+        setFetchedData(null); // Clear on error
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAllItems();
-  }, [user]);
+  }, [isSignedIn]); // Re-fetch on auth change
 
-  if (!user) return null;
+  if (!isSignedIn) return null; // Or show login prompt
 
+  const combinedItems = fetchedData?.items ?? [];
   const groupedItems = groupItemsByDate(combinedItems);
-  const hasItems = combinedItems.length > 0;
+  const hasItems = !isLoading && combinedItems.length > 0;
 
   // Function to determine if an item is active
   const getIsActive = (item: CombinedItem) => {
@@ -163,9 +144,9 @@ export function SidebarAll({ user }: SidebarAllProps) {
     if (item.type === 'chat') {
       return item.id === activeChatId;
     }
-    // For documents, check if their linked chat_id matches the active chat ID
+    // Use chatId for documents
     if (item.type === 'document') {
-      return item.chat_id === activeChatId;
+      return item.chatId === activeChatId;
     }
     return false;
   };
@@ -176,23 +157,24 @@ export function SidebarAll({ user }: SidebarAllProps) {
         <SidebarGroupContent>
           <SidebarMenu>
             {isLoading && (
-              // Simple loading state
               <div className="p-4 text-sm text-muted-foreground">
                 Loading...
               </div>
             )}
-            {!isLoading && !hasItems && (
+            {!isLoading && error && (
+              <div className="p-4 text-sm text-red-600">
+                Error loading items: {error.message}
+              </div>
+            )}
+            {!isLoading && !error && !hasItems && (
               <div className="p-4 text-sm text-muted-foreground">
                 No chats or documents found.
               </div>
             )}
-            {!isLoading && hasItems && (
+            {!isLoading && !error && hasItems && (
               <div className="flex flex-col gap-2 pb-2">
-                {/* --- Render grouped items --- */}
                 {Object.entries(groupedItems).map(([groupName, items]) => {
                   if (items.length === 0) return null;
-
-                  // *** CORRECTED: Use a map for display names ***
                   const groupNameMap: Record<string, string> = {
                     today: 'Today',
                     yesterday: 'Yesterday',
@@ -200,8 +182,6 @@ export function SidebarAll({ user }: SidebarAllProps) {
                     lastMonth: 'Last 30 Days',
                     older: 'Older',
                   };
-
-                  // Use the map, fallback to capitalized groupName if key not found (shouldn't happen)
                   const displayGroupName =
                     groupNameMap[groupName] ||
                     groupName.charAt(0).toUpperCase() + groupName.slice(1);
@@ -209,26 +189,35 @@ export function SidebarAll({ user }: SidebarAllProps) {
                   return (
                     <div key={groupName}>
                       <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                        {displayGroupName} {/* Use the mapped name */}
+                        {displayGroupName}
                       </div>
-                      {items.map((item) => (
-                        <SidebarAllItem
-                          key={`${item.type}-${item.id}`}
-                          item={item}
-                          isActive={getIsActive(item)}
-                          // TODO: Pass delete/share handlers if actions are added
-                        />
-                      ))}
+                      {items.map((item) => {
+                        // Generate a unique key based on type and primary key components
+                        const uniqueKey =
+                          item.type === 'chat'
+                            ? `chat-${item.id}`
+                            : // For documents, use id + createdAt (part of composite PK)
+                              // Ensure item.createdAt is available from the API
+                              `document-${item.id}-${item.createdAt || 'no-created-at'}`;
+
+                        return (
+                          <SidebarAllItem
+                            // key={`${item.type}-${item.id}`} // OLD KEY
+                            key={uniqueKey} // NEW KEY
+                            item={item}
+                            isActive={getIsActive(item)}
+                            // TODO: Add delete/share handlers if actions are added
+                          />
+                        );
+                      })}
                     </div>
                   );
                 })}
-                {/* --- End Render --- */}
               </div>
             )}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
-      {/* TODO: Add AlertDialog if deletion is implemented here */}
     </>
   );
 }

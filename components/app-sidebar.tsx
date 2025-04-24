@@ -1,6 +1,5 @@
 'use client';
 
-import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
 import { PlusIcon } from '@/components/icons';
@@ -21,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { SidebarFiles } from './sidebar-files';
 import { SidebarAll } from './sidebar-all';
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export function AppSidebar() {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
@@ -63,7 +62,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       </SidebarHeader>
       <SidebarContent>
         <Tabs
-          defaultValue="all"
+          defaultValue="chats"
           className="flex-1 flex flex-col overflow-hidden"
         >
           <TabsList className="shrink-0 mx-4 my-2">
@@ -78,17 +77,19 @@ export function AppSidebar({ user }: { user: User | undefined }) {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="flex-1 overflow-y-auto">
-            <SidebarAll user={user} />
+            <SidebarAll user={undefined} />
           </TabsContent>
           <TabsContent value="chats" className="flex-1 overflow-y-auto">
-            <SidebarHistory user={user} />
+            <SidebarHistory />
           </TabsContent>
           <TabsContent value="files" className="flex-1 overflow-y-auto">
-            <SidebarFiles user={user} />
+            <SidebarFiles user={undefined} />
           </TabsContent>
         </Tabs>
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter>
+        <SidebarUserNav />
+      </SidebarFooter>
     </Sidebar>
   );
 }

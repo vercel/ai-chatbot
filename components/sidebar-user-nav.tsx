@@ -2,8 +2,7 @@
 import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useUser, useClerk } from '@clerk/nextjs';
 
 import {
   DropdownMenu,
@@ -18,15 +17,17 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-export function SidebarUserNav({ user }: { user: any }) {
+export function SidebarUserNav() {
   const { setTheme, theme } = useTheme();
-  const supabase = createClient();
-  const router = useRouter();
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
+  if (!user) {
+    return null;
+  }
+
+  const userEmail = user.primaryEmailAddress?.emailAddress ?? 'Loading...';
+  const userImageUrl = user.imageUrl;
 
   return (
     <SidebarMenu>
@@ -35,13 +36,13 @@ export function SidebarUserNav({ user }: { user: any }) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10">
               <Image
-                src={`https://avatar.vercel.sh/${user.email}`}
-                alt={user.email ?? 'User Avatar'}
+                src={userImageUrl}
+                alt={userEmail ?? 'User Avatar'}
                 width={24}
                 height={24}
                 className="rounded-full"
               />
-              <span className="truncate">{user?.email}</span>
+              <span className="truncate">{userEmail}</span>
               <ChevronUp className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -52,7 +53,7 @@ export function SidebarUserNav({ user }: { user: any }) {
               Toggle theme
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
+            <DropdownMenuItem onClick={() => signOut()}>
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

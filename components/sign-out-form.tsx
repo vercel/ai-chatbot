@@ -1,23 +1,14 @@
-import Form from 'next/form';
-import { createClient } from '@/lib/supabase/client';
+import { SignOutButton } from '@clerk/nextjs';
 
 export const SignOutForm = () => {
   return (
-    <Form
-      className="w-full"
-      action={async () => {
-        'use server';
-
-        const supabase = createClient();
-        await supabase.auth.signOut();
-      }}
-    >
+    <SignOutButton>
       <button
-        type="submit"
+        type="button"
         className="w-full text-left px-1 py-0.5 text-red-500"
       >
         Sign out
       </button>
-    </Form>
+    </SignOutButton>
   );
 };

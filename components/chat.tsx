@@ -44,7 +44,7 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { mutate } = useSWRConfig();
+  // const { mutate } = useSWRConfig(); // Keep mutate import for now if needed elsewhere, but comment out its use here
 
   const {
     messages,
@@ -64,9 +64,12 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
+      console.log('[Chat] onFinish called. Skipping SWR history mutate.'); // Add log
+      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // COMMENT OUT THIS LINE
     },
-    onError: () => {
+    onError: (error) => {
+      // Add error logging
+      console.error('[Chat] onError called:', error);
       toast.error('An error occurred, please try again!');
     },
   });
