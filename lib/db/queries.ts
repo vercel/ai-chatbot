@@ -59,8 +59,8 @@ export async function createUser(email: string, password: string) {
   }
 }
 
-export async function createAnonymousUser() {
-  const email = `anonymous-${Date.now()}`;
+export async function createGuestUser() {
+  const email = `guest-${Date.now()}`;
   const password = generateHashedPassword(generateUUID());
 
   try {
@@ -69,7 +69,7 @@ export async function createAnonymousUser() {
       email: user.email,
     });
   } catch (error) {
-    console.error('Failed to create anonymous user in database');
+    console.error('Failed to create guest user in database');
     throw error;
   }
 }

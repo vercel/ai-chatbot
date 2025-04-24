@@ -24,7 +24,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { anonymousRegex, isProductionEnvironment } from '@/lib/constants';
+import { guestRegex, isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import {
   entitlementsByMembershipTier,
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const membershipTier: MembershipTier = anonymousRegex.test(
+    const membershipTier: MembershipTier = guestRegex.test(
       session.user.email ?? '',
     )
       ? 'guest'

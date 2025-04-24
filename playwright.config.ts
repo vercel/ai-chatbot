@@ -31,7 +31,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 1,
   /* Opt out of parallel tests on CI. */
-  workers: 1,
+  workers: 4,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -52,25 +52,17 @@ export default defineConfig({
   /* Configure projects */
   projects: [
     {
-      name: 'setup:auth',
-      testMatch: /e2e\/auth.setup.ts/,
-    },
-    {
       name: 'setup:reasoning',
       testMatch: /e2e\/reasoning.setup.ts/,
-      dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/session.json',
       },
     },
     {
       name: 'chat',
       testMatch: /e2e\/chat.test.ts/,
-      dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/session.json',
       },
     },
     {
@@ -85,16 +77,20 @@ export default defineConfig({
     {
       name: 'artifacts',
       testMatch: /e2e\/artifacts.test.ts/,
-      dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/session.json',
+      },
+    },
+    {
+      name: 'session',
+      testMatch: /e2e\/session.test.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
       },
     },
     {
       name: 'routes',
       testMatch: /routes\/.*.test.ts/,
-      dependencies: [],
       use: {
         ...devices['Desktop Chrome'],
       },
@@ -134,7 +130,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'pnpm dev',
-    url: baseURL,
+    url: `${baseURL}/ping`,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
   },

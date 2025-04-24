@@ -2,7 +2,7 @@ import { compare } from 'bcrypt-ts';
 import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
-import { createAnonymousUser, getUser } from '@/lib/db/queries';
+import { createGuestUser, getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 import { DUMMY_PASSWORD } from '@/lib/constants';
@@ -47,8 +47,8 @@ export const {
       id: 'guest',
       credentials: {},
       async authorize() {
-        const [anonymousUser] = await createAnonymousUser();
-        return anonymousUser;
+        const [guestUser] = await createGuestUser();
+        return guestUser;
       },
     }),
   ],

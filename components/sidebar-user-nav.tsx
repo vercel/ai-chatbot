@@ -18,17 +18,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { anonymousRegex } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { toast } from './toast';
 import { LoaderIcon } from './icons';
+import { guestRegex } from '@/lib/constants';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
   const { setTheme, theme } = useTheme();
 
-  const isGuest = anonymousRegex.test(data?.user?.email ?? '');
+  const isGuest = guestRegex.test(data?.user?.email ?? '');
 
   return (
     <SidebarMenu>
@@ -48,7 +48,10 @@ export function SidebarUserNav({ user }: { user: User }) {
                 </div>
               </SidebarMenuButton>
             ) : (
-              <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10">
+              <SidebarMenuButton
+                data-testid="user-nav-button"
+                className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10"
+              >
                 <Image
                   src={`https://avatar.vercel.sh/${user.email}`}
                   alt={user.email ?? 'User Avatar'}
@@ -56,7 +59,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   height={24}
                   className="rounded-full"
                 />
-                <span className="truncate">
+                <span data-testid="user-email" className="truncate">
                   {isGuest ? 'Guest' : user?.email}
                 </span>
                 <ChevronUp className="ml-auto" />
@@ -64,17 +67,19 @@ export function SidebarUserNav({ user }: { user: User }) {
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent
+            data-testid="user-nav-menu"
             side="top"
             className="w-[--radix-popper-anchor-width]"
           >
             <DropdownMenuItem
+              data-testid="user-nav-item-theme"
               className="cursor-pointer"
               onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
               {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild data-testid="user-nav-item-auth">
               <button
                 type="button"
                 className="w-full cursor-pointer"

@@ -1,32 +1,41 @@
-import { auth } from './app/(auth)/auth';
 import { NextResponse, type NextRequest } from 'next/server';
-import { anonymousRegex } from './lib/constants';
+import { getToken } from 'next-auth/jwt';
+import { guestRegex } from './lib/constants';
 
 export async function middleware(request: NextRequest) {
-  // Skip the check for the guest auth endpoint to avoid infinite loops.
-  if (request.nextUrl.pathname.startsWith('/api/auth/guest')) {
+  const { pathname } = request.nextUrl;
+
+  /*
+   * Playwright starts the dev server and requires a 200 status to
+   * begin the tests, so this ensures that the tests can start
+   */
+  if (pathname.startsWith('/ping')) {
+    return new Response('pong', { status: 200 });
+  }
+
+  if (pathname.startsWith('/api/auth')) {
     return NextResponse.next();
   }
 
-  const session = await auth();
+  const token = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET,
+  });
 
-  // If no session exists, rewrite the URL to the guest endpoint.
-  if (!session) {
-    return NextResponse.redirect(new URL('/api/auth/guest', request.url));
+  if (!token) {
+    const redirectUrl = encodeURIComponent(request.url);
+
+    return NextResponse.redirect(
+      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
+    );
   }
 
-  const isLoggedIn = session.user;
-  const isAnonymousUser = anonymousRegex.test(session.user?.email ?? '');
+  const isGuest = guestRegex.test(token?.email ?? '');
 
-  const isOnLoginPage = request.nextUrl.pathname.startsWith('/login');
-  const isOnRegisterPage = request.nextUrl.pathname.startsWith('/register');
-
-  // If the user is logged in and not an anonymous user, redirect to the home page
-  if (isLoggedIn && !isAnonymousUser && (isOnLoginPage || isOnRegisterPage)) {
+  if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Otherwise, continue handling the request.
   return NextResponse.next();
 }
 

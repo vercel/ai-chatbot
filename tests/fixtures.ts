@@ -1,9 +1,14 @@
-import { expect as baseExpect, test as baseTest } from '@playwright/test';
+import {
+  expect as baseExpect,
+  test as baseTest,
+  type BrowserContext,
+} from '@playwright/test';
 import { createAuthenticatedContext, type UserContext } from './auth-helper';
 
 interface Fixtures {
   adaContext: UserContext;
   babbageContext: UserContext;
+  incognitoContext: BrowserContext;
 }
 
 export const test = baseTest.extend<any, Fixtures>({
@@ -26,6 +31,14 @@ export const test = baseTest.extend<any, Fixtures>({
       });
       await use(babbage);
       await babbage.context.close();
+    },
+    { scope: 'worker' },
+  ],
+  incognitoContext: [
+    async ({ browser }, use) => {
+      const incognito = await browser.newContext();
+      await use(incognito);
+      await incognito.close();
     },
     { scope: 'worker' },
   ],
