@@ -52,43 +52,12 @@ export default defineConfig({
   /* Configure projects */
   projects: [
     {
-      name: 'setup:reasoning',
-      testMatch: /e2e\/reasoning.setup.ts/,
+      name: 'e2e',
+      testMatch: /e2e\/.*.test.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
-    {
-      name: 'chat',
-      testMatch: /e2e\/chat.test.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-    {
-      name: 'reasoning',
-      testMatch: /e2e\/reasoning.test.ts/,
-      dependencies: ['setup:reasoning'],
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'playwright/.reasoning/session.json',
-      },
-    },
-    {
-      name: 'artifacts',
-      testMatch: /e2e\/artifacts.test.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-    {
-      name: 'session',
-      testMatch: /e2e\/session.test.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-
     {
       name: 'routes',
       testMatch: /routes\/.*.test.ts/,

@@ -7,6 +7,11 @@ test.describe('Chat activity with reasoning', () => {
   test.beforeEach(async ({ page }) => {
     chatPage = new ChatPage(page);
     await chatPage.createNewChat();
+    await chatPage.chooseModelFromSelector('chat-model-reasoning');
+
+    await expect(chatPage.getSelectedModel()).resolves.toEqual(
+      'Reasoning model',
+    );
   });
 
   test('Send user message and generate response with reasoning', async () => {

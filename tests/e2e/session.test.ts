@@ -164,6 +164,24 @@ test.describe
       const authMenuItem = page.getByTestId('user-nav-item-auth');
       await expect(authMenuItem).toContainText('Sign out');
     });
+
+    test('Do not navigate to /register for non-guest users', async ({
+      page,
+    }) => {
+      await authPage.login(testUser.email, testUser.password);
+      await page.waitForURL('/');
+
+      await page.goto('/register');
+      await expect(page).toHaveURL('/');
+    });
+
+    test('Do not navigate to /login for non-guest users', async ({ page }) => {
+      await authPage.login(testUser.email, testUser.password);
+      await page.waitForURL('/');
+
+      await page.goto('/login');
+      await expect(page).toHaveURL('/');
+    });
   });
 
 test.describe('Entitlements', () => {
