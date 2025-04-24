@@ -7,7 +7,7 @@ const reasoningFile = path.join(
   '../../playwright/.reasoning/session.json',
 );
 
-setup('switch to reasoning model', async ({ page }) => {
+setup('Switch to reasoning model', async ({ page }) => {
   const chatPage = new ChatPage(page);
   await chatPage.createNewChat();
 

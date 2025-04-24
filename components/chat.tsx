@@ -12,9 +12,9 @@ import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
-import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { toast } from './toast';
 
 export function Chat({
   id,
@@ -51,8 +51,11 @@ export function Chat({
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
-    onError: () => {
-      toast.error('An error occurred, please try again!');
+    onError: (error) => {
+      toast({
+        type: 'error',
+        description: error.message,
+      });
     },
   });
 

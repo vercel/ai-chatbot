@@ -60,3 +60,13 @@ export async function createAuthenticatedContext({
     request: newContext.request,
   };
 }
+
+export function generateRandomTestUser() {
+  const email = `test-${getUnixTime(new Date())}@playwright.com`;
+  const password = generateId(16);
+
+  return {
+    email,
+    password,
+  };
+}

@@ -1,7 +1,10 @@
 import { expect, test } from '../fixtures';
+import { AuthPage } from '../pages/auth';
+import { generateRandomTestUser } from '../auth-helper';
+import { ChatPage } from '../pages/chat';
 
 test.describe
-  .serial('session', () => {
+  .serial('Guest Session', () => {
     test('Authenticate as guest user when a new session is loaded', async ({
       page,
     }) => {
@@ -83,4 +86,83 @@ test.describe
 
       expect(chain).toEqual(['http://localhost:3000/']);
     });
+
+    test('Allow navigating to /login as guest user', async ({ page }) => {
+      await page.goto('/login');
+      await page.waitForURL('/login');
+      await expect(page).toHaveURL('/login');
+    });
+
+    test('Allow navigating to /register as guest user', async ({ page }) => {
+      await page.goto('/register');
+      await page.waitForURL('/register');
+      await expect(page).toHaveURL('/register');
+    });
+
+    test('Do not show email in user menu for guest user', async ({ page }) => {
+      await page.goto('/');
+
+      const sidebarToggleButton = page.getByTestId('sidebar-toggle-button');
+      await sidebarToggleButton.click();
+
+      const userEmail = page.getByTestId('user-email');
+      await expect(userEmail).toContainText('Guest');
+    });
   });
+
+test.describe
+  .serial('Login and Registration', () => {
+    let authPage: AuthPage;
+
+    const testUser = generateRandomTestUser();
+
+    test.beforeEach(async ({ page }) => {
+      authPage = new AuthPage(page);
+    });
+
+    test('Register new account', async () => {
+      await authPage.register(testUser.email, testUser.password);
+      await authPage.expectToastToContain('Account created successfully!');
+    });
+
+    test('Register new account with existing email', async () => {
+      await authPage.register(testUser.email, testUser.password);
+      await authPage.expectToastToContain('Account already exists!');
+    });
+
+    test('Log into account that exists', async ({ page }) => {
+      await authPage.login(testUser.email, testUser.password);
+
+      await page.waitForURL('/');
+      await expect(page).toHaveURL('/');
+      await expect(page.getByPlaceholder('Send a message...')).toBeVisible();
+    });
+
+    test('Log out as non-guest user', async () => {
+      await authPage.logout(testUser.email, testUser.password);
+    });
+  });
+
+test.describe('Entitlements', () => {
+  let chatPage: ChatPage;
+
+  test.beforeEach(async ({ page }) => {
+    chatPage = new ChatPage(page);
+  });
+
+  test('Guest user cannot send more than 20 messages/day', async () => {
+    test.slow();
+
+    await chatPage.createNewChat();
+
+    for (let i = 0; i <= 20; i++) {
+      await chatPage.sendUserMessage('Why is the sky blue?');
+      await chatPage.isGenerationComplete();
+    }
+
+    await chatPage.sendUserMessage('Why is the sky blue?');
+    await chatPage.expectToastToContain(
+      'You have exceeded your maximum number of messages for the day! Please try again later.',
+    );
+  });
+});

@@ -1,7 +1,7 @@
 import { ChatPage } from '../pages/chat';
 import { test, expect } from '../fixtures';
 
-test.describe('chat activity with reasoning', () => {
+test.describe('Chat activity with reasoning', () => {
   let chatPage: ChatPage;
 
   test.beforeEach(async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe('chat activity with reasoning', () => {
     await chatPage.createNewChat();
   });
 
-  test('send user message and generate response with reasoning', async () => {
+  test('Send user message and generate response with reasoning', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -21,7 +21,7 @@ test.describe('chat activity with reasoning', () => {
     );
   });
 
-  test('toggle reasoning visibility', async () => {
+  test('Toggle reasoning visibility', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -37,7 +37,7 @@ test.describe('chat activity with reasoning', () => {
     await expect(reasoningElement).toBeVisible();
   });
 
-  test('edit message and resubmit', async () => {
+  test('Edit message and resubmit', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 

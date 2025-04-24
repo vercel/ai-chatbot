@@ -29,7 +29,7 @@ import { myProvider } from '@/lib/ai/providers';
 import {
   entitlementsByMembershipTier,
   type MembershipTier,
-} from '@/lib/ai/capabilities';
+} from '@/lib/ai/entitlements';
 
 export const maxDuration = 60;
 
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       entitlementsByMembershipTier[membershipTier].maxMessagesPerDay
     ) {
       return new Response(
-        'You have exceeded your maximum number of messages for the day',
+        'You have exceeded your maximum number of messages for the day! Please try again later.',
         {
           status: 429,
         },

@@ -179,4 +179,13 @@ export class ChatPage {
       },
     };
   }
+
+  async expectToastToContain(text: string) {
+    await expect(this.page.getByTestId('toast')).toContainText(text);
+  }
+
+  async openSideBar() {
+    const sidebarToggleButton = this.page.getByTestId('sidebar-toggle-button');
+    await sidebarToggleButton.click();
+  }
 }

@@ -44,9 +44,9 @@ export default defineConfig({
   },
 
   /* Configure global timeout for each test */
-  timeout: 60 * 1000, // 30 seconds
+  timeout: 30 * 1000, // 30 seconds
   expect: {
-    timeout: 60 * 1000,
+    timeout: 30 * 1000,
   },
 
   /* Configure projects */
@@ -88,6 +88,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
       },
     },
+
     {
       name: 'routes',
       testMatch: /routes\/.*.test.ts/,
