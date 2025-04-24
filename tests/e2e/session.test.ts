@@ -47,25 +47,6 @@ test.describe
       await expect(authMenuItem).toContainText('Login to your account');
     });
 
-    test('Log out is available for non-guest users', async ({ adaContext }) => {
-      await adaContext.page.goto('/');
-
-      const sidebarToggleButton = adaContext.page.getByTestId(
-        'sidebar-toggle-button',
-      );
-      await sidebarToggleButton.click();
-
-      const userNavButton = adaContext.page.getByTestId('user-nav-button');
-      await expect(userNavButton).toBeVisible();
-
-      await userNavButton.click();
-      const userNavMenu = adaContext.page.getByTestId('user-nav-menu');
-      await expect(userNavMenu).toBeVisible();
-
-      const authMenuItem = adaContext.page.getByTestId('user-nav-item-auth');
-      await expect(authMenuItem).toContainText('Sign out');
-    });
-
     test('Do not authenticate as guest user when an existing non-guest session is active', async ({
       adaContext,
     }) => {
@@ -134,12 +115,54 @@ test.describe
       await authPage.login(testUser.email, testUser.password);
 
       await page.waitForURL('/');
-      await expect(page).toHaveURL('/');
       await expect(page.getByPlaceholder('Send a message...')).toBeVisible();
+    });
+
+    test('Display user email in user menu', async ({ page }) => {
+      await authPage.login(testUser.email, testUser.password);
+
+      await page.waitForURL('/');
+      await expect(page.getByPlaceholder('Send a message...')).toBeVisible();
+
+      const userEmail = await page.getByTestId('user-email');
+      await expect(userEmail).toHaveText(testUser.email);
     });
 
     test('Log out as non-guest user', async () => {
       await authPage.logout(testUser.email, testUser.password);
+    });
+
+    test('Do not force create a guest session if non-guest session already exists', async ({
+      page,
+    }) => {
+      await authPage.login(testUser.email, testUser.password);
+      await page.waitForURL('/');
+
+      const userEmail = await page.getByTestId('user-email');
+      await expect(userEmail).toHaveText(testUser.email);
+
+      await page.goto('/api/auth/guest');
+      await page.waitForURL('/');
+
+      const updatedUserEmail = await page.getByTestId('user-email');
+      await expect(updatedUserEmail).toHaveText(testUser.email);
+    });
+
+    test('Log out is available for non-guest users', async ({ page }) => {
+      await authPage.login(testUser.email, testUser.password);
+      await page.waitForURL('/');
+
+      authPage.openSidebar();
+
+      const userNavButton = page.getByTestId('user-nav-button');
+      await expect(userNavButton).toBeVisible();
+
+      await userNavButton.click();
+      const userNavMenu = page.getByTestId('user-nav-menu');
+      await expect(userNavMenu).toBeVisible();
+
+      const authMenuItem = page.getByTestId('user-nav-item-auth');
+      await expect(authMenuItem).toContainText('Sign out');
     });
   });
 

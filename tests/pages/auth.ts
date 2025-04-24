@@ -36,8 +36,7 @@ export class AuthPage {
     await this.login(email, password);
     await this.page.waitForURL('/');
 
-    const sidebarToggleButton = this.page.getByTestId('sidebar-toggle-button');
-    await sidebarToggleButton.click();
+    await this.openSidebar();
 
     const userNavButton = this.page.getByTestId('user-nav-button');
     await expect(userNavButton).toBeVisible();
@@ -57,5 +56,10 @@ export class AuthPage {
 
   async expectToastToContain(text: string) {
     await expect(this.page.getByTestId('toast')).toContainText(text);
+  }
+
+  async openSidebar() {
+    const sidebarToggleButton = this.page.getByTestId('sidebar-toggle-button');
+    await sidebarToggleButton.click();
   }
 }
