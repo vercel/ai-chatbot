@@ -20,7 +20,6 @@ import {
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
-import { createClient } from '@/lib/supabase/client';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
