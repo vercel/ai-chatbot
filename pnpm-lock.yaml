@@ -235,7 +235,7 @@ importers:
         specifier: ^9.1.0
         version: 9.1.0(eslint@8.57.1)
       eslint-import-resolver-typescript:
-        specifier: ^3.6.3
+        specifier: ^3.8.7
         version: 3.8.7(eslint-plugin-import@2.31.0)(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: ^3.17.5

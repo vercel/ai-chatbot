@@ -1,4 +1,4 @@
-import { Chat } from '@/lib/db/schema';
+import type { Chat } from '@/lib/db/schema';
 import {
   SidebarMenuAction,
   SidebarMenuButton,
