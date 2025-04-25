@@ -4,6 +4,7 @@ import {
   type BrowserContext,
 } from '@playwright/test';
 import { createAuthenticatedContext, type UserContext } from './auth-helper';
+import { getUnixTime } from 'date-fns';
 
 interface Fixtures {
   adaContext: UserContext;
@@ -13,10 +14,10 @@ interface Fixtures {
 
 export const test = baseTest.extend<any, Fixtures>({
   adaContext: [
-    async ({ browser }, use) => {
+    async ({ browser }, use, workerInfo) => {
       const ada = await createAuthenticatedContext({
         browser,
-        name: 'ada',
+        name: `ada-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
       });
       await use(ada);
       await ada.context.close();
@@ -24,10 +25,10 @@ export const test = baseTest.extend<any, Fixtures>({
     { scope: 'worker' },
   ],
   babbageContext: [
-    async ({ browser }, use) => {
+    async ({ browser }, use, workerInfo) => {
       const babbage = await createAuthenticatedContext({
         browser,
-        name: 'babbage',
+        name: `babbage-${workerInfo.workerIndex}-${getUnixTime(new Date())}`,
       });
       await use(babbage);
       await babbage.context.close();

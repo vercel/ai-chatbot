@@ -34,7 +34,7 @@ export async function createAuthenticatedContext({
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  const email = `test-${name}-${getUnixTime(new Date())}@playwright.com`;
+  const email = `test-${name}@playwright.com`;
   const password = generateId(16);
 
   await page.goto('http://localhost:3000/register');
