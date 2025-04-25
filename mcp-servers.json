@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "calc": {
+      "command": "node",
+      "args": [
+        "./fixtures/servers/add/index.js"
+      ]
+    }
+  }
+}
