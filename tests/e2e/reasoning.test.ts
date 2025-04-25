@@ -43,6 +43,8 @@ test.describe('Chat activity with reasoning', () => {
   });
 
   test('Edit message and resubmit', async () => {
+    test.slow();
+
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
