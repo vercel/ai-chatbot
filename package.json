@@ -116,6 +116,7 @@
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
+    "clerk": "^0.8.3",
     "drizzle-kit": "^0.25.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "15.3.1",

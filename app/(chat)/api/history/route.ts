@@ -30,8 +30,12 @@ export async function GET(req: Request) {
     console.error(
       `[API /api/history] User profile not found for Clerk ID: ${clerkUserId}`,
     );
-    // Return Response object
-    return new Response('User profile not found', { status: 404 });
+    // Return valid JSON with 404 status for the client to handle gracefully
+    return Response.json(
+      // Match the expected success structure but indicate emptiness
+      { items: [], hasMore: false, error: 'User profile not found' },
+      { status: 404 },
+    );
   }
   const userId = profile.id; // Use the internal profile UUID
   // --- END AUTH ---
