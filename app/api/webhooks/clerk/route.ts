@@ -2,7 +2,8 @@
 import { headers } from 'next/headers';
 // Use "import type" for type-only imports
 import type { WebhookEvent, UserJSON } from '@clerk/nextjs/server';
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'; // Keep NextResponse as value import
+import type { NextRequest } from 'next/server'; // Import NextRequest specifically as type
 import { db } from '@/lib/db/queries'; // Corrected import path for db
 import { userProfiles } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -63,7 +64,8 @@ export async function POST(req: NextRequest) {
       });
     }
     const userData = evt.data as UserJSON;
-    const { id: clerkId, email_addresses, primary_email_address_id } = userData;
+    const { id: clerkId } = userData; // Only need clerkId here
+    const email = getPrimaryEmail(userData); // Use the helper function
 
     if (!clerkId) {
       console.error(
@@ -74,50 +76,35 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const email = email_addresses.find(
-      (e) => e.id === primary_email_address_id,
-    )?.email_address;
     console.log(
       `Processing user.created for Clerk ID: ${clerkId}, Email: ${email}`,
     );
 
-    // --- START REVISED UPSERT LOGIC ---
+    // --- START REVISED UPSERT LOGIC (Using Actual Schema) ---
     try {
-      const newProfileId = crypto.randomUUID(); // Still needed for the initial insert attempt
-      // const email = getPrimaryEmail(userData); // Email already extracted above
+      const newProfileId = crypto.randomUUID();
 
       console.log(
         `[Webhook Handler] Attempting upsert for clerkId: ${clerkId}, email: ${email}`,
       );
 
-      // Perform the Upsert Operation
+      // Perform the Upsert Operation using ONLY existing columns
       await db
         .insert(userProfiles)
         .values({
           id: newProfileId, // Provide UUID for potential insert
           clerkId: clerkId,
-          email: email,
-          // Add other relevant fields from userData
-          firstName: userData.first_name, // Ensure these fields exist in your schema or remove
-          lastName: userData.last_name,
-          imageUrl: userData.image_url,
-          createdAt: new Date(userData.created_at), // Set createdAt on initial insert
-          updatedAt: new Date(userData.updated_at), // Set updatedAt on initial insert
+          email: email, // Email from Clerk
+          // Database defaults will handle created_at, modified_at
         })
         .onConflictDoUpdate({
           target: userProfiles.clerkId, // The column with the unique constraint
           set: {
             // Fields to update if conflict occurs on clerkId
-            email: email,
-            firstName: userData.first_name,
-            lastName: userData.last_name,
-            imageUrl: userData.image_url,
-            updatedAt: new Date(), // Update updatedAt timestamp on conflict
-            // DO NOT update 'id' (primary key) or 'clerkId' (conflict target)
-            // DO NOT update 'createdAt'
+            email: email, // Update email if it changed
+            // modified_at could potentially be updated here if desired:
+            // modified_at: new Date(),
           },
-          // Example of optional where clause for the update part:
-          // where: sql`${userProfiles.email} is distinct from ${email}`
         });
 
       console.log(
@@ -125,7 +112,6 @@ export async function POST(req: NextRequest) {
       );
 
       // --- N8N Call Section (Fetch profile *after* upsert) ---
-      // Refetch the profile to get the definitive internal ID (new or existing)
       const profileAfterUpsert = await db.query.userProfiles.findFirst({
         where: eq(userProfiles.clerkId, clerkId),
       });
@@ -134,12 +120,11 @@ export async function POST(req: NextRequest) {
         console.error(
           `Clerk Webhook Error: Profile not found for clerkId ${clerkId} immediately after upsert. Cannot proceed with N8N call.`,
         );
-        // Decide if this should be a hard error or just skip N8N
-        // return new Response('Failed to retrieve profile post-upsert', { status: 500 });
       } else {
         const profileIdToUse = profileAfterUpsert.id;
+        // Use public_metadata from Clerk payload
         const alreadySent =
-          userData.publicMetadata?.onboarding_webhook_sent ?? false;
+          userData.public_metadata?.onboarding_webhook_sent ?? false;
 
         if (alreadySent) {
           console.log(
@@ -153,12 +138,12 @@ export async function POST(req: NextRequest) {
           const payload = {
             clerk_user_id: userData.id,
             primary_email: email,
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            profile_image_url: userData.image_url,
+            first_name: userData.first_name, // Keep for N8N if needed
+            last_name: userData.last_name, // Keep for N8N if needed
+            profile_image_url: userData.image_url, // Keep for N8N if needed
             created_at: new Date(userData.created_at).toISOString(),
             updated_at: new Date(userData.updated_at).toISOString(),
-            your_internal_db_id: profileIdToUse, // Use the ID from the upserted record
+            your_internal_db_id: profileIdToUse,
           };
 
           // Call N8N Webhook
@@ -180,8 +165,8 @@ export async function POST(req: NextRequest) {
               );
               // Update Clerk Metadata on Success
               try {
-                // Consider initializing clerkClient outside the handler if possible
                 const client = await clerkClient();
+                // Use publicMetadata for the Clerk client call
                 await client.users.updateUserMetadata(clerkId, {
                   publicMetadata: { onboarding_webhook_sent: true },
                 });
@@ -214,7 +199,6 @@ export async function POST(req: NextRequest) {
         `Clerk Webhook Error: Database upsert failed for user.created (Clerk ID ${clerkId}):`,
         dbError,
       );
-      // Consider checking error type for constraint violation vs other errors
       return new Response('Database operation failed', { status: 500 });
     }
     // --- END REVISED UPSERT LOGIC ---
