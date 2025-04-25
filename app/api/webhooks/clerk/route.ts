@@ -1,4 +1,4 @@
-import { Webhook } from 'svix';
+// import { Webhook } from 'svix'; // No longer needed
 import { headers } from 'next/headers';
 // Use "import type" for type-only imports
 import type { WebhookEvent, UserJSON } from '@clerk/nextjs/server';
@@ -6,10 +6,10 @@ import { NextResponse, NextRequest } from 'next/server';
 import { db } from '@/lib/db/queries'; // Corrected import path for db
 import { userProfiles } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import crypto from 'node:crypto'; // Use node: prefix for built-in module
+import crypto from 'node:crypto'; // <-- Keep as value import
 import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 import { clerkClient } from '@clerk/nextjs/server';
-import { verifyWebhook } from '@clerk/nextjs/webhooks'; // <-- Add this import
+import { verifyWebhook } from '@clerk/nextjs/webhooks';
 
 // Function to safely extract primary email
 function getPrimaryEmail(user: UserJSON): string | undefined {
@@ -91,11 +91,17 @@ export async function POST(req: NextRequest) {
         // Generate a new UUID for the primary key
         const newProfileId = crypto.randomUUID();
 
+        // --- ADD DEBUG LOG ---
+        console.log(
+          `[Webhook Handler] Inserting UserProfile with id: ${newProfileId}, clerkId: ${clerkId}, email: ${email}`,
+        );
+        // --- END DEBUG LOG ---
+
         // Insert new user profile
         await db.insert(userProfiles).values({
           id: newProfileId, // Provide the generated UUID
           clerkId: clerkId,
-          // email: email, // Uncomment if needed
+          email: email, // <-- UNCOMMENT this line
         });
         console.log(
           `Clerk Webhook: Successfully created user profile for Clerk ID: ${clerkId} with Profile ID: ${newProfileId}`,
@@ -106,91 +112,59 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // --- N8N Onboarding Webhook Logic ---
+      // --- TEMPORARILY BYPASS TOKEN FETCH FOR N8N TEST ---
       console.log(
-        `Clerk Webhook: Checking N8N onboarding status for ${clerkId}`,
+        `Clerk Webhook: TEMPORARY - Skipping token fetch and calling N8N for ${clerkId}`,
       );
 
-      // Check metadata *before* potentially calling N8N
-      // Need to use clerkClient here, not the user object from the event directly
-      // Note: This assumes you use the same `await clerkClient()` pattern needed elsewhere
-      const client = await clerkClient(); // Assuming await is needed based on other files
-      const clerkUser = await client.users.getUser(clerkId);
+      // Construct payload (using data from event 'userData', not refetched 'clerkUser')
+      const payload = {
+        clerk_user_id: userData.id,
+        primary_email: email, // Already extracted above
+        // Add other relevant fields from userData if needed...
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        profile_image_url: userData.image_url,
+        created_at: new Date(userData.created_at).toISOString(),
+        updated_at: new Date(userData.updated_at).toISOString(),
+        // No provider_tokens for now
+      };
 
-      if (clerkUser.publicMetadata?.onboarding_webhook_sent === true) {
-        console.log(
-          `Clerk Webhook: N8N onboarding already marked as sent for ${clerkId}. Skipping N8N call.`,
+      // Call N8N Webhook
+      const n8nResponse = await fetch(N8N_ONBOARDING_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!n8nResponse.ok) {
+        const n8nResponseBody = await n8nResponse.text();
+        console.error(
+          `Clerk Webhook: N8N call failed for ${clerkId}. Status: ${n8nResponse.status}, Body: ${n8nResponseBody}`,
         );
+        // Decide on error handling - maybe don't update metadata?
       } else {
         console.log(
-          `Clerk Webhook: N8N onboarding flag not set for ${clerkId}. Fetching token and calling N8N...`,
+          `Clerk Webhook: N8N call successful for ${clerkId}. Status: ${n8nResponse.status}. Updating Clerk metadata.`,
         );
-        // Fetch Google Token using the action
-        const tokenResult = await getGoogleOAuthToken(); // Uses auth() internally, should be correct context here
-
-        if (tokenResult.error || !tokenResult.token) {
-          console.error(
-            `Clerk Webhook: Failed to get Google OAuth token for user ${clerkId}: ${tokenResult.error || 'Token missing'}`,
-            tokenResult,
-          );
-          // Decide if this is critical - maybe still return 200 to Clerk?
-          // Or return 500 to signal Clerk to retry? For now, log error and continue.
-        } else {
-          console.log(
-            `Clerk Webhook: Successfully fetched Google token for ${clerkId}. Sending to N8N.`,
-          );
-          // Construct payload (using data from event 'userData', not refetched 'clerkUser')
-          const payload = {
-            clerk_user_id: userData.id,
-            primary_email: email, // Already extracted above
-            // Add other relevant fields from userData if needed...
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            profile_image_url: userData.image_url,
-            created_at: new Date(userData.created_at).toISOString(),
-            updated_at: new Date(userData.updated_at).toISOString(),
-            provider_tokens: {
-              access_token: tokenResult.token,
-              refresh_token: null, // As before
-            },
-          };
-
-          // Call N8N Webhook
-          const n8nResponse = await fetch(N8N_ONBOARDING_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+        // --- Update Clerk Metadata on Success ---
+        // (Keep this part, we still want to mark it as sent if the call succeeds)
+        try {
+          const client = await clerkClient();
+          await client.users.updateUserMetadata(clerkId, {
+            publicMetadata: { onboarding_webhook_sent: true },
           });
-
-          if (!n8nResponse.ok) {
-            const n8nResponseBody = await n8nResponse.text();
-            console.error(
-              `Clerk Webhook: N8N call failed for ${clerkId}. Status: ${n8nResponse.status}, Body: ${n8nResponseBody}`,
-            );
-            // Decide on error handling - maybe don't update metadata?
-          } else {
-            console.log(
-              `Clerk Webhook: N8N call successful for ${clerkId}. Status: ${n8nResponse.status}. Updating Clerk metadata.`,
-            );
-            // --- Update Clerk Metadata on Success ---
-            try {
-              await client.users.updateUserMetadata(clerkId, {
-                // Use the same awaited client
-                publicMetadata: { onboarding_webhook_sent: true },
-              });
-              console.log(
-                `Clerk Webhook: Successfully updated Clerk metadata for ${clerkId}.`,
-              );
-            } catch (metaError) {
-              console.error(
-                `Clerk Webhook: CRITICAL: Failed to update Clerk metadata for ${clerkId} after successful N8N call:`,
-                metaError,
-              );
-              // Log critical error, but webhook was processed.
-            }
-          }
+          console.log(
+            `Clerk Webhook: Successfully updated Clerk metadata for ${clerkId}.`,
+          );
+        } catch (metaError) {
+          console.error(
+            `Clerk Webhook: CRITICAL: Failed to update Clerk metadata for ${clerkId} after successful N8N call:`,
+            metaError,
+          );
         }
       }
+      // --- END TEMPORARY BYPASS ---
 
       return NextResponse.json(
         { message: 'User profile processed' },

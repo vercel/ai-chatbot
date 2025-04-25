@@ -3,7 +3,7 @@ import {
   pgTable,
   varchar,
   timestamp,
-  json,
+  jsonb,
   uuid,
   text,
   primaryKey,
@@ -15,24 +15,30 @@ import { relations } from 'drizzle-orm';
 
 import type { UIMessage } from 'ai';
 
-// ADDED:
-import { jsonb } from 'drizzle-orm/pg-core';
-// --- END ADDED
-
 export const userProfiles = pgTable('User_Profiles', {
-  id: uuid('id').primaryKey().notNull(),
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
   clerkId: text('clerk_id').unique(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  email: varchar('email'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   modifiedAt: timestamp('modified_at', { withTimezone: true }).defaultNow(),
   googleRefreshToken: text('google_refresh_token'),
+  pdl_person_data: jsonb('pdl_person_data'),
+  pdl_org_data: jsonb('pdl_org_data'),
+  person_deep_research_data: text('person_deep_research_data'),
+  org_deep_research_data: text('org_deep_research_data'),
+  org_website_scrape: text('org_website_scrape'),
 });
 
 export type UserProfile = InferSelectModel<typeof userProfiles>;
 
 export const Chat = pgTable('Chat', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: text('userId').notNull(),
-  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => userProfiles.id),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
   title: text('title').notNull(),
   visibility: text('visibility', { enum: ['public', 'private', 'unlisted'] })
     .default('private')
@@ -54,8 +60,8 @@ export const Message_v2 = pgTable('Message_v2', {
     enum: ['user', 'assistant', 'system', 'tool'],
   }).notNull(),
   parts: jsonb('parts').notNull(),
-  attachments: jsonb('attachments'),
-  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  attachments: jsonb('attachments').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
 
 export type DBMessage = InferSelectModel<typeof Message_v2>;
@@ -101,7 +107,7 @@ export const document = pgTable(
       .notNull()
       .references(() => userProfiles.id, { onDelete: 'cascade' }),
     tags: text('tags').array(),
-    modifiedAt: timestamp('modifiedAt', { withTimezone: true }),
+    modifiedAt: timestamp('modifiedAt', { withTimezone: true }).defaultNow(),
     chatId: uuid('chat_id').references(() => Chat.id),
   },
   (table) => {
