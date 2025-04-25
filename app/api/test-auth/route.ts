@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   try {
     console.log('[API /api/test-auth] Attempting to call auth()...');
-    const { userId } = auth();
+    const { userId } = await auth();
     console.log(
       `[API /api/test-auth] auth() call completed. Clerk User ID: ${userId}`,
     );

@@ -5,13 +5,12 @@ import { cookies } from 'next/headers';
 import type { UIMessage } from 'ai';
 import type { DBMessage } from '@/lib/db/schema';
 import type { Metadata, ResolvingMetadata } from 'next'; // Add standard types
+import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models'; // ADD: Import default model
 
 import { Chat } from '@/components/chat';
 import ChatNotFound from '@/components/chat-not-found';
 import { getChat } from '@/app/actions';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-
-const DEFAULT_CHAT_MODEL = 'grok-2-1212';
 
 // Function to convert DB messages to UI messages (keep as is)
 function convertToUIMessages(dbMessages: DBMessage[]): UIMessage[] {
@@ -26,10 +25,14 @@ function convertToUIMessages(dbMessages: DBMessage[]): UIMessage[] {
   }) as UIMessage[];
 }
 
-// @ts-expect-error - Build fails due to incorrect PageProps constraint expecting Promise
-export default async function ChatPage({ params }: { params: { id: string } }) {
-  // Access params.id immediately before any awaits
-  const chatId = params.id;
+// Correct signature for Next.js 15+ async page with dynamic route
+export default async function ChatPage(props: {
+  params: Promise<{ id: string }>;
+}) {
+  // Await the params promise to get the resolved object
+  const resolvedParams = await props.params;
+  const chatId = resolvedParams.id; // Use id from the resolved object
+
   console.log(`[ChatPage] Loading chat for ID: ${chatId}`); // DEBUG LOG
 
   // --- RESTORE CLERK AUTH ---
@@ -74,6 +77,7 @@ export default async function ChatPage({ params }: { params: { id: string } }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model')?.value;
+  // Use the imported DEFAULT_CHAT_MODEL as fallback
   const selectedChatModel = chatModelFromCookie || DEFAULT_CHAT_MODEL;
 
   // ** IMPORTANT: Determine readonly status using chat.userId (UUID) **

@@ -1,6 +1,7 @@
 'use server';
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
+import type { EmailAddress, PhoneNumber } from '@clerk/nextjs/server';
 import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 
 // Define the N8N Webhook URL (replace if different from the one discussed)
@@ -19,7 +20,7 @@ export async function triggerOnboardingWebhook(): Promise<{
     console.log(
       '[Action triggerOnboardingWebhook] Attempting to call auth()...',
     );
-    const { userId: clerkUserId } = auth();
+    const { userId: clerkUserId } = await auth();
     console.log(
       `[Action triggerOnboardingWebhook] auth() call completed. Clerk User ID: ${clerkUserId}`,
     ); // Log immediately after
@@ -35,8 +36,11 @@ export async function triggerOnboardingWebhook(): Promise<{
       `[Action triggerOnboardingWebhook] Authenticated Clerk User ID: ${clerkUserId}`,
     );
 
+    // ADD: Await clerkClient to satisfy linter
+    const client = await clerkClient();
+
     // Fetch the full user object from Clerk
-    const user = await clerkClient.users.getUser(clerkUserId);
+    const user = await client.users.getUser(clerkUserId);
 
     // Check if onboarding webhook has already been sent
     if (user.publicMetadata?.onboarding_webhook_sent === true) {
@@ -72,11 +76,11 @@ export async function triggerOnboardingWebhook(): Promise<{
 
     // --- Construct the payload ---
     // Attempt to mimic the old Supabase payload structure using Clerk data
-    const primaryEmail = user.emailAddresses.find(
-      (e) => e.id === user.primaryEmailAddressId,
+    const primaryEmail = user.emailAddresses?.find(
+      (e: EmailAddress) => e.id === user.primaryEmailAddressId,
     )?.emailAddress;
-    const primaryPhone = user.phoneNumbers.find(
-      (p) => p.id === user.primaryPhoneNumberId,
+    const primaryPhone = user.phoneNumbers?.find(
+      (p: PhoneNumber) => p.id === user.primaryPhoneNumberId,
     )?.phoneNumber;
 
     // Note: raw_user_meta_data and raw_app_meta_data structure was specific to Supabase Auth
@@ -136,7 +140,7 @@ export async function triggerOnboardingWebhook(): Promise<{
 
     // --- Update Clerk Metadata on Success ---
     try {
-      await clerkClient.users.updateUserMetadata(clerkUserId, {
+      await client.users.updateUserMetadata(clerkUserId, {
         publicMetadata: {
           onboarding_webhook_sent: true,
         },

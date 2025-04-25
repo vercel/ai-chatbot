@@ -1,28 +1,33 @@
 'use server';
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
+import type { OauthAccessToken } from '@clerk/nextjs/server';
 
 export async function getGoogleOAuthToken(): Promise<{
   error: string | null;
   token: string | null;
 }> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return { error: 'User not authenticated', token: null };
     }
 
-    // Fetch the OAuth access token for the user
+    // ADD: Await clerkClient() to satisfy linter error
+    const client = await clerkClient();
+
+    // Fetch the OAuth access token using the awaited client
     const provider = 'oauth_google';
-    const clerkResponse = await clerkClient.users.getUserOauthAccessToken(
+    // Type is PaginatedResourceResponse, not array directly - adjust variable name and remove explicit type
+    const oauthTokensResponse = await client.users.getUserOauthAccessToken(
       userId,
       provider,
     );
 
-    // The response is an array; find the Google token.
-    const googleToken = clerkResponse?.find(
-      (token) => token.provider === provider,
+    // Access .data before using .find()
+    const googleToken = oauthTokensResponse?.data?.find(
+      (token: OauthAccessToken) => token.provider === provider,
     );
 
     if (!googleToken || !googleToken.token) {

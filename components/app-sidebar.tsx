@@ -77,13 +77,13 @@ export function AppSidebar() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="flex-1 overflow-y-auto">
-            <SidebarAll user={undefined} />
+            <SidebarAll />
           </TabsContent>
           <TabsContent value="chats" className="flex-1 overflow-y-auto">
             <SidebarHistory />
           </TabsContent>
           <TabsContent value="files" className="flex-1 overflow-y-auto">
-            <SidebarFiles user={undefined} />
+            <SidebarFiles />
           </TabsContent>
         </Tabs>
       </SidebarContent>

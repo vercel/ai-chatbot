@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   console.log('[API /api/minimal-auth-test] Route hit.');
   try {
     // Attempt to get auth context
-    const { userId } = auth();
+    const { userId } = await auth();
 
     console.log(
       `[API /api/minimal-auth-test] auth() returned userId: ${userId}`,
