@@ -47,4 +47,4 @@ yarn-error.log*
 dist
 
 # MCP
-mcp-server.json
+mcp-servers.json
