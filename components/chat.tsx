@@ -38,7 +38,7 @@ export function Chat({
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
-  initialAssociatedDocument: InitialDocumentProp;
+  initialAssociatedDocument?: InitialDocumentProp;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
