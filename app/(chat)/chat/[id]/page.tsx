@@ -4,13 +4,16 @@ import { redirect, notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import type { UIMessage } from 'ai';
 import type { DBMessage } from '@/lib/db/schema';
+import type { Metadata, ResolvingMetadata } from 'next'; // Add standard types
 
 import { Chat } from '@/components/chat';
 import ChatNotFound from '@/components/chat-not-found';
 import { getChat } from '@/app/actions';
+import { DataStreamHandler } from '@/components/data-stream-handler';
 
 const DEFAULT_CHAT_MODEL = 'grok-2-1212';
 
+// Function to convert DB messages to UI messages (keep as is)
 function convertToUIMessages(dbMessages: DBMessage[]): UIMessage[] {
   return dbMessages.map((message) => {
     return {
@@ -80,13 +83,15 @@ export default async function ChatPage({ params }: { params: { id: string } }) {
   const isReadonly = false; // TEMPORARY: Assume editable if loaded
 
   return (
-    <Chat
-      id={chat.id}
-      initialMessages={initialMessages}
-      initialAssociatedDocument={null}
-      selectedChatModel={selectedChatModel}
-      selectedVisibilityType={chat.visibility}
-      isReadonly={isReadonly}
-    />
+    <>
+      <Chat
+        id={chat.id}
+        initialMessages={initialMessages}
+        selectedChatModel={selectedChatModel}
+        selectedVisibilityType={chat.visibility}
+        isReadonly={isReadonly}
+      />
+      <DataStreamHandler id={chatId} />
+    </>
   );
 }
