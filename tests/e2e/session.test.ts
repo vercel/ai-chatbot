@@ -192,8 +192,6 @@ test.describe('Entitlements', () => {
   });
 
   test('Guest user cannot send more than 20 messages/day', async () => {
-    test.slow();
-
     await chatPage.createNewChat();
 
     for (let i = 0; i <= 20; i++) {
