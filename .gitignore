@@ -45,3 +45,6 @@ yarn-error.log*
 # Electron
 .tscache
 dist
+
+# MCP
+mcp-server.json
