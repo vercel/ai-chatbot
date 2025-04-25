@@ -31,7 +31,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: 0,
   /* Opt out of parallel tests on CI. */
-  workers: 4,
+  workers: 6,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -54,25 +54,8 @@ export default defineConfig({
     {
       name: 'e2e',
       testMatch: /e2e\/.*.test.ts/,
-      testIgnore: /e2e\/reasoning.test.ts/,
       use: {
         ...devices['Desktop Chrome'],
-      },
-    },
-    {
-      name: 'setup:reasoning',
-      testMatch: /e2e\/reasoning.setup.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-    {
-      name: 'reasoning',
-      testMatch: /e2e\/reasoning.test.ts/,
-      dependencies: ['setup:reasoning'],
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'playwright/.reasoning/session.json',
       },
     },
     {

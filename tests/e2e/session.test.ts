@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures';
 import { AuthPage } from '../pages/auth';
-import { generateRandomTestUser } from '../auth-helper';
+import { generateRandomTestUser } from '../helpers';
 import { ChatPage } from '../pages/chat';
 
 test.describe
