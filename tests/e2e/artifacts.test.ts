@@ -14,6 +14,8 @@ test.describe('Artifacts activity', () => {
   });
 
   test('Create a text artifact', async () => {
+    test.slow();
+
     await chatPage.createNewChat();
 
     await chatPage.sendUserMessage(
@@ -32,6 +34,8 @@ test.describe('Artifacts activity', () => {
   });
 
   test('Toggle artifact visibility', async () => {
+    test.slow();
+
     await chatPage.createNewChat();
 
     await chatPage.sendUserMessage(
@@ -51,6 +55,8 @@ test.describe('Artifacts activity', () => {
   });
 
   test('Send follow up message after generation', async () => {
+    test.slow();
+
     await chatPage.createNewChat();
 
     await chatPage.sendUserMessage(

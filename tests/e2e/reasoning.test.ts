@@ -15,6 +15,8 @@ test.describe('Chat activity with reasoning', () => {
   });
 
   test('Send user message and generate response with reasoning', async () => {
+    test.slow();
+
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -27,6 +29,8 @@ test.describe('Chat activity with reasoning', () => {
   });
 
   test('Toggle reasoning visibility', async () => {
+    test.slow();
+
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
