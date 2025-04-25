@@ -87,6 +87,21 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <header className="absolute top-4 right-4">
+              <SignedIn>
+                <UserButton
+                  userProfileProps={{
+                    additionalOAuthScopes: {
+                      // NOTE: drive.readonly is a restricted scope and requires Google verification for production use.
+                      google: [
+                        'https://www.googleapis.com/auth/drive.readonly',
+                      ],
+                    },
+                  }}
+                />
+              </SignedIn>
+            </header>
+
             <OnboardingTrigger>
               <Toaster position="top-center" />
               {children}
