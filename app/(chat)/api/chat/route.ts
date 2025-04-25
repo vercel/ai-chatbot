@@ -37,6 +37,7 @@ import { chatModels } from '@/lib/ai/models';
 import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
 import { revalidateTag } from 'next/cache';
+import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 
 export const maxDuration = 60;
 
@@ -84,6 +85,31 @@ export async function POST(request: Request) {
     }
     const userId = userProfileId; // Use the profile UUID as userId internally
     // --- END CLERK AUTH ---
+
+    // --- FETCH GOOGLE OAUTH TOKEN (Added) ---
+    console.log(
+      `[API /api/chat] Attempting to fetch Google OAuth token for user: ${userId}`,
+    );
+    const tokenResult = await getGoogleOAuthToken();
+    if (tokenResult.error) {
+      // Log error but don't necessarily block the chat flow unless the token is strictly required
+      console.warn(
+        `[API /api/chat] Failed to get Google OAuth token for user ${userId}: ${tokenResult.error}`,
+      );
+      // If the token IS required for the next step, you might return an error here:
+      // return new Response(`Failed to get required Google token: ${tokenResult.error}`, { status: 500 });
+    } else if (tokenResult.token) {
+      console.log(
+        `[API /api/chat] Successfully fetched Google OAuth token for user ${userId}.`,
+      );
+      // You can now use tokenResult.token if needed for tools/AI calls later in this function
+      // Example: pass it to streamText options or tool functions
+    } else {
+      console.warn(
+        `[API /api/chat] Google OAuth token fetch for user ${userId} completed but no token was returned.`,
+      );
+    }
+    // --- END FETCH GOOGLE OAUTH TOKEN ---
 
     const finalChatId = id;
 
@@ -286,6 +312,7 @@ export async function POST(request: Request) {
         userId: userId, // Use profile UUID
         messageId: lastUserMessageId,
         datetime: lastUserMessageCreatedAt,
+        googleToken: tokenResult.token, // Pass the fetched token (will be null if fetch failed or no token)
       });
 
       // *** USE createDataStreamResponse with streamText and the n8nModel (Restoring Original Logic) ***

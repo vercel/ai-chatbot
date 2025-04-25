@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 # Clerk Authentication Migration Checklist
 
 This checklist outlines critical areas to test after migrating from Supabase Auth to Clerk Auth to ensure the application functions correctly.
@@ -55,11 +60,16 @@ This checklist outlines critical areas to test after migrating from Supabase Aut
 
 - [ ] **Standard Model:** Can send/receive messages? Are messages saved correctly?
 - [ ] **N8n Model (If applicable):** Can send/receive messages? Are messages saved correctly?
-- [ ] **Document Creation:** Can create a document/artifact within a chat successfully?
+- [ ] **Artifact Creation:** Can create a document/artifact within a chat successfully? Use Gemini Pro 2.5.
+- [ ] **Artifact Creation:** Can create a text/markdown file within a chat? Use Gemini Pro 2.5.
+- [ ] **Artifact Creation:** Can create a CSV/spreadsheet file within a chat? Use Gemini Pro 2.5.
+- [ ] **Artifact Creation:** Can create an code file within a chat? Use Gemini Pro 2.5.
+- [ ] **Artifact Creation:** Can create an image within a chat? Use Gemini Pro 2.5.
 - [ ] **Document Linking:** Is the created document correctly linked (`chatId`) and displayed?
 - [ ] **Document Update:** Can the AI update an existing document successfully?
 - [ ] **Document Update - Integrity:** Is `chatId` preserved after update? Are duplicates avoided?
-- [ ] **Voting:** Can vote on messages? Is the vote state reflected correctly?
+- [ ] **Document Update - Integrity:** Does the Document table look right in Supabase?
+- [ ] **Voting:** Can vote on messages? Is the 👍🏼 vote state reflected correctly in the UI? Does it save to Supabase?
 
 ## User Profile / Display
 

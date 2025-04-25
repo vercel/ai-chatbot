@@ -31,6 +31,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
   private userId: string;
   private messageId: string | null;
   private datetime: Date | null;
+  private googleToken: string | null;
 
   constructor(config: {
     webhookUrl: string;
@@ -39,6 +40,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
     userId: string;
     messageId: string | null;
     datetime: Date | null;
+    googleToken?: string | null;
   }) {
     this.webhookUrl = config.webhookUrl;
     this.modelId = config.modelId;
@@ -46,6 +48,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
     this.userId = config.userId;
     this.messageId = config.messageId;
     this.datetime = config.datetime;
+    this.googleToken = config.googleToken ?? null;
   }
 
   async doGenerate(
@@ -119,6 +122,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
       userMessageParts: userMessageParts,
       userMessageDatetime: this.datetime,
       history: history,
+      ...(this.googleToken && { google_token: this.googleToken }),
     };
 
     // Log the exact payload being sent

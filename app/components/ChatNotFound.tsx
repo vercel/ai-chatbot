@@ -10,8 +10,8 @@ export function ChatNotFound() {
         <h2 className="text-lg font-semibold">Chat Not Found</h2>
       </div>
       <p className="text-muted-foreground">
-        The chat you're looking for doesn't exist or you don't have access to
-        it.
+        The chat you&apos;re looking for doesn&apos;t exist or you don&apos;t
+        have access to it.
       </p>
       <Button asChild>
         <Link href="/">Return Home</Link>

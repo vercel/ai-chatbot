@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Manrope, Fira_Code } from 'next/font/google';
@@ -12,6 +11,7 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+import { OnboardingTrigger } from '@/components/onboarding-trigger';
 
 import './globals.css';
 
@@ -87,8 +87,10 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Toaster position="top-center" />
-            {children}
+            <OnboardingTrigger>
+              <Toaster position="top-center" />
+              {children}
+            </OnboardingTrigger>
           </ThemeProvider>
         </body>
       </html>
