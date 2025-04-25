@@ -209,7 +209,6 @@ export function Weather({
   weatherAtLocation?: WeatherAtLocation;
 }) {
   if (weatherAtLocation.error) {
-    console.error('Failed to get weather', weatherAtLocation.reason);
     return null;
   }
 
