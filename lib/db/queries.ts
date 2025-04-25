@@ -16,17 +16,9 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { unstable_cache } from 'next/cache';
 
-import {
-  chat,
-  document,
-  type Suggestion,
-  suggestion,
-  message,
-  vote,
-  type DBMessage,
-  type Chat,
-} from './schema';
+import * as schema from './schema';
 import type { ArtifactKind } from '@/components/artifact';
+import type { VisibilityType } from '@/components/visibility-selector';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -34,7 +26,7 @@ import type { ArtifactKind } from '@/components/artifact';
 
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+export const db = drizzle(client, { schema });
 
 export async function saveChat({
   id,
@@ -46,7 +38,7 @@ export async function saveChat({
   title: string;
 }) {
   try {
-    return await db.insert(chat).values({
+    return await db.insert(schema.Chat).values({
       id,
       createdAt: new Date(),
       userId,
@@ -60,10 +52,10 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    await db.delete(vote).where(eq(vote.chatId, id));
-    await db.delete(message).where(eq(message.chatId, id));
+    await db.delete(schema.vote).where(eq(schema.vote.chatId, id));
+    await db.delete(schema.Message_v2).where(eq(schema.Message_v2.chatId, id));
 
-    return await db.delete(chat).where(eq(chat.id, id));
+    return await db.delete(schema.Chat).where(eq(schema.Chat.id, id));
   } catch (error) {
     console.error('Failed to delete chat by id from database');
     throw error;
@@ -87,41 +79,45 @@ export async function getChatsByUserId({
     const query = (whereCondition?: SQL<any>) =>
       db
         .select()
-        .from(chat)
+        .from(schema.Chat)
         .where(
           whereCondition
-            ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id),
+            ? and(whereCondition, eq(schema.Chat.userId, id))
+            : eq(schema.Chat.userId, id),
         )
-        .orderBy(desc(chat.createdAt))
+        .orderBy(desc(schema.Chat.createdAt))
         .limit(extendedLimit);
 
-    let filteredChats: Array<Chat> = [];
+    let filteredChats: Array<schema.DBChat> = [];
 
     if (startingAfter) {
       const [selectedChat] = await db
         .select()
-        .from(chat)
-        .where(eq(chat.id, startingAfter))
+        .from(schema.Chat)
+        .where(eq(schema.Chat.id, startingAfter))
         .limit(1);
 
       if (!selectedChat) {
         throw new Error(`Chat with id ${startingAfter} not found`);
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(
+        gt(schema.Chat.createdAt, selectedChat.createdAt),
+      );
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
-        .from(chat)
-        .where(eq(chat.id, endingBefore))
+        .from(schema.Chat)
+        .where(eq(schema.Chat.id, endingBefore))
         .limit(1);
 
       if (!selectedChat) {
         throw new Error(`Chat with id ${endingBefore} not found`);
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await query(
+        lt(schema.Chat.createdAt, selectedChat.createdAt),
+      );
     } else {
       filteredChats = await query();
     }
@@ -150,8 +146,8 @@ export async function getChatById({ id }: { id: string }) {
         // Original database query logic
         const [selectedChat] = await db
           .select()
-          .from(chat)
-          .where(eq(chat.id, chatId));
+          .from(schema.Chat)
+          .where(eq(schema.Chat.id, chatId));
         // --- Start inner timer ---
         console.timeEnd(`getChatById DB Query - Chat ${chatId}`);
         // --- End inner timer ---
@@ -182,22 +178,19 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({
   messages,
 }: {
-  messages: Array<DBMessage>;
+  messages: Array<schema.DBMessage>;
 }) {
   try {
     // Perform an upsert operation: Insert new messages, or update existing ones on conflict (based on ID)
     return await db
-      .insert(message)
+      .insert(schema.Message_v2)
       .values(messages)
       .onConflictDoUpdate({
-        target: message.id,
+        target: schema.Message_v2.id,
         set: {
-          // Specify which fields to update if the message ID already exists
           role: sql`excluded.role`,
           parts: sql`excluded.parts`,
           attachments: sql`excluded.attachments`,
-          // Optionally update createdAt, or keep the original creation time
-          // createdAt: sql`excluded.created_at`,
         },
       });
   } catch (error) {
@@ -210,9 +203,9 @@ export async function getMessagesByChatId({ id }: { id: string }) {
   try {
     return await db
       .select()
-      .from(message)
-      .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt));
+      .from(schema.Message_v2)
+      .where(eq(schema.Message_v2.chatId, id))
+      .orderBy(asc(schema.Message_v2.createdAt));
   } catch (error) {
     console.error('Failed to get messages by chat id from database', error);
     throw error;
@@ -231,16 +224,21 @@ export async function voteMessage({
   try {
     const [existingVote] = await db
       .select()
-      .from(vote)
-      .where(and(eq(vote.messageId, messageId)));
+      .from(schema.vote)
+      .where(and(eq(schema.vote.messageId, messageId)));
 
     if (existingVote) {
       return await db
-        .update(vote)
+        .update(schema.vote)
         .set({ isUpvoted: type === 'up' })
-        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+        .where(
+          and(
+            eq(schema.vote.messageId, messageId),
+            eq(schema.vote.chatId, chatId),
+          ),
+        );
     }
-    return await db.insert(vote).values({
+    return await db.insert(schema.vote).values({
       chatId,
       messageId,
       isUpvoted: type === 'up',
@@ -253,7 +251,10 @@ export async function voteMessage({
 
 export async function getVotesByChatId({ id }: { id: string }) {
   try {
-    return await db.select().from(vote).where(eq(vote.chatId, id));
+    return await db
+      .select()
+      .from(schema.vote)
+      .where(eq(schema.vote.chatId, id));
   } catch (error) {
     console.error('Failed to get votes by chat id from database', error);
     throw error;
@@ -300,16 +301,18 @@ export async function saveDocument({
     };
 
     return await db
-      .insert(document)
+      .insert(schema.document)
       .values(valuesToInsert)
       .onConflictDoUpdate({
-        target: document.id,
+        target: schema.document.id,
         set: {
           content,
           title,
           modifiedAt: new Date(),
+          chatId: sql`excluded.chat_id`,
         },
-      });
+      })
+      .returning();
   } catch (error) {
     console.error('Failed to save document in database:', error);
     throw error;
@@ -320,9 +323,9 @@ export async function getDocumentsById({ id }: { id: string }) {
   try {
     const documents = await db
       .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt));
+      .from(schema.document)
+      .where(eq(schema.document.id, id))
+      .orderBy(asc(schema.document.createdAt));
 
     return documents;
   } catch (error) {
@@ -335,9 +338,9 @@ export async function getDocumentById({ id }: { id: string }) {
   try {
     const [selectedDocument] = await db
       .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(desc(document.createdAt));
+      .from(schema.document)
+      .where(eq(schema.document.id, id))
+      .orderBy(desc(schema.document.createdAt));
 
     return selectedDocument;
   } catch (error) {
@@ -355,17 +358,22 @@ export async function deleteDocumentsByIdAfterTimestamp({
 }) {
   try {
     await db
-      .delete(suggestion)
+      .delete(schema.suggestion)
       .where(
         and(
-          eq(suggestion.documentId, id),
-          gt(suggestion.documentCreatedAt, timestamp),
+          eq(schema.suggestion.documentId, id),
+          gt(schema.suggestion.documentCreatedAt, timestamp),
         ),
       );
 
     return await db
-      .delete(document)
-      .where(and(eq(document.id, id), gt(document.createdAt, timestamp)));
+      .delete(schema.document)
+      .where(
+        and(
+          eq(schema.document.id, id),
+          gt(schema.document.createdAt, timestamp),
+        ),
+      );
   } catch (error) {
     console.error(
       'Failed to delete documents by id after timestamp from database',
@@ -377,10 +385,10 @@ export async function deleteDocumentsByIdAfterTimestamp({
 export async function saveSuggestions({
   suggestions,
 }: {
-  suggestions: Array<Suggestion>;
+  suggestions: Array<schema.Suggestion>;
 }) {
   try {
-    return await db.insert(suggestion).values(suggestions);
+    return await db.insert(schema.suggestion).values(suggestions);
   } catch (error) {
     console.error('Failed to save suggestions in database');
     throw error;
@@ -395,8 +403,8 @@ export async function getSuggestionsByDocumentId({
   try {
     return await db
       .select()
-      .from(suggestion)
-      .where(and(eq(suggestion.documentId, documentId)));
+      .from(schema.suggestion)
+      .where(and(eq(schema.suggestion.documentId, documentId)));
   } catch (error) {
     console.error(
       'Failed to get suggestions by document version from database',
@@ -407,7 +415,10 @@ export async function getSuggestionsByDocumentId({
 
 export async function getMessageById({ id }: { id: string }) {
   try {
-    return await db.select().from(message).where(eq(message.id, id));
+    return await db
+      .select()
+      .from(schema.Message_v2)
+      .where(eq(schema.Message_v2.id, id));
   } catch (error) {
     console.error('Failed to get message by id from database');
     throw error;
@@ -423,25 +434,34 @@ export async function deleteMessagesByChatIdAfterTimestamp({
 }) {
   try {
     const messagesToDelete = await db
-      .select({ id: message.id })
-      .from(message)
+      .select({ id: schema.Message_v2.id })
+      .from(schema.Message_v2)
       .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
+        and(
+          eq(schema.Message_v2.chatId, chatId),
+          gte(schema.Message_v2.createdAt, timestamp),
+        ),
       );
 
     const messageIds = messagesToDelete.map((message) => message.id);
 
     if (messageIds.length > 0) {
       await db
-        .delete(vote)
+        .delete(schema.vote)
         .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
+          and(
+            eq(schema.vote.chatId, chatId),
+            inArray(schema.vote.messageId, messageIds),
+          ),
         );
 
       return await db
-        .delete(message)
+        .delete(schema.Message_v2)
         .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
+          and(
+            eq(schema.Message_v2.chatId, chatId),
+            inArray(schema.Message_v2.id, messageIds),
+          ),
         );
     }
   } catch (error) {
@@ -457,12 +477,42 @@ export async function updateChatVisiblityById({
   visibility,
 }: {
   chatId: string;
-  visibility: 'private' | 'public';
+  visibility: VisibilityType;
 }) {
   try {
-    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+    return await db
+      .update(schema.Chat)
+      .set({ visibility })
+      .where(eq(schema.Chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+export async function getDocumentsByUserId({
+  id,
+  limit,
+}: {
+  id: string;
+  limit: number;
+}) {
+  try {
+    // Basic query for now, sort by modifiedAt descending
+    const documents = await db
+      .select()
+      .from(schema.document)
+      .where(eq(schema.document.userId, id))
+      .orderBy(desc(schema.document.modifiedAt))
+      .limit(limit);
+
+    // Simple return for now, no hasMore logic yet
+    return {
+      documents: documents,
+      hasMore: false, // Assume no more for now
+    };
+  } catch (error) {
+    console.error('Failed to get documents by user from database', error);
     throw error;
   }
 }

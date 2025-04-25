@@ -1,4 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+// import { createClient } from '@/lib/supabase/server'; // REMOVE SUPABASE
+import { auth } from '@clerk/nextjs/server'; // ADD CLERK
+import { db } from '@/lib/db/queries'; // Need DB for profile lookup
+import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
+import { eq } from 'drizzle-orm'; // Need eq for profile lookup
 import { getChatById, getVotesByChatId, voteMessage } from '@/lib/db/queries';
 
 export async function GET(request: Request) {
@@ -9,16 +13,20 @@ export async function GET(request: Request) {
     return new Response('chatId is required', { status: 400 });
   }
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (!user || error) {
+  // --- CLERK AUTH & PROFILE LOOKUP ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
     return new Response('Unauthorized', { status: 401 });
   }
+  const profile = await db.query.userProfiles.findFirst({
+    columns: { id: true },
+    where: eq(schema.userProfiles.clerkId, clerkUserId),
+  });
+  if (!profile) {
+    return new Response('User profile not found', { status: 404 });
+  }
+  const userId = profile.id; // Use the internal profile UUID
+  // --- END AUTH ---
 
   const chat = await getChatById({ id: chatId });
 
@@ -26,7 +34,8 @@ export async function GET(request: Request) {
     return new Response('Chat not found', { status: 404 });
   }
 
-  if (chat.userId !== user.id) {
+  // Check ownership using the internal profile UUID
+  if (chat.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -47,16 +56,20 @@ export async function PATCH(request: Request) {
     return new Response('messageId and type are required', { status: 400 });
   }
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (!user || error) {
+  // --- CLERK AUTH & PROFILE LOOKUP ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
     return new Response('Unauthorized', { status: 401 });
   }
+  const profile = await db.query.userProfiles.findFirst({
+    columns: { id: true },
+    where: eq(schema.userProfiles.clerkId, clerkUserId),
+  });
+  if (!profile) {
+    return new Response('User profile not found', { status: 404 });
+  }
+  const userId = profile.id; // Use the internal profile UUID
+  // --- END AUTH ---
 
   const chat = await getChatById({ id: chatId });
 
@@ -64,7 +77,8 @@ export async function PATCH(request: Request) {
     return new Response('Chat not found', { status: 404 });
   }
 
-  if (chat.userId !== user.id) {
+  // Check ownership using the internal profile UUID
+  if (chat.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 

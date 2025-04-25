@@ -2,7 +2,8 @@ import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createClient } from '@/lib/supabase/server';
+// import { createClient } from '@/lib/supabase/server'; // REMOVE SUPABASE
+import { auth } from '@clerk/nextjs/server'; // ADD CLERK
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
@@ -18,16 +19,12 @@ const FileSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  // CORRECT AUTHENTICATION CHECK
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  // --- CLERK AUTH CHECK ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  // --- END AUTH CHECK ---
 
   if (request.body === null) {
     return new Response('Request body is empty', { status: 400 });

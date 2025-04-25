@@ -1,23 +1,40 @@
-import type { NextRequest } from 'next/server';
-import { updateSession } from '@/lib/supabase/middleware';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  // Run the Supabase session update logic from the dedicated middleware utility
-  return await updateSession(request);
-}
+// Define public routes that don't require authentication
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/webhooks(.*)',
+  '/api/debug(.*)',
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  console.log(`[Middleware] Processing route: ${req.nextUrl.pathname}`);
+
+  // If it's NOT a public route, protect it
+  if (!isPublicRoute(req)) {
+    try {
+      await auth.protect();
+      console.log(`[Middleware] Protected route: ${req.nextUrl.pathname}`);
+    } catch (error) {
+      console.log(
+        `[Middleware] Unauthorized access to ${req.nextUrl.pathname}, redirecting to sign-in`,
+      );
+      const signInUrl = new URL('/sign-in', req.url);
+      signInUrl.searchParams.set('redirect_url', req.url);
+      return NextResponse.redirect(signInUrl);
+    }
+  } else {
+    console.log(`[Middleware] Public route: ${req.nextUrl.pathname}`);
+  }
+});
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - api (API routes)
-     * - auth (authentication routes like login, callback, etc.)
-     */
-    // Matcher ensures middleware runs on relevant pages, excluding static assets,
-    // API routes, and explicit auth routes (handled within updateSession).
-    '/((?!api|auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Skip Next.js internals and all static files
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
   ],
 };

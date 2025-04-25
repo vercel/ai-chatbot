@@ -1,84 +1,64 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+// import { createServerClient, type CookieOptions } from '@supabase/ssr';
+// import { type NextRequest, NextResponse } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+// export async function updateSession(request: NextRequest) {
+//   let supabaseResponse = NextResponse.next({
+//     request,
+//   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+//   const supabase = createServerClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+//     {
+//       cookies: {
+//         getAll() {
+//           return request.cookies.getAll();
+//         },
+//         setAll(cookiesToSet) {
+//           cookiesToSet.forEach(({ name, value, options }) =>
+//             request.cookies.set(name, value),
+//           );
+//           supabaseResponse = NextResponse.next({
+//             request,
+//           });
+//           cookiesToSet.forEach(({ name, value, options }) =>
+//             supabaseResponse.cookies.set(name, value, options),
+//           );
+//         },
+//       },
+//     },
+//   );
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables');
-    // Optionally, return a specific error response or redirect
-    // For now, let's just prevent client creation and let the request proceed
-    // which will likely fail later, but avoids a hard crash here.
-    // A more robust solution might redirect to an error page.
-    return supabaseResponse;
-  }
+//   // IMPORTANT: Avoid writing any logic between createServerClient and
+//   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+//   // issues with users getting randomly logged out.
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value),
-        );
-        supabaseResponse = NextResponse.next({
-          request,
-        });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options),
-        );
-      },
-    },
-  });
+//   // Remove the getUser call as it's no longer necessary with Clerk middleware
+//   // const { data: { user }, error } = await supabase.auth.getUser();
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+//   // if (error) {
+//   //   console.error('Error getting user in Supabase middleware:', error);
+//   //   // Handle error appropriately, maybe redirect to an error page or login
+//   // }
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
+//   // // if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+//   // //   // no user, potentially respond by redirecting the user to the login page
+//   // //   const url = request.nextUrl.clone();
+//   // //   url.pathname = '/login';
+//   // //   return NextResponse.redirect(url);
+//   // // }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+//   return supabaseResponse;
+// }
 
-  const pathname = request.nextUrl.pathname;
+// --- This file might be entirely removable if not used elsewhere ---
+// For now, just commenting out the Supabase-specific logic.
+// If this file IS removed, ensure `middleware.ts` doesn't import `updateSession`.
 
-  // Redirect logged-in users away from /login
-  if (user && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Redirect non-logged-in users trying to access protected routes
-  if (
-    !user &&
-    pathname !== '/login' &&
-    pathname !== '/callback' && // Allow access to the callback route
-    !pathname.startsWith('/auth') // Keep allowing /auth/* just in case
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
-  }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
-
-  return supabaseResponse;
+// Placeholder export to avoid breaking imports if the file is kept temporarily
+export async function updateSession(request: any) {
+  console.warn(
+    'updateSession from lib/supabase/middleware.ts called but is deprecated. Use Clerk middleware instead.',
+  );
+  return request; // Or return appropriate NextResponse if needed by calling code
 }

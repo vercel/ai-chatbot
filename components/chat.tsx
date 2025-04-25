@@ -20,7 +20,6 @@ import {
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
-import { createClient } from '@/lib/supabase/client';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
@@ -39,12 +38,12 @@ export function Chat({
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
-  initialAssociatedDocument: InitialDocumentProp;
+  initialAssociatedDocument?: InitialDocumentProp;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { mutate } = useSWRConfig();
+  // const { mutate } = useSWRConfig(); // Keep mutate import for now if needed elsewhere, but comment out its use here
 
   const {
     messages,
@@ -64,9 +63,12 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
+      console.log('[Chat] onFinish called. Skipping SWR history mutate.'); // Add log
+      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // COMMENT OUT THIS LINE
     },
-    onError: () => {
+    onError: (error) => {
+      // Add error logging
+      console.error('[Chat] onError called:', error);
       toast.error('An error occurred, please try again!');
     },
   });

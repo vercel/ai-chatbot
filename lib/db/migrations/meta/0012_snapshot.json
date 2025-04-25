@@ -1,6 +1,6 @@
 {
-  "id": "ee600d1a-55a8-4c62-8d8a-4ff663b960a1",
-  "prevId": "d0043a61-b54b-4f54-9e4f-501fb8e35c3d",
+  "id": "90ec9eda-cf10-4c41-9589-d03f0f314b5e",
+  "prevId": "ee600d1a-55a8-4c62-8d8a-4ff663b960a1",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -165,7 +165,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "Document_chat_id_Chat_id_fk": {
@@ -405,6 +405,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "clerk_id": {
+          "name": "clerk_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -429,7 +435,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "User_Profiles_clerk_id_unique": {
+          "name": "User_Profiles_clerk_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clerk_id"
+          ]
+        }
+      }
     },
     "public.Vote_v2": {
       "name": "Vote_v2",

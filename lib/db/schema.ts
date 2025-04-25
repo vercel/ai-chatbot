@@ -3,7 +3,7 @@ import {
   pgTable,
   varchar,
   timestamp,
-  json,
+  jsonb,
   uuid,
   text,
   primaryKey,
@@ -15,82 +15,73 @@ import { relations } from 'drizzle-orm';
 
 import type { UIMessage } from 'ai';
 
-// ADDED:
-import { jsonb } from 'drizzle-orm/pg-core';
-// --- END ADDED
-
 export const userProfiles = pgTable('User_Profiles', {
-  id: uuid('id').primaryKey().notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  clerkId: text('clerk_id').unique(),
+  email: varchar('email'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   modifiedAt: timestamp('modified_at', { withTimezone: true }).defaultNow(),
   googleRefreshToken: text('google_refresh_token'),
+  pdl_person_data: jsonb('pdl_person_data'),
+  pdl_org_data: jsonb('pdl_org_data'),
+  person_deep_research_data: text('person_deep_research_data'),
+  org_deep_research_data: text('org_deep_research_data'),
+  org_website_scrape: text('org_website_scrape'),
 });
 
 export type UserProfile = InferSelectModel<typeof userProfiles>;
 
-export const chat = pgTable(
-  'Chat',
-  {
-    id: uuid('id').primaryKey().notNull().defaultRandom(),
-    createdAt: timestamp('createdAt').notNull(),
-    title: text('title').notNull(),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => userProfiles.id, { onDelete: 'cascade' }),
-    visibility: varchar('visibility', { enum: ['public', 'private'] })
-      .notNull()
-      .default('private'),
-  },
-  (table) => {
-    return {
-      chatUserIdIdx: index('chat_user_id_idx').on(table.userId),
-    };
-  },
-);
+export const Chat = pgTable('Chat', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => userProfiles.id),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  title: text('title').notNull(),
+  visibility: text('visibility', { enum: ['public', 'private', 'unlisted'] })
+    .default('private')
+    .notNull(),
+});
 
-export type Chat = typeof chat.$inferSelect;
+export type DBChat = InferSelectModel<typeof Chat>;
 
-export const chatRelations = relations(chat, ({ many, one }) => ({
-  messages: many(message),
-  votes: many(vote),
-  userProfile: one(userProfiles, {
-    fields: [chat.userId],
-    references: [userProfiles.id],
-  }),
+export const chatRelations = relations(Chat, ({ many }) => ({
+  messages: many(Message_v2),
 }));
 
-export const message = pgTable(
-  'Message_v2',
-  {
-    id: uuid('id').primaryKey().notNull().defaultRandom(),
-    chatId: uuid('chatId')
-      .notNull()
-      .references(() => chat.id),
-    role: varchar('role').notNull(),
-    parts: json('parts').notNull(),
-    attachments: json('attachments').notNull(),
-    createdAt: timestamp('createdAt').notNull(),
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.id, table.createdAt] }),
-      messageChatIdIdx: index('message_v2_chat_id_idx').on(table.chatId),
-      messageCreatedAtIdx: index('message_created_at_idx').on(table.createdAt),
-    };
-  },
-);
+export const Message_v2 = pgTable('Message_v2', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  chatId: uuid('chatId')
+    .references(() => Chat.id, { onDelete: 'cascade' })
+    .notNull(),
+  role: text('role', {
+    enum: ['user', 'assistant', 'system', 'tool'],
+  }).notNull(),
+  parts: jsonb('parts').notNull(),
+  attachments: jsonb('attachments').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
 
-export type DBMessage = InferSelectModel<typeof message>;
+export type DBMessage = InferSelectModel<typeof Message_v2>;
+
+export const messageRelations = relations(Message_v2, ({ one }) => ({
+  chat: one(Chat, {
+    fields: [Message_v2.chatId],
+    references: [Chat.id],
+  }),
+}));
 
 export const vote = pgTable(
   'Vote_v2',
   {
     chatId: uuid('chatId')
       .notNull()
-      .references(() => chat.id),
+      .references(() => Chat.id),
     messageId: uuid('messageId')
       .notNull()
-      .references(() => message.id),
+      .references(() => Message_v2.id),
     isUpvoted: boolean('isUpvoted').notNull(),
   },
   (table) => {
@@ -116,8 +107,8 @@ export const document = pgTable(
       .notNull()
       .references(() => userProfiles.id, { onDelete: 'cascade' }),
     tags: text('tags').array(),
-    modifiedAt: timestamp('modifiedAt', { withTimezone: true }),
-    chatId: uuid('chat_id').references(() => chat.id),
+    modifiedAt: timestamp('modifiedAt', { withTimezone: true }).defaultNow(),
+    chatId: uuid('chat_id').references(() => Chat.id),
   },
   (table) => {
     return {

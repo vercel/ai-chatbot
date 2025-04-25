@@ -1,4 +1,4 @@
-import { Chat } from '@/lib/db/schema';
+import { DBChat } from '@/lib/db/schema';
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -32,7 +32,7 @@ const PureChatItem = ({
   onDelete,
   setOpenMobile,
 }: {
-  chat: Chat;
+  chat: DBChat;
   isActive: boolean;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;

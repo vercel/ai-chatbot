@@ -33,7 +33,7 @@ interface DocumentItemData {
   id: string;
   title: string;
   modifiedAt: string;
-  chat_id: string | null;
+  chatId: string | null;
   type: 'document';
 }
 type CombinedItem = ChatItemData | DocumentItemData;
@@ -52,13 +52,13 @@ const PureAllItem = ({ item, isActive }: SidebarAllItemProps) => {
   const href =
     item.type === 'chat'
       ? `/chat/${item.id}`
-      : item.chat_id
-        ? `/chat/${item.chat_id}?showArtifact=${item.id}`
+      : item.chatId
+        ? `/chat/${item.chatId}?showArtifact=${item.id}`
         : '#';
 
   const handleNavigate = (e: React.MouseEvent) => {
     const targetHref = href;
-    if (item.type === 'document' && !item.chat_id) {
+    if (item.type === 'document' && !item.chatId) {
       e.preventDefault();
       toast.error(`Document "${item.title}" is not linked to a chat.`);
       return;

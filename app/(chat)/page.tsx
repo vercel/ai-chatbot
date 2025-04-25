@@ -1,6 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
+// import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { auth } from '@clerk/nextjs/server'; // Import Clerk auth helper
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
@@ -12,15 +13,24 @@ export default async function Page() {
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
 
-  const supabase = await createClient();
+  // Remove Supabase client creation and auth call
+  // const supabase = await createClient();
+  // const {
+  //   data: { user },
+  //   error,
+  // } = await supabase.auth.getUser();
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  // Get Clerk user ID
+  const { userId } = await auth();
 
-  if (!user || error) {
-    redirect('/login');
+  // Middleware should handle redirect, but check userId as safeguard
+  if (!userId) {
+    console.error(
+      '(chat)/page.tsx: No Clerk userId found despite middleware. Redirecting.',
+    );
+    // Optionally redirect, or rely on middleware (safer if middleware is robust)
+    // redirect('/sign-in'); // Redirect to Clerk sign-in
+    return null; // Or render an unauthorized state
   }
 
   if (!modelIdFromCookie) {

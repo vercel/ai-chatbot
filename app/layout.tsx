@@ -1,9 +1,17 @@
 import { cookies } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Manrope, Fira_Code } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs';
+import { OnboardingTrigger } from '@/components/onboarding-trigger';
 
 import './globals.css';
 
@@ -55,33 +63,37 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      // `next-themes` injects an extra classname to the body element to avoid
-      // visual flicker before hydration. Hence the `suppressHydrationWarning`
-      // prop is necessary to avoid the React hydration mismatch warning.
-      // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
-      suppressHydrationWarning
-      className={`${manrope.variable} ${fira_code.variable}`}
-    >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: THEME_COLOR_SCRIPT,
-          }}
-        />
-      </head>
-      <body className="antialiased" suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster position="top-center" />
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en"
+        // `next-themes` injects an extra classname to the body element to avoid
+        // visual flicker before hydration. Hence the `suppressHydrationWarning`
+        // prop is necessary to avoid the React hydration mismatch warning.
+        // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
+        suppressHydrationWarning
+        className={`${manrope.variable} ${fira_code.variable}`}
+      >
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: THEME_COLOR_SCRIPT,
+            }}
+          />
+        </head>
+        <body className="antialiased" suppressHydrationWarning>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <OnboardingTrigger>
+              <Toaster position="top-center" />
+              {children}
+            </OnboardingTrigger>
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

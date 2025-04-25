@@ -1,11 +1,19 @@
-import type { UIMessage } from 'ai';
+import type {
+  UIMessage,
+  CoreMessage,
+  LanguageModelV1CallOptions,
+  LanguageModelV1Prompt,
+} from 'ai';
 import {
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
   streamText,
 } from 'ai';
-import { createClient as createServerClient } from '@/lib/supabase/server';
+import { auth } from '@clerk/nextjs/server';
+import { db } from '@/lib/db/queries';
+import * as schema from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -29,6 +37,7 @@ import { chatModels } from '@/lib/ai/models';
 import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
 import { revalidateTag } from 'next/cache';
+import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 
 export const maxDuration = 60;
 
@@ -59,17 +68,49 @@ export async function POST(request: Request) {
       JSON.stringify(messages, null, 2),
     );
 
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // --- CLERK AUTH & PROFILE LOOKUP ---
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      console.error('[API /api/chat] Unauthorized - No Clerk User ID found');
       return new Response('Unauthorized', { status: 401 });
     }
+    const profile = await db.query.userProfiles.findFirst({
+      columns: { id: true },
+      where: eq(schema.userProfiles.clerkId, clerkUserId),
+    });
+    const userProfileId: string | undefined = profile?.id;
+    if (!userProfileId) {
+      console.error(`Could not find user profile for Clerk ID: ${clerkUserId}`);
+      return new Response('User profile not found', { status: 500 });
+    }
+    const userId = userProfileId; // Use the profile UUID as userId internally
+    // --- END CLERK AUTH ---
 
-    const userId = user.id;
+    // --- FETCH GOOGLE OAUTH TOKEN (Added) ---
+    console.log(
+      `[API /api/chat] Attempting to fetch Google OAuth token for user: ${userId}`,
+    );
+    const tokenResult = await getGoogleOAuthToken();
+    if (tokenResult.error) {
+      // Log error but don't necessarily block the chat flow unless the token is strictly required
+      console.warn(
+        `[API /api/chat] Failed to get Google OAuth token for user ${userId}: ${tokenResult.error}`,
+      );
+      // If the token IS required for the next step, you might return an error here:
+      // return new Response(`Failed to get required Google token: ${tokenResult.error}`, { status: 500 });
+    } else if (tokenResult.token) {
+      console.log(
+        `[API /api/chat] Successfully fetched Google OAuth token for user ${userId}.`,
+      );
+      // You can now use tokenResult.token if needed for tools/AI calls later in this function
+      // Example: pass it to streamText options or tool functions
+    } else {
+      console.warn(
+        `[API /api/chat] Google OAuth token fetch for user ${userId} completed but no token was returned.`,
+      );
+    }
+    // --- END FETCH GOOGLE OAUTH TOKEN ---
+
     const finalChatId = id;
 
     const userMessage = getMostRecentUserMessage(messages);
@@ -77,7 +118,7 @@ export async function POST(request: Request) {
       return new Response('No user message found', { status: 400 });
     }
 
-    // --- RESTORING CHAT CREATION/CHECK LOGIC ---
+    // --- CHAT CREATION/CHECK LOGIC (Adapted from Original) ---
     const isNewChatAttempt =
       messages.length === 1 && messages[0].role === 'user';
 
@@ -87,22 +128,18 @@ export async function POST(request: Request) {
 
       // Generate title only for new chats
       if (documentId) {
-        const { data: documentData, error: docError } = await supabase
-          .from('Document')
-          .select('title')
-          .eq('id', documentId)
-          .eq('userId', userId)
-          .maybeSingle();
+        // Use Drizzle query instead of Supabase client
+        const documentData = await db.query.document.findFirst({
+          columns: { title: true },
+          where: and(
+            eq(schema.document.id, documentId),
+            eq(schema.document.userId, userId), // Use profile UUID
+          ),
+        });
 
-        if (docError) {
-          console.error('Error fetching document title:', docError);
-          return new Response('Error fetching document details', {
-            status: 500,
-          });
-        }
         if (!documentData) {
           console.error(
-            `Document not found or permission denied for documentId: ${documentId}`,
+            `Document not found or permission denied for documentId: ${documentId} and userProfileId: ${userId}`,
           );
           return new Response('Document not found or access denied', {
             status: 404,
@@ -117,68 +154,73 @@ export async function POST(request: Request) {
         console.log(`Generated title for new chat: "${newChatTitle}"`);
       }
 
-      // Attempt to save the new chat record
+      // Attempt to save the new chat record (using existing helper)
       try {
         await saveChat({
           id: finalChatId,
-          userId: userId,
+          userId: userId, // Use profile UUID
           title: newChatTitle,
         });
-        revalidateTag(`chat-${finalChatId}`); // Revalidate cache on successful save
+        // Revalidate chat-specific cache and user history cache
+        revalidateTag(`chat-${finalChatId}`);
+        revalidateTag(`history-${userId}`);
         console.log(
           `Saved new chat with ID: ${finalChatId} and Title: "${newChatTitle}"`,
         );
 
-        // Link document if needed
+        // Link document if needed (using Drizzle)
         if (documentId) {
           console.log(
             `Attempting to link document ${documentId} to chat ${finalChatId}`,
           );
-          const { error: updateError } = await supabase
-            .from('Document')
-            .update({ chat_id: finalChatId })
-            .eq('id', documentId)
-            .eq('userId', userId);
-
-          if (updateError) {
+          try {
+            await db
+              .update(schema.document)
+              .set({ chatId: finalChatId })
+              .where(
+                and(
+                  eq(schema.document.id, documentId),
+                  eq(schema.document.userId, userId), // Use profile UUID
+                ),
+              );
+            console.log(
+              `Successfully linked document ${documentId} to chat ${finalChatId}`,
+            );
+          } catch (updateError) {
             console.error(
               `Failed to update document ${documentId} with chat_id ${finalChatId}:`,
               updateError,
             );
-          } else {
-            console.log(
-              `Successfully linked document ${documentId} to chat ${finalChatId}`,
-            );
+            // Continue even if linking fails? Or return error?
           }
         }
       } catch (saveError: any) {
         // Handle duplicate key error gracefully (race condition)
         if (saveError.code === '23505') {
+          // Assuming Drizzle throws similar error code
           console.warn(
             `Chat (ID: ${finalChatId}) already exists, likely due to race condition. Proceeding.`,
           );
-          revalidateTag(`chat-${finalChatId}`); // Still revalidate
+          revalidateTag(`chat-${finalChatId}`);
         } else {
-          // For other errors, log and return 500
           console.error('Failed to save chat:', saveError);
           return new Response('Failed to save chat', { status: 500 });
         }
       }
     } else {
-      // For existing chats, just verify ownership
+      // For existing chats, just verify ownership (using existing helper)
       console.log(
         `Verifying ownership for existing chat (ID: ${finalChatId})...`,
       );
-      const chat = await getChatById({ id: finalChatId }); // Fetch for ownership check
+      const chat = await getChatById({ id: finalChatId });
       if (!chat) {
-        // This case means the chat ID exists in the URL/request but not the DB.
-        // This could happen if a chat was deleted between requests.
         console.error(
           `Existing chat check failed: Chat (ID: ${finalChatId}) not found in DB.`,
         );
         return new Response('Chat not found', { status: 404 });
       }
       if (chat.userId !== userId) {
+        // Use profile UUID for check
         console.warn(
           `Unauthorized attempt to access chat (ID: ${finalChatId}) by user ${userId}.`,
         );
@@ -186,9 +228,9 @@ export async function POST(request: Request) {
       }
       console.log(`Ownership verified for chat (ID: ${finalChatId}).`);
     }
-    // --- END OF RESTORED LOGIC ---
+    // --- END CHAT CREATION/CHECK LOGIC ---
 
-    // Save the current user message (this runs for both new and existing chats AFTER the above block)
+    // Save the current user message (using existing helper)
     try {
       await saveMessages({
         messages: [
@@ -196,7 +238,7 @@ export async function POST(request: Request) {
             chatId: finalChatId,
             id: userMessage.id,
             role: 'user',
-            parts: userMessage.parts ?? [],
+            parts: userMessage.parts ?? [], // Ensure parts/attachments are handled
             attachments: userMessage.experimental_attachments ?? [],
             createdAt: new Date(),
           },
@@ -206,14 +248,12 @@ export async function POST(request: Request) {
         `Saved user message (ID: ${userMessage.id}) for chat ${finalChatId}`,
       );
     } catch (error: any) {
-      // Handle potential foreign key violation if saveChat failed *and* the duplicate catch didn't run (should be rare)
       if (error.code === '23503') {
-        // Foreign key violation
+        // Assuming Drizzle foreign key error code
         console.error(
-          `Failed to save message: Chat (ID: ${finalChatId}) does not exist. This might indicate an issue syncing chat creation.`,
+          `Failed to save message: Chat (ID: ${finalChatId}) does not exist.`,
           error,
         );
-        // Return a specific error, maybe 404 or 500 depending on desired behavior
         return new Response('Chat record not found for message', {
           status: 404,
         });
@@ -222,16 +262,31 @@ export async function POST(request: Request) {
           `Failed to save user message (ID: ${userMessage.id}) for chat ${finalChatId}:`,
           error,
         );
-        // Optionally return 500 here, or let streaming proceed despite message save failure
         return new Response('Failed to save message', { status: 500 });
       }
     }
 
-    // Check if selected model is an n8n assistant
+    // ---- START N8N CHECK LOGS ----
+    console.log(
+      `[API Route] Checking model: selectedChatModel = "${selectedChatModel}"`,
+    );
     const selectedModelInfo = chatModels.find(
       (m) => m.id === selectedChatModel,
     );
+    console.log(`[API Route] Found selectedModelInfo:`, selectedModelInfo);
+    console.log(
+      `[API Route] Evaluating selectedModelInfo?.isN8n: ${selectedModelInfo?.isN8n}`,
+    );
+    // ---- END N8N CHECK LOGS ----
+
+    // Check if selected model is an n8n assistant
     if (selectedModelInfo?.isN8n) {
+      // ---- START INSIDE N8N IF LOG ----
+      console.log(
+        `[API Route] Entering N8n model block for model: ${selectedChatModel}`,
+      );
+      // ---- END INSIDE N8N IF LOG ----
+
       const webhookUrl = n8nWebhookUrls[selectedChatModel];
       if (!webhookUrl) {
         console.error(
@@ -241,7 +296,6 @@ export async function POST(request: Request) {
       }
 
       // *** Instantiate the N8nLanguageModel ***
-      // Ensure userMessage is defined before accessing its properties
       const lastUserMessageId = userMessage?.id ?? null;
       const lastUserMessageCreatedAt = userMessage?.createdAt ?? null;
 
@@ -255,59 +309,68 @@ export async function POST(request: Request) {
         webhookUrl: webhookUrl,
         modelId: selectedChatModel,
         chatId: finalChatId,
-        userId: userId,
-        messageId: lastUserMessageId, // Pass the ID
-        datetime: lastUserMessageCreatedAt, // Pass the timestamp
+        userId: userId, // Use profile UUID
+        messageId: lastUserMessageId,
+        datetime: lastUserMessageCreatedAt,
+        googleToken: tokenResult.token, // Pass the fetched token (will be null if fetch failed or no token)
       });
 
-      // *** USE createDataStreamResponse with streamText and the n8nModel ***
+      // *** USE createDataStreamResponse with streamText and the n8nModel (Restoring Original Logic) ***
       return createDataStreamResponse({
         execute: (dataStream) => {
           const result = streamText({
-            model: n8nModel, // Use the adapter model here
-            messages, // Pass the message history
-            // REMOVED context from here:
-            // chatId: finalChatId,
-            // userId: userId,
-            // REMOVED system prompt and tools:
-            // system: systemPrompt({ selectedChatModel }),
-            // tools: { ... },
-            // experimental_activeTools: [],
-
-            // Keep common settings
-            maxSteps: 5, // Adjust if needed
+            model: n8nModel,
+            // Ensure messages are filtered and asserted correctly
+            messages: messages.filter(
+              (m) => m.role !== 'data',
+            ) as CoreMessage[],
+            maxSteps: 5, // Keep original settings
             experimental_transform: smoothStream({ chunking: 'word' }),
             experimental_generateMessageId: generateUUID,
-
-            // onFinish should now work correctly to save the final message
             onFinish: async ({ response }) => {
+              console.log(
+                '[API Route / N8n / onFinish] Reached onFinish handler.',
+              ); // LOG: Entered handler
               if (userId) {
+                console.log(
+                  `[API Route / N8n / onFinish] User ID ${userId} present.`,
+                ); // LOG: User ID check
                 try {
-                  // Get the assistant message constructed by streamText
+                  console.log(
+                    '[API Route / N8n / onFinish] Attempting to get trailing message ID.',
+                  ); // LOG: Before getTrailingMessageId
                   const assistantId = getTrailingMessageId({
                     messages: response.messages.filter(
                       (message) => message.role === 'assistant',
                     ),
                   });
-
+                  console.log(
+                    `[API Route / N8n / onFinish] Got assistantId: ${assistantId}`,
+                  ); // LOG: After getTrailingMessageId
                   if (!assistantId) {
+                    console.error(
+                      '[API Route / N8n / onFinish] Error: No assistant message found after stream!',
+                    );
                     throw new Error(
                       'No assistant message found after n8n stream!',
                     );
                   }
-
+                  console.log(
+                    '[API Route / N8n / onFinish] Attempting appendResponseMessages.',
+                  ); // LOG: Before append
                   const [, assistantMessage] = appendResponseMessages({
                     messages: [userMessage],
                     responseMessages: response.messages,
                   });
-
-                  // Save the final message (including the parts field used by DB)
+                  console.log(
+                    '[API Route / N8n / onFinish] Attempting saveMessages.',
+                  ); // LOG: Before save
                   await saveMessages({
                     messages: [
                       {
-                        id: assistantId, // Use the ID generated by streamText
+                        id: assistantId,
                         chatId: finalChatId,
-                        role: assistantMessage.role,
+                        role: 'assistant', // Explicitly set role from previous fix
                         parts: assistantMessage.parts ?? [],
                         attachments:
                           assistantMessage.experimental_attachments ?? [],
@@ -316,22 +379,30 @@ export async function POST(request: Request) {
                     ],
                   });
                   console.log(
-                    `Saved final n8n message (ID: ${assistantId}) for chat ${finalChatId}`,
-                  );
+                    `[API Route / N8n / onFinish] SUCCESS: Saved final n8n message (ID: ${assistantId}) for chat ${finalChatId}`,
+                  ); // LOG: Success
                 } catch (saveError) {
-                  console.error('Failed to save n8n chat message:', saveError);
+                  // LOG: Failure
+                  console.error(
+                    '[API Route / N8n / onFinish] FAILURE: Failed to save n8n chat message:',
+                    saveError,
+                  );
                 }
+              } else {
+                console.warn(
+                  '[API Route / N8n / onFinish] User ID not found, cannot save message.',
+                ); // LOG: No user ID
               }
             },
             experimental_telemetry: AISDKExporter.getSettings(),
           });
 
           console.log(
-            `[API Route] Calling streamText for chat ${finalChatId} with Langsmith telemetry enabled.`,
+            `[API Route] Calling streamText for N8N chat ${finalChatId} with Langsmith telemetry enabled.`,
           );
           result.consumeStream();
           result.mergeIntoDataStream(dataStream, {
-            sendReasoning: false, // No reasoning for n8n model
+            sendReasoning: false,
           });
         },
         onError: (error) => {
@@ -341,13 +412,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // Original code for standard models
+    // STANDARD MODEL LOGIC (From Original, Adapted Tools)
+    // Ensure this part remains consistent with the previous version
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
-          messages,
+          messages: messages.filter((m) => m.role !== 'data') as CoreMessage[], // Keep filter + assertion
           maxSteps: 5,
           experimental_activeTools: [
             'getWeather',
@@ -360,13 +432,13 @@ export async function POST(request: Request) {
           tools: {
             getWeather,
             createDocument: createDocument({
-              user,
+              userId: userId, // Pass profile UUID
               dataStream,
               chatId: finalChatId,
             }),
-            updateDocument: updateDocument({ user, dataStream }),
+            updateDocument: updateDocument({ userId: userId, dataStream }), // Pass profile UUID
             requestSuggestions: requestSuggestions({
-              user,
+              userId: userId, // Pass profile UUID
               dataStream,
             }),
           },
@@ -378,22 +450,20 @@ export async function POST(request: Request) {
                     (message) => message.role === 'assistant',
                   ),
                 });
-
                 if (!assistantId) {
                   throw new Error('No assistant message found!');
                 }
-
                 const [, assistantMessage] = appendResponseMessages({
                   messages: [userMessage],
                   responseMessages: response.messages,
                 });
-
+                // Save message - will fix role type in next step
                 await saveMessages({
                   messages: [
                     {
                       id: assistantId,
                       chatId: finalChatId,
-                      role: assistantMessage.role,
+                      role: 'assistant',
                       parts: assistantMessage.parts ?? [],
                       attachments:
                         assistantMessage.experimental_attachments ?? [],
@@ -402,7 +472,10 @@ export async function POST(request: Request) {
                   ],
                 });
               } catch (error) {
-                console.error('Error during streamText execution:', error);
+                console.error(
+                  'Failed to save standard chat message after stream:',
+                  error,
+                );
               }
             }
           },
@@ -410,7 +483,7 @@ export async function POST(request: Request) {
         });
 
         console.log(
-          `[API Route] Calling streamText for n8n chat ${finalChatId} with Langsmith telemetry enabled.`,
+          `[API Route] Calling streamText for standard chat ${finalChatId} with Langsmith telemetry enabled.`,
         );
         result.consumeStream();
         result.mergeIntoDataStream(dataStream, {
@@ -422,47 +495,65 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    // Log the actual error for debugging
     console.error('Error in POST /api/chat:', error);
     return new Response('An error occurred while processing your request!', {
-      status: 500, // Return 500 for internal server errors
+      status: 500,
     });
   }
 }
 
+// Modify DELETE to use Clerk Auth and profile ID
 export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  // Get ID from body as per current working version, not searchParams
+  const { id } = await request.json();
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response('Missing chat ID', { status: 400 });
   }
 
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  // --- CLERK AUTH & PROFILE LOOKUP ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
+    console.error('[DELETE /api/chat] Unauthorized - No Clerk User ID found');
     return new Response('Unauthorized', { status: 401 });
   }
-
-  const userId = user.id;
+  const profile = await db.query.userProfiles.findFirst({
+    columns: { id: true },
+    where: eq(schema.userProfiles.clerkId, clerkUserId),
+  });
+  const userId = profile?.id; // Profile UUID
+  if (!userId) {
+    console.error(
+      `[DELETE /api/chat] User profile not found for Clerk ID: ${clerkUserId}`,
+    );
+    return new Response('User profile not found', { status: 500 });
+  }
+  // --- END CLERK AUTH ---
 
   try {
-    const chat = await getChatById({ id });
+    const chat = await getChatById({ id: id }); // Use existing helper
 
+    // If chat doesn't exist, it might have been deleted already. Return OK.
+    if (!chat) {
+      console.log(`[DELETE /api/chat] Chat ${id} not found, returning OK.`);
+      return new Response('OK', { status: 200 });
+    }
+
+    // Verify ownership using the profile UUID
     if (chat.userId !== userId) {
+      console.warn(
+        `[DELETE /api/chat] Unauthorized attempt to delete chat ${id} by user ${userId}.`,
+      );
       return new Response('Unauthorized', { status: 401 });
     }
 
-    await deleteChatById({ id });
-
-    return new Response('Chat deleted', { status: 200 });
+    // Use existing helper to delete
+    await deleteChatById({ id: id });
+    revalidateTag(`chat-${id}`); // Keep revalidation
+    console.log(`[DELETE /api/chat] Deleted chat ${id} by user ${userId}.`);
+    return new Response('OK', { status: 200 }); // Return OK on success
   } catch (error) {
-    return new Response('An error occurred while processing your request!', {
-      status: 500,
-    });
+    console.error('Error deleting chat:', error);
+    return new Response('Failed to delete chat', { status: 500 });
   }
 }

@@ -1,4 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+// import { createClient } from '@/lib/supabase/server'; // REMOVE SUPABASE
+import { auth } from '@clerk/nextjs/server'; // ADD CLERK
+import { db } from '@/lib/db/queries'; // Need DB for profile lookup
+import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
+import { eq } from 'drizzle-orm'; // Need eq for profile lookup
 import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
@@ -14,17 +18,20 @@ export async function GET(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  // --- CLERK AUTH & PROFILE LOOKUP ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
     return new Response('Unauthorized', { status: 401 });
   }
-
-  const userId = user.id;
+  const profile = await db.query.userProfiles.findFirst({
+    columns: { id: true },
+    where: eq(schema.userProfiles.clerkId, clerkUserId),
+  });
+  if (!profile) {
+    return new Response('User profile not found', { status: 404 });
+  }
+  const userId = profile.id; // Use the internal profile UUID
+  // --- END AUTH ---
 
   const documents = await getDocumentsById({ id });
 
@@ -34,6 +41,7 @@ export async function GET(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
+  // Check ownership using the internal profile UUID
   if (document.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
@@ -49,17 +57,20 @@ export async function POST(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  // --- CLERK AUTH & PROFILE LOOKUP ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
     return new Response('Unauthorized', { status: 401 });
   }
-
-  const userId = user.id;
+  const profile = await db.query.userProfiles.findFirst({
+    columns: { id: true },
+    where: eq(schema.userProfiles.clerkId, clerkUserId),
+  });
+  if (!profile) {
+    return new Response('User profile not found', { status: 404 });
+  }
+  const userId = profile.id; // Use the internal profile UUID
+  // --- END AUTH ---
 
   const {
     content,
@@ -69,6 +80,7 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: ArtifactKind; chatId: string } =
     await request.json();
 
+  // Save document using the internal profile UUID
   const document = await saveDocument({
     id,
     content,
@@ -91,22 +103,31 @@ export async function PATCH(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  // --- CLERK AUTH & PROFILE LOOKUP ---
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
     return new Response('Unauthorized', { status: 401 });
   }
-
-  const userId = user.id;
+  const profile = await db.query.userProfiles.findFirst({
+    columns: { id: true },
+    where: eq(schema.userProfiles.clerkId, clerkUserId),
+  });
+  if (!profile) {
+    return new Response('User profile not found', { status: 404 });
+  }
+  const userId = profile.id; // Use the internal profile UUID
+  // --- END AUTH ---
 
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
+  // Add check for document existence before checking ownership
+  if (!document) {
+    return new Response('Document not found', { status: 404 });
+  }
+
+  // Check ownership using the internal profile UUID
   if (document.userId !== userId) {
     return new Response('Unauthorized', { status: 401 });
   }
