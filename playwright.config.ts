@@ -54,8 +54,25 @@ export default defineConfig({
     {
       name: 'e2e',
       testMatch: /e2e\/.*.test.ts/,
+      testIgnore: /e2e\/reasoning.test.ts/,
       use: {
         ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'setup:reasoning',
+      testMatch: /e2e\/reasoning.setup.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'reasoning',
+      testMatch: /e2e\/reasoning.test.ts/,
+      dependencies: ['setup:reasoning'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.reasoning/session.json',
       },
     },
     {

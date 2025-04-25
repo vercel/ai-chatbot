@@ -1,17 +1,12 @@
 import { ChatPage } from '../pages/chat';
-import { test, expect } from '../fixtures';
+import { test, expect } from '@playwright/test';
 
-test.describe('Chat activity with reasoning', () => {
+test.describe('chat activity with reasoning', () => {
   let chatPage: ChatPage;
 
   test.beforeEach(async ({ page }) => {
     chatPage = new ChatPage(page);
     await chatPage.createNewChat();
-    await chatPage.chooseModelFromSelector('chat-model-reasoning');
-
-    await expect(chatPage.getSelectedModel()).resolves.toEqual(
-      'Reasoning model',
-    );
   });
 
   test('Send user message and generate response with reasoning', async () => {
