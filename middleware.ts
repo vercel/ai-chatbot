@@ -22,6 +22,8 @@ export async function middleware(request: NextRequest) {
     secret: process.env.AUTH_SECRET,
   });
 
+  console.log({ token });
+
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);
 
