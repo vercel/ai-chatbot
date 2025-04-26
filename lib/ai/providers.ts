@@ -52,6 +52,8 @@ export const myProvider = isTestEnvironment
         'o4-mini': openai('o4-mini'),
       },
       imageModels: {
-        'small-model': fal.image('fal-ai/recraft-v3'),
+        // 'small-model': fal.image('fal-ai/recraft-v3'), // Commented out Fal model
+        'gpt-image-1': openai.image('gpt-image-1'), // Added OpenAI gpt-image-1
+        'dall-e-3': openai.image('dall-e-3'), // Added OpenAI dall-e-3
       },
     });
