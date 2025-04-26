@@ -16,7 +16,7 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
   },
 
   /*
-   * For user with an account
+   * For users with an account
    */
   regular: {
     maxMessagesPerDay: 100,
