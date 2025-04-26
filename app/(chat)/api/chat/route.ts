@@ -1,16 +1,16 @@
 import {
-  type UIMessage,
   appendClientMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
   streamText,
 } from 'ai';
-import { auth } from '@/app/(auth)/auth';
+import { auth, type UserType } from '@/app/(auth)/auth';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
+  getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
   saveMessages,
@@ -23,29 +23,44 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import { postRequestBodySchema, type PostRequestBody } from './schema';
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  let requestBody: PostRequestBody;
+
   try {
-    const {
-      id,
-      message,
-      selectedChatModel,
-    }: {
-      id: string;
-      message: UIMessage;
-      selectedChatModel: string;
-    } = await request.json();
+    const json = await request.json();
+    requestBody = postRequestBodySchema.parse(json);
+  } catch (_) {
+    return new Response('Invalid request body', { status: 400 });
+  }
+
+  try {
+    const { id, message, selectedChatModel } = requestBody;
 
     const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    if (!message) {
-      return new Response('No user message found', { status: 400 });
+    const userType: UserType = session.user.type;
+
+    const messageCount = await getMessageCountByUserId({
+      id: session.user.id,
+      differenceInHours: 24,
+    });
+
+    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+      return new Response(
+        'You have exceeded your maximum number of messages for the day! Please try again later.',
+        {
+          status: 429,
+        },
+      );
     }
 
     const chat = await getChatById({ id });

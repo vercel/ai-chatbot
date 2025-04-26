@@ -10,21 +10,21 @@ test.describe
       adaContext,
     }) => {
       const response = await adaContext.request.post('/api/chat', {
-        data: {},
+        data: JSON.stringify({}),
       });
-      expect(response.status()).toBe(500);
+      expect(response.status()).toBe(400);
 
       const text = await response.text();
-      expect(text).toEqual('An error occurred while processing your request!');
+      expect(text).toEqual('Invalid request body');
     });
 
     test('Ada can invoke chat generation', async ({ adaContext }) => {
       const chatId = generateUUID();
 
-      const response = await adaContext.request.post('api/chat', {
+      const response = await adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
-          messages: TEST_PROMPTS.SKY.MESSAGES,
+          message: TEST_PROMPTS.SKY.MESSAGE,
           selectedChatModel: 'chat-model',
         },
       });
@@ -44,10 +44,10 @@ test.describe
     }) => {
       const [chatId] = chatIdsCreatedByAda;
 
-      const response = await babbageContext.request.post('api/chat', {
+      const response = await babbageContext.request.post('/api/chat', {
         data: {
           id: chatId,
-          messages: TEST_PROMPTS.GRASS.MESSAGES,
+          message: TEST_PROMPTS.GRASS.MESSAGE,
           selectedChatModel: 'chat-model',
         },
       });
@@ -61,7 +61,7 @@ test.describe
       const [chatId] = chatIdsCreatedByAda;
 
       const response = await babbageContext.request.delete(
-        `api/chat?id=${chatId}`,
+        `/api/chat?id=${chatId}`,
       );
       expect(response.status()).toBe(403);
 
@@ -72,7 +72,9 @@ test.describe
     test('Ada can delete her own chat', async ({ adaContext }) => {
       const [chatId] = chatIdsCreatedByAda;
 
-      const response = await adaContext.request.delete(`api/chat?id=${chatId}`);
+      const response = await adaContext.request.delete(
+        `/api/chat?id=${chatId}`,
+      );
       expect(response.status()).toBe(200);
 
       const deletedChat = await response.json();
