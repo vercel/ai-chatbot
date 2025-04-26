@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
             profile_image_url: userData.image_url, // Keep for N8N if needed
             created_at: new Date(userData.created_at).toISOString(),
             updated_at: new Date(userData.updated_at).toISOString(),
-            your_internal_db_id: profileIdToUse,
+            internal_db_user_id: profileIdToUse,
           };
 
           // Call N8N Webhook
@@ -168,7 +168,10 @@ export async function POST(req: NextRequest) {
                 const client = await clerkClient();
                 // Use publicMetadata for the Clerk client call
                 await client.users.updateUserMetadata(clerkId, {
-                  publicMetadata: { onboarding_webhook_sent: true },
+                  publicMetadata: {
+                    onboarding_webhook_sent: true,
+                    internal_db_id: profileIdToUse,
+                  },
                 });
                 console.log(
                   `Clerk Webhook: Successfully updated Clerk metadata for ${clerkId}.`,
