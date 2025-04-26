@@ -11,6 +11,8 @@ export async function GET(request: Request) {
     secret: process.env.AUTH_SECRET,
   });
 
+  console.log('/api/guest/token', { token });
+
   if (token) {
     return NextResponse.redirect(new URL('/', request.url));
   }
