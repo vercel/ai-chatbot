@@ -37,6 +37,7 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  debug: true,
   providers: [
     Credentials({
       credentials: {},
