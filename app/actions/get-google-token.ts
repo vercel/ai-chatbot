@@ -18,11 +18,13 @@ export async function getGoogleOAuthToken(): Promise<{
     const client = await clerkClient();
 
     // Fetch the OAuth access token using the awaited client
-    const provider = 'oauth_google';
-    // Type is PaginatedResourceResponse, not array directly - adjust variable name and remove explicit type
+    // Follow deprecation warning: Use unprefixed provider name for the *function argument*
+    const providerArg = 'google';
+    const providerCheck = 'oauth_google'; // Still check response data for this
+
     const oauthTokensResponse = await client.users.getUserOauthAccessToken(
       userId,
-      provider,
+      providerArg, // Use 'google' as the argument here
     );
 
     // --- Add Detailed Logging ---
@@ -33,8 +35,9 @@ export async function getGoogleOAuthToken(): Promise<{
     // --- End Detailed Logging ---
 
     // Access .data before using .find()
+    // Keep checking the response data for the 'oauth_google' provider name
     const googleToken = oauthTokensResponse?.data?.find(
-      (token: OauthAccessToken) => token.provider === provider,
+      (token: OauthAccessToken) => token.provider === providerCheck,
     );
 
     if (!googleToken || !googleToken.token) {
