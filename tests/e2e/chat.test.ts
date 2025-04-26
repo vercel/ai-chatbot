@@ -1,7 +1,7 @@
 import { ChatPage } from '../pages/chat';
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 
-test.describe('chat activity', () => {
+test.describe('Chat activity', () => {
   let chatPage: ChatPage;
 
   test.beforeEach(async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe('chat activity', () => {
     await chatPage.createNewChat();
   });
 
-  test('send a user message and receive response', async () => {
+  test('Send a user message and receive response', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
@@ -17,7 +17,7 @@ test.describe('chat activity', () => {
     expect(assistantMessage.content).toContain("It's just green duh!");
   });
 
-  test('redirect to /chat/:id after submitting message', async () => {
+  test('Redirect to /chat/:id after submitting message', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
@@ -26,7 +26,7 @@ test.describe('chat activity', () => {
     await chatPage.hasChatIdInUrl();
   });
 
-  test('send a user message from suggestion', async () => {
+  test('Send a user message from suggestion', async () => {
     await chatPage.sendUserMessageFromSuggestion();
     await chatPage.isGenerationComplete();
 
@@ -36,7 +36,7 @@ test.describe('chat activity', () => {
     );
   });
 
-  test('toggle between send/stop button based on activity', async () => {
+  test('Toggle between send/stop button based on activity', async () => {
     await expect(chatPage.sendButton).toBeVisible();
     await expect(chatPage.sendButton).toBeDisabled();
 
@@ -51,14 +51,14 @@ test.describe('chat activity', () => {
     await expect(chatPage.sendButton).toBeVisible();
   });
 
-  test('stop generation during submission', async () => {
+  test('Stop generation during submission', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await expect(chatPage.stopButton).toBeVisible();
     await chatPage.stopButton.click();
     await expect(chatPage.sendButton).toBeVisible();
   });
 
-  test('edit user message and resubmit', async () => {
+  test('Edit user message and resubmit', async () => {
     await chatPage.sendUserMessage('Why is grass green?');
     await chatPage.isGenerationComplete();
 
@@ -74,13 +74,13 @@ test.describe('chat activity', () => {
     expect(updatedAssistantMessage.content).toContain("It's just blue duh!");
   });
 
-  test('hide suggested actions after sending message', async () => {
+  test('Hide suggested actions after sending message', async () => {
     await chatPage.isElementVisible('suggested-actions');
     await chatPage.sendUserMessageFromSuggestion();
     await chatPage.isElementNotVisible('suggested-actions');
   });
 
-  test('upload file and send image attachment with message', async () => {
+  test('Upload file and send image attachment with message', async () => {
     await chatPage.addImageAttachment();
 
     await chatPage.isElementVisible('attachments-preview');
@@ -98,7 +98,7 @@ test.describe('chat activity', () => {
     expect(assistantMessage.content).toBe('This painting is by Monet!');
   });
 
-  test('call weather tool', async () => {
+  test('Call weather tool', async () => {
     await chatPage.sendUserMessage("What's the weather in sf?");
     await chatPage.isGenerationComplete();
 
@@ -109,7 +109,7 @@ test.describe('chat activity', () => {
     );
   });
 
-  test('upvote message', async () => {
+  test('Upvote message', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -118,7 +118,7 @@ test.describe('chat activity', () => {
     await chatPage.isVoteComplete();
   });
 
-  test('downvote message', async () => {
+  test('Downvote message', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -127,7 +127,7 @@ test.describe('chat activity', () => {
     await chatPage.isVoteComplete();
   });
 
-  test('update vote', async () => {
+  test('Update vote', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
