@@ -1,5 +1,5 @@
 import {
-  type UIMessage,
+  appendClientMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
@@ -11,14 +11,11 @@ import {
   deleteChatById,
   getChatById,
   getMessageCountByUserId,
+  getMessagesByChatId,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import {
-  generateUUID,
-  getMostRecentUserMessage,
-  getTrailingMessageId,
-} from '@/lib/utils';
+import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
@@ -27,24 +24,26 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import { postRequestBodySchema, type PostRequestBody } from './schema';
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  let requestBody: PostRequestBody;
+
   try {
-    const {
-      id,
-      messages,
-      selectedChatModel,
-    }: {
-      id: string;
-      messages: Array<UIMessage>;
-      selectedChatModel: string;
-    } = await request.json();
+    const json = await request.json();
+    requestBody = postRequestBodySchema.parse(json);
+  } catch (_) {
+    return new Response('Invalid request body', { status: 400 });
+  }
+
+  try {
+    const { id, message, selectedChatModel } = requestBody;
 
     const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
 
@@ -64,17 +63,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const userMessage = getMostRecentUserMessage(messages);
-
-    if (!userMessage) {
-      return new Response('No user message found', { status: 400 });
-    }
-
     const chat = await getChatById({ id });
 
     if (!chat) {
       const title = await generateTitleFromUserMessage({
-        message: userMessage,
+        message,
       });
 
       await saveChat({ id, userId: session.user.id, title });
@@ -84,14 +77,22 @@ export async function POST(request: Request) {
       }
     }
 
+    const previousMessages = await getMessagesByChatId({ id });
+
+    const messages = appendClientMessage({
+      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
+      messages: previousMessages,
+      message,
+    });
+
     await saveMessages({
       messages: [
         {
           chatId: id,
-          id: userMessage.id,
+          id: message.id,
           role: 'user',
-          parts: userMessage.parts,
-          attachments: userMessage.experimental_attachments ?? [],
+          parts: message.parts,
+          attachments: message.experimental_attachments ?? [],
           createdAt: new Date(),
         },
       ],
@@ -138,7 +139,7 @@ export async function POST(request: Request) {
                 }
 
                 const [, assistantMessage] = appendResponseMessages({
-                  messages: [userMessage],
+                  messages: [message],
                   responseMessages: response.messages,
                 });
 
@@ -176,7 +177,7 @@ export async function POST(request: Request) {
         return 'Oops, an error occurred!';
       },
     });
-  } catch (error) {
+  } catch (_) {
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });

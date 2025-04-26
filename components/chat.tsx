@@ -46,11 +46,15 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, selectedChatModel: selectedChatModel },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
+    experimental_prepareRequestBody: (body) => ({
+      id,
+      message: body.messages.at(-1),
+      selectedChatModel,
+    }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
