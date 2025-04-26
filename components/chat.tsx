@@ -12,9 +12,10 @@ import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
-import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { toast } from './toast';
+import type { Session } from 'next-auth';
 
 export function Chat({
   id,
@@ -22,12 +23,14 @@ export function Chat({
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
+  session,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  session: Session;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -51,8 +54,11 @@ export function Chat({
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
-    onError: () => {
-      toast.error('An error occurred, please try again!');
+    onError: (error) => {
+      toast({
+        type: 'error',
+        description: error.message,
+      });
     },
   });
 
@@ -72,6 +78,7 @@ export function Chat({
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
+          session={session}
         />
 
         <Messages
