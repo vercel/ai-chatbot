@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { guestRegex } from './lib/constants';
+import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,10 +20,8 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
-    secureCookie: true,
+    secureCookie: !isDevelopmentEnvironment,
   });
-
-  console.log('mw', { token, secret: process.env.AUTH_SECRET, request });
 
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);
