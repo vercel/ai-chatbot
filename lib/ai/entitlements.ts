@@ -1,30 +1,26 @@
+import type { UserType } from '@/app/(auth)/auth';
 import type { ChatModel } from './models';
-
-export type MembershipTier = 'guest' | 'free';
 
 interface Entitlements {
   maxMessagesPerDay: number;
-  chatModelsAvailable: Array<ChatModel['id']>;
+  availableChatModelIds: Array<ChatModel['id']>;
 }
 
-export const entitlementsByMembershipTier: Record<
-  MembershipTier,
-  Entitlements
-> = {
+export const entitlementsByUserType: Record<UserType, Entitlements> = {
   /*
    * For users without an account
    */
   guest: {
     maxMessagesPerDay: 20,
-    chatModelsAvailable: ['chat-model', 'chat-model-reasoning'],
+    availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
   },
 
   /*
    * For user with an account
    */
-  free: {
+  regular: {
     maxMessagesPerDay: 100,
-    chatModelsAvailable: ['chat-model', 'chat-model-reasoning'],
+    availableChatModelIds: ['chat-model', 'chat-model-reasoning'],
   },
 
   /*
