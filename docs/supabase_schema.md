@@ -1,63 +1,10 @@
 # Database Schema Documentation
 
-This document outlines the tables found in the Supabase project `dvlcpljodhsfrucieoqd`, grouped by schema.
+This document outlines the tables found in the Supabase project `dvlcpljodhsfrucieoqd`, updated as of 2025-04-27. Tables are grouped by schema.
 
-## Schema: `auth`
+*(Note: Live row estimates, sizes, and dead row counts are snapshots and may change frequently.)*
 
-Standard Supabase Auth schema.
-
-- `users`: Stores user login data. (RLS enabled)
-- `refresh_tokens`: Stores refresh tokens for JWTs. (RLS enabled)
-- `instances`: Manages users across multiple sites. (RLS enabled)
-- `audit_log_entries`: Audit trail for user actions. (RLS enabled)
-- `schema_migrations`: Manages updates to the auth system. (RLS enabled)
-- `identities`: Stores identities (e.g., OAuth) associated with users. (RLS enabled)
-- `sessions`: Stores session data associated with users. (RLS enabled)
-- `mfa_factors`: Stores metadata about MFA factors. (RLS enabled)
-- `mfa_challenges`: Stores metadata about MFA challenge requests. (RLS enabled)
-- `mfa_amr_claims`: Stores AMR claims for MFA. (RLS enabled)
-- `sso_providers`: Manages SSO provider information. (RLS enabled)
-- `sso_domains`: Manages SSO domain mapping. (RLS enabled)
-- `saml_providers`: Manages SAML IdP connections. (RLS enabled)
-- `saml_relay_states`: Contains SAML Relay State information. (RLS enabled)
-- `flow_state`: Stores metadata for PKCE logins. (RLS enabled)
-- `one_time_tokens`: Stores one-time tokens (e.g., confirmation). (RLS enabled)
-
-## Schema: `storage`
-
-Standard Supabase Storage schema.
-
-- `buckets`: Stores storage bucket information. (RLS enabled)
-- `objects`: Stores storage object information. (RLS enabled)
-- `migrations`: Manages updates to the storage system. (RLS enabled)
-- `s3_multipart_uploads`: Tracks S3 multipart uploads. (RLS enabled)
-- `s3_multipart_uploads_parts`: Tracks parts of S3 multipart uploads. (RLS enabled)
-
-## Schema: `pgsodium`
-
-Schema for the `pgsodium` extension (transparent column encryption).
-
-- `key`: Holds metadata for derived cryptographic keys.
-
-## Schema: `vault`
-
-Schema for the `supabase-vault` extension (encrypted secrets).
-
-- `secrets`: Table with encrypted `secret` column for storing sensitive information.
-
-## Schema: `realtime`
-
-Standard Supabase Realtime schema.
-
-- `schema_migrations`: Manages updates to the Realtime system.
-- `subscription`: Tracks Realtime subscriptions.
-- `messages`: Internal table for Realtime broadcast/presence messages. (RLS enabled)
-
-## Schema: `drizzle`
-
-Schema used by Drizzle ORM for tracking migrations.
-
-- `__drizzle_migrations`: Tracks schema migrations applied by Drizzle ORM.
+---
 
 ## Schema: `public`
 
@@ -65,156 +12,183 @@ Custom application tables.
 
 ### Table: `Suggestion`
 
-- **Comment**: null
-- **RLS Enabled**: true
-- **Live Rows Estimate**: 0 (Note: Table appears empty, potentially deprecated)
-- **Primary Key(s)**: `id` (uuid)
-- **Foreign Keys**:
-    - `(documentId, documentCreatedAt)` -> `public.Document(id, createdAt)` (Constraint: `Suggestion_documentId_documentCreatedAt_Document_id_createdAt_f`)
-    - `(userId)` -> `auth.users(id)` (Constraint: `suggestion_user_id_fkey`)
-- **Columns**:
-    - `id` (uuid, default: `gen_random_uuid()`)
-    - `documentId` (uuid)
-    - `documentCreatedAt` (timestamp)
-    - `originalText` (text)
-    - `suggestedText` (text)
-    - `description` (text, nullable)
-    - `isResolved` (boolean, default: `false`)
-    - `userId` (uuid)
-    - `createdAt` (timestamp)
+-   **Comment**: null
+-   **RLS Enabled**: true
+-   **Primary Key(s)**: `id` (uuid)
+-   **Foreign Keys**:
+    -   `(documentId)` -> `public.Document(id)`
+    -   `(documentCreatedAt)` -> `public.Document(createdAt)` *(Note: This seems unusual, linking only to createdAt)*
+    -   `(userId)` -> `public.User_Profiles(id)`
+    -   `(userId)` -> `auth.users(id)`
+-   **Columns**:
+    -   `id` (uuid, default: `gen_random_uuid()`)
+    -   `documentId` (uuid)
+    -   `documentCreatedAt` (timestamp without time zone)
+    -   `originalText` (text)
+    -   `suggestedText` (text)
+    -   `description` (text, nullable)
+    -   `isResolved` (boolean, default: `false`)
+    -   `userId` (uuid)
+    -   `createdAt` (timestamp without time zone)
 
 ### Table: `Document`
 
-- **Comment**: null
-- **RLS Enabled**: true
-- **Live Rows Estimate**: 3
-- **Primary Key(s)**: `id` (uuid), `createdAt` (timestamp)
-- **Foreign Keys**:
-    - `(chat_id)` -> `public.Chat(id)` (Constraint: `fk_document_chat`)
-    - `(userId)` -> `auth.users(id)` (Constraint: `document_user_id_fkey`)
-- **Incoming Foreign Keys**:
-    - `public.Suggestion(documentId, documentCreatedAt)` -> `(id, createdAt)` (Constraint: `Suggestion_documentId_documentCreatedAt_Document_id_createdAt_f`)
-- **Columns**:
-    - `id` (uuid, default: `gen_random_uuid()`)
-    - `createdAt` (timestamp)
-    - `title` (text)
-    - `content` (text, nullable)
-    - `userId` (uuid)
-    - `kind` (varchar, default: `'text'::character varying`)
-    - `tags` (ARRAY, _text, nullable, default: `ARRAY[]::text[]`)
-    - `modifiedAt` (timestamptz, nullable, default: `now()`)
-    - `chat_id` (uuid, nullable)
+-   **Comment**: null
+-   **RLS Enabled**: true
+-   **Primary Key(s)**: `id` (uuid), `createdAt` (timestamp without time zone) *(Note: Composite PK)*
+-   **Foreign Keys**:
+    -   `(userId)` -> `public.User_Profiles(id)`
+    -   `(chat_id)` -> `public.Chat(id)`
+-   **Incoming FKs**:
+    -   `public.Suggestion(documentId)` -> `(id)`
+    -   `public.Suggestion(documentCreatedAt)` -> `(createdAt)`
+-   **Columns**:
+    -   `id` (uuid, default: `gen_random_uuid()`, is_unique: true)
+    -   `createdAt` (timestamp without time zone)
+    -   `title` (text)
+    -   `content` (text, nullable)
+    -   `userId` (uuid)
+    -   `kind` (character varying, default: `'text'::character varying`, check: `kind` in ('text', 'code', 'image', 'sheet', 'textv2'))
+    -   `tags` (ARRAY, _text, nullable, default: `ARRAY[]::text[]`)
+    -   `modifiedAt` (timestamp with time zone, nullable, default: `now()`)
+    -   `chat_id` (uuid, nullable)
+    -   `content_json` (jsonb, nullable)
 
 ### Table: `User_Profiles`
 
-- **Comment**: null
-- **RLS Enabled**: true
-- **Live Rows Estimate**: 1
-- **Primary Key(s)**: `id` (uuid)
-- **Foreign Keys**:
-    - `(auth.refresh_tokens)` -> `auth.refresh_tokens(token)` (Constraint: `User_Profiles_auth.refresh_tokens_fkey`)
-    - `(id)` -> `auth.users(id)` (Constraint: `User_Profiles_id_fkey`)
-- **Columns**:
-    - `id` (uuid, default: `gen_random_uuid()`)
-    - `created_at` (timestamptz, default: `now()`)
-    - `modified_at` (timestamptz, nullable, default: `now()`)
-    - `google_refresh_token` (text, nullable)
-    - `auth.refresh_tokens` (text, nullable)
-    - `email` (varchar, nullable)
-
-### Table: `User`
-
-- **Comment**: null
-- **RLS Enabled**: false
-- **Live Rows Estimate**: 2
-- **Primary Key(s)**: `id` (uuid)
-- **Incoming Foreign Keys**:
-    - `public.Chat(userId)` -> `(id)` (Constraint: `Chat_userId_fkey`)
-- **Columns**:
-    - `id` (uuid)
-    - `email` (varchar)
+-   **Comment**: null
+-   **RLS Enabled**: true
+-   **Primary Key(s)**: `id` (uuid)
+-   **Incoming FKs**:
+    -   `public.Document(userId)` -> `(id)`
+    -   `public.Chat(userId)` -> `(id)`
+    -   `public.Suggestion(userId)` -> `(id)`
+-   **Columns**:
+    -   `id` (uuid, default: `gen_random_uuid()`)
+    -   `created_at` (timestamp with time zone, default: `now()`)
+    -   `modified_at` (timestamp with time zone, nullable, default: `now()`)
+    -   `google_refresh_token` (text, nullable)
+    -   `email` (character varying, nullable)
+    -   `pdl_person_data` (jsonb, nullable)
+    -   `pdl_org_data` (jsonb, nullable)
+    -   `person_deep_research_data` (text, nullable)
+    -   `org_deep_research_data` (text, nullable)
+    -   `org_website_scrape` (text, nullable)
+    -   `clerk_id` (text, nullable, is_unique: true)
 
 ### Table: `Chat`
 
-- **Comment**: null
-- **RLS Enabled**: false
-- **Live Rows Estimate**: 36
-- **Primary Key(s)**: `id` (uuid)
-- **Foreign Keys**:
-    - `(userId)` -> `public.User(id)` (Constraint: `Chat_userId_fkey`)
-- **Incoming Foreign Keys**:
-    - `public.Document(chat_id)` -> `(id)` (Constraint: `fk_document_chat`)
-    - `public.Message_v2(chatId)` -> `(id)` (Constraint: `Message_v2_chatId_fkey`)
-    - `public.Vote_v2(chatId)` -> `(id)` (Constraint: `Vote_v2_chatId_fkey`)
-- **Columns**:
-    - `id` (uuid, default: `gen_random_uuid()`)
-    - `createdAt` (timestamp)
-    - `title` (text)
-    - `userId` (uuid)
-    - `visibility` (varchar, default: `'private'::character varying`, check: `visibility::text = ANY (ARRAY['public'::character varying, 'private'::character varying]::text[])`)
+-   **Comment**: null
+-   **RLS Enabled**: false
+-   **Primary Key(s)**: `id` (uuid)
+-   **Foreign Keys**:
+    -   `(userId)` -> `public.User_Profiles(id)`
+-   **Incoming FKs**:
+    -   `public.Document(chat_id)` -> `(id)`
+    -   `public.Message_v2(chatId)` -> `(id)`
+    -   `public.Vote_v2(chatId)` -> `(id)`
+-   **Columns**:
+    -   `id` (uuid, default: `gen_random_uuid()`)
+    -   `createdAt` (timestamp without time zone)
+    -   `title` (text)
+    -   `userId` (uuid)
+    -   `visibility` (character varying, default: `'private'::character varying`, check: `visibility` in ('public', 'private'))
 
 ### Table: `Message_v2`
 
-- **Comment**: null
-- **RLS Enabled**: false
-- **Live Rows Estimate**: 94
-- **Primary Key(s)**: `id` (uuid)
-- **Foreign Keys**:
-    - `(chatId)` -> `public.Chat(id)` (Constraint: `Message_v2_chatId_fkey`)
-- **Incoming Foreign Keys**:
-    - `public.Vote_v2(messageId)` -> `(id)` (Constraint: `Vote_v2_messageId_fkey`)
-- **Columns**:
-    - `id` (uuid, default: `gen_random_uuid()`)
-    - `chatId` (uuid)
-    - `role` (varchar)
-    - `parts` (json)
-    - `attachments` (json)
-    - `createdAt` (timestamp)
+-   **Comment**: null
+-   **RLS Enabled**: false
+-   **Primary Key(s)**: `id` (uuid)
+-   **Foreign Keys**:
+    -   `(chatId)` -> `public.Chat(id)`
+-   **Incoming FKs**:
+    -   `public.Vote_v2(messageId)` -> `(id)`
+-   **Columns**:
+    -   `id` (uuid, default: `gen_random_uuid()`)
+    -   `chatId` (uuid)
+    -   `role` (character varying)
+    -   `parts` (json)
+    -   `attachments` (json)
+    -   `createdAt` (timestamp without time zone)
 
 ### Table: `Vote_v2`
 
-- **Comment**: null
-- **RLS Enabled**: false
-- **Live Rows Estimate**: 1
-- **Primary Key(s)**: `chatId` (uuid), `messageId` (uuid)
-- **Foreign Keys**:
-    - `(chatId)` -> `public.Chat(id)` (Constraint: `Vote_v2_chatId_fkey`)
-    - `(messageId)` -> `public.Message_v2(id)` (Constraint: `Vote_v2_messageId_fkey`)
-- **Columns**:
-    - `chatId` (uuid)
-    - `messageId` (uuid)
-    - `isUpvoted` (boolean)
+-   **Comment**: null
+-   **RLS Enabled**: false
+-   **Primary Key(s)**: `chatId` (uuid), `messageId` (uuid) *(Note: Composite PK)*
+-   **Foreign Keys**:
+    -   `(chatId)` -> `public.Chat(id)`
+    -   `(messageId)` -> `public.Message_v2(id)`
+-   **Columns**:
+    -   `chatId` (uuid)
+    -   `messageId` (uuid)
+    -   `isUpvoted` (boolean)
 
-### Table: `user_provider_tokens`
-
-- **Comment**: null
-- **RLS Enabled**: true
-- **Live Rows Estimate**: 2
-- **Primary Key(s)**: `id` (uuid)
-- **Foreign Keys**:
-    - `(user_id)` -> `auth.users(id)` (Constraint: `user_provider_tokens_user_id_fkey`)
-- **Columns**:
-    - `id` (uuid, default: `gen_random_uuid()`)
-    - `user_id` (uuid)
-    - `provider` (text)
-    - `access_token` (text)
-    - `refresh_token` (text, nullable)
-    - `created_at` (timestamptz, default: `now()`)
-    - `updated_at` (timestamptz, default: `now()`)
-    - `email` (varchar, nullable)
+---
 
 ## Schema: `supabase_migrations`
 
-Schema used by Supabase Studio/CLI for tracking migrations.
+Schema used by Supabase Studio/CLI for tracking its migrations.
 
-- `schema_migrations`: Tracks schema migrations applied through Supabase Studio/CLI.
+-   `schema_migrations`: Tracks schema migrations applied by Supabase. (RLS: false)
+
+---
 
 ## Schema: `net`
 
-Schema for the `pg_net` extension (HTTP requests from Postgres).
+Schema for the `pg_net` extension (enables outbound HTTP requests from Postgres).
 
-- `http_request_queue`: Internal queue for `pg_net`.
-- `_http_response`: Internal table for `pg_net` responses.
+-   `http_request_queue`: Internal queue for `pg_net`. (RLS: false)
+-   `_http_response`: Internal table for `pg_net` responses. (RLS: false)
+
+---
+
+
+## Schema: `storage`
+
+Standard Supabase Storage schema for managing file storage.
+
+-   `buckets`: Stores storage bucket configuration. (RLS: true)
+-   `objects`: Stores metadata about individual storage objects. (RLS: true)
+-   `migrations`: Manages updates to the storage schema. (RLS: true)
+-   `s3_multipart_uploads`: Tracks S3 multipart uploads in progress. (RLS: true)
+-   `s3_multipart_uploads_parts`: Tracks individual parts of S3 multipart uploads. (RLS: true)
+
+---
+
+## Schema: `pgsodium`
+
+Schema for the `pgsodium` extension (transparent column encryption).
+
+-   `key`: Holds metadata for derived cryptographic keys. (RLS: false)
+
+---
+
+## Schema: `vault`
+
+Schema for the `supabase-vault` extension (encrypted secrets).
+
+-   `secrets`: Table with an encrypted `secret` column. (RLS: false)
+
+---
+
+## Schema: `realtime`
+
+Standard Supabase Realtime schema for WebSocket subscriptions.
+
+-   `schema_migrations`: Manages updates to the Realtime schema. (RLS: false)
+-   `subscription`: Tracks active client subscriptions. (RLS: false)
+-   `messages`: Internal table potentially used for broadcast/presence messages (usage may vary). (RLS: true)
+
+---
+
+## Schema: `drizzle`
+
+Schema used by Drizzle ORM for tracking its migrations.
+
+-   `__drizzle_migrations`: Tracks schema migrations applied by Drizzle Kit. (RLS: false)
+
+---
 
 ## Database Functions
 
@@ -222,80 +196,70 @@ Schema for the `pg_net` extension (HTTP requests from Postgres).
 
 #### Function: `handle_document_tagging()`
 
-- **Purpose**: Trigger function to automatically add an 'artifact' tag to the `tags` array of a `Document` row if it's not already present.
-- **Returns**: `trigger`
-- **Code**:
-  ```sql
-  declare
-    tag text := $tag$artifact$tag$;
-  begin
-    -- Initialize tags array if null
-    new.tags := coalesce(new.tags, array[]::text[]);
-    
-    -- Add artifact tag if not present
-    if not tag = any (new.tags) then
-      new.tags := array_append(new.tags, tag);
-    end if;
-    
-    return new;
-  end;
-  ```
+-   **Purpose**: Trigger function to automatically add an 'artifact' tag to the `tags` array of a `Document` row if it's not already present.
+-   **Returns**: `trigger`
+-   **Definition**:
+    ```sql
+    CREATE OR REPLACE FUNCTION public.handle_document_tagging()
+     RETURNS trigger
+     LANGUAGE plpgsql
+    AS $function$
+    declare
+      tag text := $tag$artifact$tag$;
+    begin
+      -- Initialize tags array if null
+      new.tags := coalesce(new.tags, array[]::text[]);
 
-#### Function: `handle_new_user()`
+      -- Add artifact tag if not present
+      if not tag = any (new.tags) then
+        new.tags := array_append(new.tags, tag);
+      end if;
 
-- **Purpose**: Trigger function called when a new user is created in `auth.users`. It inserts a corresponding record into `public.User_Profiles`, copying the `id` and `email`. Includes basic error handling for unique violations or other insertion errors.
-- **Returns**: `trigger`
-- **Code**:
-  ```sql
-  BEGIN
-    -- Only insert into User_Profiles, including email. All other logic removed.
-    BEGIN
-        INSERT INTO public."User_Profiles" (id, email)
-        VALUES (NEW.id, NEW.email);
-        RAISE NOTICE 'Simple Trigger: Inserted new user profile for % with email %', NEW.id, NEW.email;
-    EXCEPTION 
-        WHEN unique_violation THEN
-            RAISE NOTICE 'Simple Trigger: User profile for % already exists.', NEW.id;
-        WHEN OTHERS THEN
-            -- Log error but do not re-raise to ensure user creation is not blocked by profile insert issue
-            RAISE WARNING 'Simple Trigger: Error inserting into User_Profiles for user %: %', NEW.id, SQLERRM;
-    END;
-    
-    RETURN NEW;
-  END;
-  ```
+      return new;
+    end;
+    $function$
+    ```
 
 #### Function: `update_updated_at_column()`
 
-- **Purpose**: Generic trigger function to set the `updated_at` column to the current timestamp (`now()`).
-- **Returns**: `trigger`
-- **Code**:
-  ```sql
-  BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-  END;
-  ```
+-   **Purpose**: Generic trigger function to set the `updated_at` column to the current timestamp (`now()`). *Note: No trigger currently calls this function in the `public` schema according to `information_schema.triggers`.*
+-   **Returns**: `trigger`
+-   **Definition**:
+    ```sql
+    CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+     RETURNS trigger
+     LANGUAGE plpgsql
+    AS $function$
+    BEGIN
+      NEW.updated_at = now();
+      RETURN NEW;
+    END;
+    $function$
+    ```
 
 #### Function: `update_user_metadata(user_id uuid, metadata jsonb)`
 
-- **Purpose**: Updates the `raw_user_meta_data` JSONB column in the `auth.users` table for a given `user_id` by merging the existing metadata with the provided `metadata` JSONB object.
-- **Returns**: `void`
-- **Code**:
-  ```sql
-  BEGIN
-    UPDATE auth.users
-    SET raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || metadata
-    WHERE id = user_id;
-  END;
-  ```
+-   **Purpose**: Updates the `raw_user_meta_data` JSONB column in the `auth.users` table for a given `user_id` by merging the existing metadata with the provided `metadata` JSONB object. Defined with `SECURITY DEFINER`.
+-   **Returns**: `void`
+-   **Definition**:
+    ```sql
+    CREATE OR REPLACE FUNCTION public.update_user_metadata(user_id uuid, metadata jsonb)
+     RETURNS void
+     LANGUAGE plpgsql
+     SECURITY DEFINER
+    AS $function$
+    BEGIN
+      UPDATE auth.users
+      SET raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || metadata
+      WHERE id = user_id;
+    END;
+    $function$
+    ```
 
 ## Database Triggers
 
-| Name                  | Table       | Function             | Events   | Orientation | Timing | Enabled | Notes                               |
-|-----------------------|-------------|----------------------|----------|-------------|--------|---------|-------------------------------------|
-| `on_auth_user_created` | `auth.users` | `handle_new_user`    | `INSERT` | `ROW`       | `AFTER`  | Yes     | Creates corresponding profile row |
-| *Unnamed?*            | *Various?*  | `update_updated_at_column` | `UPDATE` | `ROW`       | `BEFORE` | Yes?    | Auto-updates `updated_at` column  | 
-| *Unnamed?*            | `Document`? | `handle_document_tagging` | `INSERT`, `UPDATE`? | `ROW`? | `BEFORE`? | Yes? | Auto-adds 'artifact' tag | 
+| Schema | Table    | Name                     | Events         | Timing | Orientation | Action Statement                      |
+| :----- | :------- | :----------------------- | :------------- | :----- | :---------- | :------------------------------------ |
+| public | Document | `tag_document_on_change` | INSERT, UPDATE | BEFORE | ROW         | `EXECUTE FUNCTION handle_document_tagging()` |
 
-*Note: Trigger details for `update_updated_at_column` and `handle_document_tagging` are inferred and may need verification from migration files.* 
+*(Note: Only triggers in the `public` schema are listed. The `handle_new_user` logic is not implemented via a trigger in the `public` schema based on this query.)* 
