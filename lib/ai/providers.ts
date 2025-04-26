@@ -5,16 +5,11 @@ import {
 } from "ai";
 
 import { createGroq } from "@ai-sdk/groq";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { google } from "@ai-sdk/google";
 
 const groq = createGroq({
   baseURL:
     "https://gateway.ai.cloudflare.com/v1/b4ca0337fb21e846c53e1f2611ba436c/chatbot-ai/groq",
-});
-
-const google = createGoogleGenerativeAI({
-  baseURL:
-    "https://gateway.ai.cloudflare.com/v1/b4ca0337fb21e846c53e1f2611ba436c/chatbot-ai/google-ai-studio",
 });
 
 import { isTestEnvironment } from "../constants";
@@ -36,7 +31,7 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        "chat-llama3-70b": groq("llama3-70b-8192", {}),
+        "chat-llama3-70b": groq("llama3-70b-8192"),
         "chat-llama3.3-70b-versatile": groq("llama-3.3-70b-versatile"),
         "chat-llama-4-scout-17b": groq(
           "meta-llama/llama-4-scout-17b-16e-instruct",
