@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
     secret: process.env.AUTH_SECRET,
   });
 
-  console.log('mw', { token });
+  console.log('mw', { token, secret: process.env.AUTH_SECRET, request });
 
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);
