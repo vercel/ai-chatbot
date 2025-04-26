@@ -25,6 +25,13 @@ export async function getGoogleOAuthToken(): Promise<{
       provider,
     );
 
+    // --- Add Detailed Logging ---
+    console.log(
+      '[getGoogleOAuthToken] Raw oauthTokensResponse:',
+      JSON.stringify(oauthTokensResponse, null, 2),
+    );
+    // --- End Detailed Logging ---
+
     // Access .data before using .find()
     const googleToken = oauthTokensResponse?.data?.find(
       (token: OauthAccessToken) => token.provider === provider,
