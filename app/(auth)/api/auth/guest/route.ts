@@ -8,8 +8,8 @@ export async function GET(request: Request) {
 
   const token = await getToken({
     req: request,
-    cookieName: '__Secure-authjs.session-token',
     secret: process.env.AUTH_SECRET,
+    secureCookie: true,
   });
 
   if (token) {
