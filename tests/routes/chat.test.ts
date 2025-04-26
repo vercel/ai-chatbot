@@ -21,7 +21,7 @@ test.describe
     test('Ada can invoke chat generation', async ({ adaContext }) => {
       const chatId = generateUUID();
 
-      const response = await adaContext.request.post('api/chat', {
+      const response = await adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           messages: TEST_PROMPTS.SKY.MESSAGES,
@@ -44,7 +44,7 @@ test.describe
     }) => {
       const [chatId] = chatIdsCreatedByAda;
 
-      const response = await babbageContext.request.post('api/chat', {
+      const response = await babbageContext.request.post('/api/chat', {
         data: {
           id: chatId,
           messages: TEST_PROMPTS.GRASS.MESSAGES,
@@ -61,7 +61,7 @@ test.describe
       const [chatId] = chatIdsCreatedByAda;
 
       const response = await babbageContext.request.delete(
-        `api/chat?id=${chatId}`,
+        `/api/chat?id=${chatId}`,
       );
       expect(response.status()).toBe(403);
 
@@ -72,7 +72,9 @@ test.describe
     test('Ada can delete her own chat', async ({ adaContext }) => {
       const [chatId] = chatIdsCreatedByAda;
 
-      const response = await adaContext.request.delete(`api/chat?id=${chatId}`);
+      const response = await adaContext.request.delete(
+        `/api/chat?id=${chatId}`,
+      );
       expect(response.status()).toBe(200);
 
       const deletedChat = await response.json();
