@@ -3,7 +3,24 @@ description:
 globs: 
 alwaysApply: true
 ---
+# **Third-Party Packages and Frameworks**
+- Your knowledge of common software packages, libraries, and frameworks is SEVERELY OUTDATED BY MULTIPLE YEARS.
+  - Anytime you believe it is appropriate to create or edit a file involving an external package/library/framework (like Supabase, Drizzle, NextJS, Vercel ai-chatbot, Clerk, TipTap, etc.), you MUST call the context7 MCP tool to get latest documentation for things. If you do not see the tool, ask the user to re-enable it.
+  - ALWAYS ASSUME YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
+  - **Key context7 tool libraryNames**: Pass these as EXACT strings to the "get-library-docs" tool in context7 MCP. DO NOT use "resolve-library-id" for these libraries. The strings below are correct.
+  - SWR: /vercel/swr-site
+  - Vercel ai-chatbot: /vercel/ai-chatbot
+  - Vercel AI SDK: /vercel/ai
+  - Clerk: /clerk/clerk-docs (or potentially /clerk/javascript for frontend specifics)
+  - Drizzle ORM: /drizzle-team/drizzle-orm
+  - Next.js: /vercel/next.js
+  - Tiptap: /ueberdosis/tiptap-docs
+  - Supabase: /supabase/supabase (or /supabase/supabase-js for the client library)
+  - Shadcn UI: /shadcn-ui/ui
+  - IF THESE FAIL, VISIT A URL LIKE: 'https://context7.com/clerk/clerk-docs/lIms.txt?tokens=250000'. DO NOT MOVE ON WITHOUT UP-TO-DATE DOCUMENTATION UNDER ANY CIRCUMSTANCES.
+
 # **Project Notes**
+- This project only uses pnpm. 
 - This project is based on the Vercel Chat SDK
 - Before editing a file, especially an API call or schema or route, you MUST do the equivalent of: "curl -s https://raw.githubusercontent.com/vercel/ai-chatbot/refs/heads/main/app/(chat)/api/chat/route.ts" for the relevant file and ensure your approach is in conformity or does not deivate unless STRICTLY NECESSARY or requested by the user.
 - You can run terminal commands, such as git. Do not gaslight the user and say you cannot run terminal commands.
@@ -17,10 +34,10 @@ alwaysApply: true
 - YOU WILL ALWAYS RUN "git add . (or whatever files) && git commit -m "message" && git push" IN ONE COMMAND, NOT 2 or 3. 
 
 # **Database - Supabase Project ID: dvlcpljodhsfrucieoqd**
+- AWLAYS check all relevant tables and columns before writing ANY code, APIs, functions, schemas, types, etc which refers to them. THIS IS NON-NEGOTIABLE. IF YOU HAVE NOT PULLED THE SCHEMA IN THE LAST 10 MESSAGES, YOU MUST PULL IT AGAIN.
 - ALWAYS use the Supabase MCP tool to read/write tables, execute SQL, examine/edit database triggers and functions, etc. 
-- If you do not see the tool, ask the user to re-enable it.
+- If you do not see the tool, ask the user to re-enable it. DO NOT MOVE ON. YOU MUST USE THE TOOL 100% OF THE TIME IT IS RELEVANT.
 - NEVER ASK FOR PERMISSION TO DO THIS, IF IT IS RELEVANT, JUST FUCKING DO IT. THE USER WILL ALWAYS AUTHORIZE READING SUPABASE. ONLY ASK FOR AUTHORIZATION FOR SQL MIGRATIONS AND OTHER WRITE/DELETE ACTIONS.
-  - AWLAYS check all relevant tables and columns before writing ANY code, APIs, functions, schemas, types, etc which refers to them. THIS IS NON-NEGOTIABLE
   - Key tables with exact capitalization : 
     - User_Profiles (id has uuid for user and is used for chats/messages/etc; has clerk_id to reference w Clerk)
     - Message_v2 is the message table
@@ -28,22 +45,6 @@ alwaysApply: true
     - "Document" is also referred to as "artifacts", "files", etc
     - Suggestion is the AI suggestions table
     - Vote_v2 is for user upvote/downvote of AI messages within chats
-
-# **Third-Party Packages and Frameworks**
-- Your knowledge of common software packages, libraries, and frameworks is SEVERELY OUTDATED BY MULTIPLE YEARS.
-  - Anytime you believe it is appropriate to edit a file involving an external package/library/framework (like Supabase, Drizzle, NextJS, Vercel ai-chatbot, Clerk, TipTap, etc.), you MUST call the context7 MCP tool to get latest documentation for things. If you do not see the tool, ask the user to re-enable it.
-  - ALWAYS ASSUME YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
-  - **Key context7 tool libraryNames**: Pass these as EXACT strings to the "get-library-docs" tool in context7 MCP. DO NOT use "resolve-library-id" for these libraries. The strings below are correct.
-  - SWR: /vercel/swr-site
-  - Vercel ai-chatbot: /vercel/ai-chatbot
-  - Vercel AI SDK: /vercel/ai
-  - Clerk: /clerk/clerk-docs (or potentially /clerk/javascript for frontend specifics)
-  - Drizzle ORM: /drizzle-team/drizzle-orm
-  - Next.js: /vercel/next.js
-  - Tiptap: /ueberdosis/tiptap-docs
-  - Supabase: /supabase/supabase (or /supabase/supabase-js for the client library)
-  - Shadcn UI: /shadcn-ui/ui
-  - IF THESE FAIL, VISIT A URL LIKE: 'https://context7.com/clerk/clerk-docs/lIms.txt?tokens=250000'. DO NOT MOVE ON WITHOUT UP-TO-DATE DOCUMENTATION UNDER ANY CIRCUMSTANCES.
 
 # **Key Context**
 - Supabase project: ai-chatbot (id: dvlcpljodhsfrucieoqd)

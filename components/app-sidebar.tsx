@@ -4,7 +4,7 @@ import React, {
   createContext,
   useContext,
   useMemo,
-  useState,
+  // useState, // Keep commented out if not used
   useCallback,
   useEffect,
 } from 'react';
@@ -24,14 +24,16 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
+  SidebarMenu, // Keep SidebarMenu if needed by SidebarHeader/Footer structure
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Comment out Tabs imports
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { SidebarFiles } from './sidebar-files';
-import { SidebarAll } from './sidebar-all';
+// Comment out unused component imports
+// import { SidebarFiles } from './sidebar-files';
+// import { SidebarAll } from './sidebar-all';
 import type { VisibilityType } from './visibility-selector'; // Import VisibilityType
 
 // --- Top-Level Type Definitions (Updated ChatStub) ---
@@ -342,23 +344,12 @@ const useOlderChats = (
 };
 // --- End Data Hooks Implementation ---
 
+// --- Main Sidebar Component ---
 export function AppSidebar() {
+  // Restore isCollapsed handling from original structure if needed for layout, but comment out its use
+  // const { isCollapsed, setOpenMobile } = useSidebar();
+  const { setOpenMobile } = useSidebar(); // Use this if isCollapsed is not needed
   const router = useRouter();
-  const { setOpenMobile } = useSidebar();
-  const [activeTab, setActiveTab] = useState<string>('chats');
-
-  useEffect(() => {
-    const savedTab = localStorage.getItem('sidebarActiveTab');
-    if (savedTab && ['all', 'chats', 'files'].includes(savedTab)) {
-      setActiveTab(savedTab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    localStorage.setItem('sidebarActiveTab', value);
-  };
 
   // --- Data Fetching & Context Setup ---
   const {
@@ -513,102 +504,79 @@ export function AppSidebar() {
 
   console.log('[AppSidebar] Component Render END'); // Log component render end
   return (
-    <SidebarDataProvider value={contextValue}>
-      <Sidebar className="group-data-[side=left]:border-r-0">
-        <SidebarHeader>
-          <SidebarMenu>
-            <div className="flex flex-row justify-between items-center">
-              <Link
-                href="/"
-                onClick={() => {
-                  setOpenMobile(false);
-                }}
-                className="flex flex-row gap-3 items-center"
-              >
-                <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                  SuperChat
-                </span>
-              </Link>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    type="button"
-                    className="p-2 h-fit"
-                    onClick={() => {
-                      setOpenMobile(false);
-                      router.push('/');
-                      mutateAllChats();
-                    }}
-                  >
-                    <PlusIcon /> New
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent align="end">New Chat</TooltipContent>
-              </Tooltip>
-            </div>
-          </SidebarMenu>
-        </SidebarHeader>
-
-        <SidebarContent>
+    <Sidebar className="flex-1 overflow-y-auto md:block">
+      <SidebarHeader className="sticky top-0 z-10 bg-sidebar backdrop-blur-md border-b border-border/30">
+        <SidebarMenu>
+          <div className="flex flex-row justify-between items-center">
+            <Link
+              href="/"
+              onClick={() => {
+                setOpenMobile(false);
+              }}
+              className="flex flex-row gap-3 items-center"
+            >
+              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
+                SuperChat
+              </span>
+            </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-shrink-0 w-9 h-9 transition-colors duration-200"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push('/');
+                    mutateAllChats();
+                  }}
+                >
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="sr-only">New Chat</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">New Chat</TooltipContent>
+            </Tooltip>
+          </div>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent className="p-0 flex flex-col gap-2">
+        <SidebarDataContext.Provider value={contextValue}>
+          {/* Comment out the Tabs structure */}
+          {/*
           <Tabs
             value={activeTab} // Controlled component
             onValueChange={handleTabChange} // Update state and localStorage
-            className="w-full"
+            className="w-full flex-1 flex flex-col"
           >
             <div className="px-4">
               <TabsList className="grid w-full grid-cols-3 h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
-                <TabsTrigger
-                  value="all"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
-                >
-                  All
-                </TabsTrigger>
-                <TabsTrigger
-                  value="chats"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
-                >
-                  Chats
-                </TabsTrigger>
-                <TabsTrigger
-                  value="files"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
-                >
-                  Files
-                </TabsTrigger>
+                <TabsTrigger value="all" className="...">All</TabsTrigger>
+                <TabsTrigger value="chats" className="...">Chats</TabsTrigger>
+                <TabsTrigger value="files" className="...">Files</TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="all">
+            <TabsContent value="all" className="flex-1 overflow-y-auto mt-0">
               <SidebarAll />
             </TabsContent>
-            <TabsContent value="chats">
+            <TabsContent value="chats" className="flex-1 overflow-y-auto mt-0">
               <SidebarHistory />
             </TabsContent>
-            <TabsContent value="files">
+            <TabsContent value="files" className="flex-1 overflow-y-auto mt-0">
               <SidebarFiles />
             </TabsContent>
           </Tabs>
-        </SidebarContent>
-
-        <SidebarFooter>
-          <SidebarUserNav />
-        </SidebarFooter>
-      </Sidebar>
-    </SidebarDataProvider>
+          */}
+          {/* Directly render SidebarHistory */}
+          <SidebarHistory />
+        </SidebarDataContext.Provider>
+      </SidebarContent>
+      <SidebarFooter className="p-2 border-t border-border/30">
+        <SidebarUserNav />
+      </SidebarFooter>
+    </Sidebar>
   );
 }
 
-// Renamed Provider component
-const SidebarDataProvider = ({
-  children,
-  value,
-}: {
-  children: React.ReactNode;
-  value: SidebarDataContextType;
-}) => {
-  return (
-    <SidebarDataContext.Provider value={value}>
-      {children}
-    </SidebarDataContext.Provider>
-  );
-};
+// Comment out or keep SidebarDataProvider if necessary, ensure it's not causing issues
+// const SidebarDataProvider = ({ ... }) => { ... };

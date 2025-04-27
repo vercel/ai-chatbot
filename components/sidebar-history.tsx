@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 import {
   AlertDialog,
@@ -24,7 +25,6 @@ import {
 import type { ChatStub } from './app-sidebar';
 import { ChatItem } from './sidebar-history-item';
 import { LoaderIcon } from './icons';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from './ui/skeleton';
 import { useSidebarData } from './app-sidebar';
 
@@ -99,8 +99,10 @@ export function SidebarHistory() {
     mutateAllChats,
   } = useSidebarData();
   console.log(
-    `[SidebarHistory] Data from context: initialFetchAttempted=${initialFetchAttempted}, contextError=${contextError}, allChatStubs length=${allChatStubs?.length ?? 0}`,
+    `[SidebarHistory] Data from context: initialFetchAttempted=${initialFetchAttempted}, contextError=${contextError}, allChatStubs length=${allChatStubs?.length ?? 0}, hasMoreOlder=${hasMoreOlder}`,
   );
+
+  const isLoading = !initialFetchAttempted;
 
   const groupedChats = useMemo(() => {
     console.log('[SidebarHistory] useMemo for groupedChats START');
@@ -157,14 +159,10 @@ export function SidebarHistory() {
     }
   }, [deleteId, activeChatId, mutateAllChats, router, allChatStubs]);
 
-  // --- Strict Rendering Logic Checks --- //
-  // const showSkeleton = !initialFetchAttempted && !hasItems; // Original logic
-  const showSkeleton = !initialFetchAttempted; // MODIFIED: Only check if fetch attempt is pending
+  const showSkeleton = isLoading;
   const showError = initialFetchAttempted && contextError;
-  // Modify showEmpty to account for skeleton being shown even if items exist but fetch isn't attempted
   const showEmpty = initialFetchAttempted && !contextError && !hasItems;
-  // const showList = !showSkeleton && !showError && !showEmpty; // Original logic
-  const showList = initialFetchAttempted && !contextError && hasItems; // MODIFIED: Show list only if fetch attempted, no error, and items exist
+  const showList = initialFetchAttempted && !contextError && hasItems;
 
   console.log(
     `[SidebarHistory] Rendering Checks: showSkeleton=${showSkeleton}, showError=${showError}, showEmpty=${showEmpty}, showList=${showList}`,
@@ -212,7 +210,7 @@ export function SidebarHistory() {
   console.log('[SidebarHistory] Rendering List');
   return (
     <>
-      {hasItems && (
+      {showList && (
         <SidebarGroup className="flex-1 overflow-y-auto">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -251,15 +249,25 @@ export function SidebarHistory() {
                   </div>
                 );
               })}
+
+              <motion.div
+                className="h-10"
+                onViewportEnter={() => {
+                  console.log(
+                    `[Viewport Enter] Triggering loadMoreOlderItems. hasMoreOlder: ${hasMoreOlder}`,
+                  );
+                  if (hasMoreOlder) {
+                    loadMoreOlderItems();
+                  }
+                }}
+              />
+
+              <div className="p-4 text-center text-xs text-muted-foreground">
+                {!hasMoreOlder ? 'End of history.' : 'Loading...'}
+              </div>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      )}
-
-      {hasMoreOlder && (
-        <div className="p-4 text-center text-xs text-muted-foreground">
-          End of history.
-        </div>
       )}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
