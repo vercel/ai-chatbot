@@ -41,7 +41,7 @@ export const myProvider = isTestEnvironment
         //   model: fireworks('accounts/fireworks/models/deepseek-r1'),
         //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
         // }),
-        'title-model': openai('gpt-4.1-mini'),
+        'title-model': google('gemini-2.5-flash-preview-04-17'),
         'artifact-model': google('gemini-2.5-pro-exp-03-25'),
         'gemini-2.5-pro-exp-03-25': google('gemini-2.5-pro-exp-03-25'),
         'gemini-2.5-flash-preview-04-17': google(
