@@ -1,10 +1,17 @@
-import { DBChat } from '@/lib/db/schema';
+import { memo } from 'react';
+import Link from 'next/link';
+// Import shared types
+// import type { ChatItemData } from '@/lib/types/sidebar'; // Import shared type
+// Import Chat type from schema
+import { type Chat } from '@/lib/db/schema'; // Use 'type' keyword
+// Import DBChat only if absolutely necessary for casting/specific DB fields not in ChatItemData
+import type { DBChat } from '@/lib/db/schema';
+
 import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from './ui/sidebar';
-import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,29 +30,33 @@ import {
   ShareIcon,
   TrashIcon,
 } from './icons';
-import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+
+// Define props using the imported shared type
+interface PureChatItemProps {
+  chat: DBChat; // Use DBChat type from schema
+  isActive: boolean;
+  onDelete: (chatId: string) => void;
+  setOpenMobile: (open: boolean) => void;
+}
 
 const PureChatItem = ({
   chat,
   isActive,
   onDelete,
   setOpenMobile,
-}: {
-  chat: DBChat;
-  isActive: boolean;
-  onDelete: (chatId: string) => void;
-  setOpenMobile: (open: boolean) => void;
-}) => {
+}: PureChatItemProps) => {
+  // Use properties directly from ChatItemData
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
-    initialVisibility: chat.visibility,
+    initialVisibility: chat.visibility, // Assumes visibility matches
   });
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+          {/* Title is available directly */}
           <span>{chat.title}</span>
         </Link>
       </SidebarMenuButton>
@@ -101,7 +112,7 @@ const PureChatItem = ({
 
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
-            onSelect={() => onDelete(chat.id)}
+            onSelect={() => onDelete(chat.id)} // Use chat.id directly
           >
             <TrashIcon />
             <span>Delete</span>
@@ -112,7 +123,4 @@ const PureChatItem = ({
   );
 };
 
-export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
-  if (prevProps.isActive !== nextProps.isActive) return false;
-  return true;
-});
+export const ChatItem = memo(PureChatItem);
