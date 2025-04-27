@@ -1,8 +1,7 @@
 'use server';
 
-import { generateText, type Message } from 'ai';
+import { generateText, type UIMessage } from 'ai';
 import { cookies } from 'next/headers';
-
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
@@ -19,7 +18,7 @@ export async function saveChatModelAsCookie(model: string) {
 export async function generateTitleFromUserMessage({
   message,
 }: {
-  message: Message;
+  message: UIMessage;
 }) {
   const { text: title } = await generateText({
     model: myProvider.languageModel('title-model'),
