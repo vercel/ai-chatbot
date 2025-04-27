@@ -167,3 +167,154 @@
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
 }
+
+/* === START: Tiptap Editor Styling Overrides (Added by Assistant) === */
+/* Based on examples/tiptap-react-simple-editor/src/index.scss */
+/* Apply to ensure basic Markdown formatting is visible */
+
+/* Ensure the editor itself allows content to fill space and has padding */
+/* Note: Current tiptap-editor.tsx does not wrap EditorContent, */
+/* so these styles apply directly to the generated .tiptap.ProseMirror div */
+.tiptap.ProseMirror {
+  min-height: 150px; /* Give it some minimum space */
+  width: 100%;
+  padding: 0.75rem 1rem; /* Use rem for padding consistent with example */
+  outline: none; /* Remove default focus outline if desired */
+}
+
+/* Basic Block Spacing */
+.tiptap.ProseMirror > * + * {
+  margin-top: 0.75em; /* Add space between block elements like paragraphs, headings, lists */
+}
+
+/* Headings */
+.tiptap.ProseMirror h1,
+.tiptap.ProseMirror h2,
+.tiptap.ProseMirror h3,
+.tiptap.ProseMirror h4,
+.tiptap.ProseMirror h5,
+.tiptap.ProseMirror h6 {
+  line-height: 1.1;
+  font-weight: 600; /* Ensure headings are bold */
+  margin-top: 1.25em; /* Add more space above headings */
+  margin-bottom: 0.5em; /* Add some space below headings */
+}
+/* Use Tailwind's font sizes for consistency if possible, otherwise use em */
+.tiptap.ProseMirror h1 { font-size: 2em; } /* text-3xl or text-4xl */
+.tiptap.ProseMirror h2 { font-size: 1.5em; } /* text-2xl */
+.tiptap.ProseMirror h3 { font-size: 1.25em; } /* text-xl */
+.tiptap.ProseMirror h4 { font-size: 1em; } /* text-lg */
+.tiptap.ProseMirror h5 { font-size: 0.875em; } /* text-base */
+.tiptap.ProseMirror h6 { font-size: 0.85em; } /* text-sm */
+
+
+/* Bold */
+.tiptap.ProseMirror strong,
+.tiptap.ProseMirror b {
+  font-weight: bold;
+}
+
+/* Italic */
+.tiptap.ProseMirror em,
+.tiptap.ProseMirror i {
+  font-style: italic;
+}
+
+/* Inline Code */
+.tiptap.ProseMirror code {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  padding: 0.1em 0.3em;
+  border-radius: 0.25em;
+  font-family: var(--font-geist-mono); /* Use mono font if defined */
+  font-size: 0.9em;
+}
+
+/* Code Blocks */
+.tiptap.ProseMirror pre {
+  background: hsl(var(--secondary)); /* Use a theme color */
+  color: hsl(var(--secondary-foreground));
+  font-family: var(--font-geist-mono); /* Use mono font */
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.tiptap.ProseMirror pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.85em;
+}
+
+/* Lists */
+.tiptap.ProseMirror ul,
+.tiptap.ProseMirror ol {
+  padding: 0 1.5rem; /* Add indentation */
+  margin: 0.75em 0;
+}
+.tiptap.ProseMirror ul {
+  list-style-type: disc; /* Ensure bullets are visible */
+}
+.tiptap.ProseMirror ol {
+  list-style-type: decimal; /* Ensure numbers are visible */
+}
+.tiptap.ProseMirror li > p {
+ margin-top: 0.25em; /* Reduce space within list items */
+ margin-bottom: 0.25em;
+}
+.tiptap.ProseMirror li > ol,
+.tiptap.ProseMirror li > ul {
+ margin-top: 0.4em; /* Space for nested lists */
+ margin-bottom: 0.4em;
+}
+
+
+/* Blockquotes */
+.tiptap.ProseMirror blockquote {
+  border-left: 3px solid hsl(var(--border));
+  margin-left: 0; /* Remove default browser margin */
+  margin-right: 0;
+  padding-left: 1rem;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Horizontal Rule */
+.tiptap.ProseMirror hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+/* Placeholder */
+.tiptap.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+/* Task Lists (Basic Styling - Requires TaskList/TaskItem extensions) */
+.tiptap.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+.tiptap.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+}
+.tiptap.ProseMirror ul[data-type="taskList"] li > label {
+  margin-right: 0.5rem;
+  user-select: none;
+}
+.tiptap.ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+.tiptap.ProseMirror ul[data-type="taskList"] li input[type="checkbox"] {
+  cursor: pointer;
+}
+
+
+/* === END: Tiptap Editor Styling Overrides (Added by Assistant) === */

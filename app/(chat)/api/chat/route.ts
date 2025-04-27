@@ -1,9 +1,4 @@
-import type {
-  UIMessage,
-  CoreMessage,
-  LanguageModelV1CallOptions,
-  LanguageModelV1Prompt,
-} from 'ai';
+import type { UIMessage, CoreMessage } from 'ai';
 import {
   appendResponseMessages,
   createDataStreamResponse,
@@ -31,7 +26,6 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { chatModels } from '@/lib/ai/models';
 import { N8nLanguageModel } from '@/lib/ai/n8n-model';
@@ -365,18 +359,30 @@ export async function POST(request: Request) {
                   console.log(
                     '[API Route / N8n / onFinish] Attempting saveMessages.',
                   ); // LOG: Before save
+                  const messageToSave =
+                    typeof assistantId === 'string' &&
+                    assistantId.startsWith('msg-')
+                      ? {
+                          // Omit ID if it's temporary
+                          chatId: finalChatId,
+                          role: 'assistant' as const,
+                          parts: assistantMessage.parts ?? [],
+                          attachments:
+                            assistantMessage.experimental_attachments ?? [],
+                          createdAt: new Date(),
+                        }
+                      : {
+                          // Include ID if it seems persistent (or is not a string)
+                          id: assistantId,
+                          chatId: finalChatId,
+                          role: 'assistant' as const,
+                          parts: assistantMessage.parts ?? [],
+                          attachments:
+                            assistantMessage.experimental_attachments ?? [],
+                          createdAt: new Date(),
+                        };
                   await saveMessages({
-                    messages: [
-                      {
-                        id: assistantId,
-                        chatId: finalChatId,
-                        role: 'assistant', // Explicitly set role from previous fix
-                        parts: assistantMessage.parts ?? [],
-                        attachments:
-                          assistantMessage.experimental_attachments ?? [],
-                        createdAt: new Date(),
-                      },
-                    ],
+                    messages: [messageToSave], // Pass the conditionally constructed object
                   });
                   console.log(
                     `[API Route / N8n / onFinish] SUCCESS: Saved final n8n message (ID: ${assistantId}) for chat ${finalChatId}`,
@@ -427,8 +433,8 @@ export async function POST(request: Request) {
             'updateDocument',
             'requestSuggestions',
           ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
+          // experimental_transform: smoothStream({ chunking: 'word' }), // Keep commented out
+          // experimental_generateMessageId: generateUUID, // Keep commented out
           tools: {
             getWeather,
             createDocument: createDocument({
@@ -436,7 +442,7 @@ export async function POST(request: Request) {
               dataStream,
               chatId: finalChatId,
             }),
-            updateDocument: updateDocument({ userId: userId, dataStream }), // Pass profile UUID
+            updateDocument: updateDocument({ userId: userId, dataStream }),
             requestSuggestions: requestSuggestions({
               userId: userId, // Pass profile UUID
               dataStream,
@@ -457,19 +463,34 @@ export async function POST(request: Request) {
                   messages: [userMessage],
                   responseMessages: response.messages,
                 });
-                // Save message - will fix role type in next step
+
+                // Conditionally construct the message object based on the ID format
+                const messageToSave =
+                  typeof assistantId === 'string' &&
+                  assistantId.startsWith('msg-')
+                    ? {
+                        // Omit ID if it's temporary
+                        chatId: finalChatId,
+                        role: 'assistant' as const,
+                        parts: assistantMessage.parts ?? [],
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      }
+                    : {
+                        // Include ID if it seems persistent (or is not a string)
+                        id: assistantId,
+                        chatId: finalChatId,
+                        role: 'assistant' as const,
+                        parts: assistantMessage.parts ?? [],
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      };
+
+                // Save the correctly structured message
                 await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: finalChatId,
-                      role: 'assistant',
-                      parts: assistantMessage.parts ?? [],
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
+                  messages: [messageToSave], // Pass the conditionally constructed object
                 });
               } catch (error) {
                 console.error(

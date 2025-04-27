@@ -21,6 +21,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
+import { Markdown } from './markdown';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -91,6 +92,7 @@ export function DocumentPreview({
           title: artifact.title,
           kind: artifact.kind,
           content: artifact.content,
+          content_json: null,
           id: artifact.documentId,
           createdAt: new Date(),
           userId: 'noop',
@@ -243,7 +245,8 @@ const DocumentContent = ({ document }: { document: Document }) => {
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
-      'p-4 sm:px-14 sm:py-16': document.kind === 'text',
+      'p-4 sm:px-14 sm:py-16':
+        document.kind === 'text' || document.kind === 'textv2',
       'p-0': document.kind === 'code',
     },
   );
@@ -282,6 +285,8 @@ const DocumentContent = ({ document }: { document: Document }) => {
           status={artifact.status}
           isInline={true}
         />
+      ) : document.kind === 'textv2' ? (
+        <Markdown>{document.content ?? ''}</Markdown>
       ) : null}
     </div>
   );

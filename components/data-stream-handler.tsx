@@ -1,9 +1,9 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useRef } from 'react';
-import { artifactDefinitions, ArtifactKind } from './artifact';
-import { Suggestion } from '@/lib/db/schema';
+import { useEffect, useRef, type ElementRef } from 'react';
+import { artifactDefinitions, type ArtifactKind } from './artifact';
+import type { Suggestion } from '@/lib/db/schema';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
 
 export type DataStreamDelta = {
@@ -17,7 +17,8 @@ export type DataStreamDelta = {
     | 'suggestion'
     | 'clear'
     | 'finish'
-    | 'kind';
+    | 'kind'
+    | 'final-content-json';
   content: string | Suggestion;
 };
 
@@ -56,6 +57,7 @@ export function DataStreamHandler({ id }: { id: string }) {
               ...draftArtifact,
               documentId: delta.content as string,
               status: 'streaming',
+              isVisible: true,
             };
 
           case 'title':
@@ -77,6 +79,17 @@ export function DataStreamHandler({ id }: { id: string }) {
               ...draftArtifact,
               content: '',
               status: 'streaming',
+            };
+
+          case 'final-content-json':
+            console.log(
+              '[DataStreamHandler] Received final-content-json:',
+              delta.content,
+            );
+            return {
+              ...draftArtifact,
+              content: delta.content,
+              status: 'idle',
             };
 
           case 'finish':

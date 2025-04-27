@@ -1,0 +1,15 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "import/no-anonymous-default-export": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/jsx-no-constructed-context-values": "error",
+    "react/jsx-no-bind": "warn",
+    "react/jsx-key": "error",
+    "react/display-name": "warn",
+    "react-hooks/rules-of-hooks": "warn",
+    "@next/next/no-img-element": "off"
+  }
+}

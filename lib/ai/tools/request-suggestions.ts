@@ -67,13 +67,32 @@ export const requestSuggestions = ({
       }
 
       if (userId) {
+        const suggestionsToSave = suggestions.map((suggestion) => ({
+          ...suggestion,
+          userId: userId,
+          createdAt: new Date(),
+          documentCreatedAt: document.createdAt,
+        }));
+        console.log(
+          '[requestSuggestions] Attempting to save suggestions:',
+          JSON.stringify(suggestionsToSave, null, 2),
+        );
+
+        if (
+          !(document.createdAt instanceof Date) ||
+          Number.isNaN(document.createdAt.getTime())
+        ) {
+          console.error(
+            '[requestSuggestions] Error: Invalid document.createdAt:',
+            document.createdAt,
+          );
+          throw new Error(
+            'Invalid document creation date found when saving suggestions.',
+          );
+        }
+
         await saveSuggestions({
-          suggestions: suggestions.map((suggestion) => ({
-            ...suggestion,
-            userId: userId,
-            createdAt: new Date(),
-            documentCreatedAt: document.createdAt,
-          })),
+          suggestions: suggestionsToSave,
         });
       }
 

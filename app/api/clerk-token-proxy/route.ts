@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     const client = await clerkClient();
 
     // Fetch the Google OAuth token using the Backend API
-    const googleProvider = 'oauth_google';
+    const googleProvider = 'google';
     // Let TypeScript infer the type for tokenResponse
     const tokenResponse = await client.users.getUserOauthAccessToken(
       clerkUserId,

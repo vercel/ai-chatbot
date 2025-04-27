@@ -2,18 +2,23 @@ import { codeDocumentHandler } from '@/artifacts/code/server';
 import { imageDocumentHandler } from '@/artifacts/image/server';
 import { sheetDocumentHandler } from '@/artifacts/sheet/server';
 import { textDocumentHandler } from '@/artifacts/text/server';
+import { textV2DocumentHandler } from '@/artifacts/textv2/server';
 import type { ArtifactKind } from '@/components/artifact';
 import type { DataStreamWriter } from 'ai';
 import type { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
 import { revalidateTag } from 'next/cache';
+import type { JSONContent } from '@tiptap/react';
 
 export interface SaveDocumentProps {
   id: string;
   title: string;
   kind: ArtifactKind;
-  content: string;
+  content: string | null;
+  content_json?: JSONContent | null;
   userId: string;
+  chatId?: string;
+  createdAt: Date;
 }
 
 export interface CreateDocumentCallbackProps {
@@ -44,13 +49,13 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
     title: string;
     dataStream: DataStreamWriter;
     userId: string;
-  }) => Promise<string>;
+  }) => Promise<string | object>;
   onUpdateDocument: (params: {
     document: Document;
     description: string;
     dataStream: DataStreamWriter;
     userId: string;
-  }) => Promise<string>;
+  }) => Promise<string | object>;
 }): DocumentHandler<T> {
   return {
     kind: config.kind,
@@ -59,15 +64,17 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         '[createDocumentHandler] onCreateDocument called with args:',
         args,
       );
-      const draftContent = await config.onCreateDocument({
+      const draftResult = await config.onCreateDocument({
         id: args.id,
         title: args.title,
         dataStream: args.dataStream,
         userId: args.userId,
       });
       console.log(
-        '[createDocumentHandler] draftContent received:',
-        draftContent ? `${draftContent.substring(0, 30)}...` : null,
+        '[createDocumentHandler] draftResult received:',
+        typeof draftResult === 'string'
+          ? `${draftResult.substring(0, 30)}...`
+          : '[Object Content]',
       );
 
       if (args.userId) {
@@ -75,25 +82,49 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           `[createDocumentHandler] Attempting saveDocument for id: ${args.id}, userId: ${args.userId}`,
         );
         try {
-          await saveDocument({
+          let contentToSave: string | null = null;
+          let contentJsonToSave: JSONContent | null = null;
+
+          if (config.kind === 'textv2' && typeof draftResult === 'object') {
+            contentToSave = (draftResult as any).markdown ?? '';
+            contentJsonToSave = (draftResult as any).json ?? null;
+          } else if (typeof draftResult === 'string') {
+            contentToSave = draftResult;
+            contentJsonToSave = null;
+          } else {
+            console.warn(
+              '[createDocumentHandler] Unexpected draftResult type:',
+              typeof draftResult,
+            );
+            contentToSave = '';
+            contentJsonToSave = null;
+          }
+
+          const saveProps: SaveDocumentProps = {
             id: args.id,
             title: args.title,
-            content: draftContent,
             kind: config.kind,
             userId: args.userId,
-            chatId: args.chatId,
-          });
+            chatId: args.chatId ?? undefined,
+            createdAt: new Date(),
+            content: contentToSave,
+            content_json: contentJsonToSave,
+          };
+
+          console.log('Saving document with values:', saveProps);
+
+          await saveDocument(saveProps);
+
           console.log(
             `[createDocumentHandler] saveDocument successful for id: ${args.id}`,
           );
-          // Revalidate user history after creating a document
+
           revalidateTag(`history-${args.userId}`);
         } catch (error) {
           console.error(
             `[createDocumentHandler] saveDocument FAILED for id: ${args.id}:`,
             error,
           );
-          // Revalidate user history after updating a document
           revalidateTag(`history-${args.userId}`);
           throw error;
         }
@@ -110,15 +141,17 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         '[createDocumentHandler] onUpdateDocument called with args:',
         args,
       );
-      const draftContent = await config.onUpdateDocument({
+      const draftResult = await config.onUpdateDocument({
         document: args.document,
         description: args.description,
         dataStream: args.dataStream,
         userId: args.userId,
       });
       console.log(
-        '[createDocumentHandler] draftContent received for update:',
-        draftContent ? `${draftContent.substring(0, 30)}...` : null,
+        '[createDocumentHandler] draftResult received for update:',
+        typeof draftResult === 'string'
+          ? `${draftResult.substring(0, 30)}...`
+          : '[Object Content]',
       );
 
       if (args.userId) {
@@ -126,25 +159,49 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           `[createDocumentHandler] Attempting saveDocument update for id: ${args.document.id}, userId: ${args.userId}`,
         );
         try {
-          await saveDocument({
+          let contentToSave: string | null = null;
+          let contentJsonToSave: JSONContent | null = null;
+
+          if (config.kind === 'textv2' && typeof draftResult === 'object') {
+            contentToSave = (draftResult as any).markdown ?? '';
+            contentJsonToSave = (draftResult as any).json ?? null;
+          } else if (typeof draftResult === 'string') {
+            contentToSave = draftResult;
+            contentJsonToSave = null;
+          } else {
+            console.warn(
+              '[createDocumentHandler] Unexpected draftResult type for update:',
+              typeof draftResult,
+            );
+            contentToSave = '';
+            contentJsonToSave = null;
+          }
+
+          const saveProps: SaveDocumentProps = {
             id: args.document.id,
             title: args.document.title,
-            content: draftContent,
             kind: config.kind,
             userId: args.userId,
             chatId: args.document.chatId ?? undefined,
-          });
+            createdAt: args.document.createdAt,
+            content: contentToSave,
+            content_json: contentJsonToSave,
+          };
+
+          console.log('Saving document update with values:', saveProps);
+
+          await saveDocument(saveProps);
+
           console.log(
             `[createDocumentHandler] saveDocument update successful for id: ${args.document.id}`,
           );
-          // Revalidate user history after creating a document
+
           revalidateTag(`history-${args.userId}`);
         } catch (error) {
           console.error(
             `[createDocumentHandler] saveDocument update FAILED for id: ${args.document.id}:`,
             error,
           );
-          // Revalidate user history after updating a document
           revalidateTag(`history-${args.userId}`);
           throw error;
         }
@@ -164,9 +221,16 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
  */
 export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   textDocumentHandler,
+  textV2DocumentHandler,
   codeDocumentHandler,
   imageDocumentHandler,
   sheetDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = [
+  'text',
+  'code',
+  'image',
+  'sheet',
+  'textv2',
+] as const;

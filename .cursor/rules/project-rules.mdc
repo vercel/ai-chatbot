@@ -1,0 +1,55 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# **Project Notes**
+- This project is based on the Vercel Chat SDK
+- Before editing a file, especially an API call or schema or route, you MUST do the equivalent of: "curl -s https://raw.githubusercontent.com/vercel/ai-chatbot/refs/heads/main/app/(chat)/api/chat/route.ts" for the relevant file and ensure your approach is in conformity or does not deivate unless STRICTLY NECESSARY or requested by the user.
+- You can run terminal commands, such as git. Do not gaslight the user and say you cannot run terminal commands.
+- You can search for files and retrieve their contents, using grep or other search tools. Never ask the user to find a file by name or a file containing a certain function. ALWAYS LOOK FOR IT YOURSELF. 
+- NEVER ASK FOR CONFIRMATION TO MERELY READ A FILE OR TO SEARCH FOR THEM. ALWAYS ASSUME THE USER WILL AUTHORIZE FINDING/READING FILES.
+- All .env variables locally and on Vercel are set correctly unless we have just added a new library/API/service. NEVER suggest the user check these or update them otherwise.
+- The user is not a developer and has virtually zero knowledge of software development. 
+- The user did not write ANY code in this project, and it was cloned from a 100% working Vercel template, so if any code is broken, it is DUE TO CODE YOU WROTE. 
+- YOU WILL NEVER ASK THE USER TO RUN GIT COMMANDS. OR ANY TERMINAL COMMAND. THE USER IS NOT A DEVELOPER. YOU WILL RUN THESE COMMANDS.
+- YOU WILL NEVER ASK THE USER FOR FUCKING GIT COMMIT MESSAGES OR BRANCH NAMES, YOU WILL ALWAYS WRITE THESE YOURSELF DIRECTLY.
+- YOU WILL ALWAYS RUN "git add . (or whatever files) && git commit -m "message" && git push" IN ONE COMMAND, NOT 2 or 3. 
+
+# **Database - Supabase Project ID: dvlcpljodhsfrucieoqd**
+- ALWAYS use the Supabase MCP tool to read/write tables, execute SQL, examine/edit database triggers and functions, etc. 
+- If you do not see the tool, ask the user to re-enable it.
+- NEVER ASK FOR PERMISSION TO DO THIS, IF IT IS RELEVANT, JUST FUCKING DO IT. THE USER WILL ALWAYS AUTHORIZE READING SUPABASE. ONLY ASK FOR AUTHORIZATION FOR SQL MIGRATIONS AND OTHER WRITE/DELETE ACTIONS.
+  - AWLAYS check all relevant tables and columns before writing ANY code, APIs, functions, schemas, types, etc which refers to them. THIS IS NON-NEGOTIABLE
+  - Key tables with exact capitalization : 
+    - User_Profiles (id has uuid for user and is used for chats/messages/etc; has clerk_id to reference w Clerk)
+    - Message_v2 is the message table
+    - Chat is the chat threads table
+    - "Document" is also referred to as "artifacts", "files", etc
+    - Suggestion is the AI suggestions table
+    - Vote_v2 is for user upvote/downvote of AI messages within chats
+
+# **Third-Party Packages and Frameworks**
+- Your knowledge of common software packages, libraries, and frameworks is SEVERELY OUTDATED BY MULTIPLE YEARS.
+  - Anytime you believe it is appropriate to edit a file involving an external package/library/framework (like Supabase, Drizzle, NextJS, Vercel ai-chatbot, Clerk, TipTap, etc.), you MUST call the context7 MCP tool to get latest documentation for things. If you do not see the tool, ask the user to re-enable it.
+  - ALWAYS ASSUME YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
+  - **Key context7 tool libraryNames**: Pass these as EXACT strings to the "get-library-docs" tool in context7 MCP. DO NOT use "resolve-library-id" for these libraries. The strings below are correct.
+  - SWR: /vercel/swr-site
+  - Vercel ai-chatbot: /vercel/ai-chatbot
+  - Vercel AI SDK: /vercel/ai
+  - Clerk: /clerk/clerk-docs (or potentially /clerk/javascript for frontend specifics)
+  - Drizzle ORM: /drizzle-team/drizzle-orm
+  - Next.js: /vercel/next.js
+  - Tiptap: /ueberdosis/tiptap-docs
+  - Supabase: /supabase/supabase (or /supabase/supabase-js for the client library)
+  - Shadcn UI: /shadcn-ui/ui
+  - IF THESE FAIL, VISIT A URL LIKE: 'https://context7.com/clerk/clerk-docs/lIms.txt?tokens=250000'. DO NOT MOVE ON WITHOUT UP-TO-DATE DOCUMENTATION UNDER ANY CIRCUMSTANCES.
+
+# **Key Context**
+- Supabase project: ai-chatbot (id: dvlcpljodhsfrucieoqd)
+- Vercel project: ai-chatbot (ai.chrisyork.co, ai-chatbot-cyhq.vercel.app)
+- TipTap app id: 7me322g9
+- Tiptap CONVERT app id: v911g5l9
+- Tiptap CONVERT JWT secret: XpEf51Uwc42DrGRFapTg2E3mEGOm1zYfZYvIikSRT9TeLXNU2M18mLCtSZ1HDF6t
+- n8n chat webhook: "https://n8n-naps.onrender.com/webhook/05af71c4-23a8-44fb-bfd6-3536345edbac"
+- n8n onboarding webhook: "https://n8n-naps.onrender.com/webhook/64fc6422-135f-4e81-bd23-8fc61daee99e"

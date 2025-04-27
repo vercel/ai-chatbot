@@ -38,9 +38,9 @@ export const Chat = pgTable('Chat', {
   userId: uuid('userId')
     .notNull()
     .references(() => userProfiles.id),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  createdAt: timestamp('createdAt').notNull(),
   title: text('title').notNull(),
-  visibility: text('visibility', { enum: ['public', 'private', 'unlisted'] })
+  visibility: varchar('visibility', { enum: ['public', 'private', 'unlisted'] })
     .default('private')
     .notNull(),
 });
@@ -52,7 +52,7 @@ export const chatRelations = relations(Chat, ({ many }) => ({
 }));
 
 export const Message_v2 = pgTable('Message_v2', {
-  id: uuid('id').defaultRandom().primaryKey(),
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
   chatId: uuid('chatId')
     .references(() => Chat.id, { onDelete: 'cascade' })
     .notNull(),
@@ -61,7 +61,7 @@ export const Message_v2 = pgTable('Message_v2', {
   }).notNull(),
   parts: jsonb('parts').notNull(),
   attachments: jsonb('attachments').notNull(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  createdAt: timestamp('createdAt').notNull(),
 });
 
 export type DBMessage = InferSelectModel<typeof Message_v2>;
@@ -100,7 +100,10 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
+    content_json: jsonb('content_json'),
+    kind: varchar('kind', {
+      enum: ['text', 'code', 'image', 'sheet', 'textv2'],
+    })
       .notNull()
       .default('text'),
     userId: uuid('userId')

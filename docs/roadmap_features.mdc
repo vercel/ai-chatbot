@@ -32,7 +32,7 @@ alwaysApply: false
 - AI can send you messages when you're not on the website and these are marked as new with a dot like iMessage
 - Streaming interruption (https://upstash.com/blog/resumable-llm-streams)
 - Implement more complex memory solution like Zep or custom one
-- Deep research tool
+- Deep research tool e.g. [Firecrawl](https://github.com/nickscamara/open-deep-research)
 - Tool selection UI
 - Use TanStack table for spreadsheet artifact (maybe)
 - MacOS app

@@ -12,6 +12,7 @@ import { EditorView } from 'prosemirror-view';
 import React, { useEffect, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 import ReactMarkdown from 'react-markdown';
+import type { ArtifactKind } from '@/components/artifact';
 
 import { diffEditor, DiffType } from '@/lib/editor/diff';
 
@@ -49,31 +50,60 @@ function computeDiff(oldDoc: ProsemirrorNode, newDoc: ProsemirrorNode) {
 type DiffEditorProps = {
   oldContent: string;
   newContent: string;
+  kind?: ArtifactKind;
 };
 
-export const DiffView = ({ oldContent, newContent }: DiffEditorProps) => {
+export const DiffView = ({ oldContent, newContent, kind }: DiffEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
     if (editorRef.current && !viewRef.current) {
-      const parser = DOMParser.fromSchema(diffSchema);
+      let oldDoc: ProsemirrorNode | null = null;
+      let newDoc: ProsemirrorNode | null = null;
 
-      const oldHtmlContent = renderToString(
-        <ReactMarkdown>{oldContent}</ReactMarkdown>,
-      );
-      const newHtmlContent = renderToString(
-        <ReactMarkdown>{newContent}</ReactMarkdown>,
-      );
+      try {
+        if (kind === 'textv2') {
+          const parsedOldContent = oldContent
+            ? JSON.parse(oldContent)
+            : { type: 'doc', content: [] };
+          const parsedNewContent = newContent
+            ? JSON.parse(newContent)
+            : { type: 'doc', content: [] };
+          oldDoc = diffSchema.nodeFromJSON(parsedOldContent);
+          newDoc = diffSchema.nodeFromJSON(parsedNewContent);
+        } else {
+          const parser = DOMParser.fromSchema(diffSchema);
+          const oldHtmlContent = renderToString(
+            <ReactMarkdown>{oldContent || ''}</ReactMarkdown>,
+          );
+          const newHtmlContent = renderToString(
+            <ReactMarkdown>{newContent || ''}</ReactMarkdown>,
+          );
 
-      const oldContainer = document.createElement('div');
-      oldContainer.innerHTML = oldHtmlContent;
+          const oldContainer = document.createElement('div');
+          oldContainer.innerHTML = oldHtmlContent;
+          const newContainer = document.createElement('div');
+          newContainer.innerHTML = newHtmlContent;
 
-      const newContainer = document.createElement('div');
-      newContainer.innerHTML = newHtmlContent;
+          oldDoc = parser.parse(oldContainer);
+          newDoc = parser.parse(newContainer);
+        }
+      } catch (error) {
+        console.error('Error parsing content for diff view:', error);
+        if (editorRef.current) {
+          editorRef.current.textContent = 'Error loading diff.';
+        }
+        return;
+      }
 
-      const oldDoc = parser.parse(oldContainer);
-      const newDoc = parser.parse(newContainer);
+      if (!oldDoc || !newDoc) {
+        console.error('Could not create ProseMirror documents for diff view.');
+        if (editorRef.current) {
+          editorRef.current.textContent = 'Error loading diff.';
+        }
+        return;
+      }
 
       const diffedDoc = computeDiff(oldDoc, newDoc);
 
@@ -94,7 +124,7 @@ export const DiffView = ({ oldContent, newContent }: DiffEditorProps) => {
         viewRef.current = null;
       }
     };
-  }, [oldContent, newContent]);
+  }, [oldContent, newContent, kind]);
 
   return <div className="diff-editor" ref={editorRef} />;
 };

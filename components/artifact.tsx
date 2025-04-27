@@ -12,6 +12,7 @@ import {
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 import type { Document, Vote } from '@/lib/db/schema';
+import type { JSONContent } from '@tiptap/react';
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
@@ -25,11 +26,13 @@ import { imageArtifact } from '@/artifacts/image/client';
 import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
+import { textV2Artifact } from '@/artifacts/textv2/client';
 import equal from 'fast-deep-equal';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 export const artifactDefinitions = [
   textArtifact,
+  textV2Artifact,
   codeArtifact,
   imageArtifact,
   sheetArtifact,
@@ -40,7 +43,7 @@ export interface UIArtifact {
   title: string;
   documentId: string;
   kind: ArtifactKind;
-  content: string;
+  content: any;
   isVisible: boolean;
   status: 'streaming' | 'idle';
   boundingBox: {
@@ -95,6 +98,11 @@ function PureArtifact({
     fetcher,
   );
 
+  // Log fetched documents data immediately after SWR
+  useEffect(() => {
+    console.log('[Artifact SWR Effect] Fetched documents data:', documents);
+  }, [documents]);
+
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
@@ -102,16 +110,50 @@ function PureArtifact({
   const { open: isSidebarOpen } = useSidebar();
 
   useEffect(() => {
+    console.log('[Artifact Content useEffect] Entered. Documents:', documents);
     if (documents && documents.length > 0) {
       const mostRecentDocument = documents.at(-1);
 
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
-        setArtifact((currentArtifact) => ({
-          ...currentArtifact,
-          content: mostRecentDocument.content ?? '',
-        }));
+        console.log(
+          '[Artifact useEffect] Most recent doc found:',
+          JSON.stringify(mostRecentDocument, null, 2),
+        );
+        setArtifact((currentArtifact) => {
+          const contentSource = mostRecentDocument.content;
+
+          console.log(
+            '[Artifact useEffect] Raw contentSource (from document.content):',
+            contentSource,
+          );
+          console.log(
+            '[Artifact useEffect] Typeof contentSource:',
+            typeof contentSource,
+          );
+
+          // If contentSource is null/undefined or empty string, default for Tiptap
+          // For other artifacts, it might just be an empty string
+          const initialContent =
+            contentSource &&
+            typeof contentSource === 'string' &&
+            contentSource.trim() !== ''
+              ? contentSource
+              : currentArtifact.kind === 'textv2'
+                ? { type: 'doc', content: [{ type: 'paragraph' }] }
+                : ''; // Default to empty string for non-Tiptap or empty content
+
+          console.log(
+            '[Artifact useEffect] Calculated initialContent:',
+            JSON.stringify(initialContent, null, 2),
+          );
+
+          return {
+            ...currentArtifact,
+            content: initialContent, // Set either loaded content or default JSON
+          };
+        });
       }
     }
   }, [documents, setArtifact]);
@@ -124,7 +166,7 @@ function PureArtifact({
   const [isContentDirty, setIsContentDirty] = useState(false);
 
   const handleContentChange = useCallback(
-    (updatedContent: string) => {
+    (updatedContent: string | JSONContent) => {
       if (!artifact) return;
 
       mutate<Array<Document>>(
@@ -134,26 +176,88 @@ function PureArtifact({
 
           const currentDocument = currentDocuments.at(-1);
 
-          if (!currentDocument || !currentDocument.content) {
+          if (!currentDocument) {
             setIsContentDirty(false);
             return currentDocuments;
           }
 
-          if (currentDocument.content !== updatedContent) {
+          // Determine content and comparison logic based on kind
+          let contentHasChanged = false;
+          let payload: {
+            title: string;
+            kind: ArtifactKind;
+            content?: string | null;
+            content_json?: JSONContent | null;
+          };
+
+          if (artifact.kind === 'textv2') {
+            let currentJsonContent: JSONContent | null = null;
+            try {
+              // Check if content_json is already an object
+              if (
+                typeof currentDocument.content_json === 'object' &&
+                currentDocument.content_json !== null
+              ) {
+                currentJsonContent =
+                  currentDocument.content_json as JSONContent;
+              } else if (typeof currentDocument.content_json === 'string') {
+                // Only parse if it's a string
+                currentJsonContent = JSON.parse(currentDocument.content_json);
+              } else {
+                currentJsonContent = null;
+              }
+            } catch (e) {
+              console.error(
+                '[handleContentChange] Error parsing currentDocument.content_json',
+                e,
+              );
+              currentJsonContent = null; // Ensure it's null on error
+            }
+
+            // Use deep equality check for JSON
+            if (!equal(currentJsonContent, updatedContent)) {
+              contentHasChanged = true;
+              payload = {
+                title: artifact.title,
+                kind: artifact.kind,
+                content_json: updatedContent as JSONContent,
+              };
+            } else {
+              payload = { title: '', kind: artifact.kind }; // Dummy payload if no change
+            }
+          } else {
+            // Original logic for string content
+            if (currentDocument.content !== updatedContent) {
+              contentHasChanged = true;
+              payload = {
+                title: artifact.title,
+                kind: artifact.kind,
+                content: updatedContent as string,
+              };
+            } else {
+              payload = { title: '', kind: artifact.kind }; // Dummy payload if no change
+            }
+          }
+
+          if (contentHasChanged) {
             await fetch(`/api/document?id=${artifact.documentId}`, {
               method: 'POST',
-              body: JSON.stringify({
-                title: artifact.title,
-                content: updatedContent,
-                kind: artifact.kind,
-              }),
+              body: JSON.stringify(payload),
             });
 
             setIsContentDirty(false);
 
+            // Create the new document entry optimistically
             const newDocument = {
               ...currentDocument,
-              content: updatedContent,
+              content:
+                artifact.kind !== 'textv2'
+                  ? (updatedContent as string)
+                  : currentDocument.content, // Keep old string content for textv2
+              content_json:
+                artifact.kind === 'textv2'
+                  ? JSON.stringify(updatedContent)
+                  : currentDocument.content_json, // Stringify new JSON for textv2
               createdAt: new Date(),
             };
 
@@ -173,8 +277,38 @@ function PureArtifact({
   );
 
   const saveContent = useCallback(
-    (updatedContent: string, debounce: boolean) => {
-      if (document && updatedContent !== document.content) {
+    (updatedContent: string | JSONContent, debounce: boolean) => {
+      // Determine content and comparison logic based on kind
+      let comparisonContent: string | JSONContent | null = null;
+      let contentHasChanged = false;
+
+      if (!document) return; // Ensure document exists
+
+      if (artifact.kind === 'textv2') {
+        try {
+          // Check if content_json is already an object
+          if (
+            typeof document.content_json === 'object' &&
+            document.content_json !== null
+          ) {
+            comparisonContent = document.content_json as JSONContent;
+          } else if (typeof document.content_json === 'string') {
+            // Only parse if it's a string
+            comparisonContent = JSON.parse(document.content_json);
+          } else {
+            comparisonContent = null;
+          }
+        } catch (e) {
+          console.error('[saveContent] Error parsing document.content_json', e);
+          comparisonContent = null;
+        }
+        contentHasChanged = !equal(comparisonContent, updatedContent);
+      } else {
+        comparisonContent = document.content ?? null;
+        contentHasChanged = updatedContent !== comparisonContent;
+      }
+
+      if (contentHasChanged) {
         setIsContentDirty(true);
 
         if (debounce) {
@@ -187,10 +321,14 @@ function PureArtifact({
     [document, debouncedHandleContentChange, handleContentChange],
   );
 
-  function getDocumentContentById(index: number) {
+  function getDocumentContentById(index: number): any {
     if (!documents) return '';
-    if (!documents[index]) return '';
-    return documents[index].content ?? '';
+    const doc = documents[index];
+    if (!doc) return '';
+
+    // Corrected: Always return content (string) - Client component handles parsing/rendering
+    // For textv2, TiptapEditor will parse this string as Markdown
+    return doc.content ?? '';
   }
 
   const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
@@ -231,6 +369,8 @@ function PureArtifact({
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
+
+  console.log('[PureArtifact Render] Artifact Kind:', artifact.kind);
 
   const artifactDefinition = artifactDefinitions.find(
     (definition) => definition.kind === artifact.kind,
@@ -448,22 +588,22 @@ function PureArtifact({
 
             <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
               <artifactDefinition.content
-                title={artifact.title}
+                mode={mode}
+                status={artifact.status}
                 content={
                   isCurrentVersion
                     ? artifact.content
                     : getDocumentContentById(currentVersionIndex)
                 }
-                mode={mode}
-                status={artifact.status}
-                currentVersionIndex={currentVersionIndex}
-                suggestions={[]}
-                onSaveContent={saveContent}
-                isInline={false}
                 isCurrentVersion={isCurrentVersion}
+                currentVersionIndex={currentVersionIndex}
+                onSaveContent={saveContent}
                 getDocumentContentById={getDocumentContentById}
                 isLoading={isDocumentsFetching && !artifact.content}
                 metadata={metadata}
+                title={artifact.title}
+                suggestions={[]}
+                isInline={false}
                 setMetadata={setMetadata}
               />
 
