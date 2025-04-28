@@ -29,6 +29,8 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     const finalPrompt = `${description}${instructions ? `. Style/Instructions for update: ${instructions}` : ''}`;
 
+    console.log(`[Image Update] Final Prompt: "${finalPrompt}"`);
+
     const { image } = await experimental_generateImage({
       model: myProvider.imageModel('gpt-image-1'),
       prompt: finalPrompt,
