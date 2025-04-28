@@ -4,9 +4,10 @@ globs:
 alwaysApply: true
 ---
 # **Third-Party Packages and Frameworks**
+  - YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU **ALWAYS** READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
 - Your knowledge of common software packages, libraries, and frameworks is SEVERELY OUTDATED BY MULTIPLE YEARS.
   - Anytime you believe it is appropriate to create or edit a file involving an external package/library/framework (like Supabase, Drizzle, NextJS, Vercel ai-chatbot, Clerk, TipTap, etc.), you MUST call the context7 MCP tool to get latest documentation for things. If you do not see the tool, ask the user to re-enable it.
-  - ALWAYS ASSUME YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
+- YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU **ALWAYS** READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
   - **Key context7 tool libraryNames**: Pass these as EXACT strings to the "get-library-docs" tool in context7 MCP. DO NOT use "resolve-library-id" for these libraries. The strings below are correct.
   - SWR: /vercel/swr-site
   - Vercel ai-chatbot: /vercel/ai-chatbot
@@ -32,6 +33,8 @@ alwaysApply: true
 - YOU WILL NEVER ASK THE USER TO RUN GIT COMMANDS. OR ANY TERMINAL COMMAND. THE USER IS NOT A DEVELOPER. YOU WILL RUN THESE COMMANDS.
 - YOU WILL NEVER ASK THE USER FOR FUCKING GIT COMMIT MESSAGES OR BRANCH NAMES, YOU WILL ALWAYS WRITE THESE YOURSELF DIRECTLY.
 - YOU WILL ALWAYS RUN "git add . (or whatever files) && git commit -m "message" && git push" IN ONE COMMAND, NOT 2 or 3. 
+- Git commit messages can't have newlines.
+- Avoid creating new files unless ABSOLUTELY necessary, and request permission before doing so. 
 
 # **Database - Supabase Project ID: dvlcpljodhsfrucieoqd**
 - AWLAYS check all relevant tables and columns before writing ANY code, APIs, functions, schemas, types, etc which refers to them. THIS IS NON-NEGOTIABLE. IF YOU HAVE NOT PULLED THE SCHEMA IN THE LAST 10 MESSAGES, YOU MUST PULL IT AGAIN.

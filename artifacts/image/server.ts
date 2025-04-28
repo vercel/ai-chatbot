@@ -10,7 +10,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     const finalPrompt = `${title}${instructions ? `. Style/Instructions: ${instructions}` : ''}`;
 
     const { image } = await experimental_generateImage({
-      model: myProvider.imageModel('small-model'),
+      model: myProvider.imageModel('gpt-image-1'),
       prompt: finalPrompt,
       n: 1,
     });
