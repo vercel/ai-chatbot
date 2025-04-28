@@ -4,10 +4,11 @@ import { useMemo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
 import { updateChatVisibility } from '@/app/(chat)/actions';
-import {
-  getChatHistoryPaginationKey,
-  type ChatHistory,
-} from '@/components/sidebar-history';
+// Remove unused imports from sidebar-history
+// import {
+//   getChatHistoryPaginationKey,
+//   type ChatHistory,
+// } from '@/components/sidebar-history';
 import type { VisibilityType } from '@/components/visibility-selector';
 
 export function useChatVisibility({
@@ -18,7 +19,8 @@ export function useChatVisibility({
   initialVisibility: VisibilityType;
 }) {
   const { mutate, cache } = useSWRConfig();
-  const history: ChatHistory = cache.get('/api/history')?.data;
+  // Remove unused variable and potentially problematic cache access
+  // const history: ChatHistory = cache.get('/api/history')?.data;
 
   const { data: localVisibility, mutate: setLocalVisibility } = useSWR(
     `${chatId}-visibility`,
@@ -29,11 +31,15 @@ export function useChatVisibility({
   );
 
   const visibilityType = useMemo(() => {
-    if (!history) return localVisibility;
-    const chat = history.items.find((chat) => chat.id === chatId);
-    if (!chat) return 'private';
-    return chat.visibility;
-  }, [history, chatId, localVisibility]);
+    // Remove dependency on removed 'history' variable
+    // if (!history) return localVisibility;
+    // const chat = history.items.find((chat) => chat.id === chatId);
+    // if (!chat) return 'private'; // Default if chat not found in (removed) history cache?
+    // return chat.visibility;
+
+    // Simplify: Rely solely on the local SWR state for visibility
+    return localVisibility;
+  }, [localVisibility]); // Only depend on localVisibility now
 
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
