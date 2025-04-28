@@ -28,7 +28,7 @@ import {
 import { ChatItem } from './sidebar-history-item';
 import { LoaderIcon } from './icons';
 import { Skeleton } from './ui/skeleton';
-import type { User } from '@clerk/nextjs/server';
+import type { UserResource } from '@clerk/types';
 import type { DBChat } from '@/lib/db/schema';
 
 export interface HistoryPage {
@@ -98,7 +98,9 @@ export function getChatHistoryPaginationKey(
   return `/api/history?ending_before=${lastItem.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({ user }: { user: User | null | undefined }) {
+export function SidebarHistory({
+  user,
+}: { user: UserResource | null | undefined }) {
   const { setOpenMobile } = useSidebar();
   const params = useParams();
   const activeChatId = typeof params?.id === 'string' ? params.id : null;
