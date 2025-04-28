@@ -15,8 +15,8 @@ import {
 //   type ChatHistory,
 // } from '@/components/sidebar-history';
 import type { VisibilityType } from '@/components/visibility-selector';
-import type { DBChat } from './db/schema';
-import { toast } from 'react-hot-toast';
+import type { Chat as DBChat } from '@/lib/db/schema';
+import { toast } from 'sonner';
 
 export function useChatVisibility({
   chatId,
@@ -59,7 +59,9 @@ export function useChatVisibility({
     });
   };
 
-  const { pathname, router, searchParams } = useRouter();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // COMMENT OUT THIS LINE (history invalidation handled by optimistic update/API route)
   // if (chatId) {
@@ -82,7 +84,7 @@ export function useChatVisibility({
       setVisibilityType(visibility);
 
       try {
-        await updateChatVisibility(chatId, visibility);
+        await updateChatVisibility({ chatId, visibility });
         toast.success('Chat visibility updated.');
         // Optionally revalidate specific chat data if needed, but history handled elsewhere
         // mutate((key) => typeof key === 'string' && key.includes(`/api/chat?id=${chatId}`));
