@@ -6,11 +6,11 @@ import {
   streamText,
 } from 'ai';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db/queries';
 import * as schema from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
+  db,
   deleteChatById,
   getChatById,
   saveChat,

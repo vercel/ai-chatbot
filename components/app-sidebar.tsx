@@ -11,9 +11,8 @@ import React, {
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import useSWR from 'swr';
-import useSWRInfinite from 'swr/infinite';
+import useSWRInfinite, { unstable_serialize } from 'swr/infinite'; // Merged imports
 import { fetcher } from '@/lib/utils';
-import { unstable_serialize } from 'swr/infinite'; // For global mutation
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
@@ -106,7 +105,12 @@ export const useSidebarData = () => {
 const parseDatesInInitData = (
   data: SidebarInitResponse,
 ): SidebarInitResponse => {
-  const parsedStubs = data.initialChatStubs.map((stub) => ({
+  // Check if initialChatStubs is an array, default to empty array if not
+  const stubsToParse = Array.isArray(data.initialChatStubs)
+    ? data.initialChatStubs
+    : [];
+
+  const parsedStubs = stubsToParse.map((stub) => ({
     ...stub,
     createdAt: new Date(stub.createdAt),
     // Ensure the modifiedAt date is also parsed if it exists

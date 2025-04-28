@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@clerk/nextjs/server';
+import { getAuth, clerkClient } from '@clerk/nextjs/server';
 import { db } from '@/lib/db/queries'; // CORRECTED import path
 import {
   userProfiles,
@@ -12,7 +12,6 @@ import {
   type UserProfile,
 } from '@/lib/db/schema';
 import { eq, desc, sql, inArray, exists, and } from 'drizzle-orm';
-import { clerkClient } from '@clerk/nextjs/server'; // <-- Import clerkClient
 
 // --- Type Definitions (Updated ChatStub) ---
 

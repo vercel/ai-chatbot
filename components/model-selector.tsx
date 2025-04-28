@@ -69,7 +69,7 @@ export function ModelSelector({
             >
               <button
                 type="button"
-                className="gap-4 group/item flex flex-row justify-between items-center w-full"
+                className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer"
               >
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>

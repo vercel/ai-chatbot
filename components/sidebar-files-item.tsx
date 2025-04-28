@@ -14,10 +14,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { MoreHorizontalIcon, ShareIcon, TrashIcon } from './icons';
+import { MoreHorizontalIcon, ShareIcon, TrashIcon, FileIcon } from './icons';
 import { useRouter } from 'next/navigation'; // To navigate
 import { toast } from 'sonner'; // Correct import for toast
-import { FileIcon } from './icons';
 
 // UPDATED Interface to match API response
 interface DocumentItem {

@@ -34,7 +34,7 @@ export function SidebarUserNav() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10">
+            <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10 cursor-pointer">
               <Image
                 src={userImageUrl}
                 alt={userEmail ?? 'User Avatar'}
@@ -49,11 +49,15 @@ export function SidebarUserNav() {
           <DropdownMenuContent align="start" className="w-[200px]">
             <DropdownMenuItem
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              className="cursor-pointer"
             >
               Toggle theme
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="cursor-pointer"
+            >
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

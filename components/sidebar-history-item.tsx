@@ -2,10 +2,8 @@ import { memo } from 'react';
 import Link from 'next/link';
 // Import shared types
 // import type { ChatItemData } from '@/lib/types/sidebar'; // Import shared type
-// Import Chat type from schema
-import { type Chat } from '@/lib/db/schema'; // Use 'type' keyword
 // Import DBChat only if absolutely necessary for casting/specific DB fields not in ChatItemData
-import type { DBChat } from '@/lib/db/schema';
+import type { DBChat } from '@/lib/db/schema'; // Reverted to import type
 
 import {
   SidebarMenuAction,

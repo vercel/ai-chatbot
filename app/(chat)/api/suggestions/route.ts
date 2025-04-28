@@ -1,9 +1,12 @@
 // import { createClient } from '../../../../lib/supabase/server'; // REMOVE SUPABASE
 import { auth } from '@clerk/nextjs/server'; // ADD CLERK
-import { db } from '@/lib/db/queries'; // Need DB for profile lookup
+// REMOVED: import { db } from '@/lib/db/queries'; // Need DB for profile lookup
 import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
 import { eq } from 'drizzle-orm'; // Need eq for profile lookup
-import { getSuggestionsByDocumentId } from '../../../../lib/db/queries';
+import {
+  db, // Added db here
+  getSuggestionsByDocumentId,
+} from '@/lib/db/queries'; // Merged imports, corrected path
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

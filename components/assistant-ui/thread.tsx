@@ -4,8 +4,8 @@ import {
   ComposerPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
-} from "@assistant-ui/react";
-import type { FC } from "react";
+} from '@assistant-ui/react';
+import type { FC } from 'react';
 import {
   ArrowDownIcon,
   CheckIcon,
@@ -15,19 +15,19 @@ import {
   PencilIcon,
   RefreshCwIcon,
   SendHorizontalIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-import { Button } from "@/components/ui/button";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
-import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
+import { Button } from '@/components/ui/button';
+import { MarkdownText } from '@/components/assistant-ui/markdown-text';
+import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button';
 
 export const Thread: FC = () => {
   return (
     <ThreadPrimitive.Root
       className="bg-background box-border flex h-full flex-col overflow-hidden"
       style={{
-        ["--thread-max-width" as string]: "42rem",
+        ['--thread-max-width' as string]: '42rem',
       }}
     >
       <ThreadPrimitive.Viewport className="flex h-full flex-col items-center overflow-y-scroll scroll-smooth bg-inherit px-4 pt-8">
@@ -42,7 +42,7 @@ export const Thread: FC = () => {
         />
 
         <ThreadPrimitive.If empty={false}>
-          <div className="min-h-8 flex-grow" />
+          <div className="min-h-8 grow" />
         </ThreadPrimitive.If>
 
         <div className="sticky bottom-0 mt-3 flex w-full max-w-[var(--thread-max-width)] flex-col items-center justify-end rounded-t-lg bg-inherit pb-4">
@@ -71,11 +71,9 @@ const ThreadScrollToBottom: FC = () => {
 const ThreadWelcome: FC = () => {
   return (
     <ThreadPrimitive.Empty>
-      <div className="flex w-full max-w-[var(--thread-max-width)] flex-grow flex-col">
-        <div className="flex w-full flex-grow flex-col items-center justify-center">
-          <p className="mt-4 font-medium">
-            How can I help you today?
-          </p>
+      <div className="flex w-full max-w-[var(--thread-max-width)] grow flex-col">
+        <div className="flex w-full grow flex-col items-center justify-center">
+          <p className="mt-4 font-medium">How can I help you today?</p>
         </div>
         <ThreadWelcomeSuggestions />
       </div>
@@ -117,7 +115,7 @@ const Composer: FC = () => {
         rows={1}
         autoFocus
         placeholder="Write a message..."
-        className="placeholder:text-muted-foreground max-h-40 flex-grow resize-none border-none bg-transparent px-2 py-4 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed"
+        className="placeholder:text-muted-foreground max-h-40 grow resize-none border-none bg-transparent px-2 py-4 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed"
       />
       <ComposerAction />
     </ComposerPrimitive.Root>
@@ -248,7 +246,10 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
   return (
     <BranchPickerPrimitive.Root
       hideWhenSingleBranch
-      className={cn("text-muted-foreground inline-flex items-center text-xs", className)}
+      className={cn(
+        'text-muted-foreground inline-flex items-center text-xs',
+        className,
+      )}
       {...rest}
     >
       <BranchPickerPrimitive.Previous asChild>

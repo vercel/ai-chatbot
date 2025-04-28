@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -87,7 +87,7 @@ export function VisibilitySelector({
               setVisibilityType(visibility.id);
               setOpen(false);
             }}
-            className="gap-4 group/item flex flex-row justify-between items-center"
+            className="gap-4 group/item flex flex-row justify-between items-center cursor-pointer"
             data-active={visibility.id === visibilityType}
           >
             <div className="flex flex-col gap-1 items-start">

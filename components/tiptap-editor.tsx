@@ -1,8 +1,8 @@
 'use client';
 
 import { useEditor, EditorContent, type JSONContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
+import { StarterKit } from '@tiptap/starter-kit';
+import { Placeholder } from '@tiptap/extension-placeholder';
 import { Markdown } from 'tiptap-markdown';
 import React, { useEffect, useRef } from 'react';
 import type { Suggestion } from '@/lib/db/schema'; // Keep for later suggestion integration
