@@ -27,13 +27,6 @@ export async function getGoogleOAuthToken(): Promise<{
       providerArg, // Use 'google' as the argument here
     );
 
-    // --- Add Detailed Logging ---
-    console.log(
-      '[getGoogleOAuthToken] Raw oauthTokensResponse:',
-      JSON.stringify(oauthTokensResponse, null, 2),
-    );
-    // --- End Detailed Logging ---
-
     // Access .data before using .find()
     // Keep checking the response data for the 'oauth_google' provider name
     const googleToken = oauthTokensResponse?.data?.find(

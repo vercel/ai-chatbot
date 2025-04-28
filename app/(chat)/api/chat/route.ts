@@ -470,12 +470,6 @@ export async function POST(request: Request) {
             n8nToolNames.join(', ') || 'None'
           }`,
         );
-        if (n8nTools && n8nToolNames.length > 0) {
-          console.log(
-            '[API Route / Standard] Fetched n8n Tools Details:',
-            JSON.stringify(null),
-          );
-        }
         // --- END FETCH N8N TOOLS ---
 
         // --- DEFINE COMBINED TOOLS ---
