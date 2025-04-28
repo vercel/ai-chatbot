@@ -208,8 +208,10 @@ export function Weather({
 }: {
   weatherAtLocation?: WeatherAtLocation;
 }) {
-  if (weatherAtLocation.error) {
-    return null;
+  const { error } = weatherAtLocation;
+
+  if (error) {
+    weatherAtLocation = SAMPLE;
   }
 
   const currentHigh = Math.max(
@@ -254,7 +256,7 @@ export function Weather({
     currentTimeIndex + hoursToShow,
   );
 
-  return (
+  return !error ? (
     <div
       className={cx(
         'flex flex-col gap-4 rounded-2xl p-4 skeleton-bg max-w-[500px]',
@@ -311,6 +313,12 @@ export function Weather({
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  ) : (
+    <div className="flex flex-col rounded-2xl pl-4 skeleton-bg max-w-[500px]">
+      <div className="font-medium text-red-600">
+        Error in loading weather data 🌧️☔☀️
       </div>
     </div>
   );
