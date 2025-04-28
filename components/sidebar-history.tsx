@@ -28,8 +28,11 @@ import {
 import { ChatItem } from './sidebar-history-item';
 import { LoaderIcon } from './icons';
 import { Skeleton } from './ui/skeleton';
-import type { UserResource } from '@clerk/types';
 import type { DBChat } from '@/lib/db/schema';
+
+// Infer user type from useUser hook return value
+type UseUserReturn = ReturnType<typeof useUser>;
+type UserPropType = UseUserReturn['user'];
 
 export interface HistoryPage {
   items: DBChat[];
@@ -98,9 +101,7 @@ export function getChatHistoryPaginationKey(
   return `/api/history?ending_before=${lastItem.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({
-  user,
-}: { user: UserResource | null | undefined }) {
+export function SidebarHistory({ user }: { user: UserPropType }) {
   const { setOpenMobile } = useSidebar();
   const params = useParams();
   const activeChatId = typeof params?.id === 'string' ? params.id : null;
