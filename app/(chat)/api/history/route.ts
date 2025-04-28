@@ -94,12 +94,12 @@ export async function GET(req: NextRequest) {
       endingBefore: endingBefore,
     });
 
-    // --- ADD LOGGING HERE ---
-    console.log(
-      '[API /api/history] getChatsByUserId returned:',
-      JSON.stringify(result, null, 2),
-    );
-    // --- END LOGGING ---
+    // --- REMOVE LOGGING HERE ---
+    // console.log(
+    //   '[API /api/history] getChatsByUserId returned:',
+    //   JSON.stringify(result, null, 2),
+    // );
+    // --- END REMOVED LOGGING ---
 
     // Ensure the response matches the expected { chats, hasMore } structure
     // The result from getChatsByUserId should already be in this shape.
