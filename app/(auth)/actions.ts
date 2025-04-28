@@ -82,3 +82,24 @@ export const register = async (
     return { status: 'failed' };
   }
 };
+
+export interface GoogleSignInState {
+  status: 'idle' | 'in_progress' | 'success' | 'failed';
+}
+
+export const signInWithGoogle = async () => {
+  await signIn('google');
+  // try {
+  //   await signIn('google', { 
+  //     callbackUrl: '/',
+  //     // redirect: false 
+  //   });
+    
+  //   // if (result?.error) {
+  //   //   return { status: 'failed' };
+  //   // }
+  //   return { status: 'success' };
+  // } catch (error) {
+  //   return { status: 'failed' };
+  // }
+};
