@@ -1,0 +1,5 @@
+packages:
+  # Include the root package
+  - '.'
+  # Include packages in the examples directory
+  - 'examples/*' 
