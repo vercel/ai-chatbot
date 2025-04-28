@@ -38,6 +38,9 @@ function PureMessages({
       {messages.length === 0 && <Greeting />}
 
       {messages.map((message, index) => (
+        // @FIXME: Rendering all of the parts in the mssage cause performance issues
+        // After finished, the message will be re-rendered, then flinking
+        // The parts should be rendered separately, text is fine, but artifacts are not
         <PreviewMessage
           key={message.id}
           chatId={chatId}
