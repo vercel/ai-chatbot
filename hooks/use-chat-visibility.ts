@@ -37,24 +37,28 @@ export function useChatVisibility({
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 
-  const setVisibilityType = async (updatedVisibilityType: VisibilityType) => {
+  const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     if (!chatId) return;
 
     setLocalVisibility(updatedVisibilityType);
 
     mutate(unstable_serialize(getChatHistoryPaginationKey));
 
-    try {
-      await updateChatVisibility({
-        chatId: chatId,
-        visibility: updatedVisibilityType,
+    updateChatVisibility({
+      chatId: chatId,
+      visibility: updatedVisibilityType,
+    })
+      .then(() => {
+        // Optional: Can place toast.success here if desired as enhancement
+        // toast.success('Chat visibility updated.');
+      })
+      .catch((error) => {
+        // Optional: Basic error logging if desired
+        console.error(
+          `Failed to update chat visibility: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+        // Note: No revert or error toast to match original structure
       });
-      toast.success('Chat visibility updated.');
-    } catch (error) {
-      console.error(
-        `Failed to update chat visibility: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
   };
 
   return { visibilityType, setVisibilityType };
