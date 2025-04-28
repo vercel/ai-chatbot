@@ -1,12 +1,18 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef } from 'react';
 
-export function useScrollToBottom<T extends HTMLElement>(): [
-  RefObject<T>,
-  RefObject<T>,
-] {
+export function useScrollToBottom<T extends HTMLElement>() {
   const containerRef = useRef<T>(null);
   const endRef = useRef<T>(null);
   const shouldScrollRef = useRef(true);
+
+  const scrollToBottom = () => {
+    if (endRef.current) {
+      endRef.current.scrollIntoView({
+        behavior: 'instant',
+        block: 'end',
+      });
+    }
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -24,7 +30,7 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
       const mutationObserver = new MutationObserver(() => {
         if (shouldScrollRef.current) {
-          end.scrollIntoView({ behavior: 'instant', block: 'end' });
+          scrollToBottom();
         }
       });
 
@@ -42,5 +48,11 @@ export function useScrollToBottom<T extends HTMLElement>(): [
     }
   }, []);
 
-  return [containerRef, endRef];
+  return {
+    containerRef,
+    endRef,
+    scrollToBottom,
+  };
 }
+
+export type UseScrollToBottomReturn = ReturnType<typeof useScrollToBottom>;

@@ -2,7 +2,7 @@ import type { UIMessage } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Greeting } from './greeting';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
@@ -27,12 +27,19 @@ function PureMessages({
   reload,
   isReadonly,
 }: MessagesProps) {
-  const [messagesContainerRef, messagesEndRef] =
+  const { containerRef, endRef, scrollToBottom } =
     useScrollToBottom<HTMLDivElement>();
+
+  useEffect(() => {
+    if (messages.length <= 0) return;
+    if (messages[messages.length - 1].role === 'user') {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
 
   return (
     <div
-      ref={messagesContainerRef}
+      ref={containerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
       {messages.length === 0 && <Greeting />}
@@ -58,10 +65,7 @@ function PureMessages({
         messages.length > 0 &&
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
-      <div
-        ref={messagesEndRef}
-        className="shrink-0 min-w-[24px] min-h-[24px]"
-      />
+      <div ref={endRef} className="shrink-0 min-w-[24px] min-h-[24px]" />
     </div>
   );
 }
