@@ -393,15 +393,21 @@ export function AppSidebar() {
     console.log('[AppSidebar] useMemo for derivedInitialFetchAttempted START'); // Log attempt memo start
     // **Simplified Logic Proposal:** If cache was hit, consider attempt complete for UI purposes
     // Or if an error occurred (meaning fetch *was* attempted and failed)
-    const attempted = cacheHit || errorInit !== undefined;
+    const attempted = cacheHit || errorInit !== undefined; // BACK TO ORIGINAL LOGIC
     // Original logic kept for reference:
     // const attempted_original = cacheHit || parsedSidebarInitData !== undefined || errorInit !== undefined;
+
+    // Fetch is considered attempted if:
+    // 1. SWR is no longer in its initial validation/loading phase.
+    // 2. Or an error occurred during the fetch.
+    // This covers cache hits (SWR might finish quickly), cache misses + success, and cache misses + error.
+    // const attempted = !isSwrValidating || errorInit !== undefined; // REVERTED LOGIC
     console.log(
-      `[AppSidebar] derivedInitialFetchAttempted: ${attempted} (cacheHit=${cacheHit}, errorInitExists=${errorInit !== undefined})`,
+      `[AppSidebar] derivedInitialFetchAttempted: ${attempted} (cacheHit=${cacheHit}, errorInitExists=${errorInit !== undefined})`, // Log original dependencies
     );
     return attempted;
     // ** End Simplified Logic **
-  }, [cacheHit, errorInit]); // Removed parsedSidebarInitData dependency
+  }, [cacheHit, errorInit]); // Depend on cache hit and error state again
   console.log(
     `[AppSidebar] derivedInitialFetchAttempted value: ${derivedInitialFetchAttempted}`,
   ); // Log attempt result

@@ -163,32 +163,38 @@ const PurePreviewMessage = ({
                 if (state === 'call') {
                   const { args } = toolInvocation;
 
-                  return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'getWeather' ? (
-                        <Weather />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args} />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall
-                          type="update"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : null}
-                    </div>
-                  );
+                  if (toolName === 'getWeather') {
+                    return <Weather />;
+                  } else if (toolName === 'createDocument') {
+                    return (
+                      <DocumentPreview isReadonly={isReadonly} args={args} />
+                    );
+                  } else if (toolName === 'updateDocument') {
+                    return (
+                      <DocumentToolCall
+                        type="update"
+                        args={args}
+                        isReadonly={isReadonly}
+                      />
+                    );
+                  } else if (toolName === 'requestSuggestions') {
+                    return (
+                      <DocumentToolCall
+                        type="request-suggestions"
+                        args={args}
+                        isReadonly={isReadonly}
+                      />
+                    );
+                  } else {
+                    return (
+                      <div
+                        key={toolCallId}
+                        className="text-muted-foreground text-sm"
+                      >
+                        Calling tool: {toolName}...
+                      </div>
+                    );
+                  }
                 }
 
                 if (state === 'result') {

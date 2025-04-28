@@ -32,6 +32,7 @@ import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
 import { revalidateTag } from 'next/cache';
 import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
+import { getN8nTools } from '@/lib/ai/tools/n8n-mcp';
 
 export const maxDuration = 60;
 
@@ -421,33 +422,48 @@ export async function POST(request: Request) {
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)
     // Ensure this part remains consistent with the previous version
     return createDataStreamResponse({
-      execute: (dataStream) => {
+      execute: async (dataStream) => {
+        // --- FETCH N8N TOOLS ---
+        const n8nTools = await getN8nTools();
+        const n8nToolNames = Object.keys(n8nTools || {});
+        console.log(
+          `[API Route / Standard] Fetched n8n tools via helper. Count: ${n8nToolNames.length}, Names: ${
+            n8nToolNames.join(', ') || 'None'
+          }`,
+        );
+        if (n8nTools && n8nToolNames.length > 0) {
+          console.log(
+            '[API Route / Standard] Fetched n8n Tools Details:',
+            JSON.stringify(n8nTools, null, 2),
+          );
+        }
+        // --- END FETCH N8N TOOLS ---
+
+        // --- DEFINE COMBINED TOOLS ---
+        const combinedTools = {
+          getWeather,
+          createDocument: createDocument({
+            userId: userId, // Pass profile UUID
+            dataStream,
+            chatId: finalChatId,
+          }),
+          updateDocument: updateDocument({ userId: userId, dataStream }),
+          requestSuggestions: requestSuggestions({
+            userId: userId, // Pass profile UUID
+            dataStream,
+          }),
+          ...(n8nTools || {}), // <-- Merge fetched n8n tools here
+        };
+        // --- END COMBINED TOOLS ---
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
           messages: messages.filter((m) => m.role !== 'data') as CoreMessage[], // Keep filter + assertion
           maxSteps: 5,
-          experimental_activeTools: [
-            'getWeather',
-            'createDocument',
-            'updateDocument',
-            'requestSuggestions',
-          ],
-          // experimental_transform: smoothStream({ chunking: 'word' }), // Keep commented out
-          // experimental_generateMessageId: generateUUID, // Keep commented out
-          tools: {
-            getWeather,
-            createDocument: createDocument({
-              userId: userId, // Pass profile UUID
-              dataStream,
-              chatId: finalChatId,
-            }),
-            updateDocument: updateDocument({ userId: userId, dataStream }),
-            requestSuggestions: requestSuggestions({
-              userId: userId, // Pass profile UUID
-              dataStream,
-            }),
-          },
+          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_generateMessageId: generateUUID,
+          tools: combinedTools, // USE THE COMBINED TOOLS OBJECT
           onFinish: async ({ response }) => {
             if (userId) {
               try {
