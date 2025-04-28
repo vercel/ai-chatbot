@@ -5,7 +5,7 @@ import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { useUser } from '@clerk/nextjs';
+import type { useUser } from '@clerk/nextjs';
 import useSWRInfinite from 'swr/infinite';
 import { fetcher } from '@/lib/utils';
 
