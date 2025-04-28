@@ -1,10 +1,15 @@
 import { SignIn } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
 
 export default function Page() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <SignIn
         appearance={{
+          baseTheme: dark,
+          variables: {
+            colorBackground: '#09090B',
+          },
           elements: {
             // Hide elements potentially remaining after disabling password strategy
             dividerRow: { display: 'none' }, // Hides the "or" separator

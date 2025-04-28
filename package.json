@@ -36,6 +36,7 @@
     "@assistant-ui/react-markdown": "^0.9.1",
     "@clerk/elements": "^0.23.18",
     "@clerk/nextjs": "^6.17.0",
+    "@clerk/themes": "^2.2.36",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
