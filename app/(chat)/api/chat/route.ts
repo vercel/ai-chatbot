@@ -308,7 +308,6 @@ export async function POST(request: Request) {
     const selectedModelInfo = chatModels.find(
       (m) => m.id === selectedChatModel,
     );
-    console.log(`[API Route] Found selectedModelInfo:`, selectedModelInfo);
     console.log(
       `[API Route] Evaluating selectedModelInfo?.isN8n: ${selectedModelInfo?.isN8n}`,
     );
