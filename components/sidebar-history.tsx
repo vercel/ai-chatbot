@@ -128,8 +128,10 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
   const isLoadingMore =
     isLoading && paginatedChatHistories && paginatedChatHistories.length > 0;
 
-  const allChatStubs: DBChat[] =
-    paginatedChatHistories?.flatMap((page) => page.items) ?? [];
+  const allChatStubs: DBChat[] = useMemo(() => {
+    return paginatedChatHistories?.flatMap((page) => page.items) ?? [];
+  }, [paginatedChatHistories]);
+
   const hasMoreOlder = paginatedChatHistories?.at(-1)?.hasMore ?? false;
 
   console.log(
@@ -143,7 +145,7 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     return result;
   }, [allChatStubs]);
 
-  const hasItems = allChatStubs.length > 0;
+  const hasItems = useMemo(() => allChatStubs.length > 0, [allChatStubs]);
   console.log(`[SidebarHistory] Calculated hasItems: ${hasItems}`);
 
   const handleDelete = useCallback(async () => {

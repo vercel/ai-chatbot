@@ -318,7 +318,12 @@ function PureArtifact({
         }
       }
     },
-    [document, debouncedHandleContentChange, handleContentChange],
+    [
+      document,
+      debouncedHandleContentChange,
+      handleContentChange,
+      artifact.kind,
+    ],
   );
 
   function getDocumentContentById(index: number): any {
