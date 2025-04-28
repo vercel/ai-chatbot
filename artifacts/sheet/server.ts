@@ -6,12 +6,14 @@ import { z } from 'zod';
 
 export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
   kind: 'sheet',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream, instructions }) => {
     let draftContent = '';
+
+    const systemPromptWithInstructions = `${sheetPrompt} ${instructions ? `IMPORTANT: Adhere to the following user instructions: ${instructions}` : ''}`;
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
-      system: sheetPrompt,
+      system: systemPromptWithInstructions,
       prompt: title,
       schema: z.object({
         csv: z.string().describe('CSV data'),
@@ -43,12 +45,20 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({
+    document,
+    description,
+    dataStream,
+    instructions,
+  }) => {
     let draftContent = '';
+
+    const baseSystemPrompt = updateDocumentPrompt(document.content, 'sheet');
+    const systemPromptWithInstructions = `${baseSystemPrompt} ${instructions ? `IMPORTANT: Also adhere to the following user instructions for this update: ${instructions}` : ''}`;
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
-      system: updateDocumentPrompt(document.content, 'sheet'),
+      system: systemPromptWithInstructions,
       prompt: description,
       schema: z.object({
         csv: z.string(),

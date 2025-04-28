@@ -27,6 +27,7 @@ export interface CreateDocumentCallbackProps {
   chatId: string;
   dataStream: DataStreamWriter;
   userId: string;
+  instructions?: string;
 }
 
 export interface UpdateDocumentCallbackProps {
@@ -34,6 +35,7 @@ export interface UpdateDocumentCallbackProps {
   description: string;
   dataStream: DataStreamWriter;
   userId: string;
+  instructions?: string;
 }
 
 export interface DocumentHandler<T = ArtifactKind> {
@@ -49,12 +51,14 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
     title: string;
     dataStream: DataStreamWriter;
     userId: string;
+    instructions?: string;
   }) => Promise<string | object>;
   onUpdateDocument: (params: {
     document: Document;
     description: string;
     dataStream: DataStreamWriter;
     userId: string;
+    instructions?: string;
   }) => Promise<string | object>;
 }): DocumentHandler<T> {
   return {
@@ -69,6 +73,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         title: args.title,
         dataStream: args.dataStream,
         userId: args.userId,
+        instructions: args.instructions,
       });
       console.log(
         '[createDocumentHandler][onCreate] Raw draftResult received:',
@@ -180,6 +185,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         description: args.description,
         dataStream: args.dataStream,
         userId: args.userId,
+        instructions: args.instructions,
       });
       console.log(
         '[createDocumentHandler][onUpdate] Raw draftResult received:',

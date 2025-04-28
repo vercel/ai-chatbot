@@ -75,16 +75,18 @@ const emptyTiptapJSON: JSONContent = {
 
 export const textV2DocumentHandler = createDocumentHandler<'textv2'>({
   kind: 'textv2',
-  onCreateDocument: async ({ title, dataStream, userId }) => {
+  onCreateDocument: async ({ title, dataStream, userId, instructions }) => {
     console.log(
       `[textV2 onCreateDocument] Generating content for title: "${title}"`,
     );
 
+    // Use instructions in system prompt
+    const systemContent = `You are an expert writer. Generate the main content for a document based on the provided title. Respond only with the content itself in Markdown format. Do not include the title in your response. ${instructions ? `IMPORTANT: Adhere to the following user instructions: ${instructions}` : ''}`;
+
     const messages: CoreMessage[] = [
       {
         role: 'system',
-        content:
-          'You are an expert writer. Generate the main content for a document based on the provided title. Respond only with the content itself in Markdown format. Do not include the title in your response.',
+        content: systemContent,
       },
       {
         role: 'user',
@@ -161,7 +163,13 @@ export const textV2DocumentHandler = createDocumentHandler<'textv2'>({
       };
     }
   },
-  onUpdateDocument: async ({ document, description, dataStream, userId }) => {
+  onUpdateDocument: async ({
+    document,
+    description,
+    dataStream,
+    userId,
+    instructions,
+  }) => {
     console.log(
       `[textV2 onUpdateDocument] Updating document ID: ${document.id} with description: "${description}"`,
     );
@@ -169,12 +177,14 @@ export const textV2DocumentHandler = createDocumentHandler<'textv2'>({
     // Provide an empty string fallback if content is null/undefined
     const currentContent = document.content ?? '';
 
+    // Use instructions in system prompt
+    const systemContent = `You are an expert editor. Update the provided document based on the user request. Respond only with the complete, updated document content in Markdown format. Preserve existing formatting where appropriate. ${instructions ? `IMPORTANT: Also adhere to the following user instructions for this update: ${instructions}` : ''}`;
+
     // Define the prompt for the AI, including existing content and the update instruction
     const messages: CoreMessage[] = [
       {
         role: 'system',
-        content:
-          'You are an expert editor. Update the provided document based on the user request. Respond only with the complete, updated document content in Markdown format. Preserve existing formatting where appropriate.',
+        content: systemContent,
       },
       {
         role: 'user',

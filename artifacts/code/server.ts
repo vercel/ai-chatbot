@@ -6,12 +6,14 @@ import { createDocumentHandler } from '@/lib/artifacts/server';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream, instructions }) => {
     let draftContent = '';
+
+    const systemPromptWithInstructions = `${codePrompt} ${instructions ? `IMPORTANT: Adhere to the following user instructions: ${instructions}` : ''}`;
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
-      system: codePrompt,
+      system: systemPromptWithInstructions,
       prompt: title,
       schema: z.object({
         code: z.string(),
@@ -45,12 +47,20 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({
+    document,
+    description,
+    dataStream,
+    instructions,
+  }) => {
     let draftContent = '';
+
+    const baseSystemPrompt = updateDocumentPrompt(document.content, 'code');
+    const systemPromptWithInstructions = `${baseSystemPrompt} ${instructions ? `IMPORTANT: Also adhere to the following user instructions for this update: ${instructions}` : ''}`;
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
-      system: updateDocumentPrompt(document.content, 'code'),
+      system: systemPromptWithInstructions,
       prompt: description,
       schema: z.object({
         code: z.string(),

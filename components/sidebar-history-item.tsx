@@ -1,9 +1,8 @@
 import { memo } from 'react';
 import Link from 'next/link';
-// Import shared types
-// import type { ChatItemData } from '@/lib/types/sidebar'; // Import shared type
-// Import DBChat only if absolutely necessary for casting/specific DB fields not in ChatItemData
-import type { DBChat } from '@/lib/db/schema'; // Reverted to import type
+// REMOVE commented import
+// Use DBChat type for consistency with sidebar-history
+import type { DBChat } from '@/lib/db/schema';
 
 import {
   SidebarMenuAction,
@@ -30,9 +29,9 @@ import {
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
-// Define props using the imported shared type
+// Use DBChat type
 interface PureChatItemProps {
-  chat: DBChat; // Use DBChat type from schema
+  chat: DBChat;
   isActive: boolean;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
@@ -44,7 +43,6 @@ const PureChatItem = ({
   onDelete,
   setOpenMobile,
 }: PureChatItemProps) => {
-  // Use properties directly from ChatItemData
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibility: chat.visibility, // Assumes visibility matches
@@ -54,7 +52,6 @@ const PureChatItem = ({
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          {/* Title is available directly */}
           <span>{chat.title}</span>
         </Link>
       </SidebarMenuButton>
@@ -110,7 +107,7 @@ const PureChatItem = ({
 
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
-            onSelect={() => onDelete(chat.id)} // Use chat.id directly
+            onSelect={() => onDelete(chat.id)}
           >
             <TrashIcon />
             <span>Delete</span>
@@ -121,4 +118,9 @@ const PureChatItem = ({
   );
 };
 
-export const ChatItem = memo(PureChatItem);
+// Add custom comparison function to memo
+export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
+  if (prevProps.isActive !== nextProps.isActive) return false;
+  // Optional: Add other checks if necessary, but isActive is primary for Vercel template
+  return true;
+});

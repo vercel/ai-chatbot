@@ -18,14 +18,21 @@ export const updateDocument = ({
   dataStream,
 }: UpdateDocumentProps) =>
   tool({
-    description: 'Update a document with the given description.',
+    description:
+      "Update a document with the given description. If the user specifies instructions relevant to the update (e.g., length, style, format), extract them and pass them in the 'instructions' parameter.",
     parameters: z.object({
       id: z.string().describe('The ID of the document to update'),
       description: z
         .string()
         .describe('The description of changes that need to be made'),
+      instructions: z
+        .string()
+        .optional()
+        .describe(
+          'Specific user instructions like length, style, format, etc., extracted from the user query relevant to the update.',
+        ),
     }),
-    execute: async ({ id, description }) => {
+    execute: async ({ id, description, instructions }) => {
       console.log(`[updateDocument tool] Executing for ID: ${id}`); // Log start
       let document: Document | undefined;
       try {
@@ -97,6 +104,7 @@ export const updateDocument = ({
           description,
           dataStream,
           userId: userId,
+          instructions,
         });
         console.log(
           `[updateDocument tool] documentHandler.onUpdateDocument finished for ID: ${id}`,

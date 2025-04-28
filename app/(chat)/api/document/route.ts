@@ -1,15 +1,15 @@
 // import { createClient } from '@/lib/supabase/server'; // REMOVE SUPABASE
 import { auth } from '@clerk/nextjs/server'; // ADD CLERK
-// REMOVED: import { db } from '@/lib/db/queries'; // Need DB for profile lookup
+// Remove duplicate import: import { db } from '@/lib/db/queries'; // Need DB for profile lookup
 import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
 import { eq } from 'drizzle-orm'; // Need eq for profile lookup
 import type { ArtifactKind } from '@/components/artifact';
 import {
-  db, // Added db here
+  db, // Already consolidated here
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
-} from '@/lib/db/queries'; // Merged imports
+} from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

@@ -3,25 +3,41 @@ import { auth } from '@clerk/nextjs/server'; // ADD CLERK
 // REMOVED: import { db } from '@/lib/db/queries'; // Need DB for profile lookup
 import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
 import { eq } from 'drizzle-orm'; // Need eq for profile lookup
-import { cookies } from 'next/headers';
+// REMOVE: import { cookies } from 'next/headers';
+import { NextRequest } from 'next/server'; // Use NextRequest
 // Import the Drizzle query function
 import {
-  db, // Added db here
+  db, // Already consolidated here
   getChatsByUserId,
-  getDocumentsByUserId,
-} from '@/lib/db/queries'; // Merged imports
+  // REMOVE: getDocumentsByUserId,
+} from '@/lib/db/queries';
+// import type { HistoryPage } from '@/components/app-sidebar'; // Import response type if needed
+// Use an inline type or define locally if HistoryPage is simple
+interface HistoryPage {
+  items: any[]; // Replace 'any' with the actual chat type from schema if possible
+  hasMore: boolean;
+}
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
+export async function GET(req: NextRequest) {
+  // Use NextRequest
+  const { searchParams } = req.nextUrl; // Use req.nextUrl
   const limit = Number(searchParams.get('limit') || 20);
-  // Get the type parameter, default to 'chats'
-  const type = searchParams.get('type') || 'chats';
+  // REMOVE: const type = searchParams.get('type') || 'chats';
+  // ADD pagination parameters
+  const startingAfter = searchParams.get('starting_after');
+  const endingBefore = searchParams.get('ending_before');
 
-  // --- CLERK AUTH & PROFILE LOOKUP ---
-  const { userId: clerkUserId } = await auth();
+  if (startingAfter && endingBefore) {
+    return Response.json(
+      { error: 'Only one of starting_after or ending_before can be provided!' },
+      { status: 400 },
+    );
+  }
+
+  // --- CLERK AUTH & PROFILE LOOKUP (Keep this block) ---
+  const { userId: clerkUserId } = await auth(); // Use existing auth call
   if (!clerkUserId) {
     console.error('[API /api/history] Unauthorized - No Clerk User ID found');
-    // Return Response object for consistency
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -34,95 +50,38 @@ export async function GET(req: Request) {
     console.error(
       `[API /api/history] User profile not found for Clerk ID: ${clerkUserId}`,
     );
-    // Return valid JSON with 404 status for the client to handle gracefully
     return Response.json(
-      // Match the expected success structure but indicate emptiness
       { items: [], hasMore: false, error: 'User profile not found' },
       { status: 404 },
     );
   }
-  const userId = profile.id; // Use the internal profile UUID
+  const userId = profile.id;
   // --- END AUTH ---
 
   try {
-    let responseData: any = { items: [], hasMore: false }; // Default structure
+    // Directly fetch chats using parsed pagination parameters
+    console.log(
+      `[API /api/history] Fetching chats for user ${userId} with limit: ${limit}, startingAfter: ${startingAfter}, endingBefore: ${endingBefore}`,
+    );
+    const result = await getChatsByUserId({
+      id: userId,
+      limit,
+      startingAfter: startingAfter, // Pass parsed param
+      endingBefore: endingBefore, // Pass parsed param
+    });
 
-    if (type === 'chats') {
-      console.log(`[API /api/history] Fetching type: chats for user ${userId}`);
-      const result = await getChatsByUserId({
-        id: userId,
-        limit,
-        startingAfter: null, // Add pagination params later
-        endingBefore: null,
-      });
-      // Adapt to common structure
-      responseData = {
-        items: result.chats.map((c) => ({ ...c, type: 'chat' })),
-        hasMore: result.hasMore,
-      };
-    } else if (type === 'files') {
-      console.log(`[API /api/history] Fetching type: files for user ${userId}`);
-      const result = await getDocumentsByUserId({
-        id: userId,
-        limit,
-      });
-      // Adapt to common structure
-      responseData = {
-        items: result.documents.map((d) => ({ ...d, type: 'document' })),
-        hasMore: result.hasMore,
-      };
-    } else if (type === 'all') {
-      console.log(`[API /api/history] Fetching type: all for user ${userId}`);
-      // Fetch both, limit each slightly more to allow for combination/sorting? Or fetch full page of each?
-      // For simplicity now, fetch first page of each and combine/sort
-      const [chatResult, docResult] = await Promise.all([
-        getChatsByUserId({
-          id: userId,
-          limit,
-          startingAfter: null,
-          endingBefore: null,
-        }),
-        getDocumentsByUserId({ id: userId, limit }),
-      ]);
+    // Ensure the response matches the expected { items, hasMore } structure
+    // Assuming getChatsByUserId already returns { chats: [], hasMore: boolean }
+    const responseData: HistoryPage = {
+      items: result.chats, // Use result.chats directly
+      hasMore: result.hasMore,
+    };
 
-      const combinedItems = [
-        ...chatResult.chats.map((c) => ({
-          ...c,
-          type: 'chat' as const,
-          sortDate: new Date(c.createdAt),
-          createdAt: c.createdAt,
-        })),
-        ...docResult.documents.map((d) => ({
-          ...d,
-          type: 'document' as const,
-          sortDate: d.modifiedAt ? new Date(d.modifiedAt) : new Date(0),
-          createdAt: d.createdAt,
-          modifiedAt: d.modifiedAt,
-          chatId: d.chatId,
-        })),
-      ];
-
-      // Sort combined items by date descending
-      combinedItems.sort((a, b) => b.sortDate.getTime() - a.sortDate.getTime());
-
-      // Apply limit AFTER sorting
-      const limitedItems = combinedItems.slice(0, limit);
-      // Determine hasMore based on if we fetched more than the limit initially (simplification)
-      const hasMore =
-        chatResult.chats.length + docResult.documents.length > limit;
-
-      responseData = { items: limitedItems, hasMore };
-    } else {
-      console.warn(`[API /api/history] Unknown type requested: ${type}`);
-      return Response.json(
-        { error: 'Invalid type parameter' },
-        { status: 400 },
-      );
-    }
+    // REMOVE type checking logic (files, all)
 
     return Response.json(responseData);
   } catch (err: any) {
-    console.error(`Error fetching history (type: ${type}):`, err);
+    console.error(`Error fetching chat history:`, err);
     return Response.json(
       { error: 'Error fetching history', details: err.message },
       { status: 500 },

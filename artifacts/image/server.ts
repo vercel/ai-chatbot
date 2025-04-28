@@ -4,12 +4,14 @@ import { experimental_generateImage } from 'ai';
 
 export const imageDocumentHandler = createDocumentHandler<'image'>({
   kind: 'image',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream, instructions }) => {
     let draftContent = '';
+
+    const finalPrompt = `${title}${instructions ? `. Style/Instructions: ${instructions}` : ''}`;
 
     const { image } = await experimental_generateImage({
       model: myProvider.imageModel('small-model'),
-      prompt: title,
+      prompt: finalPrompt,
       n: 1,
     });
 
@@ -22,12 +24,14 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ description, dataStream }) => {
+  onUpdateDocument: async ({ description, dataStream, instructions }) => {
     let draftContent = '';
+
+    const finalPrompt = `${description}${instructions ? `. Style/Instructions for update: ${instructions}` : ''}`;
 
     const { image } = await experimental_generateImage({
       model: myProvider.imageModel('gpt-image-1'),
-      prompt: description,
+      prompt: finalPrompt,
       n: 1,
     });
 

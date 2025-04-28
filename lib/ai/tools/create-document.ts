@@ -19,12 +19,18 @@ export const createDocument = ({
 }: CreateDocumentProps) =>
   tool({
     description:
-      'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+      "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind. If the user specifies instructions (e.g., length, style, format), extract them and pass them in the 'instructions' parameter.",
     parameters: z.object({
       title: z.string(),
       kind: z.enum(artifactKinds),
+      instructions: z
+        .string()
+        .optional()
+        .describe(
+          'Specific user instructions like length, style, format, etc., extracted from the user query.',
+        ),
     }),
-    execute: async ({ title, kind }) => {
+    execute: async ({ title, kind, instructions }) => {
       const id = generateUUID();
 
       dataStream.writeData({
@@ -62,6 +68,7 @@ export const createDocument = ({
         chatId,
         dataStream,
         userId: userId,
+        instructions,
       });
 
       dataStream.writeData({ type: 'finish', content: '' });

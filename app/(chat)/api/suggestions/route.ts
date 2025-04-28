@@ -4,9 +4,9 @@ import { auth } from '@clerk/nextjs/server'; // ADD CLERK
 import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
 import { eq } from 'drizzle-orm'; // Need eq for profile lookup
 import {
-  db, // Added db here
+  db, // Already consolidated here
   getSuggestionsByDocumentId,
-} from '@/lib/db/queries'; // Merged imports, corrected path
+} from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

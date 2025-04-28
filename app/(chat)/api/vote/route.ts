@@ -4,11 +4,11 @@ import { auth } from '@clerk/nextjs/server'; // ADD CLERK
 import * as schema from '@/lib/db/schema'; // Need schema for profile lookup
 import { eq } from 'drizzle-orm'; // Need eq for profile lookup
 import {
-  db, // Added db here
+  db, // Already consolidated here
   getChatById,
   getVotesByChatId,
   voteMessage,
-} from '@/lib/db/queries'; // Merged imports
+} from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

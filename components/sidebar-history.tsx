@@ -5,6 +5,9 @@ import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { useUser } from '@clerk/nextjs';
+import useSWRInfinite from 'swr/infinite';
+import { fetcher } from '@/lib/utils';
 
 import {
   AlertDialog,
@@ -22,23 +25,28 @@ import {
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
-import type { ChatStub } from './app-sidebar';
 import { ChatItem } from './sidebar-history-item';
 import { LoaderIcon } from './icons';
 import { Skeleton } from './ui/skeleton';
-import { useSidebarData } from './app-sidebar';
+import type { User } from '@clerk/nextjs/server';
+import type { DBChat } from '@/lib/db/schema';
 
-type FilteredChatItem = ChatStub;
+export interface HistoryPage {
+  items: DBChat[];
+  hasMore: boolean;
+}
 
 type GroupedChats = {
-  today: ChatStub[];
-  yesterday: ChatStub[];
-  lastWeek: ChatStub[];
-  lastMonth: ChatStub[];
-  older: ChatStub[];
+  today: DBChat[];
+  yesterday: DBChat[];
+  lastWeek: DBChat[];
+  lastMonth: DBChat[];
+  older: DBChat[];
 };
 
-const groupChatsByDate = (chats: ChatStub[]): GroupedChats => {
+const PAGE_SIZE = 20;
+
+const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
   const oneMonthAgo = subMonths(now, 1);
@@ -47,14 +55,7 @@ const groupChatsByDate = (chats: ChatStub[]): GroupedChats => {
     (groups, chat) => {
       const chatDate = chat.createdAt;
 
-      if (
-        !chatDate ||
-        !(chatDate instanceof Date) ||
-        Number.isNaN(chatDate.getTime())
-      ) {
-        console.warn(
-          `[SidebarHistory] Invalid or missing createdAt date for chat ${chat.id}`,
-        );
+      if (!chatDate) {
         groups.older.push(chat);
       } else if (isToday(chatDate)) {
         groups.today.push(chat);
@@ -80,7 +81,24 @@ const groupChatsByDate = (chats: ChatStub[]): GroupedChats => {
   );
 };
 
-export function SidebarHistory() {
+export function getChatHistoryPaginationKey(
+  pageIndex: number,
+  previousPageData: HistoryPage | null,
+): string | null {
+  if (previousPageData && !previousPageData.hasMore) {
+    return null;
+  }
+
+  if (pageIndex === 0) return `/api/history?limit=${PAGE_SIZE}`;
+
+  const lastItem = previousPageData?.items?.at(-1);
+
+  if (!lastItem) return null;
+
+  return `/api/history?ending_before=${lastItem.id}&limit=${PAGE_SIZE}`;
+}
+
+export function SidebarHistory({ user }: { user: User | null | undefined }) {
   const { setOpenMobile } = useSidebar();
   const params = useParams();
   const activeChatId = typeof params?.id === 'string' ? params.id : null;
@@ -91,18 +109,29 @@ export function SidebarHistory() {
   console.log('[SidebarHistory] Component Render START');
 
   const {
-    allChatStubs,
-    initialFetchAttempted,
-    error: contextError,
-    hasMoreOlder,
-    loadMoreOlderItems,
-    mutateAllChats,
-  } = useSidebarData();
-  console.log(
-    `[SidebarHistory] Data from context: initialFetchAttempted=${initialFetchAttempted}, contextError=${contextError}, allChatStubs length=${allChatStubs?.length ?? 0}, hasMoreOlder=${hasMoreOlder}`,
-  );
+    data: paginatedChatHistories,
+    error,
+    isLoading,
+    isValidating,
+    setSize,
+    mutate,
+  } = useSWRInfinite<HistoryPage>(getChatHistoryPaginationKey, fetcher, {
+    revalidateFirstPage: false,
+    fallbackData: [],
+    keepPreviousData: true,
+  });
 
-  const isLoading = !initialFetchAttempted;
+  const isLoadingInitialData = isLoading && !paginatedChatHistories;
+  const isLoadingMore =
+    isLoading && paginatedChatHistories && paginatedChatHistories.length > 0;
+
+  const allChatStubs: DBChat[] =
+    paginatedChatHistories?.flatMap((page) => page.items) ?? [];
+  const hasMoreOlder = paginatedChatHistories?.at(-1)?.hasMore ?? false;
+
+  console.log(
+    `[SidebarHistory] SWR State: isLoadingInitial=${isLoadingInitialData}, isLoadingMore=${isLoadingMore}, error=${error}, allChatStubs length=${allChatStubs.length}, hasMoreOlder=${hasMoreOlder}`,
+  );
 
   const groupedChats = useMemo(() => {
     console.log('[SidebarHistory] useMemo for groupedChats START');
@@ -111,8 +140,7 @@ export function SidebarHistory() {
     return result;
   }, [allChatStubs]);
 
-  const chatItems = allChatStubs;
-  const hasItems = chatItems.length > 0;
+  const hasItems = allChatStubs.length > 0;
   console.log(`[SidebarHistory] Calculated hasItems: ${hasItems}`);
 
   const handleDelete = useCallback(async () => {
@@ -121,17 +149,15 @@ export function SidebarHistory() {
     setShowDeleteDialog(false);
     setDeleteId(null);
 
-    mutateAllChats(
-      (currentData: any) => {
+    mutate(
+      (currentData) => {
         if (!currentData) return currentData;
-        return currentData;
+        return currentData.map((page) => ({
+          ...page,
+          items: page.items.filter((chat) => chat.id !== tempDeleteId),
+        }));
       },
-      {
-        optimisticData: allChatStubs.filter((chat) => chat.id !== tempDeleteId),
-        rollbackOnError: true,
-        populateCache: false,
-        revalidate: false,
-      },
+      { revalidate: false },
     );
 
     if (tempDeleteId === activeChatId) {
@@ -151,22 +177,34 @@ export function SidebarHistory() {
       }
 
       toast.success('Chat deleted successfully');
-      mutateAllChats(undefined, { revalidate: true });
+      mutate();
     } catch (err: any) {
       console.error('Failed to delete chat:', err);
       toast.error(`Failed to delete chat: ${err.message || 'Unknown error'}`);
-      mutateAllChats(undefined, { revalidate: true });
+      mutate();
     }
-  }, [deleteId, activeChatId, mutateAllChats, router, allChatStubs]);
+  }, [deleteId, activeChatId, mutate, router]);
 
-  const showSkeleton = isLoading;
-  const showError = initialFetchAttempted && contextError;
-  const showEmpty = initialFetchAttempted && !contextError && !hasItems;
-  const showList = initialFetchAttempted && !contextError && hasItems;
+  const showSkeleton = isLoadingInitialData;
+  const showError = !!error;
+  const showEmpty = !isLoadingInitialData && !error && !hasItems;
+  const showList = !isLoadingInitialData && !error && hasItems;
 
   console.log(
     `[SidebarHistory] Rendering Checks: showSkeleton=${showSkeleton}, showError=${showError}, showEmpty=${showEmpty}, showList=${showList}`,
   );
+
+  if (!user) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+            Login to save and revisit previous chats!
+          </div>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  }
 
   if (showSkeleton) {
     console.log('[SidebarHistory] Rendering Skeleton');
@@ -187,7 +225,7 @@ export function SidebarHistory() {
       <SidebarGroup className="flex-1 overflow-y-auto">
         <SidebarGroupContent>
           <div className="p-4 text-sm text-red-600">
-            Error loading chats: {contextError?.message || 'Unknown error'}
+            Error loading chats: {error?.message || 'Unknown error'}
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -232,40 +270,47 @@ export function SidebarHistory() {
                     <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                       {displayGroupName}
                     </div>
-                    {chats.map((chat) => {
-                      return (
-                        <ChatItem
-                          key={chat.id}
-                          chat={chat}
-                          isActive={activeChatId === chat.id}
-                          onDelete={() => {
-                            setDeleteId(chat.id);
-                            setShowDeleteDialog(true);
-                          }}
-                          setOpenMobile={setOpenMobile}
-                        />
-                      );
-                    })}
+                    {chats.map((chat) => (
+                      <ChatItem
+                        key={chat.id}
+                        chat={chat}
+                        isActive={activeChatId === chat.id}
+                        onDelete={() => {
+                          setDeleteId(chat.id);
+                          setShowDeleteDialog(true);
+                        }}
+                        setOpenMobile={setOpenMobile}
+                      />
+                    ))}
                   </div>
                 );
               })}
-
-              <motion.div
-                className="h-10"
-                onViewportEnter={() => {
-                  console.log(
-                    `[Viewport Enter] Triggering loadMoreOlderItems. hasMoreOlder: ${hasMoreOlder}`,
-                  );
-                  if (hasMoreOlder) {
-                    loadMoreOlderItems();
-                  }
-                }}
-              />
-
-              <div className="p-4 text-center text-xs text-muted-foreground">
-                {!hasMoreOlder ? 'End of history.' : 'Loading...'}
-              </div>
             </SidebarMenu>
+
+            <motion.div
+              className="h-10 w-full"
+              onViewportEnter={() => {
+                if (!isValidating && hasMoreOlder) {
+                  console.log('[SidebarHistory] Loading more...');
+                  setSize((size) => size + 1);
+                }
+              }}
+            />
+
+            {isLoadingMore && (
+              <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center justify-center mt-4">
+                <div className="animate-spin">
+                  <LoaderIcon />
+                </div>
+                <div>Loading More Chats...</div>
+              </div>
+            )}
+
+            {!hasMoreOlder && !isLoadingMore && (
+              <div className="p-4 text-sm text-muted-foreground text-center mt-4">
+                End of chat history.
+              </div>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       )}
@@ -275,19 +320,14 @@ export function SidebarHistory() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this
-              chat and remove its data from our servers.
+              This action cannot be undone. This will permanently delete your
+              chat and remove it from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteId(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
