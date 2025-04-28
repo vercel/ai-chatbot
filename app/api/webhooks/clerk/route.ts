@@ -111,90 +111,125 @@ export async function POST(req: NextRequest) {
         `Clerk Webhook: Successfully upserted user profile for Clerk ID: ${clerkId}`,
       );
 
-      // --- N8N Call Section (Fetch profile *after* upsert) ---
+      // --- IMMEDIATELY Update Clerk Metadata with Internal DB ID ---
+      // Fetch profile right after upsert to get the definitive internal ID
       const profileAfterUpsert = await db.query.userProfiles.findFirst({
         where: eq(userProfiles.clerkId, clerkId),
       });
 
-      if (!profileAfterUpsert) {
+      let profileIdToUse: string | null = null;
+      if (profileAfterUpsert) {
+        profileIdToUse = profileAfterUpsert.id;
+        try {
+          console.log(
+            `Clerk Webhook: Updating Clerk metadata immediately with internal_db_id: ${profileIdToUse} for Clerk ID: ${clerkId}`,
+          );
+          const client = await clerkClient(); // Await the client
+          await client.users.updateUserMetadata(clerkId, {
+            // Use awaited client
+            publicMetadata: {
+              internal_db_id: profileIdToUse,
+            },
+          });
+          console.log(
+            `Clerk Webhook: Successfully set internal_db_id in Clerk metadata for ${clerkId}.`,
+          );
+        } catch (metaError) {
+          // Log critical failure, but don't necessarily stop the N8N call yet
+          console.error(
+            `Clerk Webhook: CRITICAL: Failed to set internal_db_id in Clerk metadata for ${clerkId}:`,
+            metaError,
+          );
+        }
+      } else {
+        // This case should ideally not happen after a successful upsert
         console.error(
-          `Clerk Webhook Error: Profile not found for clerkId ${clerkId} immediately after upsert. Cannot proceed with N8N call.`,
+          `Clerk Webhook Error: Profile not found for clerkId ${clerkId} immediately after upsert. Cannot set internal_db_id metadata.`,
+        );
+        // Decide if you want to proceed without the ID or return an error
+        // For now, we'll log and proceed, N8N call might fail or miss data.
+      }
+      // --- End Immediate Metadata Update ---
+
+      // --- N8N Call Section (Now profileIdToUse might be null if fetch failed) ---
+      // Use public_metadata from Clerk payload (check if already sent)
+      const alreadySent =
+        userData.public_metadata?.onboarding_webhook_sent ?? false;
+
+      if (alreadySent) {
+        console.log(
+          `Clerk Webhook: Onboarding webhook already marked as sent for Clerk ID: ${clerkId}. Skipping N8N call.`,
+        );
+      } else if (!profileIdToUse) {
+        // If we couldn't get the profile ID earlier, we can't reliably call N8N with it.
+        console.log(
+          `Clerk Webhook: Skipping N8N call for Clerk ID: ${clerkId} because internal profile ID could not be determined after upsert.`,
         );
       } else {
-        const profileIdToUse = profileAfterUpsert.id;
-        // Use public_metadata from Clerk payload
-        const alreadySent =
-          userData.public_metadata?.onboarding_webhook_sent ?? false;
+        // Proceed with N8N call only if we have the internal ID
+        console.log(
+          `Clerk Webhook: Triggering N8N onboarding for Clerk ID: ${clerkId}, Profile ID: ${profileIdToUse}.`,
+        );
 
-        if (alreadySent) {
-          console.log(
-            `Clerk Webhook: Onboarding webhook already marked as sent for Clerk ID: ${clerkId}. Skipping N8N call.`,
-          );
-        } else {
-          console.log(
-            `Clerk Webhook: Triggering N8N onboarding for Clerk ID: ${clerkId}, Profile ID: ${profileIdToUse}.`,
-          );
+        const payload = {
+          clerk_user_id: userData.id,
+          primary_email: email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          profile_image_url: userData.image_url,
+          created_at: new Date(userData.created_at).toISOString(),
+          updated_at: new Date(userData.updated_at).toISOString(),
+          internal_db_user_id: profileIdToUse, // Use the fetched ID
+        };
 
-          const payload = {
-            clerk_user_id: userData.id,
-            primary_email: email,
-            first_name: userData.first_name, // Keep for N8N if needed
-            last_name: userData.last_name, // Keep for N8N if needed
-            profile_image_url: userData.image_url, // Keep for N8N if needed
-            created_at: new Date(userData.created_at).toISOString(),
-            updated_at: new Date(userData.updated_at).toISOString(),
-            internal_db_user_id: profileIdToUse,
-          };
+        // Call N8N Webhook
+        try {
+          const n8nResponse = await fetch(N8N_ONBOARDING_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
 
-          // Call N8N Webhook
-          try {
-            const n8nResponse = await fetch(N8N_ONBOARDING_WEBHOOK_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            });
-
-            if (!n8nResponse.ok) {
-              const n8nResponseBody = await n8nResponse.text();
-              console.error(
-                `Clerk Webhook: N8N call failed for ${clerkId}. Status: ${n8nResponse.status}, Body: ${n8nResponseBody}`,
-              );
-            } else {
-              console.log(
-                `Clerk Webhook: N8N call successful for ${clerkId}. Status: ${n8nResponse.status}. Updating Clerk metadata.`,
-              );
-              // Update Clerk Metadata on Success
-              try {
-                const client = await clerkClient();
-                // Use publicMetadata for the Clerk client call
-                await client.users.updateUserMetadata(clerkId, {
-                  publicMetadata: {
-                    onboarding_webhook_sent: true,
-                    internal_db_id: profileIdToUse,
-                  },
-                });
-                console.log(
-                  `Clerk Webhook: Successfully updated Clerk metadata for ${clerkId}.`,
-                );
-              } catch (metaError) {
-                console.error(
-                  `Clerk Webhook: CRITICAL: Failed to update Clerk metadata for ${clerkId} after successful N8N call:`,
-                  metaError,
-                );
-              }
-            }
-          } catch (fetchError) {
+          if (!n8nResponse.ok) {
+            const n8nResponseBody = await n8nResponse.text();
             console.error(
-              `Clerk Webhook: Error calling N8N fetch for ${clerkId}:`,
-              fetchError,
+              `Clerk Webhook: N8N call failed for ${clerkId}. Status: ${n8nResponse.status}, Body: ${n8nResponseBody}`,
             );
+          } else {
+            console.log(
+              `Clerk Webhook: N8N call successful for ${clerkId}. Status: ${n8nResponse.status}. Updating Clerk metadata.`,
+            );
+            // Update ONLY the webhook sent flag in Clerk Metadata
+            try {
+              const client = await clerkClient(); // Await the client
+              await client.users.updateUserMetadata(clerkId, {
+                // Use awaited client
+                publicMetadata: {
+                  onboarding_webhook_sent: true, // ONLY set this flag now
+                },
+              });
+              console.log(
+                `Clerk Webhook: Successfully updated onboarding_webhook_sent flag in Clerk metadata for ${clerkId}.`,
+              );
+            } catch (metaError) {
+              // Log critical failure to update the *sent* flag
+              console.error(
+                `Clerk Webhook: CRITICAL: Failed to update onboarding_webhook_sent flag in Clerk metadata for ${clerkId} after successful N8N call:`,
+                metaError,
+              );
+            }
           }
+        } catch (fetchError) {
+          console.error(
+            `Clerk Webhook: Error calling N8N fetch for ${clerkId}:`,
+            fetchError,
+          );
         }
       }
       // --- End N8N Call Section ---
 
       return NextResponse.json(
-        { message: 'User profile processed via upsert' },
+        { message: 'User profile processed' }, // Updated message
         { status: 200 },
       );
     } catch (dbError) {

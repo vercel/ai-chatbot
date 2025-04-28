@@ -9,6 +9,7 @@ import {
   gte,
   inArray,
   lt,
+  or,
   type SQL,
   sql,
 } from 'drizzle-orm';
@@ -81,9 +82,11 @@ export async function getChatsByUserId({
   startingAfter: string | null;
   endingBefore: string | null;
 }) {
+  // Revert to the original Vercel logic (inefficient but avoids type errors)
   try {
     const extendedLimit = limit + 1;
 
+    // Base query builder function
     const query = (whereCondition?: SQL<any>) =>
       db
         .select()
@@ -98,6 +101,7 @@ export async function getChatsByUserId({
 
     let filteredChats: Array<schema.DBChat> = [];
 
+    // Original Vercel pagination logic (two queries)
     if (startingAfter) {
       const [selectedChat] = await db
         .select()
@@ -106,6 +110,7 @@ export async function getChatsByUserId({
         .limit(1);
 
       if (!selectedChat) {
+        // Keep original error throwing
         throw new Error(`Chat with id ${startingAfter} not found`);
       }
 
@@ -120,6 +125,7 @@ export async function getChatsByUserId({
         .limit(1);
 
       if (!selectedChat) {
+        // Keep original error throwing
         throw new Error(`Chat with id ${endingBefore} not found`);
       }
 
@@ -127,18 +133,32 @@ export async function getChatsByUserId({
         lt(schema.Chat.createdAt, selectedChat.createdAt),
       );
     } else {
+      // Initial load
       filteredChats = await query();
     }
 
     const hasMore = filteredChats.length > limit;
+    const chatsToReturn = hasMore
+      ? filteredChats.slice(0, limit)
+      : filteredChats;
+
+    // Ensure dates are Date objects (keep this safety check)
+    const finalChats = chatsToReturn.map((chat) => ({
+      ...chat,
+      createdAt:
+        chat.createdAt instanceof Date
+          ? chat.createdAt
+          : new Date(chat.createdAt),
+    }));
 
     return {
-      chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
+      chats: finalChats,
       hasMore,
     };
   } catch (error) {
+    // Revert to simpler error handling from original Vercel query function
     console.error('Failed to get chats by user from database', { error });
-    throw error;
+    throw error; // Re-throw original error
   }
 }
 

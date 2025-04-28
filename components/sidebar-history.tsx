@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
-import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
+import { isToday, isYesterday, subMonths, subWeeks, isValid } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -34,8 +34,9 @@ import type { DBChat } from '@/lib/db/schema';
 type UseUserReturn = ReturnType<typeof useUser>;
 type UserPropType = UseUserReturn['user'];
 
-export interface HistoryPage {
-  items: DBChat[];
+// FIX: Update ChatHistory interface to use 'items' matching API response
+export interface ChatHistory {
+  items: Array<DBChat>; // Use 'items' instead of 'chats'
   hasMore: boolean;
 }
 
@@ -47,7 +48,7 @@ type GroupedChats = {
   older: DBChat[];
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 30;
 
 const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
   const now = new Date();
@@ -56,9 +57,28 @@ const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
 
   return chats.reduce(
     (groups, chat) => {
-      const chatDate = chat.createdAt;
+      if (!chat || !chat.createdAt) {
+        console.warn(
+          '[SidebarHistory] Encountered chat without createdAt:',
+          chat,
+        );
+        groups.older.push(
+          chat || {
+            id: `invalid-${Math.random()}`,
+            title: 'Invalid Chat Data',
+            createdAt: new Date(0),
+          },
+        );
+        return groups;
+      }
 
-      if (!chatDate) {
+      const chatDate = new Date(chat.createdAt);
+
+      if (!isValid(chatDate)) {
+        console.warn(
+          '[SidebarHistory] Encountered chat with invalid createdAt date:',
+          chat,
+        );
         groups.older.push(chat);
       } else if (isToday(chatDate)) {
         groups.today.push(chat);
@@ -86,14 +106,17 @@ const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
 
 export function getChatHistoryPaginationKey(
   pageIndex: number,
-  previousPageData: HistoryPage | null,
+  // Use ChatHistory type
+  previousPageData: ChatHistory | null, // Allow null for SWRInfinite
 ): string | null {
+  // FIX: Use previousPageData.items
   if (previousPageData && !previousPageData.hasMore) {
     return null;
   }
 
   if (pageIndex === 0) return `/api/history?limit=${PAGE_SIZE}`;
 
+  // FIX: Use previousPageData.items
   const lastItem = previousPageData?.items?.at(-1);
 
   if (!lastItem) return null;
@@ -118,9 +141,9 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     isValidating,
     setSize,
     mutate,
-  } = useSWRInfinite<HistoryPage>(getChatHistoryPaginationKey, fetcher, {
+    // Use ChatHistory type in SWRInfinite hook
+  } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
     revalidateFirstPage: false,
-    fallbackData: [],
     keepPreviousData: true,
   });
 
@@ -128,25 +151,21 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
   const isLoadingMore =
     isValidating && paginatedChatHistories && paginatedChatHistories.length > 0;
 
-  const allChatStubs: DBChat[] = useMemo(() => {
-    return paginatedChatHistories?.flatMap((page) => page.items) ?? [];
-  }, [paginatedChatHistories]);
-
   const hasMoreOlder = paginatedChatHistories?.at(-1)?.hasMore ?? false;
 
   console.log(
-    `[SidebarHistory] SWR State: isLoadingInitial=${isLoadingInitialData}, isLoadingMore=${isLoadingMore}, error=${error}, allChatStubs length=${allChatStubs.length}, hasMoreOlder=${hasMoreOlder}`,
+    `[SidebarHistory] SWR State: isLoadingInitial=${isLoadingInitialData}, isLoadingMore=${isLoadingMore}, error=${error}, pages=${paginatedChatHistories?.length}, hasMoreOlder=${hasMoreOlder}`,
   );
 
   const groupedChats = useMemo(() => {
     console.log('[SidebarHistory] useMemo for groupedChats START');
-    const result = groupChatsByDate(allChatStubs);
+    // FIX: Use flatMap((page) => page.items)
+    const currentChats =
+      paginatedChatHistories?.flatMap((page) => page.items) ?? [];
+    const result = groupChatsByDate(currentChats);
     console.log('[SidebarHistory] useMemo for groupedChats END');
     return result;
-  }, [allChatStubs]);
-
-  const hasItems = useMemo(() => allChatStubs.length > 0, [allChatStubs]);
-  console.log(`[SidebarHistory] Calculated hasItems: ${hasItems}`);
+  }, [paginatedChatHistories]);
 
   const handleDelete = useCallback(async () => {
     if (!deleteId) return;
@@ -190,36 +209,40 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     }
   }, [deleteId, activeChatId, mutate, router]);
 
-  // Determine rendering state based on SWR isLoading and error
-  const showSkeleton = isLoadingInitialData; // Show skeleton while SWR isLoading
+  // Calculate hasReachedEnd (equivalent to Vercel original)
+  const hasReachedEnd = !hasMoreOlder;
+
+  // Refined Check: Only consider empty if loading is finished AND data is present AND it's truly empty
+  const hasEmptyChatHistory =
+    !isLoading && // Add check: ensure initial load is complete
+    paginatedChatHistories && // Add check: ensure data array exists
+    paginatedChatHistories.every((page) => {
+      // FIX: Explicitly check if page and page.items exist and is an array
+      if (page && Array.isArray(page.items)) {
+        return page.items.length === 0; // FIX: Check page.items.length
+      }
+      // Treat missing/invalid page or page.items as effectively empty
+      return true;
+    });
+
   const showError = !!error;
-  // Show empty only if *not* loading, no error, and no items
-  const showEmpty = !isLoadingInitialData && !error && !hasItems;
-  const showList = !isLoadingInitialData && !error && hasItems;
 
   console.log(
-    `[SidebarHistory] Rendering Checks: showSkeleton=${showSkeleton}, showError=${showError}, showEmpty=${showEmpty}, showList=${showList}`,
+    // Keep logging for now, but adjust to reflect simplified state checks
+    `[SidebarHistory] Rendering Checks: isLoading=${isLoading}, error=${error}, hasEmpty=${hasEmptyChatHistory}, hasReachedEnd=${hasReachedEnd}`,
   );
 
-  if (!user) {
-    // This should ideally not be hit frequently now due to parent check,
-    // but keep as a fallback.
-    return (
-      <SidebarGroup>
-        <SidebarGroupContent>
-          <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
-            Login to save and revisit previous chats!
-          </div>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    );
-  }
+  // --- Use Vercel Original Loading/Empty State Rendering ---
+  console.log(
+    `[SidebarHistory] Decision State: isLoading=${isLoading}, showError=${showError}, hasEmpty=${hasEmptyChatHistory}, pages=${JSON.stringify(paginatedChatHistories)}`,
+  );
 
-  // Show skeleton based on SWR isLoading
-  if (showSkeleton) {
-    console.log('[SidebarHistory] Rendering Skeleton');
+  if (isLoading) {
+    // Use the original Vercel skeleton rendering logic
+    console.log('[SidebarHistory] Rendering Skeleton (Vercel Style)');
     return (
       <SidebarGroup className="flex-1 overflow-y-auto">
+        {/* Simplified skeleton, adjust if needed */}
         <div className="p-4 space-y-2">
           <Skeleton className="h-6 w-3/4" />
           <Skeleton className="h-6 w-1/2" />
@@ -229,8 +252,8 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     );
   }
 
-  // Show error if SWR returns an error
   if (showError) {
+    // Keep explicit error handling
     console.log('[SidebarHistory] Rendering Error');
     return (
       <SidebarGroup className="flex-1 overflow-y-auto">
@@ -243,9 +266,8 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     );
   }
 
-  // Show empty state only after loading is confirmed false and no items exist
-  if (showEmpty) {
-    console.log('[SidebarHistory] Rendering Empty State');
+  if (hasEmptyChatHistory) {
+    console.log('[SidebarHistory] Rendering Empty State (Vercel Style)');
     return (
       <SidebarGroup className="flex-1 overflow-y-auto">
         <SidebarGroupContent>
@@ -256,15 +278,12 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
       </SidebarGroup>
     );
   }
+  // --- End Revert ---
 
-  // Show list if not loading, no error, and items exist
-  // Note: The original code didn't have an explicit check for showList here,
-  // it just proceeded to render the list if none of the other states were met.
-  // We'll keep that pattern but ensure the logic driving the conditions above is correct.
+  // Render list if not loading, no error, and not empty
   console.log('[SidebarHistory] Rendering List');
   return (
     <>
-      {/* Removed explicit showList check - render list if other states false */}
       <SidebarGroup className="flex-1 overflow-y-auto">
         <SidebarGroupContent>
           <SidebarMenu>
@@ -306,14 +325,21 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
           <motion.div
             className="h-10 w-full"
             onViewportEnter={() => {
-              if (!isValidating && hasMoreOlder) {
+              // Use hasReachedEnd (which is !hasMoreOlder)
+              if (!isValidating && !hasReachedEnd) {
                 console.log('[SidebarHistory] Loading more...');
                 setSize((size) => size + 1);
               }
             }}
           />
 
-          {isLoadingMore && (
+          {/* --- Revert Bottom Indicator Logic to Vercel Original Pattern --- */}
+          {hasReachedEnd ? (
+            <div className="p-4 text-sm text-muted-foreground text-center mt-4">
+              End of chat history.
+            </div>
+          ) : (
+            // Show loading indicator if not at the end
             <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center justify-center mt-4">
               <div className="animate-spin">
                 <LoaderIcon />
@@ -321,12 +347,7 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
               <div>Loading More Chats...</div>
             </div>
           )}
-
-          {!hasMoreOlder && !isLoadingMore && (
-            <div className="p-4 text-sm text-muted-foreground text-center mt-4">
-              End of chat history.
-            </div>
-          )}
+          {/* --- End Revert --- */}
         </SidebarGroupContent>
       </SidebarGroup>
 

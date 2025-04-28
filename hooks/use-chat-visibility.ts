@@ -1,15 +1,22 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useCallback, useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
 import { updateChatVisibility } from '@/app/(chat)/actions';
-// Remove unused imports from sidebar-history
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation';
 // import {
 //   getChatHistoryPaginationKey,
 //   type ChatHistory,
 // } from '@/components/sidebar-history';
 import type { VisibilityType } from '@/components/visibility-selector';
+import type { DBChat } from './db/schema';
+import { toast } from 'react-hot-toast';
 
 export function useChatVisibility({
   chatId,
@@ -51,6 +58,52 @@ export function useChatVisibility({
       visibility: updatedVisibilityType,
     });
   };
+
+  const { pathname, router, searchParams } = useRouter();
+
+  // COMMENT OUT THIS LINE (history invalidation handled by optimistic update/API route)
+  // if (chatId) {
+  //   mutate((key) => typeof key === 'string' && key.includes(`/api/chat?id=${chatId}`), undefined, { revalidate: true });
+  // }
+  // History list mutation needs to happen AFTER navigation/state settled
+  // Ensure SWR infinite history query is revalidated
+  // mutate(unstable_serialize(getChatHistoryPaginationKey));
+
+  // COMMENT OUT THIS LINE (not directly related, was for older history approach)
+  // mutate<HistoryPage[]>((key) => typeof key === 'string' && key.includes('/api/history'), undefined, { revalidate: true });
+
+  const updateVisibility = useCallback(
+    async (visibility: VisibilityType) => {
+      if (!chatId) return;
+
+      // Temporarily store current visibility
+      const previousVisibility = visibilityType;
+      // Optimistically update the UI
+      setVisibilityType(visibility);
+
+      try {
+        await updateChatVisibility(chatId, visibility);
+        toast.success('Chat visibility updated.');
+        // Optionally revalidate specific chat data if needed, but history handled elsewhere
+        // mutate((key) => typeof key === 'string' && key.includes(`/api/chat?id=${chatId}`));
+      } catch (error) {
+        // Revert optimistic update on error
+        setVisibilityType(previousVisibility);
+        toast.error(
+          `Failed to update chat visibility: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
+    },
+    [
+      pathname,
+      router,
+      searchParams,
+      chatId,
+      visibilityType,
+      setVisibilityType,
+      mutate,
+    ],
+  );
 
   return { visibilityType, setVisibilityType };
 }

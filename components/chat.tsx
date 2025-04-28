@@ -63,7 +63,11 @@ export function Chat({
     generateId: generateUUID,
     onFinish: () => {
       console.log('[Chat] onFinish called. Skipping SWR history mutate.'); // Add log
-      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // COMMENT OUT THIS LINE
+      //   revalidate: false,
+      // });
+
+      // COMMENT OUT THIS LINE
+      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Needs to be adapted if history structure changes
     },
     onError: (error) => {
       // Add error logging
