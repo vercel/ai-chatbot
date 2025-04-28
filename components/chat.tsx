@@ -19,7 +19,6 @@ import {
 } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
-import { getChatHistoryPaginationKey } from './sidebar-history';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
