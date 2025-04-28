@@ -32,6 +32,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
   private messageId: string | null;
   private datetime: Date | null;
   private googleToken: string | null;
+  private webhookSecretKey: string | undefined;
 
   constructor(config: {
     webhookUrl: string;
@@ -49,6 +50,13 @@ export class N8nLanguageModel implements LanguageModelV1 {
     this.messageId = config.messageId;
     this.datetime = config.datetime;
     this.googleToken = config.googleToken ?? null;
+    this.webhookSecretKey = process.env.N8N_WEBHOOK_SECRET_KEY;
+
+    if (!this.webhookSecretKey) {
+      console.warn(
+        '[N8nLanguageModel] N8N_WEBHOOK_SECRET_KEY environment variable is not set. Webhook calls will be unauthenticated.',
+      );
+    }
   }
 
   async doGenerate(
@@ -138,9 +146,17 @@ export class N8nLanguageModel implements LanguageModelV1 {
 
     try {
       console.log(`[N8nLanguageModel] Calling webhook: ${this.webhookUrl}`);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (this.webhookSecretKey) {
+        headers.Authorization = `Bearer ${this.webhookSecretKey}`;
+      }
+
       const n8nResponse = await fetch(this.webhookUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(payload),
       });
       responseHeaders = Object.fromEntries(n8nResponse.headers.entries());

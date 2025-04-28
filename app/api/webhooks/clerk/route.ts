@@ -23,6 +23,9 @@ function getPrimaryEmail(user: UserJSON): string | undefined {
 const N8N_ONBOARDING_WEBHOOK_URL =
   'https://n8n-naps.onrender.com/webhook/64fc6422-135f-4e81-bd23-8fc61daee99e';
 
+// ADDED: Get the shared webhook secret key
+const N8N_WEBHOOK_SECRET_KEY = process.env.N8N_WEBHOOK_SECRET_KEY;
+
 export async function POST(req: NextRequest) {
   // --- ADD DEBUG LOG ---
   console.log('[Webhook Handler] POST function invoked.');
@@ -171,6 +174,19 @@ export async function POST(req: NextRequest) {
           `Clerk Webhook: Triggering N8N onboarding for Clerk ID: ${clerkId}, Profile ID: ${profileIdToUse}.`,
         );
 
+        // ADDED: Prepare headers for N8N call
+        const n8nHeaders: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (N8N_WEBHOOK_SECRET_KEY) {
+          n8nHeaders.Authorization = `Bearer ${N8N_WEBHOOK_SECRET_KEY}`;
+        } else {
+          // Log a warning if the key is missing, as the N8N call might fail if auth is required
+          console.warn(
+            '[Clerk Webhook] N8N_WEBHOOK_SECRET_KEY is not set. Sending unauthenticated request to onboarding webhook.',
+          );
+        }
+
         const payload = {
           clerk_user_id: userData.id,
           primary_email: email,
@@ -184,20 +200,20 @@ export async function POST(req: NextRequest) {
 
         // Call N8N Webhook
         try {
-          const n8nResponse = await fetch(N8N_ONBOARDING_WEBHOOK_URL, {
+          const response = await fetch(N8N_ONBOARDING_WEBHOOK_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: n8nHeaders, // USE new headers object
             body: JSON.stringify(payload),
           });
 
-          if (!n8nResponse.ok) {
-            const n8nResponseBody = await n8nResponse.text();
+          if (!response.ok) {
+            const responseBody = await response.text();
             console.error(
-              `Clerk Webhook: N8N call failed for ${clerkId}. Status: ${n8nResponse.status}, Body: ${n8nResponseBody}`,
+              `Clerk Webhook: N8N call failed for ${clerkId}. Status: ${response.status}, Body: ${responseBody}`,
             );
           } else {
             console.log(
-              `Clerk Webhook: N8N call successful for ${clerkId}. Status: ${n8nResponse.status}. Updating Clerk metadata.`,
+              `Clerk Webhook: N8N call successful for ${clerkId}. Status: ${response.status}. Updating Clerk metadata.`,
             );
             // Update ONLY the webhook sent flag in Clerk Metadata
             try {
