@@ -58,9 +58,49 @@ export async function POST(request: Request) {
       documentId?: string;
     } = await request.json();
 
+    // --- Process messages for logging: Truncate base64 image data --- START
+    const loggableMessages = messages.map((message) => {
+      // Deep copy to avoid modifying original messages
+      const messageCopy = JSON.parse(JSON.stringify(message));
+
+      // Check and truncate in parts
+      if (Array.isArray(messageCopy.parts)) {
+        messageCopy.parts = messageCopy.parts.map((part: any) => {
+          if (
+            typeof part.content === 'string' &&
+            part.content.startsWith('data:image/')
+          ) {
+            return { ...part, content: '[base64 image data truncated]' };
+          }
+          return part;
+        });
+      }
+
+      // Check and truncate in attachments
+      if (Array.isArray(messageCopy.experimental_attachments)) {
+        messageCopy.experimental_attachments =
+          messageCopy.experimental_attachments.map((attachment: any) => {
+            if (
+              typeof attachment.content === 'string' &&
+              attachment.content.startsWith('data:image/')
+            ) {
+              return {
+                ...attachment,
+                content: '[base64 image data truncated]',
+              };
+            }
+            return attachment;
+          });
+      }
+
+      return messageCopy;
+    });
+    // --- Process messages for logging: Truncate base64 image data --- END
+
+    // Log the processed messages array
     console.log(
-      '[API /api/chat] Received messages:',
-      JSON.stringify(messages, null, 2),
+      '[API /api/chat] Received messages (images truncated):',
+      JSON.stringify(loggableMessages, null, 2), // Log the processed copy
     );
 
     // --- CLERK AUTH & PROFILE LOOKUP ---
