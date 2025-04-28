@@ -1,14 +1,12 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+// Keep necessary date-fns functions, add isValid
 import { isToday, isYesterday, subMonths, subWeeks, isValid } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import type { useUser } from '@clerk/nextjs';
-import useSWRInfinite from 'swr/infinite';
-import { fetcher } from '@/lib/utils';
-
+import type { useUser } from '@clerk/nextjs'; // Keep Clerk type
+import { useState } from 'react'; // Keep useState
+import { toast } from 'sonner'; // Keep sonner
+import { motion } from 'framer-motion'; // Keep motion
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,18 +23,20 @@ import {
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
+import type { DBChat } from '@/lib/db/schema'; // Correct: Import the exported type directly
+import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
+import useSWRInfinite from 'swr/infinite';
 import { LoaderIcon } from './icons';
-import { Skeleton } from './ui/skeleton';
-import type { DBChat } from '@/lib/db/schema';
+// Removed Skeleton import
 
 // Infer user type from useUser hook return value
 type UseUserReturn = ReturnType<typeof useUser>;
 type UserPropType = UseUserReturn['user'];
 
-// FIX: Update ChatHistory interface to use 'items' matching API response
+// Keep ChatHistory interface using 'items' matching API response
 export interface ChatHistory {
-  items: Array<DBChat>; // Use 'items' instead of 'chats'
+  items: Array<DBChat>;
   hasMore: boolean;
 }
 
@@ -48,8 +48,10 @@ type GroupedChats = {
   older: DBChat[];
 };
 
+// Keep PAGE_SIZE (adjust if needed, 30 was local)
 const PAGE_SIZE = 30;
 
+// Keep groupChatsByDate with isValid check
 const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
@@ -57,6 +59,7 @@ const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
 
   return chats.reduce(
     (groups, chat) => {
+      // Keep null/undefined chat check
       if (!chat || !chat.createdAt) {
         console.warn(
           '[SidebarHistory] Encountered chat without createdAt:',
@@ -71,9 +74,8 @@ const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
         );
         return groups;
       }
-
       const chatDate = new Date(chat.createdAt);
-
+      // Keep isValid check
       if (!isValid(chatDate)) {
         console.warn(
           '[SidebarHistory] Encountered chat with invalid createdAt date:',
@@ -91,7 +93,6 @@ const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
       } else {
         groups.older.push(chat);
       }
-
       return groups;
     },
     {
@@ -104,264 +105,322 @@ const groupChatsByDate = (chats: DBChat[]): GroupedChats => {
   );
 };
 
+// Keep getChatHistoryPaginationKey adapted for 'items'
 export function getChatHistoryPaginationKey(
   pageIndex: number,
-  // Use ChatHistory type
   previousPageData: ChatHistory | null, // Allow null for SWRInfinite
 ): string | null {
-  // FIX: Use previousPageData.items
   if (previousPageData && !previousPageData.hasMore) {
     return null;
   }
-
   if (pageIndex === 0) return `/api/history?limit=${PAGE_SIZE}`;
-
-  // FIX: Use previousPageData.items
   const lastItem = previousPageData?.items?.at(-1);
-
   if (!lastItem) return null;
-
   return `/api/history?ending_before=${lastItem.id}&limit=${PAGE_SIZE}`;
 }
 
 export function SidebarHistory({ user }: { user: UserPropType }) {
+  // Keep Clerk UserPropType
   const { setOpenMobile } = useSidebar();
+  // const { id } = useParams(); // Use params directly like original if needed, or keep activeChatId
   const params = useParams();
-  const activeChatId = typeof params?.id === 'string' ? params.id : null;
+  const activeChatId = typeof params?.id === 'string' ? params.id : null; // Keep activeChatId extraction
+
+  const {
+    data: paginatedChatHistories,
+    setSize,
+    isValidating, // Keep isValidating
+    isLoading, // Keep isLoading
+    error, // Keep error for potential use
+    mutate,
+  } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
+    // Keep ChatHistory<items> type
+    revalidateFirstPage: false, // Keep SWR options
+    keepPreviousData: true, // Keep SWR options
+    // Remove fallbackData: [] ? Match original
+  });
+
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  console.log('[SidebarHistory] Component Render START');
+  // Calculate hasReachedEnd like original, adapting for pages/hasMore
+  const hasReachedEnd = paginatedChatHistories
+    ? paginatedChatHistories.some((page) => page.hasMore === false)
+    : false;
 
-  const {
-    data: paginatedChatHistories,
-    error,
-    isLoading,
-    isValidating,
-    setSize,
-    mutate,
-    // Use ChatHistory type in SWRInfinite hook
-  } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
-    revalidateFirstPage: false,
-    keepPreviousData: true,
-  });
+  // Calculate hasEmptyChatHistory like original, adapting for 'items' and ensuring validity
+  const hasEmptyChatHistory = paginatedChatHistories
+    ? paginatedChatHistories.every((page) => {
+        // Add checks for safety
+        if (page && Array.isArray(page.items)) {
+          return page.items.length === 0;
+        }
+        // Treat invalid page structure as empty for this check
+        return true;
+      })
+    : false; // Default to false if paginatedChatHistories is undefined
 
-  const isLoadingInitialData = isLoading;
-  const isLoadingMore =
-    isValidating && paginatedChatHistories && paginatedChatHistories.length > 0;
-
-  const hasMoreOlder = paginatedChatHistories?.at(-1)?.hasMore ?? false;
-
-  console.log(
-    `[SidebarHistory] SWR State: isLoadingInitial=${isLoadingInitialData}, isLoadingMore=${isLoadingMore}, error=${error}, pages=${paginatedChatHistories?.length}, hasMoreOlder=${hasMoreOlder}`,
-  );
-
-  const groupedChats = useMemo(() => {
-    console.log('[SidebarHistory] useMemo for groupedChats START');
-    // FIX: Use flatMap((page) => page.items)
-    const currentChats =
-      paginatedChatHistories?.flatMap((page) => page.items) ?? [];
-    const result = groupChatsByDate(currentChats);
-    console.log('[SidebarHistory] useMemo for groupedChats END');
-    return result;
-  }, [paginatedChatHistories]);
-
-  const handleDelete = useCallback(async () => {
+  // Revert handleDelete closer to original using toast.promise
+  const handleDelete = async () => {
     if (!deleteId) return;
-    const tempDeleteId = deleteId;
+    const tempDeleteId = deleteId; // Store locally before clearing state
     setShowDeleteDialog(false);
     setDeleteId(null);
 
-    mutate(
-      (currentData) => {
-        if (!currentData) return currentData;
-        return currentData.map((page) => ({
-          ...page,
-          items: page.items.filter((chat) => chat.id !== tempDeleteId),
-        }));
-      },
-      { revalidate: false },
-    );
-
-    if (tempDeleteId === activeChatId) {
-      router.push('/');
-    }
-
-    try {
-      const response = await fetch(`/api/chat?id=${tempDeleteId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(
-          `Failed to delete chat: ${response.status} ${response.statusText} - ${errorData}`,
-        );
-      }
-
-      toast.success('Chat deleted successfully');
-      mutate();
-    } catch (err: any) {
-      console.error('Failed to delete chat:', err);
-      toast.error(`Failed to delete chat: ${err.message || 'Unknown error'}`);
-      mutate();
-    }
-  }, [deleteId, activeChatId, mutate, router]);
-
-  // Calculate hasReachedEnd (equivalent to Vercel original)
-  const hasReachedEnd = !hasMoreOlder;
-
-  // Refined Check: Only consider empty if loading is finished AND data is present AND it's truly empty
-  const hasEmptyChatHistory =
-    !isLoading && // Add check: ensure initial load is complete
-    paginatedChatHistories && // Add check: ensure data array exists
-    paginatedChatHistories.every((page) => {
-      // FIX: Explicitly check if page and page.items exist and is an array
-      if (page && Array.isArray(page.items)) {
-        return page.items.length === 0; // FIX: Check page.items.length
-      }
-      // Treat missing/invalid page or page.items as effectively empty
-      return true;
+    const deletePromise = fetch(`/api/chat?id=${tempDeleteId}`, {
+      method: 'DELETE',
     });
 
-  const showError = !!error;
+    toast.promise(deletePromise, {
+      loading: 'Deleting chat...',
+      success: () => {
+        // Mutate logic adapted for pages and 'items'
+        mutate(
+          (currentData) => {
+            if (currentData) {
+              return currentData.map((page) => ({
+                ...page,
+                items: page.items.filter((chat) => chat.id !== tempDeleteId),
+              }));
+            }
+            return currentData; // Return unchanged if no current data
+          },
+          { revalidate: false },
+        ); // Keep revalidate false for optimistic feel
 
-  console.log(
-    // Keep logging for now, but adjust to reflect simplified state checks
-    `[SidebarHistory] Rendering Checks: isLoading=${isLoading}, error=${error}, hasEmpty=${hasEmptyChatHistory}, hasReachedEnd=${hasReachedEnd}`,
-  );
+        // Redirect if the active chat was deleted
+        if (tempDeleteId === activeChatId) {
+          router.push('/');
+          router.refresh(); // Add refresh like original?
+        }
 
-  // --- Use Vercel Original Loading/Empty State Rendering ---
-  console.log(
-    `[SidebarHistory] Decision State: isLoading=${isLoading}, showError=${showError}, hasEmpty=${hasEmptyChatHistory}, pages=${JSON.stringify(paginatedChatHistories)}`,
-  );
+        return 'Chat deleted successfully'; // Message for toast
+      },
+      error: (err) => {
+        // Handle error within toast.promise
+        console.error('Failed to delete chat:', err); // Add logging
+        return err instanceof Error ? err.message : 'Failed to delete chat'; // Error message for toast
+      },
+    });
+  };
 
-  if (isLoading) {
-    // Use the original Vercel skeleton rendering logic
-    console.log('[SidebarHistory] Rendering Skeleton (Vercel Style)');
+  // Keep !user check for Clerk
+  if (!user) {
     return (
-      <SidebarGroup className="flex-1 overflow-y-auto">
-        {/* Simplified skeleton, adjust if needed */}
-        <div className="p-4 space-y-2">
-          <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-6 w-2/3" />
-        </div>
-      </SidebarGroup>
-    );
-  }
-
-  if (showError) {
-    // Keep explicit error handling
-    console.log('[SidebarHistory] Rendering Error');
-    return (
-      <SidebarGroup className="flex-1 overflow-y-auto">
+      <SidebarGroup>
         <SidebarGroupContent>
-          <div className="p-4 text-sm text-red-600">
-            Error loading chats: {error?.message || 'Unknown error'}
+          <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+            Login to save and revisit previous chats!
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
     );
   }
 
-  if (hasEmptyChatHistory) {
-    console.log('[SidebarHistory] Rendering Empty State (Vercel Style)');
+  // Use original isLoading check and skeleton rendering
+  if (isLoading && !paginatedChatHistories) {
+    // Be more specific: show skeleton only on initial load without any data yet
     return (
       <SidebarGroup className="flex-1 overflow-y-auto">
+        {' '}
+        {/* Keep scroll */}
+        {/* Use original manual skeleton structure */}
+        <div className="p-4 space-y-2">
+          <div className="h-6 w-3/4 rounded-md bg-sidebar-accent-foreground/10 animate-pulse" />
+          <div className="h-6 w-1/2 rounded-md bg-sidebar-accent-foreground/10 animate-pulse" />
+          <div className="h-6 w-2/3 rounded-md bg-sidebar-accent-foreground/10 animate-pulse" />
+        </div>
+      </SidebarGroup>
+    );
+  }
+
+  // Use original hasEmptyChatHistory check
+  if (hasEmptyChatHistory) {
+    return (
+      <SidebarGroup className="flex-1 overflow-y-auto">
+        {' '}
+        {/* Keep scroll */}
         <SidebarGroupContent>
           <div className="p-4 text-sm text-muted-foreground">
+            {' '}
+            {/* Adjusted text */}
             No chat history found.
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
     );
   }
-  // --- End Revert ---
 
-  // Render list if not loading, no error, and not empty
-  console.log('[SidebarHistory] Rendering List');
+  // Main render logic (closer to original)
   return (
     <>
+      {/* Make top group scrollable */}
       <SidebarGroup className="flex-1 overflow-y-auto">
         <SidebarGroupContent>
           <SidebarMenu>
-            {Object.entries(groupedChats).map(([groupName, chats]) => {
-              if (chats.length === 0) return null;
-              const groupNameMap: Record<string, string> = {
-                today: 'Today',
-                yesterday: 'Yesterday',
-                lastWeek: 'Last 7 Days',
-                lastMonth: 'Last 30 Days',
-                older: 'Older',
-              };
-              const displayGroupName =
-                groupNameMap[groupName] ||
-                groupName.charAt(0).toUpperCase() + groupName.slice(1);
+            {/* Calculate grouped chats directly here, remove useMemo */}
+            {(() => {
+              // Adapt flatMap for 'items'
+              const chatsFromHistory =
+                paginatedChatHistories?.flatMap(
+                  (page) => page.items ?? [], // Add nullish coalescing for safety
+                ) ?? []; // Add nullish coalescing for safety
+
+              const groupedChats = groupChatsByDate(chatsFromHistory);
 
               return (
-                <div key={groupName}>
-                  <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                    {displayGroupName}
-                  </div>
-                  {chats.map((chat) => (
-                    <ChatItem
-                      key={chat.id}
-                      chat={chat}
-                      isActive={activeChatId === chat.id}
-                      onDelete={() => {
-                        setDeleteId(chat.id);
-                        setShowDeleteDialog(true);
-                      }}
-                      setOpenMobile={setOpenMobile}
-                    />
-                  ))}
+                // Use original rendering structure
+                <div className="flex flex-col gap-6">
+                  {groupedChats.today.length > 0 && (
+                    <div>
+                      <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                        Today
+                      </div>
+                      {groupedChats.today.map((chat) => (
+                        <ChatItem
+                          key={chat.id}
+                          chat={chat}
+                          isActive={chat.id === activeChatId}
+                          onDelete={() => {
+                            setDeleteId(chat.id);
+                            setShowDeleteDialog(true);
+                          }}
+                          setOpenMobile={setOpenMobile}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {groupedChats.yesterday.length > 0 && (
+                    <div>
+                      <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                        Yesterday
+                      </div>
+                      {groupedChats.yesterday.map((chat) => (
+                        <ChatItem
+                          key={chat.id}
+                          chat={chat}
+                          isActive={chat.id === activeChatId}
+                          onDelete={() => {
+                            setDeleteId(chat.id);
+                            setShowDeleteDialog(true);
+                          }}
+                          setOpenMobile={setOpenMobile}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {groupedChats.lastWeek.length > 0 && (
+                    <div>
+                      <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                        Last 7 days
+                      </div>
+                      {groupedChats.lastWeek.map((chat) => (
+                        <ChatItem
+                          key={chat.id}
+                          chat={chat}
+                          isActive={chat.id === activeChatId}
+                          onDelete={() => {
+                            setDeleteId(chat.id);
+                            setShowDeleteDialog(true);
+                          }}
+                          setOpenMobile={setOpenMobile}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {groupedChats.lastMonth.length > 0 && (
+                    <div>
+                      <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                        Last 30 days
+                      </div>
+                      {groupedChats.lastMonth.map((chat) => (
+                        <ChatItem
+                          key={chat.id}
+                          chat={chat}
+                          isActive={chat.id === activeChatId}
+                          onDelete={() => {
+                            setDeleteId(chat.id);
+                            setShowDeleteDialog(true);
+                          }}
+                          setOpenMobile={setOpenMobile}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {groupedChats.older.length > 0 && (
+                    <div>
+                      <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                        Older
+                      </div>
+                      {groupedChats.older.map((chat) => (
+                        <ChatItem
+                          key={chat.id}
+                          chat={chat}
+                          isActive={chat.id === activeChatId}
+                          onDelete={() => {
+                            setDeleteId(chat.id);
+                            setShowDeleteDialog(true);
+                          }}
+                          setOpenMobile={setOpenMobile}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
-            })}
+            })()}
           </SidebarMenu>
 
+          {/* Keep motion div for loading more */}
           <motion.div
-            className="h-10 w-full"
+            className="h-10 w-full" // Keep size
             onViewportEnter={() => {
-              // Use hasReachedEnd (which is !hasMoreOlder)
+              // Use original logic check
               if (!isValidating && !hasReachedEnd) {
-                console.log('[SidebarHistory] Loading more...');
                 setSize((size) => size + 1);
               }
             }}
           />
 
-          {/* --- Revert Bottom Indicator Logic to Vercel Original Pattern --- */}
+          {/* Use original loading/end messages */}
           {hasReachedEnd ? (
             <div className="p-4 text-sm text-muted-foreground text-center mt-4">
+              {' '}
+              {/* Adjusted styling */}
               End of chat history.
             </div>
           ) : (
-            // Show loading indicator if not at the end
-            <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center justify-center mt-4">
-              <div className="animate-spin">
-                <LoaderIcon />
+            // Show loading indicator only if validating and not initial load
+            isValidating &&
+            paginatedChatHistories &&
+            paginatedChatHistories.length > 0 && (
+              <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center justify-center mt-4">
+                {' '}
+                {/* Keep styling */}
+                <div className="animate-spin">
+                  <LoaderIcon />
+                </div>
+                <div>Loading More Chats...</div>
               </div>
-              <div>Loading More Chats...</div>
-            </div>
+            )
           )}
-          {/* --- End Revert --- */}
         </SidebarGroupContent>
       </SidebarGroup>
 
+      {/* Keep AlertDialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete your
-              chat and remove it from our servers.
+              chat and remove it from all servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {/* Use reverted handleDelete */}
             <AlertDialogAction onClick={handleDelete}>
               Continue
             </AlertDialogAction>
