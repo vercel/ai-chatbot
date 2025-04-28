@@ -7,11 +7,11 @@ import { CodeBlock } from './code-block';
 const components: Partial<Components> = {
   // @ts-expect-error
   code: CodeBlock,
-  p: ({ node, children }) => {
-    // Check if the first child exists and is an ELEMENT node before checking tagName
-    const firstChild = node?.children?.[0];
+  p: ({ children }) => {
     const isPreTag =
-      firstChild?.type === 'element' && firstChild.tagName === 'pre';
+      Array.isArray(children) &&
+      children.length > 0 &&
+      (children[0] as any)?.type === 'pre';
     if (isPreTag) {
       return <>{children}</>;
     }

@@ -125,13 +125,11 @@ const PurePreviewMessage = ({
 
                       <div
                         data-testid="message-content"
-                        className={cn(
-                          'flex flex-col gap-4 px-3 py-2 rounded-xl',
-                          {
-                            'bg-sidebar-accent text-sidebar-foreground':
-                              message.role === 'user',
-                          },
-                        )}
+                        className={cn('flex flex-col gap-4 rounded-xl', {
+                          'bg-sidebar-accent text-sidebar-foreground':
+                            message.role === 'user',
+                          'px-3 py-2': message.role !== 'assistant',
+                        })}
                       >
                         <Markdown>{part.text}</Markdown>
                       </div>
@@ -163,38 +161,36 @@ const PurePreviewMessage = ({
                 if (state === 'call') {
                   const { args } = toolInvocation;
 
-                  if (toolName === 'getWeather') {
-                    return <Weather />;
-                  } else if (toolName === 'createDocument') {
-                    return (
-                      <DocumentPreview isReadonly={isReadonly} args={args} />
-                    );
-                  } else if (toolName === 'updateDocument') {
-                    return (
-                      <DocumentToolCall
-                        type="update"
-                        args={args}
-                        isReadonly={isReadonly}
-                      />
-                    );
-                  } else if (toolName === 'requestSuggestions') {
-                    return (
-                      <DocumentToolCall
-                        type="request-suggestions"
-                        args={args}
-                        isReadonly={isReadonly}
-                      />
-                    );
-                  } else {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-muted-foreground text-sm"
-                      >
-                        Calling tool: {toolName}...
-                      </div>
-                    );
-                  }
+                  return (
+                    <div
+                      key={toolCallId}
+                      className={cx({
+                        skeleton: ['getWeather'].includes(toolName),
+                      })}
+                    >
+                      {toolName === 'getWeather' ? (
+                        <Weather />
+                      ) : toolName === 'createDocument' ? (
+                        <DocumentPreview isReadonly={isReadonly} args={args} />
+                      ) : toolName === 'updateDocument' ? (
+                        <DocumentToolCall
+                          type="update"
+                          args={args}
+                          isReadonly={isReadonly}
+                        />
+                      ) : toolName === 'requestSuggestions' ? (
+                        <DocumentToolCall
+                          type="request-suggestions"
+                          args={args}
+                          isReadonly={isReadonly}
+                        />
+                      ) : (
+                        <div className="text-muted-foreground text-sm">
+                          Calling tool: {toolName}...
+                        </div>
+                      )}
+                    </div>
+                  );
                 }
 
                 if (state === 'result') {
@@ -222,7 +218,9 @@ const PurePreviewMessage = ({
                           isReadonly={isReadonly}
                         />
                       ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                        <pre className="hidden">
+                          {JSON.stringify(result, null, 2)}
+                        </pre>
                       )}
                     </div>
                   );
@@ -281,13 +279,13 @@ export const ThinkingMessage = () => {
           },
         )}
       >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
+        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border hidden">
           <SparklesIcon size={14} />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
+            Thinking...
           </div>
         </div>
       </div>

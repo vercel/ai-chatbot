@@ -100,6 +100,11 @@ export function Chat({
         status: 'idle',
         boundingBox: initialArtifactData.boundingBox,
       });
+    } else {
+      console.log(
+        'No initial artifact associated with this chat, ensuring artifact is hidden.',
+      );
+      setArtifact({ ...initialArtifactData, isVisible: false });
     }
   }, [initialAssociatedDocument, setArtifact]);
 
