@@ -59,6 +59,7 @@
     "@radix-ui/react-visually-hidden": "^1.1.0",
     "@tiptap-pro/extension-export": "2.18.0-beta.13",
     "@tiptap-pro/extension-import": "2.18.0-beta.13",
+    "@tiptap/core": "^2.11.7",
     "@tiptap/extension-bold": "^2.11.7",
     "@tiptap/extension-bullet-list": "^2.11.7",
     "@tiptap/extension-code": "^2.11.7",
