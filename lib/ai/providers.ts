@@ -42,13 +42,13 @@ export const myProvider = isTestEnvironment
         //   middleware: extractReasoningMiddleware({ tagName: 'think' }),
         // }),
         'title-model': google('gemini-2.5-flash-preview-04-17'),
-        'artifact-model': google('gemini-2.5-pro-exp-03-25'),
-        'gemini-2.5-pro-exp-03-25': google('gemini-2.5-pro-exp-03-25'),
+        'artifact-model': google('gemini-2.5-pro-preview-03-25'),
+        'deepseek-v3': togetherai('deepseek-ai/DeepSeek-V3'),
+        'deepseek-r1': togetherai('deepseek-ai/DeepSeek-R1'),
         'gemini-2.5-flash-preview-04-17': google(
           'gemini-2.5-flash-preview-04-17',
         ),
-        'deepseek-v3': togetherai('deepseek-ai/DeepSeek-V3'),
-        'deepseek-r1': togetherai('deepseek-ai/DeepSeek-R1'),
+        'gemini-2.5-pro-preview-03-25': google('gemini-2.5-pro-preview-03-25'),
         'o4-mini': openai('o4-mini'),
       },
       imageModels: {

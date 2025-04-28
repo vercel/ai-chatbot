@@ -71,10 +71,8 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         userId: args.userId,
       });
       console.log(
-        '[createDocumentHandler] draftResult received:',
-        typeof draftResult === 'string'
-          ? `${draftResult.substring(0, 30)}...`
-          : '[Object Content]',
+        '[createDocumentHandler][onCreate] Raw draftResult received:',
+        draftResult,
       );
 
       if (args.userId) {
@@ -85,19 +83,48 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           let contentToSave: string | null = null;
           let contentJsonToSave: JSONContent | null = null;
 
-          if (config.kind === 'textv2' && typeof draftResult === 'object') {
+          if (
+            config.kind === 'textv2' &&
+            typeof draftResult === 'object' &&
+            draftResult !== null
+          ) {
+            console.log(
+              '[createDocumentHandler][onCreate] Processing as textv2 object.',
+            );
             contentToSave = (draftResult as any).markdown ?? '';
             contentJsonToSave = (draftResult as any).json ?? null;
+            console.log(
+              '[createDocumentHandler][onCreate] textv2 values set:',
+              {
+                contentToSave: `${(contentToSave ?? '').substring(0, 30)}...`,
+                contentJsonToSave: !!contentJsonToSave,
+              },
+            );
           } else if (typeof draftResult === 'string') {
+            console.log(
+              '[createDocumentHandler][onCreate] Processing as string.',
+            );
             contentToSave = draftResult;
             contentJsonToSave = null;
+            console.log(
+              '[createDocumentHandler][onCreate] string values set:',
+              {
+                contentToSave: `${(contentToSave ?? '').substring(0, 30)}...`,
+                contentJsonToSave: !!contentJsonToSave,
+              },
+            );
           } else {
             console.warn(
-              '[createDocumentHandler] Unexpected draftResult type:',
+              '[createDocumentHandler][onCreate] Unexpected draftResult type or null object, defaulting to empty:',
               typeof draftResult,
+              draftResult,
             );
             contentToSave = '';
             contentJsonToSave = null;
+            console.log(
+              '[createDocumentHandler][onCreate] else/error values set:',
+              { contentToSave, contentJsonToSave },
+            );
           }
 
           const saveProps: SaveDocumentProps = {
@@ -111,7 +138,14 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
             content_json: contentJsonToSave,
           };
 
-          console.log('Saving document with values:', saveProps);
+          console.log(
+            '[createDocumentHandler][onCreate] Final props before saveDocument:',
+            {
+              ...saveProps,
+              content: `${(saveProps.content ?? '').substring(0, 30)}...`,
+              content_json: !!saveProps.content_json,
+            },
+          );
 
           await saveDocument(saveProps);
 
@@ -148,10 +182,8 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         userId: args.userId,
       });
       console.log(
-        '[createDocumentHandler] draftResult received for update:',
-        typeof draftResult === 'string'
-          ? `${draftResult.substring(0, 30)}...`
-          : '[Object Content]',
+        '[createDocumentHandler][onUpdate] Raw draftResult received:',
+        draftResult,
       );
 
       if (args.userId) {
@@ -162,19 +194,48 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           let contentToSave: string | null = null;
           let contentJsonToSave: JSONContent | null = null;
 
-          if (config.kind === 'textv2' && typeof draftResult === 'object') {
+          if (
+            config.kind === 'textv2' &&
+            typeof draftResult === 'object' &&
+            draftResult !== null
+          ) {
+            console.log(
+              '[createDocumentHandler][onUpdate] Processing as textv2 object.',
+            );
             contentToSave = (draftResult as any).markdown ?? '';
             contentJsonToSave = (draftResult as any).json ?? null;
+            console.log(
+              '[createDocumentHandler][onUpdate] textv2 values set:',
+              {
+                contentToSave: `${(contentToSave ?? '').substring(0, 30)}...`,
+                contentJsonToSave: !!contentJsonToSave,
+              },
+            );
           } else if (typeof draftResult === 'string') {
+            console.log(
+              '[createDocumentHandler][onUpdate] Processing as string.',
+            );
             contentToSave = draftResult;
             contentJsonToSave = null;
+            console.log(
+              '[createDocumentHandler][onUpdate] string values set:',
+              {
+                contentToSave: `${(contentToSave ?? '').substring(0, 30)}...`,
+                contentJsonToSave: !!contentJsonToSave,
+              },
+            );
           } else {
             console.warn(
-              '[createDocumentHandler] Unexpected draftResult type for update:',
+              '[createDocumentHandler][onUpdate] Unexpected draftResult type or null object, defaulting to empty:',
               typeof draftResult,
+              draftResult,
             );
             contentToSave = '';
             contentJsonToSave = null;
+            console.log(
+              '[createDocumentHandler][onUpdate] else/error values set:',
+              { contentToSave, contentJsonToSave },
+            );
           }
 
           const saveProps: SaveDocumentProps = {
@@ -188,7 +249,14 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
             content_json: contentJsonToSave,
           };
 
-          console.log('Saving document update with values:', saveProps);
+          console.log(
+            '[createDocumentHandler][onUpdate] Final props before saveDocument:',
+            {
+              ...saveProps,
+              content: `${(saveProps.content ?? '').substring(0, 30)}...`,
+              content_json: !!saveProps.content_json,
+            },
+          );
 
           await saveDocument(saveProps);
 

@@ -98,13 +98,42 @@ export const textV2DocumentHandler = createDocumentHandler<'textv2'>({
         messages,
       });
 
+      console.log(
+        '[textV2 onCreateDocument] streamText result object:',
+        result,
+      );
+
       let fullResponse = '';
+      console.log(
+        '[textV2 onCreateDocument] Entering stream aggregation loop...',
+      );
       // Aggregate the stream and forward text deltas
       for await (const delta of result.textStream) {
-        fullResponse += delta;
-        dataStream.writeData({ type: 'text-delta', content: delta });
+        // --- Log Delta Start ---
+        console.log(
+          '[textV2 onCreateDocument] Received delta:',
+          JSON.stringify(delta),
+        );
+        // --- Log Delta End ---
+        try {
+          if (typeof delta === 'string') {
+            fullResponse += delta;
+            console.log('[textV2 onCreateDocument] Received delta:', delta);
+            // dataStream.writeData({ type: 'text-delta', content: delta }); // Keep this commented out for now
+          }
+        } catch (error) {
+          console.error(
+            '[textV2 onCreateDocument] Error processing delta:',
+            error,
+          );
+        }
       }
+      console.log('[textV2 onCreateDocument] Exited stream aggregation loop.');
       console.log('[textV2 onCreateDocument] Finished streaming AI content.');
+      console.log(
+        '[textV2 onCreateDocument] Full streamed response before conversion:',
+        fullResponse,
+      ); // Log the full response
 
       // Convert Markdown to JSON
       console.log('[textV2 onCreateDocument] Converting Markdown to JSON...');
@@ -165,10 +194,27 @@ export const textV2DocumentHandler = createDocumentHandler<'textv2'>({
       console.log('[textV2 onUpdateDocument] streamText call finished.');
 
       // Aggregate the stream and forward text deltas
-      console.log('[textV2 onUpdateDocument] Aggregating stream...');
+      console.log(
+        '[textV2 onUpdateDocument] Entering stream aggregation loop...',
+      );
       for await (const delta of result.textStream) {
-        fullResponse += delta;
-        dataStream.writeData({ type: 'text-delta', content: delta });
+        // --- Log Delta Start ---
+        console.log(
+          '[textV2 onUpdateDocument] Received delta:',
+          JSON.stringify(delta),
+        );
+        // --- Log Delta End ---
+        try {
+          if (typeof delta === 'string') {
+            fullResponse += delta;
+            dataStream.writeData({ type: 'text-delta', content: delta });
+          }
+        } catch (error) {
+          console.error(
+            '[textV2 onUpdateDocument] Error processing delta:',
+            error,
+          );
+        }
       }
       console.log(
         '[textV2 onUpdateDocument] Finished streaming updated AI content.',

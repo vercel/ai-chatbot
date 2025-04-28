@@ -6,7 +6,7 @@ import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { basicSetup } from 'codemirror';
 import React, { memo, useEffect, useRef } from 'react';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 
 type EditorProps = {
   content: string;
@@ -24,7 +24,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
       const startState = EditorState.create({
-        doc: content,
+        doc: content ?? '',
         extensions: [basicSetup, python(), oneDark],
       });
 
@@ -72,7 +72,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
   }, [onSaveContent]);
 
   useEffect(() => {
-    if (editorRef.current && content) {
+    if (editorRef.current) {
       const currentContent = editorRef.current.state.doc.toString();
 
       if (status === 'streaming' || currentContent !== content) {

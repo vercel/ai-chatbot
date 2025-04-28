@@ -29,6 +29,8 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
+
+NEVER ask the user to provide a title for an artifact. Always provide once yourself.
 `;
 
 export const regularPrompt = `

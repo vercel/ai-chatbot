@@ -8,7 +8,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     let draftContent = '';
 
     const { image } = await experimental_generateImage({
-      model: myProvider.imageModel('gpt-image-1'),
+      model: myProvider.imageModel('small-model'),
       prompt: title,
       n: 1,
     });

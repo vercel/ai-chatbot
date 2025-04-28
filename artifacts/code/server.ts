@@ -18,7 +18,14 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
       }),
     });
 
+    console.log('[codeDocumentHandler][onCreate] Entering stream loop...');
     for await (const delta of fullStream) {
+      // --- Log Delta Start ---
+      console.log(
+        '[codeDocumentHandler][onCreate] Received delta:',
+        JSON.stringify(delta),
+      );
+      // --- Log Delta End ---
       const { type } = delta;
 
       if (type === 'object') {
@@ -50,7 +57,14 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
       }),
     });
 
+    console.log('[codeDocumentHandler][onUpdate] Entering stream loop...');
     for await (const delta of fullStream) {
+      // --- Log Delta Start ---
+      console.log(
+        '[codeDocumentHandler][onUpdate] Received delta:',
+        JSON.stringify(delta),
+      );
+      // --- Log Delta End ---
       const { type } = delta;
 
       if (type === 'object') {
