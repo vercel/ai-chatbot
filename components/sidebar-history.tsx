@@ -124,9 +124,9 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     keepPreviousData: true,
   });
 
-  const isLoadingInitialData = isLoading && !paginatedChatHistories;
+  const isLoadingInitialData = isLoading;
   const isLoadingMore =
-    isLoading && paginatedChatHistories && paginatedChatHistories.length > 0;
+    isValidating && paginatedChatHistories && paginatedChatHistories.length > 0;
 
   const allChatStubs: DBChat[] = useMemo(() => {
     return paginatedChatHistories?.flatMap((page) => page.items) ?? [];
@@ -190,8 +190,10 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     }
   }, [deleteId, activeChatId, mutate, router]);
 
-  const showSkeleton = isLoadingInitialData;
+  // Determine rendering state based on SWR isLoading and error
+  const showSkeleton = isLoadingInitialData; // Show skeleton while SWR isLoading
   const showError = !!error;
+  // Show empty only if *not* loading, no error, and no items
   const showEmpty = !isLoadingInitialData && !error && !hasItems;
   const showList = !isLoadingInitialData && !error && hasItems;
 
@@ -200,6 +202,8 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
   );
 
   if (!user) {
+    // This should ideally not be hit frequently now due to parent check,
+    // but keep as a fallback.
     return (
       <SidebarGroup>
         <SidebarGroupContent>
@@ -211,6 +215,7 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     );
   }
 
+  // Show skeleton based on SWR isLoading
   if (showSkeleton) {
     console.log('[SidebarHistory] Rendering Skeleton');
     return (
@@ -224,6 +229,7 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     );
   }
 
+  // Show error if SWR returns an error
   if (showError) {
     console.log('[SidebarHistory] Rendering Error');
     return (
@@ -237,6 +243,7 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     );
   }
 
+  // Show empty state only after loading is confirmed false and no items exist
   if (showEmpty) {
     console.log('[SidebarHistory] Rendering Empty State');
     return (
@@ -250,75 +257,78 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     );
   }
 
+  // Show list if not loading, no error, and items exist
+  // Note: The original code didn't have an explicit check for showList here,
+  // it just proceeded to render the list if none of the other states were met.
+  // We'll keep that pattern but ensure the logic driving the conditions above is correct.
   console.log('[SidebarHistory] Rendering List');
   return (
     <>
-      {showList && (
-        <SidebarGroup className="flex-1 overflow-y-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {Object.entries(groupedChats).map(([groupName, chats]) => {
-                if (chats.length === 0) return null;
-                const groupNameMap: Record<string, string> = {
-                  today: 'Today',
-                  yesterday: 'Yesterday',
-                  lastWeek: 'Last 7 Days',
-                  lastMonth: 'Last 30 Days',
-                  older: 'Older',
-                };
-                const displayGroupName =
-                  groupNameMap[groupName] ||
-                  groupName.charAt(0).toUpperCase() + groupName.slice(1);
+      {/* Removed explicit showList check - render list if other states false */}
+      <SidebarGroup className="flex-1 overflow-y-auto">
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {Object.entries(groupedChats).map(([groupName, chats]) => {
+              if (chats.length === 0) return null;
+              const groupNameMap: Record<string, string> = {
+                today: 'Today',
+                yesterday: 'Yesterday',
+                lastWeek: 'Last 7 Days',
+                lastMonth: 'Last 30 Days',
+                older: 'Older',
+              };
+              const displayGroupName =
+                groupNameMap[groupName] ||
+                groupName.charAt(0).toUpperCase() + groupName.slice(1);
 
-                return (
-                  <div key={groupName}>
-                    <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                      {displayGroupName}
-                    </div>
-                    {chats.map((chat) => (
-                      <ChatItem
-                        key={chat.id}
-                        chat={chat}
-                        isActive={activeChatId === chat.id}
-                        onDelete={() => {
-                          setDeleteId(chat.id);
-                          setShowDeleteDialog(true);
-                        }}
-                        setOpenMobile={setOpenMobile}
-                      />
-                    ))}
+              return (
+                <div key={groupName}>
+                  <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+                    {displayGroupName}
                   </div>
-                );
-              })}
-            </SidebarMenu>
-
-            <motion.div
-              className="h-10 w-full"
-              onViewportEnter={() => {
-                if (!isValidating && hasMoreOlder) {
-                  console.log('[SidebarHistory] Loading more...');
-                  setSize((size) => size + 1);
-                }
-              }}
-            />
-
-            {isLoadingMore && (
-              <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center justify-center mt-4">
-                <div className="animate-spin">
-                  <LoaderIcon />
+                  {chats.map((chat) => (
+                    <ChatItem
+                      key={chat.id}
+                      chat={chat}
+                      isActive={activeChatId === chat.id}
+                      onDelete={() => {
+                        setDeleteId(chat.id);
+                        setShowDeleteDialog(true);
+                      }}
+                      setOpenMobile={setOpenMobile}
+                    />
+                  ))}
                 </div>
-                <div>Loading More Chats...</div>
-              </div>
-            )}
+              );
+            })}
+          </SidebarMenu>
 
-            {!hasMoreOlder && !isLoadingMore && (
-              <div className="p-4 text-sm text-muted-foreground text-center mt-4">
-                End of chat history.
+          <motion.div
+            className="h-10 w-full"
+            onViewportEnter={() => {
+              if (!isValidating && hasMoreOlder) {
+                console.log('[SidebarHistory] Loading more...');
+                setSize((size) => size + 1);
+              }
+            }}
+          />
+
+          {isLoadingMore && (
+            <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center justify-center mt-4">
+              <div className="animate-spin">
+                <LoaderIcon />
               </div>
-            )}
-          </SidebarGroupContent>
-        </SidebarGroup>
-      )}
+              <div>Loading More Chats...</div>
+            </div>
+          )}
+
+          {!hasMoreOlder && !isLoadingMore && (
+            <div className="p-4 text-sm text-muted-foreground text-center mt-4">
+              End of chat history.
+            </div>
+          )}
+        </SidebarGroupContent>
+      </SidebarGroup>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

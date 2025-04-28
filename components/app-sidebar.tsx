@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 export function AppSidebar() {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0">
@@ -60,9 +60,15 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarHistory user={user} />
+        {isLoaded ? (
+          <SidebarHistory user={user} />
+        ) : (
+          <div className="p-4">
+            {/* You can add a simple loading indicator here if desired */}
+          </div>
+        )}
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav />}</SidebarFooter>
+      <SidebarFooter>{isLoaded && user && <SidebarUserNav />}</SidebarFooter>
     </Sidebar>
   );
 }
