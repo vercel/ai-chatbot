@@ -152,7 +152,10 @@ export class ChatPage {
     const messageElements = await this.page.getByTestId('message-user').all();
     const lastMessageElement = messageElements[messageElements.length - 1];
 
-    const content = await lastMessageElement.innerText();
+    const content = await lastMessageElement
+      .getByTestId('message-content')
+      .innerText()
+      .catch(() => null);
 
     const hasAttachments = await lastMessageElement
       .getByTestId('message-attachments')

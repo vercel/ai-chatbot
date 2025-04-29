@@ -138,4 +138,15 @@ test.describe('Chat activity', () => {
     await assistantMessage.downvote();
     await chatPage.isVoteComplete();
   });
+
+  test('Create message from url query', async ({ page }) => {
+    await page.goto('/?query=Why is the sky blue?');
+    const userMessage = await chatPage.getRecentUserMessage();
+    expect(userMessage.content).toBe('Why is the sky blue?');
+
+    await chatPage.isGenerationComplete();
+
+    const assistantMessage = await chatPage.getRecentAssistantMessage();
+    expect(assistantMessage.content).toContain("It's just blue duh!");
+  });
 });
