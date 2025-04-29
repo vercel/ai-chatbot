@@ -141,10 +141,11 @@ test.describe('Chat activity', () => {
 
   test('Create message from url query', async ({ page }) => {
     await page.goto('/?query=Why is the sky blue?');
-    const userMessage = await chatPage.getRecentUserMessage();
-    expect(userMessage.content).toBe('Why is the sky blue?');
 
     await chatPage.isGenerationComplete();
+
+    const userMessage = await chatPage.getRecentUserMessage();
+    expect(userMessage.content).toBe('Why is the sky blue?');
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toContain("It's just blue duh!");
