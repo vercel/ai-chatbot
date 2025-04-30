@@ -3,13 +3,15 @@ import postgres from 'postgres';
 import {
   chat,
   message,
+  type MessageDeprecated,
   messageDeprecated,
   vote,
   voteDeprecated,
 } from '../schema';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { inArray } from 'drizzle-orm';
-import { appendResponseMessages, UIMessage } from 'ai';
+import { appendResponseMessages, type UIMessage } from 'ai';
+import { writeFileSync } from 'node:fs';
 
 config({
   path: '.env.local',
@@ -39,6 +41,35 @@ type NewVoteInsert = {
   chatId: string;
   isUpvoted: boolean;
 };
+
+interface MessageDeprecatedContentPart {
+  type: string;
+  content: unknown;
+}
+
+function getMessageRank(message: MessageDeprecated): number {
+  if (
+    message.role === 'assistant' &&
+    (message.content as MessageDeprecatedContentPart[]).some(
+      (contentPart) => contentPart.type === 'tool-call',
+    )
+  ) {
+    return 0;
+  }
+  if (
+    message.role === 'tool' &&
+    (message.content as MessageDeprecatedContentPart[]).some(
+      (contentPart) => contentPart.type === 'tool-result',
+    )
+  ) {
+    return 1;
+  }
+  if (message.role === 'assistant') {
+    return 2;
+  }
+
+  return 3;
+}
 
 async function createNewTable() {
   const chats = await db.select().from(chat);
@@ -70,7 +101,16 @@ async function createNewTable() {
       console.info(`Processed ${processedCount}/${chats.length} chats`);
 
       // Filter messages and votes for this specific chat
-      const messages = allMessages.filter((msg) => msg.chatId === chat.id);
+      const messages = allMessages
+        .filter((message) => message.chatId === chat.id)
+        .sort((a, b) => {
+          const differenceInTime =
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          if (differenceInTime !== 0) return differenceInTime;
+
+          return getMessageRank(a) - getMessageRank(b);
+        });
+
       const votes = allVotes.filter((v) => v.chatId === chat.id);
 
       // Group messages into sections
@@ -151,6 +191,10 @@ async function createNewTable() {
           }
         } catch (error) {
           console.error(`Error processing chat ${chat.id}: ${error}`);
+          writeFileSync(
+            `.errors/${chat.id}.txt`,
+            JSON.stringify({ error: `${error}`, messages }, null, 2),
+          );
         }
       }
     }
