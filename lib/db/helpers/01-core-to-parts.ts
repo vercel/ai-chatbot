@@ -24,7 +24,7 @@ const client = postgres(process.env.POSTGRES_URL);
 const db = drizzle(client);
 
 const BATCH_SIZE = 100; // Process 100 chats at a time
-const INSERT_BATCH_SIZE = 100; // Insert 100 messages at a time
+const INSERT_BATCH_SIZE = 1000; // Insert 1000 messages at a time
 
 type NewMessageInsert = {
   id: string;
