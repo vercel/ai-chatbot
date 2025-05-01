@@ -30,6 +30,7 @@ export default async function Page() {
           selectedVisibilityType="private"
           isReadonly={false}
           session={session}
+          autoResume={false}
         />
         <DataStreamHandler id={id} />
       </>
@@ -46,6 +47,7 @@ export default async function Page() {
         selectedVisibilityType="private"
         isReadonly={false}
         session={session}
+        autoResume={false}
       />
       <DataStreamHandler id={id} />
     </>
