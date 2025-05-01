@@ -158,13 +158,13 @@ test.describe('Chat activity', () => {
 
   test('scroll button appears when user scrolls up, hides on click', async () => {
     await chatPage.sendMultipleMessages(5, (i) => `filling message #${i}`);
-    expect(chatPage.scrollToBottomButton).not.toBeVisible();
+    await expect(chatPage.scrollToBottomButton).not.toBeVisible();
 
     await chatPage.scrollToTop();
-    expect(chatPage.scrollToBottomButton).toBeVisible();
+    await expect(chatPage.scrollToBottomButton).toBeVisible();
 
     await chatPage.scrollToBottomButton.click();
     await chatPage.waitForScrollToBottom();
-    expect(chatPage.scrollToBottomButton).not.toBeVisible();
+    await expect(chatPage.scrollToBottomButton).not.toBeVisible();
   });
 });
