@@ -30,6 +30,7 @@ import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
 import { createResumableStreamContext } from 'resumable-stream';
 import { after } from 'next/server';
+import type { Chat } from '@/lib/db/schema';
 
 export const maxDuration = 60;
 
@@ -217,6 +218,28 @@ export async function GET(request: Request) {
     return new Response('id is required', { status: 400 });
   }
 
+  const session = await auth();
+
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  let chat: Chat;
+
+  try {
+    chat = await getChatById({ id: chatId });
+  } catch {
+    return new Response('Not found', { status: 404 });
+  }
+
+  if (!chat) {
+    return new Response('Not found', { status: 404 });
+  }
+
+  if (chat.userId !== session.user.id) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
   const streamIds = await getStreamIdsByChatId({ chatId });
 
   if (!streamIds.length) {
@@ -235,6 +258,9 @@ export async function GET(request: Request) {
 
   return new Response(
     await streamContext.resumableStream(recentStreamId, () => emptyDataStream),
+    {
+      status: 200,
+    },
   );
 }
 
@@ -263,6 +289,7 @@ export async function DELETE(request: Request) {
 
     return Response.json(deletedChat, { status: 200 });
   } catch (error) {
+    console.error(error);
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });

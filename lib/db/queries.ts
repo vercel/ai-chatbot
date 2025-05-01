@@ -101,6 +101,7 @@ export async function deleteChatById({ id }: { id: string }) {
   try {
     await db.delete(vote).where(eq(vote.chatId, id));
     await db.delete(message).where(eq(message.chatId, id));
+    await db.delete(stream).where(eq(stream.chatId, id));
 
     const [chatsDeleted] = await db
       .delete(chat)
