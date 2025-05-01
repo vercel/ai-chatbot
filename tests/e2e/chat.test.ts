@@ -150,4 +150,21 @@ test.describe('Chat activity', () => {
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toContain("It's just blue duh!");
   });
+
+  test('auto-scrolls to bottom after submitting new messages', async () => {
+    await chatPage.sendMultipleMessages(5, (i) => `filling message #${i}`);
+    await chatPage.waitForScrollToBottom();
+  });
+
+  test('scroll button appears when user scrolls up, hides on click', async () => {
+    await chatPage.sendMultipleMessages(5, (i) => `filling message #${i}`);
+    await expect(chatPage.scrollToBottomButton).not.toBeVisible();
+
+    await chatPage.scrollToTop();
+    await expect(chatPage.scrollToBottomButton).toBeVisible();
+
+    await chatPage.scrollToBottomButton.click();
+    await chatPage.waitForScrollToBottom();
+    await expect(chatPage.scrollToBottomButton).not.toBeVisible();
+  });
 });
