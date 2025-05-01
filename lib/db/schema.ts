@@ -150,3 +150,21 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+export const stream = pgTable(
+  'Stream',
+  {
+    id: uuid('id').notNull().defaultRandom(),
+    chatId: uuid('chatId').notNull(),
+    createdAt: timestamp('createdAt').notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id] }),
+    chatRef: foreignKey({
+      columns: [table.chatId],
+      foreignColumns: [chat.id],
+    }),
+  }),
+);
+
+export type Stream = InferSelectModel<typeof stream>;

@@ -25,6 +25,7 @@ export function Chat({
   selectedVisibilityType,
   isReadonly,
   session,
+  autoResume,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
@@ -32,6 +33,7 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
+  autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -45,6 +47,7 @@ export function Chat({
     status,
     stop,
     reload,
+    experimental_resume,
   } = useChat({
     id,
     initialMessages,
@@ -66,6 +69,15 @@ export function Chat({
       });
     },
   });
+
+  useEffect(() => {
+    if (autoResume) {
+      experimental_resume();
+    }
+
+    // note: this hook has no dependencies since it only needs to run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');

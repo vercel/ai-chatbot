@@ -1,6 +1,6 @@
 {
   "name": "ai-chatbot",
-  "version": "3.0.15",
+  "version": "3.0.16",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -19,8 +19,8 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
-    "@ai-sdk/react": "^1.2.8",
-    "@ai-sdk/xai": "^1.2.10",
+    "@ai-sdk/react": "^1.2.11",
+    "@ai-sdk/xai": "^1.2.15",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
@@ -40,7 +40,7 @@
     "@vercel/blob": "^0.24.1",
     "@vercel/functions": "^2.0.0",
     "@vercel/postgres": "^0.10.0",
-    "ai": "4.3.4",
+    "ai": "4.3.13",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
@@ -74,7 +74,9 @@
     "react-dom": "19.0.0-rc-45804af1-20241021",
     "react-markdown": "^9.0.1",
     "react-resizable-panels": "^2.1.7",
+    "redis": "^5.0.0",
     "remark-gfm": "^4.0.0",
+    "resumable-stream": "^2.0.0",
     "server-only": "^0.0.1",
     "sonner": "^1.5.0",
     "swr": "^2.2.5",
