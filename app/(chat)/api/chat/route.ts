@@ -1,17 +1,19 @@
 import {
   appendClientMessage,
   appendResponseMessages,
-  createDataStreamResponse,
+  createDataStream,
   smoothStream,
   streamText,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
+  createStreamId,
   deleteChatById,
   getChatById,
   getMessageCountByUserId,
   getMessagesByChatId,
+  getStreamIdsByChatId,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
@@ -26,8 +28,15 @@ import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
+import { createResumableStreamContext } from 'resumable-stream';
+import { after } from 'next/server';
+import type { Chat } from '@/lib/db/schema';
 
 export const maxDuration = 60;
+
+const streamContext = createResumableStreamContext({
+  waitUntil: after,
+});
 
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
@@ -108,7 +117,10 @@ export async function POST(request: Request) {
       ],
     });
 
-    return createDataStreamResponse({
+    const streamId = generateUUID();
+    await createStreamId({ streamId, chatId: id });
+
+    const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
@@ -187,11 +199,69 @@ export async function POST(request: Request) {
         return 'Oops, an error occurred!';
       },
     });
+
+    return new Response(
+      await streamContext.resumableStream(streamId, () => stream),
+    );
   } catch (_) {
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });
   }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const chatId = searchParams.get('chatId');
+
+  if (!chatId) {
+    return new Response('id is required', { status: 400 });
+  }
+
+  const session = await auth();
+
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  let chat: Chat;
+
+  try {
+    chat = await getChatById({ id: chatId });
+  } catch {
+    return new Response('Not found', { status: 404 });
+  }
+
+  if (!chat) {
+    return new Response('Not found', { status: 404 });
+  }
+
+  if (chat.userId !== session.user.id) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
+  const streamIds = await getStreamIdsByChatId({ chatId });
+
+  if (!streamIds.length) {
+    return new Response('No streams found', { status: 404 });
+  }
+
+  const recentStreamId = streamIds.at(-1);
+
+  if (!recentStreamId) {
+    return new Response('No recent stream found', { status: 404 });
+  }
+
+  const emptyDataStream = createDataStream({
+    execute: () => {},
+  });
+
+  return new Response(
+    await streamContext.resumableStream(recentStreamId, () => emptyDataStream),
+    {
+      status: 200,
+    },
+  );
 }
 
 export async function DELETE(request: Request) {
@@ -219,6 +289,7 @@ export async function DELETE(request: Request) {
 
     return Response.json(deletedChat, { status: 200 });
   } catch (error) {
+    console.error(error);
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });
