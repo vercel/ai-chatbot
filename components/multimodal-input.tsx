@@ -204,7 +204,7 @@ function PureMultimodalInput({
             <Button
               data-testid="scroll-to-bottom-button"
               className="rounded-full"
-              size="sm"
+              size="icon"
               variant="outline"
               onClick={(event) => {
                 event.preventDefault();
