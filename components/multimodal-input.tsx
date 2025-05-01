@@ -202,6 +202,7 @@ function PureMultimodalInput({
             className="absolute left-1/2 bottom-28 -translate-x-1/2 z-50"
           >
             <Button
+              data-testid="scroll-to-bottom-button"
               className="rounded-full"
               size="sm"
               variant="outline"
