@@ -15,7 +15,7 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
-import type { Session } from 'next-auth';
+import type { Session } from '@/lib/types/auth';
 import { useSearchParams } from 'next/navigation';
 
 export function Chat({

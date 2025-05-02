@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Session } from 'next-auth';
+import type { Session } from '@/lib/types/auth';
 import { DataStreamWriter, streamObject, tool } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
 import { Suggestion } from '@/lib/db/schema';
