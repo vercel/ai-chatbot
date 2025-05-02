@@ -3,12 +3,23 @@
 import { generateText, type UIMessage } from 'ai';
 import { cookies } from 'next/headers';
 import {
-  deleteMessagesByChatIdAfterTimestamp,
-  getMessageById,
-  updateChatVisiblityById,
-} from '@/lib/db/queries';
+  getChat,
+  getChatMessages,
+  updateChat,
+  createMessage,
+} from '@/lib/firebase/db';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
+import { db } from '@/lib/firebase/admin';
+import {
+  query,
+  where,
+  collection,
+  orderBy,
+  limit,
+  getDocs,
+  deleteDoc,
+} from 'firebase/firestore';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -34,12 +45,39 @@ export async function generateTitleFromUserMessage({
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
+  try {
+    // Get message to determine chatId and timestamp
+    const messagesRef = collection(db, 'messages');
+    const q = query(messagesRef, where('id', '==', id), limit(1));
+    const messageSnapshot = await getDocs(q);
 
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
-  });
+    if (messageSnapshot.empty) {
+      throw new Error('Message not found');
+    }
+
+    const message = messageSnapshot.docs[0].data();
+    const chatId = message.chatId;
+    const timestamp = message.createdAt;
+
+    // Find messages in the chat after this timestamp
+    const trailingMessagesQuery = query(
+      collection(db, 'messages'),
+      where('chatId', '==', chatId),
+      where('createdAt', '>', timestamp),
+      orderBy('createdAt', 'asc'),
+    );
+
+    const trailingMessagesSnapshot = await getDocs(trailingMessagesQuery);
+
+    // Delete all trailing messages
+    const deletePromises = trailingMessagesSnapshot.docs.map((doc) =>
+      deleteDoc(doc.ref),
+    );
+    await Promise.all(deletePromises);
+  } catch (error) {
+    console.error('Error deleting trailing messages:', error);
+    throw error;
+  }
 }
 
 export async function updateChatVisibility({
@@ -49,5 +87,9 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await updateChatVisiblityById({ chatId, visibility });
+  // Convert visibility type to boolean for isShared field
+  const isShared = visibility === 'public';
+
+  // Update the chat document in Firestore
+  await updateChat(chatId, { isShared });
 }

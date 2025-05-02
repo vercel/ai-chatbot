@@ -23,7 +23,14 @@ export const postRequestBodySchema = z.object({
       )
       .optional(),
   }),
-  selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning']),
+  selectedChatModel: z.enum([
+    'chat-model', 
+    'chat-model-reasoning',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-reasoning',
+    'deepseek-chat',
+    'deepseek-chat-reasoning'
+  ]),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

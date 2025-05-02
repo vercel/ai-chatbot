@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbars for all elements while maintaining scroll functionality */
+* {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Hide scrollbars for Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+    display: none;
+}
+
 :root {
     --foreground-rgb: 0, 0, 0;
     --background-start-rgb: 214, 219, 220;
@@ -58,12 +71,16 @@
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
     }
+
     .dark {
-        --background: 26 26 26;
+        --background: 0 0% 10.2%;
+        /* rgba(26,26,26,255) equivalent in HSL */
         --foreground: 0 0% 98%;
-        --card: 240 10% 3.9%;
+        --card: 0 0% 10.2%;
+        /* rgba(26,26,26,255) equivalent in HSL */
         --card-foreground: 0 0% 98%;
-        --popover: 240 10% 3.9%;
+        --popover: 0 0% 10.2%;
+        /* rgba(26,26,26,255) equivalent in HSL */
         --popover-foreground: 0 0% 98%;
         --primary: 0 0% 98%;
         --primary-foreground: 240 5.9% 10%;
@@ -132,7 +149,7 @@
     @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
 }
 
-.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.ͼo.cm-focused>.cm-scroller>.cm-selectionLayer .cm-selectionBackground,
 .ͼo.cm-selectionBackground,
 .ͼo.cm-content::selection {
     @apply bg-zinc-200 dark:bg-zinc-900 !important;

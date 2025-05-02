@@ -89,10 +89,10 @@ export async function POST(request: Request) {
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
-      longitude,
-      latitude,
-      city,
-      country,
+      longitude: longitude ? Number.parseFloat(longitude).toString() : '0',
+      latitude: latitude ? Number.parseFloat(latitude).toString() : '0',
+      city: city || 'Unknown',
+      country: country || 'Unknown',
     };
 
     await saveMessages({
@@ -110,84 +110,109 @@ export async function POST(request: Request) {
 
     return createDataStreamResponse({
       execute: (dataStream) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
+        try {
+          let languageModel: ReturnType<typeof myProvider.languageModel>;
+          try {
+            languageModel = myProvider.languageModel(selectedChatModel);
 
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [message],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
-              }
+            if (!languageModel) {
+              console.error(`Model not available: ${selectedChatModel}`);
+              languageModel = myProvider.languageModel('chat-model');
             }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
+          } catch (modelError) {
+            console.error(
+              `Error initializing model ${selectedChatModel}:`,
+              modelError,
+            );
+            languageModel = myProvider.languageModel('chat-model');
+          }
 
-        result.consumeStream();
+          const result = streamText({
+            model: languageModel,
+            system: systemPrompt({ selectedChatModel, requestHints }),
+            messages,
+            maxSteps: 5,
+            experimental_activeTools:
+              selectedChatModel === 'chat-model-reasoning' ||
+              selectedChatModel.startsWith('gemini-')
+                ? []
+                : [
+                    'getWeather',
+                    'createDocument',
+                    'updateDocument',
+                    'requestSuggestions',
+                  ],
+            experimental_transform: smoothStream({ chunking: 'word' }),
+            experimental_generateMessageId: generateUUID,
+            tools: {
+              getWeather,
+              createDocument: createDocument({ session, dataStream }),
+              updateDocument: updateDocument({ session, dataStream }),
+              requestSuggestions: requestSuggestions({
+                session,
+                dataStream,
+              }),
+            },
+            onFinish: async ({ response }) => {
+              if (session.user?.id) {
+                try {
+                  const assistantId = getTrailingMessageId({
+                    messages: response.messages.filter(
+                      (message) => message.role === 'assistant',
+                    ),
+                  });
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+                  if (!assistantId) {
+                    throw new Error('No assistant message found!');
+                  }
+
+                  const [, assistantMessage] = appendResponseMessages({
+                    messages: [message],
+                    responseMessages: response.messages,
+                  });
+
+                  await saveMessages({
+                    messages: [
+                      {
+                        id: assistantId,
+                        chatId: id,
+                        role: assistantMessage.role,
+                        parts: assistantMessage.parts,
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
+                } catch (_) {
+                  console.error('Failed to save chat');
+                }
+              }
+            },
+            experimental_telemetry: {
+              isEnabled: isProductionEnvironment,
+              functionId: 'stream-text',
+            },
+          });
+
+          result.consumeStream();
+
+          result.mergeIntoDataStream(dataStream, {
+            sendReasoning: true,
+          });
+        } catch (error) {
+          console.error('Error during streaming execution:', error);
+          dataStream.write('e:Oops, an error occurred during streaming!\n');
+        }
       },
-      onError: () => {
-        return 'Oops, an error occurred!';
+      onError: (error) => {
+        console.error('An error occurred during the data stream:', error);
+        return 'e:Oops, an error occurred!\n';
       },
     });
-  } catch (_) {
+  } catch (error) {
+    // Enhanced error logging
+    console.error('API route error:', error);
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });

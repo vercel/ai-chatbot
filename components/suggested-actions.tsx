@@ -19,13 +19,13 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
     },
     {
       title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      label: `demonstrate Dijkstra's algorithm`,
+      action: `Write code to demonstrate Dijkstra's algorithm`,
     },
     {
       title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      label: `about Silicon Valley`,
+      action: `Help me write an essay about Silicon Valley`,
     },
     {
       title: 'What is the weather',
@@ -37,7 +37,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   return (
     <div
       data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
+      className="grid sm:grid-cols-2 gap-3 w-full md:px-10"
     >
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
@@ -49,7 +49,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
           className={index > 1 ? 'hidden sm:block' : 'block'}
         >
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={async () => {
               window.history.replaceState({}, '', `/chat/${chatId}`);
 
@@ -58,7 +58,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
                 content: suggestedAction.action,
               });
             }}
-            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
+            className="text-left border rounded-[20px] px-5 py-4 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start hover:bg-accent/50 transition-colors"
           >
             <span className="font-medium">{suggestedAction.title}</span>
             <span className="text-muted-foreground">

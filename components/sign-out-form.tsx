@@ -1,17 +1,20 @@
 import Form from 'next/form';
 
-import { signOut } from '@/app/(auth)/auth';
+import { signOutAction } from '@/app/(auth)/actions';
 
-export const SignOutForm = () => {
+interface SignOutFormProps {
+  onClose?: () => void;
+}
+
+export const SignOutForm = ({ onClose }: SignOutFormProps) => {
   return (
     <Form
       className="w-full"
       action={async () => {
-        'use server';
-
-        await signOut({
-          redirectTo: '/',
-        });
+        await signOutAction('/');
+        if (onClose) {
+          onClose();
+        }
       }}
     >
       <button

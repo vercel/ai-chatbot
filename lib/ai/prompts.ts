@@ -59,8 +59,12 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
+  // Handle different model types with appropriate prompts
   if (selectedChatModel === 'chat-model-reasoning') {
     return `${regularPrompt}\n\n${requestPrompt}`;
+  } else if (selectedChatModel.startsWith('gemini-')) {
+    // Simplified prompt for Gemini models, they may handle lengthy system prompts differently
+    return `${regularPrompt}\n\nYou are a helpful AI assistant. Keep your responses informative and concise.`;
   } else {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
   }

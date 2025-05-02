@@ -35,24 +35,33 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {messages.length === 0 && <Greeting />}
+      {/* Only show the greeting when no messages are present */}
+      {messages.length === 0 && (
+        <div className="flex-1 flex flex-col justify-center md:pb-36">
+          <Greeting />
+        </div>
+      )}
 
-      {messages.map((message, index) => (
-        <PreviewMessage
-          key={message.id}
-          chatId={chatId}
-          message={message}
-          isLoading={status === 'streaming' && messages.length - 1 === index}
-          vote={
-            votes
-              ? votes.find((vote) => vote.messageId === message.id)
-              : undefined
-          }
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-        />
-      ))}
+      {messages.length > 0 && (
+        <div className="flex flex-col gap-6">
+          {messages.map((message, index) => (
+            <PreviewMessage
+              key={message.id}
+              chatId={chatId}
+              message={message}
+              isLoading={status === 'streaming' && messages.length - 1 === index}
+              vote={
+                votes
+                  ? votes.find((vote) => vote.messageId === message.id)
+                  : undefined
+              }
+              setMessages={setMessages}
+              reload={reload}
+              isReadonly={isReadonly}
+            />
+          ))}
+        </div>
+      )}
 
       {status === 'submitted' &&
         messages.length > 0 &&

@@ -1,10 +1,34 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export const Greeting = () => {
+  // Use client-side only rendering to prevent hydration errors
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    // Server-side or during hydration, render a simple version without animations
+    return (
+      <div
+        key="overview"
+        className="max-w-3xl  w-full mx-auto md:-mt-16 px-8 flex flex-col justify-center items-center"
+      >
+        <div className="text-2xl font-semibold opacity-0">Hello there!</div>
+        <div className="text-2xl text-zinc-500 opacity-0">
+          How can I help you today?
+        </div>
+      </div>
+    );
+  }
+
+  // Client-side render with animations
   return (
     <div
       key="overview"
-      className="max-w-3xl mx-auto md:mt-20 px-8 size-full flex flex-col justify-center"
+      className="max-w-3xl w-full mx-auto md:-mt-16 px-8 flex flex-col justify-center items-center"
     >
       <motion.div
         initial={{ opacity: 0, y: 10 }}
