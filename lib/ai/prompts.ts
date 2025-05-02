@@ -119,3 +119,32 @@ Improve the following spreadsheet based on the given prompt.
 ${currentContent}
 `
         : '';
+
+export const webSearchPrompt = (responseData: {
+  original_prompt: string;
+  search_results: {
+    organic: Array<{
+      title: string;
+      snippet: string;
+      link: string;
+    }>;
+  };
+}) => `
+User asked: "${responseData.original_prompt}"
+
+I performed a Google search and found these results:
+
+1. ${responseData.search_results.organic[0].title}
+   ${responseData.search_results.organic[0].snippet}
+   (${responseData.search_results.organic[0].link})
+
+2. ${responseData.search_results.organic[1].title}
+   ${responseData.search_results.organic[1].snippet}
+   (${responseData.search_results.organic[1].link})
+
+3. ${responseData.search_results.organic[2].title}
+   ${responseData.search_results.organic[2].snippet}
+   (${responseData.search_results.organic[2].link})
+
+Based on these sources, answer the user's question in a clear, concise, and accurate way.
+`;

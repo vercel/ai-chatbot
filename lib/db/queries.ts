@@ -196,22 +196,28 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }) {
   try {
-    return await db.insert(message).values(messages);
+    console.log('Attempting to save messages:', messages);
+    const result = await db.insert(message).values(messages);
+    console.log('Successfully saved messages');
+    return result;
   } catch (error) {
-    console.error('Failed to save messages in database', error);
+    console.error('Failed to save messages in database. Error details:', error);
     throw error;
   }
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
-    return await db
+    console.log('Attempting to get messages for chat:', id);
+    const result = await db
       .select()
       .from(message)
       .where(eq(message.chatId, id))
       .orderBy(asc(message.createdAt));
+    console.log('Successfully retrieved messages:', result);
+    return result;
   } catch (error) {
-    console.error('Failed to get messages by chat id from database', error);
+    console.error('Failed to get messages by chat id from database. Error details:', error);
     throw error;
   }
 }

@@ -1172,3 +1172,21 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const SearchIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.5 1.5C4.18629 1.5 1.5 4.18629 1.5 7.5C1.5 10.8137 4.18629 13.5 7.5 13.5C8.89164 13.5 10.1682 13.0118 11.1676 12.2076L13.8536 14.8536L14.5607 14.1464L11.8747 11.4604C12.6789 10.461 13.1671 9.18436 13.1671 7.79271C13.1671 4.479 10.4808 1.79271 7.16708 1.79271H7.5V1.5ZM2.5 7.5C2.5 4.73858 4.73858 2.5 7.5 2.5C10.2614 2.5 12.5 4.73858 12.5 7.5C12.5 10.2614 10.2614 12.5 7.5 12.5C4.73858 12.5 2.5 10.2614 2.5 7.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};

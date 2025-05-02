@@ -34,16 +34,23 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
+    console.log("Request ", json);
+
     requestBody = postRequestBodySchema.parse(json);
+    console.log("Request body ", requestBody);
   } catch (_) {
     return new Response('Invalid request body', { status: 400 });
   }
 
   try {
-    const { id, message, selectedChatModel } = requestBody;
-
+    const { id, messages, selectedChatModel } = requestBody;
+    
+    // Get the last message from the messages array
+    const message = messages[messages.length - 1];
+    
+    console.log("Details ", id, message, selectedChatModel);
     const session = await auth();
-
+    console.log("Session ", session);
     if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
@@ -80,7 +87,7 @@ export async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
+    const messagesForModel = appendClientMessage({
       // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
       messages: previousMessages,
       message,
@@ -113,7 +120,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
+          messages: messagesForModel,
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
@@ -187,8 +194,9 @@ export async function POST(request: Request) {
         return 'Oops, an error occurred!';
       },
     });
-  } catch (_) {
-    return new Response('An error occurred while processing your request!', {
+  } catch (error) {
+    console.error('Error in chat API:', error);
+    return new Response(`An error occurred while processing your request! ${error instanceof Error ? error.message : 'Unknown error'}`, {
       status: 500,
     });
   }
@@ -219,7 +227,8 @@ export async function DELETE(request: Request) {
 
     return Response.json(deletedChat, { status: 200 });
   } catch (error) {
-    return new Response('An error occurred while processing your request!', {
+    console.error('Error in chat API:', error);
+    return new Response(`An error occurred while processing your request! ${error instanceof Error ? error.message : 'Unknown error'}`, {
       status: 500,
     });
   }
