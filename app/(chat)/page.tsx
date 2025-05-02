@@ -1,39 +1,33 @@
-import { cookies } from 'next/headers';
+'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { auth } from '../(auth)/auth';
-import { redirect } from 'next/navigation';
 
-export default async function Page() {
-  const session = await auth();
+export default function Page() {
+  const router = useRouter();
+  const [id] = useState(generateUUID());
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_CHAT_MODEL);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!session) {
-    redirect('/api/auth/guest');
-  }
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
 
-  const id = generateUUID();
+    // Get chat model from localStorage
+    const chatModel = localStorage.getItem('chat-model') || DEFAULT_CHAT_MODEL;
+    setSelectedModel(chatModel);
+    setIsLoading(false);
+  }, [router]);
 
-  const cookieStore = await cookies();
-  const modelIdFromCookie = cookieStore.get('chat-model');
-
-  if (!modelIdFromCookie) {
-    return (
-      <>
-        <Chat
-          key={id}
-          id={id}
-          initialMessages={[]}
-          selectedChatModel={DEFAULT_CHAT_MODEL}
-          selectedVisibilityType="private"
-          isReadonly={false}
-          session={session}
-        />
-        <DataStreamHandler id={id} />
-      </>
-    );
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -42,10 +36,13 @@ export default async function Page() {
         key={id}
         id={id}
         initialMessages={[]}
-        selectedChatModel={modelIdFromCookie.value}
+        selectedChatModel={selectedModel}
         selectedVisibilityType="private"
         isReadonly={false}
-        session={session}
+        session={{ 
+          user: { id: '1', email: 'user@example.com', type: 'regular' },
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+        }}
       />
       <DataStreamHandler id={id} />
     </>

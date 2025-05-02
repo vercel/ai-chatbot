@@ -1,4 +1,4 @@
-import type { UserType } from '@/app/(auth)/auth';
+import type { UserType } from '../auth';
 import type { ChatModel } from './models';
 
 interface Entitlements {
@@ -27,3 +27,8 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
    * TODO: For users with an account and a paid membership
    */
 };
+
+export function isEntitledToFeature(userType: UserType, feature: string): boolean {
+  // For now, all features are available to all users
+  return true;
+}

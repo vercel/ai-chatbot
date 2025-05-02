@@ -1,19 +1,31 @@
-import { cookies } from 'next/headers';
+'use client';
 
+import { useEffect, useState } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { auth } from '../(auth)/auth';
 import Script from 'next/script';
 
-export const experimental_ppr = true;
-
-export default async function Layout({
+export default function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [session, cookieStore] = await Promise.all([auth(), cookies()]);
-  const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Get sidebar state from localStorage
+    const sidebarState = localStorage.getItem('sidebar:state');
+    setIsCollapsed(sidebarState !== 'true');
+
+    // Get user info from localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+      // You might want to decode the JWT token here to get user info
+      // For now, we'll just set a basic user object
+      setUser({ email: 'user@example.com' });
+    }
+  }, []);
 
   return (
     <>
@@ -22,7 +34,7 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <SidebarProvider defaultOpen={!isCollapsed}>
-        <AppSidebar user={session?.user} />
+        <AppSidebar user={user} />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>
     </>

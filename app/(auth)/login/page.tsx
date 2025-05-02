@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from '@/components/toast';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
@@ -19,13 +19,15 @@ export default function Page() {
       setIsLoading(true);
       setEmail(formData.get('email') as string);
       
-      await apiClient.login({
+      const response = await apiClient.login({
         email: formData.get('email') as string,
         password: formData.get('password') as string,
       });
-      console.log("HERE");
+
+      // Store token in localStorage
+      localStorage.setItem('token', response.token);
       setIsSuccessful(true);
-      router.refresh();
+      router.push('/');
     } catch (error: any) {
       if (error.status === 401) {
         toast({

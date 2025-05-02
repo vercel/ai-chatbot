@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from '@/components/toast';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 import { apiClient } from '@/lib/api-client';
-import { toast } from '@/components/toast';
 
 export default function Page() {
   const router = useRouter();
@@ -19,20 +19,27 @@ export default function Page() {
       setIsLoading(true);
       setEmail(formData.get('email') as string);
       
-      await apiClient.register({
+      const response = await apiClient.register({
         email: formData.get('email') as string,
         password: formData.get('password') as string,
-        organizationId: '', // This will be handled by the backend
+        organizationId: 'default',
       });
 
-      toast({ type: 'success', description: 'Account created successfully!' });
+      // Store token in localStorage
+      localStorage.setItem('token', response.token);
       setIsSuccessful(true);
-      router.refresh();
+      router.push('/');
     } catch (error: any) {
       if (error.status === 409) {
-        toast({ type: 'error', description: 'Account already exists!' });
+        toast({
+          type: 'error',
+          description: 'Account already exists!',
+        });
       } else {
-        toast({ type: 'error', description: 'Failed to create account!' });
+        toast({
+          type: 'error',
+          description: 'Failed to create account!',
+        });
       }
     } finally {
       setIsLoading(false);
@@ -41,7 +48,7 @@ export default function Page() {
 
   return (
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl gap-12 flex flex-col">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
           <h3 className="text-xl font-semibold dark:text-zinc-50">Sign Up</h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400">
@@ -49,7 +56,7 @@ export default function Page() {
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful} isLoading={isLoading}>Sign Up</SubmitButton>
+          <SubmitButton isSuccessful={isSuccessful} isLoading={isLoading}>Sign up</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {'Already have an account? '}
             <Link
