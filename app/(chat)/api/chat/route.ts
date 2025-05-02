@@ -49,7 +49,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, selectedChatModel } = requestBody;
+    const { id, message, selectedChatModel, selectedVisibilityType } =
+      requestBody;
 
     const session = await auth();
 
@@ -80,7 +81,12 @@ export async function POST(request: Request) {
         message,
       });
 
-      await saveChat({ id, userId: session.user.id, title });
+      await saveChat({
+        id,
+        userId: session.user.id,
+        title,
+        visibility: selectedVisibilityType,
+      });
     } else {
       if (chat.userId !== session.user.id) {
         return new Response('Forbidden', { status: 403 });
@@ -236,7 +242,7 @@ export async function GET(request: Request) {
     return new Response('Not found', { status: 404 });
   }
 
-  if (chat.userId !== session.user.id) {
+  if (chat.visibility === 'private' && chat.userId !== session.user.id) {
     return new Response('Forbidden', { status: 403 });
   }
 
