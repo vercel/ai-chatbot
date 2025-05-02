@@ -1,4 +1,4 @@
-import { Chat } from '@/lib/db/schema';
+import type { Chat } from '@/lib/db/schema';
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -39,7 +39,7 @@ const PureChatItem = ({
 }) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
-    initialVisibility: chat.visibility,
+    initialVisibilityType: chat.visibility,
   });
 
   return (

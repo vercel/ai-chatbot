@@ -115,6 +115,23 @@ export class ChatPage {
     expect(await this.getSelectedModel()).toBe(chatModel.name);
   }
 
+  public async getSelectedVisibility() {
+    const visibilityId = await this.page
+      .getByTestId('visibility-selector')
+      .innerText();
+    return visibilityId;
+  }
+
+  public async chooseVisibilityFromSelector(
+    chatVisibility: 'public' | 'private',
+  ) {
+    await this.page.getByTestId('visibility-selector').click();
+    await this.page
+      .getByTestId(`visibility-selector-item-${chatVisibility}`)
+      .click();
+    expect(await this.getSelectedVisibility()).toBe(chatVisibility);
+  }
+
   async getRecentAssistantMessage() {
     const messageElements = await this.page
       .getByTestId('message-assistant')
