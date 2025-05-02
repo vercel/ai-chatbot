@@ -26,6 +26,7 @@ test.describe
           id: chatId,
           message: TEST_PROMPTS.SKY.MESSAGE,
           selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
         },
       });
       expect(response.status()).toBe(200);
@@ -49,6 +50,7 @@ test.describe
           id: chatId,
           message: TEST_PROMPTS.GRASS.MESSAGE,
           selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
         },
       });
       expect(response.status()).toBe(403);
@@ -109,6 +111,7 @@ test.describe
             createdAt: new Date().toISOString(),
           },
           selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
         },
       });
 
@@ -162,6 +165,7 @@ test.describe
             createdAt: new Date().toISOString(),
           },
           selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
         },
       });
 
@@ -190,7 +194,7 @@ test.describe
       expect(secondResponseContent).toEqual('');
     });
 
-    test('Babbage cannot resume chat generation that belongs to Ada', async ({
+    test('Babbage cannot resume a private chat generation that belongs to Ada', async ({
       adaContext,
       babbageContext,
     }) => {
@@ -212,6 +216,7 @@ test.describe
             createdAt: new Date().toISOString(),
           },
           selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
         },
       });
 
@@ -233,5 +238,58 @@ test.describe
 
       expect(firstStatusCode).toBe(200);
       expect(secondStatusCode).toBe(403);
+    });
+
+    test('Babbage can resume a public chat generation that belongs to Ada', async ({
+      adaContext,
+      babbageContext,
+    }) => {
+      const chatId = generateUUID();
+
+      const firstRequest = adaContext.request.post('/api/chat', {
+        data: {
+          id: chatId,
+          message: {
+            id: generateUUID(),
+            role: 'user',
+            content: 'Help me write an essay about Silicon Valley',
+            parts: [
+              {
+                type: 'text',
+                text: 'Help me write an essay about Silicon Valley',
+              },
+            ],
+            createdAt: new Date().toISOString(),
+          },
+          selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'public',
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const secondRequest = babbageContext.request.get(
+        `/api/chat?chatId=${chatId}`,
+      );
+
+      const [firstResponse, secondResponse] = await Promise.all([
+        firstRequest,
+        secondRequest,
+      ]);
+
+      const [firstStatusCode, secondStatusCode] = await Promise.all([
+        firstResponse.status(),
+        secondResponse.status(),
+      ]);
+
+      expect(firstStatusCode).toBe(200);
+      expect(secondStatusCode).toBe(200);
+
+      const [firstResponseContent, secondResponseContent] = await Promise.all([
+        firstResponse.text(),
+        secondResponse.text(),
+      ]);
+
+      expect(firstResponseContent).toEqual(secondResponseContent);
     });
   });
