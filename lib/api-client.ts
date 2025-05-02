@@ -106,7 +106,7 @@ export class ApiClient {
   }
 
   // Authentication APIs
-  async login(data: LoginRequest) {
+  async  login(data: LoginRequest) {
     const response = await this.client.post('/api/auth/login', data);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);

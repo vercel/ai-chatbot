@@ -2,48 +2,41 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
-
+import { useState } from 'react';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-
-import { register, type RegisterActionState } from '../actions';
+import { apiClient } from '@/lib/api-client';
 import { toast } from '@/components/toast';
 
 export default function Page() {
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [state, formAction] = useActionState<RegisterActionState, FormData>(
-    register,
-    {
-      status: 'idle',
-    },
-  );
-
-  useEffect(() => {
-    if (state.status === 'user_exists') {
-      toast({ type: 'error', description: 'Account already exists!' });
-    } else if (state.status === 'failed') {
-      toast({ type: 'error', description: 'Failed to create account!' });
-    } else if (state.status === 'invalid_data') {
-      toast({
-        type: 'error',
-        description: 'Failed validating your submission!',
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      setIsLoading(true);
+      setEmail(formData.get('email') as string);
+      
+      await apiClient.register({
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+        organizationId: '', // This will be handled by the backend
       });
-    } else if (state.status === 'success') {
-      toast({ type: 'success', description: 'Account created successfully!' });
 
+      toast({ type: 'success', description: 'Account created successfully!' });
       setIsSuccessful(true);
       router.refresh();
+    } catch (error: any) {
+      if (error.status === 409) {
+        toast({ type: 'error', description: 'Account already exists!' });
+      } else {
+        toast({ type: 'error', description: 'Failed to create account!' });
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }, [state]);
-
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    formAction(formData);
   };
 
   return (
@@ -56,7 +49,7 @@ export default function Page() {
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
+          <SubmitButton isSuccessful={isSuccessful} isLoading={isLoading}>Sign Up</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {'Already have an account? '}
             <Link
