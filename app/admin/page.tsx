@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 // Admin dashboard page
 export default function AdminPage() {
@@ -15,20 +21,20 @@ export default function AdminPage() {
     const fetchAdminData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch admin data from our API endpoints
+
+        // Fetch admin data from our API endpoints using PostgreSQL
         const [usersResponse, chatsResponse] = await Promise.all([
           fetch('/api/admin/users'),
-          fetch('/api/admin/chats')
+          fetch('/api/admin/chats'),
         ]);
-        
+
         if (!usersResponse.ok || !chatsResponse.ok) {
           throw new Error('Failed to fetch admin data');
         }
-        
+
         const usersData = await usersResponse.json();
         const chatsData = await chatsResponse.json();
-        
+
         setUsers(usersData);
         setChats(chatsData);
       } catch (err) {
@@ -45,13 +51,13 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           Error: {error}. Make sure you have admin privileges.
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
@@ -76,7 +82,9 @@ export default function AdminPage() {
                       <tr key={user.id} className="border-b">
                         <td className="py-2">{user.name || 'N/A'}</td>
                         <td className="py-2">{user.email}</td>
-                        <td className="py-2">{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td className="py-2">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -85,7 +93,7 @@ export default function AdminPage() {
             )}
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Chats</CardTitle>
@@ -109,7 +117,9 @@ export default function AdminPage() {
                       <tr key={chat.id} className="border-b">
                         <td className="py-2">{chat.title}</td>
                         <td className="py-2">{chat.userId}</td>
-                        <td className="py-2">{new Date(chat.createdAt).toLocaleDateString()}</td>
+                        <td className="py-2">
+                          {new Date(chat.createdAt).toLocaleDateString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -119,7 +129,7 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
-      
+
       <div className="flex gap-4 justify-end">
         <Button onClick={() => window.location.reload()}>Refresh Data</Button>
       </div>

@@ -3,27 +3,16 @@
 import { generateText, type UIMessage } from 'ai';
 import { cookies } from 'next/headers';
 import {
-  getChat,
-  getChatMessages,
-  updateChat,
-  createMessage,
-} from '@/lib/firebase/db';
+  getChatById,
+  getMessagesByChatId,
+  updateChatVisiblityById,
+  deleteMessagesByChatIdAfterTimestamp,
+} from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
-import { db } from '@/lib/firebase/admin';
-import {
-  query,
-  where,
-  collection,
-  orderBy,
-  limit,
-  getDocs,
-  deleteDoc,
-} from 'firebase/firestore';
 
 export async function saveChatModelAsCookie(model: string) {
-  const cookieStore = await cookies();
-  cookieStore.set('chat-model', model);
+  cookies().set('chatModel', model);
 }
 
 export async function generateTitleFromUserMessage({
@@ -31,49 +20,48 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel('title-model'),
-    system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
-  });
+  try {
+    // Generate a title based on the first user message
+    const response = await generateText({
+      prompt: `Generate a very short title (3-5 words) for a conversation starting with this message: "${message.content}"`,
+      provider: myProvider,
+      maxTokens: 20,
+    });
 
-  return title;
+    return response;
+  } catch (error) {
+    console.error('Failed to generate title:', error);
+    return 'New chat';
+  }
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
   try {
-    // Get message to determine chatId and timestamp
-    const messagesRef = collection(db, 'messages');
-    const q = query(messagesRef, where('id', '==', id), limit(1));
-    const messageSnapshot = await getDocs(q);
-
-    if (messageSnapshot.empty) {
-      throw new Error('Message not found');
+    // Find the most recent user message timestamp
+    const chat = await getChatById({ id });
+    if (!chat) {
+      throw new Error(`Chat with id ${id} not found`);
     }
 
-    const message = messageSnapshot.docs[0].data();
-    const chatId = message.chatId;
-    const timestamp = message.createdAt;
+    const messages = await getMessagesByChatId({ id });
 
-    // Find messages in the chat after this timestamp
-    const trailingMessagesQuery = query(
-      collection(db, 'messages'),
-      where('chatId', '==', chatId),
-      where('createdAt', '>', timestamp),
-      orderBy('createdAt', 'asc'),
-    );
+    // Find the timestamp of the most recent user message
+    let latestUserMessageIndex = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        latestUserMessageIndex = i;
+        break;
+      }
+    }
 
-    const trailingMessagesSnapshot = await getDocs(trailingMessagesQuery);
-
-    // Delete all trailing messages
-    const deletePromises = trailingMessagesSnapshot.docs.map((doc) =>
-      deleteDoc(doc.ref),
-    );
-    await Promise.all(deletePromises);
+    if (latestUserMessageIndex !== -1) {
+      const timestamp = messages[latestUserMessageIndex].createdAt;
+      // Delete all messages after this timestamp
+      await deleteMessagesByChatIdAfterTimestamp({
+        chatId: id,
+        timestamp,
+      });
+    }
   } catch (error) {
     console.error('Error deleting trailing messages:', error);
     throw error;
@@ -87,9 +75,13 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  // Convert visibility type to boolean for isShared field
-  const isShared = visibility === 'public';
-
-  // Update the chat document in Firestore
-  await updateChat(chatId, { isShared });
+  try {
+    return await updateChatVisiblityById({
+      chatId,
+      visibility,
+    });
+  } catch (error) {
+    console.error('Error updating chat visibility:', error);
+    throw error;
+  }
 }

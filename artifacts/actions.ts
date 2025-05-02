@@ -1,20 +1,16 @@
 'use server';
 
-import { db } from '@/lib/firebase/admin';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/db/queries';
+import { suggestion } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function getSuggestions({ documentId }: { documentId: string }) {
   try {
-    // Query suggestions collection for matches with the given documentId
-    const suggestionsRef = collection(db, 'suggestions');
-    const q = query(suggestionsRef, where('documentId', '==', documentId));
-    const querySnapshot = await getDocs(q);
-
-    // Transform the query results into an array of suggestions
-    const suggestions = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    // Query suggestions from PostgreSQL database
+    const suggestions = await db
+      .select()
+      .from(suggestion)
+      .where(eq(suggestion.documentId, documentId));
 
     return suggestions ?? [];
   } catch (error) {
