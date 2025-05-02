@@ -1,6 +1,6 @@
 {
   "name": "ai-chatbot",
-  "version": "3.0.17",
+  "version": "3.0.18",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
