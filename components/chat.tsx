@@ -168,6 +168,7 @@ export function Chat({
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}
+        selectedVisibilityType={visibilityType}
       />
     </>
   );
