@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
 import {
   experimental_createMCPClient,
+  type Tool,
   type MCPTransport as MCPTransportType,
 } from 'ai';
 
@@ -35,7 +36,8 @@ async function readMCPServerConfig(
   return config;
 }
 
-type MCPTransportConfig = Record<string, MCPTransport>;
+export type MCPTransportConfig = Record<string, MCPTransport>;
+export type MCPTool = Tool;
 
 async function createMCPTransports(
   config: Record<string, any>,
@@ -78,7 +80,7 @@ async function createMCPTools() {
     ),
   );
 
-  const tools: Record<string, any> = {};
+  const tools: Record<string, MCPTool> = {};
 
   for (const client of clients) {
     for (const [name, tool] of Object.entries(await client.tools())) {

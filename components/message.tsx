@@ -12,14 +12,16 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
-import { cn } from '@/lib/utils';
+import { APPROVAL, cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
-import type { UseChatHelpers } from '@ai-sdk/react';
+import type { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { ToolContentCall } from './tool-content';
+import { ToolPermissionRequest } from './tool-permission-request';
+import type { ToolMetadata } from '../lib/ai/tools';
 
 const PurePreviewMessage = ({
   chatId,
@@ -27,16 +29,20 @@ const PurePreviewMessage = ({
   vote,
   isLoading,
   setMessages,
+  addToolResult,
   reload,
   isReadonly,
+  tools,
 }: {
   chatId: string;
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
+  addToolResult: ReturnType<typeof useChat>['addToolResult'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
+  tools?: Record<string, ToolMetadata>;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -150,9 +156,33 @@ const PurePreviewMessage = ({
               if (type === 'tool-invocation') {
                 const { toolInvocation } = part;
                 const { toolName, toolCallId, state } = toolInvocation;
+                const tool = tools?.[toolName];
 
                 if (state === 'call') {
                   const { args } = toolInvocation;
+
+                  if (tool?.capabilities === 'executable') {
+                    return (
+                      <ToolPermissionRequest
+                        key={toolCallId}
+                        args={args}
+                        toolName={toolName}
+                        description={tool?.description ?? ''}
+                        onAllowAction={() => {
+                          addToolResult({
+                            toolCallId,
+                            result: APPROVAL.YES,
+                          });
+                        }}
+                        onDenyAction={() => {
+                          addToolResult({
+                            toolCallId,
+                            result: APPROVAL.NO,
+                          });
+                        }}
+                      />
+                    );
+                  }
 
                   return (
                     <div
@@ -250,6 +280,7 @@ export const PreviewMessage = memo(
     if (prevProps.message.id !== nextProps.message.id) return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
+    if (!equal(prevProps.tools, nextProps.tools)) return false;
 
     return true;
   },

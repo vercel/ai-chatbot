@@ -14,7 +14,7 @@ const server = new McpServer({
 
 server.tool(
   'calc_add',
-  'Add two of numbers',
+  'Calculate numbers addition, if text has numbers and operation, return the result',
   { a: z.number(), b: z.number() },
   async ({ a, b }) => {
     await sleep(100);
@@ -27,7 +27,7 @@ server.tool(
 
 server.tool(
   'calc_minus',
-  'Subtract two of numbers',
+  'Calculate numbers subtraction, if text has numbers and operation, return the result',
   { a: z.number(), b: z.number() },
   async ({ a, b }) => {
     await sleep(100);
@@ -40,7 +40,7 @@ server.tool(
 
 server.tool(
   'calc_multiply',
-  'Multiply two of numbers',
+  'Calculate numbers multiplication, if text has numbers and operation, return the result',
   { a: z.number(), b: z.number() },
   async ({ a, b }) => {
     await sleep(100);
@@ -53,7 +53,7 @@ server.tool(
 
 server.tool(
   'calc_divide',
-  'Divide two of numbers',
+  'Calculate numbers division, if text has numbers and operation, return the result',
   { a: z.number(), b: z.number() },
   async ({ a, b }) => {
     await sleep(100);

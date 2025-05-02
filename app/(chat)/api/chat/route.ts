@@ -1,5 +1,6 @@
 import {
-  UIMessage,
+  Message,
+  type UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
@@ -10,6 +11,7 @@ import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
+  getMessageById,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
@@ -17,11 +19,12 @@ import {
   generateUUID,
   getMostRecentUserMessage,
   getTrailingMessageId,
+  processToolCalls,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { tools, activeTools } from '@/lib/ai/tools';
+import { tools, executableFunctions } from '@/lib/ai/tools';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -62,31 +65,48 @@ export async function POST(request: Request) {
       }
     }
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: userMessage.id,
-          role: 'user',
-          parts: userMessage.parts,
-          attachments: userMessage.experimental_attachments ?? [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    // In process tool calls, we will check if the message has been updated
+    // and if so, we will update the message in the database.
+    const message = await getMessageById({ id: userMessage.id });
+    if (!message) {
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            id: userMessage.id,
+            role: 'user',
+            parts: userMessage.parts,
+            attachments: userMessage.experimental_attachments ?? [],
+            createdAt: new Date(),
+          },
+        ],
+      });
+    }
 
     return createDataStreamResponse({
-      execute: (dataStream) => {
+      execute: async (dataStream) => {
+        const processedMessages = await processToolCalls(
+          {
+            messages,
+            dataStream,
+          },
+          executableFunctions,
+        );
+
+        const executableTools = tools({ session, dataStream });
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
-          messages,
+          messages: processedMessages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning' ? [] : activeTools,
+            selectedChatModel === 'chat-model-reasoning'
+              ? []
+              : Object.keys(executableTools),
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
-          tools: tools({ session, dataStream }),
+          tools: executableTools,
           onFinish: async ({ response }) => {
             if (session.user?.id) {
               try {
@@ -135,8 +155,12 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: () => {
-        return 'Oops, an error occurred!';
+      onError: (error) => {
+        if (typeof error === 'object') {
+          return JSON.stringify(error);
+        }
+
+        return 'Unexpected error occurred';
       },
     });
   } catch (error) {

@@ -5,7 +5,8 @@ import { Greeting } from './greeting';
 import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
-import type { UseChatHelpers } from '@ai-sdk/react';
+import type { useChat, UseChatHelpers } from '@ai-sdk/react';
+import type { ToolMetadata } from '../lib/ai/tools';
 
 interface MessagesProps {
   chatId: string;
@@ -13,9 +14,11 @@ interface MessagesProps {
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
+  addToolResult: ReturnType<typeof useChat>['addToolResult'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  tools?: Record<string, ToolMetadata>;
 }
 
 function PureMessages({
@@ -24,8 +27,10 @@ function PureMessages({
   votes,
   messages,
   setMessages,
+  addToolResult,
   reload,
   isReadonly,
+  tools,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -52,8 +57,10 @@ function PureMessages({
               : undefined
           }
           setMessages={setMessages}
+          addToolResult={addToolResult}
           reload={reload}
           isReadonly={isReadonly}
+          tools={tools}
         />
       ))}
 
@@ -77,6 +84,7 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.messages, nextProps.messages)) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
+  if (!equal(prevProps.tools, nextProps.tools)) return false;
 
   return true;
 });

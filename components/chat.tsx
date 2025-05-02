@@ -1,6 +1,6 @@
 'use client';
 
-import type { Attachment, UIMessage } from 'ai';
+import type { Attachment, ToolSet, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -15,6 +15,7 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import type { ToolMetadata } from '../lib/ai/tools';
 
 export function Chat({
   id,
@@ -34,6 +35,7 @@ export function Chat({
   const {
     messages,
     setMessages,
+    addToolResult,
     handleSubmit,
     input,
     setInput,
@@ -61,6 +63,10 @@ export function Chat({
     fetcher,
   );
 
+  const { data: tools } = useSWR<Record<string, ToolMetadata>>(
+    '/api/tools',
+    fetcher,
+  );
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
@@ -80,9 +86,11 @@ export function Chat({
           votes={votes}
           messages={messages}
           setMessages={setMessages}
+          addToolResult={addToolResult}
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
+          tools={tools}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

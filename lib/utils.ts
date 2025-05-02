@@ -1,16 +1,16 @@
-import type {
-  CoreAssistantMessage,
-  CoreToolMessage,
-  Message,
-  TextStreamPart,
-  ToolInvocation,
-  ToolSet,
-  UIMessage,
+import {
+  convertToCoreMessages,
+  type DataStreamWriter,
+  formatDataStreamPart,
+  type CoreAssistantMessage,
+  type CoreToolMessage,
+  type Message,
+  type UIMessage,
 } from 'ai';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-
-import type { DBMessage, Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/db/schema';
+import type { ExecutableToolSet } from './ai/tools';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -162,4 +162,145 @@ export function getTrailingMessageId({
   if (!trailingMessage) return null;
 
   return trailingMessage.id;
+}
+
+export function formatJSON(jsonString: string) {
+  try {
+    return JSON.stringify(jsonString, null, 2);
+  } catch (e) {
+    return jsonString;
+  }
+}
+
+export function formatToolContent(result?: any) {
+  if (result && typeof result === 'object') {
+    if (result.content) {
+      if (typeof result.content === 'object') {
+        if (Array.isArray(result.content)) {
+          return result.content.map((item: any) => {
+            if (item.type && item.type === 'text') {
+              return item.text;
+            } else {
+              return JSON.stringify(item, null, 2);
+            }
+          });
+        } else {
+          return JSON.stringify(result.content, null, 2);
+        }
+      } else if (typeof result.content === 'string') {
+        return result.content;
+      } else {
+        return 'Unknwown content type';
+      }
+    } else {
+      return JSON.stringify(result, null, 2);
+    }
+  }
+
+  return '';
+}
+
+export const APPROVAL = {
+  YES: 'Yes, confirmed.',
+  NO: 'No, denied.',
+} as const;
+
+export async function processToolCalls(
+  {
+    dataStream,
+    messages,
+  }: {
+    dataStream: DataStreamWriter;
+    messages: Message[];
+  },
+  executeFunctions: ExecutableToolSet,
+): Promise<Message[]> {
+  const lastMessage = messages[messages.length - 1];
+  const parts = lastMessage.parts;
+
+  if (!parts) {
+    return messages;
+  }
+
+  const processedParts = await Promise.all(
+    parts.map(async (part) => {
+      if (part.type !== 'tool-invocation') {
+        return part;
+      }
+
+      const { toolInvocation } = part;
+      const toolName = toolInvocation.toolName;
+
+      if (
+        !(toolName in executeFunctions) ||
+        toolInvocation.state !== 'result'
+      ) {
+        return part;
+      }
+
+      let result: any;
+
+      if (toolInvocation.result === APPROVAL.YES) {
+        const toolInstance = executeFunctions[toolName];
+        if (toolInstance) {
+          result = await toolInstance(toolInvocation.args, {
+            messages: convertToCoreMessages(messages),
+            toolCallId: toolInvocation.toolCallId,
+          });
+        } else {
+          result = 'Error: No execute function found on tool';
+        }
+      } else if (toolInvocation.result === APPROVAL.NO) {
+        result = 'Error: User denied access to tool execution';
+      } else {
+        return part;
+      }
+
+      dataStream.write(
+        formatDataStreamPart('tool_result', {
+          toolCallId: toolInvocation.toolCallId,
+          result,
+        }),
+      );
+
+      return {
+        ...part,
+        toolInvocation: {
+          ...toolInvocation,
+          result,
+        },
+      };
+    }),
+  );
+
+  return [...messages.slice(0, -1), { ...lastMessage, parts: processedParts }];
+}
+
+export function hasUpadtedMessage(
+  prevMessages: Array<Message>,
+  messages: Array<Message>,
+) {
+  return (
+    prevMessages.length !== messages.length ||
+    prevMessages.some((message, index) => {
+      const newMessage = messages[index];
+      if (message.id !== newMessage.id || message.role !== newMessage.role) {
+        return true;
+      }
+
+      if (!message.parts || !newMessage.parts) {
+        return message.parts !== newMessage.parts;
+      }
+
+      if (message.parts.length !== newMessage.parts.length) {
+        return true;
+      }
+
+      return message.parts.some(
+        (part, partIndex) =>
+          JSON.stringify(part) !==
+          JSON.stringify(newMessage.parts?.[partIndex]),
+      );
+    })
+  );
 }

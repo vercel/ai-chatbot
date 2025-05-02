@@ -4,7 +4,7 @@ import React, { memo, useEffect } from 'react';
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn, formatJSON, formatToolContent } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface ToolContentProps {
@@ -101,42 +101,6 @@ function PureToolContentCall({
       </AnimatePresence>
     </Card>
   );
-}
-
-function formatJSON(jsonString: string) {
-  try {
-    return JSON.stringify(jsonString, null, 2);
-  } catch (e) {
-    return jsonString;
-  }
-}
-
-function formatToolContent(result?: any) {
-  if (result && typeof result === 'object') {
-    if (result.content) {
-      if (typeof result.content === 'object') {
-        if (Array.isArray(result.content)) {
-          return result.content.map((item: any) => {
-            if (item.type && item.type === 'text') {
-              return item.text;
-            } else {
-              return JSON.stringify(item, null, 2);
-            }
-          });
-        } else {
-          return JSON.stringify(result.content, null, 2);
-        }
-      } else if (typeof result.content === 'string') {
-        return result.content;
-      } else {
-        return 'Unknwown content type';
-      }
-    } else {
-      return JSON.stringify(result, null, 2);
-    }
-  }
-
-  return '';
 }
 
 export const ToolContentCall = memo(PureToolContentCall, (prev, next) => {
