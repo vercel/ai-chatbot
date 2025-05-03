@@ -1,0 +1,31 @@
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_fk" will be truncated to "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_f"',
+  where: 'compilation of PL/pgSQL function "inline_code_block" near line 1',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_fk" will be truncated to "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_f"',
+  position: '15',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_fk" will be truncated to "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_f"',
+  where: 'SQL statement "ALTER TABLE "Suggestion" ADD CONSTRAINT "Suggestion_documentId_documentCreatedAt_Document_id_createdAt_fk" FOREIGN KEY ("documentId","documentCreatedAt") REFERENCES "public"."Document"("id","createdAt") ON DELETE no action ON UPDATE no action"\n' +
+    'PL/pgSQL function inline_code_block line 2 at SQL statement',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
