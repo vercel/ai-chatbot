@@ -1,10 +1,10 @@
 <a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
+  <img alt="Next.js 14 and Electron, MCP ready AI Chatbot." src="public/images/chatbot.png">
+  <h1 align="center">Chat SDK for MCP Host Application</h1>
 </a>
 
 <p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
+    Chat SDK is a free, open-source template built with Next.js, the AI SDK, and Electron, designed to integrate seamlessly with MCP host applications for building powerful desktop chatbot experiences.
 </p>
 
 <p align="center">
@@ -15,6 +15,21 @@
   <a href="#running-locally"><strong>Running locally</strong></a>
 </p>
 <br/>
+
+## Changelogs for Customizing from Chat SDK
+
+### May 3, 2025
+
+- Initial release with Next.js 14 and Electron integration
+  - Default package manager must be npm to navigate packages in the packed file
+  - Add commands `e:dev`, `e:build` and `e:start` for build and dev with Electron
+    - `npm run build && npm run e:build && npm run e:start` for building and running application
+- Implemented basic chat functionality with Antrophic AI providers
+- Added MCP Integration
+  - Loading MCP servers from config file
+  - Human-in-the-loop for asking permission
+  - Customizable UI components for MCP tools
+- Patched code from the origin code
 
 ## Features
 
@@ -37,12 +52,6 @@
 ## Model Providers
 
 This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat model. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
-
-## Deploy Your Own
-
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Generate%20a%20random%20secret%20to%20use%20for%20authentication&envLink=https%3A%2F%2Fgenerate-secret.vercel.app%2F32&project-name=my-awesome-chatbot&repository-name=my-awesome-chatbot&demo-title=AI%20Chatbot&demo-description=An%20Open-Source%20AI%20Chatbot%20Template%20Built%20With%20Next.js%20and%20the%20AI%20SDK%20by%20Vercel&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
 
 ## Running locally
 
