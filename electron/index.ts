@@ -31,6 +31,11 @@ const createWindow = async () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
   mainWindow = new BrowserWindow({
+    titleBarStyle: 'hidden',
+    title: 'Chatbot built with Next.js, Chat SDK and Electron',
+    frame: false,
+    autoHideMenuBar: true,
+    resizable: true,
     width: width,
     height: height,
     webPreferences: {
@@ -38,6 +43,7 @@ const createWindow = async () => {
       devTools: true,
       preload: path.join(__dirname, 'preload.js'),
     },
+    icon: path.join(__dirname, 'public/icons/mac/icon.icns'),
   });
 
   if (!isDev) {

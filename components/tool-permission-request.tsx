@@ -34,7 +34,7 @@ export function ToolPermissionRequest({
       <Card className="w-full">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <Shield className="size-4 text-muted-foreground" />
             <span>
               Permission Required: <span className="font-mono">{toolName}</span>
             </span>
@@ -55,7 +55,7 @@ export function ToolPermissionRequest({
             size="sm"
             onClick={() => setDialogOpen(true)}
           >
-            <BadgeInfo className="h-4 w-4 text-muted-foreground" />
+            <BadgeInfo className="size-4 text-muted-foreground" />
           </Button>
         </CardFooter>
       </Card>

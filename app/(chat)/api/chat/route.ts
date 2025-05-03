@@ -67,8 +67,8 @@ export async function POST(request: Request) {
 
     // In process tool calls, we will check if the message has been updated
     // and if so, we will update the message in the database.
-    const message = await getMessageById({ id: userMessage.id });
-    if (!message) {
+    const prevMessages = await getMessageById({ id: userMessage.id });
+    if (prevMessages.length <= 0) {
       await saveMessages({
         messages: [
           {

@@ -39,7 +39,7 @@ const PurePreviewMessage = ({
   vote: Vote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
-  addToolResult: ReturnType<typeof useChat>['addToolResult'];
+  addToolResult?: ReturnType<typeof useChat>['addToolResult'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   tools?: Record<string, ToolMetadata>;
@@ -66,7 +66,7 @@ const PurePreviewMessage = ({
         >
           {message.role === 'assistant' && (
             <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-              <div className="translate-y-px">
+              <div>
                 <SparklesIcon size={14} />
               </div>
             </div>
@@ -169,13 +169,13 @@ const PurePreviewMessage = ({
                         toolName={toolName}
                         description={tool?.description ?? ''}
                         onAllowAction={() => {
-                          addToolResult({
+                          addToolResult?.({
                             toolCallId,
                             result: APPROVAL.YES,
                           });
                         }}
                         onDenyAction={() => {
-                          addToolResult({
+                          addToolResult?.({
                             toolCallId,
                             result: APPROVAL.NO,
                           });

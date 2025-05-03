@@ -1,7 +1,6 @@
 'use client';
 
-import React, { memo, useEffect } from 'react';
-import { useState } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn, formatJSON, formatToolContent } from '@/lib/utils';
@@ -57,9 +56,9 @@ function PureToolContentCall({
           className="rounded-full p-1 hover:bg-muted"
         >
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            <ChevronUp className="size-4 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="size-4 text-muted-foreground" />
           )}
         </button>
       </CardHeader>

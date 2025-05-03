@@ -36,7 +36,7 @@ export function ToolPermissionDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-muted-foreground" />
+            <Shield className="size-5 text-muted-foreground" />
             Permission Request
           </DialogTitle>
           <DialogDescription>
@@ -60,7 +60,7 @@ export function ToolPermissionDialog({
 
           <div className="rounded-md bg-muted p-3">
             <div className="flex gap-2">
-              <AlertCircle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              <AlertCircle className="size-5 text-muted-foreground shrink-0" />
               <div className="text-sm">
                 <p className="font-medium">Important</p>
                 <p className="text-muted-foreground">

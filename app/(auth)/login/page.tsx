@@ -38,7 +38,7 @@ export default function Page() {
       setIsSuccessful(true);
       router.refresh();
     }
-  }, [state.status]);
+  }, [state.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);
