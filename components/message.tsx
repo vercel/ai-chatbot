@@ -22,6 +22,7 @@ import type { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { ToolContentCall } from './tool-content';
 import { ToolPermissionRequest } from './tool-permission-request';
 import type { ToolMetadata } from '../lib/ai/tools';
+import { Calculator } from './calculator';
 
 const PurePreviewMessage = ({
   chatId,
@@ -242,8 +243,10 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'calculator' ? (
+                        <Calculator key={toolCallId} args={args} />
                       ) : (
-                        <ToolContentCall
+                        <ToolContentCall // @FIXME: change name to ToolContentResult thenm remote state
                           state={state}
                           args={args}
                           result={result}
