@@ -30,6 +30,9 @@
   - Human-in-the-loop for asking permission
   - Customizable UI components for MCP tools
 - Patched code from the origin code
+- Trouble shootings for Development
+  - `npm install --legacy-peer-deps`
+  - `export NODE_OPTIONS="--network-family-autoselection-attempt-timeout=500"`
 
 ## Features
 
