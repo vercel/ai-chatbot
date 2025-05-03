@@ -1,0 +1,35 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TechStack
+
+- Node
+- Typescript (and JavaScript)
+- Nextjs 15.x
+- React 19.x
+- Vercel AI SDK 4.2
+- Bedrock, Openai, Google LLM - Mainly Claude 3.5 Sonnect
+- shadcn/ui
+- AWS
+
+Next.js App Router
+
+Data Persistence
+
+- Vercel Postgres powered by Neon for saving chat history and user data
+
+- Vercel Blob for efficient object storage
+
+- AWS S3 for object storage alternative to Vercel Blob
+
+- AWS SQS for triggering heavy lifting Agent tasks
+
+Current
+
+- Auth.js
+
+Future
+
+Migrate to Clerk
