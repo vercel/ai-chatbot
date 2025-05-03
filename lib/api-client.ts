@@ -21,6 +21,11 @@ export interface RegisterRequest {
   organizationId: string;
 }
 
+export interface UpdateMeRequest {
+  name?: string;
+  email?: string;
+}
+
 export interface OrganizationRequest {
   name: string;
   description: string;
@@ -29,8 +34,7 @@ export interface OrganizationRequest {
 }
 
 export interface ChatRequest {
-  title: string;
-  organizationId: string;
+  message: string;
 }
 
 export interface MessageRequest {
@@ -83,6 +87,16 @@ export interface ApiResponse<T = any> {
   data: T;
   message?: string;
   status?: number;
+}
+
+export interface UpdateChatVisibilityRequest {
+  isVisible: boolean;
+}
+
+export interface PaginationParams {
+  page: number;
+  limit: number;
+  ending_before?: string;
 }
 
 export class ApiClient {
@@ -170,7 +184,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateMe(data: { name?: string; email?: string }) {
+  async updateMe(data: UpdateMeRequest) {
     const response = await this.client.put('/api/auth/me', data);
     return response.data;
   }
@@ -207,10 +221,8 @@ export class ApiClient {
     return response.data;
   }
 
-  async getPaginatedChats(page: number = 1, limit: number = 10) {
-    const response = await this.client.get('/api/chats/paginated', {
-      params: { page, limit }
-    });
+  async getPaginatedChats(params: PaginationParams) {
+    const response = await this.client.get('/api/chats/paginated', { params });
     return response.data;
   }
 
@@ -224,7 +236,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async createMessageInChat(chatId: string, data: { content: string; role: string }) {
+  async createMessageInChat(chatId: string, data: Omit<MessageRequest, 'chatId'>) {
     const response = await this.client.post(`/api/chats/${chatId}/messages`, data);
     return response.data;
   }
@@ -234,7 +246,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateChatVisibility(chatId: string, data: { isVisible: boolean }) {
+  async updateChatVisibility(chatId: string, data: UpdateChatVisibilityRequest) {
     const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
     return response.data;
   }

@@ -24,7 +24,7 @@ export async function getSession(): Promise<Session | null> {
     if (!token) return null;
 
     // Get user info from API
-    const user = await apiClient.getCurrentUser();
+    const user = await apiClient.getMe();
     return {
       user: {
         id: user.id,

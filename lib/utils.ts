@@ -13,7 +13,12 @@ interface ApplicationError extends Error {
 }
 
 export const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const headers = {
+    'Authorization': 'Bearer ' + localStorage.getItem('token')
+  }
+  const res = await fetch(url, {
+    headers: headers,
+  });
 
   if (!res.ok) {
     const error = new Error(
@@ -26,7 +31,9 @@ export const fetcher = async (url: string) => {
     throw error;
   }
 
-  return res.json();
+  let data = await res.json();
+  console.log(data);
+  return data;
 };
 
 export function getLocalStorage(key: string) {

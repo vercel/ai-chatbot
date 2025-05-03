@@ -25,14 +25,12 @@ export function Chat({
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
-  session,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: Session;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -47,7 +45,16 @@ export function Chat({
     stop,
     reload,
   } = useChat({
-    id,
+    api: `http://localhost:3001/api/chats/stream`,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: {
+      id,
+      message: initialMessages,
+      selectedChatModel,
+    },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -87,7 +94,7 @@ export function Chat({
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? id : null,
-    () => apiClient.getVotes(id)
+    () => apiClient.getVotesByChat(id)
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
@@ -101,7 +108,6 @@ export function Chat({
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
-          session={session}
         />
 
         <Messages
