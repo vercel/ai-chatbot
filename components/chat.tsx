@@ -5,7 +5,6 @@ import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
@@ -17,6 +16,8 @@ import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
 import type { Session } from '@/lib/types/auth';
 import { useSearchParams } from 'next/navigation';
+import { apiClient } from '@/lib/api-client';
+import type { Vote } from '@/lib/api-client';
 
 export function Chat({
   id,
@@ -85,8 +86,8 @@ export function Chat({
   }, [query, append, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-    fetcher,
+    messages.length >= 2 ? id : null,
+    () => apiClient.getVotes(id)
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);

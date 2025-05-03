@@ -6,6 +6,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface Vote {
+  id: string;
+  chatId: string;
+  messageId: string;
+  reaction?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -46,6 +55,23 @@ export interface VoteRequest {
   chatId: string;
   messageId: string;
   reaction?: string;
+}
+
+export interface DocumentRequest {
+  title: string;
+  content: string;
+  kind: string;
+}
+
+export interface SuggestionRequest {
+  suggestions: Array<{
+    content: string;
+    documentId: string;
+  }>;
+}
+
+export interface SuggestionStatusRequest {
+  status: string;
 }
 
 export interface ApiError {
@@ -139,24 +165,34 @@ export class ApiClient {
     return response.data;
   }
 
+  async getMe() {
+    const response = await this.client.get('/api/auth/me');
+    return response.data;
+  }
+
+  async updateMe(data: { name?: string; email?: string }) {
+    const response = await this.client.put('/api/auth/me', data);
+    return response.data;
+  }
+
   // Organization APIs
   async createOrganization(data: OrganizationRequest) {
     const response = await this.client.post('/api/organizations', data);
     return response.data;
   }
 
-  async getOrganization() {
-    const response = await this.client.get('/api/organizations');
+  async getOrganization(id: string) {
+    const response = await this.client.get(`/api/organizations/${id}`);
     return response.data;
   }
 
-  async updateOrganization(data: Partial<OrganizationRequest>) {
-    const response = await this.client.put('/api/organizations', data);
+  async updateOrganization(id: string, data: Partial<OrganizationRequest>) {
+    const response = await this.client.put(`/api/organizations/${id}`, data);
     return response.data;
   }
 
-  async deleteOrganization() {
-    const response = await this.client.delete('/api/organizations');
+  async deleteOrganization(id: string) {
+    const response = await this.client.delete(`/api/organizations/${id}`);
     return response.data;
   }
 
@@ -166,57 +202,177 @@ export class ApiClient {
     return response.data;
   }
 
+  async getChats() {
+    const response = await this.client.get('/api/chats');
+    return response.data;
+  }
+
+  async getPaginatedChats(page: number = 1, limit: number = 10) {
+    const response = await this.client.get('/api/chats/paginated', {
+      params: { page, limit }
+    });
+    return response.data;
+  }
+
   async getChat(id: string) {
     const response = await this.client.get(`/api/chats/${id}`);
     return response.data;
   }
 
-  async getChatMessages(chatId: string, organizationId: string) {
-    const response = await this.client.get(`/api/chats/${chatId}/messages`, {
-      params: { organizationId },
-    });
+  async deleteChat(id: string) {
+    const response = await this.client.delete(`/api/chats/${id}`);
     return response.data;
   }
 
-  async shareChat(data: ShareChatRequest) {
-    const response = await this.client.post('/api/chats/share', data);
+  async createMessageInChat(chatId: string, data: { content: string; role: string }) {
+    const response = await this.client.post(`/api/chats/${chatId}/messages`, data);
     return response.data;
   }
 
-  async getSharedChats() {
-    const response = await this.client.get('/api/chats/shared');
+  async getMessagesInChat(chatId: string) {
+    const response = await this.client.get(`/api/chats/${chatId}/messages`);
     return response.data;
   }
 
-  async updateChatVisibility(chatId: string, visibility: string) {
-    const response = await this.client.patch(`/api/chats/${chatId}/visibility`, { visibility });
+  async updateChatVisibility(chatId: string, data: { isVisible: boolean }) {
+    const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
     return response.data;
   }
 
   // Message APIs
-  async createMessage(data: MessageRequest) {
-    const response = await this.client.post('/api/messages', data);
-    return response.data;
-  }
-
-  async getMessage(id: string, organizationId: string) {
-    const response = await this.client.get(`/api/messages/${id}`, {
-      params: { organizationId },
+  async getMessagesByChat(chatId: string, organizationId: string) {
+    const response = await this.client.get(`/api/messages/chats/${chatId}/messages`, {
+      params: { organizationId }
     });
     return response.data;
   }
 
-  async updateMessage(id: string, content: string, organizationId: string) {
-    const response = await this.client.put(`/api/messages/${id}`, { content }, {
-      params: { organizationId },
+  async getMessage(id: string, organizationId: string) {
+    const response = await this.client.get(`/api/messages/messages/${id}`, {
+      params: { organizationId }
+    });
+    return response.data;
+  }
+
+  async createMessage(data: MessageRequest) {
+    const response = await this.client.post('/api/messages/messages', data);
+    return response.data;
+  }
+
+  async updateMessage(id: string, data: { content: string }, organizationId: string) {
+    const response = await this.client.put(`/api/messages/messages/${id}`, data, {
+      params: { organizationId }
     });
     return response.data;
   }
 
   async deleteMessage(id: string, organizationId: string) {
-    const response = await this.client.delete(`/api/messages/${id}`, {
-      params: { organizationId },
+    const response = await this.client.delete(`/api/messages/messages/${id}`, {
+      params: { organizationId }
     });
+    return response.data;
+  }
+
+  async deleteMessagesAfterTimestamp(chatId: string, timestamp: number, organizationId: string) {
+    const response = await this.client.delete(`/api/messages/chats/${chatId}/messages/after`, {
+      params: { timestamp, organizationId }
+    });
+    return response.data;
+  }
+
+  async getMessageCountByUser(userId: string, organizationId: string) {
+    const response = await this.client.get(`/api/messages/users/${userId}/messages/count`, {
+      params: { organizationId }
+    });
+    return response.data;
+  }
+
+  // Document APIs
+  async getAllDocuments() {
+    const response = await this.client.get('/api/documents');
+    return response.data;
+  }
+
+  async getDocumentById(id: string) {
+    const response = await this.client.get(`/api/documents/${id}`);
+    return response.data;
+  }
+
+  async createDocument(data: DocumentRequest) {
+    const response = await this.client.post('/api/documents', data);
+    return response.data;
+  }
+
+  async updateDocument(id: string, data: Partial<DocumentRequest>) {
+    const response = await this.client.put(`/api/documents/${id}`, data);
+    return response.data;
+  }
+
+  async deleteDocument(id: string) {
+    const response = await this.client.delete(`/api/documents/${id}`);
+    return response.data;
+  }
+
+  async getDocumentsByUser(userId: string) {
+    const response = await this.client.get(`/api/documents/user/${userId}`);
+    return response.data;
+  }
+
+  async getDocumentsByKind(kind: string) {
+    const response = await this.client.get(`/api/documents/kind/${kind}`);
+    return response.data;
+  }
+
+  async getDocumentVersions(id: string) {
+    const response = await this.client.get(`/api/documents/${id}/versions`);
+    return response.data;
+  }
+
+  async deleteDocumentsAfterTimestamp(id: string, timestamp: number) {
+    const response = await this.client.delete(`/api/documents/${id}/after`, {
+      params: { timestamp }
+    });
+    return response.data;
+  }
+
+  // Suggestion APIs
+  async getAllSuggestions() {
+    const response = await this.client.get('/api/suggestions');
+    return response.data;
+  }
+
+  async getSuggestionById(id: string) {
+    const response = await this.client.get(`/api/suggestions/${id}`);
+    return response.data;
+  }
+
+  async saveSuggestions(data: SuggestionRequest) {
+    const response = await this.client.post('/api/suggestions', data);
+    return response.data;
+  }
+
+  async getSuggestionsByDocument(documentId: string) {
+    const response = await this.client.get(`/api/suggestions/document/${documentId}`);
+    return response.data;
+  }
+
+  async getSuggestionsByUser(userId: string) {
+    const response = await this.client.get(`/api/suggestions/user/${userId}`);
+    return response.data;
+  }
+
+  async getUnresolvedSuggestions() {
+    const response = await this.client.get('/api/suggestions/unresolved');
+    return response.data;
+  }
+
+  async updateSuggestionStatus(id: string, data: SuggestionStatusRequest) {
+    const response = await this.client.patch(`/api/suggestions/${id}/status`, data);
+    return response.data;
+  }
+
+  async deleteSuggestion(id: string) {
+    const response = await this.client.delete(`/api/suggestions/${id}`);
     return response.data;
   }
 
@@ -231,8 +387,8 @@ export class ApiClient {
     return response.data;
   }
 
-  async addReaction(chatId: string, messageId: string, reaction: string) {
-    const response = await this.client.post(`/api/votes/reaction/${chatId}/${messageId}`, { reaction });
+  async addReaction(chatId: string, messageId: string, data: { reaction: string }) {
+    const response = await this.client.post(`/api/votes/reaction/${chatId}/${messageId}`, data);
     return response.data;
   }
 
@@ -243,42 +399,6 @@ export class ApiClient {
 
   async toggleVote(chatId: string, messageId: string) {
     const response = await this.client.post(`/api/votes/toggle/${chatId}/${messageId}`);
-    return response.data;
-  }
-
-  // Suggestion APIs
-  async getSuggestionsByDocumentId(documentId: string) {
-    const response = await this.client.get(`/api/suggestions/document/${documentId}`);
-    return response.data;
-  }
-
-  // Message Reaction APIs (Legacy - to be deprecated)
-  async getMessageReactions(messageId: string, organizationId: string) {
-    const response = await this.client.get(`/api/message-reactions/message/${messageId}`, {
-      params: { organizationId },
-    });
-    return response.data;
-  }
-
-  async getMyReactions(organizationId: string) {
-    const response = await this.client.get('/api/message-reactions/my-reactions', {
-      params: { organizationId },
-    });
-    return response.data;
-  }
-
-  async getReaction(id: string) {
-    const response = await this.client.get(`/api/message-reactions/${id}`);
-    return response.data;
-  }
-
-  async addMessageReaction(data: MessageReactionRequest) {
-    const response = await this.client.post('/api/message-reactions', data);
-    return response.data;
-  }
-
-  async removeMessageReaction(id: string) {
-    const response = await this.client.delete(`/api/message-reactions/${id}`);
     return response.data;
   }
 }

@@ -3,11 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chat } from '@/components/chat';
-import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import type { DBMessage } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
+import { apiClient } from '@/lib/api-client';
+
+type DBMessage = {
+  id: string;
+  role: string;
+  parts: any[];
+  attachments: Attachment[];
+  createdAt: Date;
+};
 
 export default function Page({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -25,7 +32,7 @@ export default function Page({ params }: { params: { id: string } }) {
           return;
         }
 
-        const chatData = await getChatById({ id: params.id });
+        const chatData = await apiClient.getChat(params.id);
         if (!chatData) {
           router.push('/404');
           return;
@@ -41,7 +48,7 @@ export default function Page({ params }: { params: { id: string } }) {
           }
         }
 
-        const messagesFromDb = await getMessagesByChatId({ id: params.id });
+        const messagesFromDb = await apiClient.getMessagesInChat(params.id);
         const convertedMessages = convertToUIMessages(messagesFromDb);
 
         // Get chat model from localStorage
