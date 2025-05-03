@@ -1,0 +1,55 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Specification (v0)
+
+We are building AI-Powered application for Legal Professionals
+
+- Chat with AI
+- Upload Medical Documents
+- Use Pre-defined Agents - Summary and Settlement
+
+## Medical Documents
+
+- Allow for PDF - some of these can be large
+- Max size of a file cannot exceed 50MB
+- Quality of PDF's vary
+- Users can upload multiple files
+
+## Additional Document Handling
+
+- Number of pages must be ascertain as quickly as possible
+- This is critical to limiting usage and calculating billing
+
+## LLm Model Usage
+
+- Track number of input tokens
+- Track number of output tokens
+- This is critical to limiting usage and calculating billing
+
+## Nextjs
+
+- Use Next.js App Router
+- Follow latest Nextjs Best Practices
+
+## Data Persistence
+
+- Vercel Postgres Neon for saving chat history and user data
+- Vercel Blob for object storage
+- Vector Store - Probably Pincone Serverless
+
+
+# Authentication
+
+- Auth.js (Current)
+- Migrate to Clerk for OAuth: Google, Microsoft & Github
+- Possibly integrate with Payload CMS (Admin Panel)
+
+## Backend Integration
+
+- AWS S3 for object storage alternative to Vercel Blob
+- AWS SQS for triggering heavy lifting Agent tasks on AWS Lambda & ECS Fargate
+
+

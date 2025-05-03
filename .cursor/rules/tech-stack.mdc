@@ -10,26 +10,14 @@ alwaysApply: true
 - Nextjs 15.x
 - React 19.x
 - Vercel AI SDK 4.2
+- Postgres via Neon
+- Redis via Vercel
 - Bedrock, Openai, Google LLM - Mainly Claude 3.5 Sonnect
 - shadcn/ui
-- AWS
-
-Next.js App Router
-
-Data Persistence
-
-- Vercel Postgres powered by Neon for saving chat history and user data
-
-- Vercel Blob for efficient object storage
-
-- AWS S3 for object storage alternative to Vercel Blob
-
-- AWS SQS for triggering heavy lifting Agent tasks
-
-Current
-
+- AWS S3
+- AWS SQS
+- Resend Email
+- Vercel
+- Payload CMS 3.0
+- Clerk Auth
 - Auth.js
-
-Future
-
-Migrate to Clerk
