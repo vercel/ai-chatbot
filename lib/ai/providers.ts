@@ -3,7 +3,8 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { xai } from '@ai-sdk/xai';
+// import { xai } from '@ai-sdk/xai';
+import { bedrock } from '@ai-sdk/amazon-bedrock';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -23,15 +24,15 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        'chat-model': bedrock('us.anthropic.claude-3-5-sonnet-20241022-v2:0'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
+          model: bedrock('us.anthropic.claude-3-5-sonnet-20241022-v2:0'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'title-model': bedrock('us.anthropic.claude-3-5-sonnet-20241022-v2:0'),
+        'artifact-model': bedrock('us.anthropic.claude-3-5-sonnet-20241022-v2:0'),
       },
-      imageModels: {
-        'small-model': xai.image('grok-2-image'),
-      },
+      // imageModels: {
+      //   'small-model': bedrock('gpt-4o'),
+      // },
     });
