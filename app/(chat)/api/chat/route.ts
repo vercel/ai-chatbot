@@ -28,15 +28,36 @@ import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
-import { createResumableStreamContext } from 'resumable-stream';
+import {
+  createResumableStreamContext,
+  type ResumableStreamContext,
+} from 'resumable-stream';
 import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 
 export const maxDuration = 60;
 
-const streamContext = createResumableStreamContext({
-  waitUntil: after,
-});
+let globalStreamContext: ResumableStreamContext | null = null;
+
+function getStreamContext() {
+  if (!globalStreamContext) {
+    try {
+      globalStreamContext = createResumableStreamContext({
+        waitUntil: after,
+      });
+    } catch (error: any) {
+      if (error.message.includes('REDIS_URL')) {
+        console.log(
+          ' > Resumable streams are disabled due to missing REDIS_URL',
+        );
+      } else {
+        console.error(error);
+      }
+    }
+  }
+
+  return globalStreamContext;
+}
 
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
@@ -206,9 +227,15 @@ export async function POST(request: Request) {
       },
     });
 
-    return new Response(
-      await streamContext.resumableStream(streamId, () => stream),
-    );
+    const streamContext = getStreamContext();
+
+    if (streamContext) {
+      return new Response(
+        await streamContext.resumableStream(streamId, () => stream),
+      );
+    } else {
+      return new Response(stream);
+    }
   } catch (_) {
     return new Response('An error occurred while processing your request!', {
       status: 500,
@@ -217,6 +244,12 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+  const streamContext = getStreamContext();
+
+  if (!streamContext) {
+    return new Response(null, { status: 204 });
+  }
+
   const { searchParams } = new URL(request.url);
   const chatId = searchParams.get('chatId');
 
