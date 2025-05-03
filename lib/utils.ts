@@ -164,6 +164,15 @@ export function getTrailingMessageId({
   return trailingMessage.id;
 }
 
+export function getTrailingAssistantMessage({
+  messages,
+}: { messages: Array<Message> }): Message | null {
+  const assistantMessages = messages.filter(
+    (message) => message.role === 'assistant',
+  );
+  return assistantMessages.at(-1) || null;
+}
+
 export function formatJSON(jsonString: string) {
   try {
     return JSON.stringify(jsonString, null, 2);
@@ -214,12 +223,12 @@ export async function processToolCalls(
     messages: Message[];
   },
   executeFunctions: ExecutableToolSet,
-): Promise<Message[]> {
+): Promise<{ messages: Message[]; updated: boolean }> {
   const lastMessage = messages[messages.length - 1];
   const parts = lastMessage.parts;
 
   if (!parts) {
-    return messages;
+    return { messages, updated: false };
   }
 
   const processedParts = await Promise.all(
@@ -273,10 +282,20 @@ export async function processToolCalls(
     }),
   );
 
-  return [...messages.slice(0, -1), { ...lastMessage, parts: processedParts }];
+  return {
+    messages: [
+      ...messages.slice(0, -1),
+      { ...lastMessage, parts: processedParts },
+    ],
+    updated:
+      lastMessage?.parts?.some(
+        (part, index) =>
+          JSON.stringify(part) !== JSON.stringify(processedParts[index]),
+      ) ?? false,
+  };
 }
 
-export function hasUpadtedMessage(
+export function hasUpdatedMessage(
   prevMessages: Array<Message>,
   messages: Array<Message>,
 ) {

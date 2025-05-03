@@ -14,10 +14,12 @@ import {
   getMessageById,
   saveChat,
   saveMessages,
+  updateMessage,
 } from '@/lib/db/queries';
 import {
   generateUUID,
   getMostRecentUserMessage,
+  getTrailingAssistantMessage,
   getTrailingMessageId,
   processToolCalls,
 } from '@/lib/utils';
@@ -85,13 +87,37 @@ export async function POST(request: Request) {
 
     return createDataStreamResponse({
       execute: async (dataStream) => {
-        const processedMessages = await processToolCalls(
+        const { messages: processedMessages, updated } = await processToolCalls(
           {
             messages,
             dataStream,
           },
           executableFunctions,
         );
+
+        // If the message has been updated, we will update the message in the database.
+        // To sync-up and keep tracking the message with the database and dataStream
+        if (updated) {
+          const updatedMessage = processedMessages.at(-1);
+          if (updatedMessage?.id) {
+            const prevMessages = await getMessageById({
+              id: updatedMessage?.id,
+            });
+
+            if (prevMessages) {
+              await updateMessage({
+                message: {
+                  chatId: id,
+                  id: updatedMessage.id,
+                  role: 'user',
+                  parts: updatedMessage.parts,
+                  attachments: updatedMessage.experimental_attachments ?? [],
+                  createdAt: new Date(),
+                },
+              });
+            }
+          }
+        }
 
         const executableTools = tools({ session, dataStream });
 
@@ -125,19 +151,43 @@ export async function POST(request: Request) {
                   responseMessages: response.messages,
                 });
 
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
+                const prevAssistantMessage = await getTrailingAssistantMessage({
+                  messages: processedMessages,
+                });
+
+                if (prevAssistantMessage) {
+                  await updateMessage({
+                    message: {
                       chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
+                      id: prevAssistantMessage.id,
+                      role: prevAssistantMessage.role,
+                      parts: [
+                        ...(prevAssistantMessage.parts ?? []),
+                        ...(assistantMessage.parts ?? []),
+                      ],
+                      attachments: [
+                        ...(prevAssistantMessage.experimental_attachments ??
+                          []),
+                        ...(assistantMessage.experimental_attachments ?? []),
+                      ],
                       createdAt: new Date(),
                     },
-                  ],
-                });
+                  });
+                } else {
+                  await saveMessages({
+                    messages: [
+                      {
+                        chatId: id,
+                        id: assistantId,
+                        role: assistantMessage.role,
+                        parts: assistantMessage.parts,
+                        attachments:
+                          assistantMessage.experimental_attachments ?? [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
+                }
               } catch (_) {
                 console.error('Failed to save chat');
               }
