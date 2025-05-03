@@ -1,8 +1,11 @@
-'use server';
-
-import { getSuggestionsByDocumentId } from '@/lib/db/queries';
+import { apiClient } from '@/lib/api-client';
 
 export async function getSuggestions({ documentId }: { documentId: string }) {
-  const suggestions = await getSuggestionsByDocumentId({ documentId });
-  return suggestions ?? [];
+  try {
+    const suggestions = await apiClient.getSuggestionsByDocumentId(documentId);
+    return suggestions ?? [];
+  } catch (error) {
+    console.error('Failed to get suggestions:', error);
+    return [];
+  }
 }

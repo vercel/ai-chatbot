@@ -25,30 +25,26 @@ export const guestLogin = async (): Promise<GuestLoginActionState> => {
   }
 };
 
-export const login = async (
-  _: LoginActionState,
+export async function loginAction(
+  prevState: LoginActionState,
   formData: FormData,
-): Promise<LoginActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
-    console.log("HERE");
-    await apiClient.login({
-      email: validatedData.email,
-      password: validatedData.password,
-    });
+): Promise<LoginActionState> {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
 
+  const result = authFormSchema.safeParse({ email, password });
+
+  if (!result.success) {
+    return { status: 'invalid_data' };
+  }
+
+  try {
+    await apiClient.login({ email, password });
     return { status: 'success' };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: 'invalid_data' };
-    }
-
     return { status: 'failed' };
   }
-};
+}
 
 export interface RegisterActionState {
   status:
@@ -60,34 +56,27 @@ export interface RegisterActionState {
     | 'invalid_data';
 }
 
-export const register = async (
-  _: RegisterActionState,
+export async function registerAction(
+  prevState: RegisterActionState,
   formData: FormData,
-): Promise<RegisterActionState> => {
+): Promise<RegisterActionState> {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const organizationId = formData.get('organizationId') as string;
+
+  const result = authFormSchema.safeParse({ email, password });
+
+  if (!result.success) {
+    return { status: 'invalid_data' };
+  }
+
   try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
-
-    try {
-      await apiClient.register({
-        email: validatedData.email,
-        password: validatedData.password,
-        organizationId: '', // This will be handled by the backend
-      });
-      return { status: 'success' };
-    } catch (error: any) {
-      if (error.status === 409) { // Assuming 409 is used for user exists
-        return { status: 'user_exists' };
-      }
-      throw error;
+    await apiClient.register({ email, password, organizationId });
+    return { status: 'success' };
+  } catch (error: any) {
+    if (error.message?.includes('already exists')) {
+      return { status: 'user_exists' };
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: 'invalid_data' };
-    }
-
     return { status: 'failed' };
   }
-};
+}

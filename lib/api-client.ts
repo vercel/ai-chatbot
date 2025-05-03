@@ -42,9 +42,21 @@ export interface ShareChatRequest {
   sharedWithUserId: string;
 }
 
+export interface VoteRequest {
+  chatId: string;
+  messageId: string;
+  reaction?: string;
+}
+
 export interface ApiError {
   message: string;
   status: number;
+}
+
+export interface ApiResponse<T = any> {
+  data: T;
+  message?: string;
+  status?: number;
 }
 
 export class ApiClient {
@@ -58,13 +70,12 @@ export class ApiClient {
       headers: {
         'Content-Type': 'application/json',
       },
-      withCredentials: true, // Important for handling cookies
+      withCredentials: true,
     });
 
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        // Get token from localStorage only on client side
         if (typeof window !== 'undefined') {
           const token = localStorage.getItem('token');
           if (token) {
@@ -81,10 +92,8 @@ export class ApiClient {
     // Response interceptor
     this.client.interceptors.response.use(
       (response) => response,
-      (error: AxiosError) => {
-        // Handle specific error cases
+      (error: AxiosError<ApiError>) => {
         if (error.response?.status === 401) {
-          // Handle unauthorized access
           if (typeof window !== 'undefined') {
             localStorage.removeItem('token');
             window.location.href = '/login';
@@ -106,7 +115,7 @@ export class ApiClient {
   }
 
   // Authentication APIs
-  async  login(data: LoginRequest) {
+  async login(data: LoginRequest) {
     const response = await this.client.post('/api/auth/login', data);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
@@ -179,6 +188,11 @@ export class ApiClient {
     return response.data;
   }
 
+  async updateChatVisibility(chatId: string, visibility: string) {
+    const response = await this.client.patch(`/api/chats/${chatId}/visibility`, { visibility });
+    return response.data;
+  }
+
   // Message APIs
   async createMessage(data: MessageRequest) {
     const response = await this.client.post('/api/messages', data);
@@ -206,7 +220,39 @@ export class ApiClient {
     return response.data;
   }
 
-  // Message Reaction APIs
+  // Vote APIs
+  async getVotesByMessage(chatId: string, messageId: string) {
+    const response = await this.client.get(`/api/votes/message/${chatId}/${messageId}`);
+    return response.data;
+  }
+
+  async getVotesByChat(chatId: string) {
+    const response = await this.client.get(`/api/votes/chat/${chatId}`);
+    return response.data;
+  }
+
+  async addReaction(chatId: string, messageId: string, reaction: string) {
+    const response = await this.client.post(`/api/votes/reaction/${chatId}/${messageId}`, { reaction });
+    return response.data;
+  }
+
+  async removeReaction(chatId: string, messageId: string) {
+    const response = await this.client.delete(`/api/votes/reaction/${chatId}/${messageId}`);
+    return response.data;
+  }
+
+  async toggleVote(chatId: string, messageId: string) {
+    const response = await this.client.post(`/api/votes/toggle/${chatId}/${messageId}`);
+    return response.data;
+  }
+
+  // Suggestion APIs
+  async getSuggestionsByDocumentId(documentId: string) {
+    const response = await this.client.get(`/api/suggestions/document/${documentId}`);
+    return response.data;
+  }
+
+  // Message Reaction APIs (Legacy - to be deprecated)
   async getMessageReactions(messageId: string, organizationId: string) {
     const response = await this.client.get(`/api/message-reactions/message/${messageId}`, {
       params: { organizationId },
@@ -226,16 +272,15 @@ export class ApiClient {
     return response.data;
   }
 
-  async addReaction(data: MessageReactionRequest) {
+  async addMessageReaction(data: MessageReactionRequest) {
     const response = await this.client.post('/api/message-reactions', data);
     return response.data;
   }
 
-  async removeReaction(id: string) {
+  async removeMessageReaction(id: string) {
     const response = await this.client.delete(`/api/message-reactions/${id}`);
     return response.data;
   }
 }
 
-// Export a singleton instance
 export const apiClient = ApiClient.getInstance(); 

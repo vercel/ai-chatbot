@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
-import { updateChatVisibility } from '@/app/(chat)/actions';
+import { apiClient } from '@/lib/api-client';
 import {
   getChatHistoryPaginationKey,
   type ChatHistory,
@@ -35,14 +35,17 @@ export function useChatVisibility({
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 
-  const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
+  const setVisibilityType = async (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
     mutate(unstable_serialize(getChatHistoryPaginationKey));
 
-    updateChatVisibility({
-      chatId: chatId,
-      visibility: updatedVisibilityType,
-    });
+    try {
+      await apiClient.updateChatVisibility(chatId, updatedVisibilityType);
+    } catch (error) {
+      console.error('Failed to update chat visibility:', error);
+      // Revert local state on error
+      setLocalVisibility(visibilityType);
+    }
   };
 
   return { visibilityType, setVisibilityType };

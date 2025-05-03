@@ -9,10 +9,11 @@ import {
 } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
+import { apiClient } from '@/lib/api-client';
 
 export async function saveChatModelAsCookie(model: string) {
-  const cookieStore = await cookies();
-  cookieStore.set('chat-model', model);
+  // This should be handled by the frontend state management
+  return model;
 }
 
 export async function generateTitleFromUserMessage({
@@ -33,13 +34,14 @@ export async function generateTitleFromUserMessage({
   return title;
 }
 
-export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
-
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
-  });
+export async function deleteTrailingMessages(chatId: string, messageId: string) {
+  try {
+    await apiClient.deleteMessage(messageId, chatId);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete messages:', error);
+    return { success: false, error };
+  }
 }
 
 export async function updateChatVisibility({
@@ -49,5 +51,11 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await updateChatVisiblityById({ chatId, visibility });
+  try {
+    await apiClient.updateChatVisibility(chatId, visibility);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update chat visibility:', error);
+    return { success: false, error };
+  }
 }
