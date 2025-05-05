@@ -27,6 +27,7 @@ import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
 import useSWRInfinite from 'swr/infinite';
 import { LoaderIcon } from './icons';
+import { apiClient } from '@/lib/api-client';
 
 type GroupedChats = {
   today: Chat[];
@@ -119,34 +120,34 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     ? paginatedChatHistories.every((page) => page.chats.length === 0)
     : false;
 
-  const handleDelete = async () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: 'DELETE',
-    });
-
-    toast.promise(deletePromise, {
-      loading: 'Deleting chat...',
-      success: () => {
-        mutate((chatHistories) => {
-          if (chatHistories) {
-            return chatHistories.map((chatHistory) => ({
-              ...chatHistory,
-              chats: chatHistory.chats.filter((chat) => chat.id !== deleteId),
-            }));
-          }
-        });
-
-        return 'Chat deleted successfully';
-      },
-      error: 'Failed to delete chat',
-    });
-
-    setShowDeleteDialog(false);
-
-    if (deleteId === id) {
-      router.push('/');
-    }
-  };
+    const handleDelete = async () => {
+      const deletePromise = apiClient.deleteChat(deleteId!);
+    
+      toast.promise(deletePromise, {
+        loading: 'Deleting chat...',
+        success: () => {
+          mutate((chatHistories) => {
+            if (chatHistories) {
+              return chatHistories.map((chatHistory) => ({
+                ...chatHistory,
+                chats: chatHistory.chats.filter((chat) => chat.id !== deleteId),
+              }));
+            }
+            return chatHistories;
+          });
+    
+          return 'Chat deleted successfully';
+        },
+        error: 'Failed to delete chat',
+      });
+    
+      setShowDeleteDialog(false);
+    
+      if (deleteId === id) {
+        router.push('/');
+      }
+    };
+    
 
   if (!user) {
     return (
