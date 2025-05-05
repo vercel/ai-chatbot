@@ -7,6 +7,8 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { Attachment, UIMessage } from 'ai';
 import { apiClient } from '@/lib/api-client';
+import {use} from 'react';
+import { promises } from 'dns';
 
 type DBMessage = {
   id: string;
@@ -16,14 +18,17 @@ type DBMessage = {
   createdAt: Date;
 };
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page({ params }: { params:Promise<{ id: string }>  }) {
   const router = useRouter();
   const [chat, setChat] = useState<any>(null);
   const [messages, setMessages] = useState<Array<UIMessage>>([]);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_CHAT_MODEL);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { id } = use(params);
+
   useEffect(() => {
+    
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -32,7 +37,7 @@ export default function Page({ params }: { params: { id: string } }) {
           return;
         }
 
-        const chatData = await apiClient.getChat(params.id);
+        const chatData = await apiClient.getChat(id);
         if (!chatData) {
           router.push('/404');
           return;
@@ -48,7 +53,7 @@ export default function Page({ params }: { params: { id: string } }) {
           }
         }
 
-        const messagesFromDb = await apiClient.getMessagesInChat(params.id);
+        const messagesFromDb = await apiClient.getMessagesInChat(id);
         const convertedMessages = convertToUIMessages(messagesFromDb);
 
         // Get chat model from localStorage
@@ -66,7 +71,7 @@ export default function Page({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [params.id, router]);
+  }, [id, router]);
 
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
     return messages.map((message) => ({
@@ -101,7 +106,7 @@ export default function Page({ params }: { params: { id: string } }) {
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
         }}
       />
-      <DataStreamHandler id={params.id} />
+      <DataStreamHandler id={id} />
     </>
   );
 }
