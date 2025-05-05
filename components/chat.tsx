@@ -17,23 +17,31 @@ import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
 export function Chat({
   id,
   initialMessages,
-  selectedChatModel,
-  selectedVisibilityType,
+  initialChatModel,
+  initialVisibilityType,
   isReadonly,
   session,
+  autoResume,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
-  selectedChatModel: string;
-  selectedVisibilityType: VisibilityType;
+  initialChatModel: string;
+  initialVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
+  autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
+
+  const { visibilityType } = useChatVisibility({
+    chatId: id,
+    initialVisibilityType,
+  });
 
   const {
     messages,
@@ -45,6 +53,7 @@ export function Chat({
     status,
     stop,
     reload,
+    experimental_resume,
   } = useChat({
     id,
     initialMessages,
@@ -54,7 +63,8 @@ export function Chat({
     experimental_prepareRequestBody: (body) => ({
       id,
       message: body.messages.at(-1),
-      selectedChatModel,
+      selectedChatModel: initialChatModel,
+      selectedVisibilityType: visibilityType,
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -66,6 +76,15 @@ export function Chat({
       });
     },
   });
+
+  useEffect(() => {
+    if (autoResume) {
+      experimental_resume();
+    }
+
+    // note: this hook has no dependencies since it only needs to run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
@@ -97,8 +116,8 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={selectedChatModel}
-          selectedVisibilityType={selectedVisibilityType}
+          selectedModelId={initialChatModel}
+          selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
         />
@@ -128,6 +147,7 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
+              selectedVisibilityType={visibilityType}
             />
           )}
         </form>
@@ -148,6 +168,7 @@ export function Chat({
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}
+        selectedVisibilityType={visibilityType}
       />
     </>
   );

@@ -12,7 +12,7 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
-import { cn } from '@/lib/utils';
+import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
@@ -28,6 +28,7 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
+  requiresScrollPadding,
 }: {
   chatId: string;
   message: UIMessage;
@@ -36,6 +37,7 @@ const PurePreviewMessage = ({
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
+  requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -65,7 +67,11 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          <div className="flex flex-col gap-4 w-full">
+          <div
+            className={cn('flex flex-col gap-4 w-full', {
+              'min-h-96': message.role === 'assistant' && requiresScrollPadding,
+            })}
+          >
             {message.experimental_attachments &&
               message.experimental_attachments.length > 0 && (
                 <div
@@ -124,7 +130,7 @@ const PurePreviewMessage = ({
                             message.role === 'user',
                         })}
                       >
-                        <Markdown>{part.text}</Markdown>
+                        <Markdown>{sanitizeText(part.text)}</Markdown>
                       </div>
                     </div>
                   );
@@ -236,6 +242,8 @@ export const PreviewMessage = memo(
   (prevProps, nextProps) => {
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (prevProps.message.id !== nextProps.message.id) return false;
+    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
+      return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
 
@@ -249,7 +257,7 @@ export const ThinkingMessage = () => {
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="w-full mx-auto max-w-3xl px-4 group/message "
+      className="w-full mx-auto max-w-3xl px-4 group/message min-h-96"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}

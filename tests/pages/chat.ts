@@ -18,6 +18,14 @@ export class ChatPage {
     return this.page.getByTestId('multimodal-input');
   }
 
+  public get scrollContainer() {
+    return this.page.locator('.overflow-y-scroll');
+  }
+
+  public get scrollToBottomButton() {
+    return this.page.getByTestId('scroll-to-bottom-button');
+  }
+
   async createNewChat() {
     await this.page.goto('/');
   }
@@ -107,6 +115,23 @@ export class ChatPage {
     expect(await this.getSelectedModel()).toBe(chatModel.name);
   }
 
+  public async getSelectedVisibility() {
+    const visibilityId = await this.page
+      .getByTestId('visibility-selector')
+      .innerText();
+    return visibilityId;
+  }
+
+  public async chooseVisibilityFromSelector(
+    chatVisibility: 'public' | 'private',
+  ) {
+    await this.page.getByTestId('visibility-selector').click();
+    await this.page
+      .getByTestId(`visibility-selector-item-${chatVisibility}`)
+      .click();
+    expect(await this.getSelectedVisibility()).toBe(chatVisibility);
+  }
+
   async getRecentAssistantMessage() {
     const messageElements = await this.page
       .getByTestId('message-assistant')
@@ -194,5 +219,38 @@ export class ChatPage {
   async openSideBar() {
     const sidebarToggleButton = this.page.getByTestId('sidebar-toggle-button');
     await sidebarToggleButton.click();
+  }
+
+  public async isScrolledToBottom(): Promise<boolean> {
+    return this.scrollContainer.evaluate(
+      (el) => Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1,
+    );
+  }
+
+  public async waitForScrollToBottom(timeout = 5_000): Promise<void> {
+    const start = Date.now();
+
+    while (Date.now() - start < timeout) {
+      if (await this.isScrolledToBottom()) return;
+      await this.page.waitForTimeout(100);
+    }
+
+    throw new Error(`Timed out waiting for scroll bottom after ${timeout}ms`);
+  }
+
+  public async sendMultipleMessages(
+    count: number,
+    makeMessage: (i: number) => string,
+  ) {
+    for (let i = 0; i < count; i++) {
+      await this.sendUserMessage(makeMessage(i));
+      await this.isGenerationComplete();
+    }
+  }
+
+  public async scrollToTop(): Promise<void> {
+    await this.scrollContainer.evaluate((element) => {
+      element.scrollTop = 0;
+    });
   }
 }

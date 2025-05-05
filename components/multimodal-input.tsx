@@ -23,6 +23,10 @@ import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
+import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
+import type { VisibilityType } from './visibility-selector';
 
 function PureMultimodalInput({
   chatId,
@@ -37,6 +41,7 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
+  selectedVisibilityType,
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -50,6 +55,7 @@ function PureMultimodalInput({
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
+  selectedVisibilityType: VisibilityType;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -179,12 +185,49 @@ function PureMultimodalInput({
     [setAttachments],
   );
 
+  const { isAtBottom, scrollToBottom } = useScrollToBottom();
+
+  useEffect(() => {
+    if (status === 'submitted') {
+      scrollToBottom();
+    }
+  }, [status, scrollToBottom]);
+
   return (
     <div className="relative w-full flex flex-col gap-4">
+      <AnimatePresence>
+        {!isAtBottom && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="absolute left-1/2 bottom-28 -translate-x-1/2 z-50"
+          >
+            <Button
+              data-testid="scroll-to-bottom-button"
+              className="rounded-full"
+              size="icon"
+              variant="outline"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToBottom();
+              }}
+            >
+              <ArrowDown />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
-          <SuggestedActions append={append} chatId={chatId} />
+          <SuggestedActions
+            append={append}
+            chatId={chatId}
+            selectedVisibilityType={selectedVisibilityType}
+          />
         )}
 
       <input
@@ -273,6 +316,8 @@ export const MultimodalInput = memo(
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
+    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+      return false;
 
     return true;
   },

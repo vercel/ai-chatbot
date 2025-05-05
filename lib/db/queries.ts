@@ -26,10 +26,12 @@ import {
   vote,
   type DBMessage,
   type Chat,
+  stream,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
+import type { VisibilityType } from '@/components/visibility-selector';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -78,10 +80,12 @@ export async function saveChat({
   id,
   userId,
   title,
+  visibility,
 }: {
   id: string;
   userId: string;
   title: string;
+  visibility: VisibilityType;
 }) {
   try {
     return await db.insert(chat).values({
@@ -89,6 +93,7 @@ export async function saveChat({
       createdAt: new Date(),
       userId,
       title,
+      visibility,
     });
   } catch (error) {
     console.error('Failed to save chat in database');
@@ -100,6 +105,7 @@ export async function deleteChatById({ id }: { id: string }) {
   try {
     await db.delete(vote).where(eq(vote.chatId, id));
     await db.delete(message).where(eq(message.chatId, id));
+    await db.delete(stream).where(eq(stream.chatId, id));
 
     const [chatsDeleted] = await db
       .delete(chat)
@@ -467,6 +473,39 @@ export async function getMessageCountByUserId({
     console.error(
       'Failed to get message count by user id for the last 24 hours from database',
     );
+    throw error;
+  }
+}
+
+export async function createStreamId({
+  streamId,
+  chatId,
+}: {
+  streamId: string;
+  chatId: string;
+}) {
+  try {
+    await db
+      .insert(stream)
+      .values({ id: streamId, chatId, createdAt: new Date() });
+  } catch (error) {
+    console.error('Failed to create stream id in database');
+    throw error;
+  }
+}
+
+export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
+  try {
+    const streamIds = await db
+      .select({ id: stream.id })
+      .from(stream)
+      .where(eq(stream.chatId, chatId))
+      .orderBy(desc(stream.createdAt))
+      .execute();
+
+    return streamIds.map(({ id }) => id);
+  } catch (error) {
+    console.error('Failed to get stream ids by chat id from database');
     throw error;
   }
 }
