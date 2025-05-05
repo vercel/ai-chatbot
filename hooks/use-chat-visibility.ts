@@ -40,9 +40,10 @@ export function useChatVisibility({
     mutate(unstable_serialize(getChatHistoryPaginationKey));
 
     try {
-      await apiClient.updateChatVisibility(chatId, updatedVisibilityType);
+      await apiClient.updateChatVisibility(chatId, { visibility: updatedVisibilityType });
     } catch (error) {
       console.error('Failed to update chat visibility:', error);
+      
       // Revert local state on error
       setLocalVisibility(visibilityType);
     }
