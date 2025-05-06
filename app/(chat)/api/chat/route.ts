@@ -1,5 +1,4 @@
 import {
-  Message,
   type UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
@@ -19,7 +18,6 @@ import {
 import {
   generateUUID,
   getMostRecentUserMessage,
-  getTrailingAssistantMessage,
   getTrailingMessageId,
   processToolCalls,
 } from '@/lib/utils';
@@ -69,8 +67,9 @@ export async function POST(request: Request) {
 
     // In process tool calls, we will check if the message has been updated
     // and if so, we will update the message in the database.
-    const prevMessages = await getMessageById({ id: userMessage.id });
-    if (prevMessages.length <= 0) {
+    const prevUserMessages = await getMessageById({ id: userMessage.id });
+
+    if (prevUserMessages.length <= 0) {
       await saveMessages({
         messages: [
           {
@@ -109,7 +108,7 @@ export async function POST(request: Request) {
                 message: {
                   chatId: id,
                   id: updatedMessage.id,
-                  role: 'user',
+                  role: updatedMessage.role,
                   parts: updatedMessage.parts,
                   attachments: updatedMessage.experimental_attachments ?? [],
                   createdAt: new Date(),
@@ -151,45 +150,21 @@ export async function POST(request: Request) {
                   responseMessages: response.messages,
                 });
 
-                const prevAssistantMessage = await getTrailingAssistantMessage({
-                  messages: processedMessages,
-                });
-
-                if (prevAssistantMessage) {
-                  await updateMessage({
-                    message: {
+                await saveMessages({
+                  messages: [
+                    {
                       chatId: id,
-                      id: prevAssistantMessage.id,
-                      role: prevAssistantMessage.role,
-                      parts: [
-                        ...(prevAssistantMessage.parts ?? []),
-                        ...(assistantMessage.parts ?? []),
-                      ],
-                      attachments: [
-                        ...(prevAssistantMessage.experimental_attachments ??
-                          []),
-                        ...(assistantMessage.experimental_attachments ?? []),
-                      ],
+                      id: assistantId,
+                      role: assistantMessage.role,
+                      parts: assistantMessage.parts,
+                      attachments:
+                        assistantMessage.experimental_attachments ?? [],
                       createdAt: new Date(),
                     },
-                  });
-                } else {
-                  await saveMessages({
-                    messages: [
-                      {
-                        chatId: id,
-                        id: assistantId,
-                        role: assistantMessage.role,
-                        parts: assistantMessage.parts,
-                        attachments:
-                          assistantMessage.experimental_attachments ?? [],
-                        createdAt: new Date(),
-                      },
-                    ],
-                  });
-                }
-              } catch (_) {
-                console.error('Failed to save chat');
+                  ],
+                });
+              } catch (error) {
+                console.error(`[error] Failed to save chat`, error);
               }
             }
           },
