@@ -1,6 +1,6 @@
 'use client';
 
-import type { Attachment, ToolSet, UIMessage } from 'ai';
+import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -91,6 +91,7 @@ export function Chat({
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
           tools={tools}
+          setInput={setInput}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

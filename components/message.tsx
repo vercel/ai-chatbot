@@ -23,6 +23,7 @@ import { ToolContentCall } from './tool-content';
 import { ToolPermissionRequest } from './tool-permission-request';
 import type { ToolMetadata } from '../lib/ai/tools';
 import { Calculator } from './calculator';
+import { PokemonCarousel } from './pokemon-carousel';
 
 const PurePreviewMessage = ({
   chatId,
@@ -34,6 +35,7 @@ const PurePreviewMessage = ({
   reload,
   isReadonly,
   tools,
+  setInput,
 }: {
   chatId: string;
   message: UIMessage;
@@ -44,6 +46,7 @@ const PurePreviewMessage = ({
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   tools?: Record<string, ToolMetadata>;
+  setInput: UseChatHelpers['setInput'];
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -245,6 +248,16 @@ const PurePreviewMessage = ({
                         />
                       ) : toolName === 'calculator' ? (
                         <Calculator key={toolCallId} args={args} />
+                      ) : toolName === 'pokemons_query' ? (
+                        <PokemonCarousel
+                          result={result}
+                          onClickPokemon={(poketmon) => {
+                            setInput(
+                              () =>
+                                `I would like to know more about ${poketmon.name} (${poketmon.id})`,
+                            );
+                          }}
+                        />
                       ) : (
                         <ToolContentCall // @FIXME: change name to ToolContentResult thenm remote state
                           state={state}

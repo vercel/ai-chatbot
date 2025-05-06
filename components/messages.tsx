@@ -19,6 +19,7 @@ interface MessagesProps {
   isReadonly: boolean;
   isArtifactVisible: boolean;
   tools?: Record<string, ToolMetadata>;
+  setInput: UseChatHelpers['setInput'];
 }
 
 function PureMessages({
@@ -31,6 +32,7 @@ function PureMessages({
   reload,
   isReadonly,
   tools,
+  setInput,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -61,6 +63,7 @@ function PureMessages({
           reload={reload}
           isReadonly={isReadonly}
           tools={tools}
+          setInput={setInput}
         />
       ))}
 
