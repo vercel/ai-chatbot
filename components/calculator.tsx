@@ -111,7 +111,7 @@ export function Calculator({ args }: { args?: any }) {
             className={'flex flex-row items-center justify-between space-y-0'}
           >
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CalculatorIcon className="h-4 w-4" />
+              <CalculatorIcon className="size-4" />
               <span>Calculator</span>
             </CardTitle>
           </CardHeader>

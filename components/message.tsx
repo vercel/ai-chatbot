@@ -46,7 +46,7 @@ const PurePreviewMessage = ({
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   tools?: Record<string, ToolMetadata>;
-  setInput: UseChatHelpers['setInput'];
+  setInput?: UseChatHelpers['setInput'];
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -252,7 +252,7 @@ const PurePreviewMessage = ({
                         <PokemonCarousel
                           result={result}
                           onClickPokemon={(poketmon) => {
-                            setInput(
+                            setInput?.(
                               () =>
                                 `I would like to know more about ${poketmon.name} (${poketmon.id})`,
                             );

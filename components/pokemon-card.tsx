@@ -18,10 +18,10 @@ export function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
 
   return (
     <Card
-      className="overflow-hidden cursor-pointer opacity-60 hover:opacity-100 h-[320px] w-[220px] flex flex-col bg-gradient-to-b from-slate-50 to-slate-100 border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+      className="overflow-hidden cursor-pointer opacity-60 hover:opacity-100 h-[320px] w-[220px] flex flex-col bg-gradient-to-b from-slate-50 to-slate-100 border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
       onClick={() => onClick?.(id)}
     >
-      <CardContent className="p-3 flex-grow flex items-center justify-center bg-white">
+      <CardContent className="p-3 grow flex items-center justify-center bg-white">
         <div className="relative w-full h-[200px] flex items-center justify-center">
           <Image
             src={artwork || '/placeholder.svg'}
