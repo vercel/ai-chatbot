@@ -84,18 +84,21 @@ export function convertPartsToStreamChunks(
   return parts.map((part) => {
     if (part.type === 'text') {
       return `0:${part.text}\n`;
-    } else if (part.type === 'reasoning') {
-      return `g:${part.reasoning}\n`;
-    } else if (part.type === 'source') {
-      return `h:${part.source}\n`;
-    } else if (part.type === 'file') {
-      return `k:${part.data}; ${part.mimeType}\n`;
-    } else if (part.type === 'step-start') {
-      return `f:${part}\n`;
-    } else if (part.type === 'tool-invocation') {
-      return '';
     } else {
-      return '';
+      return ``;
     }
+    // } else if (part.type === 'reasoning') {
+    //   return `g:${part.reasoning}\n`;
+    // } else if (part.type === 'source') {
+    //   return `h:${part.source}\n`;
+    // } else if (part.type === 'file') {
+    //   return `k:${part.data}; ${part.mimeType}\n`;
+    // } else if (part.type === 'step-start') {
+    //   return `f:${part}\n`;
+    // } else if (part.type === 'tool-invocation') {
+    //   return '';
+    // } else {
+    //   return '';
+    // }
   });
 }
