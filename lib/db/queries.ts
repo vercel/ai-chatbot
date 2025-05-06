@@ -217,7 +217,7 @@ export async function saveMessages({
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
-  const span = tracer.startSpan('db.get-message-by-chat-id');
+  const span = tracer.startSpan('db.get-messages-by-chat-id');
 
   try {
     return await db

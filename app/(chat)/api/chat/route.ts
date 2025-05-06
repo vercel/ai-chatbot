@@ -2,10 +2,10 @@ import {
   appendClientMessage,
   appendResponseMessages,
   createDataStream,
-  type LanguageModelV1StreamPart,
   simulateReadableStream,
   smoothStream,
   streamText,
+  type UIMessage,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
@@ -19,7 +19,11 @@ import {
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import { generateUUID, getTrailingMessageId } from '@/lib/utils';
+import {
+  convertPartsToStreamChunks,
+  generateUUID,
+  getTrailingMessageId,
+} from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
@@ -318,10 +322,10 @@ export async function GET(request: Request) {
       return new Response(emptyDataStream, { status: 200 });
     }
 
-    const chunks = mostRecentMessage.parts as LanguageModelV1StreamPart[];
+    const parts = mostRecentMessage.parts as UIMessage['parts'];
 
     const restoredStream = simulateReadableStream({
-      chunks,
+      chunks: convertPartsToStreamChunks(parts),
       chunkDelayInMs: 1000,
     });
 
