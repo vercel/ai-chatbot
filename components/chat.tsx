@@ -79,7 +79,11 @@ export function Chat({
 
   useEffect(() => {
     if (autoResume) {
-      experimental_resume();
+      const mostRecentMessage = initialMessages.at(-1);
+
+      if (mostRecentMessage?.role === 'user') {
+        experimental_resume();
+      }
     }
 
     // note: this hook has no dependencies since it only needs to run once

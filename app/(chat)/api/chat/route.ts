@@ -302,6 +302,10 @@ export async function GET(request: Request) {
     () => emptyDataStream,
   );
 
+  /*
+   * For when the generation completes after SSR
+   * and the resumable stream has concluded.
+   */
   if (!stream) {
     const messages = await getMessagesByChatId({ id: chatId });
     const mostRecentMessage = messages.at(-1);
