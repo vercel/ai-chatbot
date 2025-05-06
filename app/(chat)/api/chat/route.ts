@@ -303,8 +303,8 @@ export async function GET(request: Request) {
   );
 
   /*
-   * For when the generation completes after SSR
-   * and the resumable stream has concluded.
+   * For when the generation is streaming during SSR
+   * but the resumable stream has concluded at this point.
    */
   if (!stream) {
     const messages = await getMessagesByChatId({ id: chatId });
