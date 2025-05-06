@@ -2,6 +2,8 @@ import {
   appendClientMessage,
   appendResponseMessages,
   createDataStream,
+  type LanguageModelV1StreamPart,
+  simulateReadableStream,
   smoothStream,
   streamText,
 } from 'ai';
@@ -294,6 +296,33 @@ export async function GET(request: Request) {
   const emptyDataStream = createDataStream({
     execute: () => {},
   });
+
+  const stream = await streamContext.resumableStream(
+    recentStreamId,
+    () => emptyDataStream,
+  );
+
+  if (!stream) {
+    const messages = await getMessagesByChatId({ id: chatId });
+    const mostRecentMessage = messages.at(-1);
+
+    if (!mostRecentMessage) {
+      return new Response(emptyDataStream, { status: 200 });
+    }
+
+    if (mostRecentMessage.role !== 'assistant') {
+      return new Response(emptyDataStream, { status: 200 });
+    }
+
+    const chunks = mostRecentMessage.parts as LanguageModelV1StreamPart[];
+
+    const restoredStream = simulateReadableStream({
+      chunks,
+      chunkDelayInMs: 1000,
+    });
+
+    return new Response(restoredStream, { status: 200 });
+  }
 
   return new Response(
     await streamContext.resumableStream(recentStreamId, () => emptyDataStream),
