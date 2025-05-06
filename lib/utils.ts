@@ -38,51 +38,11 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function getLocalStorage(key: string) {
-  if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  }
-  return [];
-}
-
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
-  });
-}
-
-function addToolMessageToChat({
-  toolMessage,
-  messages,
-}: {
-  toolMessage: CoreToolMessage;
-  messages: Array<Message>;
-}): Array<Message> {
-  return messages.map((message) => {
-    if (message.toolInvocations) {
-      return {
-        ...message,
-        toolInvocations: message.toolInvocations.map((toolInvocation) => {
-          const toolResult = toolMessage.content.find(
-            (tool) => tool.toolCallId === toolInvocation.toolCallId,
-          );
-
-          if (toolResult) {
-            return {
-              ...toolInvocation,
-              state: 'result',
-              result: toolResult.result,
-            };
-          }
-
-          return toolInvocation;
-        }),
-      };
-    }
-
-    return message;
   });
 }
 
@@ -186,13 +146,15 @@ export function formatToolContent(result?: any) {
     if (result.content) {
       if (typeof result.content === 'object') {
         if (Array.isArray(result.content)) {
-          return result.content.map((item: any) => {
-            if (item.type && item.type === 'text') {
-              return item.text;
-            } else {
-              return JSON.stringify(item, null, 2);
-            }
-          });
+          return result.content
+            .map((item: any) => {
+              if (item.type && item.type === 'text') {
+                return item.text;
+              } else {
+                return JSON.stringify(item, null, 2);
+              }
+            })
+            .join('\n');
         } else {
           return JSON.stringify(result.content, null, 2);
         }
