@@ -1,4 +1,11 @@
-import type { CoreAssistantMessage, CoreToolMessage, UIMessage } from 'ai';
+import {
+  formatDataStreamPart,
+  type CoreAssistantMessage,
+  type CoreToolMessage,
+  type ToolCall,
+  type ToolResult,
+  type UIMessage,
+} from 'ai';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { Document } from '@/lib/db/schema';
@@ -78,27 +85,96 @@ export function sanitizeText(text: string) {
   return text.replace('<has_function_call>', '');
 }
 
-export function convertPartsToStreamChunks(
-  parts: UIMessage['parts'],
-): string[] {
-  return parts.map((part) => {
-    if (part.type === 'text') {
-      return `0:${part.text}\n`;
-    } else {
-      return ``;
+/**
+ * Converts an array of UIMessage parts into an array of DataStreamString.
+ */
+export function partsToDataStreamStrings(parts: UIMessage['parts']): any[] {
+  const streams: any[] = [];
+
+  for (const part of parts) {
+    switch (part.type) {
+      case 'text': {
+        const textPart = part;
+        streams.push(formatDataStreamPart('text', textPart.text));
+        break;
+      }
+
+      case 'reasoning': {
+        const reasoningPart = part;
+        streams.push(
+          formatDataStreamPart('reasoning', reasoningPart.reasoning),
+        );
+        break;
+      }
+
+      case 'tool-invocation': {
+        const invocationPart = part;
+        const invocation = invocationPart.toolInvocation;
+
+        // Tool call in progress (partial or full)
+        if (
+          invocation.state === 'partial-call' ||
+          invocation.state === 'call'
+        ) {
+          const call = invocation as ToolCall<string, any> & { state: string };
+          streams.push(
+            formatDataStreamPart('tool_call', {
+              toolCallId: call.toolCallId,
+              toolName: call.toolName,
+              args: call.args,
+            }),
+          );
+        }
+
+        // Tool result
+        if (invocation.state === 'result') {
+          const result = invocation as ToolResult<string, any, any> & {
+            state: 'result';
+          };
+          streams.push(
+            formatDataStreamPart('tool_result', {
+              toolCallId: result.toolCallId,
+              result: result.result,
+            }),
+          );
+        }
+        break;
+      }
+
+      case 'source': {
+        const sourcePart = part;
+        streams.push(formatDataStreamPart('source', sourcePart.source));
+        break;
+      }
+
+      case 'file': {
+        const filePart = part;
+        streams.push(
+          formatDataStreamPart('file', {
+            data: filePart.data,
+            mimeType: filePart.mimeType,
+          }),
+        );
+        break;
+      }
+
+      case 'step-start': {
+        const stepPart = part;
+        // Note: StepStartUIPart has no messageId, adjust as needed
+        // Here we emit a start_step with an empty messageId
+        streams.push(
+          formatDataStreamPart('start_step', {
+            messageId: '',
+          }),
+        );
+        break;
+      }
+
+      default:
+        // Unsupported part type, skip or throw
+        console.warn(`Skipping unsupported part type: ${(part as any).type}`);
     }
-    // } else if (part.type === 'reasoning') {
-    //   return `g:${part.reasoning}\n`;
-    // } else if (part.type === 'source') {
-    //   return `h:${part.source}\n`;
-    // } else if (part.type === 'file') {
-    //   return `k:${part.data}; ${part.mimeType}\n`;
-    // } else if (part.type === 'step-start') {
-    //   return `f:${part}\n`;
-    // } else if (part.type === 'tool-invocation') {
-    //   return '';
-    // } else {
-    //   return '';
-    // }
-  });
+  }
+
+  return streams;
 }

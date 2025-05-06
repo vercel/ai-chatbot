@@ -20,9 +20,9 @@ import {
   saveMessages,
 } from '@/lib/db/queries';
 import {
-  convertPartsToStreamChunks,
   generateUUID,
   getTrailingMessageId,
+  partsToDataStreamStrings,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
@@ -325,7 +325,7 @@ export async function GET(request: Request) {
     const parts = mostRecentMessage.parts as UIMessage['parts'];
 
     const restoredStream = simulateReadableStream({
-      chunks: convertPartsToStreamChunks(parts),
+      chunks: partsToDataStreamStrings(parts),
       chunkDelayInMs: 1000,
     });
 
