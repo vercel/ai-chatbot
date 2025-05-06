@@ -16,7 +16,8 @@ interface ToolPermissionRequestProps {
   toolName: string;
   description: string;
   args?: any;
-  onAllowAction: () => void;
+  onAllowOnceAction: () => void;
+  onAllowAlwaysAction: () => void;
   onDenyAction: () => void;
 }
 
@@ -24,7 +25,8 @@ export function ToolPermissionRequest({
   toolName,
   description,
   args,
-  onAllowAction,
+  onAllowOnceAction,
+  onAllowAlwaysAction,
   onDenyAction,
 }: ToolPermissionRequestProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,20 +45,29 @@ export function ToolPermissionRequest({
         <CardContent className="pb-2">
           <p className="text-sm text-muted-foreground">{description}</p>
         </CardContent>
-        <CardFooter className="flex justify-end gap-2 pt-0">
-          <Button variant="ghost" size="sm" onClick={onDenyAction}>
-            Deny
-          </Button>
-          <Button size="sm" onClick={onAllowAction}>
-            Allow
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDialogOpen(true)}
-          >
-            <BadgeInfo className="size-4 text-muted-foreground" />
-          </Button>
+        <CardFooter className="flex justify-between gap-2 pt-0">
+          <div className="flex-1">
+            <Button variant="ghost" size="sm" onClick={onDenyAction}>
+              Deny
+            </Button>
+          </div>
+          <div className="flex flex-row justify-between gap-2">
+            <Button size="sm" onClick={onAllowAlwaysAction}>
+              Allow always
+            </Button>
+            <Button size="sm" onClick={onAllowOnceAction}>
+              Allow once
+            </Button>
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDialogOpen(true)}
+              >
+                <BadgeInfo className="size-4 text-muted-foreground" />
+              </Button>
+            </div>
+          </div>
         </CardFooter>
       </Card>
 
@@ -66,14 +77,6 @@ export function ToolPermissionRequest({
         toolName={toolName}
         description={description}
         args={args}
-        onAllowAction={() => {
-          setDialogOpen(false);
-          onAllowAction();
-        }}
-        onDenyAction={() => {
-          setDialogOpen(false);
-          onDenyAction();
-        }}
       />
     </>
   );

@@ -5,11 +5,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { formatJSON } from '../lib/utils';
 
 interface ToolPermissionDialogProps {
@@ -18,8 +16,6 @@ interface ToolPermissionDialogProps {
   toolName: string;
   description: string;
   args?: any;
-  onAllowAction: () => void;
-  onDenyAction: () => void;
 }
 
 export function ToolPermissionDialog({
@@ -28,8 +24,6 @@ export function ToolPermissionDialog({
   toolName,
   description,
   args,
-  onAllowAction,
-  onDenyAction,
 }: ToolPermissionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChangeAction}>
@@ -72,17 +66,6 @@ export function ToolPermissionDialog({
             </div>
           </div>
         </div>
-
-        <DialogFooter className="flex sm:justify-between">
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onDenyAction}>
-              Deny
-            </Button>
-            <Button size="sm" onClick={onAllowAction}>
-              Allow
-            </Button>
-          </div>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

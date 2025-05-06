@@ -3,7 +3,7 @@
 import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, startTransition, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -24,6 +24,7 @@ import { ToolPermissionRequest } from './tool-permission-request';
 import type { ToolMetadata } from '../lib/ai/tools';
 import { Calculator } from './calculator';
 import { PokemonCarousel } from './pokemon-carousel';
+import useSWR from 'swr';
 
 const PurePreviewMessage = ({
   chatId,
@@ -49,6 +50,32 @@ const PurePreviewMessage = ({
   setInput?: UseChatHelpers['setInput'];
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+
+  const { data, mutate } = useSWR<Record<string, any>>(`/chat/${chatId}`);
+
+  const handleApproveResult = ({
+    toolName,
+    toolCallId,
+    result,
+    always,
+  }: {
+    toolName: string;
+    toolCallId: string;
+    result: any;
+    always?: boolean;
+  }) => {
+    addToolResult?.({
+      toolCallId,
+      result,
+    });
+
+    if (always) {
+      mutate({
+        ...data,
+        approved: [...(data?.approved ?? []), toolName],
+      });
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -166,20 +193,47 @@ const PurePreviewMessage = ({
                   const { args } = toolInvocation;
 
                   if (tool?.capabilities === 'executable') {
+                    // If the tool was allowed to execute before, we don't need to ask for permission again
+                    if (
+                      data?.approved &&
+                      data?.approved?.indexOf(toolName) !== -1
+                    ) {
+                      // return addToolResult directly cause component rendering conflict
+                      setTimeout(() => {
+                        startTransition(() => {
+                          addToolResult?.({
+                            toolCallId,
+                            result: APPROVAL.YES,
+                          });
+                        });
+                      }, 100);
+                      return;
+                    }
+
                     return (
                       <ToolPermissionRequest
                         key={toolCallId}
                         args={args}
                         toolName={toolName}
                         description={tool?.description ?? ''}
-                        onAllowAction={() => {
-                          addToolResult?.({
+                        onAllowOnceAction={() => {
+                          handleApproveResult({
+                            toolName,
                             toolCallId,
                             result: APPROVAL.YES,
                           });
                         }}
+                        onAllowAlwaysAction={() => {
+                          handleApproveResult({
+                            toolName,
+                            toolCallId,
+                            always: true,
+                            result: APPROVAL.YES,
+                          });
+                        }}
                         onDenyAction={() => {
-                          addToolResult?.({
+                          handleApproveResult({
+                            toolName,
                             toolCallId,
                             result: APPROVAL.NO,
                           });
