@@ -500,7 +500,7 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       .select({ id: stream.id })
       .from(stream)
       .where(eq(stream.chatId, chatId))
-      .orderBy(desc(stream.createdAt))
+      .orderBy(asc(stream.createdAt))
       .execute();
 
     return streamIds.map(({ id }) => id);
