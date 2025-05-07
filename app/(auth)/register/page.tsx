@@ -4,42 +4,52 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from '@/components/toast';
-import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 import { apiClient } from '@/lib/api-client';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function Page() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [step, setStep] = useState(1);
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [businessType, setBusinessType] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [website, setWebsite] = useState('');
+  const [employees, setEmployees] = useState('');
+  const [ein, setEin] = useState('');
+
+  const handleFinalSubmit = async () => {
+    if (password !== confirmPassword) {
+      toast({ type: 'error', description: 'Passwords do not match!' });
+      return;
+    }
+
     try {
       setIsLoading(true);
-      setEmail(formData.get('email') as string);
-      
       const response = await apiClient.register({
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-        organizationId: 'default',
+        name,
+        email,
+        password,
+        organizationId: businessName,
       });
 
-      // Store token in localStorage
       localStorage.setItem('token', response.token);
       setIsSuccessful(true);
       router.push('/');
     } catch (error: any) {
       if (error.status === 409) {
-        toast({
-          type: 'error',
-          description: 'Account already exists!',
-        });
+        toast({ type: 'error', description: 'Account already exists!' });
       } else {
-        toast({
-          type: 'error',
-          description: 'Failed to create account!',
-        });
+        toast({ type: 'error', description: 'Failed to create account!' });
       }
     } finally {
       setIsLoading(false);
@@ -47,28 +57,124 @@ export default function Page() {
   };
 
   return (
-    <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
-        <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign Up</h3>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Create an account with your email and password
-          </p>
+    <div className="flex items-center justify-center h-dvh w-full bg-background">
+      <div className="flex w-full h-full overflow-hidden shadow-md md:flex-row flex-col bg-white dark:bg-zinc-900">
+
+        {/* Left Panel */}
+        <div className="w-1/2 flex items-center justify-center bg-[#D1EBEB] text-black p-10">
+          <div className="max-w-md text-left space-y-5">
+            <h2 className="text-lg font-semibold text-green-700">★ Dental AI</h2>
+            <h1 className="text-3xl font-bold">Chat with exciting tool</h1>
+            <p className="text-sm text-gray-800">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+          </div>
         </div>
-        <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful} isLoading={isLoading}>Sign up</SubmitButton>
-          <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {'Already have an account? '}
-            <Link
-              href="/login"
-              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
-            >
-              Sign in
-            </Link>
-            {' instead.'}
-          </p>
-        </AuthForm>
+
+        {/* Right Panel */}
+        <div className="w-1/2 flex items-center justify-center px-4 py-8 sm:px-6 min-h-[520px]">
+          <div className="w-full max-w-md space-y-6">
+            <div className="text-left">
+              <h3 className="text-xl font-semibold dark:text-zinc-50">Create your account</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
+                {step === 1 && 'Let’s start with your contact details'}
+                {step === 2 && 'Set up a secure password'}
+                {step === 3 && 'Tell us about your business'}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {step === 1 && (
+                <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setStep(2);
+                }}
+                className="space-y-4"
+              >
+                <InputBlock label="Full Name" id="name" value={name} onChange={setName} required />
+                <InputBlock label="Email Address" id="email" type="email" value={email} onChange={setEmail} required />
+                <InputBlock label="Phone Number" id="phone" type="tel" value={phone} onChange={setPhone} required />
+                <div className="flex justify-center mt-4">
+                  <button type="submit" className="w-full bg-black text-white rounded-md py-2">Confirm</button>
+                </div>
+              </form>
+              )}
+
+              {step === 2 && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (password !== confirmPassword) {
+                      toast({ type: 'error', description: 'Passwords do not match!' });
+                      return;
+                    }
+                    setStep(3);
+                  }}
+                  className="space-y-4"
+                >
+                  <InputBlock label="Password" id="password" type="password" value={password} onChange={setPassword} required />
+                  <InputBlock label="Confirm Password" id="confirmPassword" type="password" value={confirmPassword} onChange={setConfirmPassword} required />
+                  <div className="flex flex-col sm:flex-row justify-between gap-2 mt-4">
+                    <BackButton onClick={() => setStep(1)} />
+                    <button type="submit" className="w-full bg-black text-white rounded-md py-2">Confirm</button>
+                  </div>
+                </form>
+              )}
+
+              {step === 3 && (
+                <>
+                  <InputBlock label="Legal Business Name" id="businessName" value={businessName} onChange={setBusinessName} required />
+                  <InputBlock label="Type of Business" id="businessType" value={businessType} onChange={setBusinessType} required />
+                  <InputBlock label="Industry" id="industry" value={industry} onChange={setIndustry} required />
+                  <InputBlock label="Business Website" id="website" type="url" value={website} onChange={setWebsite} required />
+                  <InputBlock label="Number of Employees" id="employees" type="number" value={employees} onChange={setEmployees} required />
+                  <div className="flex flex-col sm:flex-row justify-between gap-2 mt-4">
+                    <BackButton onClick={() => setStep(2)} />
+                    <SubmitButton isLoading={isLoading} isSuccessful={isSuccessful} onClick={handleFinalSubmit}>
+                      Sign Up
+                    </SubmitButton>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
+              Already have an account?{' '}
+              <Link href="/login" className="font-semibold text-gray-800 hover:underline dark:text-zinc-200">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+// Reusable Components
+
+function InputBlock({ label, id, type = 'text', value, onChange }: any) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={id} className="text-zinc-600 font-normal dark:text-zinc-400">{label}</Label>
+      <Input id={id} type={type} value={value} onChange={(e) => onChange(e.target.value)} required />
+    </div>
+  );
+}
+
+function NextButton({ onClick }: { onClick: () => void }) {
+  return <button onClick={onClick} className="w-full bg-black text-white rounded-md py-2">Confirm</button>;
+}
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full bg-gray-200 text-gray-800 dark:bg-zinc-700 dark:text-white rounded-md py-2 hover:bg-gray-300 font-medium"
+    >
+      Back
+    </button>
   );
 }

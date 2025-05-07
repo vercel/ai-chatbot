@@ -22,7 +22,7 @@ export function SubmitButton({
       type={pending || isLoading ? 'button' : 'submit'}
       aria-disabled={pending || isSuccessful || isLoading}
       disabled={pending || isSuccessful || isLoading}
-      className="relative"
+      className="relative w-full bg-black text-white rounded-md py-2"
     >
       {children}
 
