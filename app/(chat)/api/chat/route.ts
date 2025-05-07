@@ -2,10 +2,8 @@ import {
   appendClientMessage,
   appendResponseMessages,
   createDataStream,
-  simulateReadableStream,
   smoothStream,
   streamText,
-  type UIMessage,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
@@ -19,11 +17,7 @@ import {
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import {
-  generateUUID,
-  getTrailingMessageId,
-  partsToDataStreamStrings,
-} from '@/lib/utils';
+import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
@@ -318,15 +312,13 @@ export async function GET(request: Request) {
       return new Response(emptyDataStream, { status: 200 });
     }
 
-    if (mostRecentMessage.role !== 'assistant') {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    const parts = mostRecentMessage.parts as UIMessage['parts'];
-
-    const restoredStream = simulateReadableStream({
-      chunks: partsToDataStreamStrings(parts),
-      chunkDelayInMs: 1000,
+    const restoredStream = createDataStream({
+      execute: (buffer) => {
+        buffer.writeData({
+          type: 'append-message',
+          message: JSON.stringify(mostRecentMessage),
+        });
+      },
     });
 
     return new Response(restoredStream, { status: 200 });
