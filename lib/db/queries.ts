@@ -32,9 +32,6 @@ import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { trace } from '@opentelemetry/api';
-
-const tracer = trace.getTracer('db-tracer');
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -204,21 +201,15 @@ export async function saveMessages({
 }: {
   messages: Array<DBMessage>;
 }) {
-  const span = tracer.startSpan('db.save-message');
-
   try {
     return await db.insert(message).values(messages);
   } catch (error) {
     console.error('Failed to save messages in database', error);
     throw error;
-  } finally {
-    span.end();
   }
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
-  const span = tracer.startSpan('db.get-messages-by-chat-id');
-
   try {
     return await db
       .select()
@@ -228,8 +219,6 @@ export async function getMessagesByChatId({ id }: { id: string }) {
   } catch (error) {
     console.error('Failed to get messages by chat id from database', error);
     throw error;
-  } finally {
-    span.end();
   }
 }
 
