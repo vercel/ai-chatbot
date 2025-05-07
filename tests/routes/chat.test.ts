@@ -199,7 +199,7 @@ test.describe
     }) => {
       const chatId = generateUUID();
 
-      const firstRequest = await adaContext.request.post('/api/chat', {
+      const firstResponse = await adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           message: {
@@ -219,31 +219,21 @@ test.describe
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+      const firstStatusCode = firstResponse.status();
+      expect(firstStatusCode).toBe(200);
 
-      const secondRequest = adaContext.request.get(
+      await firstResponse.text();
+      await new Promise((resolve) => setTimeout(resolve, 15 * 1000));
+      await new Promise((resolve) => setTimeout(resolve, 15000));
+      const secondResponse = await adaContext.request.get(
         `/api/chat?chatId=${chatId}`,
       );
 
-      const [firstResponse, secondResponse] = await Promise.all([
-        firstRequest,
-        secondRequest,
-      ]);
-
-      const [firstStatusCode, secondStatusCode] = await Promise.all([
-        firstResponse.status(),
-        secondResponse.status(),
-      ]);
-
-      expect(firstStatusCode).toBe(200);
+      const secondStatusCode = secondResponse.status();
       expect(secondStatusCode).toBe(200);
 
-      const [, secondResponseContent] = await Promise.all([
-        firstResponse.text(),
-        secondResponse.text(),
-      ]);
-
-      expect(secondResponseContent).toContain('');
+      const secondResponseContent = await secondResponse.text();
+      expect(secondResponseContent).toEqual('');
     });
 
     test('Babbage cannot resume a private chat generation that belongs to Ada', async ({

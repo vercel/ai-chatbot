@@ -34,6 +34,7 @@ import {
 } from 'resumable-stream';
 import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
+import { differenceInSeconds } from 'date-fns';
 
 export const maxDuration = 60;
 
@@ -245,6 +246,7 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   const streamContext = getStreamContext();
+  const resumeRequestedAt = new Date();
 
   if (!streamContext) {
     return new Response(null, { status: 204 });
@@ -313,6 +315,12 @@ export async function GET(request: Request) {
     }
 
     if (mostRecentMessage.role !== 'assistant') {
+      return new Response(emptyDataStream, { status: 200 });
+    }
+
+    const messageCreatedAt = new Date(mostRecentMessage.createdAt);
+
+    if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
       return new Response(emptyDataStream, { status: 200 });
     }
 
