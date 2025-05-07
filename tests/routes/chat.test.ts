@@ -144,7 +144,7 @@ test.describe
       );
     });
 
-    test('Ada cannot resume chat generation that has ended', async ({
+    test('Ada can resume chat generation that has ended during request', async ({
       adaContext,
     }) => {
       const chatId = generateUUID();
@@ -191,6 +191,48 @@ test.describe
         secondResponse.text(),
       ]);
 
+      expect(secondResponseContent).toContain('append-message');
+    });
+
+    test('Ada cannot resume chat generation that has ended', async ({
+      adaContext,
+    }) => {
+      const chatId = generateUUID();
+
+      const firstResponse = await adaContext.request.post('/api/chat', {
+        data: {
+          id: chatId,
+          message: {
+            id: generateUUID(),
+            role: 'user',
+            content: 'Help me write an essay about Silcon Valley',
+            parts: [
+              {
+                type: 'text',
+                text: 'Help me write an essay about Silicon Valley',
+              },
+            ],
+            createdAt: new Date().toISOString(),
+          },
+          selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
+        },
+      });
+
+      const firstStatusCode = firstResponse.status();
+      expect(firstStatusCode).toBe(200);
+
+      await firstResponse.text();
+      await new Promise((resolve) => setTimeout(resolve, 15 * 1000));
+      await new Promise((resolve) => setTimeout(resolve, 15000));
+      const secondResponse = await adaContext.request.get(
+        `/api/chat?chatId=${chatId}`,
+      );
+
+      const secondStatusCode = secondResponse.status();
+      expect(secondStatusCode).toBe(200);
+
+      const secondResponseContent = await secondResponse.text();
       expect(secondResponseContent).toEqual('');
     });
 
@@ -266,7 +308,7 @@ test.describe
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
 
       const secondRequest = babbageContext.request.get(
         `/api/chat?chatId=${chatId}`,
