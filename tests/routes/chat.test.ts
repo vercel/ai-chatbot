@@ -144,7 +144,7 @@ test.describe
       );
     });
 
-    test('Ada cannot resume chat generation that has ended', async ({
+    test('Ada can resume chat generation that has ended during request', async ({
       adaContext,
     }) => {
       const chatId = generateUUID();
@@ -191,7 +191,59 @@ test.describe
         secondResponse.text(),
       ]);
 
-      expect(secondResponseContent).toEqual('');
+      expect(secondResponseContent).toContain('append-message');
+    });
+
+    test('Ada cannot resume chat generation that has ended', async ({
+      adaContext,
+    }) => {
+      const chatId = generateUUID();
+
+      const firstRequest = await adaContext.request.post('/api/chat', {
+        data: {
+          id: chatId,
+          message: {
+            id: generateUUID(),
+            role: 'user',
+            content: 'Help me write an essay about Silcon Valley',
+            parts: [
+              {
+                type: 'text',
+                text: 'Help me write an essay about Silicon Valley',
+              },
+            ],
+            createdAt: new Date().toISOString(),
+          },
+          selectedChatModel: 'chat-model',
+          selectedVisibilityType: 'private',
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+
+      const secondRequest = adaContext.request.get(
+        `/api/chat?chatId=${chatId}`,
+      );
+
+      const [firstResponse, secondResponse] = await Promise.all([
+        firstRequest,
+        secondRequest,
+      ]);
+
+      const [firstStatusCode, secondStatusCode] = await Promise.all([
+        firstResponse.status(),
+        secondResponse.status(),
+      ]);
+
+      expect(firstStatusCode).toBe(200);
+      expect(secondStatusCode).toBe(200);
+
+      const [, secondResponseContent] = await Promise.all([
+        firstResponse.text(),
+        secondResponse.text(),
+      ]);
+
+      expect(secondResponseContent).toContain('');
     });
 
     test('Babbage cannot resume a private chat generation that belongs to Ada', async ({
@@ -266,7 +318,7 @@ test.describe
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
 
       const secondRequest = babbageContext.request.get(
         `/api/chat?chatId=${chatId}`,

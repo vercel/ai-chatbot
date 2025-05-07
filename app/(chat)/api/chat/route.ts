@@ -328,12 +328,7 @@ export async function GET(request: Request) {
     return new Response(restoredStream, { status: 200 });
   }
 
-  return new Response(
-    await streamContext.resumableStream(recentStreamId, () => emptyDataStream),
-    {
-      status: 200,
-    },
-  );
+  return new Response(stream, { status: 200 });
 }
 
 export async function DELETE(request: Request) {
