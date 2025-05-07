@@ -312,6 +312,10 @@ export async function GET(request: Request) {
       return new Response(emptyDataStream, { status: 200 });
     }
 
+    if (mostRecentMessage.role !== 'assistant') {
+      return new Response(emptyDataStream, { status: 200 });
+    }
+
     const restoredStream = createDataStream({
       execute: (buffer) => {
         buffer.writeData({
