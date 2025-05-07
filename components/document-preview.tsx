@@ -11,9 +11,9 @@ import {
 import { ArtifactKind, UIArtifact } from './artifact';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
-import { Document } from '@/lib/db/schema';
+import { Document } from '@/lib/api-client';
 import { InlineDocumentSkeleton } from './document-skeleton';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { Editor } from './text-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { CodeEditor } from './code-editor';
@@ -21,6 +21,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
+import { apiClient } from '@/lib/api-client';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -35,9 +36,28 @@ export function DocumentPreview({
 }: DocumentPreviewProps) {
   const { artifact, setArtifact } = useArtifact();
 
-  const { data: documents, isLoading: isDocumentsFetching } = useSWR<
+  // Clear cache when component mounts or result changes
+  useEffect(() => {
+    if (result?.id) {
+      mutate(`/api/documents/${result.id}`);
+    }
+  }, [result?.id]);
+
+  const { data: documents, isLoading: isDocumentsFetching, error } = useSWR<
     Array<Document>
-  >(result ? `/api/document?id=${result.id}` : null, fetcher);
+  >(
+    result ? `/api/documents/${result.id}` : null,
+    async () => {
+      if (!result) return null;
+      return apiClient.getDocumentById(result.id);
+    }
+  );
+
+  console.log('Result:', result);
+  console.log('Documents:', documents);
+  console.log('Is Loading:', isDocumentsFetching);
+  console.log('Error:', error);
+  console.log('SWR Key:', result ? `api/documents/${result.id}` : null);
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);
   const hitboxRef = useRef<HTMLDivElement>(null);
@@ -89,10 +109,11 @@ export function DocumentPreview({
     : artifact.status === 'streaming'
       ? {
           title: artifact.title,
-          kind: artifact.kind,
+          kind: artifact.kind as ArtifactKind,
           content: artifact.content,
           id: artifact.documentId,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           userId: 'noop',
         }
       : null;
@@ -108,7 +129,7 @@ export function DocumentPreview({
       />
       <DocumentHeader
         title={document.title}
-        kind={document.kind}
+        kind={document.kind as ArtifactKind}
         isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
