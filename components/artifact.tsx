@@ -11,7 +11,8 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-import type { Document, Vote } from '@/lib/db/schema';
+import type { Document, Vote } from '@/lib/api-client';
+import { apiClient } from '@/lib/api-client';
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
@@ -27,12 +28,16 @@ import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { imageArtifact as apiImageArtifact } from '@/artifacts/image/client';
+import { codeArtifact as apiCodeArtifact } from '@/artifacts/code/client';
+import { sheetArtifact as apiSheetArtifact } from '@/artifacts/sheet/client';
+import { textArtifact as apiTextArtifact } from '@/artifacts/text/client';
 
 export const artifactDefinitions = [
-  textArtifact,
-  codeArtifact,
-  imageArtifact,
-  sheetArtifact,
+  apiTextArtifact,
+  apiCodeArtifact,
+  apiImageArtifact,
+  apiSheetArtifact,
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
@@ -90,9 +95,10 @@ function PureArtifact({
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
     artifact.documentId !== 'init' && artifact.status !== 'streaming'
-      ? `/api/document?id=${artifact.documentId}`
+      ? () => {
+          return apiClient.getDocumentById(artifact.documentId);
+        }
       : null,
-    fetcher,
   );
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
@@ -128,7 +134,7 @@ function PureArtifact({
       if (!artifact) return;
 
       mutate<Array<Document>>(
-        `/api/document?id=${artifact.documentId}`,
+        () => apiClient.getDocumentById(artifact.documentId),
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
@@ -140,13 +146,10 @@ function PureArtifact({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${artifact.documentId}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                title: artifact.title,
-                content: updatedContent,
-                kind: artifact.kind,
-              }),
+            await apiClient.updateDocument(artifact.documentId, {
+              title: artifact.title,
+              content: updatedContent,
+              kind: artifact.kind,
             });
 
             setIsContentDirty(false);
@@ -154,7 +157,7 @@ function PureArtifact({
             const newDocument = {
               ...currentDocument,
               content: updatedContent,
-              createdAt: new Date(),
+              createdAt: new Date().toISOString(),
             };
 
             return [...currentDocuments, newDocument];

@@ -6,8 +6,9 @@ import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import type { Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/api-client';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
+import { apiClient } from '@/lib/api-client';
 
 import { LoaderIcon } from './icons';
 import { Button } from './ui/button';
@@ -56,33 +57,12 @@ export const VersionFooter = ({
             setIsMutating(true);
 
             mutate(
-              `/api/document?id=${artifact.documentId}`,
-              await fetch(
-                `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
-                  documents,
-                  currentVersionIndex,
-                )}`,
-                {
-                  method: 'DELETE',
-                },
+              () => apiClient.getDocumentById(artifact.documentId),
+              await apiClient.deleteDocumentsAfterTimestamp(
+                artifact.documentId,
+                getDocumentTimestampByIndex(documents, currentVersionIndex)
               ),
-              {
-                optimisticData: documents
-                  ? [
-                      ...documents.filter((document) =>
-                        isAfter(
-                          new Date(document.createdAt),
-                          new Date(
-                            getDocumentTimestampByIndex(
-                              documents,
-                              currentVersionIndex,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ]
-                  : [],
-              },
+              { revalidate: false },
             );
           }}
         >

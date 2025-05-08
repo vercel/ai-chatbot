@@ -45,7 +45,7 @@ export function Chat({
     stop,
     reload,
   } = useChat({
-    api: `http://localhost:3001/api/chats/stream`,
+    api: `http://localhost:3001/api/chats`,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${localStorage.getItem('token')}`

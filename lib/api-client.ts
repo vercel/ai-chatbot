@@ -78,6 +78,17 @@ export interface SuggestionStatusRequest {
   status: string;
 }
 
+export interface Document {
+  id: string;
+  title: string;
+  content: string;
+  kind: string;
+  createdAt: string;
+  updatedAt: string;
+  userId?: string;
+  organizationId?: string;
+}
+
 export interface ApiError {
   message: string;
   status: number;

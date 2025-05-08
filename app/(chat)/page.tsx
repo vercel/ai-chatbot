@@ -24,10 +24,10 @@ export default function Page() {
 
       try {
         // Create a new chat
-        const chatResponse = await apiClient.createChat({
-          message: 'New Chat'
-        });
-        setId(chatResponse.id);
+        // const chatResponse = await apiClient.createChat({
+        //   message: 'New Chat'
+        // });
+        // setId(chatResponse.id);
 
         // Get chat model from localStorage
         const chatModel = localStorage.getItem('chat-model') || DEFAULT_CHAT_MODEL;
