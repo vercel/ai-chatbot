@@ -11,6 +11,7 @@ import {
   createStreamId,
   deleteChatById,
   getChatById,
+  getDefaultUserPersona,
   getMessageCountByUserId,
   getMessagesByChatId,
   getStreamIdsByChatId,
@@ -44,20 +45,24 @@ function getStreamContext() {
   if (!globalStreamContext) {
     try {
       // Check if REDIS_URL is properly configured
-      const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
+      const redisUrl =
+        process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
       if (!redisUrl || redisUrl.includes('SSS')) {
         console.log(
           ' > Resumable streams are disabled due to invalid Redis URL configuration',
         );
         return null;
       }
-      
+
       globalStreamContext = createResumableStreamContext({
         waitUntil: after,
       });
     } catch (error: any) {
       console.error('Failed to initialize resumable streams:', error);
-      if (error.message.includes('REDIS_URL') || error.code === 'ERR_INVALID_URL') {
+      if (
+        error.message.includes('REDIS_URL') ||
+        error.code === 'ERR_INVALID_URL'
+      ) {
         console.log(
           ' > Resumable streams are disabled due to Redis configuration error',
         );
@@ -91,6 +96,18 @@ export async function POST(request: Request) {
     }
 
     const userType: UserType = session.user.type;
+
+    // Try to fetch user's default persona but don't wait or block on failure
+    let defaultPersona = null;
+    try {
+      defaultPersona = await getDefaultUserPersona(session.user.id);
+    } catch (error) {
+      console.error(
+        'Failed to fetch default persona, using system defaults:',
+        error,
+      );
+      // Continue with null persona - the systemPrompt function will use defaults
+    }
 
     const messageCount = await getMessageCountByUserId({
       id: session.user.id,
@@ -162,12 +179,16 @@ export async function POST(request: Request) {
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({
+            selectedChatModel,
+            requestHints,
+            userPersona: defaultPersona,
+          }),
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning' || 
-            selectedChatModel === 'openai-reasoning' || 
+            selectedChatModel === 'chat-model-reasoning' ||
+            selectedChatModel === 'openai-reasoning' ||
             selectedChatModel === 'xai-grok3-mini'
               ? []
               : [

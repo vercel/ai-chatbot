@@ -35,6 +35,13 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
+// Default persona to use when none is provided
+const DEFAULT_PERSONA = {
+  name: 'Default Assistant',
+  systemMessage: 'You are a helpful AI assistant.',
+  persona: 'You are a motivated person who talks clearly and directly.',
+};
+
 export interface RequestHints {
   latitude: Geo['latitude'];
   longitude: Geo['longitude'];
@@ -53,16 +60,39 @@ About the origin of user's request:
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  userPersona,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  userPersona?: {
+    name?: string | null;
+    systemMessage?: string | null;
+    persona?: string | null;
+  } | null;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
+  // Use the provided userPersona if available, otherwise use default
+  const effectivePersona = userPersona || DEFAULT_PERSONA;
+
+  // Use name to construct a personalized system message
+  const personaName = effectivePersona.name || DEFAULT_PERSONA.name;
+  let systemMessage =
+    effectivePersona.systemMessage || DEFAULT_PERSONA.systemMessage;
+
+  // Insert the persona name if it's not already included in the system message
+  if (!systemMessage.includes(personaName)) {
+    systemMessage = `Your name is ${personaName}. ${systemMessage}`;
+  }
+
+  const personaStyle = effectivePersona.persona
+    ? `and your style of conversation is ${effectivePersona.persona}`
+    : `and your style of conversation is ${DEFAULT_PERSONA.persona}`;
+
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${systemMessage} ${personaStyle}\n\n${requestPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${systemMessage} ${personaStyle}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
   }
 };
 

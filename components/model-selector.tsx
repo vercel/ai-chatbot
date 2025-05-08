@@ -191,13 +191,6 @@ export function ModelSelector({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      
-      {/* Image generator indicator */}
-      {selectedChatModel && (
-        <div className="text-xs text-muted-foreground mt-1">
-          Using {selectedChatModel.provider === 'openai' ? 'DALL·E 3' : 'Grok-2 Image'} for image generation
-        </div>
-      )}
     </div>
   );
 }

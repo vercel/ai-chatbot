@@ -14,19 +14,26 @@ import {
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { hash } from 'bcrypt';
 
 import {
-  user,
   chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
   message,
+  messageDeprecated,
+  user,
   vote,
-  type DBMessage,
+  voteDeprecated,
+  document,
+  suggestion,
+  type User,
   type Chat,
   stream,
+  userPersona,
+  userSettings,
+  type UserPersona,
+  type UserSettings,
+  type DBMessage,
+  type Suggestion,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -508,4 +515,162 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     console.error('Failed to get stream ids by chat id from database');
     throw error;
   }
+}
+
+// User Persona Queries
+export async function getUserPersonas(userId: string): Promise<UserPersona[]> {
+  const persona = await db
+    .select()
+    .from(userPersona)
+    .where(eq(userPersona.userId, userId))
+    .limit(1);
+
+  return persona;
+}
+
+export async function getDefaultUserPersona(
+  userId: string,
+): Promise<UserPersona | null> {
+  const personas = await db
+    .select()
+    .from(userPersona)
+    .where(eq(userPersona.userId, userId))
+    .limit(1);
+
+  return personas.length > 0 ? personas[0] : null;
+}
+
+export async function createUserPersona(persona: {
+  userId: string;
+  name: string;
+  systemMessage?: string;
+  persona?: string;
+}): Promise<UserPersona[]> {
+  try {
+    const existingPersona = await getDefaultUserPersona(persona.userId);
+
+    if (existingPersona) {
+      return await db
+        .update(userPersona)
+        .set({
+          name: persona.name,
+          systemMessage: persona.systemMessage || null,
+          persona: persona.persona || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(userPersona.userId, persona.userId))
+        .returning();
+    }
+
+    return await db
+      .insert(userPersona)
+      .values({
+        userId: persona.userId,
+        name: persona.name,
+        systemMessage: persona.systemMessage || null,
+        persona: persona.persona || null,
+        isDefault: true,
+      })
+      .returning();
+  } catch (error) {
+    console.error('Failed to create user persona in database', error);
+    throw error;
+  }
+}
+
+export async function updateUserPersona(
+  id: string,
+  userId: string,
+  updates: {
+    name?: string;
+    systemMessage?: string;
+    persona?: string;
+  },
+): Promise<UserPersona[]> {
+  try {
+    return await db
+      .update(userPersona)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(userPersona.userId, userId))
+      .returning();
+  } catch (error) {
+    console.error('Failed to update user persona in database', error);
+    throw error;
+  }
+}
+
+export async function deleteUserPersona(
+  id: string,
+  userId: string,
+): Promise<void> {
+  console.log(
+    'Delete operation skipped - only one persona per user is supported',
+  );
+}
+
+// User Settings Queries
+export async function getUserSettings(
+  userId: string,
+): Promise<UserSettings | null> {
+  const settings = await db
+    .select()
+    .from(userSettings)
+    .where(eq(userSettings.userId, userId))
+    .limit(1);
+
+  return settings.length > 0 ? settings[0] : null;
+}
+
+export async function createOrUpdateUserSettings(
+  userId: string,
+  settings: {
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    frequencyPenalty?: number;
+    presencePenalty?: number;
+  },
+): Promise<UserSettings[]> {
+  // Check if settings already exist
+  const existingSettings = await getUserSettings(userId);
+
+  if (existingSettings) {
+    return await db
+      .update(userSettings)
+      .set({
+        ...settings,
+        updatedAt: new Date(),
+      })
+      .where(eq(userSettings.userId, userId))
+      .returning();
+  } else {
+    return await db
+      .insert(userSettings)
+      .values({
+        userId,
+        ...settings,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+  }
+}
+
+// Password Change Function
+export async function changeUserPassword(
+  userId: string,
+  newPassword: string,
+): Promise<User[]> {
+  const hashedPassword = await hash(newPassword, 10);
+
+  return await db
+    .update(user)
+    .set({
+      password: hashedPassword,
+    })
+    .where(eq(user.id, userId))
+    .returning();
 }

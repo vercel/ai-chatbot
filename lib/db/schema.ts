@@ -19,6 +19,32 @@ export const user = pgTable('User', {
 
 export type User = InferSelectModel<typeof user>;
 
+export const userPersona = pgTable('UserPersona', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId').notNull().references(() => user.id),
+  name: varchar('name', { length: 64 }).notNull(),
+  systemMessage: text('systemMessage'),
+  persona: text('persona'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  isDefault: boolean('isDefault').notNull().default(false),
+});
+
+export type UserPersona = InferSelectModel<typeof userPersona>;
+
+export const userSettings = pgTable('UserSettings', {
+  userId: uuid('userId').primaryKey().notNull().references(() => user.id),
+  temperature: json('temperature').notNull().default('0.7'),
+  maxTokens: json('maxTokens'),
+  topP: json('topP'),
+  frequencyPenalty: json('frequencyPenalty'),
+  presencePenalty: json('presencePenalty'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type UserSettings = InferSelectModel<typeof userSettings>;
+
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   createdAt: timestamp('createdAt').notNull(),
