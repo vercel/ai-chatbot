@@ -43,13 +43,23 @@ let globalStreamContext: ResumableStreamContext | null = null;
 function getStreamContext() {
   if (!globalStreamContext) {
     try {
+      // Check if REDIS_URL is properly configured
+      const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
+      if (!redisUrl || redisUrl.includes('SSS')) {
+        console.log(
+          ' > Resumable streams are disabled due to invalid Redis URL configuration',
+        );
+        return null;
+      }
+      
       globalStreamContext = createResumableStreamContext({
         waitUntil: after,
       });
     } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
+      console.error('Failed to initialize resumable streams:', error);
+      if (error.message.includes('REDIS_URL') || error.code === 'ERR_INVALID_URL') {
         console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
+          ' > Resumable streams are disabled due to Redis configuration error',
         );
       } else {
         console.error(error);
@@ -156,7 +166,9 @@ export async function POST(request: Request) {
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
+            selectedChatModel === 'chat-model-reasoning' || 
+            selectedChatModel === 'openai-reasoning' || 
+            selectedChatModel === 'xai-grok3-mini'
               ? []
               : [
                   'getWeather',
@@ -237,7 +249,8 @@ export async function POST(request: Request) {
     } else {
       return new Response(stream);
     }
-  } catch (_) {
+  } catch (error) {
+    console.error('Error processing request:', error);
     return new Response('An error occurred while processing your request!', {
       status: 500,
     });
