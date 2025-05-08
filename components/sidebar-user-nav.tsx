@@ -69,7 +69,7 @@ export function SidebarUserNav({ user }: { user: User }) {
           <DropdownMenuContent
             data-testid="user-nav-menu"
             side="top"
-            className="w-[--radix-popper-anchor-width]"
+            className="w-(--radix-popper-anchor-width)"
           >
             <DropdownMenuItem
               data-testid="user-nav-item-theme"
