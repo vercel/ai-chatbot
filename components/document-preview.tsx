@@ -11,7 +11,7 @@ import {
 import { ArtifactKind, UIArtifact } from './artifact';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
-import { Document } from '@/lib/api-client';
+import { Document } from '@/lib/api-client.types';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import useSWR, { mutate } from 'swr';
 import { Editor } from './text-editor';
@@ -176,7 +176,7 @@ const PureHitboxLayer = ({
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
-
+      debugger;
       setArtifact((artifact) =>
         artifact.status === 'streaming'
           ? { ...artifact, isVisible: true }
@@ -257,7 +257,6 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 
 const DocumentContent = ({ document }: { document: Document }) => {
   const { artifact } = useArtifact();
-
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
@@ -265,7 +264,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
       'p-0': document.kind === 'code',
     },
   );
-
+  // debugger;
   const commonProps = {
     content: document.content ?? '',
     isCurrentVersion: true,

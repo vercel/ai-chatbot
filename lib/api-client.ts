@@ -1,114 +1,16 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-
-// Types
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface Vote {
-  id: string;
-  chatId: string;
-  messageId: string;
-  reaction?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  organizationId: string;
-}
-
-export interface UpdateMeRequest {
-  name?: string;
-  email?: string;
-}
-
-export interface OrganizationRequest {
-  name: string;
-  description: string;
-  email?: string;
-  password?: string;
-}
-
-export interface ChatRequest {
-  message: string;
-}
-
-export interface MessageRequest {
-  chatId: string;
-  content: string;
-  role: 'user' | 'assistant';
-  organizationId: string;
-}
-
-export interface MessageReactionRequest {
-  messageId: string;
-  reaction: string;
-  organizationId: string;
-}
-
-export interface ShareChatRequest {
-  chatId: string;
-  sharedWithUserId: string;
-}
-
-export interface VoteRequest {
-  chatId: string;
-  messageId: string;
-  reaction?: string;
-}
-
-export interface DocumentRequest {
-  title: string;
-  content: string;
-  kind: string;
-}
-
-export interface SuggestionRequest {
-  suggestions: Array<{
-    content: string;
-    documentId: string;
-  }>;
-}
-
-export interface SuggestionStatusRequest {
-  status: string;
-}
-
-export interface Document {
-  id: string;
-  title: string;
-  content: string;
-  kind: string;
-  createdAt: string;
-  updatedAt: string;
-  userId?: string;
-  organizationId?: string;
-}
-
-export interface ApiError {
-  message: string;
-  status: number;
-}
-
-export interface ApiResponse<T = any> {
-  data: T;
-  message?: string;
-  status?: number;
-}
-
-export interface UpdateChatVisibilityRequest {
-  isVisible: boolean;
-}
-
-export interface PaginationParams {
-  page: number;
-  limit: number;
-  ending_before?: string;
-}
+import {
+  LoginRequest,
+  RegisterRequest,
+  OrganizationRequest,
+  ChatRequest,
+  MessageRequest,
+  ShareChatRequest,
+  DocumentRequest,
+  SuggestionRequest,
+  ApiError,
+  ApiResponse
+} from './api-client.types';
 
 export class ApiClient {
   private client: AxiosInstance;
@@ -195,7 +97,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateMe(data: UpdateMeRequest) {
+  async updateMe(data: { name?: string; email?: string }) {
     const response = await this.client.put('/api/auth/me', data);
     return response.data;
   }
@@ -232,7 +134,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async getPaginatedChats(params: PaginationParams) {
+  async getPaginatedChats(params: { page: number; limit: number; ending_before?: string }) {
     const response = await this.client.get('/api/chats/paginated', { params });
     return response.data;
   }
@@ -257,7 +159,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateChatVisibility(chatId: string, data: UpdateChatVisibilityRequest) {
+  async updateChatVisibility(chatId: string, data: { isVisible: boolean }) {
     const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
     return response.data;
   }
@@ -389,7 +291,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateSuggestionStatus(id: string, data: SuggestionStatusRequest) {
+  async updateSuggestionStatus(id: string, data: { status: string }) {
     const response = await this.client.patch(`/api/suggestions/${id}/status`, data);
     return response.data;
   }

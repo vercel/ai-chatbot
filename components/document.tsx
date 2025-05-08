@@ -30,7 +30,7 @@ interface DocumentToolResultProps {
 }
 
 function PureDocumentToolResult({
-  type,
+  type, 
   result,
   isReadonly,
 }: DocumentToolResultProps) {
