@@ -15,11 +15,14 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
   useSidebar,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { ProfileAutoOpener } from './profile-auto-opener';
+import { DatabaseIcon } from 'lucide-react';
 
 export function AppSidebar({ user }: { user?: User }) {
   const router = useRouter();
@@ -68,16 +71,28 @@ export function AppSidebar({ user }: { user?: User }) {
                 <TooltipContent align="end">New Chat</TooltipContent>
               </Tooltip>
             </div>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link
+                  href="/rag-test"
+                  onClick={() => {
+                    setOpenMobile(false);
+                  }}
+                >
+                  <DatabaseIcon className="mr-2" />
+                  <span>RAG Test</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
           <SidebarHistory user={user} />
         </SidebarContent>
-        <SidebarFooter>
-          {user && <SidebarUserNav user={user} />}
-        </SidebarFooter>
+        <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
       </Sidebar>
-      
+
       <ProfileAutoOpener />
     </>
   );

@@ -9,6 +9,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  customType,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -171,7 +172,7 @@ export type Vote = InferSelectModel<typeof vote>;
 export const document = pgTable(
   'Document',
   {
-    id: uuid('id').notNull().defaultRandom(),
+    id: uuid('id').notNull().defaultRandom().unique(),
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
@@ -246,3 +247,36 @@ export const systemSettings = pgTable('SystemSettings', {
 });
 
 export type SystemSettings = InferSelectModel<typeof systemSettings>;
+
+// Custom type for pgvector
+const vector = (name: string, dimensions: number) =>
+  customType<{ data: number[]; driverData: string }>({
+    dataType() {
+      return `vector(${dimensions})`;
+    },
+    toDriver(value: number[]): string {
+      return JSON.stringify(value);
+    },
+    fromDriver(value: string): number[] {
+      return JSON.parse(value);
+    },
+  })(name);
+
+// Resources table (can be an alias or re-evaluation of the existing Document table for RAG context)
+// For now, we'll assume the existing 'document' table serves as the 'resources' table.
+// If specific RAG resource fields are needed beyond what 'document' offers,
+// a new 'ragResource' table could be created.
+
+// Embeddings table to store text chunks and their vector embeddings
+export const embeddings = pgTable('Embeddings', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  resourceId: uuid('resourceId') // Assuming 'document.id' is uuid
+    .notNull()
+    .references(() => document.id, { onDelete: 'cascade' }), // Link to the 'document' table
+  content: text('content').notNull(), // The actual text chunk
+  embedding: vector('embedding', 1536).notNull(), // For OpenAI text-embedding-ada-002 (1536 dimensions)
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Embedding = InferSelectModel<typeof embeddings>;
