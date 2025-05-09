@@ -24,112 +24,114 @@ import { toast } from './toast';
 import { LoaderIcon } from './icons';
 import { guestRegex } from '@/lib/constants';
 import { ProfileDialog } from './profile-dialog';
+import { AdminDialog } from './admin-dialog';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
-  const { data, status } = useSession();
+  const { data: session } = useSession();
   const { setTheme, theme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const isGuest = user?.email ? guestRegex.test(user.email) : false;
+  const isAdmin = user?.role === 'admin';
 
-  const isGuest = guestRegex.test(data?.user?.email ?? '');
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      await signOut({
+        callbackUrl: '/login',
+        redirect: false,
+      });
+      router.push('/login');
+    } catch (error) {
+      setIsSigningOut(false);
+      toast({
+        type: 'error',
+        description: `Error signing out: ${String(error)}`,
+      });
+    }
+  };
 
   return (
     <>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              {status === 'loading' ? (
-                <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10 justify-between">
-                  <div className="flex flex-row gap-2">
-                    <div className="size-6 bg-zinc-500/30 rounded-full animate-pulse" />
-                    <span className="bg-zinc-500/30 text-transparent rounded-md animate-pulse">
-                      Loading auth status
-                    </span>
-                  </div>
-                  <div className="animate-spin text-zinc-500">
-                    <LoaderIcon />
-                  </div>
-                </SidebarMenuButton>
-              ) : (
-                <SidebarMenuButton
-                  data-testid="user-nav-button"
-                  className="data-[state=open]:bg-sidebar-accent bg-background data-[state=open]:text-sidebar-accent-foreground h-10"
-                >
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuButton data-testid="user-nav-button" className="h-10">
+            <div className="flex items-center gap-2">
+              {user?.image ? (
+                <div className="relative w-6 h-6 overflow-hidden rounded-full">
                   <Image
-                    src={`https://avatar.vercel.sh/${user.email}`}
-                    alt={user.email ?? 'User Avatar'}
                     width={24}
                     height={24}
-                    className="rounded-full"
+                    alt="User avatar"
+                    src={user.image}
+                    className="object-cover rounded-full"
                   />
-                  <span data-testid="user-email" className="truncate">
-                    {isGuest ? 'Guest' : user?.email}
-                  </span>
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
+                </div>
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-primary/10" />
               )}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              data-testid="user-nav-menu"
-              side="top"
-              className="w-[--radix-popper-anchor-width]"
+              <span className="truncate max-w-32">
+                {user?.name || user?.email?.split('@')[0]}
+              </span>
+            </div>
+            <ChevronUp className="w-4 h-4 ml-auto" />
+          </SidebarMenuButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          {isAdmin && (
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => setIsAdminOpen(true)}
             >
-              <DropdownMenuItem
-                data-testid="user-nav-item-theme"
-                className="cursor-pointer"
-                onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              >
-                {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
-              </DropdownMenuItem>
-              
-              {!isGuest && (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onSelect={() => setIsProfileOpen(true)}
-                >
-                  Profile Settings
-                </DropdownMenuItem>
-              )}
-              
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild data-testid="user-nav-item-auth">
-                <button
-                  type="button"
-                  className="w-full cursor-pointer"
-                  onClick={() => {
-                    if (status === 'loading') {
-                      toast({
-                        type: 'error',
-                        description:
-                          'Checking authentication status, please try again!',
-                      });
+              Admin Dashboard
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setIsProfileOpen(true)}
+          >
+            Profile Settings
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="cursor-pointer flex items-center gap-2"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? 'Light' : 'Dark'} Theme
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            disabled={isSigningOut || isGuest}
+            onClick={handleSignOut}
+            className="cursor-pointer"
+          >
+            {isSigningOut ? (
+              <div className="flex items-center gap-2">
+                <LoaderIcon />
+                <span>Signing Out</span>
+              </div>
+            ) : (
+              'Sign Out'
+            )}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-                      return;
-                    }
+      {/* Profile Dialog */}
+      <ProfileDialog
+        user={user}
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+      />
 
-                    if (isGuest) {
-                      router.push('/login');
-                    } else {
-                      signOut({
-                        redirectTo: '/',
-                      });
-                    }
-                  }}
-                >
-                  {isGuest ? 'Login to your account' : 'Sign out'}
-                </button>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </SidebarMenuItem>
-      </SidebarMenu>
-
-      {!isGuest && data?.user && (
-        <ProfileDialog 
-          user={data.user} 
-          isOpen={isProfileOpen} 
-          onClose={() => setIsProfileOpen(false)} 
+      {/* Admin Dialog - Only shown for admin users */}
+      {isAdmin && (
+        <AdminDialog
+          user={user}
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
         />
       )}
     </>

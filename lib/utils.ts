@@ -77,3 +77,35 @@ export function getTrailingMessageId({
 export function sanitizeText(text: string) {
   return text.replace('<has_function_call>', '');
 }
+
+/**
+ * Generates a random password with the specified length
+ * @param length The length of the password to generate
+ * @returns A randomly generated password
+ */
+export function generateRandomPassword(length: number): string {
+  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+  const numberChars = '0123456789';
+  const specialChars = '!@#$%^&*()-_=+';
+
+  const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
+
+  // Ensure at least one character from each category
+  let password =
+    uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length)) +
+    lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length)) +
+    numberChars.charAt(Math.floor(Math.random() * numberChars.length)) +
+    specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+
+  // Add remaining random characters
+  for (let i = 4; i < length; i++) {
+    password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+  }
+
+  // Shuffle the password
+  return password
+    .split('')
+    .sort(() => Math.random() - 0.5)
+    .join('');
+}

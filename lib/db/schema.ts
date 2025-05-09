@@ -15,13 +15,50 @@ export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  role: varchar('role', { enum: ['user', 'admin'] })
+    .notNull()
+    .default('user'),
 });
 
 export type User = InferSelectModel<typeof user>;
 
+// Provider table to store API configurations for different providers
+export const provider = pgTable('Provider', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  name: varchar('name', { length: 64 }).notNull(),
+  slug: varchar('slug', { length: 64 }).notNull().unique(),
+  apiKey: text('apiKey'),
+  baseUrl: text('baseUrl'),
+  enabled: boolean('enabled').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Provider = InferSelectModel<typeof provider>;
+
+// Provider Model table to store models for each provider
+export const providerModel = pgTable('ProviderModel', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  providerId: uuid('providerId')
+    .notNull()
+    .references(() => provider.id),
+  name: varchar('name', { length: 128 }).notNull(),
+  modelId: varchar('modelId', { length: 128 }).notNull(),
+  isChat: boolean('isChat').notNull().default(true),
+  isImage: boolean('isImage').notNull().default(false),
+  enabled: boolean('enabled').notNull().default(true),
+  config: json('config'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ProviderModel = InferSelectModel<typeof providerModel>;
+
 export const userPersona = pgTable('UserPersona', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
-  userId: uuid('userId').notNull().references(() => user.id),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
   name: varchar('name', { length: 64 }).notNull(),
   systemMessage: text('systemMessage'),
   persona: text('persona'),
@@ -33,7 +70,10 @@ export const userPersona = pgTable('UserPersona', {
 export type UserPersona = InferSelectModel<typeof userPersona>;
 
 export const userSettings = pgTable('UserSettings', {
-  userId: uuid('userId').primaryKey().notNull().references(() => user.id),
+  userId: uuid('userId')
+    .primaryKey()
+    .notNull()
+    .references(() => user.id),
   temperature: json('temperature').notNull().default('0.7'),
   maxTokens: json('maxTokens'),
   topP: json('topP'),
@@ -194,3 +234,14 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// Add systemSettings table to store global application settings
+export const systemSettings = pgTable('SystemSettings', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  allowGuestUsers: boolean('allowGuestUsers').notNull().default(true),
+  allowRegistration: boolean('allowRegistration').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type SystemSettings = InferSelectModel<typeof systemSettings>;

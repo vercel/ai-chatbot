@@ -14,15 +14,13 @@ import {
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { hash } from 'bcrypt';
+import { hash } from 'bcrypt-ts';
 
 import {
   chat,
   message,
-  messageDeprecated,
   user,
   vote,
-  voteDeprecated,
   document,
   suggestion,
   type User,
@@ -34,6 +32,10 @@ import {
   type UserSettings,
   type DBMessage,
   type Suggestion,
+  provider,
+  providerModel,
+  systemSettings,
+  type SystemSettings,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -673,4 +675,191 @@ export async function changeUserPassword(
     })
     .where(eq(user.id, userId))
     .returning();
+}
+
+export async function getUsers() {
+  return await db.select().from(user);
+}
+
+export async function updateUserRole(userId: string, role: 'user' | 'admin') {
+  return await db.update(user).set({ role }).where(eq(user.id, userId));
+}
+
+export async function deleteUser(userId: string) {
+  // Delete all user-related data
+  await db.delete(chat).where(eq(chat.userId, userId));
+  await db.delete(userPersona).where(eq(userPersona.userId, userId));
+  await db.delete(userSettings).where(eq(userSettings.userId, userId));
+
+  // Finally delete the user
+  return await db.delete(user).where(eq(user.id, userId));
+}
+
+// For providers
+export async function getProviders() {
+  return await db.select().from(provider);
+}
+
+export async function getProviderById(providerId: string) {
+  const providers = await db
+    .select()
+    .from(provider)
+    .where(eq(provider.id, providerId));
+
+  return providers[0];
+}
+
+export async function getProviderBySlug(slug: string) {
+  const providers = await db
+    .select()
+    .from(provider)
+    .where(eq(provider.slug, slug));
+
+  return providers[0];
+}
+
+export async function updateProvider(
+  providerId: string,
+  data: { name?: string; apiKey?: string; baseUrl?: string; enabled?: boolean },
+) {
+  return await db.update(provider).set(data).where(eq(provider.id, providerId));
+}
+
+export async function createProvider(
+  name: string,
+  slug: string,
+  apiKey?: string,
+  baseUrl?: string,
+  enabled = true,
+) {
+  const providers = await db
+    .insert(provider)
+    .values({
+      name,
+      slug,
+      apiKey,
+      baseUrl,
+      enabled,
+    })
+    .returning();
+
+  return providers[0];
+}
+
+// For provider models
+export async function getProviderModels(providerId: string) {
+  return await db
+    .select()
+    .from(providerModel)
+    .where(eq(providerModel.providerId, providerId));
+}
+
+export async function getEnabledChatModels() {
+  return await db
+    .select()
+    .from(providerModel)
+    .where(
+      and(eq(providerModel.enabled, true), eq(providerModel.isChat, true)),
+    );
+}
+
+export async function getEnabledImageModels() {
+  return await db
+    .select()
+    .from(providerModel)
+    .where(
+      and(eq(providerModel.enabled, true), eq(providerModel.isImage, true)),
+    );
+}
+
+export async function updateProviderModel(
+  modelId: string,
+  data: { name?: string; modelId?: string; enabled?: boolean; config?: any },
+) {
+  return await db
+    .update(providerModel)
+    .set(data)
+    .where(eq(providerModel.id, modelId));
+}
+
+export async function createProviderModel(
+  providerId: string,
+  name: string,
+  modelIdStr: string,
+  isChat = true,
+  isImage = false,
+  enabled = true,
+  config?: any,
+) {
+  const models = await db
+    .insert(providerModel)
+    .values({
+      providerId,
+      name,
+      modelId: modelIdStr,
+      isChat,
+      isImage,
+      enabled,
+      config,
+    })
+    .returning();
+
+  return models[0];
+}
+
+// System Settings functions
+export async function getSystemSettings(): Promise<SystemSettings | null> {
+  try {
+    const settings = await db.select().from(systemSettings).limit(1);
+
+    return settings.length > 0 ? settings[0] : null;
+  } catch (error) {
+    console.error('Failed to get system settings:', error);
+    throw error;
+  }
+}
+
+export async function updateSystemSettings(updates: {
+  allowGuestUsers?: boolean;
+  allowRegistration?: boolean;
+}): Promise<SystemSettings[]> {
+  try {
+    // Get the current settings record or create one if it doesn't exist
+    const currentSettings = await getSystemSettings();
+
+    if (!currentSettings) {
+      // Create a new settings record
+      return await db
+        .insert(systemSettings)
+        .values({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .returning();
+    }
+
+    // Update the existing settings record
+    return await db
+      .update(systemSettings)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(systemSettings.id, currentSettings.id))
+      .returning();
+  } catch (error) {
+    console.error('Failed to update system settings:', error);
+    throw error;
+  }
+}
+
+// Function to check if guest users are allowed
+export async function isGuestAccessAllowed(): Promise<boolean> {
+  try {
+    const settings = await getSystemSettings();
+    return settings?.allowGuestUsers ?? true; // Default to true if no settings exist
+  } catch (error) {
+    console.error('Failed to check if guest access is allowed:', error);
+    return true; // Default to true in case of error
+  }
 }

@@ -28,37 +28,67 @@ const MOCK_SETTINGS: ModelSettings = {
 
 const settingsFormSchema = z.object({
   temperature: z.coerce.number().min(0).max(2),
-  maxTokens: z.coerce.number().positive().int().optional(),
-  topP: z.coerce.number().min(0).max(1).optional(),
-  frequencyPenalty: z.coerce.number().min(-2).max(2).optional(),
-  presencePenalty: z.coerce.number().min(-2).max(2).optional(),
+  maxTokens: z.coerce.number().positive().int().optional().or(z.literal('')),
+  topP: z.coerce.number().min(0).max(1).optional().or(z.literal('')),
+  frequencyPenalty: z.coerce
+    .number()
+    .min(-2)
+    .max(2)
+    .optional()
+    .or(z.literal('')),
+  presencePenalty: z.coerce
+    .number()
+    .min(-2)
+    .max(2)
+    .optional()
+    .or(z.literal('')),
 });
 
-type SettingsForm = z.infer<typeof settingsFormSchema>;
+type SettingsFormRaw = z.infer<typeof settingsFormSchema>;
+
+// Interface for the processed form data
+interface SettingsForm {
+  temperature: number;
+  maxTokens?: number;
+  topP?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+}
 
 export function ProfileSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [useMockData, setUseMockData] = useState(false);
 
-  const { 
-    register, 
-    handleSubmit, 
+  const {
+    register,
+    handleSubmit,
     formState: { errors },
     reset,
     setValue,
-    watch
-  } = useForm<SettingsForm>({
+    watch,
+  } = useForm<SettingsFormRaw>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
       temperature: 0.7,
-      maxTokens: undefined,
-      topP: undefined,
-      frequencyPenalty: undefined,
-      presencePenalty: undefined,
+      maxTokens: '',
+      topP: '',
+      frequencyPenalty: '',
+      presencePenalty: '',
     },
   });
-  
+
   const temperatureValue = watch('temperature');
+
+  // Helper function to format temperature value
+  const formatTemperature = (value: any): string => {
+    if (typeof value === 'number') {
+      return value.toFixed(1);
+    } else if (typeof value === 'string') {
+      const parsed = Number.parseFloat(value);
+      return Number.isNaN(parsed) ? '0.7' : parsed.toFixed(1);
+    }
+    return '0.7';
+  };
 
   // Fetch user settings on component mount
   useEffect(() => {
@@ -69,19 +99,36 @@ export function ProfileSettings() {
     setIsLoading(true);
     try {
       const response = await fetch('/api/profile/settings');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch settings');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.settings) {
         // Update form with existing settings
         Object.entries(data.settings).forEach(([key, value]) => {
-          if (value !== null && key !== 'userId' && key !== 'createdAt' && key !== 'updatedAt') {
-            // @ts-ignore - dynamically setting form values
-            setValue(key, value);
+          if (
+            value !== null &&
+            key !== 'userId' &&
+            key !== 'createdAt' &&
+            key !== 'updatedAt'
+          ) {
+            // Convert temperature to number if it's a string or other type
+            if (key === 'temperature' && value !== undefined) {
+              const temperatureValue =
+                typeof value === 'number'
+                  ? value
+                  : Number.parseFloat(String(value));
+              setValue(
+                'temperature',
+                Number.isNaN(temperatureValue) ? 0.7 : temperatureValue,
+              );
+            } else if (value !== undefined) {
+              // @ts-ignore - dynamically setting form values
+              setValue(key, value);
+            }
           }
         });
       }
@@ -92,8 +139,20 @@ export function ProfileSettings() {
       setUseMockData(true);
       Object.entries(MOCK_SETTINGS).forEach(([key, value]) => {
         if (value !== null) {
-          // @ts-ignore - dynamically setting form values
-          setValue(key, value);
+          // Convert temperature to number if needed
+          if (key === 'temperature' && value !== undefined) {
+            const temperatureValue =
+              typeof value === 'number'
+                ? value
+                : Number.parseFloat(String(value));
+            setValue(
+              'temperature',
+              Number.isNaN(temperatureValue) ? 0.7 : temperatureValue,
+            );
+          } else if (value !== undefined) {
+            // @ts-ignore - dynamically setting form values
+            setValue(key, value);
+          }
         }
       });
       toast({
@@ -105,8 +164,47 @@ export function ProfileSettings() {
     }
   }
 
-  async function onSubmit(data: SettingsForm) {
+  async function onSubmit(rawData: SettingsFormRaw) {
     setIsLoading(true);
+
+    // Convert raw form data to clean data by removing empty strings
+    const data: SettingsForm = {
+      temperature:
+        typeof rawData.temperature === 'number'
+          ? rawData.temperature
+          : Number.parseFloat(String(rawData.temperature)) || 0.7,
+    };
+
+    // Convert optional fields, omitting empty strings
+    if (rawData.maxTokens && rawData.maxTokens !== '') {
+      const value =
+        typeof rawData.maxTokens === 'string'
+          ? Number(rawData.maxTokens)
+          : rawData.maxTokens;
+      data.maxTokens = value;
+    }
+
+    if (rawData.topP && rawData.topP !== '') {
+      const value =
+        typeof rawData.topP === 'string' ? Number(rawData.topP) : rawData.topP;
+      data.topP = value;
+    }
+
+    if (rawData.frequencyPenalty && rawData.frequencyPenalty !== '') {
+      const value =
+        typeof rawData.frequencyPenalty === 'string'
+          ? Number(rawData.frequencyPenalty)
+          : rawData.frequencyPenalty;
+      data.frequencyPenalty = value;
+    }
+
+    if (rawData.presencePenalty && rawData.presencePenalty !== '') {
+      const value =
+        typeof rawData.presencePenalty === 'string'
+          ? Number(rawData.presencePenalty)
+          : rawData.presencePenalty;
+      data.presencePenalty = value;
+    }
 
     if (useMockData) {
       // Mock update
@@ -141,7 +239,8 @@ export function ProfileSettings() {
       console.error('Error updating settings:', error);
       toast({
         type: 'error',
-        description: error instanceof Error ? error.message : 'Failed to update settings',
+        description:
+          error instanceof Error ? error.message : 'Failed to update settings',
       });
     } finally {
       setIsLoading(false);
@@ -158,12 +257,16 @@ export function ProfileSettings() {
           </div>
         )}
       </div>
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="temperature">Temperature: {temperatureValue?.toFixed(1) || 0.7}</Label>
-            <span className="text-xs text-muted-foreground">Creativity level (0-2)</span>
+            <Label htmlFor="temperature">
+              Temperature: {formatTemperature(temperatureValue)}
+            </Label>
+            <span className="text-xs text-muted-foreground">
+              Creativity level (0-2)
+            </span>
           </div>
           <Input
             id="temperature"
@@ -182,7 +285,9 @@ export function ProfileSettings() {
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="maxTokens">Max Tokens</Label>
-            <span className="text-xs text-muted-foreground">Maximum response length</span>
+            <span className="text-xs text-muted-foreground">
+              Maximum response length
+            </span>
           </div>
           <Input
             id="maxTokens"
@@ -199,7 +304,9 @@ export function ProfileSettings() {
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="topP">Top P</Label>
-            <span className="text-xs text-muted-foreground">Token sampling probability (0-1)</span>
+            <span className="text-xs text-muted-foreground">
+              Token sampling probability (0-1)
+            </span>
           </div>
           <Input
             id="topP"
@@ -219,7 +326,9 @@ export function ProfileSettings() {
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="frequencyPenalty">Frequency Penalty</Label>
-            <span className="text-xs text-muted-foreground">Repetition reduction (-2 to 2)</span>
+            <span className="text-xs text-muted-foreground">
+              Repetition reduction (-2 to 2)
+            </span>
           </div>
           <Input
             id="frequencyPenalty"
@@ -232,14 +341,18 @@ export function ProfileSettings() {
             {...register('frequencyPenalty')}
           />
           {errors.frequencyPenalty && (
-            <p className="text-sm text-red-500">{errors.frequencyPenalty.message}</p>
+            <p className="text-sm text-red-500">
+              {errors.frequencyPenalty.message}
+            </p>
           )}
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="presencePenalty">Presence Penalty</Label>
-            <span className="text-xs text-muted-foreground">Topic freshness (-2 to 2)</span>
+            <span className="text-xs text-muted-foreground">
+              Topic freshness (-2 to 2)
+            </span>
           </div>
           <Input
             id="presencePenalty"
@@ -252,7 +365,9 @@ export function ProfileSettings() {
             {...register('presencePenalty')}
           />
           {errors.presencePenalty && (
-            <p className="text-sm text-red-500">{errors.presencePenalty.message}</p>
+            <p className="text-sm text-red-500">
+              {errors.presencePenalty.message}
+            </p>
           )}
         </div>
 
@@ -262,4 +377,4 @@ export function ProfileSettings() {
       </form>
     </div>
   );
-} 
+}
