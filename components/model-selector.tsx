@@ -1,6 +1,12 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState, useEffect } from 'react';
+import {
+  startTransition,
+  useMemo,
+  useOptimistic,
+  useState,
+  useEffect,
+} from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -12,7 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels, type ChatModel } from '@/lib/ai/models';
+import {
+  chatModels,
+  type ChatModel,
+  PROVIDERS,
+  type Provider,
+} from '@/lib/ai/client-models';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
@@ -25,10 +36,7 @@ interface ProviderData {
 }
 
 interface ModelsResponse {
-  providers: {
-    openai: ProviderData;
-    xai: ProviderData;
-  };
+  providers: Record<Provider | string, ProviderData>;
   error: string | null;
 }
 
@@ -45,37 +53,57 @@ export function ModelSelector({
     useOptimistic(selectedModelId);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [providersData, setProvidersData] = useState<Record<string, ProviderData> | null>(null);
+  const [providersData, setProvidersData] = useState<Record<
+    string,
+    ProviderData
+  > | null>(null);
 
-  // Fetch models from API
-  useEffect(() => {
-    async function fetchModels() {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch('/api/models');
-        
-        if (!response.ok) {
-          throw new Error(`API responded with status ${response.status}`);
-        }
-        
-        const data: ModelsResponse = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        
-        setProvidersData(data.providers);
-      } catch (err: any) {
-        console.error('Failed to fetch models:', err);
-        setError(err.message || 'Failed to load models');
-      } finally {
-        setIsLoading(false);
+  // Function to fetch models from API
+  const fetchModels = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/chat/models');
+
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
       }
+
+      const data: ModelsResponse = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setProvidersData(data.providers);
+      console.log('Fetched models:', data.providers);
+    } catch (err: any) {
+      console.error('Failed to fetch models:', err);
+      setError(err.message || 'Failed to load models');
+    } finally {
+      setIsLoading(false);
     }
-    
+  };
+
+  // Initial fetch
+  useEffect(() => {
     fetchModels();
+  }, []);
+
+  // Listen for model updates from admin panel
+  useEffect(() => {
+    const handleModelUpdate = (event: Event) => {
+      console.log('Model update detected, refreshing models list');
+      fetchModels();
+    };
+
+    // Listen for the new models-updated event
+    window.addEventListener('models-updated', handleModelUpdate);
+
+    return () => {
+      window.removeEventListener('models-updated', handleModelUpdate);
+    };
   }, []);
 
   const userType = session.user.type;
@@ -85,53 +113,81 @@ export function ModelSelector({
   const availableModels = useMemo(() => {
     if (providersData) {
       // Flatten all models from all providers
-      const allModels = Object.values(providersData).flatMap(provider => provider.models);
-      // Filter by user's entitlements
-      return allModels.filter(model => availableChatModelIds.includes(model.id));
+      const allModels = Object.values(providersData).flatMap(
+        (provider) => provider.models,
+      );
+
+      console.log('Models from API:', allModels);
+      console.log('Allowed model IDs:', availableChatModelIds);
+
+      // More lenient filtering - if the model id partially matches an allowed id
+      // This helps with format differences between provider-modelname and the entitlements
+      return allModels.filter((model) => {
+        // Check exact match first (e.g., 'openai-gpt4o')
+        if (availableChatModelIds.includes(model.id)) {
+          return true;
+        }
+
+        // Then check if the model.id starts with a generic provider pattern (e.g., 'anthropic-')
+        return availableChatModelIds.some((allowedIdPattern) => {
+          if (allowedIdPattern.endsWith('-')) {
+            // This identifies a generic provider pattern
+            return model.id.startsWith(allowedIdPattern);
+          }
+          return false; // Not a generic pattern, already handled by exact match
+        });
+      });
     } else {
       // Fall back to static list
-      return chatModels.filter(model => availableChatModelIds.includes(model.id));
+      return chatModels.filter((model) =>
+        availableChatModelIds.includes(model.id),
+      );
     }
   }, [providersData, availableChatModelIds]);
 
   // Group models by provider
   const modelsByProvider = useMemo(() => {
     if (providersData) {
-      const result: Record<string, { name: string, models: ChatModel[] }> = {};
-      
+      const result: Record<string, { name: string; models: ChatModel[] }> = {};
+
       // Initialize with empty arrays for each provider
-      Object.keys(providersData).forEach(providerId => {
-        result[providerId] = { 
+      Object.keys(providersData).forEach((providerId) => {
+        result[providerId] = {
           name: providersData[providerId].name,
-          models: []
+          models: [],
         };
       });
-      
+
       // Populate with available models
-      availableModels.forEach(model => {
+      availableModels.forEach((model) => {
         if (result[model.provider]) {
           result[model.provider].models.push(model);
         }
       });
-      
+
       return result;
     } else {
       // Fall back to static grouping
-      const grouped: Record<string, { name: string, models: ChatModel[] }> = {
-        openai: { name: 'OpenAI', models: [] },
-        xai: { name: 'xAI', models: [] }
+      const grouped: Record<string, { name: string; models: ChatModel[] }> = {
+        [PROVIDERS.OPENAI]: { name: 'OpenAI', models: [] },
+        [PROVIDERS.XAI]: { name: 'xAI', models: [] },
+        [PROVIDERS.ANTHROPIC]: { name: 'Anthropic', models: [] },
+        [PROVIDERS.GOOGLE]: { name: 'Google', models: [] },
+        [PROVIDERS.MISTRAL]: { name: 'Mistral', models: [] },
+        [PROVIDERS.GROQ]: { name: 'Groq', models: [] },
+        [PROVIDERS.COHERE]: { name: 'Cohere', models: [] },
       };
-      
-      availableModels.forEach(model => {
+
+      availableModels.forEach((model) => {
         grouped[model.provider].models.push(model);
       });
-      
+
       return grouped;
     }
   }, [providersData, availableModels]);
 
   const selectedChatModel = useMemo(
-    () => availableModels.find(model => model.id === optimisticModelId),
+    () => availableModels.find((model) => model.id === optimisticModelId),
     [optimisticModelId, availableModels],
   );
 
@@ -151,7 +207,9 @@ export function ModelSelector({
             className="md:px-2 md:h-[34px]"
             disabled={isLoading}
           >
-            {isLoading ? 'Loading models...' : selectedChatModel?.name || 'Select model'}
+            {isLoading
+              ? 'Loading models...'
+              : selectedChatModel?.name || 'Select model'}
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
@@ -161,33 +219,44 @@ export function ModelSelector({
               Error loading models: {error}
             </div>
           ) : isLoading ? (
-            <div className="p-2 text-sm text-muted-foreground">Loading available models...</div>
+            <div className="p-2 text-sm text-muted-foreground">
+              Loading available models...
+            </div>
+          ) : Object.keys(modelsByProvider).length === 0 ||
+            Object.values(modelsByProvider).every(
+              (provider) => provider.models.length === 0,
+            ) ? (
+            <div className="p-2 text-sm text-muted-foreground">
+              No models available. Please check admin settings.
+            </div>
           ) : (
             // Render providers and their models
-            Object.entries(modelsByProvider).map(([providerId, { name, models }]) => {
-              if (models.length === 0) return null;
-              
-              return (
-                <div key={providerId}>
-                  <DropdownMenuLabel>{name}</DropdownMenuLabel>
-                  {models.map(model => (
-                    <ModelMenuItem 
-                      key={model.id}
-                      chatModel={model}
-                      isSelected={model.id === optimisticModelId}
-                      onSelect={() => {
-                        setOpen(false);
-                        startTransition(() => {
-                          setOptimisticModelId(model.id);
-                          saveChatModelAsCookie(model.id);
-                        });
-                      }}
-                    />
-                  ))}
-                  <DropdownMenuSeparator />
-                </div>
-              );
-            })
+            Object.entries(modelsByProvider).map(
+              ([providerId, { name, models }]) => {
+                if (models.length === 0) return null;
+
+                return (
+                  <div key={providerId}>
+                    <DropdownMenuLabel>{name}</DropdownMenuLabel>
+                    {models.map((model) => (
+                      <ModelMenuItem
+                        key={model.id}
+                        chatModel={model}
+                        isSelected={model.id === optimisticModelId}
+                        onSelect={() => {
+                          setOpen(false);
+                          startTransition(() => {
+                            setOptimisticModelId(model.id);
+                            saveChatModelAsCookie(model.id);
+                          });
+                        }}
+                      />
+                    ))}
+                    <DropdownMenuSeparator />
+                  </div>
+                );
+              },
+            )
           )}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -196,37 +265,26 @@ export function ModelSelector({
 }
 
 // Helper component for model menu items
-function ModelMenuItem({ 
-  chatModel, 
-  isSelected, 
-  onSelect 
-}: { 
+function ModelMenuItem({
+  chatModel,
+  isSelected,
+  onSelect,
+}: {
   chatModel: ChatModel;
   isSelected: boolean;
   onSelect: () => void;
 }) {
+  // Use the exact model ID for selection and comparison
   return (
     <DropdownMenuItem
-      data-testid={`model-selector-item-${chatModel.id}`}
-      onSelect={onSelect}
-      data-active={isSelected}
-      asChild
+      key={chatModel.id}
+      onClick={onSelect}
+      className="flex items-center gap-2 justify-between"
     >
-      <button
-        type="button"
-        className="gap-4 group/item flex flex-row justify-between items-center w-full"
-      >
-        <div className="flex flex-col gap-1 items-start">
-          <div>{chatModel.name}</div>
-          <div className="text-xs text-muted-foreground">
-            {chatModel.description}
-          </div>
-        </div>
-
-        <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-          <CheckCircleFillIcon />
-        </div>
-      </button>
+      <span className="font-medium">{chatModel.name}</span>
+      {isSelected ? (
+        <CheckCircleFillIcon size={16} className="text-primary" />
+      ) : null}
     </DropdownMenuItem>
   );
 }

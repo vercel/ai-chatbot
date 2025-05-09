@@ -14,6 +14,7 @@ async function isAdmin() {
 interface SettingsResponse {
   allowGuestUsers: boolean;
   allowRegistration: boolean;
+  braveSearchApiKey?: string | null;
   [key: string]: any;
 }
 
@@ -86,12 +87,14 @@ export async function PUT(request: Request) {
       );
     }
 
-    const { allowGuestUsers, allowRegistration } = await request.json();
+    const { allowGuestUsers, allowRegistration, braveSearchApiKey } =
+      await request.json();
 
     // Validate inputs
     if (
       typeof allowGuestUsers !== 'boolean' ||
-      typeof allowRegistration !== 'boolean'
+      typeof allowRegistration !== 'boolean' ||
+      (braveSearchApiKey !== undefined && typeof braveSearchApiKey !== 'string')
     ) {
       return NextResponse.json({ error: 'Invalid settings' }, { status: 400 });
     }
@@ -100,6 +103,7 @@ export async function PUT(request: Request) {
     const updatedSettings = await updateSystemSettings({
       allowGuestUsers,
       allowRegistration,
+      braveSearchApiKey,
     });
 
     // Create response with updated settings

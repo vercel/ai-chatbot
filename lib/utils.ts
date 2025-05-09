@@ -109,3 +109,23 @@ export function generateRandomPassword(length: number): string {
     .sort(() => Math.random() - 0.5)
     .join('');
 }
+
+/**
+ * Gets the absolute URL for an API endpoint
+ * Works in both client and server contexts
+ */
+export function getAbsoluteUrl(path: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+  // Remove trailing slash from baseUrl if it exists
+  const formattedBaseUrl = baseUrl.endsWith('/')
+    ? baseUrl.slice(0, -1)
+    : baseUrl;
+
+  // Ensure path starts with a slash
+  const formattedPath = path.startsWith('/') ? path : `/${path}`;
+
+  return `${formattedBaseUrl}${formattedPath}`;
+}

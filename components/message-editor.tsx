@@ -1,11 +1,12 @@
 'use client';
 
-import { ChatRequestOptions, Message } from 'ai';
+import type { Message } from 'ai';
 import { Button } from './ui/button';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Textarea } from './ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 export type MessageEditorProps = {
   message: Message;
@@ -28,6 +29,7 @@ export function MessageEditor({
   useEffect(() => {
     if (textareaRef.current) {
       adjustHeight();
+      textareaRef.current.focus();
     }
   }, []);
 
@@ -43,6 +45,47 @@ export function MessageEditor({
     adjustHeight();
   };
 
+  const handleSubmit = async () => {
+    if (isSubmitting || !draftContent.trim()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Skip the deleteTrailingMessages call as it requires chatId from DB
+      // We'll just update the UI state directly
+
+      // @ts-expect-error todo: support UIMessage in setMessages
+      setMessages((messages) => {
+        const index = messages.findIndex((m) => m.id === message.id);
+
+        if (index !== -1) {
+          const updatedMessage = {
+            ...message,
+            content: draftContent,
+            parts: [{ type: 'text', text: draftContent }],
+          };
+
+          return [...messages.slice(0, index), updatedMessage];
+        }
+
+        return messages;
+      });
+
+      setMode('view');
+      reload();
+    } catch (error) {
+      console.error('Error updating message:', error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey && !isSubmitting) {
+      event.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2 w-full">
       <Textarea
@@ -51,6 +94,7 @@ export function MessageEditor({
         className="bg-transparent outline-none overflow-hidden resize-none !text-base rounded-xl w-full"
         value={draftContent}
         onChange={handleInput}
+        onKeyDown={handleKeyDown}
       />
 
       <div className="flex flex-row gap-2 justify-end">
@@ -68,33 +112,7 @@ export function MessageEditor({
           variant="default"
           className="h-fit py-2 px-3"
           disabled={isSubmitting}
-          onClick={async () => {
-            setIsSubmitting(true);
-
-            await deleteTrailingMessages({
-              id: message.id,
-            });
-
-            // @ts-expect-error todo: support UIMessage in setMessages
-            setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
-
-              if (index !== -1) {
-                const updatedMessage = {
-                  ...message,
-                  content: draftContent,
-                  parts: [{ type: 'text', text: draftContent }],
-                };
-
-                return [...messages.slice(0, index), updatedMessage];
-              }
-
-              return messages;
-            });
-
-            setMode('view');
-            reload();
-          }}
+          onClick={handleSubmit}
         >
           {isSubmitting ? 'Sending...' : 'Send'}
         </Button>

@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { SearchResults } from './search-results';
 
 const PurePreviewMessage = ({
   chatId,
@@ -183,6 +184,10 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'braveSearch' ? (
+                        <div className="animate-pulse text-sm">
+                          Searching for information about "{args.query}"...
+                        </div>
                       ) : null}
                     </div>
                   );
@@ -211,6 +216,12 @@ const PurePreviewMessage = ({
                           type="request-suggestions"
                           result={result}
                           isReadonly={isReadonly}
+                        />
+                      ) : toolName === 'braveSearch' ? (
+                        <SearchResults
+                          results={result.results}
+                          query={result.query}
+                          error={result.error}
                         />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>

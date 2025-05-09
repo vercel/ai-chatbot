@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/toast';
-import { LoaderIcon, PlusIcon } from 'lucide-react';
+import { LoaderIcon, PlusIcon, AlertCircleIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type ProviderModel = {
   id: string;
@@ -33,20 +34,22 @@ type Provider = {
   slug: string;
 };
 
+type AvailableModel = {
+  id: string;
+  name: string;
+  type: string;
+  existingModelId?: string;
+  enabled?: boolean;
+  uniqueId?: string; // To handle duplicate model IDs
+};
+
 export function AdminModels() {
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [modelsByProvider, setModelsByProvider] = useState<
-    Record<string, ProviderModel[]>
-  >({});
+  const [allModels, setAllModels] = useState<AvailableModel[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newModel, setNewModel] = useState({
-    name: '',
-    modelId: '',
-    isChat: true,
-    isImage: false,
-  });
 
   useEffect(() => {
     fetchProviders();
@@ -60,7 +63,7 @@ export function AdminModels() {
 
   useEffect(() => {
     if (selectedProvider) {
-      fetchModels(selectedProvider);
+      refreshAvailableModels();
     }
   }, [selectedProvider]);
 
@@ -86,58 +89,99 @@ export function AdminModels() {
     }
   };
 
-  const fetchModels = async (providerId: string) => {
-    try {
-      const response = await fetch(`/admin/api/providers/${providerId}/models`);
+  const fetchAvailableModels = async (providerId: string) => {
+    const currentProvider = providers.find((p) => p.id === providerId);
+    if (!currentProvider) {
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch models');
+    try {
+      setApiKeyError(null);
+      const response = await fetch(
+        `/admin/api/providers/${providerId}/available-models`,
+      );
+      const data = await response.json();
+
+      // Always continue to display models even with errors
+      if (data.error) {
+        console.error('Error fetching available models:', data.error);
+        setApiKeyError(data.error);
       }
 
-      const data = await response.json();
-      setModelsByProvider((prev) => ({
-        ...prev,
-        [providerId]: data,
-      }));
+      // Even with errors, we should still have models from the database
+      if (data.models?.length > 0) {
+        // Add a unique ID to each model for React key
+        const modelsWithUniqueIds = data.models.map(
+          (model: AvailableModel, index: number) => ({
+            ...model,
+            uniqueId: `model-${model.id}-${index}`,
+          }),
+        );
+
+        setAllModels(modelsWithUniqueIds);
+      } else {
+        setAllModels([]);
+      }
     } catch (error) {
-      console.error('Error fetching models:', error);
+      console.error('Error fetching available models:', error);
       toast({
         type: 'error',
-        description: 'Failed to load models. Please try again.',
+        description: 'Connection error while fetching models.',
       });
+
+      // Set an error message but don't block UI
+      setApiKeyError(
+        'Connection error while fetching models. Please check network and try again.',
+      );
     }
   };
 
-  const handleToggleEnabled = async (modelId: string, enabled: boolean) => {
+  const toggleModelEnabled = async (model: AvailableModel) => {
     try {
-      const response = await fetch(`/admin/api/providers/models/${modelId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ enabled }),
-      });
+      // All models should now have existingModelId since they're in the database
+      if (model.existingModelId) {
+        const response = await fetch(
+          `/admin/api/providers/models/${model.existingModelId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              enabled: !model.enabled,
+            }),
+          },
+        );
 
-      if (!response.ok) {
-        throw new Error('Failed to update model');
+        if (!response.ok) {
+          throw new Error('Failed to update model');
+        }
+      } else {
+        console.error('Model is missing existingModelId', model);
+        throw new Error('Cannot update model: Missing ID');
       }
 
       // Update local state
-      if (selectedProvider) {
-        setModelsByProvider((prev) => ({
-          ...prev,
-          [selectedProvider]: prev[selectedProvider].map((model) =>
-            model.id === modelId ? { ...model, enabled } : model,
-          ),
-        }));
-      }
+      setAllModels((prev) =>
+        prev.map((m) =>
+          m.uniqueId === model.uniqueId ? { ...m, enabled: !m.enabled } : m,
+        ),
+      );
+
+      // Dispatch a custom event to notify other components that models have changed
+      const event = new CustomEvent('models-updated', {
+        detail: { providerId: selectedProvider },
+      });
+      window.dispatchEvent(event);
 
       toast({
         type: 'success',
-        description: 'Model updated successfully.',
+        description: `${model.name} has been ${
+          model.enabled ? 'disabled' : 'enabled'
+        }.`,
       });
     } catch (error) {
-      console.error('Error updating model:', error);
+      console.error('Error toggling model enabled:', error);
       toast({
         type: 'error',
         description: 'Failed to update model. Please try again.',
@@ -145,51 +189,12 @@ export function AdminModels() {
     }
   };
 
-  const handleCreateModel = async () => {
-    if (!selectedProvider) return;
-
-    try {
-      const response = await fetch(
-        `/admin/api/providers/${selectedProvider}/models`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newModel),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to create model');
-      }
-
-      const createdModel = await response.json();
-
-      // Update local state
-      setModelsByProvider((prev) => ({
-        ...prev,
-        [selectedProvider]: [...(prev[selectedProvider] || []), createdModel],
-      }));
-
-      // Reset form and close dialog
-      setNewModel({
-        name: '',
-        modelId: '',
-        isChat: true,
-        isImage: false,
-      });
-      setIsDialogOpen(false);
-
-      toast({
-        type: 'success',
-        description: 'Model created successfully.',
-      });
-    } catch (error) {
-      console.error('Error creating model:', error);
-      toast({
-        type: 'error',
-        description: 'Failed to create model. Please try again.',
+  const refreshAvailableModels = () => {
+    if (selectedProvider) {
+      setIsLoadingModels(true);
+      setApiKeyError(null);
+      fetchAvailableModels(selectedProvider).finally(() => {
+        setIsLoadingModels(false);
       });
     }
   };
@@ -202,9 +207,6 @@ export function AdminModels() {
     );
   }
 
-  const currentModels = selectedProvider
-    ? modelsByProvider[selectedProvider] || []
-    : [];
   const currentProvider = providers.find((p) => p.id === selectedProvider);
 
   return (
@@ -223,34 +225,75 @@ export function AdminModels() {
               </option>
             ))}
           </select>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Model
-          </Button>
+          {selectedProvider && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshAvailableModels}
+              disabled={isLoadingModels}
+            >
+              {isLoadingModels ? (
+                <LoaderIcon className="h-4 w-4 mr-1" />
+              ) : (
+                'Refresh Models'
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
-      {currentModels.length === 0 ? (
+      {apiKeyError && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded relative mb-4 flex items-center">
+          <AlertCircleIcon className="h-5 w-5 mr-2" />
+          <div>
+            <p>{apiKeyError}</p>
+            <p className="text-sm">
+              {apiKeyError.includes('API key')
+                ? 'This is normal for providers that use predefined model lists. You can still enable the default models or configure an API key in the Providers tab.'
+                : 'You can still enable/disable existing models.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isLoadingModels ? (
+        <div className="flex items-center justify-center h-64">
+          <LoaderIcon className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading models...</span>
+        </div>
+      ) : allModels.length === 0 ? (
         <div className="bg-muted text-muted-foreground rounded-md p-8 text-center">
-          No models configured for {currentProvider?.name}
+          <div className="mb-4">
+            {apiKeyError ? (
+              <p>No models available due to error: {apiKeyError}</p>
+            ) : (
+              <p>No models available for {currentProvider?.name}</p>
+            )}
+          </div>
+          <p className="text-sm">
+            {apiKeyError?.includes('API key')
+              ? 'Please configure API keys in the Providers tab and try again.'
+              : 'Try refreshing the models list or check the provider configuration.'}
+          </p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {currentModels.map((model) => (
-            <Card key={model.id}>
+          {allModels.map((model) => (
+            <Card key={model.uniqueId || `${model.id}-${Math.random()}`}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{model.name}</CardTitle>
                   <div className="flex items-center space-x-2">
-                    <Label htmlFor={`enable-${model.id}`} className="text-sm">
+                    <Label
+                      htmlFor={`enable-${model.uniqueId}`}
+                      className="text-sm"
+                    >
                       Enable
                     </Label>
                     <Switch
-                      id={`enable-${model.id}`}
-                      checked={model.enabled}
-                      onCheckedChange={(checked) =>
-                        handleToggleEnabled(model.id, checked)
-                      }
+                      id={`enable-${model.uniqueId}`}
+                      checked={!!model.enabled}
+                      onCheckedChange={() => toggleModelEnabled(model)}
                     />
                   </div>
                 </div>
@@ -258,16 +301,20 @@ export function AdminModels() {
               <CardContent className="space-y-2">
                 <div className="text-sm">
                   <span className="font-medium">Model ID: </span>
-                  {model.modelId}
+                  {model.id}
                 </div>
                 <div className="flex space-x-4 text-sm">
                   <span>
-                    <span className="font-medium">Chat: </span>
-                    {model.isChat ? 'Yes' : 'No'}
+                    <span className="font-medium">Type: </span>
+                    {model.type === 'chat'
+                      ? 'Chat'
+                      : model.type === 'image'
+                        ? 'Image'
+                        : 'Other'}
                   </span>
                   <span>
-                    <span className="font-medium">Image: </span>
-                    {model.isImage ? 'Yes' : 'No'}
+                    <span className="font-medium">Status: </span>
+                    {model.existingModelId ? 'Configured' : 'Available'}
                   </span>
                 </div>
               </CardContent>
@@ -275,67 +322,6 @@ export function AdminModels() {
           ))}
         </div>
       )}
-
-      {/* Add Model Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Model</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="model-name">Model Name</Label>
-              <Input
-                id="model-name"
-                value={newModel.name}
-                onChange={(e) =>
-                  setNewModel({ ...newModel, name: e.target.value })
-                }
-                placeholder="e.g., GPT-4o"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="model-id">Model ID</Label>
-              <Input
-                id="model-id"
-                value={newModel.modelId}
-                onChange={(e) =>
-                  setNewModel({ ...newModel, modelId: e.target.value })
-                }
-                placeholder="e.g., gpt-4o"
-              />
-            </div>
-            <div className="flex space-x-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is-chat"
-                  checked={newModel.isChat}
-                  onCheckedChange={(checked) =>
-                    setNewModel({ ...newModel, isChat: checked })
-                  }
-                />
-                <Label htmlFor="is-chat">Chat Model</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is-image"
-                  checked={newModel.isImage}
-                  onCheckedChange={(checked) =>
-                    setNewModel({ ...newModel, isImage: checked })
-                  }
-                />
-                <Label htmlFor="is-image">Image Model</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateModel}>Create</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

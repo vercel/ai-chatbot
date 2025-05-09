@@ -9,28 +9,15 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import { LoaderIcon } from 'lucide-react';
 
-// Dynamic imports to avoid TypeScript errors
-import dynamic from 'next/dynamic';
-
-const AdminDashboard = dynamic(() =>
-  import('./admin/admin-dashboard').then((mod) => ({
-    default: mod.AdminDashboard,
-  })),
-);
-const AdminUsers = dynamic(() =>
-  import('./admin/admin-users').then((mod) => ({ default: mod.AdminUsers })),
-);
-const AdminProviders = dynamic(() =>
-  import('./admin/admin-providers').then((mod) => ({
-    default: mod.AdminProviders,
-  })),
-);
-const AdminSettings = dynamic(() =>
-  import('./admin/admin-settings').then((mod) => ({
-    default: mod.AdminSettings,
-  })),
-);
+// Import admin components directly instead of using dynamic imports
+// This avoids chunk loading errors
+import { AdminDashboard } from './admin/admin-dashboard';
+import { AdminUsers } from './admin/admin-users';
+import { AdminProviders } from './admin/admin-providers';
+import { AdminSettings } from './admin/admin-settings';
 
 interface AdminDialogProps {
   user: User;
@@ -39,6 +26,12 @@ interface AdminDialogProps {
 }
 
 export function AdminDialog({ user, isOpen, onClose }: AdminDialogProps) {
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
@@ -50,7 +43,11 @@ export function AdminDialog({ user, isOpen, onClose }: AdminDialogProps) {
         </DialogHeader>
 
         <div className="py-4">
-          <Tabs defaultValue="dashboard" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>

@@ -13,17 +13,20 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/toast';
 import { LoaderIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface SystemSettings {
   id?: string;
   allowGuestUsers: boolean;
   allowRegistration: boolean;
+  braveSearchApiKey?: string;
 }
 
 export function AdminSettings() {
   const [settings, setSettings] = useState<SystemSettings>({
     allowGuestUsers: true,
     allowRegistration: true,
+    braveSearchApiKey: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -98,6 +101,13 @@ export function AdminSettings() {
     setHasChanges(true);
   };
 
+  const handleBraveSearchApiKeyChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setSettings({ ...settings, braveSearchApiKey: e.target.value });
+    setHasChanges(true);
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -162,6 +172,53 @@ export function AdminSettings() {
           )}
         </CardContent>
       </Card>
+
+      {!isLoading && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Web Search Settings</CardTitle>
+            <CardDescription>
+              Configure the Brave Search integration for web search capabilities
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="brave-search-api-key">Brave Search API Key</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                API key for Brave Search integration. Get yours at{' '}
+                <a
+                  href="https://brave.com/search/api/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  https://brave.com/search/api/
+                </a>
+              </p>
+              <Input
+                id="brave-search-api-key"
+                type="password"
+                placeholder="Enter your Brave Search API key"
+                value={settings.braveSearchApiKey || ''}
+                onChange={handleBraveSearchApiKeyChange}
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={saveSettings} disabled={isSaving || !hasChanges}>
+                {isSaving ? (
+                  <>
+                    <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

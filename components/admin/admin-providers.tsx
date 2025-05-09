@@ -7,9 +7,10 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/toast';
-import { LoaderIcon } from 'lucide-react';
+import { LoaderIcon, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminModels } from './admin-models';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type Provider = {
   id: string;
@@ -18,6 +19,7 @@ type Provider = {
   apiKey: string | null;
   baseUrl: string | null;
   enabled: boolean;
+  fromEnv?: boolean;
 };
 
 export function AdminProviders() {
@@ -52,6 +54,18 @@ export function AdminProviders() {
 
   const updateProvider = async (id: string, updates: Partial<Provider>) => {
     try {
+      const provider = providers.find((p) => p.id === id);
+      if (
+        provider?.fromEnv &&
+        (updates.apiKey !== undefined || updates.baseUrl !== undefined)
+      ) {
+        toast({
+          type: 'error',
+          description: `${provider.name} is configured via environment variables. Please remove the API key from your .env file first.`,
+        });
+        return;
+      }
+
       const response = await fetch(`/admin/api/providers/${id}`, {
         method: 'PATCH',
         headers: {
@@ -64,7 +78,6 @@ export function AdminProviders() {
         throw new Error('Failed to update provider');
       }
 
-      // Update local state
       setProviders(
         providers.map((provider) =>
           provider.id === id ? { ...provider, ...updates } : provider,
@@ -149,6 +162,17 @@ export function AdminProviders() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {provider.fromEnv && (
+                      <Alert variant="destructive" className="mb-4">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        <AlertDescription>
+                          This provider is configured via environment variables.
+                          To use the configuration below, remove the API key
+                          from your .env file.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <div className="space-y-2">
                       <Label htmlFor={`apikey-${provider.id}`}>API Key</Label>
                       <Input
@@ -158,7 +182,13 @@ export function AdminProviders() {
                         onChange={(e) =>
                           handleApiKeyChange(provider.id, e.target.value)
                         }
-                        placeholder="Enter API key"
+                        placeholder={
+                          provider.fromEnv
+                            ? 'Using API key from environment variables'
+                            : 'Enter API key'
+                        }
+                        disabled={provider.fromEnv}
+                        className={provider.fromEnv ? 'bg-muted' : ''}
                       />
                     </div>
 
@@ -173,7 +203,13 @@ export function AdminProviders() {
                           onChange={(e) =>
                             handleBaseUrlChange(provider.id, e.target.value)
                           }
-                          placeholder="Enter base URL (optional)"
+                          placeholder={
+                            provider.fromEnv
+                              ? 'Using base URL from environment variables'
+                              : 'Enter base URL (optional)'
+                          }
+                          disabled={provider.fromEnv}
+                          className={provider.fromEnv ? 'bg-muted' : ''}
                         />
                       </div>
                     )}

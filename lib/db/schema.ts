@@ -240,6 +240,7 @@ export const systemSettings = pgTable('SystemSettings', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   allowGuestUsers: boolean('allowGuestUsers').notNull().default(true),
   allowRegistration: boolean('allowRegistration').notNull().default(true),
+  braveSearchApiKey: text('braveSearchApiKey'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });

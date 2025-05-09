@@ -28,7 +28,7 @@ export async function GET(
       );
     }
 
-    const providerId = params.id;
+    const { id: providerId } = await params;
     const provider = await getProviderById(providerId);
 
     if (!provider) {
@@ -63,7 +63,7 @@ export async function POST(
       );
     }
 
-    const providerId = params.id;
+    const { id: providerId } = await params;
     const provider = await getProviderById(providerId);
 
     if (!provider) {
