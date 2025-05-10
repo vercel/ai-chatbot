@@ -1,12 +1,11 @@
-import type { NextConfig } from 'next';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-const nextConfig: NextConfig = {
+/**
+ * @type {import('next').NextConfig}
+ */
+const nextConfig = {
   experimental: {
     // ppr: true,
+    serverComponentsExternalPackages: ['bcrypt', 'postgres'],
   },
-  serverExternalPackages: ['bcrypt', 'postgres'],
   images: {
     remotePatterns: [
       {
@@ -22,12 +21,13 @@ const nextConfig: NextConfig = {
       fs: false,
       net: false,
       tls: false,
-      'perf_hooks': false,
+      _http_common: false,
+      perf_hooks: false,
       'mock-aws-s3': false,
-      'nock': false,
+      nock: false,
     };
     return config;
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

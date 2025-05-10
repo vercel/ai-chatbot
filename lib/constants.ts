@@ -10,4 +10,7 @@ export const isTestEnvironment = Boolean(
 
 export const guestRegex = /^guest-\d+$/;
 
-export const DUMMY_PASSWORD = generateDummyPassword();
+export const DUMMY_PASSWORD =
+  typeof window === 'undefined'
+    ? generateDummyPassword()
+    : 'dummy_edge_password_placeholder';
