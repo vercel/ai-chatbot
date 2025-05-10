@@ -69,18 +69,30 @@ export async function getProviderConfig(providerSlug: string) {
   }
 }
 
+// Type for image models
+type ImageModel = (prompt: string, options?: any) => any;
+
 // Dynamically construct the imageModels object for customProvider
 const registeredImageModels: Record<string, any> = {};
 
-if (clientImageModels[PROVIDERS.OPENAI] && openai.image) {
-  registeredImageModels[clientImageModels[PROVIDERS.OPENAI].id] = openai.image(
-    clientImageModels[PROVIDERS.OPENAI].modelId,
-  );
+// Check if the AI SDK models include image generation capability
+if (
+  clientImageModels[PROVIDERS.OPENAI] &&
+  typeof openai === 'function' &&
+  'image' in openai
+) {
+  registeredImageModels[clientImageModels[PROVIDERS.OPENAI].id] = (
+    openai as any
+  ).image(clientImageModels[PROVIDERS.OPENAI].modelId);
 }
-if (clientImageModels[PROVIDERS.XAI] && xai.image) {
-  registeredImageModels[clientImageModels[PROVIDERS.XAI].id] = xai.image(
-    clientImageModels[PROVIDERS.XAI].modelId,
-  );
+if (
+  clientImageModels[PROVIDERS.XAI] &&
+  typeof xai === 'function' &&
+  'image' in xai
+) {
+  registeredImageModels[clientImageModels[PROVIDERS.XAI].id] = (
+    xai as any
+  ).image(clientImageModels[PROVIDERS.XAI].modelId);
 }
 // Google image generation is typically part of a multimodal generateText call,
 // not a separate .image() model like OpenAI/XAI via the core AI SDK customProvider structure.
@@ -154,16 +166,26 @@ export const myProvider = isTestEnvironment
 
 // This helper function might need to be updated or deprecated if image model selection
 // is handled directly by selecting from `myProvider.imageModels` based on UI choice.
-export function getImageModelForProvider(
-  provider: 'openai' | 'xai' | 'google',
-) {
-  if (provider === PROVIDERS.OPENAI && clientImageModels[PROVIDERS.OPENAI]) {
+export function getImageModelForProvider(provider: string) {
+  // Normalize the provider string
+  const normalizedProvider = provider.toLowerCase();
+
+  if (
+    normalizedProvider === PROVIDERS.OPENAI &&
+    clientImageModels[PROVIDERS.OPENAI]
+  ) {
     return clientImageModels[PROVIDERS.OPENAI].id;
   }
-  if (provider === PROVIDERS.XAI && clientImageModels[PROVIDERS.XAI]) {
+  if (
+    normalizedProvider === PROVIDERS.XAI &&
+    clientImageModels[PROVIDERS.XAI]
+  ) {
     return clientImageModels[PROVIDERS.XAI].id;
   }
-  if (provider === PROVIDERS.GOOGLE && clientImageModels[PROVIDERS.GOOGLE]) {
+  if (
+    normalizedProvider === PROVIDERS.GOOGLE &&
+    clientImageModels[PROVIDERS.GOOGLE]
+  ) {
     return clientImageModels[PROVIDERS.GOOGLE].id;
   }
   console.warn(

@@ -1,8 +1,16 @@
 import { sql } from 'drizzle-orm';
-import { db } from '../index';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 
 export async function addBraveSearchApiKeyToSystemSettings() {
   try {
+    if (!process.env.POSTGRES_URL) {
+      throw new Error('POSTGRES_URL is not defined');
+    }
+
+    const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
+    const db = drizzle(connection);
+
     console.log('Adding braveSearchApiKey column to SystemSettings table...');
     
     // Check if the column already exists before trying to add it
@@ -25,6 +33,9 @@ export async function addBraveSearchApiKeyToSystemSettings() {
     } else {
       console.log('Column braveSearchApiKey already exists in SystemSettings table');
     }
+    
+    // Close the connection
+    await connection.end();
     
     return true;
   } catch (error) {

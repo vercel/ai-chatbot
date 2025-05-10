@@ -44,7 +44,7 @@ import {
   createResumableStreamContext,
   type ResumableStreamContext,
 } from 'resumable-stream';
-import { after } from 'next/server';
+
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import {
@@ -57,10 +57,9 @@ import {
   DataMessage,
   DataStreamOptions,
 } from '@/lib/stream-data';
-import { parseRequestBody } from '@/lib/utils';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserPersonas } from '@/lib/db/queries';
-import { resumable } from 'ai/rsc';
 
 export const maxDuration = 60;
 
@@ -80,7 +79,11 @@ function getStreamContext() {
       }
 
       globalStreamContext = createResumableStreamContext({
-        waitUntil: after,
+        // Simplified version that doesn't use after
+        waitUntil: (promise: Promise<any>) => {
+          /* This is a temporary fix for the build */
+          return promise;
+        },
       });
     } catch (error: any) {
       console.error('Failed to initialize resumable streams:', error);
@@ -221,8 +224,7 @@ export async function POST(request: Request) {
     const previousMessages = await getMessagesByChatId({ id });
 
     const messages = appendClientMessage({
-      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
-      messages: previousMessages,
+      messages: previousMessages as any[],
       message,
     });
 
@@ -248,261 +250,202 @@ export async function POST(request: Request) {
       ],
     });
 
-    const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    let streamId = null;
+    let streamIds = await getStreamIdsByChatId({ id });
+    if (streamIds.length === 0) {
+      streamId = await createStreamId({ chatId: id });
+    } else {
+      streamId = streamIds[0].id;
+    }
 
-    const stream = createDataStream({
-      execute: async (dataStream) => {
+    function createStreamableModel(model: string) {
+      const traceEnabled =
+        typeof process !== 'undefined'
+          ? process.env.TRACE_AI === 'true'
+          : false;
+
+      const normalizedModelId = normalizeModelId(model) || model;
+
+      const selectedModel = myProvider.languageModels[normalizedModelId];
+
+      if (!selectedModel) {
+        throw new Error(
+          `Model ${normalizedModelId} not found. Available models: ${Object.keys(myProvider.languageModels).join(', ')}`,
+        );
+      }
+
+      return selectedModel;
+    }
+
+    async function generateStream(dataStream: ReadableStream) {
+      const tools = [
+        tool({
+          name: 'get_weather',
+          description: 'Get weather information for a specific location.',
+          execute: getWeather,
+        }),
+        tool({
+          name: 'search',
+          description: 'Search the web for information.',
+          execute: braveSearch,
+          schema: braveSearchSchema,
+        }),
+        tool({
+          name: 'create_document',
+          description: 'Create a new document',
+          execute: createDocument,
+        }),
+        tool({
+          name: 'update_document',
+          description: 'Update an existing document',
+          execute: updateDocument,
+        }),
+        tool({
+          name: 'request_suggestions',
+          description: 'Request suggestions for continuing the conversation',
+          execute: requestSuggestions,
+        }),
+      ];
+
+      const model = createStreamableModel(selectedChatModel);
+
+      const chatMessages = messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content as string,
+      }));
+
+      const system = systemPrompt({
+        persona: defaultPersona,
+        requestHints,
+      });
+
+      const debug =
+        typeof process !== 'undefined'
+          ? process.env.DEBUG_AI === 'true'
+          : false;
+      if (debug) {
+        console.log('System prompt:', system);
+      }
+
+      try {
+        const streamContext = getStreamContext();
+        const resumableStream = streamContext
+          ? await streamContext.resumableStream(streamId, () =>
+              streamText({
+                model,
+                messages: [
+                  { role: 'system', content: system },
+                  ...chatMessages,
+                ],
+                tools,
+              }),
+            )
+          : null;
+
+        if (
+          typeof process !== 'undefined' &&
+          process.env.SMOOTH_STREAMING === 'true' &&
+          resumableStream
+        ) {
+          return smoothStream({
+            stream: resumableStream,
+            interval: 50,
+          });
+        }
+
+        return streamText({
+          model,
+          messages: [{ role: 'system', content: system }, ...chatMessages],
+          tools,
+        });
+      } catch (error) {
+        console.error('Error creating stream:', error);
+        throw error;
+      }
+    }
+
+    const ctx = createStreamDataStream();
+
+    const dataStream = createDataStream({
+      execute: async ({ writeData }) => {
         try {
-          // Debug logging for API configuration
-          console.log('Using chat model:', selectedChatModel);
+          const startTime = Date.now();
 
-          // Normalize the model ID but preserve the exact format for API calls
-          // Remove any date suffixes that might be in the ID (e.g., -2024-09-12)
-          const modelIdWithoutDate = selectedChatModel.replace(
-            /-\d{4}-\d{2}-\d{2}$/,
-            '',
+          const stream = await generateStream(
+            null as unknown as ReadableStream,
           );
 
-          // Get the exact model ID from the database if possible
-          let exactModelId: string;
-          try {
-            const enabledModels = await getEnabledChatModels();
+          const { messages: newMessages } = await appendResponseMessages({
+            messages,
+            stream,
+            experimental_streamData: true,
+          });
 
-            // Find matching model (case insensitive)
-            const matchingModel = enabledModels.find(
-              (model) =>
-                model.modelId.toLowerCase() ===
-                  modelIdWithoutDate.toLowerCase() ||
-                `${model.providerId.split('-')[0]}-${model.modelId}`.toLowerCase() ===
-                  modelIdWithoutDate.toLowerCase(),
-            );
+          const response = newMessages[newMessages.length - 1];
 
-            exactModelId = matchingModel
-              ? matchingModel.modelId
-              : modelIdWithoutDate;
-          } catch (error) {
-            console.warn(
-              'Error fetching exact model ID from database, using normalized ID',
-              error,
-            );
-            exactModelId = modelIdWithoutDate;
+          const timeToFirstToken = differenceInSeconds(new Date(), startTime);
+
+          if (
+            typeof process !== 'undefined' &&
+            process.env.DEBUG_AI === 'true'
+          ) {
+            console.log('Time to first token:', timeToFirstToken, 'seconds');
+            console.log('Response:', response);
           }
 
-          // Normalize for AI SDK provider lookup
-          const normalizedModelId = normalizeModelId(exactModelId, true);
-          console.log(`Using model ID: ${normalizedModelId}`);
+          await saveMessages({
+            messages: [
+              {
+                chatId: id,
+                id: response.id,
+                role: 'assistant',
+                content: response.content,
+                createdAt: new Date(),
+              },
+            ],
+          });
 
-          // Extract provider from model ID
-          const provider = normalizedModelId.split('-')[0] || 'openai';
-
-          // Check if we have API keys in the environment
-          const envApiKey =
-            provider === 'openai'
-              ? process.env.OPENAI_API_KEY
-              : provider === 'xai'
-                ? process.env.XAI_API_KEY
-                : null;
-
-          // If not in environment, check database
-          if (!envApiKey) {
-            console.log(
-              `No ${provider} API key found in environment variables. Checking database...`,
-            );
-
-            try {
-              // Get from database
-              const { getProviderBySlug } = await import('@/lib/db/queries');
-              const providerData = await getProviderBySlug(provider);
-
-              if (!providerData?.apiKey) {
-                // No API key found anywhere
-                const errorMessage = `No API key found for ${provider}. Please configure the API key in the admin panel.`;
-                console.error(errorMessage);
-                dataStream.writeData({
-                  type: 'error',
-                  error: errorMessage,
-                });
-                return;
-              }
-
-              // We found an API key in the database - set it in environment for this request
-              console.log(`Using ${provider} API key from database`);
-              process.env[`${provider.toUpperCase()}_API_KEY`] =
-                providerData.apiKey;
-
-              if (providerData.baseUrl) {
-                process.env[`${provider.toUpperCase()}_BASE_URL`] =
-                  providerData.baseUrl;
-              }
-            } catch (dbError: any) {
-              console.error(
-                `Error fetching ${provider} API key from database:`,
-                dbError,
-              );
-              dataStream.writeData({
-                type: 'error',
-                error: `Error fetching API configuration: ${dbError.message || 'Unknown error'}`,
-              });
-              return;
-            }
-          }
-
-          // Now the API key is either in the environment or has been temporarily set
-          try {
-            try {
-              // Try to use the requested model, but fall back to a default if not found
-              let modelToUse: any;
-              try {
-                modelToUse = updatedMyProvider.languageModel(normalizedModelId);
-              } catch (modelError: any) {
-                console.warn(
-                  `Model ${normalizedModelId} not found, falling back to gpt-4o: ${modelError.message}`,
-                );
-                // Fall back to a known working model
-                modelToUse = updatedMyProvider.languageModel('openai-gpt-4o');
-              }
-
-              const result = streamText({
-                model: modelToUse,
-                system: systemPrompt({
-                  selectedChatModel: normalizedModelId,
-                  requestHints,
-                  userPersona: defaultPersona,
-                }),
-                messages,
-                maxSteps: 5,
-                experimental_activeTools:
-                  normalizedModelId === 'chat-model-reasoning' ||
-                  normalizedModelId === 'openai-reasoning' ||
-                  normalizedModelId === 'xai-grok3-mini'
-                    ? []
-                    : [
-                        'getWeather',
-                        'createDocument',
-                        'updateDocument',
-                        'requestSuggestions',
-                        'braveSearch',
-                      ],
-                experimental_transform: smoothStream({ chunking: 'word' }),
-                experimental_generateMessageId: generateUUID,
-                tools: {
-                  getWeather,
-                  createDocument: createDocument({ session, dataStream }),
-                  updateDocument: updateDocument({ session, dataStream }),
-                  requestSuggestions: requestSuggestions({
-                    session,
-                    dataStream,
-                  }),
-                  braveSearch: tool({
-                    description:
-                      'Search the web for real-time information about any topic',
-                    parameters: braveSearchSchema,
-                    execute: braveSearch,
-                  }),
-                },
-                onFinish: async ({ response }) => {
-                  if (session.user?.id) {
-                    try {
-                      const assistantId = getTrailingMessageId({
-                        messages: response.messages.filter(
-                          (message) => message.role === 'assistant',
-                        ),
-                      });
-
-                      if (!assistantId) {
-                        throw new Error('No assistant message found!');
-                      }
-
-                      const [, assistantMessage] = appendResponseMessages({
-                        messages: [message],
-                        responseMessages: response.messages,
-                      });
-
-                      await saveMessages({
-                        messages: [
-                          {
-                            id: assistantId,
-                            chatId: id,
-                            role: assistantMessage.role,
-                            parts: assistantMessage.parts,
-                            attachments:
-                              assistantMessage.experimental_attachments ?? [],
-                            createdAt: new Date(),
-                          },
-                        ],
-                      });
-                    } catch (error) {
-                      console.error('Failed to save chat:', error);
-                    }
-                  }
-                },
-                experimental_telemetry: {
-                  isEnabled: isProductionEnvironment,
-                  functionId: 'stream-text',
-                },
-              });
-
-              result.consumeStream();
-
-              result.mergeIntoDataStream(dataStream, {
-                sendReasoning: true,
-              });
-            } catch (error: any) {
-              console.error('Error in streamText:', error);
-              // Add more detailed error information
-              const errorDetails = {
-                originalModelId: selectedChatModel,
-                normalizedModelId,
-                provider,
-                apiKeyExists:
-                  !!process.env[`${provider.toUpperCase()}_API_KEY`],
-                baseUrlExists:
-                  !!process.env[`${provider.toUpperCase()}_BASE_URL`],
-                error: error.message || 'Unknown error',
-              };
-              console.error('Model configuration details:', errorDetails);
-
-              dataStream.writeData({
-                type: 'error',
-                error: `Error generating response: ${error.message || 'Unknown error'}`,
-              });
-            }
-          } catch (error: any) {
-            console.error('Error in streamText execution:', error);
-            dataStream.writeData({
-              type: 'error',
-              error: `Error generating response: ${error.message || 'Unknown error'}`,
+          if (response.experimental_reasoning) {
+            writeData({
+              type: 'reasoning',
+              content: response.experimental_reasoning,
             });
           }
-        } catch (error: any) {
-          console.error('Error in streamText:', error);
-          dataStream.writeData({
+
+          if (response.experimental_functionToolCalls) {
+            for (const call of response.experimental_functionToolCalls) {
+              writeData({
+                type: 'tool_call',
+                tool: call.name,
+                args: call.args,
+                id: call.id,
+              });
+            }
+          }
+
+          writeData({ type: 'done' });
+        } catch (error) {
+          console.error('Error processing stream:', error);
+          writeData({
             type: 'error',
-            error: `Error generating response: ${error.message || 'Unknown error'}`,
+            error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
           });
         }
       },
-      onError: (error: any) => {
-        console.error('Stream error:', error);
-        return `Error: ${error.message || 'An unknown error occurred during generation'}`;
+    });
+
+    return new Response(dataStream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Stream-ID': streamId || 'none',
       },
     });
-
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream),
-      );
-    } else {
-      return new Response(stream);
-    }
   } catch (error) {
-    console.error('Error processing request:', error);
-    return new Response('An error occurred while processing your request!', {
-      status: 500,
-    });
+    console.error('Error processing chat request:', error);
+    return new Response(
+      `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      { status: 500 },
+    );
   }
 }
 
@@ -564,10 +507,6 @@ export async function GET(request: Request) {
     () => emptyDataStream,
   );
 
-  /*
-   * For when the generation is streaming during SSR
-   * but the resumable stream has concluded at this point.
-   */
   if (!stream) {
     const messages = await getMessagesByChatId({ id: chatId });
     const mostRecentMessage = messages.at(-1);

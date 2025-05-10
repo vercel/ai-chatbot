@@ -4,6 +4,13 @@ import { getProviders, updateProvider } from '@/lib/db/queries';
 import { auth } from '@/app/(auth)/auth';
 import { getProviderConfigStatus } from '@/lib/ai/models';
 
+// Define a type for the provider config item
+interface ProviderConfigItem {
+  fromEnv: boolean;
+  apiKey: string | null;
+  baseUrl: string | null;
+}
+
 // Helper to check if the current user is an admin
 async function isAdmin() {
   const session = await auth();
@@ -25,14 +32,15 @@ export async function GET() {
     const providers = await getProviders();
 
     // Get configuration status from environment variables
-    const envConfig = getProviderConfigStatus();
+    const envConfig = await getProviderConfigStatus();
 
     // Merge the environment variable information with the provider data
-    const providersWithEnvInfo = providers.map((provider) => {
+    const providersWithEnvInfo = providers.map((provider: any) => {
       const slug = provider.slug.toLowerCase();
-      const envInfo = envConfig[slug as keyof typeof envConfig];
+      const envInfo = envConfig[slug] as ProviderConfigItem | undefined;
 
-      if (envInfo?.fromEnv) {
+      // Make sure envInfo exists and has the fromEnv property set to true
+      if (envInfo && envInfo.fromEnv) {
         return {
           ...provider,
           apiKey: envInfo.apiKey,

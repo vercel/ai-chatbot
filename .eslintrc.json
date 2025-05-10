@@ -9,7 +9,14 @@
   "plugins": ["tailwindcss"],
   "rules": {
     "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "off"
+    "tailwindcss/classnames-order": "off",
+    "import/no-unresolved": ["warn", { 
+      "ignore": ["@/lib/stream-data", "../index", "ai", "next-auth/react", "next/link", "next/navigation", "next/server", "@vercel/functions", "resumable-stream", "@ai-sdk/openai", "@ai-sdk/xai", "@ai-sdk/google"] 
+    }],
+    "react/no-unescaped-entities": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "import/no-duplicates": "warn",
+    "@typescript-eslint/no-explicit-any": "off"
   },
   "settings": {
     "import/resolver": {

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useActionState } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AuthForm } from '@/components/auth-form';
@@ -15,65 +15,81 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function Page() {
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [state, setState] = useState<RegisterActionState>({
+    status: 'idle',
+  });
+
   const [isLoading, setIsLoading] = useState(true);
   const [registrationAllowed, setRegistrationAllowed] = useState(true);
-
-  // Check if registration is allowed
-  useEffect(() => {
-    const checkRegistrationStatus = async () => {
-      try {
-        const response = await fetch('/api/registration-status');
-        const data = await response.json();
-        setRegistrationAllowed(data.allowed);
-      } catch (error) {
-        console.error('Failed to check registration status:', error);
-        // Default to allowing registration if check fails
-        setRegistrationAllowed(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkRegistrationStatus();
-  }, []);
-
-  const [state, formAction] = useActionState<RegisterActionState, FormData>(
-    register,
-    {
-      status: 'idle',
-    },
-  );
 
   const { update: updateSession } = useSession();
 
   useEffect(() => {
-    if (state.status === 'user_exists') {
-      toast({ type: 'error', description: 'Account already exists!' });
-    } else if (state.status === 'failed') {
-      toast({ type: 'error', description: 'Failed to create account!' });
+    checkRegistrationStatus();
+  }, []);
+
+  useEffect(() => {
+    if (state.status === 'failed') {
+      toast({
+        type: 'error',
+        description: 'Failed creating your account!',
+      });
     } else if (state.status === 'invalid_data') {
       toast({
         type: 'error',
         description: 'Failed validating your submission!',
       });
+    } else if (state.status === 'user_exists') {
+      toast({
+        type: 'error',
+        description: 'An account with this email already exists!',
+      });
     } else if (state.status === 'success') {
-      toast({ type: 'success', description: 'Account created successfully!' });
-
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      // Update session then redirect to home page
+      updateSession()
+        .then(() => {
+          router.push('/'); // Redirect to home page after successful registration
+        })
+        .catch((error) => {
+          console.error('Failed to update session:', error);
+          toast({
+            type: 'error',
+            description:
+              'Registration succeeded but session update failed. Please try again.',
+          });
+        });
     }
-  }, [state]);
+  }, [state.status, router, updateSession]);
 
-  const handleSubmit = (formData: FormData) => {
+  async function checkRegistrationStatus() {
+    try {
+      const response = await fetch('/api/registration-status');
+      if (response.ok) {
+        const data = await response.json();
+        setRegistrationAllowed(data.registrationAllowed);
+      } else {
+        console.error('Failed to check registration status');
+        // Default to allowing registration if we can't check
+        setRegistrationAllowed(true);
+      }
+    } catch (error) {
+      console.error('Error checking registration status:', error);
+      // Default to allowing registration if we can't check
+      setRegistrationAllowed(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleSubmit = async (formData: FormData) => {
     setEmail(formData.get('email') as string);
-    formAction(formData);
+    const result = await register(formData);
+    setState(result);
   };
 
-  // If registration is not allowed, show a message and redirect to login
   if (!isLoading && !registrationAllowed) {
     return (
       <div className="flex h-dvh w-screen items-center justify-center bg-background">
@@ -82,8 +98,8 @@ export default function Page() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Registration Disabled</AlertTitle>
             <AlertDescription>
-              New user registration is currently disabled. Please contact an
-              administrator for access.
+              Registration is currently disabled on this instance. Please
+              contact your administrator for access.
             </AlertDescription>
           </Alert>
 
