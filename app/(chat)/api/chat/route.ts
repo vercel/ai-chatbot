@@ -103,6 +103,8 @@ function getStreamContext() {
   return globalStreamContext;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   let customRequestBody: PostRequestBody;
   let isAiSdkFormat = false;
@@ -250,12 +252,14 @@ export async function POST(request: Request) {
       ],
     });
 
-    let streamId = null;
-    let streamIds = await getStreamIdsByChatId({ id });
+    let streamId: string | null = null;
+    const streamIds = await getStreamIdsByChatId({ chatId: id });
     if (streamIds.length === 0) {
-      streamId = await createStreamId({ chatId: id });
+      const newStreamId = generateUUID(); // Generate a new UUID for the stream
+      await createStreamId({ streamId: newStreamId, chatId: id });
+      streamId = newStreamId; // Assign the newStreamId to the outer streamId variable
     } else {
-      streamId = streamIds[0].id;
+      streamId = streamIds[0]; // Corrected: streamIds is an array of strings
     }
 
     function createStreamableModel(model: string) {
@@ -265,6 +269,19 @@ export async function POST(request: Request) {
           : false;
 
       const normalizedModelId = normalizeModelId(model) || model;
+
+      console.log(
+        '[DEBUG] Inside createStreamableModel, model:',
+        model,
+        'normalizedModelId:',
+        normalizedModelId,
+      );
+      console.log(
+        '[DEBUG] Inside createStreamableModel, myProvider.languageModels keys:',
+        myProvider.languageModels
+          ? Object.keys(myProvider.languageModels)
+          : 'myProvider.languageModels is undefined',
+      );
 
       const selectedModel = myProvider.languageModels[normalizedModelId];
 
@@ -329,18 +346,19 @@ export async function POST(request: Request) {
 
       try {
         const streamContext = getStreamContext();
-        const resumableStream = streamContext
-          ? await streamContext.resumableStream(streamId, () =>
-              streamText({
-                model,
-                messages: [
-                  { role: 'system', content: system },
-                  ...chatMessages,
-                ],
-                tools,
-              }),
-            )
-          : null;
+        const resumableStream =
+          streamContext && streamId // Ensure streamId is not null
+            ? await streamContext.resumableStream(streamId, () =>
+                streamText({
+                  model,
+                  messages: [
+                    { role: 'system', content: system },
+                    ...chatMessages,
+                  ],
+                  tools,
+                }),
+              )
+            : null;
 
         if (
           typeof process !== 'undefined' &&

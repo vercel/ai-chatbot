@@ -27,10 +27,12 @@ export default function Page() {
   const { update: updateSession } = useSession();
 
   useEffect(() => {
+    console.log('Login page state changed:', state.status);
     if (state.status === 'in_progress') {
       setIsLoading(true);
       setErrorMessage(null);
     } else if (state.status === 'failed') {
+      console.log('Login failed, showing error message');
       setIsLoading(false);
       setErrorMessage(
         'Invalid credentials. Please check your email and password.',
@@ -40,6 +42,7 @@ export default function Page() {
         description: 'Invalid credentials!',
       });
     } else if (state.status === 'invalid_data') {
+      console.log('Invalid data submitted, showing error message');
       setIsLoading(false);
       setErrorMessage(
         'Please enter a valid email and password (min 6 characters).',
@@ -49,36 +52,63 @@ export default function Page() {
         description: 'Failed validating your submission!',
       });
     } else if (state.status === 'success') {
+      console.log('Login successful, starting session update');
       setIsSuccessful(true);
       // Update session then redirect to home page
-      updateSession()
+
+      // Add a timeout to prevent infinite loading
+      const sessionUpdatePromise = updateSession();
+      console.log('updateSession() called, waiting for response...');
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          console.log('Session update timed out after 10 seconds');
+          reject(new Error('Session update timed out'));
+        }, 10000);
+      });
+
+      Promise.race([sessionUpdatePromise, timeoutPromise])
         .then(() => {
+          console.log(
+            'Session update completed successfully, redirecting to home',
+          );
           router.push('/'); // Redirect to home page after successful login
         })
         .catch((error: Error) => {
-          console.error('Failed to update session:', error);
+          console.error('Failed to update session:', error, error.stack);
           setIsLoading(false);
           setErrorMessage(
-            'Login succeeded but session update failed. Please try again.',
+            error.message === 'Session update timed out'
+              ? 'Login timed out. Please try again.'
+              : 'Login succeeded but session update failed. Please try again.',
           );
           toast({
             type: 'error',
             description:
-              'Login succeeded but session update failed. Please try again.',
+              error.message === 'Session update timed out'
+                ? 'Login timed out. Please try again.'
+                : 'Login succeeded but session update failed. Please try again.',
           });
         });
     }
   }, [state.status, router, updateSession]);
 
   const handleSubmit = async (formData: FormData) => {
-    setEmail(formData.get('email') as string);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    console.log(
+      `Login attempt for email: ${email}, password: ${password ? '********' : 'empty'}`,
+    );
+
+    setEmail(email);
     setIsLoading(true);
     setErrorMessage(null);
 
     // Set in progress status
     setState({ status: 'in_progress' });
+    console.log('Calling login action...');
 
     const result = await login(formData);
+    console.log('Login action returned:', result);
     setState(result);
   };
 

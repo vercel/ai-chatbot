@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAbsoluteUrl } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Test internal fetch with absolute URL

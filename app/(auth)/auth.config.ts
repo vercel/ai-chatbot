@@ -9,3 +9,10 @@ export const authConfig = {
   providers: [],
   callbacks: {},
 } satisfies NextAuthConfig;
+
+// Log auth configuration on startup
+console.log('NextAuth Configuration:', {
+  trustHost: authConfig.trustHost,
+  pages: authConfig.pages,
+  baseUrl: process.env.NEXTAUTH_URL || 'not set',
+});

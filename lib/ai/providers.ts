@@ -110,59 +110,41 @@ export const myProvider = isTestEnvironment
       },
       imageModels: {},
     })
-  : customProvider({
-      languageModels: {
-        // OpenAI Models
-        'openai-gpt-4o': openai('gpt-4o'),
-        'openai-gpt-4o-mini': openai('gpt-4o-mini'),
-        'openai-o1': openai('o1'),
-        'openai-o1-mini': openai('o1-mini'),
-        'openai-o1-preview': openai('o1-preview'),
-        'openai-gpt-4': openai('gpt-4'),
-        'openai-gpt-4-turbo': openai('gpt-4-turbo'),
-        'openai-gpt-3.5-turbo': openai('gpt-3.5-turbo'),
-        'openai-gpt-4.1': openai('gpt-4.1'),
+  : (() => {
+      console.log(
+        '[DEBUG] Attempting to initialize non-test myProvider. OPENAI_API_KEY:',
+        process.env.OPENAI_API_KEY,
+      );
+      const modelId = 'gpt-4o';
+      const modelKey = 'openai-gpt-4o';
+      const openAIModelInstance = openai(modelId);
+      console.log(
+        `[DEBUG] OpenAI model instance for '${modelKey}' (from openai('${modelId}')) is:`,
+        openAIModelInstance,
+      );
+      if (!openAIModelInstance) {
+        console.error(
+          `[DEBUG] CRITICAL: openai('${modelId}') returned a falsy value (undefined or null). Model will not be registered.`,
+        );
+      }
+      return customProvider({
+        languageModels: {
+          [modelKey]: openAIModelInstance, // Using the instance
+        },
+        imageModels: registeredImageModels,
+      });
+    })();
 
-        // OpenAI aliases (for compatibility)
-        'openai-gpt4o': openai('gpt-4o'),
-        'openai-o3mini': openai('gpt-4o-mini'),
-        'openai-gpt4': openai('gpt-4'),
-        'openai-gpt35turbo': openai('gpt-3.5-turbo'),
-        'openai-gpt41': openai('gpt-4.1'),
-
-        'openai-reasoning': wrapLanguageModel({
-          model: openai('gpt-4o'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-
-        // xAI Models
-        'xai-grok-2-1212': xai('grok-2-1212'),
-        'xai-grok-2-vision-1212': xai('grok-2-vision-1212'),
-        'xai-grok-3-mini-beta': xai('grok-3-mini-beta'),
-
-        // xAI aliases (for compatibility)
-        'xai-grok2': xai('grok-2-1212'),
-        'xai-grok2-vision': xai('grok-2-vision-1212'),
-        'xai-grok3-mini': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-
-        // Google Models (ensure you have @ai-sdk/google or similar installed)
-        'google-gemini-1.5-pro': google('gemini-1.5-pro-latest'),
-        'google-gemini-1.5-flash': google('gemini-1.5-flash-latest'),
-
-        // Legacy model IDs (for backward compatibility)
-        'chat-model': openai('gpt-4o'),
-        'chat-model-reasoning': wrapLanguageModel({
-          model: openai('gpt-4o'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'title-model': openai('gpt-3.5-turbo'),
-        'artifact-model': openai('gpt-4o'),
-      },
-      imageModels: registeredImageModels,
-    });
+console.log(
+  '[DEBUG] myProvider defined. isTestEnvironment:',
+  isTestEnvironment,
+);
+console.log(
+  '[DEBUG] myProvider.languageModels:',
+  myProvider.languageModels
+    ? Object.keys(myProvider.languageModels)
+    : 'undefined',
+);
 
 // This helper function might need to be updated or deprecated if image model selection
 // is handled directly by selecting from `myProvider.imageModels` based on UI choice.

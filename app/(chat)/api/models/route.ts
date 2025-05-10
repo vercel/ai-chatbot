@@ -10,6 +10,8 @@ import { getAvailableChatModels } from '@/lib/ai/models';
 // Cache the result for 5 minutes - reduced from 1 hour for more frequent updates
 export const revalidate = 300;
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await auth();

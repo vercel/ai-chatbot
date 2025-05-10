@@ -7,6 +7,8 @@ import { getEnabledChatModels, getProviderById } from '@/lib/db/queries';
 // Cache the result for 5 minutes
 export const revalidate = 300;
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await auth();

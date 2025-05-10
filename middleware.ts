@@ -7,6 +7,7 @@ const publicRoutes = ['/login', '/register', '/api/auth', '/ping'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log(`Middleware processing: ${pathname}`);
 
   /*
    * Playwright starts the dev server and requires a 200 status to
@@ -18,20 +19,28 @@ export async function middleware(request: NextRequest) {
 
   // Allow authentication endpoints
   if (pathname.startsWith('/api/auth')) {
+    console.log(`Allowing auth endpoint: ${pathname}`);
     return NextResponse.next();
   }
 
   // Always allow access to login and register pages
   if (pathname === '/login' || pathname === '/register') {
+    console.log(`Allowing public page: ${pathname}`);
     return NextResponse.next();
   }
 
   // Get authentication token
+  console.log('Retrieving authentication token');
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
+    secureCookie:
+      process.env.NODE_ENV === 'production' &&
+      !process.env.NEXTAUTH_URL?.startsWith('http://localhost'),
   });
+  console.log(
+    `Token found: ${!!token}, token email: ${token?.email || 'none'}`,
+  );
 
   // Read guest access setting from cookie
   // Default to true if cookie is not set
@@ -39,15 +48,21 @@ export async function middleware(request: NextRequest) {
   const allowGuestAccess = guestAccessCookie
     ? guestAccessCookie.value === 'true'
     : true;
+  console.log(
+    `Guest access setting: ${allowGuestAccess ? 'allowed' : 'not allowed'}`,
+  );
 
   // If user is not authenticated
   if (!token) {
+    console.log('No authentication token found');
     // If guest access is not allowed, redirect to login
     if (!allowGuestAccess) {
+      console.log('Guest access not allowed, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
     // If guest access is allowed, create a guest user session
+    console.log('Creating guest session');
     const redirectUrl = encodeURIComponent(request.url);
     return NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
@@ -55,17 +70,23 @@ export async function middleware(request: NextRequest) {
   }
 
   const isGuest = guestRegex.test(token?.email ?? '');
+  console.log(`User is guest: ${isGuest}`);
 
   // If guest access is disabled and current user is a guest, redirect to login
   if (isGuest && !allowGuestAccess) {
+    console.log('Guest access disabled for guest user, redirecting to login');
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Redirect authenticated users away from login/register pages
   if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
+    console.log(
+      'Authenticated user trying to access login/register, redirecting to home',
+    );
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  console.log('Middleware allowing request to proceed');
   return NextResponse.next();
 }
 

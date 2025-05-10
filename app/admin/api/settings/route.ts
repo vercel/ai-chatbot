@@ -4,6 +4,8 @@ import { getSystemSettings, updateSystemSettings } from '@/lib/db/queries';
 import { auth } from '@/app/(auth)/auth';
 import type { SystemSettings } from '@/lib/db/schema';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to check if the current user is an admin
 async function isAdmin() {
   const session = await auth();

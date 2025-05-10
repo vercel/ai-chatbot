@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSystemSettings } from '@/lib/db/queries';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Get system settings from database
