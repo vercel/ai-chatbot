@@ -7,26 +7,26 @@ import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.lostmindai.com'),
-  title: 'LostMind AI | Neural-Powered AI Chat',
-  description: 'Experience the future of AI conversation with LostMind AI - featuring 5 advanced language models including Gemini 2.5 Pro and GPT-4',
-  keywords: ['AI', 'chatbot', 'Gemini', 'GPT-4', 'LostMind', 'neural network', 'conversation'],
+  metadataBase: new URL('https://ai-chatbot-demo.vercel.app'),
+  title: 'AI Chat | Neural-Powered AI Assistant',
+  description: 'Experience the future of AI conversation with advanced language models including Gemini 2.5 Pro and Grok',
+  keywords: ['AI', 'chatbot', 'Gemini', 'Grok', 'neural network', 'conversation'],
   openGraph: {
-    title: 'LostMind AI',
-    description: 'Neural-powered AI assistant with 5 advanced models',
-    url: 'https://chat.lostmindai.com',
+    title: 'AI Chat',
+    description: 'Neural-powered AI assistant with advanced models',
+    url: 'https://ai-chatbot-demo.vercel.app',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'LostMind AI - Neural Network Chat',
+        alt: 'AI Chat - Neural Network Assistant',
       },
     ],
     locale: 'en_US',
     type: 'website',
   },
-  authors: [{ name: 'LostMind AI Team' }],
+  authors: [{ name: 'AI Chat Team' }],
   robots: 'index, follow',
   manifest: '/manifest.json',
   icons: {
@@ -52,8 +52,8 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
 });
 
-const LIGHT_THEME_COLOR = '#4F46E5'; // LostMind Blue
-const DARK_THEME_COLOR = '#2563EB'; // Darker LostMind Blue for dark mode
+const LIGHT_THEME_COLOR = '#4F46E5'; // Primary Blue
+const DARK_THEME_COLOR = '#2563EB'; // Darker Blue for dark mode
 const THEME_COLOR_SCRIPT = `\
 (function() {
   var html = document.documentElement;

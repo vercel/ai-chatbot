@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 
-interface LostMindLogoProps {
+interface LogoProps {
   width?: number;
   height?: number;
   showText?: boolean;
@@ -18,7 +18,7 @@ export function LostMindLogo({
   animated = true,
   theme = 'dark',
   onClick
-}: LostMindLogoProps) {
+}: LogoProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Theme color mapping
@@ -356,7 +356,7 @@ export function LostMindLogo({
       />
       {showText && (
         <span style={getTextStyles()} className="transition-all">
-          LostMind AI
+          AI Chat
         </span>
       )}
     </div>

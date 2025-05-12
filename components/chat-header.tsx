@@ -85,10 +85,10 @@ function PureChatHeader({
 
       <Button
         className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-sm hidden md:flex py-1.5 px-3 h-fit md:h-[34px] order-4 md:ml-auto"
-        onClick={() => window.open('https://lostmindai.com', '_blank')}
+        onClick={() => window.open('https://vercel.com/templates/next.js/ai-chatbot', '_blank')}
       >
-        <span className="hidden md:block font-medium">Explore LostMind AI</span>
-        <span className="md:hidden font-medium">Explore</span>
+        <span className="hidden md:block font-medium">Learn More</span>
+        <span className="md:hidden font-medium">Learn</span>
       </Button>
     </header>
   );

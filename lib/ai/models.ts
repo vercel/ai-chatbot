@@ -31,24 +31,24 @@ export const models: ModelConfig[] = [
   },
   // --- New Gemini Models ---
   {
-    id: 'gemini-quantum', // Unique internal ID
+    id: 'gemini-pro', // Unique internal ID
     providerModelId: 'gemini-2.5-pro-preview-05-06', // Actual Google model ID
-    name: 'LostMind Quantum',
+    name: 'Gemini Pro',
     description: 'Advanced reasoning model for complex problems',
     provider: 'google',
-    logoPath: '/logos/lostmind-quantum.svg', // Assumes this will exist
+    logoPath: '/logos/gemini-pro.svg', // Assumes this will exist
     maxTokens: 8192,
     temperature: 0.2,
     capabilities: ['chat', 'reasoning', 'knowledge', 'coding'],
     isDefault: false,
   },
   {
-    id: 'gemini-vision-pro', // Unique internal ID
+    id: 'gemini-vision', // Unique internal ID
     providerModelId: 'gemini-2.5-pro-preview-05-06', // Same Google model ID, different config/use case
-    name: 'LostMind Vision Pro',
+    name: 'Gemini Vision',
     description: 'Multimodal AI with vision capabilities',
     provider: 'google',
-    logoPath: '/logos/lostmind-vision.svg', // Assumes this will exist
+    logoPath: '/logos/gemini-vision.svg', // Assumes this will exist
     maxTokens: 8192,
     temperature: 0.7,
     capabilities: ['chat', 'vision', 'reasoning'],
@@ -57,10 +57,10 @@ export const models: ModelConfig[] = [
   {
     id: 'gemini-flash', // Unique internal ID
     providerModelId: 'gemini-2.5-flash-preview-05-06', // Actual Google model ID
-    name: 'LostMind Flash',
+    name: 'Gemini Flash',
     description: 'Ultra-fast responses with high efficiency',
     provider: 'google',
-    logoPath: '/logos/lostmind-flash.svg', // Assumes this will exist
+    logoPath: '/logos/gemini-flash.svg', // Assumes this will exist
     maxTokens: 4096,
     temperature: 0.7,
     capabilities: ['chat'],

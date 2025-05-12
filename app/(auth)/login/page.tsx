@@ -68,7 +68,7 @@ export default function Page() {
               animated={true}
             />
             <h1 className="mt-6 text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Welcome to LostMind AI
+              Welcome to AI Chat
             </h1>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
               Sign in to access your neural-powered AI assistant
