@@ -37,7 +37,7 @@ export const myProvider = customProvider({
       model: groq("qwen-qwq-32b"),
       middleware: extractReasoningMiddleware({ tagName: "think" }),
     }),
-    "title-model": google("gemini-2.0-flash-lite"),
+    "title-model": google("gemini-1.5-flash-8b"),
   },
   imageModels: {},
 });

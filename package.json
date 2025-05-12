@@ -15,8 +15,7 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
-    "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test --workers=4"
+    "db:up": "drizzle-kit up"
   },
   "dependencies": {
     "@ai-sdk/fal": "^0.0.11",
