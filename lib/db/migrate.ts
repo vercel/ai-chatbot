@@ -3,9 +3,9 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
-config({
-  path: '.env.local',
-});
+// Load environment variables from both .env and .env.local
+config(); // Load .env
+config({ path: '.env.local', override: true }); // Load .env.local and override any existing values
 
 const runMigrate = async () => {
   if (!process.env.POSTGRES_URL) {

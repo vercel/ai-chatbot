@@ -20,7 +20,22 @@ export const authConfig = {
       return true;
     },
   },
-  providers: [], // Configure your providers here
+  providers: [
+    {
+      id: 'guest',
+      type: 'credentials',
+      name: 'Guest',
+      credentials: {},
+      async authorize(credentials, request) {
+        return {
+          id: 'guest',
+          name: 'Guest User',
+          email: 'guest@example.com',
+          type: 'guest',
+        };
+      },
+    },
+  ],
   session: {
     strategy: 'jwt',
   },
