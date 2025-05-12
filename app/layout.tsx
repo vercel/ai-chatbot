@@ -29,7 +29,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'LostMind AI Team' }],
   robots: 'index, follow',
   manifest: '/manifest.json',
-  themeColor: '#4F46E5',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
@@ -38,6 +37,7 @@ export const metadata: Metadata = {
 
 export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
+  themeColor: '#4F46E5',
 };
 
 const geist = Geist({

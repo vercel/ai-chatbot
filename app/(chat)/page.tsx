@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  themeColor: '#4F46E5',
+};
+
 export default async function Page() {
   const session = await auth();
 

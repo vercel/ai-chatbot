@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
@@ -8,6 +9,20 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { models } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
+
+export const metadata: Metadata = {
+  title: 'Chat Session | LostMind AI',
+  description: 'Connect with advanced AI models through LostMind\'s neural interface',
+  openGraph: {
+    title: 'LostMind AI - Chat Session',
+    description: 'Experience neural-powered AI conversation',
+    images: ['/og-chat.png'],
+  },
+};
+
+export const viewport = {
+  themeColor: '#4F46E5',
+};
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
