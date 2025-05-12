@@ -4,6 +4,7 @@ import {
   createDataStream,
   smoothStream,
   streamText,
+  type LanguageModel,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
@@ -29,7 +30,7 @@ import { getModelConfigById } from '@/lib/ai/models'; // Added getModelConfigByI
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
-import { LanguageModelNotFoundError } from 'ai'; // Added LanguageModelNotFoundError
+// Removed: import { LanguageModelNotFoundError } from 'ai'; - Type not exported or available.
 import {
   createResumableStreamContext,
   type ResumableStreamContext,
@@ -161,27 +162,26 @@ export async function POST(request: Request) {
     const providerName = modelConfig.provider; // 'google' or 'xai'
     const providerModelId = modelConfig.providerModelId; // e.g., 'gemini-2.5-pro-preview-05-06'
 
-    const provider = configuredProviders[providerName];
+    const provider = configuredProviders[providerName as keyof typeof configuredProviders];
 
     if (!provider) {
        console.error(`Provider not configured for name: ${providerName}`);
        return new Response(JSON.stringify({ error: `Provider '${providerName}' not configured for selected model.`}), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
-    let targetModel;
+    let targetModel: LanguageModel | undefined;
     try {
       // Attempt to get the language model instance from the selected provider
       targetModel = provider.languageModel(providerModelId);
       if (!targetModel) {
          // Throw if languageModel() returns undefined/null for a known ID (should ideally not happen with customProvider)
-         throw new LanguageModelNotFoundError({ modelId: providerModelId });
+         throw new Error(`Language model not found: ${providerModelId}`);
       }
-    } catch (error) {
+    } catch (error: any) { // Catch as any or unknown since specific type isn't available
       console.error(`Error getting model '${providerModelId}' from provider '${providerName}':`, error);
-      // Handle specific errors like LanguageModelNotFoundError or general errors
-      if (error instanceof LanguageModelNotFoundError) {
-         return new Response(JSON.stringify({ error: `Model '${providerModelId}' not found for provider '${providerName}'.` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-      }
+      // Generic error handling as LanguageModelNotFoundError is not available for instanceof check
+      // We can check the error message if a more specific check is needed in the future,
+      // but for now, a general failure message is sufficient.
       return new Response(JSON.stringify({ error: `Error configuring model '${modelConfig.name}'. Please try another model.` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
     // --- End: Model Selection Logic ---

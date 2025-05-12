@@ -1,5 +1,8 @@
 import type { ModelConfig } from '../types'; // Adjusted path
 
+// Export the default model ID for backward compatibility
+export const DEFAULT_CHAT_MODEL: string = 'grok-chat';
+
 export const models: ModelConfig[] = [
   // --- Existing Grok Models (Refactored) ---
   {
@@ -65,7 +68,7 @@ export const models: ModelConfig[] = [
   },
   // --- Other Grok Models (from providers.ts) ---
   {
-    id: 'grok-title', // Internal ID based on old key
+    id: 'title-model', // Internal ID based on old key
     providerModelId: 'grok-2-1212', // From providers.ts
     name: 'Grok Title Generator', // Guessing name
     description: 'Generates titles based on content (Grok)', // Guessing description
@@ -77,7 +80,7 @@ export const models: ModelConfig[] = [
     isDefault: false,
   },
   {
-    id: 'grok-artifact', // Internal ID based on old key
+    id: 'artifact-model', // Internal ID based on old key
     providerModelId: 'grok-2-1212', // From providers.ts
     name: 'Grok Artifact Generator', // Guessing name
     description: 'Generates artifacts based on context (Grok)', // Guessing description
@@ -89,6 +92,9 @@ export const models: ModelConfig[] = [
     isDefault: false,
   },
 ];
+
+// Export models array as chatModels for backward compatibility
+export const chatModels = models;
 
 // Optional: Helper function to get model config by ID
 export function getModelConfigById(id: string): ModelConfig | undefined {

@@ -5,7 +5,7 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { models } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
 
@@ -55,12 +55,19 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const chatModelFromCookie = cookieStore.get('chat-model');
 
   if (!chatModelFromCookie) {
+    const defaultModelId = models.find(m => m.isDefault)?.id || models[0]?.id;
+    // Basic check if a default model ID was found
+    if (!defaultModelId) {
+      console.error("Error: Could not determine a default chat model.");
+      // Consider redirecting or showing an error message to the user
+      // For now, we'll pass an empty string, but this needs robust handling.
+    }
     return (
       <>
         <Chat
           id={chat.id}
           initialMessages={convertToUIMessages(messagesFromDb)}
-          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialChatModel={defaultModelId || ''} // Use the determined default model ID or fallback
           initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
           session={session}

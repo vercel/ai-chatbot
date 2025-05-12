@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
+import { models } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
@@ -32,16 +32,16 @@ export function ModelSelector({
   const userType = session.user.type;
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
+  const availableModels = models.filter((model) =>
+    availableChatModelIds.includes(model.id),
   );
 
-  const selectedChatModel = useMemo(
+  const selectedModel = useMemo(
     () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
+      availableModels.find(
+        (model) => model.id === optimisticModelId,
       ),
-    [optimisticModelId, availableChatModels],
+    [optimisticModelId, availableModels],
   );
 
   return (
@@ -58,13 +58,13 @@ export function ModelSelector({
           variant="outline"
           className="md:px-2 md:h-[34px]"
         >
-          {selectedChatModel?.name}
+          {selectedModel?.name}
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[300px]">
-        {availableChatModels.map((chatModel) => {
-          const { id } = chatModel;
+        {availableModels.map((model) => {
+          const { id } = model;
 
           return (
             <DropdownMenuItem
@@ -86,9 +86,9 @@ export function ModelSelector({
                 className="gap-4 group/item flex flex-row justify-between items-center w-full"
               >
                 <div className="flex flex-col gap-1 items-start">
-                  <div>{chatModel.name}</div>
+                  <div>{model.name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {chatModel.description}
+                    {model.description}
                   </div>
                 </div>
 

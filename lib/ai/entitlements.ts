@@ -1,9 +1,9 @@
 import type { UserType } from '@/app/(auth)/auth';
-import type { ChatModel } from './models';
+import type { ModelConfig } from '../types';
 
 interface Entitlements {
   maxMessagesPerDay: number;
-  availableChatModelIds: Array<ChatModel['id']>;
+  availableChatModelIds: Array<string>; // Using string type directly for model IDs
 }
 
 export const entitlementsByUserType: Record<UserType, Entitlements> = {
