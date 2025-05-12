@@ -1,20 +1,96 @@
-export const DEFAULT_CHAT_MODEL: string = 'chat-model';
+import type { ModelConfig } from '../types'; // Adjusted path
 
-export interface ChatModel {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export const chatModels: Array<ChatModel> = [
+export const models: ModelConfig[] = [
+  // --- Existing Grok Models (Refactored) ---
   {
-    id: 'chat-model',
-    name: 'Chat model',
-    description: 'Primary model for all-purpose chat',
+    id: 'grok-chat', // Preserving a simple internal ID
+    providerModelId: 'grok-2-vision-1212', // Actual provider model ID from providers.ts
+    name: 'Grok Chat', // User-friendly name
+    description: 'Primary model for all-purpose chat (Grok)', // Updated description
+    provider: 'xai',
+    logoPath: '/logos/grok-logo.svg', // Placeholder - needs actual logo
+    maxTokens: 4096, // Assigning a reasonable default
+    temperature: 0.7, // Assigning a reasonable default
+    capabilities: ['chat', 'vision'], // Inferred from provider model ID
+    isDefault: true, // Assuming this was the default
   },
   {
-    id: 'chat-model-reasoning',
-    name: 'Reasoning model',
-    description: 'Uses advanced reasoning',
+    id: 'grok-reasoning', // Preserving a simple internal ID
+    providerModelId: 'grok-3-mini-beta', // Actual provider model ID from providers.ts
+    name: 'Grok Reasoning', // User-friendly name
+    description: 'Uses advanced reasoning (Grok)', // Updated description
+    provider: 'xai',
+    logoPath: '/logos/grok-logo.svg', // Placeholder - needs actual logo
+    maxTokens: 8192, // Assigning a reasonable default for reasoning
+    temperature: 0.2, // Assigning a reasonable default for reasoning
+    capabilities: ['chat', 'reasoning'], // Inferred from name/description
+    isDefault: false,
+  },
+  // --- New Gemini Models ---
+  {
+    id: 'gemini-quantum', // Unique internal ID
+    providerModelId: 'gemini-2.5-pro-preview-05-06', // Actual Google model ID
+    name: 'LostMind Quantum',
+    description: 'Advanced reasoning model for complex problems',
+    provider: 'google',
+    logoPath: '/logos/lostmind-quantum.svg', // Assumes this will exist
+    maxTokens: 8192,
+    temperature: 0.2,
+    capabilities: ['chat', 'reasoning', 'knowledge', 'coding'],
+    isDefault: false,
+  },
+  {
+    id: 'gemini-vision-pro', // Unique internal ID
+    providerModelId: 'gemini-2.5-pro-preview-05-06', // Same Google model ID, different config/use case
+    name: 'LostMind Vision Pro',
+    description: 'Multimodal AI with vision capabilities',
+    provider: 'google',
+    logoPath: '/logos/lostmind-vision.svg', // Assumes this will exist
+    maxTokens: 8192,
+    temperature: 0.7,
+    capabilities: ['chat', 'vision', 'reasoning'],
+    isDefault: false,
+  },
+  {
+    id: 'gemini-flash', // Unique internal ID
+    providerModelId: 'gemini-2.5-flash-preview-05-06', // Actual Google model ID
+    name: 'LostMind Flash',
+    description: 'Ultra-fast responses with high efficiency',
+    provider: 'google',
+    logoPath: '/logos/lostmind-flash.svg', // Assumes this will exist
+    maxTokens: 4096,
+    temperature: 0.7,
+    capabilities: ['chat'],
+    isDefault: false,
+  },
+  // --- Other Grok Models (from providers.ts) ---
+  {
+    id: 'grok-title', // Internal ID based on old key
+    providerModelId: 'grok-2-1212', // From providers.ts
+    name: 'Grok Title Generator', // Guessing name
+    description: 'Generates titles based on content (Grok)', // Guessing description
+    provider: 'xai',
+    logoPath: '/logos/grok-logo.svg', // Placeholder
+    maxTokens: 1024, // Guessing
+    temperature: 0.5, // Guessing
+    capabilities: ['text-generation'], // Guessing capability
+    isDefault: false,
+  },
+  {
+    id: 'grok-artifact', // Internal ID based on old key
+    providerModelId: 'grok-2-1212', // From providers.ts
+    name: 'Grok Artifact Generator', // Guessing name
+    description: 'Generates artifacts based on context (Grok)', // Guessing description
+    provider: 'xai',
+    logoPath: '/logos/grok-logo.svg', // Placeholder
+    maxTokens: 2048, // Guessing (maybe more than title)
+    temperature: 0.6, // Guessing
+    capabilities: ['text-generation', 'artifact-creation'], // Guessing capabilities
+    isDefault: false,
   },
 ];
+
+// Optional: Helper function to get model config by ID
+export function getModelConfigById(id: string): ModelConfig | undefined {
+  return models.find(model => model.id === id);
+}

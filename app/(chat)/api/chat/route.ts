@@ -24,10 +24,12 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
-import { myProvider } from '@/lib/ai/providers';
+import { configuredProviders } from '@/lib/ai/providers'; // Removed myProvider, added configuredProviders
+import { getModelConfigById } from '@/lib/ai/models'; // Added getModelConfigById
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
+import { LanguageModelNotFoundError } from 'ai'; // Added LanguageModelNotFoundError
 import {
   createResumableStreamContext,
   type ResumableStreamContext,
@@ -148,10 +150,47 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // --- Start: Model Selection Logic ---
+    const modelConfig = getModelConfigById(selectedChatModel);
+
+    if (!modelConfig) {
+      console.error(`Model config not found for ID: ${selectedChatModel}`);
+      return new Response(JSON.stringify({ error: `Invalid model selected: ${selectedChatModel}` }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const providerName = modelConfig.provider; // 'google' or 'xai'
+    const providerModelId = modelConfig.providerModelId; // e.g., 'gemini-2.5-pro-preview-05-06'
+
+    const provider = configuredProviders[providerName];
+
+    if (!provider) {
+       console.error(`Provider not configured for name: ${providerName}`);
+       return new Response(JSON.stringify({ error: `Provider '${providerName}' not configured for selected model.`}), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    let targetModel;
+    try {
+      // Attempt to get the language model instance from the selected provider
+      targetModel = provider.languageModel(providerModelId);
+      if (!targetModel) {
+         // Throw if languageModel() returns undefined/null for a known ID (should ideally not happen with customProvider)
+         throw new LanguageModelNotFoundError({ modelId: providerModelId });
+      }
+    } catch (error) {
+      console.error(`Error getting model '${providerModelId}' from provider '${providerName}':`, error);
+      // Handle specific errors like LanguageModelNotFoundError or general errors
+      if (error instanceof LanguageModelNotFoundError) {
+         return new Response(JSON.stringify({ error: `Model '${providerModelId}' not found for provider '${providerName}'.` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+      }
+      return new Response(JSON.stringify({ error: `Error configuring model '${modelConfig.name}'. Please try another model.` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }
+    // --- End: Model Selection Logic ---
+
+    // TODO: Review systemPrompt function in lib/ai/prompts.ts to ensure it handles new model IDs correctly.
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
+          model: targetModel, // Use the dynamically selected model
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages,
           maxSteps: 5,
