@@ -24,7 +24,7 @@ export default function Page() {
   const [turnstileStatus, setTurnstileStatus] = useState<
     "success" | "error" | "expired" | "required"
   >("required");
-  const turnstileRef = useRef<string>();
+  const turnstileRef = useRef<string>("");
 
   const handleTurnstileStatus = useCallback(
     (status: "success" | "error" | "expired" | "required") => {

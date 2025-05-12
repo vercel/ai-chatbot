@@ -73,6 +73,7 @@ export function Chat({
           chatId={id}
           status={status}
           votes={votes}
+          // @ts-expect-error
           messages={messages}
           setMessages={setMessages}
           reload={reload}
@@ -90,6 +91,7 @@ export function Chat({
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
+              // @ts-expect-error
               messages={messages}
               setMessages={setMessages}
               append={append}
@@ -160,6 +162,7 @@ export function PrivateCodeChat({
           chatId={id}
           status={status}
           votes={[]}
+          // @ts-expect-error
           messages={messages}
           setMessages={setMessages}
           reload={reload}
@@ -176,6 +179,7 @@ export function PrivateCodeChat({
             stop={stop}
             attachments={attachments}
             setAttachments={setAttachments}
+            // @ts-expect-error
             messages={messages}
             setMessages={setMessages}
             append={append}
