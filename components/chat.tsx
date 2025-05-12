@@ -1,18 +1,16 @@
-'use client';
+"use client";
 
-import type { Attachment, UIMessage } from 'ai';
-import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { convertToUIMessages, fetcher, generateUUID } from '@/lib/utils';
-import { Artifact } from './artifact';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
-import { toast } from 'sonner';
+import type { Attachment, UIMessage } from "ai";
+import { useChat } from "@ai-sdk/react";
+import { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { ChatHeader } from "@/components/chat-header";
+import type { Vote } from "@/lib/db/schema";
+import { convertToUIMessages, fetcher, generateUUID } from "@/lib/utils";
+import { MultimodalInput } from "./multimodal-input";
+import { Messages } from "./messages";
+import type { VisibilityType } from "./visibility-selector";
+import { toast } from "sonner";
 
 export function Chat({
   id,
@@ -47,10 +45,10 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate('/api/history');
+      mutate("/api/history");
     },
     onError: () => {
-      toast.error('An error occured, please try again!');
+      toast.error("An error occured, please try again!");
     },
   });
 
@@ -60,7 +58,6 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <>
@@ -80,7 +77,6 @@ export function Chat({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -101,23 +97,6 @@ export function Chat({
           )}
         </form>
       </div>
-
-      <Artifact
-        chatId={id}
-        input={input}
-        setInput={setInput}
-        handleSubmit={handleSubmit}
-        status={status}
-        stop={stop}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        append={append}
-        messages={messages}
-        setMessages={setMessages}
-        reload={reload}
-        votes={votes}
-        isReadonly={isReadonly}
-      />
     </>
   );
 }
@@ -148,11 +127,11 @@ export function PrivateCodeChat({
       {
         id,
         chatId: generateUUID(),
-        role: 'system',
+        role: "system",
         createdAt: new Date(),
         parts: [
           {
-            type: 'text',
+            type: "text",
             text: systemPrompt,
           },
         ],
@@ -162,11 +141,10 @@ export function PrivateCodeChat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    api: '/api/chat/custom',
+    api: "/api/chat/custom",
   });
 
   const [attachments, setAttachments] = useState<Array<any>>([]);
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <>
@@ -186,7 +164,6 @@ export function PrivateCodeChat({
           setMessages={setMessages}
           reload={reload}
           isReadonly={false}
-          isArtifactVisible={isArtifactVisible}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
