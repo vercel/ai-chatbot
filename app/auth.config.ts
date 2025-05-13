@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 import { isDevelopmentEnvironment } from '../lib/constants';
+import CognitoProvider from 'next-auth/providers/cognito';
 
 export const authConfig = {
   pages: {
@@ -21,6 +22,11 @@ export const authConfig = {
     },
   },
   providers: [
+    CognitoProvider({
+      clientId: process.env.COGNITO_CLIENT_ID!,
+      clientSecret: process.env.COGNITO_CLIENT_SECRET!,
+      issuer: process.env.COGNITO_ISSUER,
+    }),
     {
       id: 'guest',
       type: 'credentials',
