@@ -1,3 +1,4 @@
+import CognitoProvider from 'next-auth/providers/cognito';
 import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
@@ -6,8 +7,11 @@ export const authConfig = {
     newUser: '/',
   },
   providers: [
-    // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
-    // while this file is also used in non-Node.js environments
+    CognitoProvider({
+      clientId: process.env.COGNITO_CLIENT_ID!,
+      clientSecret: process.env.COGNITO_CLIENT_SECRET!,
+      issuer: process.env.COGNITO_ISSUER,
+    }),
   ],
   callbacks: {},
 } satisfies NextAuthConfig;
