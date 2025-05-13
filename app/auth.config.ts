@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 import { isDevelopmentEnvironment } from '../lib/constants';
 import CognitoProvider from 'next-auth/providers/cognito';
+import type { UserType } from '@/app/(auth)/auth';
 
 export const authConfig = {
   pages: {
@@ -20,6 +21,20 @@ export const authConfig = {
       }
       return true;
     },
+    jwt({ token, user }) {
+      if (user?.id && user?.type) {
+        token.id = user.id;
+        token.type = user.type as UserType;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user && token.id && token.type) {
+        session.user.id = token.id;
+        session.user.type = token.type as UserType;
+      }
+      return session;
+    },
   },
   providers: [
     CognitoProvider({
@@ -37,7 +52,7 @@ export const authConfig = {
           id: 'guest',
           name: 'Guest User',
           email: 'guest@example.com',
-          type: 'guest',
+          type: 'guest' as UserType,
         };
       },
     },

@@ -1,30 +1,34 @@
 import { compare } from 'bcrypt-ts';
-import NextAuth, { type DefaultSession } from 'next-auth';
+import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { createGuestUser, getUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
 import { DUMMY_PASSWORD } from '@/lib/constants';
 import type { DefaultJWT } from 'next-auth/jwt';
+import type { DefaultSession } from 'next-auth';
 
-export type UserType = 'guest' | 'regular';
+export type UserType = 'guest' | 'cognito';
 
 declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      type: UserType;
+  interface Session {
+    user?: {
+      id?: string;
+      type?: UserType;
+      name?: string | null;
+      email?: string | null;
     } & DefaultSession['user'];
   }
 
   interface User {
     id?: string;
+    type?: UserType;
+    name?: string | null;
     email?: string | null;
-    type: UserType;
   }
 }
 
 declare module 'next-auth/jwt' {
-  interface JWT extends DefaultJWT {
+  interface JWT {
     id: string;
     type: UserType;
   }
@@ -59,7 +63,7 @@ export const {
 
         if (!passwordsMatch) return null;
 
-        return { ...user, type: 'regular' };
+        return { ...user, type: 'cognito' };
       },
     }),
     Credentials({
@@ -75,7 +79,7 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
-        token.type = user.type;
+        token.type = user.type ?? 'guest';
       }
 
       return token;
@@ -83,7 +87,7 @@ export const {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
-        session.user.type = token.type;
+        session.user.type = token.type ?? 'guest';
       }
 
       return session;
