@@ -132,8 +132,6 @@ export async function POST(request: Request) {
           filter: userSelectedTools,
         });
 
-        console.log('executableTools', Object.keys(executableTools));
-
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
