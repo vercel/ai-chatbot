@@ -11,7 +11,11 @@ export async function GET(request: Request) {
   const session = await auth();
 
   if (session) {
-    return NextResponse.redirect(new URL('/', origin));
+    if (session?.user?.type === 'guest') {
+      return NextResponse.redirect(new URL('/', origin));
+    } else if ((session?.user as any)?.provider === 'cognito') {
+      return NextResponse.redirect(new URL('/', origin));
+    }
   }
 
   return signIn('guest', { redirect: true, redirectTo: redirectUrl });
