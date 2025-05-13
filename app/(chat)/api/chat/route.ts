@@ -188,10 +188,10 @@ export async function POST(request: Request) {
   // get default assistant
   const assistants = await client.assistants.search()
   //console.log(assistants)
-  let assistant = assistants.find((a) => a.graph_id === 'intellidoctor_Agent')
+  let assistant = assistants.find((a) => a.graph_id === 'agent')
   if (!assistant) {
     assistant = await client.assistants.create({
-      graphId: 'intellidoctor_Agent'
+      graphId: 'agent'
     })
     // throw new Error('No assistant found')
   }
