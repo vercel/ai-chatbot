@@ -76,18 +76,18 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const userType: UserType = session.user.type;
+    const userType: UserType = session.user.type ?? 'guest';
 
     const messageCount = await getMessageCountByUserId({
       id: session.user.id,
       differenceInHours: 24,
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    if ((messageCount as number) > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new Response(
         'You have exceeded your maximum number of messages for the day! Please try again later.',
         {
