@@ -61,21 +61,6 @@ export async function createUser(email: string, password: string) {
   }
 }
 
-export async function createGuestUser() {
-  const email = `guest-${Date.now()}`;
-  const password = generateHashedPassword(generateUUID());
-
-  try {
-    return await db.insert(user).values({ email, password }).returning({
-      id: user.id,
-      email: user.email,
-    });
-  } catch (error) {
-    console.error('Failed to create guest user in database');
-    throw error;
-  }
-}
-
 export async function saveChat({
   id,
   userId,

@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const userType: UserType = session.user.type ?? 'guest';
+    const userType: UserType = 'cognito';
 
     const messageCount = await getMessageCountByUserId({
       id: session.user.id,

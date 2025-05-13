@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { auth } from './app/auth';
-import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,13 +21,11 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     const redirectUrl = encodeURIComponent(request.url);
     return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
+      new URL(`/api/auth/signin?callbackUrl=${redirectUrl}`, request.url),
     );
   }
 
-  const isGuest = guestRegex.test(session.user?.email ?? '');
-
-  if (session && !isGuest && ['/login', '/register'].includes(pathname)) {
+  if (session && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

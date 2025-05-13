@@ -42,20 +42,6 @@ export const authConfig = {
       clientSecret: process.env.COGNITO_CLIENT_SECRET!,
       issuer: process.env.COGNITO_ISSUER,
     }),
-    {
-      id: 'guest',
-      type: 'credentials',
-      name: 'Guest',
-      credentials: {},
-      async authorize(credentials, request) {
-        return {
-          id: 'guest',
-          name: 'Guest User',
-          email: 'guest@example.com',
-          type: 'guest' as UserType,
-        };
-      },
-    },
   ],
   session: {
     strategy: 'jwt',
