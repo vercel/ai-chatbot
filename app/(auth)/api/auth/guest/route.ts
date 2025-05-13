@@ -6,11 +6,12 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const redirectUrl = searchParams.get('redirectUrl') || '/';
+  const origin = new URL(request.url).origin;
 
   const session = await auth();
 
   if (session) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/', origin));
   }
 
   return signIn('guest', { redirect: true, redirectTo: redirectUrl });
