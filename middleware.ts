@@ -12,7 +12,12 @@ export async function middleware(request: NextRequest) {
     return new Response('pong', { status: 200 });
   }
 
-  if (pathname.startsWith('/api/auth')) {
+  if (
+    pathname.startsWith('/api/auth') ||
+    pathname === '/login' ||
+    pathname === '/api/auth/signin' ||
+    pathname === '/register'
+  ) {
     return NextResponse.next();
   }
 
