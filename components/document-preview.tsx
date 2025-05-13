@@ -37,11 +37,11 @@ export function DocumentPreview({
   const { artifact, setArtifact } = useArtifact();
 
   // Clear cache when component mounts or result changes
-  useEffect(() => {
-    if (result?.id) {
-      mutate(`/api/documents/${result.id}`);
-    }
-  }, [result?.id]);
+  // useEffect(() => {
+  //   if (result?.id) {
+  //     mutate(`/api/documents/${result.id}`);
+  //   }
+  // }, [result?.id]);
 
   const { data: documents, isLoading: isDocumentsFetching, error } = useSWR<
     Array<Document>
@@ -103,7 +103,6 @@ export function DocumentPreview({
   if (isDocumentsFetching) {
     return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
   }
-
   const document: Document | null = previewDocument
     ? previewDocument
     : artifact.status === 'streaming'
@@ -112,8 +111,7 @@ export function DocumentPreview({
           kind: artifact.kind as ArtifactKind,
           content: artifact.content,
           id: artifact.documentId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: new Date(),
           userId: 'noop',
         }
       : null;
@@ -126,6 +124,7 @@ export function DocumentPreview({
         hitboxRef={hitboxRef}
         result={result}
         setArtifact={setArtifact}
+        documents={documents}
       />
       <DocumentHeader
         title={document.title}
@@ -166,17 +165,19 @@ const PureHitboxLayer = ({
   hitboxRef,
   result,
   setArtifact,
+  documents,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
   result: any;
   setArtifact: (
     updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
   ) => void;
+  documents?: Array<Document>;
 }) => {
+  console.log('HitboxLayer', result);
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
-      debugger;
       setArtifact((artifact) =>
         artifact.status === 'streaming'
           ? { ...artifact, isVisible: true }
@@ -184,6 +185,7 @@ const PureHitboxLayer = ({
               ...artifact,
               title: result.title,
               documentId: result.id,
+              content: documents?.[0]?.content ?? '',
               kind: result.kind,
               isVisible: true,
               boundingBox: {
@@ -195,7 +197,7 @@ const PureHitboxLayer = ({
             },
       );
     },
-    [setArtifact, result],
+    [setArtifact, result, documents],
   );
 
   return (
@@ -217,6 +219,7 @@ const PureHitboxLayer = ({
 
 const HitboxLayer = memo(PureHitboxLayer, (prevProps, nextProps) => {
   if (!equal(prevProps.result, nextProps.result)) return false;
+  if (!equal(prevProps.documents, nextProps.documents)) return false;
   return true;
 });
 
@@ -264,7 +267,6 @@ const DocumentContent = ({ document }: { document: Document }) => {
       'p-0': document.kind === 'code',
     },
   );
-  // debugger;
   const commonProps = {
     content: document.content ?? '',
     isCurrentVersion: true,

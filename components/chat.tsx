@@ -93,7 +93,7 @@ export function Chat({
   }, [query, append, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? id : null,
+    messages.length >= 2 ? `/api/votes/chat/${id}` : null,
     () => apiClient.getVotesByChat(id)
   );
 
