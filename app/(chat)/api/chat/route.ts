@@ -24,7 +24,11 @@ import {
 import { generateTitleFromUserMessage } from '../../actions';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { tools, executableFunctions } from '@/lib/ai/tools';
+import {
+  tools,
+  executableFunctions,
+  extractToolNameFromString,
+} from '@/lib/ai/tools';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -118,7 +122,17 @@ export async function POST(request: Request) {
           }
         }
 
-        const executableTools = tools({ session, dataStream });
+        const userSelectedTools = extractToolNameFromString(
+          userMessage.content,
+        );
+
+        const executableTools = tools({
+          session,
+          dataStream,
+          filter: userSelectedTools,
+        });
+
+        console.log('executableTools', Object.keys(executableTools));
 
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
@@ -189,6 +203,8 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    console.error('Error in POST /api/chat', error);
+
     return new Response('An error occurred while processing your request!', {
       status: 404,
     });

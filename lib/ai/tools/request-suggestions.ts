@@ -17,11 +17,7 @@ export const requestSuggestions = ({
 }: RequestSuggestionsProps) =>
   tool({
     description: 'Request suggestions for a document',
-    parameters: z.object({
-      documentId: z
-        .string()
-        .describe('The ID of the document to request edits'),
-    }),
+    parameters: requestSuggestions.parameters,
     execute: async ({ documentId }) => {
       const document = await getDocumentById({ id: documentId });
 
@@ -87,3 +83,7 @@ export const requestSuggestions = ({
       };
     },
   });
+
+requestSuggestions.parameters = z.object({
+  documentId: z.string().describe('The ID of the document to request edits'),
+});

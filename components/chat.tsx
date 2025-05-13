@@ -108,6 +108,7 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
+              tools={tools}
             />
           )}
         </form>
