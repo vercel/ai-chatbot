@@ -153,6 +153,8 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log('mcp client init done');
+
     const mcpTools = await mcpClient.tools();
 
     console.log(mcpTools);
@@ -178,6 +180,8 @@ export async function POST(request: Request) {
             }),
           },
           onFinish: async ({ response }) => {
+            mcpClient.close();
+
             if (session.user?.id) {
               try {
                 const assistantId = getTrailingMessageId({
