@@ -155,6 +155,8 @@ export async function POST(request: Request) {
 
     const mcpTools = await mcpClient.tools();
 
+    console.log(mcpTools);
+
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
@@ -207,13 +209,16 @@ export async function POST(request: Request) {
                   ],
                 });
               } catch (_) {
-                console.error('Failed to save chat');
+                console.log('Failed to save chat');
               }
             }
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
+          },
+          onError: (error) => {
+            console.error(error);
           },
         });
 
