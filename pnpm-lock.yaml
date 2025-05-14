@@ -29,9 +29,6 @@ importers:
       '@codemirror/view':
         specifier: ^6.35.3
         version: 6.36.4
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.11.2
-        version: 1.11.2
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -1049,10 +1046,6 @@ packages:
 
   '@modelcontextprotocol/sdk@1.10.2':
     resolution: {integrity: sha512-rb6AMp2DR4SN+kc6L1ta2NCpApyA9WYNx3CrTSZvGxq9wH71bRur+zRqPfg0vQ9mjywR7qZdX2RGHOPq3ss+tA==}
-    engines: {node: '>=18'}
-
-  '@modelcontextprotocol/sdk@1.11.2':
-    resolution: {integrity: sha512-H9vwztj5OAqHg9GockCQC06k1natgcxWQSRpQcPJf6i5+MWBzfKkRtxGbjQf0X2ihii0ffLZCRGbYV2f2bjNCQ==}
     engines: {node: '>=18'}
 
   '@neondatabase/serverless@0.9.5':
@@ -4771,21 +4764,6 @@ snapshots:
   '@marijn/find-cluster-break@1.0.2': {}
 
   '@modelcontextprotocol/sdk@1.10.2':
-    dependencies:
-      content-type: 1.0.5
-      cors: 2.8.5
-      cross-spawn: 7.0.6
-      eventsource: 3.0.7
-      express: 5.1.0
-      express-rate-limit: 7.5.0(express@5.1.0)
-      pkce-challenge: 5.0.0
-      raw-body: 3.0.0
-      zod: 3.24.2
-      zod-to-json-schema: 3.24.5(zod@3.24.2)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@modelcontextprotocol/sdk@1.11.2':
     dependencies:
       content-type: 1.0.5
       cors: 2.8.5
