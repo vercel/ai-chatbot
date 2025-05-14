@@ -35,6 +35,7 @@ import {
 import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
+import { ChatSDKError } from '@/lib/errors';
 
 export const maxDuration = 60;
 
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
     const json = await request.json();
     requestBody = postRequestBodySchema.parse(json);
   } catch (_) {
-    return new Response('Invalid request body', { status: 400 });
+    return new ChatSDKError('bad_request:api').toResponse();
   }
 
   try {
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
     const session = await auth();
 
     if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
+      return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
     const userType: UserType = session.user.type;
@@ -88,12 +89,7 @@ export async function POST(request: Request) {
     });
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new Response(
-        'You have exceeded your maximum number of messages for the day! Please try again later.',
-        {
-          status: 429,
-        },
-      );
+      return new ChatSDKError('rate_limit:chat').toResponse();
     }
 
     const chat = await getChatById({ id });
@@ -111,7 +107,7 @@ export async function POST(request: Request) {
       });
     } else {
       if (chat.userId !== session.user.id) {
-        return new Response('Forbidden', { status: 403 });
+        return new ChatSDKError('forbidden:chat').toResponse();
       }
     }
 
@@ -237,10 +233,10 @@ export async function POST(request: Request) {
     } else {
       return new Response(stream);
     }
-  } catch (_) {
-    return new Response('An error occurred while processing your request!', {
-      status: 500,
-    });
+  } catch (error) {
+    if (error instanceof ChatSDKError) {
+      return error.toResponse();
+    }
   }
 }
 
@@ -256,13 +252,13 @@ export async function GET(request: Request) {
   const chatId = searchParams.get('chatId');
 
   if (!chatId) {
-    return new Response('id is required', { status: 400 });
+    return new ChatSDKError('bad_request:api').toResponse();
   }
 
   const session = await auth();
 
   if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 });
+    return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
   let chat: Chat;
@@ -270,27 +266,27 @@ export async function GET(request: Request) {
   try {
     chat = await getChatById({ id: chatId });
   } catch {
-    return new Response('Not found', { status: 404 });
+    return new ChatSDKError('not_found:chat').toResponse();
   }
 
   if (!chat) {
-    return new Response('Not found', { status: 404 });
+    return new ChatSDKError('not_found:chat').toResponse();
   }
 
   if (chat.visibility === 'private' && chat.userId !== session.user.id) {
-    return new Response('Forbidden', { status: 403 });
+    return new ChatSDKError('forbidden:chat').toResponse();
   }
 
   const streamIds = await getStreamIdsByChatId({ chatId });
 
   if (!streamIds.length) {
-    return new Response('No streams found', { status: 404 });
+    return new ChatSDKError('not_found:stream').toResponse();
   }
 
   const recentStreamId = streamIds.at(-1);
 
   if (!recentStreamId) {
-    return new Response('No recent stream found', { status: 404 });
+    return new ChatSDKError('not_found:stream').toResponse();
   }
 
   const emptyDataStream = createDataStream({
@@ -344,29 +340,22 @@ export async function DELETE(request: Request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new ChatSDKError('bad_request:api').toResponse();
   }
 
   const session = await auth();
 
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
-  try {
-    const chat = await getChatById({ id });
+  const chat = await getChatById({ id });
 
-    if (chat.userId !== session.user.id) {
-      return new Response('Forbidden', { status: 403 });
-    }
-
-    const deletedChat = await deleteChatById({ id });
-
-    return Response.json(deletedChat, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return new Response('An error occurred while processing your request!', {
-      status: 500,
-    });
+  if (chat.userId !== session.user.id) {
+    return new ChatSDKError('forbidden:chat').toResponse();
   }
+
+  const deletedChat = await deleteChatById({ id });
+
+  return Response.json(deletedChat, { status: 200 });
 }
