@@ -7,10 +7,9 @@ import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
-};
+  title: '玄学咨询师',
+  description: '专业的玄学咨询服务，提供占卜、解梦、命理分析等服务',
+}
 
 export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
