@@ -282,6 +282,12 @@ function PureMultimodalInput({
           ) {
             event.preventDefault();
 
+            // Prevent submitting if a file is uploading
+            if (uploadQueue.length > 0) {
+              toast.error('Please wait for the file upload to finish!');
+              return;
+            }
+
             if (status !== 'ready') {
               toast.error('Please wait for the model to finish its response!');
             } else {
