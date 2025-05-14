@@ -5,19 +5,23 @@ import {
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
+import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter id is missing',
+    ).toResponse();
   }
 
   const session = await auth();
 
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('unauthorized:document').toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -25,11 +29,11 @@ export async function GET(request: Request) {
   const [document] = documents;
 
   if (!document) {
-    return new Response('Not found', { status: 404 });
+    return new ChatSDKError('not_found:document').toResponse();
   }
 
   if (document.userId !== session.user.id) {
-    return new Response('Forbidden', { status: 403 });
+    return new ChatSDKError('forbidden:document').toResponse();
   }
 
   return Response.json(documents, { status: 200 });
@@ -40,13 +44,16 @@ export async function POST(request: Request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter id is required.',
+    ).toResponse();
   }
 
   const session = await auth();
 
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('not_found:document').toResponse();
   }
 
   const {
@@ -62,7 +69,7 @@ export async function POST(request: Request) {
     const [document] = documents;
 
     if (document.userId !== session.user.id) {
-      return new Response('Forbidden', { status: 403 });
+      return new ChatSDKError('forbidden:document').toResponse();
     }
   }
 
@@ -83,17 +90,23 @@ export async function DELETE(request: Request) {
   const timestamp = searchParams.get('timestamp');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter id is required.',
+    ).toResponse();
   }
 
   if (!timestamp) {
-    return new Response('Missing timestamp', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter timestamp is required.',
+    ).toResponse();
   }
 
   const session = await auth();
 
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('unauthorized:document').toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -101,7 +114,7 @@ export async function DELETE(request: Request) {
   const [document] = documents;
 
   if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new ChatSDKError('forbidden:document').toResponse();
   }
 
   const documentsDeleted = await deleteDocumentsByIdAfterTimestamp({

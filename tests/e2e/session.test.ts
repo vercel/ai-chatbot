@@ -2,6 +2,7 @@ import { expect, test } from '../fixtures';
 import { AuthPage } from '../pages/auth';
 import { generateRandomTestUser } from '../helpers';
 import { ChatPage } from '../pages/chat';
+import { getMessageByErrorCode } from '@/lib/errors';
 
 test.describe
   .serial('Guest Session', () => {
@@ -201,7 +202,7 @@ test.describe('Entitlements', () => {
 
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.expectToastToContain(
-      'You have exceeded your maximum number of messages for the day! Please try again later.',
+      getMessageByErrorCode('rate_limit:chat'),
     );
   });
 });

@@ -1,6 +1,7 @@
 import { generateUUID } from '@/lib/utils';
 import { expect, test } from '../fixtures';
 import { TEST_PROMPTS } from '../prompts/routes';
+import { getMessageByErrorCode } from '@/lib/errors';
 
 const chatIdsCreatedByAda: Array<string> = [];
 
@@ -14,8 +15,9 @@ test.describe
       });
       expect(response.status()).toBe(400);
 
-      const text = await response.text();
-      expect(text).toEqual('Invalid request body');
+      const { code, message } = await response.json();
+      expect(code).toEqual('bad_request:api');
+      expect(message).toEqual(getMessageByErrorCode('bad_request:api'));
     });
 
     test('Ada can invoke chat generation', async ({ adaContext }) => {
@@ -55,8 +57,9 @@ test.describe
       });
       expect(response.status()).toBe(403);
 
-      const text = await response.text();
-      expect(text).toEqual('Forbidden');
+      const { code, message } = await response.json();
+      expect(code).toEqual('forbidden:chat');
+      expect(message).toEqual(getMessageByErrorCode('forbidden:chat'));
     });
 
     test("Babbage cannot delete Ada's chat", async ({ babbageContext }) => {
@@ -67,8 +70,9 @@ test.describe
       );
       expect(response.status()).toBe(403);
 
-      const text = await response.text();
-      expect(text).toEqual('Forbidden');
+      const { code, message } = await response.json();
+      expect(code).toEqual('forbidden:chat');
+      expect(message).toEqual(getMessageByErrorCode('forbidden:chat'));
     });
 
     test('Ada can delete her own chat', async ({ adaContext }) => {
