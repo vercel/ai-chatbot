@@ -91,7 +91,7 @@ const Tool = ({
       <TooltipTrigger asChild>
         <motion.div
           className={cx('p-3 rounded-full', {
-            'bg-primary !text-primary-foreground': selectedTool === description,
+            'bg-primary text-primary-foreground!': selectedTool === description,
           })}
           onHoverStart={() => {
             setIsHovered(true);
