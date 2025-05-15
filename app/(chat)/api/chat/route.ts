@@ -144,8 +144,6 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    console.log(`${new URL(request.url).origin}/mcp/sse`);
-
     const mcpClient = await experimental_createMCPClient({
       transport: {
         url: `${new URL(request.url).origin}/mcp/sse`,
@@ -153,11 +151,7 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log('mcp client init done');
-
     const mcpTools = await mcpClient.tools();
-
-    console.log(mcpTools);
 
     const stream = createDataStream({
       execute: (dataStream) => {
