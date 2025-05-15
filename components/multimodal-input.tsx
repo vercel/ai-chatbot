@@ -22,8 +22,9 @@ import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ToolMetadata } from '../lib/ai/tools';
 import { ToolSelectDialog } from './tool-select-dialog';
+import { ChatSettingDialog, ChatSettingButton } from './chat-setting-dialog';
+import { extractToolNameFromString } from '../lib/utils';
 
 function PureMultimodalInput({
   chatId,
@@ -38,7 +39,6 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
-  tools,
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -52,10 +52,10 @@ function PureMultimodalInput({
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
-  tools?: Record<string, ToolMetadata>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -109,8 +109,15 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
+    const selectedTools = extractToolNameFromString(
+      textareaRef.current?.value || '',
+    );
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
+      body: {
+        selectedTools: selectedTools,
+      },
     });
 
     setAttachments([]);
@@ -222,11 +229,11 @@ function PureMultimodalInput({
         </div>
       )}
 
+      {/* @FIXME: use textareaRef.current?.value instead of wrapping component */}
       <ToolSelectDialog
         textareaRef={textareaRef}
         input={input}
         setInput={setInput}
-        tools={tools}
       >
         <Textarea
           data-testid="multimodal-input"
@@ -262,6 +269,11 @@ function PureMultimodalInput({
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
         <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <ChatSettingButton
+          onClick={() => {
+            setShowSettings((prev) => !prev);
+          }}
+        />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -275,6 +287,11 @@ function PureMultimodalInput({
           />
         )}
       </div>
+
+      <ChatSettingDialog
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
+      />
     </div>
   );
 }
@@ -285,7 +302,6 @@ export const MultimodalInput = memo(
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.status !== nextProps.status) return false;
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-    if (!equal(prevProps.tools, nextProps.tools)) return false;
 
     return true;
   },

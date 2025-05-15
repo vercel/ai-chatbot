@@ -285,3 +285,37 @@ export function hasUpdatedMessage(
     })
   );
 }
+
+export function extractToolNameFromString(message: string): string[] {
+  const regex = /@(\w+)/g;
+  const matches = message.match(regex);
+  if (!matches) {
+    return [];
+  }
+  return matches.map((match) => match.replace('@', ''));
+}
+
+export function extractToolNameFromMessage(message: UIMessage): string[] {
+  if (!message || !message.parts) {
+    return [];
+  }
+
+  if (typeof message.parts === 'string') {
+    return extractToolNameFromString(message.parts);
+  }
+
+  if (!Array.isArray(message.parts)) {
+    return [];
+  }
+
+  return message.parts.reduce((acc, part) => {
+    if (typeof part === 'string') {
+      const toolNames = extractToolNameFromString(part);
+      acc.push(...toolNames);
+    } else if (typeof part === 'object' && part.type === 'text') {
+      const toolNames = extractToolNameFromString(part.text);
+      acc.push(...toolNames);
+    }
+    return acc;
+  }, [] as string[]);
+}

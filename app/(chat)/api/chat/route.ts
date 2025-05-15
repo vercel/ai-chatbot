@@ -24,11 +24,7 @@ import {
 import { generateTitleFromUserMessage } from '../../actions';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import {
-  tools,
-  executableFunctions,
-  extractToolNameFromString,
-} from '@/lib/ai/tools';
+import { tools, executableFunctions } from '@/lib/ai/tools';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -37,10 +33,12 @@ export async function POST(request: Request) {
       id,
       messages,
       selectedChatModel,
+      selectedTools,
     }: {
       id: string;
       messages: Array<UIMessage>;
       selectedChatModel: string;
+      selectedTools: string[];
     } = await request.json();
 
     const session = await auth();
@@ -122,14 +120,10 @@ export async function POST(request: Request) {
           }
         }
 
-        const userSelectedTools = extractToolNameFromString(
-          userMessage.content,
-        );
-
         const executableTools = tools({
           session,
           dataStream,
-          filter: userSelectedTools,
+          filter: selectedTools ?? [],
         });
 
         const result = streamText({

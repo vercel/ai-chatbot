@@ -21,9 +21,9 @@ import { MessageReasoning } from './message-reasoning';
 import type { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { ToolContentCall } from './tool-content';
 import { ToolPermissionRequest } from './tool-permission-request';
-import type { ToolMetadata } from '../lib/ai/tools';
 import { Calculator } from './calculator';
 import { PokemonCarousel } from './pokemon-carousel';
+import { useChatSetting } from '@/components/chat-setting-provider';
 import useSWR from 'swr';
 
 const PurePreviewMessage = ({
@@ -35,7 +35,6 @@ const PurePreviewMessage = ({
   addToolResult,
   reload,
   isReadonly,
-  tools,
   setInput,
 }: {
   chatId: string;
@@ -46,12 +45,12 @@ const PurePreviewMessage = ({
   addToolResult?: ReturnType<typeof useChat>['addToolResult'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
-  tools?: Record<string, ToolMetadata>;
   setInput?: UseChatHelpers['setInput'];
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
   const { data, mutate } = useSWR<Record<string, any>>(`/chat/${chatId}`);
+  const { tools } = useChatSetting();
 
   const handleApproveResult = ({
     toolName,

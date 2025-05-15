@@ -15,7 +15,6 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
-import type { ToolMetadata } from '../lib/ai/tools';
 
 export function Chat({
   id,
@@ -45,7 +44,10 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, selectedChatModel: selectedChatModel },
+    body: {
+      id,
+      selectedChatModel: selectedChatModel,
+    },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -63,10 +65,6 @@ export function Chat({
     fetcher,
   );
 
-  const { data: tools } = useSWR<Record<string, ToolMetadata>>(
-    '/api/tools',
-    fetcher,
-  );
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
@@ -90,7 +88,6 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
-          tools={tools}
           setInput={setInput}
         />
 
@@ -108,7 +105,6 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
-              tools={tools}
             />
           )}
         </form>

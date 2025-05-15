@@ -5,11 +5,11 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import type { ToolMetadata } from '../lib/ai/tools';
 import { CircleHelp, Terminal } from 'lucide-react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { Tooltip } from './ui/tooltip';
 import { TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip';
+import { useChatSetting } from './chat-setting-provider';
 
 interface McpCommand {
   id: string;
@@ -17,12 +17,11 @@ interface McpCommand {
   parameters: any;
 }
 
-interface ToolSuggestionProps extends PropsWithChildren {
+interface ToolSelectDialogProps extends PropsWithChildren {
   // @FIXME: will be deprecated
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   input: UseChatHelpers['input'];
   setInput: UseChatHelpers['setInput'];
-  tools?: Record<string, ToolMetadata>;
   children: React.ReactNode;
 }
 
@@ -52,8 +51,7 @@ function getParameterDescription(parameters: any) {
   });
 }
 
-export const ToolSelectDialog: React.FC<ToolSuggestionProps> = ({
-  tools,
+export const ToolSelectDialog: React.FC<ToolSelectDialogProps> = ({
   textareaRef,
   input,
   setInput,
@@ -63,6 +61,7 @@ export const ToolSelectDialog: React.FC<ToolSuggestionProps> = ({
   const [showToolSuggestions, setShowToolSuggestions] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
+  const { tools } = useChatSetting();
 
   const mcpCommands: McpCommand[] = useMemo(
     () =>
