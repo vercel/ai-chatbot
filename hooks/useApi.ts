@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { apiClient, ApiError } from '@/lib/api-client';
+import { apiClient } from '@/lib/api-client';
+import { ApiError } from '@/lib/api-client.types';
 
 interface UseApiResponse<T> {
   data: T | null;
@@ -9,8 +10,11 @@ interface UseApiResponse<T> {
 }
 
 export function useApi<T>(
-  apiMethod: (...args: any[]) => Promise<T>,
-  options: {
+  apiFunction: (...args: any[]) => Promise<T>,
+  {
+    onSuccess,
+    onError,
+  }: {
     onSuccess?: (data: T) => void;
     onError?: (error: ApiError) => void;
   } = {}
@@ -24,21 +28,21 @@ export function useApi<T>(
       try {
         setLoading(true);
         setError(null);
-        const result = await apiMethod(...args);
+        const result = await apiFunction(...args);
         setData(result);
-        options.onSuccess?.(result);
+        onSuccess?.(result);
       } catch (err: any) {
         const error: ApiError = {
           message: err.message || 'An error occurred',
           status: err.status || 500,
         };
         setError(error);
-        options.onError?.(error);
+        onError?.(error);
       } finally {
         setLoading(false);
       }
     },
-    [apiMethod, options]
+    [apiFunction, onSuccess, onError]
   );
 
   return { data, error, loading, execute };

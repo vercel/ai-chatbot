@@ -18,6 +18,7 @@ import type { Session } from '@/lib/types/auth';
 import { useSearchParams } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import type { Vote } from '@/lib/api-client';
+import { uuid } from 'drizzle-orm/pg-core';
 
 export function Chat({
   id,
@@ -45,7 +46,7 @@ export function Chat({
     stop,
     reload,
   } = useChat({
-    api: `http://localhost:3001/api/chats/stream`,
+    api: `http://localhost:3001/api/chats`,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -74,7 +75,6 @@ export function Chat({
       });
     },
   });
-
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
 
@@ -93,7 +93,7 @@ export function Chat({
   }, [query, append, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? id : null,
+    messages.length >= 2 ? `/api/votes/chat/${id}` : null,
     () => apiClient.getVotesByChat(id)
   );
 

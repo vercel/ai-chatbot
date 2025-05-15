@@ -15,6 +15,7 @@ import {
 import { memo } from 'react';
 import equal from 'fast-deep-equal';
 import { toast } from 'sonner';
+import { apiClient } from '../lib/api-client';
 
 export function PureMessageActions({
   chatId,
@@ -29,6 +30,10 @@ export function PureMessageActions({
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
+
+  const fetchVotes = async () => {
+    return apiClient.getVotesByChat(chatId);
+  };
 
   if (isLoading) return null;
   if (message.role === 'user') return null;
@@ -71,20 +76,14 @@ export function PureMessageActions({
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
-                const upvote = fetch('/api/vote', {
-                  method: 'PATCH',
-                  body: JSON.stringify({
-                    chatId,
-                    messageId: message.id,
-                    type: 'up',
-                  }),
-                });
-
+                const upvote = apiClient.toggleVote(chatId, message.id);
+                
                 toast.promise(upvote, {
                   loading: 'Upvoting Response...',
                   success: () => {
+                    // Optimistic update
                     mutate<Array<Vote>>(
-                      `/api/vote?chatId=${chatId}`,
+                      `/api/votes/chat/${chatId}`,
                       (currentVotes) => {
                         if (!currentVotes) return [];
 
@@ -103,6 +102,11 @@ export function PureMessageActions({
                       },
                       { revalidate: false },
                     );
+
+                    // Fetch fresh data
+                    fetchVotes().then(freshVotes => {
+                      mutate(`/api/votes/chat/${chatId}`, freshVotes, { revalidate: false });
+                    });
 
                     return 'Upvoted Response!';
                   },
@@ -124,20 +128,14 @@ export function PureMessageActions({
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
-                const downvote = fetch('/api/vote', {
-                  method: 'PATCH',
-                  body: JSON.stringify({
-                    chatId,
-                    messageId: message.id,
-                    type: 'down',
-                  }),
-                });
-
+                const downvote = apiClient.toggleVote(chatId, message.id);
+                
                 toast.promise(downvote, {
                   loading: 'Downvoting Response...',
                   success: () => {
+                    // Optimistic update
                     mutate<Array<Vote>>(
-                      `/api/vote?chatId=${chatId}`,
+                      `/api/votes/chat/${chatId}`,
                       (currentVotes) => {
                         if (!currentVotes) return [];
 
@@ -156,6 +154,11 @@ export function PureMessageActions({
                       },
                       { revalidate: false },
                     );
+
+                    // Fetch fresh data
+                    fetchVotes().then(freshVotes => {
+                      mutate(`/api/votes/chat/${chatId}`, freshVotes, { revalidate: false });
+                    });
 
                     return 'Downvoted Response!';
                   },

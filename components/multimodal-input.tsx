@@ -23,6 +23,7 @@ import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { apiClient } from '../lib/api-client';
 
 function PureMultimodalInput({
   chatId,
@@ -127,27 +128,13 @@ function PureMultimodalInput({
   ]);
 
   const uploadFile = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
-
-        return {
-          url,
-          name: pathname,
-          contentType: contentType,
-        };
-      }
-      const { error } = await response.json();
-      toast.error(error);
+      const data = await apiClient.uploadFile(file);
+      return {
+        url: data.url,
+        name: data.pathname,
+        contentType: data.contentType,
+      };
     } catch (error) {
       toast.error('Failed to upload file, please try again!');
     }

@@ -11,9 +11,9 @@ import {
 import { ArtifactKind, UIArtifact } from './artifact';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
-import { Document } from '@/lib/db/schema';
+import { Document } from '@/lib/api-client.types';
 import { InlineDocumentSkeleton } from './document-skeleton';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { Editor } from './text-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { CodeEditor } from './code-editor';
@@ -21,6 +21,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
+import { apiClient } from '@/lib/api-client';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -35,9 +36,28 @@ export function DocumentPreview({
 }: DocumentPreviewProps) {
   const { artifact, setArtifact } = useArtifact();
 
-  const { data: documents, isLoading: isDocumentsFetching } = useSWR<
+  // Clear cache when component mounts or result changes
+  // useEffect(() => {
+  //   if (result?.id) {
+  //     mutate(`/api/documents/${result.id}`);
+  //   }
+  // }, [result?.id]);
+
+  const { data: documents, isLoading: isDocumentsFetching, error } = useSWR<
     Array<Document>
-  >(result ? `/api/document?id=${result.id}` : null, fetcher);
+  >(
+    result ? `/api/documents/${result.id}` : null,
+    async () => {
+      if (!result) return null;
+      return apiClient.getDocumentById(result.id);
+    }
+  );
+
+  console.log('Result:', result);
+  console.log('Documents:', documents);
+  console.log('Is Loading:', isDocumentsFetching);
+  console.log('Error:', error);
+  console.log('SWR Key:', result ? `api/documents/${result.id}` : null);
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);
   const hitboxRef = useRef<HTMLDivElement>(null);
@@ -83,13 +103,12 @@ export function DocumentPreview({
   if (isDocumentsFetching) {
     return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
   }
-
   const document: Document | null = previewDocument
     ? previewDocument
     : artifact.status === 'streaming'
       ? {
           title: artifact.title,
-          kind: artifact.kind,
+          kind: artifact.kind as ArtifactKind,
           content: artifact.content,
           id: artifact.documentId,
           createdAt: new Date(),
@@ -105,10 +124,11 @@ export function DocumentPreview({
         hitboxRef={hitboxRef}
         result={result}
         setArtifact={setArtifact}
+        documents={documents}
       />
       <DocumentHeader
         title={document.title}
-        kind={document.kind}
+        kind={document.kind as ArtifactKind}
         isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
@@ -145,17 +165,19 @@ const PureHitboxLayer = ({
   hitboxRef,
   result,
   setArtifact,
+  documents,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
   result: any;
   setArtifact: (
     updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
   ) => void;
+  documents?: Array<Document>;
 }) => {
+  console.log('HitboxLayer', result);
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
-
       setArtifact((artifact) =>
         artifact.status === 'streaming'
           ? { ...artifact, isVisible: true }
@@ -163,6 +185,7 @@ const PureHitboxLayer = ({
               ...artifact,
               title: result.title,
               documentId: result.id,
+              content: documents?.[0]?.content ?? '',
               kind: result.kind,
               isVisible: true,
               boundingBox: {
@@ -174,7 +197,7 @@ const PureHitboxLayer = ({
             },
       );
     },
-    [setArtifact, result],
+    [setArtifact, result, documents],
   );
 
   return (
@@ -196,6 +219,7 @@ const PureHitboxLayer = ({
 
 const HitboxLayer = memo(PureHitboxLayer, (prevProps, nextProps) => {
   if (!equal(prevProps.result, nextProps.result)) return false;
+  if (!equal(prevProps.documents, nextProps.documents)) return false;
   return true;
 });
 
@@ -236,7 +260,6 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 
 const DocumentContent = ({ document }: { document: Document }) => {
   const { artifact } = useArtifact();
-
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
@@ -244,7 +267,6 @@ const DocumentContent = ({ document }: { document: Document }) => {
       'p-0': document.kind === 'code',
     },
   );
-
   const commonProps = {
     content: document.content ?? '',
     isCurrentVersion: true,
