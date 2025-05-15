@@ -11,7 +11,7 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-import type { Document, Vote } from '@/lib/api-client';
+import type { Document, Vote } from '@/lib/api-client.types';
 import { apiClient } from '@/lib/api-client';
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';

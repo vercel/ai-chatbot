@@ -129,6 +129,24 @@ export class ApiClient {
     return response.data;
   }
 
+  async uploadFile(file: File): Promise<{
+    url: string;
+    downloadUrl: string;
+    pathname: string;
+    contentType: string;
+    contentDisposition: string;
+  }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await this.client.post('/api/chats/uploads', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.data;
+  }
+
   async getChats() {
     const response = await this.client.get('/api/chats');
     return response.data;
@@ -328,4 +346,4 @@ export class ApiClient {
   }
 }
 
-export const apiClient = ApiClient.getInstance(); 
+export const apiClient = ApiClient.getInstance();

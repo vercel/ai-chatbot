@@ -18,6 +18,7 @@ import type { Session } from '@/lib/types/auth';
 import { useSearchParams } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import type { Vote } from '@/lib/api-client';
+import { uuid } from 'drizzle-orm/pg-core';
 
 export function Chat({
   id,
@@ -74,7 +75,6 @@ export function Chat({
       });
     },
   });
-
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
 
