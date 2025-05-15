@@ -244,8 +244,16 @@ function PureMultimodalInput({
           data-testid="attachments-preview"
           className="flex flex-row gap-2 overflow-x-scroll items-end"
         >
-          {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+          {attachments.map((attachment, idx) => (
+            <PreviewAttachment 
+              key={attachment.url} 
+              attachment={attachment} 
+              onRemove={() => {
+                setAttachments((prev) =>
+                  prev.filter((_, i) => i !== idx)
+                );
+              }}
+            />
           ))}
 
           {uploadQueue.map((filename) => (

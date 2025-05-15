@@ -5,9 +5,11 @@ import { LoaderIcon } from './icons';
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
+  onRemove,
 }: {
   attachment: Attachment;
   isUploading?: boolean;
+  onRemove?: () => void;
 }) => {
   const { name, url, contentType } = attachment;
 
@@ -29,6 +31,17 @@ export const PreviewAttachment = ({
           )
         ) : (
           <div className="" />
+        )}
+
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="absolute top-1 right-1 size-5 rounded-full bg-zinc-100 text-black hover:bg-zinc-700 hover:text-white flex items-center justify-center shadow text-xs transition border border-zinc-700"
+            style={{ zIndex: 10 }}
+          >
+            ×
+          </button>
         )}
 
         {isUploading && (
