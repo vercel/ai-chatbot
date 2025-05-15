@@ -8,6 +8,20 @@ const components: Partial<Components> = {
   // @ts-expect-error
   code: CodeBlock,
   pre: ({ children }) => <>{children}</>,
+  p: ({ node, children }) => {
+    // Check if the children contain any pre elements
+    const childrenArray = React.Children.toArray(children);
+    const hasPre = childrenArray.some(
+      (child) => React.isValidElement(child) && child.type === 'pre',
+    );
+
+    // If there's a pre element, don't wrap in a p tag
+    if (hasPre) {
+      return <>{children}</>;
+    }
+
+    return <p>{children}</p>;
+  },
   ol: ({ node, children, ...props }) => {
     return (
       <ol className="list-decimal list-outside ml-4" {...props}>

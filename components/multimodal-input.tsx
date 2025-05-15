@@ -15,7 +15,6 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
-
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
@@ -23,6 +22,9 @@ import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { ToolSelectDialog } from './tool-select-dialog';
+import { ChatSettingDialog, ChatSettingButton } from './chat-setting-dialog';
+import { extractToolNameFromString } from '../lib/utils';
 
 function PureMultimodalInput({
   chatId,
@@ -53,6 +55,7 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -106,8 +109,15 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
+    const selectedTools = extractToolNameFromString(
+      textareaRef.current?.value || '',
+    );
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
+      body: {
+        selectedTools: selectedTools,
+      },
     });
 
     setAttachments([]);
@@ -219,37 +229,51 @@ function PureMultimodalInput({
         </div>
       )}
 
-      <Textarea
-        data-testid="multimodal-input"
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
-          className,
-        )}
-        rows={2}
-        autoFocus
-        onKeyDown={(event) => {
-          if (
-            event.key === 'Enter' &&
-            !event.shiftKey &&
-            !event.nativeEvent.isComposing
-          ) {
-            event.preventDefault();
+      {/* @FIXME: use textareaRef.current?.value instead of wrapping component */}
+      <ToolSelectDialog
+        textareaRef={textareaRef}
+        input={input}
+        setInput={setInput}
+      >
+        <Textarea
+          data-testid="multimodal-input"
+          ref={textareaRef}
+          placeholder="Send a message..."
+          value={input}
+          onChange={handleInput}
+          className={cx(
+            'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+            className,
+          )}
+          rows={2}
+          autoFocus
+          onKeyDown={(event) => {
+            if (
+              event.key === 'Enter' &&
+              !event.shiftKey &&
+              !event.nativeEvent.isComposing
+            ) {
+              event.preventDefault();
 
-            if (status !== 'ready') {
-              toast.error('Please wait for the model to finish its response!');
-            } else {
-              submitForm();
+              if (status !== 'ready') {
+                toast.error(
+                  'Please wait for the model to finish its response!',
+                );
+              } else {
+                submitForm();
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+      </ToolSelectDialog>
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
         <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <ChatSettingButton
+          onClick={() => {
+            setShowSettings((prev) => !prev);
+          }}
+        />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -263,6 +287,11 @@ function PureMultimodalInput({
           />
         )}
       </div>
+
+      <ChatSettingDialog
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
+      />
     </div>
   );
 }

@@ -12,12 +12,7 @@ interface UpdateDocumentProps {
 export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
-    parameters: z.object({
-      id: z.string().describe('The ID of the document to update'),
-      description: z
-        .string()
-        .describe('The description of changes that need to be made'),
-    }),
+    parameters: updateDocument.parameters,
     execute: async ({ id, description }) => {
       const document = await getDocumentById({ id });
 
@@ -58,3 +53,10 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       };
     },
   });
+
+updateDocument.parameters = z.object({
+  id: z.string().describe('The ID of the document to update'),
+  description: z
+    .string()
+    .describe('The description of changes that need to be made'),
+});

@@ -18,7 +18,6 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
-  tools?: Record<string, ToolMetadata>;
   setInput: UseChatHelpers['setInput'];
 }
 
@@ -31,7 +30,6 @@ function PureMessages({
   addToolResult,
   reload,
   isReadonly,
-  tools,
   setInput,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
@@ -62,7 +60,6 @@ function PureMessages({
           addToolResult={addToolResult}
           reload={reload}
           isReadonly={isReadonly}
-          tools={tools}
           setInput={setInput}
         />
       ))}
@@ -87,7 +84,6 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.messages, nextProps.messages)) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
-  if (!equal(prevProps.tools, nextProps.tools)) return false;
 
   return true;
 });

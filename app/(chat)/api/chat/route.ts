@@ -33,10 +33,12 @@ export async function POST(request: Request) {
       id,
       messages,
       selectedChatModel,
+      selectedTools,
     }: {
       id: string;
       messages: Array<UIMessage>;
       selectedChatModel: string;
+      selectedTools: string[];
     } = await request.json();
 
     const session = await auth();
@@ -118,7 +120,11 @@ export async function POST(request: Request) {
           }
         }
 
-        const executableTools = tools({ session, dataStream });
+        const executableTools = tools({
+          session,
+          dataStream,
+          filter: selectedTools ?? [],
+        });
 
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
@@ -189,6 +195,8 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    console.error('Error in POST /api/chat', error);
+
     return new Response('An error occurred while processing your request!', {
       status: 404,
     });
