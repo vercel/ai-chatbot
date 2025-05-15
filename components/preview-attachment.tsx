@@ -32,7 +32,7 @@ export const PreviewAttachment = ({
                 key={url}
                 src={url}
                 alt={name ?? "An image attachment"}
-                className="rounded-md size-full object-cover"
+                className="rounded-md size-full object-cover cursor-pointer"
                 onClick={() => setShowPreview(true)}
               />
             ) : (
@@ -82,7 +82,7 @@ export const PreviewAttachment = ({
             >
               ×
             </button>
-            
+
             {/* NOTE: it is recommended to use next/image for images */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
