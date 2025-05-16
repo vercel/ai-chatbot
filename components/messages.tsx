@@ -3,10 +3,10 @@ import { PreviewMessage, ThinkingMessage } from './message';
 import { Greeting } from './greeting';
 import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
+import equal from 'fast-deep-equal';
 
 interface MessagesProps {
   chatId: string;
@@ -82,7 +82,6 @@ function PureMessages({
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
-
   if (prevProps.status !== nextProps.status) return false;
   if (prevProps.status && nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;

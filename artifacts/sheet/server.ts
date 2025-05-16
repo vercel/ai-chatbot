@@ -26,9 +26,9 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
         const { csv } = object;
 
         if (csv) {
-          dataStream.writeData({
-            type: 'sheet-delta',
-            content: csv,
+          dataStream.write({
+            type: 'data-artifacts-sheet-delta',
+            data: csv,
           });
 
           draftContent = csv;
@@ -36,9 +36,9 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
       }
     }
 
-    dataStream.writeData({
-      type: 'sheet-delta',
-      content: draftContent,
+    dataStream.write({
+      type: 'data-artifacts-sheet-delta',
+      data: draftContent,
     });
 
     return draftContent;
@@ -63,9 +63,9 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
         const { csv } = object;
 
         if (csv) {
-          dataStream.writeData({
-            type: 'sheet-delta',
-            content: csv,
+          dataStream.write({
+            type: 'data-artifacts-sheet-delta',
+            data: csv,
           });
 
           draftContent = csv;

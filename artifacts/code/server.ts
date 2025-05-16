@@ -26,9 +26,9 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
         const { code } = object;
 
         if (code) {
-          dataStream.writeData({
-            type: 'code-delta',
-            content: code ?? '',
+          dataStream.write({
+            type: 'data-artifacts-code-delta',
+            data: code ?? '',
           });
 
           draftContent = code;
@@ -58,9 +58,9 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
         const { code } = object;
 
         if (code) {
-          dataStream.writeData({
-            type: 'code-delta',
-            content: code ?? '',
+          dataStream.write({
+            type: 'data-artifacts-code-delta',
+            data: code ?? '',
           });
 
           draftContent = code;

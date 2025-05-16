@@ -1,7 +1,7 @@
 import { generateUUID } from '@/lib/utils';
-import { DataStreamWriter, tool } from 'ai';
+import { tool, type UIMessageStreamWriter } from 'ai';
 import { z } from 'zod';
-import { Session } from 'next-auth';
+import type { Session } from 'next-auth';
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
@@ -9,7 +9,7 @@ import {
 
 interface CreateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
 }
 
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
@@ -23,24 +23,24 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
     execute: async ({ title, kind }) => {
       const id = generateUUID();
 
-      dataStream.writeData({
-        type: 'kind',
-        content: kind,
+      dataStream.write({
+        type: 'data-artifacts-kind',
+        data: kind,
       });
 
-      dataStream.writeData({
-        type: 'id',
-        content: id,
+      dataStream.write({
+        type: 'data-artifacts-id',
+        data: id,
       });
 
-      dataStream.writeData({
-        type: 'title',
-        content: title,
+      dataStream.write({
+        type: 'data-artifacts-title',
+        data: title,
       });
 
-      dataStream.writeData({
-        type: 'clear',
-        content: '',
+      dataStream.write({
+        type: 'data-artifacts-clear',
+        data: '',
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -59,7 +59,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         session,
       });
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      dataStream.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

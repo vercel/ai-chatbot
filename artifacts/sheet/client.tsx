@@ -17,10 +17,10 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},
   onStreamPart: ({ setArtifact, streamPart }) => {
-    if (streamPart.type === 'sheet-delta') {
+    if (streamPart.type === 'data-artifacts-sheet-delta') {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
-        content: streamPart.content as string,
+        content: streamPart.value as string,
         isVisible: true,
         status: 'streaming',
       }));
@@ -96,7 +96,9 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
-          content: 'Can you please format and clean the data?',
+          parts: [
+            { type: 'text', text: 'Can you please format and clean the data?' },
+          ],
         });
       },
     },
@@ -106,8 +108,12 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
-          content:
-            'Can you please analyze and visualize the data by creating a new code artifact in python?',
+          parts: [
+            {
+              type: 'text',
+              text: 'Can you please analyze and visualize the data by creating a new code artifact in python?',
+            },
+          ],
         });
       },
     },

@@ -1,12 +1,12 @@
-import { DataStreamWriter, tool } from 'ai';
-import { Session } from 'next-auth';
+import { tool, type UIMessageStreamWriter } from 'ai';
+import type { Session } from 'next-auth';
 import { z } from 'zod';
-import { getDocumentById, saveDocument } from '@/lib/db/queries';
+import { getDocumentById } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 
 interface UpdateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
 }
 
 export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
@@ -27,9 +27,9 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         };
       }
 
-      dataStream.writeData({
-        type: 'clear',
-        content: document.title,
+      dataStream.write({
+        type: 'data-artifacts-clear',
+        data: document.title,
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -48,7 +48,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         session,
       });
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      dataStream.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,
