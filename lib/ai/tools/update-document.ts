@@ -3,6 +3,7 @@ import { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
+import { generateUUID } from '@/lib/utils';
 
 interface UpdateDocumentProps {
   session: Session;
@@ -41,6 +42,9 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         throw new Error(`No document handler found for kind: ${document.kind}`);
       }
 
+      const documentId = generateUUID();
+      document.id = documentId;
+
       await documentHandler.onUpdateDocument({
         document,
         description,
@@ -51,7 +55,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       dataStream.writeData({ type: 'finish', content: '' });
 
       return {
-        id,
+        id: documentId,
         title: document.title,
         kind: document.kind,
         content: 'The document has been updated successfully.',
