@@ -27,9 +27,8 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
         if (csv) {
           dataStream.write({
-            // @ts-expect-error todo: need to handle data part
-            type: 'sheet-delta',
-            content: csv,
+            type: 'data-artifacts-sheet-delta',
+            data: csv,
           });
 
           draftContent = csv;
@@ -38,9 +37,8 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
     }
 
     dataStream.write({
-      // @ts-expect-error todo: need to handle data part
-      type: 'sheet-delta',
-      content: draftContent,
+      type: 'data-artifacts-sheet-delta',
+      data: draftContent,
     });
 
     return draftContent;
@@ -66,9 +64,8 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
         if (csv) {
           dataStream.write({
-            // @ts-expect-error todo: need to handle data part
-            type: 'sheet-delta',
-            content: csv,
+            type: 'data-artifacts-sheet-delta',
+            data: csv,
           });
 
           draftContent = csv;

@@ -27,9 +27,8 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
         if (code) {
           dataStream.write({
-            // @ts-expect-error todo: need to handle data part
-            type: 'code-delta',
-            content: code ?? '',
+            type: 'data-artifacts-code-delta',
+            data: code ?? '',
           });
 
           draftContent = code;
@@ -60,9 +59,8 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
         if (code) {
           dataStream.write({
-            // @ts-expect-error todo: need to handle data part
-            type: 'code-delta',
-            content: code ?? '',
+            type: 'data-artifacts-code-delta',
+            data: code ?? '',
           });
 
           draftContent = code;

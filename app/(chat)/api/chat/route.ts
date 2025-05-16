@@ -200,8 +200,6 @@ export async function POST(request: Request) {
           convertToStringStream(stream),
         ),
       );
-
-      // return createUIMessageStreamResponse({ stream });
     } else {
       return createUIMessageStreamResponse({ stream });
     }
@@ -293,10 +291,10 @@ export async function GET(request: Request) {
 
     const restoredStream = createUIMessageStream({
       execute: (buffer) => {
-        // buffer.write({
-        //   type: 'append-message',
-        //   message: JSON.stringify(mostRecentMessage),
-        // });
+        buffer.write({
+          type: 'data-append-in-flight-message',
+          data: mostRecentMessage,
+        });
       },
     });
 

@@ -59,9 +59,8 @@ export const requestSuggestions = ({
         };
 
         dataStream.write({
-          // @ts-expect-error todo: need to handle data part
-          type: 'suggestion',
-          content: suggestion,
+          type: 'data-artifacts-suggestion',
+          data: suggestion,
         });
 
         suggestions.push(suggestion);

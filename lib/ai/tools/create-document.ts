@@ -24,27 +24,23 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       const id = generateUUID();
 
       dataStream.write({
-        // @ts-expect-error todo: need to handle data part
-        type: 'kind',
-        content: kind,
+        type: 'data-artifacts-kind',
+        data: kind,
       });
 
       dataStream.write({
-        // @ts-expect-error todo: need to handle data part
-        type: 'id',
-        content: id,
+        type: 'data-artifacts-id',
+        data: id,
       });
 
       dataStream.write({
-        // @ts-expect-error todo: need to handle data part
-        type: 'title',
-        content: title,
+        type: 'data-artifacts-title',
+        data: title,
       });
 
       dataStream.write({
-        // @ts-expect-error todo: need to handle data part
-        type: 'clear',
-        content: '',
+        type: 'data-artifacts-clear',
+        data: '',
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -63,8 +59,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         session,
       });
 
-      // @ts-expect-error todo: need to handle data part
-      dataStream.write({ type: 'finish', content: '' });
+      dataStream.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

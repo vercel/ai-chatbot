@@ -1,13 +1,10 @@
 'use client';
-
-import type { UIMessage } from 'ai';
-import { defaultChatStore } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import type { VisibilityType } from './visibility-selector';
@@ -20,12 +17,12 @@ import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { ChatSDKError } from '@/lib/errors';
 import { Messages } from './messages';
-import { zodSchema } from '@ai-sdk/provider-utils';
-import { type Attachment, messageMetadataSchema } from '@/lib/types';
+import type { Attachment } from '@/lib/types';
+import { useChatStore } from './chat-store';
+import { useAutoResume } from '@/hooks/use-auto-resume';
 
 export function Chat({
   id,
-  initialMessages,
   initialChatModel,
   initialVisibilityType,
   isReadonly,
@@ -33,7 +30,6 @@ export function Chat({
   autoResume,
 }: {
   id: string;
-  initialMessages: Array<UIMessage>;
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
@@ -46,6 +42,8 @@ export function Chat({
     chatId: id,
     initialVisibilityType,
   });
+
+  const chatStore = useChatStore();
 
   const {
     messages,
@@ -62,23 +60,7 @@ export function Chat({
     id,
     experimental_throttle: 100,
     generateId: generateUUID,
-    chatStore: defaultChatStore({
-      api: '/api/chat',
-      fetch: fetchWithErrorHandlers,
-      // @ts-ignore infer type
-      messageMetadataSchema: zodSchema(messageMetadataSchema),
-      prepareRequestBody: (body) => ({
-        id,
-        message: body.messages.at(-1),
-        selectedChatModel: initialChatModel,
-        selectedVisibilityType: visibilityType,
-      }),
-      chats: {
-        [id]: {
-          messages: initialMessages,
-        },
-      },
-    }),
+    chatStore,
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
@@ -117,13 +99,12 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
-  // useAutoResume({
-  //   autoResume,
-  //   initialMessages,
-  //   experimental_resume,
-  //   data,
-  //   setMessages,
-  // });
+  useAutoResume({
+    autoResume,
+    experimental_resume,
+    messages,
+    setMessages,
+  });
 
   return (
     <>

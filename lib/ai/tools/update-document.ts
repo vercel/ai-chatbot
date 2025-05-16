@@ -28,9 +28,8 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       }
 
       dataStream.write({
-        // @ts-expect-error todo: need to handle data part
-        type: 'clear',
-        content: document.title,
+        type: 'data-artifacts-clear',
+        data: document.title,
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -49,8 +48,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         session,
       });
 
-      // @ts-expect-error todo: need to handle data part
-      dataStream.write({ type: 'finish', content: '' });
+      dataStream.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

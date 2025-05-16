@@ -29,22 +29,22 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     });
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === 'suggestion') {
+    if (streamPart.type === 'data-artifacts-suggestion') {
       setMetadata((metadata) => {
         return {
           suggestions: [
             ...metadata.suggestions,
-            streamPart.content as Suggestion,
+            streamPart.value as Suggestion,
           ],
         };
       });
     }
 
-    if (streamPart.type === 'text-delta') {
+    if (streamPart.type === 'data-artifacts-text-delta') {
       setArtifact((draftArtifact) => {
         return {
           ...draftArtifact,
-          content: draftArtifact.content + (streamPart.content as string),
+          content: draftArtifact.content + (streamPart.value as string),
           isVisible:
             draftArtifact.status === 'streaming' &&
             draftArtifact.content.length > 400 &&
@@ -90,9 +90,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
             onSaveContent={onSaveContent}
           />
 
-          {metadata &&
-          metadata.suggestions &&
-          metadata.suggestions.length > 0 ? (
+          {metadata?.suggestions && metadata.suggestions.length > 0 ? (
             <div className="md:hidden h-dvh w-12 shrink-0" />
           ) : null}
         </div>

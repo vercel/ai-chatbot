@@ -17,10 +17,10 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},
   onStreamPart: ({ setArtifact, streamPart }) => {
-    if (streamPart.type === 'sheet-delta') {
+    if (streamPart.type === 'data-artifacts-sheet-delta') {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
-        content: streamPart.content as string,
+        content: streamPart.value as string,
         isVisible: true,
         status: 'streaming',
       }));

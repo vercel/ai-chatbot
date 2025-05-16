@@ -73,7 +73,7 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {fileParts && (
+            {fileParts.length > 0 && (
               <div
                 data-testid={`message-file`}
                 className="flex flex-row justify-end gap-2"

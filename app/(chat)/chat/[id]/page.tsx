@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
@@ -8,6 +7,8 @@ import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
 import type { UIMessage } from 'ai';
 import type { Attachment } from '@/lib/types';
+import { DataStreamHandler } from '@/components/data-stream-handler';
+import { ChatStoreProvider } from '@/components/chat-store';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -56,33 +57,41 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   if (!chatModelFromCookie) {
     return (
-      <>
+      <ChatStoreProvider
+        id={id}
+        initialChatModel={DEFAULT_CHAT_MODEL}
+        visibilityType={chat.visibility}
+        initialMessages={convertToUIMessages(messagesFromDb)}
+      >
         <Chat
           id={chat.id}
-          initialMessages={convertToUIMessages(messagesFromDb)}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
           session={session}
           autoResume={true}
         />
-        {/* <DataStreamHandler id={id} /> */}
-      </>
+        <DataStreamHandler id={id} />
+      </ChatStoreProvider>
     );
   }
 
   return (
-    <>
+    <ChatStoreProvider
+      id={id}
+      initialChatModel={chatModelFromCookie.value}
+      visibilityType={chat.visibility}
+      initialMessages={convertToUIMessages(messagesFromDb)}
+    >
       <Chat
         id={chat.id}
-        initialMessages={convertToUIMessages(messagesFromDb)}
         initialChatModel={chatModelFromCookie.value}
         initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}
         session={session}
         autoResume={true}
       />
-      {/* <DataStreamHandler id={id} /> */}
-    </>
+      <DataStreamHandler id={id} />
+    </ChatStoreProvider>
   );
 }

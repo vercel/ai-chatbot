@@ -23,9 +23,8 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
         draftContent += delta.text;
 
         dataStream.write({
-          // @ts-expect-error todo: need to handle data part
-          type: 'text-delta',
-          content: delta.text,
+          type: 'data-artifacts-text-delta',
+          data: delta.text,
         });
       }
     }
@@ -56,9 +55,8 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       if (type === 'text') {
         draftContent += delta.text;
         dataStream.write({
-          // @ts-expect-error todo: need to handle data part
-          type: 'text-delta',
-          content: delta.text,
+          type: 'data-artifacts-text-delta',
+          data: delta.text,
         });
       }
     }
