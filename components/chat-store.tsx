@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 import { defaultChatStore, type UIMessage } from 'ai';
-import { fetchWithErrorHandlers } from '@/lib/utils';
+import { fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
 import { zodSchema } from '@ai-sdk/provider-utils';
 import { messageMetadataSchema } from '@/lib/types';
 
@@ -46,6 +46,7 @@ export function ChatStoreProvider({
         api: '/api/chat',
         fetch: fetchWithErrorHandlers,
         messageMetadataSchema: zodSchema(messageMetadataSchema),
+        generateId: generateUUID,
         prepareRequestBody: (body) => ({
           id,
           message: body.messages.at(-1),
