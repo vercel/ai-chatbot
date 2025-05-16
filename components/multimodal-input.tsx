@@ -1,6 +1,6 @@
 'use client';
 
-import type { Attachment, UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import type React from 'react';
 import {
@@ -27,6 +27,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
+import type { Attachment } from '@/lib/types';
 
 function PureMultimodalInput({
   chatId,
@@ -113,7 +114,12 @@ function PureMultimodalInput({
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
     handleSubmit(undefined, {
-      experimental_attachments: attachments,
+      files: attachments.map((attachment) => ({
+        url: attachment.url,
+        name: attachment.name,
+        mediaType: attachment.contentType,
+        type: 'file',
+      })),
     });
 
     setAttachments([]);

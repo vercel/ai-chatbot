@@ -1,9 +1,9 @@
-import { CoreMessage, LanguageModelV1StreamPart } from 'ai';
 import { TEST_PROMPTS } from './basic';
+import type { ModelMessage, TextStreamPart } from 'ai';
 
 export function compareMessages(
-  firstMessage: CoreMessage,
-  secondMessage: CoreMessage,
+  firstMessage: ModelMessage,
+  secondMessage: ModelMessage,
 ): boolean {
   if (firstMessage.role !== secondMessage.role) return false;
 
@@ -39,7 +39,8 @@ export function compareMessages(
   return true;
 }
 
-const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+// @ts-expect-error todo: need to fix type
+const textToDeltas = (text: string): TextStreamPart[] => {
   const deltas = text
     .split(' ')
     .map((char) => ({ type: 'text-delta' as const, textDelta: `${char} ` }));
@@ -47,7 +48,8 @@ const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
   return deltas;
 };
 
-const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+// @ts-expect-error todo: need to handle data part
+const reasoningToDeltas = (text: string): TextStreamPart[] => {
   const deltas = text
     .split(' ')
     .map((char) => ({ type: 'reasoning' as const, textDelta: `${char} ` }));
@@ -56,9 +58,10 @@ const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
 };
 
 export const getResponseChunksByPrompt = (
-  prompt: CoreMessage[],
-  isReasoningEnabled: boolean = false,
-): Array<LanguageModelV1StreamPart> => {
+  prompt: ModelMessage[],
+  isReasoningEnabled = false,
+  // @ts-expect-error todo: need to handle data part
+): TextStreamPart[] => {
   const recentMessage = prompt.at(-1);
 
   if (!recentMessage) {

@@ -1,13 +1,13 @@
 import { simulateReadableStream } from 'ai';
-import { MockLanguageModelV1 } from 'ai/test';
+import { MockLanguageModelV2 } from 'ai/test';
 import { getResponseChunksByPrompt } from '@/tests/prompts/utils';
 
-export const chatModel = new MockLanguageModelV1({
+export const chatModel = new MockLanguageModelV2({
   doGenerate: async () => ({
-    rawCall: { rawPrompt: null, rawSettings: {} },
+    content: [{ type: 'text', text: 'Hello, world!' }],
     finishReason: 'stop',
-    usage: { promptTokens: 10, completionTokens: 20 },
-    text: `Hello, world!`,
+    usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+    warnings: [],
   }),
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
@@ -15,16 +15,15 @@ export const chatModel = new MockLanguageModelV1({
       initialDelayInMs: 1000,
       chunks: getResponseChunksByPrompt(prompt),
     }),
-    rawCall: { rawPrompt: null, rawSettings: {} },
   }),
 });
 
-export const reasoningModel = new MockLanguageModelV1({
+export const reasoningModel = new MockLanguageModelV2({
   doGenerate: async () => ({
-    rawCall: { rawPrompt: null, rawSettings: {} },
+    content: [{ type: 'text', text: 'Hello, world!' }],
     finishReason: 'stop',
-    usage: { promptTokens: 10, completionTokens: 20 },
-    text: `Hello, world!`,
+    usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+    warnings: [],
   }),
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
@@ -36,24 +35,27 @@ export const reasoningModel = new MockLanguageModelV1({
   }),
 });
 
-export const titleModel = new MockLanguageModelV1({
+export const titleModel = new MockLanguageModelV2({
   doGenerate: async () => ({
-    rawCall: { rawPrompt: null, rawSettings: {} },
+    content: [{ type: 'text', text: 'Hello' }],
     finishReason: 'stop',
-    usage: { promptTokens: 10, completionTokens: 20 },
-    text: `This is a test title`,
+    usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+    warnings: [],
   }),
   doStream: async () => ({
     stream: simulateReadableStream({
       chunkDelayInMs: 500,
       initialDelayInMs: 1000,
       chunks: [
-        { type: 'text-delta', textDelta: 'This is a test title' },
+        { type: 'text', text: 'This is a test title' },
         {
           type: 'finish',
           finishReason: 'stop',
-          logprobs: undefined,
-          usage: { completionTokens: 10, promptTokens: 3 },
+          usage: {
+            inputTokens: 10,
+            outputTokens: 20,
+            totalTokens: 30,
+          },
         },
       ],
     }),
@@ -61,12 +63,12 @@ export const titleModel = new MockLanguageModelV1({
   }),
 });
 
-export const artifactModel = new MockLanguageModelV1({
+export const artifactModel = new MockLanguageModelV2({
   doGenerate: async () => ({
-    rawCall: { rawPrompt: null, rawSettings: {} },
+    content: [{ type: 'text', text: 'Hello, world!' }],
     finishReason: 'stop',
-    usage: { promptTokens: 10, completionTokens: 20 },
-    text: `Hello, world!`,
+    usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+    warnings: [],
   }),
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({

@@ -1,6 +1,7 @@
 'use client';
 
-import type { Attachment, UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
+import { defaultChatStore } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -9,7 +10,6 @@ import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
@@ -18,8 +18,10 @@ import { toast } from './toast';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
+import { Messages } from './messages';
+import { zodSchema } from '@ai-sdk/provider-utils';
+import { type Attachment, messageMetadataSchema } from '@/lib/types';
 
 export function Chat({
   id,
@@ -56,19 +58,26 @@ export function Chat({
     stop,
     reload,
     experimental_resume,
-    data,
   } = useChat({
     id,
-    initialMessages,
     experimental_throttle: 100,
-    sendExtraMessageFields: true,
     generateId: generateUUID,
-    fetch: fetchWithErrorHandlers,
-    experimental_prepareRequestBody: (body) => ({
-      id,
-      message: body.messages.at(-1),
-      selectedChatModel: initialChatModel,
-      selectedVisibilityType: visibilityType,
+    chatStore: defaultChatStore({
+      api: '/api/chat',
+      fetch: fetchWithErrorHandlers,
+      // @ts-ignore infer type
+      messageMetadataSchema: zodSchema(messageMetadataSchema),
+      prepareRequestBody: (body) => ({
+        id,
+        message: body.messages.at(-1),
+        selectedChatModel: initialChatModel,
+        selectedVisibilityType: visibilityType,
+      }),
+      chats: {
+        [id]: {
+          messages: initialMessages,
+        },
+      },
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -92,7 +101,7 @@ export function Chat({
     if (query && !hasAppendedQuery) {
       append({
         role: 'user',
-        content: query,
+        parts: [{ type: 'text', text: query }],
       });
 
       setHasAppendedQuery(true);
@@ -108,13 +117,13 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
-  useAutoResume({
-    autoResume,
-    initialMessages,
-    experimental_resume,
-    data,
-    setMessages,
-  });
+  // useAutoResume({
+  //   autoResume,
+  //   initialMessages,
+  //   experimental_resume,
+  //   data,
+  //   setMessages,
+  // });
 
   return (
     <>

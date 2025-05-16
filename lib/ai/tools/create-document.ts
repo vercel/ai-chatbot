@@ -1,7 +1,7 @@
 import { generateUUID } from '@/lib/utils';
-import { DataStreamWriter, tool } from 'ai';
+import { tool, type UIMessageStreamWriter } from 'ai';
 import { z } from 'zod';
-import { Session } from 'next-auth';
+import type { Session } from 'next-auth';
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
@@ -9,7 +9,7 @@ import {
 
 interface CreateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
 }
 
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
@@ -23,22 +23,26 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
     execute: async ({ title, kind }) => {
       const id = generateUUID();
 
-      dataStream.writeData({
+      dataStream.write({
+        // @ts-expect-error todo: need to handle data part
         type: 'kind',
         content: kind,
       });
 
-      dataStream.writeData({
+      dataStream.write({
+        // @ts-expect-error todo: need to handle data part
         type: 'id',
         content: id,
       });
 
-      dataStream.writeData({
+      dataStream.write({
+        // @ts-expect-error todo: need to handle data part
         type: 'title',
         content: title,
       });
 
-      dataStream.writeData({
+      dataStream.write({
+        // @ts-expect-error todo: need to handle data part
         type: 'clear',
         content: '',
       });
@@ -59,7 +63,8 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         session,
       });
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      // @ts-expect-error todo: need to handle data part
+      dataStream.write({ type: 'finish', content: '' });
 
       return {
         id,

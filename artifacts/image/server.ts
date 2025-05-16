@@ -15,7 +15,8 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     draftContent = image.base64;
 
-    dataStream.writeData({
+    dataStream.write({
+      // @ts-expect-error todo: need to handle data part
       type: 'image-delta',
       content: image.base64,
     });
@@ -33,7 +34,8 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     draftContent = image.base64;
 
-    dataStream.writeData({
+    dataStream.write({
+      // @ts-expect-error todo: need to handle data part
       type: 'image-delta',
       content: image.base64,
     });

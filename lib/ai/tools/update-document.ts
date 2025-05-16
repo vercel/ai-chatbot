@@ -1,12 +1,12 @@
-import { DataStreamWriter, tool } from 'ai';
-import { Session } from 'next-auth';
+import { tool, type UIMessageStreamWriter } from 'ai';
+import type { Session } from 'next-auth';
 import { z } from 'zod';
-import { getDocumentById, saveDocument } from '@/lib/db/queries';
+import { getDocumentById } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 
 interface UpdateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
 }
 
 export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
@@ -27,7 +27,8 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         };
       }
 
-      dataStream.writeData({
+      dataStream.write({
+        // @ts-expect-error todo: need to handle data part
         type: 'clear',
         content: document.title,
       });
@@ -48,7 +49,8 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         session,
       });
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      // @ts-expect-error todo: need to handle data part
+      dataStream.write({ type: 'finish', content: '' });
 
       return {
         id,

@@ -9,6 +9,7 @@ export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
   experimental_resume: UseChatHelpers['experimental_resume'];
+  // @ts-expect-error todo: need to handle data part
   data: UseChatHelpers['data'];
   setMessages: UseChatHelpers['setMessages'];
 }
