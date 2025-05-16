@@ -62,14 +62,33 @@ export const {
         return { ...user, type: 'regular' };
       },
     }),
+    // Credentials({
+    //   id: 'guest',
+    //   credentials: {},
+    //   async authorize() {
+    //     const [guestUser] = await createGuestUser();
+    //     return { ...guestUser, type: 'guest' };
+    //   },
+    // }),
     Credentials({
       id: 'guest',
       credentials: {},
       async authorize() {
+        // In development mode, return a mock guest user without DB access
+        if (process.env.NODE_ENV === 'development') {
+          return {
+            id: 'guest-id-123',
+            email: 'guest@example.com',
+            type: 'guest',
+          };
+        }
+
+        // In production or if DB is connected, use real guest user creation
         const [guestUser] = await createGuestUser();
         return { ...guestUser, type: 'guest' };
       },
-    }),
+   }),
+
   ],
   callbacks: {
     async jwt({ token, user }) {

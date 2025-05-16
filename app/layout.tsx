@@ -84,3 +84,5 @@ export default async function RootLayout({
     </html>
   );
 }
+
+//"build": "tsx lib/db/migrate && next build",
