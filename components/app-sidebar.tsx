@@ -7,6 +7,9 @@ import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
+import image from "@/public/images/circle.png";
+import { SidebarSetupProgress } from '@/components/sidebar-setup-progress';
+import { SidebarSearchInput } from '@/components/sidebar-search-input';
 import {
   Sidebar,
   SidebarContent,
@@ -32,9 +35,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               onClick={() => {
                 setOpenMobile(false);
               }}
-              className="flex flex-row gap-3 items-center"
+              className="flex flex-row gap-1 items-center pl-4"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
+               <img
+             src="/images/circle.png"
+            alt="Logo"
+             className="w-5 h-5"
+              />
+              <span className="text-lg font-semibold text-black  hover:bg-muted rounded-md cursor-pointer">
                 DentaMind AI
               </span>
             </Link>
@@ -56,12 +64,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               <TooltipContent align="end">New Chat</TooltipContent>
             </Tooltip>
           </div>
+        <SidebarSetupProgress />
+        <SidebarSearchInput />
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter>
+        {user && <SidebarUserNav user={user} />}
+        </SidebarFooter>
     </Sidebar>
   );
 }

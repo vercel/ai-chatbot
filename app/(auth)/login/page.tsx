@@ -7,6 +7,7 @@ import { toast } from '@/components/toast';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 import { apiClient } from '@/lib/api-client';
+import Image from "@/public/images/circle.png";
 
 export default function Page() {
   const router = useRouter();
@@ -43,10 +44,11 @@ export default function Page() {
       <div className="flex w-full h-full  overflow-hidden shadow-md md:flex-row flex-col bg-white dark:bg-zinc-900">
 
         {/* Left Panel */}
-        <div className="w-1/2 flex items-center justify-center bg-[#D1EBEB] text-black p-10 ">
+        <div className="w-1/2 flex items-center justify-center bg-[#f1e7da] text-black p-10 ">
           <div className="max-w-md space-y-4">
             <div className="flex items-center space-x-2">
-              <h2 className="text-lg font-semibold text-green-700">★ Dental AI</h2>
+              <img src="/images/circle.png" alt="image" />
+              <h2 className="text-lg font-semibold text-black-700">DentaMind AI</h2>
             </div>
             <h1 className="text-3xl font-bold">Chat with exciting tool</h1>
             <p className="text-sm text-gray-800">

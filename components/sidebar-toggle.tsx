@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react';
+import { ArrowRightIcon } from '@radix-ui/react-icons'; 
 
 import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import {
@@ -24,7 +25,8 @@ export function SidebarToggle({
           variant="outline"
           className="md:px-2 md:h-fit"
         >
-          <SidebarLeftIcon size={16} />
+          {/* <SidebarLeftIcon size={16} /> */}
+          <ArrowRightIcon width={16} height={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent align="start">Toggle Sidebar</TooltipContent>
