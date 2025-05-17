@@ -77,9 +77,9 @@ function PureDocumentToolResult({
           <MessageIcon />
         ) : null}
       </div>
-      <div className="text-left">
+      {/* <div className="text-left">
         {`${getActionText(type, 'past')} "${result.title}"`}
-      </div>
+      </div> */}
     </button>
   );
 }
