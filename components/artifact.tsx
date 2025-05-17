@@ -157,7 +157,7 @@ function PureArtifact({
             const newDocument = {
               ...currentDocument,
               content: updatedContent,
-              createdAt: new Date().toISOString(),
+              createdAt: new Date(),
             };
 
             return [...currentDocuments, newDocument];

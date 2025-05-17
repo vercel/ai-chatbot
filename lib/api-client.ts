@@ -9,8 +9,10 @@ import {
   DocumentRequest,
   SuggestionRequest,
   ApiError,
-  ApiResponse
+  ApiResponse,
+  Vote
 } from './api-client.types';
+import type { ChatVisibilityUpdate } from './api-client.types';
 
 export class ApiClient {
   private client: AxiosInstance;
@@ -177,9 +179,17 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateChatVisibility(chatId: string, data: { isVisible: boolean }) {
-    const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
-    return response.data;
+  // async updateChatVisibility(chatId: string, data: { isVisible: boolean }) {
+  //   const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
+  //   return response.data;
+  // }
+  // async updateChatVisibility(chatId: string, data: ChatVisibilityUpdate) {
+  // const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
+  // return response.data;
+  // }
+  async updateChatVisibility(chatId: string, data: ChatVisibilityUpdate) {
+  const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
+  return response.data;
   }
 
   // Message APIs
@@ -347,3 +357,4 @@ export class ApiClient {
 }
 
 export const apiClient = ApiClient.getInstance();
+export type { Vote }; // 👈 Add this to export the type
