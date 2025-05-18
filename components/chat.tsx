@@ -17,7 +17,7 @@ import { toast } from './toast';
 import type { Session } from '@/lib/types/auth';
 import { useSearchParams } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
-import type { Vote } from '@/lib/api-client';
+import type { Vote } from '@/lib/api-client.types';
 import { uuid } from 'drizzle-orm/pg-core';
 
 export function Chat({

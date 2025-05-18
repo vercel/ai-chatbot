@@ -95,10 +95,9 @@ function PureArtifact({
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
     artifact.documentId !== 'init' && artifact.status !== 'streaming'
-      ? () => {
-          return apiClient.getDocumentById(artifact.documentId);
-        }
+      ? `/api/document/${artifact.documentId}`
       : null,
+    () => apiClient.getDocumentById(artifact.documentId),
   );
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
@@ -110,7 +109,6 @@ function PureArtifact({
   useEffect(() => {
     if (documents && documents.length > 0) {
       const mostRecentDocument = documents.at(-1);
-      debugger;
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
@@ -133,8 +131,17 @@ function PureArtifact({
     (updatedContent: string) => {
       if (!artifact) return;
 
+      const cacheKey = `/api/document/${artifact.documentId}`;
+
+      // Update UI state immediately
+      setArtifact((currentArtifact) => ({
+        ...currentArtifact,
+        content: updatedContent,
+      }));
+
+      // Update document in the background
       mutate<Array<Document>>(
-        () => apiClient.getDocumentById(artifact.documentId),
+        cacheKey,
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
@@ -146,28 +153,38 @@ function PureArtifact({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await apiClient.updateDocument(artifact.documentId, {
-              title: artifact.title,
-              content: updatedContent,
-              kind: artifact.kind,
-            });
+            try {
+              await apiClient.updateDocument(currentDocument.id!, {
+                title: artifact.title,
+                content: updatedContent,
+                kind: artifact.kind,
+                userId: currentDocument.userId,
+              });
 
-            setIsContentDirty(false);
+              setIsContentDirty(false);
 
-            const newDocument = {
-              ...currentDocument,
-              content: updatedContent,
-              createdAt: new Date(),
-            };
+              // Create new document version with all required fields
+              const newDocument = {
+                id: currentDocument.id,
+                title: artifact.title,
+                content: updatedContent,
+                kind: artifact.kind,
+                userId: currentDocument.userId,
+                createdAt: new Date(),
+              } satisfies Document;
 
-            return [...currentDocuments, newDocument];
+              return [...currentDocuments, newDocument];
+            } catch (error) {
+              console.error('Failed to update document:', error);
+              throw error;
+            }
           }
           return currentDocuments;
         },
         { revalidate: false },
       );
     },
-    [artifact, mutate],
+    [artifact, mutate, setArtifact],
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
