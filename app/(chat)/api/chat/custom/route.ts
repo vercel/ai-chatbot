@@ -3,11 +3,11 @@ import {
   createDataStreamResponse,
   smoothStream,
   streamText,
-} from "ai";
-import { auth } from "@/app/(auth)/auth";
-import { generateUUID, getMostRecentUserMessage } from "@/lib/utils";
-import { isProductionEnvironment } from "@/lib/constants";
-import { myProvider } from "@/lib/ai/providers";
+} from 'ai';
+import { auth } from '@/app/(auth)/auth';
+import { generateUUID, getMostRecentUserMessage } from '@/lib/utils';
+import { isProductionEnvironment } from '@/lib/constants';
+import { myProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60;
 
@@ -26,13 +26,13 @@ export async function POST(request: Request) {
     const session = await auth();
 
     if (!session || !session.user || !session.user.id) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     const userMessage = getMostRecentUserMessage(messages);
 
     if (!userMessage) {
-      return new Response("No user message found", { status: 400 });
+      return new Response('No user message found', { status: 400 });
     }
 
     return createDataStreamResponse({
@@ -42,17 +42,17 @@ export async function POST(request: Request) {
           messages,
           maxSteps: 5,
           system:
-            id === "draft-emails"
+            id === 'draft-emails'
               ? draftEmails
-              : id === "rephrase-text-professionally"
+              : id === 'rephrase-text-professionally'
                 ? rephraseaTextProfessionally
-                : "",
+                : '',
 
-          experimental_transform: smoothStream({ chunking: "word" }),
+          experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
-            functionId: "stream-text",
+            functionId: 'stream-text',
           },
         });
 
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    return new Response("An error occurred while processing your request!", {
+    return new Response('An error occurred while processing your request!', {
       status: 404,
     });
   }

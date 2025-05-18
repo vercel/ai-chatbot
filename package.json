@@ -22,6 +22,7 @@
     "@ai-sdk/groq": "^1.2.9",
     "@ai-sdk/openai-compatible": "^0.2.14",
     "@ai-sdk/react": "^1.2.12",
+    "@posthog/ai": "^4.4.0",
     "@radix-ui/react-alert-dialog": "^1.1.13",
     "@radix-ui/react-dialog": "^1.1.13",
     "@radix-ui/react-dropdown-menu": "^2.1.14",

@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   useActionState,
   useCallback,
   useEffect,
   useRef,
   useState,
-} from "react";
-import { toast } from "@/components/toast";
+} from 'react';
+import { toast } from '@/components/toast';
 
-import { AuthForm } from "@/components/auth-form";
-import { SubmitButton } from "@/components/submit-button";
+import { AuthForm } from '@/components/auth-form';
+import { SubmitButton } from '@/components/submit-button';
 
-import { login, type LoginActionState } from "../actions";
+import { login, type LoginActionState } from '../actions';
 
 export default function Page() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [turnstileStatus, setTurnstileStatus] = useState<
-    "success" | "error" | "expired" | "required"
-  >("required");
-  const turnstileRef = useRef<string>("");
+    'success' | 'error' | 'expired' | 'required'
+  >('required');
+  const turnstileRef = useRef<string>('');
 
   const handleTurnstileStatus = useCallback(
-    (status: "success" | "error" | "expired" | "required") => {
+    (status: 'success' | 'error' | 'expired' | 'required') => {
       setTurnstileStatus(status);
     },
     [],
@@ -36,61 +36,61 @@ export default function Page() {
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
     {
-      status: "idle",
+      status: 'idle',
     },
   );
 
   useEffect(() => {
-    if (state.status === "failed") {
-      handleTurnstileStatus("required");
+    if (state.status === 'failed') {
+      handleTurnstileStatus('required');
       toast({
-        type: "error",
-        description: "Invalid credentials!",
+        type: 'error',
+        description: 'Invalid credentials!',
       });
-    } else if (state.status === "invalid_data") {
-      handleTurnstileStatus("required");
+    } else if (state.status === 'invalid_data') {
+      handleTurnstileStatus('required');
       toast({
-        type: "error",
-        description: "Failed validating your submission!",
+        type: 'error',
+        description: 'Failed validating your submission!',
       });
-    } else if (state.status === "invalid_captcha") {
-      handleTurnstileStatus("required");
+    } else if (state.status === 'invalid_captcha') {
+      handleTurnstileStatus('required');
       toast({
-        type: "error",
-        description: "Failed validating the reCAPTCHA!",
+        type: 'error',
+        description: 'Failed validating the reCAPTCHA!',
       });
-    } else if (state.status === "success") {
+    } else if (state.status === 'success') {
       setIsSuccessful(true);
       router.refresh();
     }
   }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get("email") as string);
+    setEmail(formData.get('email') as string);
     switch (turnstileStatus) {
-      case "required":
-        turnstileRef.current = "required";
+      case 'required':
+        turnstileRef.current = 'required';
         toast({
-          type: "error",
-          description: "Please complete the reCAPTCHA challenge",
+          type: 'error',
+          description: 'Please complete the reCAPTCHA challenge',
         });
         break;
-      case "expired":
-        turnstileRef.current = "expired";
+      case 'expired':
+        turnstileRef.current = 'expired';
         toast({
-          type: "error",
-          description: "Please complete the reCAPTCHA challenge",
+          type: 'error',
+          description: 'Please complete the reCAPTCHA challenge',
         });
         break;
-      case "error":
-        turnstileRef.current = "error";
+      case 'error':
+        turnstileRef.current = 'error';
         toast({
-          type: "error",
-          description: "Please complete the reCAPTCHA challenge",
+          type: 'error',
+          description: 'Please complete the reCAPTCHA challenge',
         });
         break;
-      case "success":
-        turnstileRef.current = "success";
+      case 'success':
+        turnstileRef.current = 'success';
         formAction(formData);
         break;
     }
@@ -120,7 +120,7 @@ export default function Page() {
             >
               Sign up
             </Link>
-            {" for free."}
+            {' for free.'}
           </p>
         </AuthForm>
       </div>

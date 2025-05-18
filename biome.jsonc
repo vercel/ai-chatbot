@@ -9,7 +9,8 @@
       "node_modules",
       ".next",
       "public",
-      ".vercel"
+      ".vercel",
+      ".github"
     ]
   },
   "vcs": {

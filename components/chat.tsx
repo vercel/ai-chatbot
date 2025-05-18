@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type { Attachment, UIMessage } from "ai";
-import { useChat } from "@ai-sdk/react";
-import { useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { ChatHeader } from "@/components/chat-header";
-import type { Vote } from "@/lib/db/schema";
-import { convertToUIMessages, fetcher, generateUUID } from "@/lib/utils";
-import { MultimodalInput } from "./multimodal-input";
-import { Messages } from "./messages";
-import type { VisibilityType } from "./visibility-selector";
-import { toast } from "sonner";
+import type { Attachment, UIMessage } from 'ai';
+import { useChat } from '@ai-sdk/react';
+import { useState } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { ChatHeader } from '@/components/chat-header';
+import type { Vote } from '@/lib/db/schema';
+import { convertToUIMessages, fetcher, generateUUID } from '@/lib/utils';
+import { MultimodalInput } from './multimodal-input';
+import { Messages } from './messages';
+import type { VisibilityType } from './visibility-selector';
+import { toast } from 'sonner';
 
 export function Chat({
   id,
@@ -45,10 +45,10 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate("/api/history");
+      mutate('/api/history');
     },
     onError: () => {
-      toast.error("An error occured, please try again!");
+      toast.error('An error occured, please try again!');
     },
   });
 
@@ -129,11 +129,11 @@ export function PrivateCodeChat({
       {
         id,
         chatId: generateUUID(),
-        role: "system",
+        role: 'system',
         createdAt: new Date(),
         parts: [
           {
-            type: "text",
+            type: 'text',
             text: systemPrompt,
           },
         ],
@@ -143,7 +143,7 @@ export function PrivateCodeChat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    api: "/api/chat/custom",
+    api: '/api/chat/custom',
   });
 
   const [attachments, setAttachments] = useState<Array<any>>([]);
