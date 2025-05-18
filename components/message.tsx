@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
-import type { Vote } from '@/lib/api-client.types';
+import type { Vote, VoteRequest } from '@/lib/api-client.types';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
@@ -20,6 +20,7 @@ import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 
+
 const PurePreviewMessage = ({
   chatId,
   message,
@@ -31,7 +32,7 @@ const PurePreviewMessage = ({
 }: {
   chatId: string;
   message: UIMessage;
-  vote: Vote | undefined;
+  vote: Vote | VoteRequest | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
@@ -137,6 +138,7 @@ const PurePreviewMessage = ({
 
                       <MessageEditor
                         key={message.id}
+                        chatId={chatId} 
                         message={message}
                         setMode={setMode}
                         setMessages={setMessages}

@@ -101,10 +101,10 @@ export default function Page({ params }: { params:Promise<{ id: string }>  }) {
         selectedChatModel={selectedModel}
         selectedVisibilityType={chat.visibility}
         isReadonly={false} // You might want to implement proper readonly logic based on user permissions
-        session={{ 
-          user: { id: '1', email: 'user@example.com', type: 'regular' },
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
-        }}
+        // session={{ 
+        //   user: { id: '1', email: 'user@example.com', type: 'regular' },
+        //   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+        // }}
       />
       <DataStreamHandler id={id} />
     </>
