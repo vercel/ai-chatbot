@@ -54,6 +54,8 @@
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
     "postgres": "^3.4.5",
+    "posthog-js": "^1.242.2",
+    "posthog-node": "^4.17.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-markdown": "^9.1.0",
