@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import type { Document } from '@/lib/api-client.types';
+import type { Document } from '@/lib/api-client';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 
@@ -60,7 +60,7 @@ export const VersionFooter = ({
               () => apiClient.getDocumentById(artifact.documentId),
               await apiClient.deleteDocumentsAfterTimestamp(
                 artifact.documentId,
-                getDocumentTimestampByIndex(documents, currentVersionIndex).getTime()
+                getDocumentTimestampByIndex(documents, currentVersionIndex)
               ),
               { revalidate: false },
             );
