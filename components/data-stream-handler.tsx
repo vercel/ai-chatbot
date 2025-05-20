@@ -24,7 +24,7 @@ export interface DataStreamDelta extends DataUIPart<any> {
 
 export function DataStreamHandler({ id }: { id: string }) {
   const chatStore = useChatStore();
-  const { messages } = useChat({ id, chatStore });
+  const { messages } = useChat({ chatId: id, chatStore });
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
 
@@ -68,21 +68,21 @@ export function DataStreamHandler({ id }: { id: string }) {
           case 'data-artifacts-id':
             return {
               ...draftArtifact,
-              documentId: delta.value,
+              documentId: delta.data,
               status: 'streaming',
             };
 
           case 'data-artifacts-title':
             return {
               ...draftArtifact,
-              title: delta.value,
+              title: delta.data,
               status: 'streaming',
             };
 
           case 'data-artifacts-suggestion':
             return {
               ...draftArtifact,
-              kind: delta.value,
+              kind: delta.data,
               status: 'streaming',
             };
 

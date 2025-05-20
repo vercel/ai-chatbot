@@ -47,7 +47,7 @@ export function useAutoResume({
     const dataPart = dataStream.at(-1) as DataUIPart<any>;
 
     if (dataPart.type === 'data-append-in-flight-message') {
-      const message = JSON.parse(dataPart.value) as UIMessage;
+      const message = JSON.parse(dataPart.data) as UIMessage;
       setMessages([...messages, message]);
     }
   }, [messages, setMessages, dataStream]);

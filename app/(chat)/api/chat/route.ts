@@ -2,6 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  maxSteps,
   smoothStream,
   streamText,
   type UIMessage,
@@ -148,7 +149,7 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(messages),
-          maxSteps: 5,
+          continueUntil: maxSteps(5),
           experimental_transform: [smoothStream()],
           tools: {
             getWeather,

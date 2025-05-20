@@ -58,7 +58,7 @@ export function Chat({
     reload,
     experimental_resume,
   } = useChat({
-    id,
+    chatId: id,
     experimental_throttle: 100,
     generateId: generateUUID,
     chatStore,
