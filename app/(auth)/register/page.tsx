@@ -68,11 +68,31 @@ export default function Page() {
              <img src="/images/circle.png" alt="image" />
             <h2 className="text-lg font-semibold text-black-700">DentaMind AI</h2>
            </div>
-            <h1 className="text-3xl font-bold">Chat with exciting tool</h1>
-            <p className="text-sm text-gray-800">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
+            {/* Stepper UI */}
+<div className="mt-10 space-y-8">
+  <div className="flex flex-col space-y-6">
+    {/* Step 1 */}
+    <div className="flex items-start space-x-4">
+      <div className="flex flex-col items-center">
+        <div className="w-6 h-6 flex items-center justify-center rounded-full bg-black text-white text-xs font-bold">
+          ✓
+        </div>
+        <div className="w-px py-2 h-10 bg-gray-400 mt-4" />
+      </div>
+      <div className="text-black font-semibold text-sm">Business Information</div>
+    </div>
+
+    {/* Step 2 */}
+    <div className="flex items-start  space-x-4">
+      <div className="flex flex-col items-center">
+        <div className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-gray-400 text-gray-400 text-xs">
+        </div>
+      </div>
+      <div className="text-gray-500 text-sm">Business Address</div>
+    </div>
+  </div>
+</div>
+
           </div>
         </div>
 
