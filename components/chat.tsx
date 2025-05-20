@@ -58,7 +58,7 @@ export function Chat({
     reload,
     experimental_resume,
   } = useChat({
-    id,
+    chatId: id,
     experimental_throttle: 100,
     generateId: generateUUID,
     chatStore,
@@ -82,15 +82,18 @@ export function Chat({
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
-      append({
-        role: 'user',
-        parts: [{ type: 'text', text: query }],
+      chatStore.submitMessage({
+        chatId: id,
+        message: {
+          role: 'user',
+          parts: [{ type: 'text', text: query }],
+        },
       });
 
       setHasAppendedQuery(true);
       window.history.replaceState({}, '', `/chat/${id}`);
     }
-  }, [query, append, hasAppendedQuery, id]);
+  }, [query, append, hasAppendedQuery, id, chatStore]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -101,10 +104,9 @@ export function Chat({
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   useAutoResume({
+    chatId: id,
     autoResume,
     experimental_resume,
-    messages,
-    setMessages,
   });
 
   return (
@@ -123,7 +125,6 @@ export function Chat({
           status={status}
           votes={votes}
           messages={messages}
-          setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
@@ -135,14 +136,10 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit}
               status={status}
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
               selectedVisibilityType={visibilityType}
             />
           )}
@@ -158,9 +155,6 @@ export function Chat({
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}
-        append={append}
-        messages={messages}
-        setMessages={setMessages}
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}

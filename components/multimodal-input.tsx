@@ -1,6 +1,4 @@
 'use client';
-
-import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import type React from 'react';
 import {
@@ -28,6 +26,7 @@ import { ArrowDown } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment } from '@/lib/types';
+import { useChatStore } from './chat-store';
 
 function PureMultimodalInput({
   chatId,
@@ -37,10 +36,6 @@ function PureMultimodalInput({
   stop,
   attachments,
   setAttachments,
-  messages,
-  setMessages,
-  append,
-  handleSubmit,
   className,
   selectedVisibilityType,
 }: {
@@ -51,13 +46,12 @@ function PureMultimodalInput({
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
-  append: UseChatHelpers['append'];
-  handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
   selectedVisibilityType: VisibilityType;
 }) {
+  const chatStore = useChatStore();
+  const messages = chatStore.getMessages(chatId);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
@@ -113,29 +107,38 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    handleSubmit(undefined, {
-      files: attachments.map((attachment) => ({
-        url: attachment.url,
-        name: attachment.name,
-        mediaType: attachment.contentType,
-        type: 'file',
-      })),
+    const fileParts = attachments.map((attachment) => ({
+      type: 'file' as const,
+      name: attachment.name,
+      url: attachment.url,
+      mediaType: attachment.contentType,
+    }));
+
+    chatStore.submitMessage({
+      chatId,
+      message: {
+        role: 'user',
+        parts: [...fileParts, { type: 'text', text: input }],
+      },
     });
 
     setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
+    setInput('');
 
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
   }, [
     attachments,
-    handleSubmit,
     setAttachments,
     setLocalStorageInput,
     width,
     chatId,
+    input,
+    setInput,
+    chatStore,
   ]);
 
   const uploadFile = async (file: File) => {
@@ -230,7 +233,6 @@ function PureMultimodalInput({
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
           <SuggestedActions
-            append={append}
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
           />
@@ -302,8 +304,8 @@ function PureMultimodalInput({
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {status === 'submitted' ? (
-          <StopButton stop={stop} setMessages={setMessages} />
+        {status !== 'ready' ? (
+          <StopButton stop={stop} />
         ) : (
           <SendButton
             input={input}
@@ -356,10 +358,8 @@ const AttachmentsButton = memo(PureAttachmentsButton);
 
 function PureStopButton({
   stop,
-  setMessages,
 }: {
-  stop: () => void;
-  setMessages: UseChatHelpers['setMessages'];
+  stop: UseChatHelpers['stop'];
 }) {
   return (
     <Button
@@ -367,8 +367,8 @@ function PureStopButton({
       className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
+
         stop();
-        setMessages((messages) => messages);
       }}
     >
       <StopIcon size={14} />

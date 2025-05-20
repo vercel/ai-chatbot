@@ -1,8 +1,8 @@
 import type { Suggestion } from '@/lib/db/schema';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
-import type { DataStreamDelta } from './data-stream-handler';
 import type { UIArtifact } from './artifact';
+import type { ChatStore } from './chat-store';
 
 export type ArtifactActionContext<M = any> = {
   content: string;
@@ -63,7 +63,7 @@ type ArtifactConfig<T extends string, M = any> = {
   onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setArtifact: Dispatch<SetStateAction<UIArtifact>>;
-    streamPart: DataStreamDelta;
+    streamPart: ChatStore['dataPartSchemas'];
   }) => void;
 };
 
@@ -77,7 +77,7 @@ export class Artifact<T extends string, M = any> {
   readonly onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setArtifact: Dispatch<SetStateAction<UIArtifact>>;
-    streamPart: DataStreamDelta;
+    streamPart: ChatStore['dataPartSchemas'];
   }) => void;
 
   constructor(config: ArtifactConfig<T, M>) {

@@ -4,35 +4,19 @@ import { useChat } from '@ai-sdk/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { artifactDefinitions } from './artifact';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
-import type { DataUIPart } from 'ai';
 import { useChatStore } from './chat-store';
-
-export interface DataStreamDelta extends DataUIPart<any> {
-  type:
-    | 'data-artifacts-text-delta'
-    | 'data-artifacts-code-delta'
-    | 'data-artifacts-sheet-delta'
-    | 'data-artifacts-image-delta'
-    | 'data-artifacts-title'
-    | 'data-artifacts-id'
-    | 'data-artifacts-suggestion'
-    | 'data-artifacts-clear'
-    | 'data-artifacts-finish'
-    | 'data-artifacts-kind';
-  value: any;
-}
 
 export function DataStreamHandler({ id }: { id: string }) {
   const chatStore = useChatStore();
-  const { messages } = useChat({ id, chatStore });
+  const { messages } = useChat({ chatId: id, chatStore });
   const { artifact, setArtifact, setMetadata } = useArtifact();
+
   const lastProcessedIndex = useRef(-1);
 
   const dataStream = useMemo(() => {
     const mostRecentMessage = messages.at(-1);
 
-    // @ts-expect-error fix type error
-    const dataParts: DataUIPart<any>[] = mostRecentMessage
+    const dataParts = mostRecentMessage
       ? mostRecentMessage.parts.filter((part) => part.type.startsWith('data-'))
       : [];
 
@@ -52,7 +36,6 @@ export function DataStreamHandler({ id }: { id: string }) {
 
       if (artifactDefinition?.onStreamPart) {
         artifactDefinition.onStreamPart({
-          // @ts-expect-error fix type error
           streamPart: delta,
           setArtifact,
           setMetadata,
@@ -68,21 +51,21 @@ export function DataStreamHandler({ id }: { id: string }) {
           case 'data-artifacts-id':
             return {
               ...draftArtifact,
-              documentId: delta.value,
+              documentId: delta.data,
               status: 'streaming',
             };
 
           case 'data-artifacts-title':
             return {
               ...draftArtifact,
-              title: delta.value,
+              title: delta.data,
               status: 'streaming',
             };
 
           case 'data-artifacts-suggestion':
             return {
               ...draftArtifact,
-              kind: delta.value,
+              kind: delta.data,
               status: 'streaming',
             };
 

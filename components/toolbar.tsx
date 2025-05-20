@@ -36,12 +36,7 @@ type ToolProps = {
   isToolbarVisible?: boolean;
   setIsToolbarVisible?: Dispatch<SetStateAction<boolean>>;
   isAnimating: boolean;
-  append: UseChatHelpers['append'];
-  onClick: ({
-    appendMessage,
-  }: {
-    appendMessage: UseChatHelpers['append'];
-  }) => void;
+  onClick: () => void;
 };
 
 const Tool = ({
@@ -52,7 +47,6 @@ const Tool = ({
   isToolbarVisible,
   setIsToolbarVisible,
   isAnimating,
-  append,
   onClick,
 }: ToolProps) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -79,7 +73,6 @@ const Tool = ({
       setSelectedTool(description);
     } else {
       setSelectedTool(null);
-      onClick({ appendMessage: append });
     }
   };
 
@@ -245,7 +238,6 @@ export const Tools = ({
   isToolbarVisible,
   selectedTool,
   setSelectedTool,
-  append,
   isAnimating,
   setIsToolbarVisible,
   tools,
@@ -253,7 +245,6 @@ export const Tools = ({
   isToolbarVisible: boolean;
   selectedTool: string | null;
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
-  append: UseChatHelpers['append'];
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
   tools: Array<ArtifactToolbarItem>;
@@ -276,7 +267,6 @@ export const Tools = ({
               icon={secondaryTool.icon}
               selectedTool={selectedTool}
               setSelectedTool={setSelectedTool}
-              append={append}
               isAnimating={isAnimating}
               onClick={secondaryTool.onClick}
             />
@@ -290,7 +280,6 @@ export const Tools = ({
         setSelectedTool={setSelectedTool}
         isToolbarVisible={isToolbarVisible}
         setIsToolbarVisible={setIsToolbarVisible}
-        append={append}
         isAnimating={isAnimating}
         onClick={primaryTool.onClick}
       />
@@ -301,18 +290,14 @@ export const Tools = ({
 const PureToolbar = ({
   isToolbarVisible,
   setIsToolbarVisible,
-  append,
   status,
   stop,
-  setMessages,
   artifactKind,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
   status: UseChatHelpers['status'];
-  append: UseChatHelpers['append'];
   stop: UseChatHelpers['stop'];
-  setMessages: UseChatHelpers['setMessages'];
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -433,14 +418,12 @@ const PureToolbar = ({
         ) : selectedTool === 'adjust-reading-level' ? (
           <ReadingLevelSelector
             key="reading-level-selector"
-            append={append}
             setSelectedTool={setSelectedTool}
             isAnimating={isAnimating}
           />
         ) : (
           <Tools
             key="tools"
-            append={append}
             isAnimating={isAnimating}
             isToolbarVisible={isToolbarVisible}
             selectedTool={selectedTool}

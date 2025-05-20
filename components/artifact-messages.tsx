@@ -1,19 +1,17 @@
 import { PreviewMessage, ThinkingMessage } from './message';
 import type { Vote } from '@/lib/db/schema';
-import type { UIMessage } from 'ai';
 import { memo } from 'react';
 import equal from 'fast-deep-equal';
 import type { UIArtifact } from './artifact';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
+import { useChatStore } from './chat-store';
 
 interface ArtifactMessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
@@ -23,11 +21,12 @@ function PureArtifactMessages({
   chatId,
   status,
   votes,
-  messages,
-  setMessages,
   reload,
   isReadonly,
 }: ArtifactMessagesProps) {
+  const chatStore = useChatStore();
+  const messages = chatStore.getMessages(chatId);
+
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
@@ -55,7 +54,6 @@ function PureArtifactMessages({
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }
-          setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
           requiresScrollPadding={
@@ -90,7 +88,6 @@ function areEqual(
 
   if (prevProps.status !== nextProps.status) return false;
   if (prevProps.status && nextProps.status) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
 
   return true;

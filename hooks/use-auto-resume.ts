@@ -1,22 +1,27 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import type { DataUIPart, UIMessage } from 'ai';
+import type { DataUIPart } from 'ai';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { useChatStore } from '@/components/chat-store';
+import { useEffect, useMemo } from 'react';
 
 export interface UseAutoResumeParams {
+  chatId: string;
   autoResume: boolean;
   experimental_resume: UseChatHelpers['experimental_resume'];
-  messages: UseChatHelpers['messages'];
-  setMessages: UseChatHelpers['setMessages'];
 }
 
 export function useAutoResume({
+  chatId,
   autoResume,
   experimental_resume,
-  messages,
-  setMessages,
 }: UseAutoResumeParams) {
+  const chatStore = useChatStore();
+
+  const messages = useMemo(() => {
+    return chatStore.getMessages(chatId);
+  }, [chatId, chatStore]);
+
   useEffect(() => {
     if (!autoResume) return;
 
@@ -33,8 +38,7 @@ export function useAutoResume({
   const dataStream = useMemo(() => {
     const mostRecentMessage = messages.at(-1);
 
-    // @ts-expect-error fix type error
-    const dataParts: DataUIPart<any>[] = mostRecentMessage
+    const dataParts = mostRecentMessage
       ? mostRecentMessage.parts.filter((part) => part.type.startsWith('data-'))
       : [];
 
@@ -47,8 +51,12 @@ export function useAutoResume({
     const dataPart = dataStream.at(-1) as DataUIPart<any>;
 
     if (dataPart.type === 'data-append-in-flight-message') {
-      const message = JSON.parse(dataPart.value) as UIMessage;
-      setMessages([...messages, message]);
+      const message = dataPart.data;
+
+      chatStore.setMessages({
+        id: chatId,
+        messages: [...messages, message],
+      });
     }
-  }, [messages, setMessages, dataStream]);
+  }, [messages, dataStream, chatId, chatStore]);
 }

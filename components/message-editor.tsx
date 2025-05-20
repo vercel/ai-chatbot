@@ -11,29 +11,35 @@ import {
 import { Textarea } from './ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { UIMessage } from 'ai';
+import { useChatStore } from './chat-store';
+import { toast } from './toast';
 
 export type MessageEditorProps = {
-  message: UIMessage;
+  chatId: string;
+  messageId: string;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
 };
 
 export function MessageEditor({
-  message,
+  chatId,
+  messageId,
   setMode,
-  setMessages,
   reload,
 }: MessageEditorProps) {
+  const chatStore = useChatStore();
+  const messages = chatStore.getMessages(chatId);
+  const draftMessage = messages.find((message) => message.id === messageId);
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [draftContent, setDraftContent] = useState<string>(
-    message.parts
+    draftMessage?.parts
       .filter((part) => part.type === 'text')
       .map((part) => part.text)
-      .join(''),
+      .join('') ?? '',
   );
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -80,27 +86,38 @@ export function MessageEditor({
           className="h-fit py-2 px-3"
           disabled={isSubmitting}
           onClick={async () => {
+            if (!draftMessage) {
+              return;
+            }
+
             setIsSubmitting(true);
 
             await deleteTrailingMessages({
-              id: message.id,
+              id: draftMessage.id,
             });
 
-            // @ts-expect-error todo: support UIMessage in setMessages
-            setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
+            const index = messages.findIndex(
+              (message) => message.id === draftMessage.id,
+            );
 
-              if (index !== -1) {
-                const updatedMessage = {
-                  ...message,
-                  content: draftContent,
-                  parts: [{ type: 'text', text: draftContent }],
-                };
+            if (index === -1) {
+              setIsSubmitting(false);
+              toast({
+                type: 'error',
+                description: 'Something went wrong, please try again!',
+              });
 
-                return [...messages.slice(0, index), updatedMessage];
-              }
+              return;
+            }
 
-              return messages;
+            const updatedMessage = {
+              ...draftMessage,
+              parts: [{ type: 'text' as const, text: draftContent }],
+            };
+
+            chatStore.setMessages({
+              id: chatId,
+              messages: [...messages.slice(0, index), updatedMessage],
             });
 
             setMode('view');

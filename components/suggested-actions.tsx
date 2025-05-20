@@ -3,20 +3,20 @@
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 import { memo } from 'react';
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
+import { useChatStore } from './chat-store';
 
 interface SuggestedActionsProps {
   chatId: string;
-  append: UseChatHelpers['append'];
   selectedVisibilityType: VisibilityType;
 }
 
 function PureSuggestedActions({
   chatId,
-  append,
   selectedVisibilityType,
 }: SuggestedActionsProps) {
+  const chatStore = useChatStore();
+
   const suggestedActions = [
     {
       title: 'What are the advantages',
@@ -59,9 +59,12 @@ function PureSuggestedActions({
             onClick={async () => {
               window.history.replaceState({}, '', `/chat/${chatId}`);
 
-              append({
-                role: 'user',
-                parts: [{ type: 'text', text: suggestedAction.action }],
+              chatStore.submitMessage({
+                chatId,
+                message: {
+                  role: 'user',
+                  parts: [{ type: 'text', text: suggestedAction.action }],
+                },
               });
             }}
             className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
@@ -83,7 +86,6 @@ export const SuggestedActions = memo(
     if (prevProps.chatId !== nextProps.chatId) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
-    if (prevProps.append !== nextProps.append) return false;
 
     return true;
   },

@@ -24,7 +24,6 @@ const PurePreviewMessage = ({
   message,
   vote,
   isLoading,
-  setMessages,
   reload,
   isReadonly,
   requiresScrollPadding,
@@ -33,7 +32,6 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
@@ -147,9 +145,9 @@ const PurePreviewMessage = ({
 
                       <MessageEditor
                         key={message.id}
-                        message={message}
+                        chatId={chatId}
+                        messageId={message.id}
                         setMode={setMode}
-                        setMessages={setMessages}
                         reload={reload}
                       />
                     </div>

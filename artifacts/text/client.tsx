@@ -32,10 +32,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     if (streamPart.type === 'data-artifacts-suggestion') {
       setMetadata((metadata) => {
         return {
-          suggestions: [
-            ...metadata.suggestions,
-            streamPart.value as Suggestion,
-          ],
+          suggestions: [...metadata.suggestions, streamPart.data],
         };
       });
     }
@@ -44,7 +41,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       setArtifact((draftArtifact) => {
         return {
           ...draftArtifact,
-          content: draftArtifact.content + (streamPart.value as string),
+          content: draftArtifact.content + streamPart.data,
           isVisible:
             draftArtifact.status === 'streaming' &&
             draftArtifact.content.length > 400 &&

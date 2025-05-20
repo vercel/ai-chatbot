@@ -5,10 +5,10 @@ import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
-import type { UIMessage } from 'ai';
-import type { Attachment } from '@/lib/types';
+import type { InferUIDataTypes, UIMessage } from 'ai';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { ChatStoreProvider } from '@/components/chat-store';
+import { dataPartSchemas, type MessageMetadata } from '@/lib/types';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -39,16 +39,31 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     id,
   });
 
-  function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
+  function convertToUIMessages(
+    messages: Array<DBMessage>,
+  ): Array<
+    UIMessage<MessageMetadata, InferUIDataTypes<typeof dataPartSchemas>>
+  > {
     return messages.map((message) => ({
       id: message.id,
-      parts: message.parts as UIMessage['parts'],
       role: message.role as UIMessage['role'],
-      // Note: content will soon be deprecated in @ai-sdk/react
-      content: '',
       createdAt: message.createdAt,
-      experimental_attachments:
-        (message.attachments as Array<Attachment>) ?? [],
+      parts: (message.parts as any[]).map((part: any) => {
+        const schema =
+          dataPartSchemas[part.type as keyof typeof dataPartSchemas];
+
+        if (!schema) {
+          throw new Error(
+            `Unknown message part type '${part.type}' in message ${message.id}`,
+          );
+        }
+
+        return {
+          type: part.type,
+          id: part.id,
+          data: schema.parse(part.data),
+        };
+      }),
     }));
   }
 

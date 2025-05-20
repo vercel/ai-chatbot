@@ -1,4 +1,3 @@
-import type { UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -62,9 +61,6 @@ function PureArtifact({
   stop,
   attachments,
   setAttachments,
-  append,
-  messages,
-  setMessages,
   reload,
   votes,
   isReadonly,
@@ -77,10 +73,7 @@ function PureArtifact({
   stop: UseChatHelpers['stop'];
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
   votes: Array<Vote> | undefined;
-  append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
@@ -318,8 +311,6 @@ function PureArtifact({
                   chatId={chatId}
                   status={status}
                   votes={votes}
-                  messages={messages}
-                  setMessages={setMessages}
                   reload={reload}
                   isReadonly={isReadonly}
                   artifactStatus={artifact.status}
@@ -330,15 +321,11 @@ function PureArtifact({
                     chatId={chatId}
                     input={input}
                     setInput={setInput}
-                    handleSubmit={handleSubmit}
                     status={status}
                     stop={stop}
                     attachments={attachments}
                     setAttachments={setAttachments}
-                    messages={messages}
-                    append={append}
                     className="bg-background dark:bg-muted"
-                    setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
                   />
                 </form>
@@ -477,10 +464,8 @@ function PureArtifact({
                   <Toolbar
                     isToolbarVisible={isToolbarVisible}
                     setIsToolbarVisible={setIsToolbarVisible}
-                    append={append}
                     status={status}
                     stop={stop}
-                    setMessages={setMessages}
                     artifactKind={artifact.kind}
                   />
                 )}
@@ -507,7 +492,6 @@ export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
   if (prevProps.status !== nextProps.status) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
   if (prevProps.input !== nextProps.input) return false;
-  if (!equal(prevProps.messages, nextProps.messages.length)) return false;
   if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
     return false;
 

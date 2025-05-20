@@ -1,19 +1,27 @@
 'use client';
 
-import React, {
-  createContext,
-  type ReactNode,
-  useContext,
-  useMemo,
-} from 'react';
-import { defaultChatStore, type UIMessage } from 'ai';
+import React, { createContext, type ReactNode, useContext } from 'react';
+import { defaultChatStore, type InferUIDataTypes, type UIMessage } from 'ai';
 import { fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
-import { zodSchema } from '@ai-sdk/provider-utils';
-import { messageMetadataSchema } from '@/lib/types';
+import type { dataPartSchemas, MessageMetadata } from '@/lib/types';
 
-type ChatStoreType = ReturnType<typeof defaultChatStore>;
+const chatStore = defaultChatStore<MessageMetadata, typeof dataPartSchemas>({
+  api: '/api/chat',
+  fetch: fetchWithErrorHandlers,
+  generateId: generateUUID,
+  prepareRequestBody: (body) => ({
+    id: body.chatId,
+    message: body.messages.at(-1),
+    selectedChatModel: 'chat-model',
+    selectedVisibilityType: 'private',
+  }),
 
-const ChatStoreContext = createContext<ChatStoreType | null>(null);
+  chats: {},
+});
+
+export type ChatStore = typeof chatStore;
+
+const ChatStoreContext = createContext(chatStore);
 
 export function useChatStore() {
   const context = useContext(ChatStoreContext);
@@ -30,7 +38,10 @@ type Props = {
   id: string;
   initialChatModel: string;
   visibilityType: string;
-  initialMessages: UIMessage[];
+  initialMessages: UIMessage<
+    MessageMetadata,
+    InferUIDataTypes<typeof dataPartSchemas>
+  >[];
 };
 
 export function ChatStoreProvider({
@@ -40,29 +51,10 @@ export function ChatStoreProvider({
   visibilityType,
   initialMessages,
 }: Props) {
-  const store = useMemo(
-    () =>
-      defaultChatStore({
-        api: '/api/chat',
-        fetch: fetchWithErrorHandlers,
-        messageMetadataSchema: zodSchema(messageMetadataSchema),
-        generateId: generateUUID,
-        prepareRequestBody: (body) => ({
-          id,
-          message: body.messages.at(-1),
-          selectedChatModel: initialChatModel,
-          selectedVisibilityType: visibilityType,
-        }),
-        chats: {
-          [id]: {
-            messages: initialMessages,
-          },
-        },
-      }),
-    [id, initialChatModel, visibilityType, initialMessages],
-  );
+  chatStore.addChat(id, initialMessages);
+
   return (
-    <ChatStoreContext.Provider value={store}>
+    <ChatStoreContext.Provider value={chatStore}>
       {children}
     </ChatStoreContext.Provider>
   );
