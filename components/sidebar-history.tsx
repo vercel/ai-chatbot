@@ -134,9 +134,8 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
     error, // Keep error for potential use
     mutate,
   } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
-    // Keep ChatHistory<items> type
-    revalidateFirstPage: false, // Keep SWR options
-    keepPreviousData: true, // Keep SWR options
+    revalidateFirstPage: true, // Changed from false to true
+    keepPreviousData: true,
     // Remove fallbackData: [] ? Match original
   });
 
