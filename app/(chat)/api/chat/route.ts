@@ -31,7 +31,7 @@ import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 import { assembleTools } from '@/lib/ai/tools/tool-list';
 import MemoryClient from 'mem0ai';
 
-const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY });
+const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY || '' });
 
 export const maxDuration = 300;
 
