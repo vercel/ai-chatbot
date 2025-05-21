@@ -10,6 +10,7 @@ import {
   Legend,
 } from 'recharts';
 import { chartConfig } from '@/lib/chart-config';
+import chartColors from './ChartColors.module.css';
 
 interface DataPoint {
   name: string;
@@ -33,11 +34,18 @@ const DEFAULT_DATA: DataPoint[] = [
 ];
 
 export function PieChart({ result }: PieChartProps) {
-  const { colors, height } = chartConfig.pieChart;
+  const { height } = chartConfig.pieChart;
   const { data = DEFAULT_DATA, title = 'Sample Pie Chart' } = result || {};
+  const pieColors = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)'
+  ];
 
   return (
-    <Card className="p-4">
+    <Card className={`p-4 ${chartColors.chartColors}`}>
       {title && (
         <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
       )}
@@ -56,7 +64,7 @@ export function PieChart({ result }: PieChartProps) {
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={colors[index % colors.length]}
+                  fill={pieColors[index % pieColors.length]}
                 />
               ))}
             </Pie>

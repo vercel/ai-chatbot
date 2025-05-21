@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { chartConfig } from '@/lib/chart-config';
+import chartColors from './ChartColors.module.css';
 
 interface DataPoint {
   name: string;
@@ -40,7 +41,7 @@ export function LineGraph({ result }: LineGraphProps) {
   const { data = DEFAULT_DATA, title = 'Sample Line Chart' } = result || {};
 
   return (
-    <Card className="p-4">
+    <Card className={`p-4 ${chartColors.chartColors}`}>
       {title && (
         <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
       )}
@@ -67,9 +68,9 @@ export function LineGraph({ result }: LineGraphProps) {
             <Line
               type="monotone"
               dataKey="value"
-              stroke={color}
+              stroke="var(--color-bar)"
               strokeWidth={2}
-              dot={{ fill: color }}
+              dot={{ fill: 'var(--color-bar)' }}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -215,9 +215,9 @@ const PurePreviewMessage = ({
                         />
                       ) : toolName === 'lineChart' ? (
                         <LineGraph  />
-                      ) : toolName === 'getWeather' ? (
+                      ) : toolName === 'barChart' ? (
                         <BarGraph   />
-                      ) : toolName === 'pieChart' ? (
+                      ) : toolName === 'getWeather' ? (
                         <PieChart    />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>

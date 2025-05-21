@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { chartConfig } from '@/lib/chart-config';
-import styles from './BarGraph.module.css';
+import chartColors from './ChartColors.module.css';
 
 interface DataPoint {
   name: string;
@@ -40,7 +40,7 @@ export function BarGraph({ result }: BarGraphProps) {
   const { data = DEFAULT_DATA, title = 'Sample Bar Chart' } = result || {};
 
   return (
-    <Card className={`p-4 ${styles.barGraph}`}>
+    <Card className={`p-4 ${chartColors.chartColors}`}>
       {title && (
         <h3 className="text-lg font-semibold mb-4 text-foreground">{title}</h3>
       )}
