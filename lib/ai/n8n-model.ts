@@ -6,6 +6,7 @@ import type {
   CoreMessage,
 } from 'ai';
 import { UnsupportedFunctionalityError } from 'ai';
+import { simulateReadableStream } from 'ai/test';
 
 // Define the expected structure of the message payload sent to n8n
 interface N8nPayload {
@@ -66,7 +67,9 @@ export class N8nLanguageModel implements LanguageModelV1 {
     });
   }
 
-  async doStream(options: LanguageModelV1CallOptions): Promise<{
+  async doStream(
+    options: LanguageModelV1CallOptions, // Corrected: Not generic
+  ): Promise<{
     stream: ReadableStream<LanguageModelV1StreamPart>;
     rawCall: {
       rawPrompt: LanguageModelV1Prompt;
@@ -136,128 +139,101 @@ export class N8nLanguageModel implements LanguageModelV1 {
       JSON.stringify(payload, null, 2),
     );
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (this.webhookSecretKey) {
-      headers.Authorization = `Bearer ${this.webhookSecretKey}`;
+    let assistantReplyText = 'Error fetching response from assistant.';
+    let finishReason: 'stop' | 'error' = 'error';
+    let responseHeaders: Record<string, string> | undefined = undefined;
+    let rawResponseBody: string | undefined = undefined; // Variable to store raw response
+
+    try {
+      console.log(`[N8nLanguageModel] Calling webhook: ${this.webhookUrl}`);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (this.webhookSecretKey) {
+        headers.Authorization = `Bearer ${this.webhookSecretKey}`;
+      }
+
+      const n8nResponse = await fetch(this.webhookUrl, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
+      });
+      responseHeaders = Object.fromEntries(n8nResponse.headers.entries());
+
+      // LOG RAW RESPONSE BODY
+      try {
+        rawResponseBody = await n8nResponse.text();
+        console.log(
+          '[N8nLanguageModel] Received raw response body:',
+          rawResponseBody,
+        );
+      } catch (textError) {
+        console.error(
+          '[N8nLanguageModel] Error reading raw response body:',
+          textError,
+        );
+        rawResponseBody = '[Error reading response body]';
+      }
+
+      if (!n8nResponse.ok) {
+        console.error(
+          `[N8nLanguageModel] Webhook call failed (${n8nResponse.status}): ${rawResponseBody}`,
+        );
+        assistantReplyText = `Assistant communication failed (${n8nResponse.status})`;
+      } else {
+        // Attempt to parse the logged text
+        try {
+          // LOG BEFORE PARSING
+          console.log('[N8nLanguageModel] Attempting to parse JSON response.');
+          const n8nData: N8nResponse = JSON.parse(rawResponseBody); // Parse the stored raw text
+          // LOG AFTER PARSING
+          console.log('[N8nLanguageModel] Successfully parsed JSON:', n8nData);
+
+          assistantReplyText =
+            Array.isArray(n8nData) && n8nData[0]?.responseMessage
+              ? n8nData[0].responseMessage
+              : typeof n8nData === 'object' &&
+                  n8nData !== null &&
+                  'responseMessage' in n8nData
+                ? (n8nData.responseMessage ??
+                  'Assistant responded without message.')
+                : 'Assistant response format unknown.';
+          finishReason = 'stop';
+          console.log(
+            `[N8nLanguageModel] Extracted reply: "${assistantReplyText}"`,
+          ); // LOG EXTRACTED TEXT
+        } catch (parseError: any) {
+          console.error('[N8nLanguageModel] JSON parse error:', parseError);
+          assistantReplyText = `Error parsing assistant response: ${parseError.message}`;
+          finishReason = 'error';
+        }
+      }
+    } catch (error: any) {
+      console.error('[N8nLanguageModel] Fetch error:', error);
+      assistantReplyText = `Error contacting assistant: ${error.message}`;
     }
 
-    // n8nPromise is defined here but awaited inside the stream's start method
-    const n8nPromise = fetch(this.webhookUrl, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(payload),
-    }).then(async (response) => {
-      const rawResponseBody = await response.text();
-      console.log('[N8nLanguageModel] Received raw response:', rawResponseBody);
-      if (!response.ok) {
-        throw new Error(
-          `Webhook failed (${response.status}): ${rawResponseBody}`,
-        );
-      }
-      const n8nData = JSON.parse(rawResponseBody);
-      return Array.isArray(n8nData) && n8nData[0]?.responseMessage
-        ? n8nData[0].responseMessage
-        : (n8nData.responseMessage ?? 'Assistant responded without message.');
-    });
+    // LOG BEFORE RETURNING
+    console.log(
+      `[N8nLanguageModel] Preparing to return simulated stream. FinishReason: ${finishReason}, ReplyText: "${assistantReplyText}"`,
+    );
 
-    let streamClosed = false; // Flag to prevent multiple closes
-    let pingInterval: NodeJS.Timeout | undefined = undefined;
-
-    const stream = new ReadableStream<LanguageModelV1StreamPart>({
-      async start(controller) {
-        // 1. Enqueue initial message
-        controller.enqueue({
-          type: 'text-delta',
-          textDelta:
-            "I'm working on your request. This may take a few minutes...",
-        });
-
-        // 2. Start keep-alive pings
-        pingInterval = setInterval(() => {
-          if (!streamClosed) {
-            try {
-              console.log('[N8nLanguageModel] Sending keep-alive ping.');
-              controller.enqueue({ type: 'text-delta', textDelta: ' ' }); // Send a space as a ping
-            } catch (e) {
-              console.error('[N8nLanguageModel] Error sending ping:', e);
-              // Likely stream closed, clear interval
-              if (pingInterval) clearInterval(pingInterval);
-              streamClosed = true; // Ensure flag is set
-            }
-          }
-        }, 15000); // Send a ping every 15 seconds
-
-        try {
-          // 3. Await the n8n response
-          const n8nTextResponse = await n8nPromise;
-
-          // 4. Stop pings
-          if (pingInterval) clearInterval(pingInterval);
-
-          // 5. Enqueue the n8n response
-          if (!streamClosed) {
-            controller.enqueue({
-              type: 'text-delta',
-              textDelta: `\n\n${n8nTextResponse}`,
-            });
-          }
-        } catch (error) {
-          if (pingInterval) clearInterval(pingInterval); // Stop pings on error too
-          console.error(
-            '[N8nLanguageModel] Error in stream during n8n call:',
-            error,
-          );
-          if (!streamClosed) {
-            controller.enqueue({
-              type: 'text-delta',
-              textDelta:
-                '\n\nAn error occurred while contacting the n8n assistant. Please try again.',
-            });
-          }
-        } finally {
-          if (pingInterval) clearInterval(pingInterval); // Ensure pings are stopped
-          // 6. Enqueue finish part and close the stream
-          if (!streamClosed) {
-            try {
-              controller.enqueue({
-                type: 'finish',
-                finishReason: 'stop',
-                usage: { promptTokens: 0, completionTokens: 0 },
-                logprobs: undefined,
-              });
-              controller.close();
-              streamClosed = true;
-            } catch (e) {
-              if ((e as any).name !== 'TypeError') {
-                console.error('[N8nLanguageModel] Error closing stream:', e);
-              }
-            }
-          }
-        }
-      },
-      cancel(reason) {
-        if (pingInterval) clearInterval(pingInterval);
-        console.log('[N8nLanguageModel] Stream cancelled:', reason);
-        streamClosed = true;
-      },
+    // Create a stream that yields a single text delta
+    const streamChunk: LanguageModelV1StreamPart = {
+      type: 'text-delta',
+      textDelta: assistantReplyText,
+    };
+    const stream = simulateReadableStream({
+      chunks: [streamChunk],
     });
 
     return {
       stream,
-      rawCall: {
-        rawPrompt: prompt,
-        rawSettings: settings,
-      },
-      // These initial values might be updated by the 'finish' event in the stream
-      finishReason: 'stop',
-      usage: {
-        promptTokens: 0, // Placeholder
-        completionTokens: 0, // Placeholder
-        totalTokens: 0, // Placeholder - this is fine here as it's part of the overall return
-      },
-      logprobs: undefined,
+      finishReason,
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      rawCall: { rawPrompt: prompt, rawSettings: settings },
+      rawResponse: { headers: responseHeaders },
     };
   }
 }
