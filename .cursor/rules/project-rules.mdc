@@ -33,7 +33,7 @@ alwaysApply: true
 - YOU WILL NEVER ASK THE USER TO RUN GIT COMMANDS. OR ANY TERMINAL COMMAND. THE USER IS NOT A DEVELOPER. YOU WILL RUN THESE COMMANDS.
 - YOU WILL NEVER ASK THE USER FOR FUCKING GIT COMMIT MESSAGES OR BRANCH NAMES, YOU WILL ALWAYS WRITE THESE YOURSELF DIRECTLY.
 - YOU WILL ALWAYS RUN "git add . (or whatever files) && git commit -m "message" && git push" IN ONE COMMAND, NOT 2 or 3. 
-- Git commit messages can't have newlines.
+- Git commit messages CANNOT have newlines. ALWAYS QUOTE FILEPATHS 100% OF THE TIME.
 - Avoid creating new files unless ABSOLUTELY necessary, and request permission before doing so. 
 
 # **Database - Supabase Project ID: dvlcpljodhsfrucieoqd**
@@ -41,13 +41,13 @@ alwaysApply: true
 - ALWAYS use the Supabase MCP tool to read/write tables, execute SQL, examine/edit database triggers and functions, etc. 
 - If you do not see the tool, ask the user to re-enable it. DO NOT MOVE ON. YOU MUST USE THE TOOL 100% OF THE TIME IT IS RELEVANT.
 - NEVER ASK FOR PERMISSION TO DO THIS, IF IT IS RELEVANT, JUST FUCKING DO IT. THE USER WILL ALWAYS AUTHORIZE READING SUPABASE. ONLY ASK FOR AUTHORIZATION FOR SQL MIGRATIONS AND OTHER WRITE/DELETE ACTIONS.
-  - Key tables with exact capitalization : 
-    - User_Profiles (id has uuid for user and is used for chats/messages/etc; has clerk_id to reference w Clerk)
-    - Message_v2 is the message table
-    - Chat is the chat threads table
+  - Key tables with exact capitalization: 
+    - "User_Profiles" (id has uuid for user and is used for chats/messages/etc; has clerk_id to reference w Clerk)
+    - "Message_v2" is the message table
+    - "Chat" is the chat threads table
     - "Document" is also referred to as "artifacts", "files", etc
-    - Suggestion is the AI suggestions table
-    - Vote_v2 is for user upvote/downvote of AI messages within chats
+    - "Suggestion" is the AI suggestions table
+    - "Vote_v2" is for user upvote/downvote of AI messages within chats
 
 # **Key Context**
 - Supabase project: ai-chatbot (id: dvlcpljodhsfrucieoqd)

@@ -22,19 +22,18 @@ import {
   getTrailingMessageId,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
 import { myProvider } from '@/lib/ai/providers';
 import { chatModels } from '@/lib/ai/models';
 import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
 import { revalidateTag } from 'next/cache';
 import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
-import { getN8nTools } from '@/lib/ai/tools/n8n-mcp';
+import { assembleTools } from '@/lib/ai/tools/tool-list';
+import MemoryClient from 'mem0ai';
 
-export const maxDuration = 60;
+const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY });
+
+export const maxDuration = 300;
 
 // Define n8n webhook URLs from environment variables
 const n8nWebhookUrls: Record<string, string> = {
@@ -462,32 +461,22 @@ export async function POST(request: Request) {
     // Ensure this part remains consistent with the previous version
     return createDataStreamResponse({
       execute: async (dataStream) => {
-        // --- FETCH N8N TOOLS ---
-        const n8nTools = await getN8nTools();
-        const n8nToolNames = Object.keys(n8nTools || {});
+        // --- USE assembleTools ---
         console.log(
-          `[API Route / Standard] Fetched n8n tools via helper. Count: ${n8nToolNames.length}, Names: ${
-            n8nToolNames.join(', ') || 'None'
+          `[API Route / Standard] Calling assembleTools for userId: ${userId}, chatId: ${finalChatId}`,
+        );
+        const combinedTools = await assembleTools({
+          userId: userId,
+          dataStream,
+          chatId: finalChatId,
+        });
+        const toolNames = Object.keys(combinedTools || {});
+        console.log(
+          `[API Route / Standard] Assembled tools. Count: ${toolNames.length}, Names: ${
+            toolNames.join(', ') || 'None'
           }`,
         );
-        // --- END FETCH N8N TOOLS ---
-
-        // --- DEFINE COMBINED TOOLS ---
-        const combinedTools = {
-          getWeather,
-          createDocument: createDocument({
-            userId: userId, // Pass profile UUID
-            dataStream,
-            chatId: finalChatId,
-          }),
-          updateDocument: updateDocument({ userId: userId, dataStream }),
-          requestSuggestions: requestSuggestions({
-            userId: userId, // Pass profile UUID
-            dataStream,
-          }),
-          ...(n8nTools || {}), // <-- Merge fetched n8n tools here
-        };
-        // --- END COMBINED TOOLS ---
+        // --- END USE assembleTools ---
 
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
@@ -496,7 +485,7 @@ export async function POST(request: Request) {
           maxSteps: 5,
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
-          tools: combinedTools, // USE THE COMBINED TOOLS OBJECT
+          tools: combinedTools,
           onFinish: async ({ response }) => {
             if (userId) {
               try {
