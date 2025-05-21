@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { LineGraph, BarGraph, PieChart } from './graphs';
 
 const PurePreviewMessage = ({
   chatId,
@@ -177,6 +178,12 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'lineChart' ? (
+                        <LineGraph result={args} />
+                      ) : toolName === 'barChart' ? (
+                        <BarGraph result={args} />
+                      ) : toolName === 'pieChart' ? (
+                        <PieChart result={args} />
                       ) : null}
                     </div>
                   );
@@ -187,7 +194,7 @@ const PurePreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === 'getWeather' ? (
+                      {toolName === 'getWeather1' ? (
                         <Weather weatherAtLocation={result} />
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview
@@ -206,6 +213,12 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'lineChart' ? (
+                        <LineGraph  />
+                      ) : toolName === 'getWeather' ? (
+                        <BarGraph   />
+                      ) : toolName === 'pieChart' ? (
+                        <PieChart    />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>
                       )}

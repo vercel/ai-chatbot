@@ -76,6 +76,7 @@
     "react-dom": "19.0.0-rc-45804af1-20241021",
     "react-markdown": "^9.0.1",
     "react-resizable-panels": "^2.1.7",
+    "recharts": "^2.15.3",
     "remark-gfm": "^4.0.0",
     "server-only": "^0.0.1",
     "sonner": "^1.5.0",
