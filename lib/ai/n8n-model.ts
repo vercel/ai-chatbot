@@ -139,101 +139,64 @@ export class N8nLanguageModel implements LanguageModelV1 {
       JSON.stringify(payload, null, 2),
     );
 
-    let assistantReplyText = 'Error fetching response from assistant.';
-    let finishReason: 'stop' | 'error' = 'error';
-    let responseHeaders: Record<string, string> | undefined = undefined;
-    let rawResponseBody: string | undefined = undefined; // Variable to store raw response
-
-    try {
-      console.log(`[N8nLanguageModel] Calling webhook: ${this.webhookUrl}`);
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (this.webhookSecretKey) {
-        headers.Authorization = `Bearer ${this.webhookSecretKey}`;
-      }
-
-      const n8nResponse = await fetch(this.webhookUrl, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(payload),
-      });
-      responseHeaders = Object.fromEntries(n8nResponse.headers.entries());
-
-      // LOG RAW RESPONSE BODY
-      try {
-        rawResponseBody = await n8nResponse.text();
-        console.log(
-          '[N8nLanguageModel] Received raw response body:',
-          rawResponseBody,
-        );
-      } catch (textError) {
-        console.error(
-          '[N8nLanguageModel] Error reading raw response body:',
-          textError,
-        );
-        rawResponseBody = '[Error reading response body]';
-      }
-
-      if (!n8nResponse.ok) {
-        console.error(
-          `[N8nLanguageModel] Webhook call failed (${n8nResponse.status}): ${rawResponseBody}`,
-        );
-        assistantReplyText = `Assistant communication failed (${n8nResponse.status})`;
-      } else {
-        // Attempt to parse the logged text
-        try {
-          // LOG BEFORE PARSING
-          console.log('[N8nLanguageModel] Attempting to parse JSON response.');
-          const n8nData: N8nResponse = JSON.parse(rawResponseBody); // Parse the stored raw text
-          // LOG AFTER PARSING
-          console.log('[N8nLanguageModel] Successfully parsed JSON:', n8nData);
-
-          assistantReplyText =
-            Array.isArray(n8nData) && n8nData[0]?.responseMessage
-              ? n8nData[0].responseMessage
-              : typeof n8nData === 'object' &&
-                  n8nData !== null &&
-                  'responseMessage' in n8nData
-                ? (n8nData.responseMessage ??
-                  'Assistant responded without message.')
-                : 'Assistant response format unknown.';
-          finishReason = 'stop';
-          console.log(
-            `[N8nLanguageModel] Extracted reply: "${assistantReplyText}"`,
-          ); // LOG EXTRACTED TEXT
-        } catch (parseError: any) {
-          console.error('[N8nLanguageModel] JSON parse error:', parseError);
-          assistantReplyText = `Error parsing assistant response: ${parseError.message}`;
-          finishReason = 'error';
-        }
-      }
-    } catch (error: any) {
-      console.error('[N8nLanguageModel] Fetch error:', error);
-      assistantReplyText = `Error contacting assistant: ${error.message}`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (this.webhookSecretKey) {
+      headers.Authorization = `Bearer ${this.webhookSecretKey}`;
     }
 
-    // LOG BEFORE RETURNING
-    console.log(
-      `[N8nLanguageModel] Preparing to return simulated stream. FinishReason: ${finishReason}, ReplyText: "${assistantReplyText}"`,
-    );
+    // Create promise for n8n response
+    const n8nPromise = fetch(this.webhookUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(payload),
+    }).then(async (response) => {
+      const rawResponseBody = await response.text();
+      console.log('[N8nLanguageModel] Received raw response:', rawResponseBody);
 
-    // Create a stream that yields a single text delta
-    const streamChunk: LanguageModelV1StreamPart = {
-      type: 'text-delta',
-      textDelta: assistantReplyText,
-    };
+      if (!response.ok) {
+        throw new Error(
+          `Webhook failed (${response.status}): ${rawResponseBody}`,
+        );
+      }
+
+      const n8nData = JSON.parse(rawResponseBody);
+      return Array.isArray(n8nData) && n8nData[0]?.responseMessage
+        ? n8nData[0].responseMessage
+        : (n8nData.responseMessage ?? 'Assistant responded without message.');
+    });
+
+    // Create stream that combines initial message, keep-alive, and final response
     const stream = simulateReadableStream({
-      chunks: [streamChunk],
+      initialDelayInMs: 0,
+      chunkDelayInMs: 1000,
+      chunks: [
+        {
+          type: 'text-delta' as const,
+          textDelta:
+            "I'm working on your request. This may take a few minutes...",
+        },
+        // Wait for n8n response
+        await n8nPromise.then((text) => ({
+          type: 'text-delta' as const,
+          textDelta: `\n\n${text}`,
+        })),
+      ],
     });
 
     return {
       stream,
-      finishReason,
-      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-      rawCall: { rawPrompt: prompt, rawSettings: settings },
-      rawResponse: { headers: responseHeaders },
+      rawCall: {
+        rawPrompt: prompt,
+        rawSettings: settings,
+      },
+      finishReason: 'stop',
+      usage: {
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+      },
     };
   }
 }
