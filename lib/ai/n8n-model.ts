@@ -163,6 +163,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
     });
 
     let streamClosed = false; // Flag to prevent multiple closes
+    let pingInterval: NodeJS.Timeout | undefined = undefined;
 
     const stream = new ReadableStream<LanguageModelV1StreamPart>({
       async start(controller) {
@@ -173,11 +174,29 @@ export class N8nLanguageModel implements LanguageModelV1 {
             "I'm working on your request. This may take a few minutes...",
         });
 
+        // 2. Start keep-alive pings
+        pingInterval = setInterval(() => {
+          if (!streamClosed) {
+            try {
+              console.log('[N8nLanguageModel] Sending keep-alive ping.');
+              controller.enqueue({ type: 'text-delta', textDelta: ' ' }); // Send a space as a ping
+            } catch (e) {
+              console.error('[N8nLanguageModel] Error sending ping:', e);
+              // Likely stream closed, clear interval
+              if (pingInterval) clearInterval(pingInterval);
+              streamClosed = true; // Ensure flag is set
+            }
+          }
+        }, 15000); // Send a ping every 15 seconds
+
         try {
-          // 2. Await the n8n response
+          // 3. Await the n8n response
           const n8nTextResponse = await n8nPromise;
 
-          // 3. Enqueue the n8n response
+          // 4. Stop pings
+          if (pingInterval) clearInterval(pingInterval);
+
+          // 5. Enqueue the n8n response
           if (!streamClosed) {
             controller.enqueue({
               type: 'text-delta',
@@ -185,6 +204,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
             });
           }
         } catch (error) {
+          if (pingInterval) clearInterval(pingInterval); // Stop pings on error too
           console.error(
             '[N8nLanguageModel] Error in stream during n8n call:',
             error,
@@ -197,21 +217,20 @@ export class N8nLanguageModel implements LanguageModelV1 {
             });
           }
         } finally {
-          // 4. Enqueue finish part and close the stream
+          if (pingInterval) clearInterval(pingInterval); // Ensure pings are stopped
+          // 6. Enqueue finish part and close the stream
           if (!streamClosed) {
             try {
               controller.enqueue({
                 type: 'finish',
-                finishReason: 'stop', // Or 'error' if an error occurred and was handled as a final message
-                usage: { promptTokens: 0, completionTokens: 0 }, // Removed totalTokens
+                finishReason: 'stop',
+                usage: { promptTokens: 0, completionTokens: 0 },
                 logprobs: undefined,
               });
               controller.close();
               streamClosed = true;
             } catch (e) {
-              // Ignore errors from trying to close an already closed stream
               if ((e as any).name !== 'TypeError') {
-                // TypeError: The stream controller has been closed
                 console.error('[N8nLanguageModel] Error closing stream:', e);
               }
             }
@@ -219,9 +238,9 @@ export class N8nLanguageModel implements LanguageModelV1 {
         }
       },
       cancel(reason) {
+        if (pingInterval) clearInterval(pingInterval);
         console.log('[N8nLanguageModel] Stream cancelled:', reason);
         streamClosed = true;
-        // Add any cleanup logic for when the stream is cancelled by the consumer
       },
     });
 
