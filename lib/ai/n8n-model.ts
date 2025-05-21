@@ -6,7 +6,6 @@ import type {
   CoreMessage,
 } from 'ai';
 import { UnsupportedFunctionalityError } from 'ai';
-import { simulateReadableStream } from 'ai/test';
 
 // Define the expected structure of the message payload sent to n8n
 interface N8nPayload {
@@ -67,9 +66,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
     });
   }
 
-  async doStream(
-    options: LanguageModelV1CallOptions, // Corrected: Not generic
-  ): Promise<{
+  async doStream(options: LanguageModelV1CallOptions): Promise<{
     stream: ReadableStream<LanguageModelV1StreamPart>;
     rawCall: {
       rawPrompt: LanguageModelV1Prompt;
@@ -146,7 +143,7 @@ export class N8nLanguageModel implements LanguageModelV1 {
       headers.Authorization = `Bearer ${this.webhookSecretKey}`;
     }
 
-    // Create promise for n8n response
+    // n8nPromise is defined here but awaited inside the stream's start method
     const n8nPromise = fetch(this.webhookUrl, {
       method: 'POST',
       headers: headers,
@@ -154,35 +151,78 @@ export class N8nLanguageModel implements LanguageModelV1 {
     }).then(async (response) => {
       const rawResponseBody = await response.text();
       console.log('[N8nLanguageModel] Received raw response:', rawResponseBody);
-
       if (!response.ok) {
         throw new Error(
           `Webhook failed (${response.status}): ${rawResponseBody}`,
         );
       }
-
       const n8nData = JSON.parse(rawResponseBody);
       return Array.isArray(n8nData) && n8nData[0]?.responseMessage
         ? n8nData[0].responseMessage
         : (n8nData.responseMessage ?? 'Assistant responded without message.');
     });
 
-    // Create stream that combines initial message, keep-alive, and final response
-    const stream = simulateReadableStream({
-      initialDelayInMs: 0,
-      chunkDelayInMs: 1000,
-      chunks: [
-        {
-          type: 'text-delta' as const,
+    let streamClosed = false; // Flag to prevent multiple closes
+
+    const stream = new ReadableStream<LanguageModelV1StreamPart>({
+      async start(controller) {
+        // 1. Enqueue initial message
+        controller.enqueue({
+          type: 'text-delta',
           textDelta:
             "I'm working on your request. This may take a few minutes...",
-        },
-        // Wait for n8n response
-        await n8nPromise.then((text) => ({
-          type: 'text-delta' as const,
-          textDelta: `\n\n${text}`,
-        })),
-      ],
+        });
+
+        try {
+          // 2. Await the n8n response
+          const n8nTextResponse = await n8nPromise;
+
+          // 3. Enqueue the n8n response
+          if (!streamClosed) {
+            controller.enqueue({
+              type: 'text-delta',
+              textDelta: `\n\n${n8nTextResponse}`,
+            });
+          }
+        } catch (error) {
+          console.error(
+            '[N8nLanguageModel] Error in stream during n8n call:',
+            error,
+          );
+          if (!streamClosed) {
+            controller.enqueue({
+              type: 'text-delta',
+              textDelta:
+                '\n\nAn error occurred while contacting the n8n assistant. Please try again.',
+            });
+          }
+        } finally {
+          // 4. Enqueue finish part and close the stream
+          if (!streamClosed) {
+            try {
+              controller.enqueue({
+                type: 'finish',
+                finishReason: 'stop', // Or 'error' if an error occurred and was handled as a final message
+                usage: { promptTokens: 0, completionTokens: 0 }, // Removed totalTokens
+                logprobs: undefined,
+              });
+              controller.close();
+              streamClosed = true;
+            } catch (e) {
+              // Ignore errors from trying to close an already closed stream
+              if ((e as any).name !== 'TypeError') {
+                // TypeError: The stream controller has been closed
+                console.error('[N8nLanguageModel] Error closing stream:', e);
+              }
+            }
+          }
+        }
+      },
+      cancel(reason) {
+        console.log('[N8nLanguageModel] Stream cancelled:', reason);
+        streamClosed = true;
+        // Add any cleanup logic for when the stream is cancelled by the consumer
+      },
     });
 
     return {
@@ -191,12 +231,14 @@ export class N8nLanguageModel implements LanguageModelV1 {
         rawPrompt: prompt,
         rawSettings: settings,
       },
+      // These initial values might be updated by the 'finish' event in the stream
       finishReason: 'stop',
       usage: {
-        promptTokens: 0,
-        completionTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0, // Placeholder
+        completionTokens: 0, // Placeholder
+        totalTokens: 0, // Placeholder - this is fine here as it's part of the overall return
       },
+      logprobs: undefined,
     };
   }
 }
