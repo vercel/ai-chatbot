@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
-import type { Vote } from '@/lib/api-client.types';
+import type { Vote, VoteRequest } from '@/lib/api-client.types';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
@@ -31,7 +31,7 @@ const PurePreviewMessage = ({
 }: {
   chatId: string;
   message: UIMessage;
-  vote: Vote | undefined;
+  vote: Vote | VoteRequest | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
@@ -137,6 +137,7 @@ const PurePreviewMessage = ({
 
                       <MessageEditor
                         key={message.id}
+                        chatId={chatId}
                         message={message}
                         setMode={setMode}
                         setMessages={setMessages}
@@ -268,7 +269,7 @@ export const ThinkingMessage = () => {
 
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm... I'm thinking...  
+            Hmm... I&apos;m thinking...
           </div>
         </div>
       </div>

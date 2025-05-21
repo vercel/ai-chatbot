@@ -46,7 +46,10 @@ export async function updateChatVisibility({
   visibility: VisibilityType;
 }) {
   try {
-    await apiClient.updateChatVisibility(chatId, visibility);
+    await apiClient.updateChatVisibility(chatId, {
+      // isVisible: visibility === 'public',
+      visibility: visibility
+    });
     return { success: true };
   } catch (error) {
     console.error('Failed to update chat visibility:', error);

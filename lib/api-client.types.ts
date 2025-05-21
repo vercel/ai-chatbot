@@ -39,10 +39,10 @@ export interface ShareChatRequest {
 }
 
 export interface Document {
-  id?: string;
+  id: string;
   createdAt: Date;
   title: string;
-  content?: string;
+  content: string | null;
   kind: 'text' | 'code' | 'image' | 'sheet';
   userId: string;
 }
@@ -55,12 +55,12 @@ export interface DocumentRequest {
 }
 
 export interface Suggestion {
-  id?: string;
+  id: string;
   documentId: string;
   documentCreatedAt: Date;
   originalText: string;
   suggestedText: string;
-  description?: string;
+  description: string | null;
   isResolved: boolean;
   userId: string;
   createdAt: Date;
@@ -101,4 +101,7 @@ export interface ApiResponse<T = any> {
   data: T;
   message?: string;
   status?: number;
-} 
+}
+export interface ChatVisibilityUpdate {
+  visibility: 'public' | 'private';
+}

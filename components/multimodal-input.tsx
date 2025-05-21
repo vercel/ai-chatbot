@@ -140,6 +140,25 @@ function PureMultimodalInput({
     }
   };
 
+  // ✅ Add this below uploadFile
+  const handleDeleteUpload = async (chatId: string) => {
+    try {
+      const res = await fetch(`/api/chat/upload/${chatId}`, {
+         method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete file');
+      }
+
+      toast.success('File deleted. You can now upload a new one!');
+      // Optionally: remove the attachment from UI state here
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast.error('Error deleting file.');
+    }
+  };
+
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
@@ -189,7 +208,13 @@ function PureMultimodalInput({
           className="flex flex-row gap-2 overflow-x-scroll items-end"
         >
           {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+            <PreviewAttachment 
+             key={attachment.url} 
+             attachment={attachment}
+             isUploading={uploadQueue.includes(attachment.name ?? '')}
+             chatId={chatId!} // ✅ assumes chatId is string and exists
+             handleDeleteUpload={handleDeleteUpload}
+            />
           ))}
 
           {uploadQueue.map((filename) => (
@@ -201,6 +226,8 @@ function PureMultimodalInput({
                 contentType: '',
               }}
               isUploading={true}
+              chatId={chatId!}
+              handleDeleteUpload={handleDeleteUpload}
             />
           ))}
         </div>
