@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     });
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse();
+      return new ChatSDKError('forbidden:api').toResponse();
     }
 
     const chat = await getChatById({ id });
@@ -160,7 +160,6 @@ export async function POST(request: Request) {
               dataStream,
             }),
           },
-          onFinish: async () => {},
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
@@ -169,12 +168,13 @@ export async function POST(request: Request) {
 
         dataStream.merge(
           result.toUIMessageStream({
+            sendReasoning: true,
+            newMessageId: generateUUID(),
             onFinish: async ({ responseMessage }) => {
               await saveMessages({
                 messages: [
                   {
                     ...responseMessage,
-                    id: generateUUID(),
                     createdAt: new Date(),
                     attachments: [],
                     chatId: id,
@@ -188,7 +188,7 @@ export async function POST(request: Request) {
         result.consumeStream();
       },
       onError: (error) => {
-        return 'Oops, an error occurred!';
+        return 'Oops! Something went wrong, please try again later.';
       },
     });
 

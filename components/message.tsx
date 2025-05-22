@@ -75,7 +75,7 @@ const PurePreviewMessage = ({
           >
             {fileParts.length > 0 && (
               <div
-                data-testid={`message-file`}
+                data-testid="message-files"
                 className="flex flex-row justify-end gap-2"
               >
                 {fileParts.map((filePart) => (
