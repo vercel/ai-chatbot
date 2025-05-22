@@ -57,4 +57,16 @@ export const chatModels: Array<ChatModel> = [
     description:
       'Open source model excelling in creative writing, math, code, reasoning, and cost efficiency • Context: 164k tokens',
   },
+  {
+    id: 'anthropic/claude-sonnet-4-20250514',
+    name: 'Claude Sonnet 4',
+    description:
+      'High-performance model with strong reasoning capabilities • Context: 200k tokens',
+  },
+  {
+    id: 'anthropic/claude-opus-4-20250514',
+    name: 'Claude Opus 4',
+    description:
+      "Anthropic's most powerful and capable model; skilled at coding and editing long-form prose • Context: 200k tokens",
+  },
 ];

@@ -9,7 +9,7 @@ import { google } from '@ai-sdk/google';
 // import { fal } from '@ai-sdk/fal';
 import { togetherai } from '@ai-sdk/togetherai';
 import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-// import { anthropic } from '@ai-sdk/anthropic';
+import { anthropic } from '@ai-sdk/anthropic';
 // import { fireworks } from '@ai-sdk/fireworks';
 // import { replicate } from '@ai-sdk/replicate';
 // import { elevenlabs } from '@ai-sdk/elevenlabs';
@@ -50,6 +50,8 @@ export const myProvider = isTestEnvironment
         ),
         'gemini-2.5-pro-preview-03-25': google('gemini-2.5-pro-preview-03-25'),
         'o4-mini': openai('o4-mini'),
+        'claude-sonnet-4': anthropic('claude-sonnet-4-20250514'),
+        'claude-opus-4': anthropic('claude-opus-4-20250514'),
       },
       imageModels: {
         // 'small-model': fal.image('fal-ai/recraft-v3'), // Commented out Fal model

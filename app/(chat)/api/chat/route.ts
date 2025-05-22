@@ -314,145 +314,115 @@ export async function POST(request: Request) {
 
     // Check if selected model is an n8n assistant
     if (selectedModelInfo?.isN8n) {
-      // ---- START INSIDE N8N IF LOG ----
       console.log(
-        `[API Route] Entering N8n model block for model: ${selectedChatModel}`,
+        `[API Route] Entering N8n model block for model: ${selectedChatModel} (EXPERIMENTAL TIMEOUT TEST)`,
       );
-      // ---- END INSIDE N8N IF LOG ----
 
-      const webhookUrl = n8nWebhookUrls[selectedChatModel];
-      if (!webhookUrl) {
-        console.error(
-          `Webhook URL for n8n assistant "${selectedChatModel}" is not configured.`,
-        );
-        return new Response('Assistant configuration error', { status: 500 });
-      }
+      // const webhookUrl = n8nWebhookUrls[selectedChatModel];
+      // if (!webhookUrl) {
+      //   console.error(`Webhook URL for n8n assistant "${selectedChatModel}" is not configured.`);
+      //   return new Response('Assistant configuration error', { status: 500 });
+      // }
 
-      // *** Instantiate the N8nLanguageModel ***
-      const lastUserMessageId = userMessage?.id ?? null;
-      const lastUserMessageCreatedAt = userMessage?.createdAt ?? null;
-
-      if (!lastUserMessageId) {
-        console.warn(
-          '[API Route] Warning: lastUserMessageId is null before passing to N8nModel.',
-        );
-      }
-
-      const n8nModel = new N8nLanguageModel({
-        webhookUrl: webhookUrl,
-        modelId: selectedChatModel,
-        chatId: finalChatId,
-        userId: userId, // Use profile UUID
-        messageId: lastUserMessageId,
-        datetime: lastUserMessageCreatedAt,
-        googleToken: tokenResult.token, // Pass the fetched token (will be null if fetch failed or no token)
-      });
-
-      // *** USE createDataStreamResponse with streamText and the n8nModel (Restoring Original Logic) ***
+      // Intentionally bypass n8n model and n8n fetch for this timeout test
       return createDataStreamResponse({
-        execute: (dataStream) => {
-          const result = streamText({
-            model: n8nModel,
-            // Ensure messages are filtered and asserted correctly
-            messages: messages.filter(
-              (m) => m.role !== 'data',
-            ) as CoreMessage[],
-            maxSteps: 5, // Keep original settings
-            experimental_transform: smoothStream({ chunking: 'word' }),
-            experimental_generateMessageId: generateUUID,
-            onFinish: async ({ response }) => {
-              console.log(
-                '[API Route / N8n / onFinish] Reached onFinish handler.',
-              ); // LOG: Entered handler
-              if (userId) {
-                console.log(
-                  `[API Route / N8n / onFinish] User ID ${userId} present.`,
-                ); // LOG: User ID check
+        execute: async (dataStream) => {
+          let streamClosed = false;
+          let pingInterval: NodeJS.Timeout | undefined = undefined;
+
+          try {
+            console.log('[API Route / Timeout Test] Sending initial chunk.');
+            dataStream.writeMessageAnnotation({
+              type: 'text-delta',
+              data: 'Starting timeout test (aiming for >60s)...',
+            });
+
+            console.log(
+              '[API Route / Timeout Test] Starting keep-alive pings.',
+            );
+            pingInterval = setInterval(() => {
+              if (!streamClosed) {
                 try {
                   console.log(
-                    '[API Route / N8n / onFinish] Attempting to get trailing message ID.',
-                  ); // LOG: Before getTrailingMessageId
-                  const assistantId = getTrailingMessageId({
-                    messages: response.messages.filter(
-                      (message) => message.role === 'assistant',
-                    ),
-                  });
-                  console.log(
-                    `[API Route / N8n / onFinish] Got assistantId: ${assistantId}`,
-                  ); // LOG: After getTrailingMessageId
-                  if (!assistantId) {
-                    console.error(
-                      '[API Route / N8n / onFinish] Error: No assistant message found after stream!',
-                    );
-                    throw new Error(
-                      'No assistant message found after n8n stream!',
-                    );
-                  }
-                  console.log(
-                    '[API Route / N8n / onFinish] Attempting appendResponseMessages.',
-                  ); // LOG: Before append
-                  const [, assistantMessage] = appendResponseMessages({
-                    messages: [userMessage],
-                    responseMessages: response.messages,
-                  });
-                  console.log(
-                    '[API Route / N8n / onFinish] Attempting saveMessages.',
-                  ); // LOG: Before save
-                  const messageToSave =
-                    typeof assistantId === 'string' &&
-                    assistantId.startsWith('msg-')
-                      ? {
-                          // Omit ID if it's temporary
-                          chatId: finalChatId,
-                          role: 'assistant' as const,
-                          parts: assistantMessage.parts ?? [],
-                          attachments:
-                            assistantMessage.experimental_attachments ?? [],
-                          createdAt: new Date(),
-                        }
-                      : {
-                          // Include ID if it seems persistent (or is not a string)
-                          id: assistantId,
-                          chatId: finalChatId,
-                          role: 'assistant' as const,
-                          parts: assistantMessage.parts ?? [],
-                          attachments:
-                            assistantMessage.experimental_attachments ?? [],
-                          createdAt: new Date(),
-                        };
-                  await saveMessages({
-                    messages: [messageToSave], // Pass the conditionally constructed object
-                  });
-                  console.log(
-                    `[API Route / N8n / onFinish] SUCCESS: Saved final n8n message (ID: ${assistantId}) for chat ${finalChatId}`,
-                  ); // LOG: Success
-                } catch (saveError) {
-                  // LOG: Failure
-                  console.error(
-                    '[API Route / N8n / onFinish] FAILURE: Failed to save n8n chat message:',
-                    saveError,
+                    '[API Route / Timeout Test] Sending keep-alive ping.',
                   );
+                  dataStream.writeMessageAnnotation({
+                    type: 'text-delta',
+                    data: 'ping ',
+                  });
+                } catch (e) {
+                  console.error(
+                    '[API Route / Timeout Test] Error sending ping:',
+                    e,
+                  );
+                  if (pingInterval) clearInterval(pingInterval);
+                  streamClosed = true;
                 }
               } else {
-                console.warn(
-                  '[API Route / N8n / onFinish] User ID not found, cannot save message.',
-                ); // LOG: No user ID
+                if (pingInterval) clearInterval(pingInterval);
               }
-            },
-            experimental_telemetry: AISDKExporter.getSettings(),
-          });
+            }, 15000); // Ping every 15 seconds
 
-          console.log(
-            `[API Route] Calling streamText for N8N chat ${finalChatId} with Langsmith telemetry enabled.`,
-          );
-          result.consumeStream();
-          result.mergeIntoDataStream(dataStream, {
-            sendReasoning: false,
-          });
+            console.log('[API Route / Timeout Test] Waiting for 70 seconds...');
+            await new Promise((resolve) => setTimeout(resolve, 70000)); // 70 seconds
+            if (pingInterval) clearInterval(pingInterval); // Stop pings
+
+            if (!streamClosed) {
+              console.log(
+                '[API Route / Timeout Test] Sending post-wait chunk.',
+              );
+              dataStream.writeMessageAnnotation({
+                type: 'text-delta',
+                data: '\n\nTest waited 70s. If you see this, maxDuration worked!',
+              });
+            }
+
+            // Simulate saving a message
+            console.log('[API Route / Timeout Test] Simulating save message.');
+            const assistantMessageForDb: UIMessage = {
+              id: generateUUID(),
+              role: 'assistant',
+              content: 'Test waited 70s. If you see this, maxDuration worked!',
+              parts: [
+                {
+                  type: 'text',
+                  text: 'Test waited 70s. If you see this, maxDuration worked!',
+                },
+              ],
+              createdAt: new Date(),
+              experimental_attachments: [],
+            };
+            // await saveMessages(...); // Don't actually save for this test
+            console.log(
+              `[API Route / Timeout Test] Simulated save for chat ${finalChatId}`,
+            );
+          } catch (error: any) {
+            console.error(
+              '[API Route / Timeout Test] Error during test execution:',
+              error,
+            );
+            if (pingInterval) clearInterval(pingInterval);
+            if (!streamClosed) {
+              dataStream.writeMessageAnnotation({
+                type: 'text-delta',
+                data: `\n\nError during timeout test: ${error.message}`,
+              });
+            }
+          } finally {
+            if (pingInterval) clearInterval(pingInterval);
+            if (!streamClosed) {
+              console.log('[API Route / Timeout Test] Closing dataStream.');
+              // SDK handles actual close
+              streamClosed = true;
+            }
+          }
         },
         onError: (error) => {
-          console.error('Error in streamText with n8nModel:', error);
-          return 'Oops, an error occurred communicating with the assistant!';
+          console.error(
+            '[API Route / Timeout Test] Error in createDataStreamResponse itself:',
+            error,
+          );
+          return 'Oops, an error occurred setting up the timeout test!';
         },
       });
     }
