@@ -34,37 +34,37 @@ export const chatModels: Array<ChatModel> = [
       'Fast, effective reasoning with efficient performance in coding and visual tasks • Context: 200k tokens',
   },
   {
-    id: 'gemini-2.5-pro-exp-03-25',
+    id: 'gemini-2.5-pro',
     name: 'Gemini 2.5 Pro',
     description:
       'Powerful capabilities for complex tasks, reasoning, and coding • Context: 1m tokens',
   },
   {
-    id: 'gemini-2.5-flash-preview-04-17',
+    id: 'gemini-2.5-flash',
     name: 'Gemini 2.5 Flash',
     description:
       'Best intelligence for speed and cost tradeoff; great for simple tasks, questions, and chat • Context: 1m tokens',
   },
   {
-    id: 'deepseek-ai/DeepSeek-V3',
+    id: 'deepseek-v3',
     name: 'DeepSeek V3',
     description:
       'Mixture-of-Experts model challenging top AI models (0324 version) • Context: 131k tokens',
   },
   {
-    id: 'deepseek-ai/DeepSeek-R1',
+    id: 'deepseek-r1',
     name: 'DeepSeek R1',
     description:
       'Open source model excelling in creative writing, math, code, reasoning, and cost efficiency • Context: 164k tokens',
   },
   {
-    id: 'anthropic/claude-sonnet-4-20250514',
+    id: 'claude-sonnet-4',
     name: 'Claude Sonnet 4',
     description:
       'High-performance model with strong reasoning capabilities • Context: 200k tokens',
   },
   {
-    id: 'anthropic/claude-opus-4-20250514',
+    id: 'claude-opus-4',
     name: 'Claude Opus 4',
     description:
       "Anthropic's most powerful and capable model; skilled at coding and editing long-form prose • Context: 200k tokens",

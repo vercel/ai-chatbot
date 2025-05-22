@@ -45,10 +45,8 @@ export const myProvider = isTestEnvironment
         'artifact-model': google('gemini-2.5-pro-preview-03-25'),
         'deepseek-v3': togetherai('deepseek-ai/DeepSeek-V3'),
         'deepseek-r1': togetherai('deepseek-ai/DeepSeek-R1'),
-        'gemini-2.5-flash-preview-04-17': google(
-          'gemini-2.5-flash-preview-04-17',
-        ),
-        'gemini-2.5-pro-preview-03-25': google('gemini-2.5-pro-preview-03-25'),
+        'gemini-2.5-flash': google('gemini-2.5-flash-preview-04-17'),
+        'gemini-2.5-pro': google('gemini-2.5-pro-preview-05-06'),
         'o4-mini': openai('o4-mini'),
         'claude-sonnet-4': anthropic('claude-sonnet-4-20250514'),
         'claude-opus-4': anthropic('claude-opus-4-20250514'),
