@@ -62,7 +62,11 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      console.log('[Chat] onFinish called. Skipping SWR history mutate.'); // Add log
+      console.log(
+        '[Chat] onFinish called. selectedChatModel:',
+        selectedChatModel,
+      );
+      console.log('[Chat] onFinish status:', status);
       //   revalidate: false,
       // });
 
@@ -70,8 +74,13 @@ export function Chat({
       // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Needs to be adapted if history structure changes
     },
     onError: (error) => {
-      // Add error logging
-      console.error('[Chat] onError called:', error);
+      // Add detailed error logging
+      console.error(
+        '[Chat] onError called. selectedChatModel:',
+        selectedChatModel,
+      );
+      console.error('[Chat] onError details:', error);
+      console.error('[Chat] onError status:', status);
       toast.error('An error occurred, please try again!');
     },
   });
@@ -94,12 +103,26 @@ export function Chat({
     messages[messages.length - 1]?.role === 'user' &&
     status === 'ready';
 
+  // DEBUG LOGGING - Understanding current behavior
+  console.log('[Chat DEBUG] selectedChatModel:', selectedChatModel);
+  console.log('[Chat DEBUG] status:', status);
+  console.log('[Chat DEBUG] messages length:', messages.length);
+  console.log('[Chat DEBUG] last message:', messages[messages.length - 1]);
+  console.log(
+    '[Chat DEBUG] last message role:',
+    messages[messages.length - 1]?.role,
+  );
+  console.log('[Chat DEBUG] isN8nWaiting:', isN8nWaiting);
+
   // Add SWR polling for messages when waiting for n8n
   const { data: freshMessages } = useSWR(
     isN8nWaiting ? `/api/messages?chatId=${id}` : null,
     fetcher,
     { refreshInterval: 3000 },
   );
+
+  console.log('[Chat DEBUG] SWR polling active:', !!isN8nWaiting);
+  console.log('[Chat DEBUG] freshMessages:', freshMessages);
 
   // Sync fresh messages when polling detects new data
   useEffect(() => {
