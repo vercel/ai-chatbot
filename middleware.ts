@@ -47,6 +47,12 @@ export default clerkMiddleware(async (auth, req) => {
   // If public or successfully protected, allow the request to proceed.
   // For public routes, NextResponse.next() is implicitly handled if no other response is returned.
   // For protected routes, if auth.protect() doesn't throw/redirect, the request also proceeds.
+
+  console.log('[Middleware] Path:', requestedPath);
+  console.log('[Middleware] Full URL:', requestedUrl);
+  console.log(
+    '[Middleware] Forcing redeploy attempt with new log - 2024-05-23-v2',
+  );
 });
 
 export const config = {
