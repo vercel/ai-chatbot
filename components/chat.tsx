@@ -101,7 +101,7 @@ export function Chat({
   const isN8nWaiting =
     selectedChatModel === 'n8n-assistant' &&
     messages[messages.length - 1]?.role === 'user' &&
-    status === 'ready';
+    status === 'submitted';
 
   // Override status to keep thinking animation for n8n
   const displayStatus = isN8nWaiting ? 'submitted' : status;
