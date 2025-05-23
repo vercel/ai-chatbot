@@ -132,7 +132,7 @@ export function Chat({
 
   // Add SWR polling for messages when waiting for n8n
   const { data: freshMessages } = useSWR(
-    isN8nWaiting ? `/api/messages?chatId=${id}` : null,
+    isN8nWaiting ? `/api/fetch-messages?chatId=${id}` : null,
     fetcher,
     { refreshInterval: 3000 },
   );
