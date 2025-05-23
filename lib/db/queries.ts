@@ -173,6 +173,12 @@ export async function getChatById({ id }: { id: string }) {
           .from(schema.Chat)
           .where(eq(schema.Chat.id, chatId));
         console.timeEnd(`getChatById DB Query - Chat ${chatId}`);
+        console.log(
+          `[getChatById CACHED FUNC] DB query for ${chatId} returned:`,
+          selectedChat
+            ? `Chat object (userId: ${selectedChat.userId})`
+            : 'undefined',
+        );
         return selectedChat;
       } catch (error) {
         console.timeEnd(`getChatById DB Query - Chat ${chatId}`);

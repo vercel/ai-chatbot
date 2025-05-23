@@ -206,6 +206,9 @@ export async function POST(request: Request) {
         revalidateTag(`chat-${finalChatId}`);
         revalidateTag(`history-${userId}`);
         console.log(
+          `[POST /api/chat] CALLED revalidateTag for chat-${finalChatId}`,
+        );
+        console.log(
           `Saved new chat with ID: ${finalChatId} and Title: "${newChatTitle}"`,
         );
 
@@ -243,6 +246,9 @@ export async function POST(request: Request) {
             `Chat (ID: ${finalChatId}) already exists, likely due to race condition. Proceeding.`,
           );
           revalidateTag(`chat-${finalChatId}`);
+          console.log(
+            `[POST /api/chat] CALLED revalidateTag for chat-${finalChatId} (in race condition handler)`,
+          );
         } else {
           console.error('Failed to save chat:', saveError);
           return new Response('Failed to save chat', { status: 500 });

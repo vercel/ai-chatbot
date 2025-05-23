@@ -26,9 +26,17 @@ export async function GET(request: Request) {
   const userId = profile.id; // Use the internal profile UUID
   // --- END AUTH ---
 
+  console.log(`[API /api/messages-test] Chat ID for getChatById: ${chatId}`);
   const chat = await getChatById({ id: chatId });
+  console.log(
+    `[API /api/messages-test] Result from getChatById for ${chatId}:`,
+    chat ? `Found chat with userId ${chat.userId}` : 'NOT FOUND',
+  );
 
   if (!chat) {
+    console.error(
+      `[API /api/messages-test] CRITICAL: Chat not found for ID ${chatId}. Returning 404.`,
+    );
     return new Response('Chat not found', { status: 404 });
   }
 
