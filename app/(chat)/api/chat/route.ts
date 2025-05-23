@@ -124,20 +124,21 @@ export async function POST(request: Request) {
     console.log(
       `[API /api/chat] Attempting to fetch Google OAuth token for user: ${userId}`,
     );
+    // Track token for n8n calls
+    let googleToken: string | null = null;
     const tokenResult = await getGoogleOAuthToken();
     if (tokenResult.error) {
       // Log error but don't necessarily block the chat flow unless the token is strictly required
       console.warn(
         `[API /api/chat] Failed to get Google OAuth token for user ${userId}: ${tokenResult.error}`,
       );
-      // If the token IS required for the next step, you might return an error here:
-      // return new Response(`Failed to get required Google token: ${tokenResult.error}`, { status: 500 });
     } else if (tokenResult.token) {
       console.log(
         `[API /api/chat] Successfully fetched Google OAuth token for user ${userId}.`,
       );
+      // Store token for use in n8n payload
+      googleToken = tokenResult.token;
       // You can now use tokenResult.token if needed for tools/AI calls later in this function
-      // Example: pass it to streamText options or tool functions
     } else {
       console.warn(
         `[API /api/chat] Google OAuth token fetch for user ${userId} completed but no token was returned.`,
@@ -312,117 +313,70 @@ export async function POST(request: Request) {
     );
     // ---- END N8N CHECK LOGS ----
 
-    // Check if selected model is an n8n assistant
+    // Check if selected model is an n8n assistant and trigger workflow asynchronously
     if (selectedModelInfo?.isN8n) {
       console.log(
-        `[API Route] Entering N8n model block for model: ${selectedChatModel} (EXPERIMENTAL TIMEOUT TEST)`,
+        `[API Route] Triggering n8n workflow for chat ${finalChatId}`,
       );
+      const webhookUrl = n8nWebhookUrls[selectedChatModel];
+      if (!webhookUrl) {
+        console.error(
+          `Webhook URL for n8n assistant "${selectedChatModel}" is not configured.`,
+        );
+        return new Response('Assistant configuration error', { status: 500 });
+      }
 
-      // const webhookUrl = n8nWebhookUrls[selectedChatModel];
-      // if (!webhookUrl) {
-      //   console.error(`Webhook URL for n8n assistant "${selectedChatModel}" is not configured.`);
-      //   return new Response('Assistant configuration error', { status: 500 });
-      // }
+      // Build n8n payload
+      const payload = {
+        chatId: finalChatId,
+        userId,
+        messageId: userMessage.id,
+        userMessage:
+          typeof userMessage.content === 'string'
+            ? userMessage.content
+            : JSON.stringify(userMessage.content),
+        userMessageParts: userMessage.parts,
+        userMessageDatetime: userMessage.createdAt,
+        history: messages,
+        ...(googleToken && { google_token: googleToken }),
+      };
+      console.log('[API Route] n8n payload:', JSON.stringify(payload, null, 2));
 
-      // Intentionally bypass n8n model and n8n fetch for this timeout test
+      // Fire n8n webhook without awaiting response
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
+            Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
+          }),
+        },
+        body: JSON.stringify(payload),
+      })
+        .then((resp) =>
+          console.log(
+            '[API Route] n8n webhook responded with status',
+            resp.status,
+          ),
+        )
+        .catch((error) =>
+          console.error('[API Route] Error triggering n8n webhook:', error),
+        );
+
+      // Immediately stream a Thinking placeholder and close the stream
       return createDataStreamResponse({
         execute: async (dataStream) => {
-          let streamClosed = false;
-          let pingInterval: NodeJS.Timeout | undefined = undefined;
-
-          try {
-            console.log('[API Route / Timeout Test] Sending initial chunk.');
-            dataStream.writeMessageAnnotation({
-              type: 'text-delta',
-              data: 'Starting timeout test (aiming for >60s)...',
-            });
-
-            console.log(
-              '[API Route / Timeout Test] Starting keep-alive pings.',
-            );
-            pingInterval = setInterval(() => {
-              if (!streamClosed) {
-                try {
-                  console.log(
-                    '[API Route / Timeout Test] Sending keep-alive ping.',
-                  );
-                  dataStream.writeMessageAnnotation({
-                    type: 'text-delta',
-                    data: 'ping ',
-                  });
-                } catch (e) {
-                  console.error(
-                    '[API Route / Timeout Test] Error sending ping:',
-                    e,
-                  );
-                  if (pingInterval) clearInterval(pingInterval);
-                  streamClosed = true;
-                }
-              } else {
-                if (pingInterval) clearInterval(pingInterval);
-              }
-            }, 15000); // Ping every 15 seconds
-
-            console.log('[API Route / Timeout Test] Waiting for 70 seconds...');
-            await new Promise((resolve) => setTimeout(resolve, 70000)); // 70 seconds
-            if (pingInterval) clearInterval(pingInterval); // Stop pings
-
-            if (!streamClosed) {
-              console.log(
-                '[API Route / Timeout Test] Sending post-wait chunk.',
-              );
-              dataStream.writeMessageAnnotation({
-                type: 'text-delta',
-                data: '\n\nTest waited 70s. If you see this, maxDuration worked!',
-              });
-            }
-
-            // Simulate saving a message
-            console.log('[API Route / Timeout Test] Simulating save message.');
-            const assistantMessageForDb: UIMessage = {
-              id: generateUUID(),
-              role: 'assistant',
-              content: 'Test waited 70s. If you see this, maxDuration worked!',
-              parts: [
-                {
-                  type: 'text',
-                  text: 'Test waited 70s. If you see this, maxDuration worked!',
-                },
-              ],
-              createdAt: new Date(),
-              experimental_attachments: [],
-            };
-            // await saveMessages(...); // Don't actually save for this test
-            console.log(
-              `[API Route / Timeout Test] Simulated save for chat ${finalChatId}`,
-            );
-          } catch (error: any) {
-            console.error(
-              '[API Route / Timeout Test] Error during test execution:',
-              error,
-            );
-            if (pingInterval) clearInterval(pingInterval);
-            if (!streamClosed) {
-              dataStream.writeMessageAnnotation({
-                type: 'text-delta',
-                data: `\n\nError during timeout test: ${error.message}`,
-              });
-            }
-          } finally {
-            if (pingInterval) clearInterval(pingInterval);
-            if (!streamClosed) {
-              console.log('[API Route / Timeout Test] Closing dataStream.');
-              // SDK handles actual close
-              streamClosed = true;
-            }
-          }
+          dataStream.writeMessageAnnotation({
+            type: 'text-delta',
+            data: 'Thinking...',
+          });
         },
         onError: (error) => {
           console.error(
-            '[API Route / Timeout Test] Error in createDataStreamResponse itself:',
+            '[API Route] Error streaming Thinking placeholder:',
             error,
           );
-          return 'Oops, an error occurred setting up the timeout test!';
+          return 'Oops, an error occurred starting the assistant!';
         },
       });
     }

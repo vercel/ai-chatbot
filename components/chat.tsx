@@ -76,6 +76,48 @@ export function Chat({
     },
   });
 
+  // For n8n flows, track whether we're awaiting the callback
+  const [awaitingN8n, setAwaitingN8n] = useState(false);
+
+  // When using an n8n model and user submission is acknowledged, start polling
+  useEffect(() => {
+    if (selectedChatModel.startsWith('n8n') && status === 'submitted') {
+      setAwaitingN8n(true);
+    }
+  }, [status, selectedChatModel]);
+
+  // Poll the messages endpoint until the assistant callback arrives
+  const { data: dbMessages } = useSWR(
+    awaitingN8n ? `/api/messages?chatId=${id}` : null,
+    fetcher,
+    { refreshInterval: 3000 },
+  );
+
+  useEffect(() => {
+    if (!dbMessages || !awaitingN8n) return;
+    // Find new assistant messages in DB not yet in local state
+    const existingIds = new Set(messages.map((m) => m.id));
+    const newAssistant = (dbMessages as any[]).filter(
+      (m) => m.role === 'assistant' && !existingIds.has(m.id),
+    );
+    if (newAssistant.length > 0) {
+      newAssistant.forEach((m) => {
+        // Reconstruct UIMessage
+        append({
+          id: m.id,
+          role: 'assistant',
+          content: Array.isArray(m.parts)
+            ? m.parts.map((p: any) => p.text).join('')
+            : '',
+          parts: m.parts,
+          experimental_attachments: m.attachments,
+          createdAt: new Date(m.createdAt),
+        });
+      });
+      setAwaitingN8n(false);
+    }
+  }, [dbMessages, messages, append, awaitingN8n]);
+
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
@@ -130,6 +172,7 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
+          isAwaitingN8n={awaitingN8n}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
