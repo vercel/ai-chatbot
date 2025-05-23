@@ -62,6 +62,7 @@ export const Message_v2 = pgTable('Message_v2', {
   parts: jsonb('parts').notNull(),
   attachments: jsonb('attachments').notNull(),
   createdAt: timestamp('createdAt').notNull(),
+  metadata: jsonb('metadata'),
 });
 
 export type DBMessage = InferSelectModel<typeof Message_v2>;

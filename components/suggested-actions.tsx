@@ -14,8 +14,8 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
       title: 'Get the best flight options to Tokyo next week',
-      label: 'leaving Monday or Tuesday, Haneda preferred but Narita is fine',
-      action: `Get the best flight options to Tokyo next week leaving Monday or Tuesday, Haneda preferred but Narita is fine`,
+      label: 'leaving Monday or Tuesday, Haneda preferred',
+      action: `Get the best flight options to Tokyo next week leaving Monday or Tuesday, Haneda preferred`,
     },
     {
       title: 'Find Airbnbs available for a group of 4 in Chamonix',
@@ -29,8 +29,8 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
     },
     {
       title: 'Craft an AI product strategy memo',
-      label: `based on what you know about the client's company`,
-      action: `Craft an AI product strategy memo based on what you know about the client's company`,
+      label: `with context on the client's company`,
+      action: `Craft an AI product strategy memo with context on the client's company`,
     },
   ];
 

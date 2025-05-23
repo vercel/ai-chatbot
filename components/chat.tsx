@@ -3,11 +3,9 @@
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote, Document as DBDocument } from '@/lib/db/schema';
-import { fetcher, generateUUID } from '@/lib/utils';
+import { generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
@@ -18,7 +16,8 @@ import {
   initialArtifactData,
 } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
-import { unstable_serialize } from 'swr/infinite';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/utils';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
@@ -42,8 +41,6 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  // const { mutate } = useSWRConfig(); // Keep mutate import for now if needed elsewhere, but comment out its use here
-
   const {
     messages,
     setMessages,
@@ -62,72 +59,13 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      console.log('[Chat] onFinish called. Skipping SWR history mutate.'); // Add log
-      //   revalidate: false,
-      // });
-
-      // COMMENT OUT THIS LINE
-      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Needs to be adapted if history structure changes
+      console.log('[Chat] onFinish called - standard AI SDK behavior');
     },
     onError: (error) => {
-      // Add error logging
       console.error('[Chat] onError called:', error);
       toast.error('An error occurred, please try again!');
     },
   });
-
-  // For n8n flows, track whether we're awaiting the callback
-  const [awaitingN8n, setAwaitingN8n] = useState(false);
-
-  // When using an n8n model, track when we get the "Thinking..." response
-  useEffect(() => {
-    if (selectedChatModel.startsWith('n8n') && messages.length > 0) {
-      const lastMsg = messages[messages.length - 1];
-      // Check if last message is assistant with "Thinking..." content
-      if (
-        lastMsg.role === 'assistant' &&
-        (lastMsg.content === 'Thinking...' ||
-          (Array.isArray(lastMsg.parts) &&
-            lastMsg.parts.some(
-              (p: any) => p.type === 'text' && p.text === 'Thinking...',
-            )))
-      ) {
-        setAwaitingN8n(true);
-      }
-    }
-  }, [messages, selectedChatModel]);
-
-  // Poll the messages endpoint until the assistant callback arrives
-  const { data: dbMessages } = useSWR(
-    awaitingN8n ? `/api/messages?chatId=${id}` : null,
-    fetcher,
-    { refreshInterval: 3000 },
-  );
-
-  useEffect(() => {
-    if (!dbMessages || !awaitingN8n) return;
-    // Find new assistant messages in DB not yet in local state
-    const existingIds = new Set(messages.map((m) => m.id));
-    const newAssistant = (dbMessages as any[]).filter(
-      (m) => m.role === 'assistant' && !existingIds.has(m.id),
-    );
-    if (newAssistant.length > 0) {
-      newAssistant.forEach((m) => {
-        // Reconstruct UIMessage
-        append({
-          id: m.id,
-          role: 'assistant',
-          content: Array.isArray(m.parts)
-            ? m.parts.map((p: any) => p.text).join('')
-            : '',
-          parts: m.parts,
-          experimental_attachments: m.attachments,
-          createdAt: new Date(m.createdAt),
-        });
-      });
-      setAwaitingN8n(false);
-    }
-  }, [dbMessages, messages, append, awaitingN8n]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -138,8 +76,6 @@ export function Chat({
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   const { setArtifact } = useArtifact();
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     if (initialAssociatedDocument) {
@@ -183,7 +119,6 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
-          isAwaitingN8n={awaitingN8n}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

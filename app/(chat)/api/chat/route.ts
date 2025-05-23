@@ -15,6 +15,7 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  getMessagesByChatId,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -326,11 +327,43 @@ export async function POST(request: Request) {
         return new Response('Assistant configuration error', { status: 500 });
       }
 
-      // Build n8n payload
+      // Save placeholder assistant message immediately in database
+      const placeholderMessage = {
+        chatId: finalChatId,
+        role: 'assistant' as const,
+        parts: [{ type: 'text', text: 'Thinking...' }],
+        attachments: [],
+        createdAt: new Date(),
+        metadata: { status: 'pending_n8n' }, // Mark as pending n8n completion
+      };
+
+      let placeholderMessageId: string;
+      try {
+        // Save placeholder message and get the generated ID
+        await saveMessages({ messages: [placeholderMessage] });
+
+        // Get the saved message to retrieve its generated ID
+        // Note: This is a temporary approach - ideally saveMessages should return the ID
+        const savedMessages = await getMessagesByChatId({ id: finalChatId });
+        const lastMessage = savedMessages[savedMessages.length - 1];
+        placeholderMessageId = lastMessage.id;
+
+        console.log(
+          '[API Route] Saved placeholder message with ID:',
+          placeholderMessageId,
+        );
+      } catch (error) {
+        console.error('[API Route] Failed to save placeholder message:', error);
+        return new Response('Failed to create assistant message', {
+          status: 500,
+        });
+      }
+
+      // Build n8n payload with placeholder message ID for updating
       const payload = {
         chatId: finalChatId,
         userId,
-        messageId: userMessage.id,
+        messageId: placeholderMessageId, // n8n will update this specific message
         userMessage:
           typeof userMessage.content === 'string'
             ? userMessage.content
@@ -363,22 +396,11 @@ export async function POST(request: Request) {
           console.error('[API Route] Error triggering n8n webhook:', error),
         );
 
-      // Immediately stream a Thinking placeholder and close the stream
-      return createDataStreamResponse({
-        execute: async (dataStream) => {
-          dataStream.writeMessageAnnotation({
-            type: 'text-delta',
-            data: 'Thinking...',
-          });
-        },
-        onError: (error) => {
-          console.error(
-            '[API Route] Error streaming Thinking placeholder:',
-            error,
-          );
-          return 'Oops, an error occurred starting the assistant!';
-        },
-      });
+      // Return success immediately (no streaming needed)
+      console.log(
+        '[API Route] n8n workflow triggered, returning success immediately',
+      );
+      return new Response('OK', { status: 200 });
     }
 
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)

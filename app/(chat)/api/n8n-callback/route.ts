@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { saveMessages } from '@/lib/db/queries';
-import { generateUUID } from '@/lib/utils';
+import { db } from '@/lib/db/queries';
+import * as schema from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
 
 export async function POST(request: Request) {
@@ -17,51 +18,57 @@ export async function POST(request: Request) {
 
     const {
       chatId,
+      messageId,
       responseMessage,
       parts,
     }: {
       chatId: string;
+      messageId: string;
       responseMessage: string;
       parts?: Array<{ type: string; text: string }>;
     } = await request.json();
 
     console.log('[n8n-callback] Received callback for chat:', chatId);
+    console.log('[n8n-callback] Updating message ID:', messageId);
     console.log(
       '[n8n-callback] Response message length:',
       responseMessage?.length || 0,
     );
 
-    // Build message record
-    const messageId = generateUUID();
+    // Build updated message parts
     const messageParts =
       parts && parts.length > 0
         ? parts
         : [{ type: 'text', text: responseMessage }];
 
-    const dbMessage = {
-      id: messageId,
-      chatId,
-      role: 'assistant' as const,
-      parts: messageParts,
-      attachments: [],
-      createdAt: new Date(),
-    };
+    // Update the existing placeholder message instead of creating new one
+    const updateResult = await db
+      .update(schema.Message_v2)
+      .set({
+        parts: messageParts,
+        metadata: { status: 'completed' }, // Mark as completed
+        // Note: createdAt stays the same, no need to update it
+      })
+      .where(eq(schema.Message_v2.id, messageId))
+      .returning({ id: schema.Message_v2.id });
 
-    console.log('[n8n-callback] Saving assistant message with ID:', messageId);
+    if (updateResult.length === 0) {
+      console.error('[n8n-callback] No message found with ID:', messageId);
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 });
+    }
 
-    // Save the assistant message
-    await saveMessages({ messages: [dbMessage] });
+    console.log('[n8n-callback] Successfully updated message:', messageId);
 
-    // Revalidate chat cache so front-end can pick up the new message
+    // Revalidate chat cache so front-end can pick up the updated message
     revalidateTag(`chat-${chatId}`);
 
     console.log(
-      '[n8n-callback] Successfully saved message and revalidated cache',
+      '[n8n-callback] Successfully updated message and revalidated cache',
     );
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error('[n8n-callback] Error saving assistant message:', error);
+    console.error('[n8n-callback] Error updating assistant message:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },

@@ -16,7 +16,6 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
-  isAwaitingN8n?: boolean;
 }
 
 function PureMessages({
@@ -28,7 +27,6 @@ function PureMessages({
   reload,
   isReadonly,
   isArtifactVisible,
-  isAwaitingN8n = false,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -60,8 +58,8 @@ function PureMessages({
         />
       ))}
 
-      {/* For n8n, rely on isAwaitingN8n; for other models, use status === 'submitted' */}
-      {((!isAwaitingN8n && status === 'submitted') || isAwaitingN8n) &&
+      {/* Show thinking message for standard AI SDK submitted status */}
+      {status === 'submitted' &&
         messages.length > 0 &&
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
@@ -81,7 +79,6 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.messages, nextProps.messages)) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
-  if (prevProps.isAwaitingN8n !== nextProps.isAwaitingN8n) return false;
 
   return true;
 });
