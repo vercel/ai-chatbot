@@ -31,6 +31,13 @@ import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 import { assembleTools } from '@/lib/ai/tools/tool-list';
 import MemoryClient from 'mem0ai';
 
+// Add type declaration at the top of the file
+declare global {
+  var activeStreams:
+    | Map<string, { dataStream: any; heartbeatInterval: NodeJS.Timeout }>
+    | undefined;
+}
+
 const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY || '' });
 
 export const maxDuration = 300;
@@ -343,33 +350,62 @@ export async function POST(request: Request) {
 
       console.log('[API Route] n8n payload:', JSON.stringify(payload, null, 2));
 
-      // Fire n8n webhook without awaiting response (fire-and-forget)
-      fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
-            Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
-          }),
-        },
-        body: JSON.stringify(payload),
-      })
-        .then((resp) =>
-          console.log(
-            '[API Route] n8n webhook responded with status',
-            resp.status,
-          ),
-        )
-        .catch((error) =>
-          console.error('[API Route] Error triggering n8n webhook:', error),
-        );
+      // Return streaming response that stays alive with heartbeats
+      return createDataStreamResponse({
+        execute: async (dataStream) => {
+          // Store stream for callback access - simple global Map
+          if (!global.activeStreams) {
+            global.activeStreams = new Map();
+          }
 
-      // Return success immediately - frontend will show thinking state
-      // n8n will call back to /api/n8n-callback when complete
-      console.log(
-        '[API Route] n8n workflow triggered, returning success immediately',
-      );
-      return new Response('OK', { status: 200 });
+          // Fire n8n webhook without awaiting response
+          fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
+                Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
+              }),
+            },
+            body: JSON.stringify(payload),
+          })
+            .then((resp) =>
+              console.log(
+                '[API Route] n8n webhook responded with status',
+                resp.status,
+              ),
+            )
+            .catch((error) =>
+              console.error('[API Route] Error triggering n8n webhook:', error),
+            );
+
+          // Keep stream alive with heartbeats every 30 seconds
+          const heartbeatInterval = setInterval(() => {
+            try {
+              dataStream.writeData({
+                type: 'heartbeat',
+                timestamp: Date.now(),
+              });
+            } catch (error) {
+              console.error('[API Route] Heartbeat failed:', error);
+              clearInterval(heartbeatInterval);
+              global.activeStreams?.delete(finalChatId);
+            }
+          }, 30000);
+
+          // Store stream and cleanup for callback
+          global.activeStreams.set(finalChatId, {
+            dataStream,
+            heartbeatInterval,
+          });
+
+          console.log(
+            '[API Route] n8n webhook triggered, stream staying alive with heartbeats',
+          );
+
+          // Don't end stream here - callback will handle it
+        },
+      });
     }
 
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)

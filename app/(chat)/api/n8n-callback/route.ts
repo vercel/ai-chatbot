@@ -47,15 +47,23 @@ export async function POST(request: Request) {
       responseMessage?.length || 0,
     );
 
+    // Get the active stream for this chat
+    const streamEntry = global.activeStreams?.get(chatId);
+
+    if (!streamEntry) {
+      console.warn(`[n8n-callback] No active stream found for chat ${chatId}`);
+    } else {
+      console.log(`[n8n-callback] Found active stream for chat ${chatId}`);
+    }
+
     // Build message parts
     const messageParts =
       parts && parts.length > 0
         ? parts
         : [{ type: 'text', text: responseMessage }];
 
-    // CREATE new assistant message (don't update placeholder)
-    console.log('[n8n-callback] Creating new assistant message...');
-
+    // Save message to database
+    console.log('[n8n-callback] Saving assistant message to database...');
     await saveMessages({
       messages: [
         {
@@ -68,18 +76,57 @@ export async function POST(request: Request) {
       ],
     });
 
-    console.log('[n8n-callback] Successfully created assistant message');
+    console.log('[n8n-callback] Successfully saved assistant message');
 
-    // Revalidate chat cache so front-end can pick up the new message
+    // If we have an active stream, send the response through it
+    if (streamEntry) {
+      try {
+        const { dataStream, heartbeatInterval } = streamEntry;
+
+        // Send the assistant message through the stream
+        dataStream.writeMessageAnnotation({
+          type: 'assistant-response',
+          chatId: chatId,
+          message: {
+            role: 'assistant',
+            content: messageParts,
+            createdAt: new Date().toISOString(),
+          },
+        });
+
+        // Send completion signal
+        dataStream.writeData({
+          type: 'completion',
+          chatId: chatId,
+          timestamp: Date.now(),
+        });
+
+        console.log('[n8n-callback] Sent response through active stream');
+
+        // Clean up the stream
+        clearInterval(heartbeatInterval);
+        global.activeStreams?.delete(chatId);
+        console.log('[n8n-callback] Cleaned up stream for chat', chatId);
+      } catch (streamError) {
+        console.error(
+          '[n8n-callback] Error sending through stream:',
+          streamError,
+        );
+        // Continue with database fallback
+      }
+    }
+
+    // Revalidate chat cache so other clients can pick up the new message
     revalidateTag(`chat-${chatId}`);
 
-    console.log(
-      '[n8n-callback] Successfully created message and revalidated cache',
-    );
+    console.log('[n8n-callback] Successfully processed callback');
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      streamDelivered: !!streamEntry,
+    });
   } catch (error: any) {
-    console.error('[n8n-callback] Error creating assistant message:', error);
+    console.error('[n8n-callback] Error processing callback:', error);
     console.error('[n8n-callback] Error stack:', error.stack);
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
