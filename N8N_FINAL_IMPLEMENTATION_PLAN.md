@@ -652,3 +652,34 @@ If implementation fails:
 5. Wait for n8n callback and verify message appears automatically
 
 **HONEST STATUS**: Code compiles and deploys, but core functionality is unverified.
+
+---
+
+## LATEST DEBUGGING - Persistent `/api/fetch-messages` 404 Error (As of last user interaction)
+
+Despite multiple attempts to correct file paths and ensure the SWR polling in `components/chat.tsx` uses `/api/(chat)/messages?chatId=${id}`, browser logs consistently show a 404 error for `GET /api/fetch-messages?chatId=...`.
+
+### Investigation Steps Taken:
+1.  **Verified `components/chat.tsx`**:
+    *   The SWR hook for n8n polling correctly uses the key: `` isN8nWaiting ? `/api/(chat)/messages?chatId=${id}` : null ``
+    *   Console logs confirm `isN8nWaiting` is true and `SWR polling active` is true immediately before the 404 error occurs in the browser network tab.
+2.  **Searched Codebase**: `grep` for "fetch-messages" yielded no results, indicating no explicit hardcoded calls to this old endpoint.
+3.  **Verified `middleware.ts`**: The public route `'/api/(chat)/messages(.*)'` is correctly configured. Vercel logs for the 404 show the request path as `/api/fetch-messages`, not `/api/(chat)/messages`.
+4.  **Verified `fetcher` function (`lib/utils.ts`)**: The generic `fetcher` function does not modify the URL it's given.
+5.  **Attempted Forced Redeploy**: Added console logs to `middleware.ts` to try and force Vercel to use the latest bundle; this did not resolve the issue.
+6.  **Hypothesized Vercel Caching/Stale Bundles**: Considered that Vercel might be serving an old JavaScript bundle where `components/chat.tsx` still referenced the old `/api/fetch-messages` path.
+7.  **Diagnostic SWR Cache Mutation**:
+    *   Added a step in `components/chat.tsx` to explicitly mutate (clear) the SWR cache for the polling key (`/api/(chat)/messages?chatId=${id}`) before the SWR hook is defined.
+    *   This change (`Diag: Add SWR cache mutation for n8n polling in chat.tsx`) has been pushed and is awaiting deployment and testing.
+
+### Current Mystery:
+The frontend SWR hook *appears* to be configured correctly to call `/api/(chat)/messages`, but the browser is *actually* requesting `/api/fetch-messages`. The source of this discrepancy is still unknown.
+
+### Next Steps (Post-Deployment of SWR Cache Mutation):
+1.  **Wait for Vercel deployment** of the commit with SWR cache mutation to complete.
+2.  **User to perform a hard refresh** of the browser.
+3.  **User to test n8n model flow** and observe browser network logs.
+4.  **Analyze logs**:
+    *   Does the `[Chat DEBUG] Attempting to mutate SWR cache for key: /api/(chat)/messages?chatId=...` log appear?
+    *   Does the subsequent SWR polling request in the network tab *still* go to `/api/fetch-messages` or does it now correctly go to `/api/(chat)/messages`?
+    *   If it still goes to `/api/fetch-messages`, the issue is likely deeper than SWR's component-level cache (e.g., service worker, aggressive browser caching, or a Vercel-edge-level issue).

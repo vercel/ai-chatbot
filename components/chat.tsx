@@ -118,7 +118,7 @@ export function Chat({
   // Attempt to clear any potentially stale SWR cache for this specific key
   // This is a diagnostic step.
   if (isN8nWaiting) {
-    const swrKey = `/api/(chat)/messages?chatId=${id}`;
+    const swrKey = `/api/messages-test?chatId=${id}`;
     console.log('[Chat DEBUG] Attempting to mutate SWR cache for key:', swrKey);
     mutate(swrKey, undefined, { revalidate: false }); // Clear data, don't revalidate immediately
   }
@@ -140,7 +140,7 @@ export function Chat({
 
   // Add SWR polling for messages when waiting for n8n
   const { data: freshMessages } = useSWR(
-    isN8nWaiting ? `/api/(chat)/messages?chatId=${id}` : null,
+    isN8nWaiting ? `/api/messages-test?chatId=${id}` : null,
     fetcher,
     { refreshInterval: 3000 },
   );

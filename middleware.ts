@@ -8,7 +8,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',
   '/api/debug(.*)',
   '/api/n8n-callback',
-  '/api/(chat)/messages(.*)',
+  // '/api/(chat)/messages(.*)', // Commented out old path
+  '/api/messages-test(.*)', // Added new test path
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
