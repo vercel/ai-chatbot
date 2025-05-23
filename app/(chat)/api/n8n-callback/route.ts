@@ -2,18 +2,6 @@ import { NextResponse } from 'next/server';
 import { saveMessages } from '@/lib/db/queries';
 import { revalidateTag } from 'next/cache';
 
-interface CallbackResult {
-  error?: string;
-  success?: boolean;
-}
-
-declare global {
-  var activeStreams:
-    | Map<string, { dataStream: any; heartbeatInterval: NodeJS.Timeout }>
-    | undefined;
-  var streamResolvers: Map<string, (value: CallbackResult) => void> | undefined;
-}
-
 export async function POST(request: Request) {
   console.log('[n8n-callback] POST request received');
 
@@ -59,20 +47,6 @@ export async function POST(request: Request) {
       responseMessage?.length || 0,
     );
 
-    // Check if we have a waiting stream resolver
-    const streamResolver = global.streamResolvers?.get(chatId);
-    const streamEntry = global.activeStreams?.get(chatId);
-
-    if (!streamResolver) {
-      console.warn(
-        `[n8n-callback] No waiting stream resolver found for chat ${chatId}`,
-      );
-    } else {
-      console.log(
-        `[n8n-callback] Found waiting stream resolver for chat ${chatId}`,
-      );
-    }
-
     // Build message parts
     const messageParts =
       parts && parts.length > 0
@@ -95,56 +69,14 @@ export async function POST(request: Request) {
 
     console.log('[n8n-callback] Successfully saved assistant message');
 
-    // If we have a waiting stream, resolve the promise to complete it
-    if (streamResolver && streamEntry) {
-      try {
-        // Get the dataStream to send the actual message
-        const { dataStream } = streamEntry;
-
-        // Send the assistant message through the stream
-        dataStream.writeMessageAnnotation({
-          type: 'assistant-response',
-          chatId: chatId,
-          message: {
-            role: 'assistant',
-            content: messageParts,
-            createdAt: new Date().toISOString(),
-          },
-        });
-
-        console.log('[n8n-callback] Sent response through active stream');
-
-        // Resolve the promise to complete the waiting execute function
-        streamResolver({ success: true });
-
-        // Clean up the stream resolver and active stream
-        global.streamResolvers?.delete(chatId);
-        global.activeStreams?.delete(chatId);
-
-        console.log('[n8n-callback] Resolved stream promise for chat', chatId);
-      } catch (streamError) {
-        console.error(
-          '[n8n-callback] Error sending through stream:',
-          streamError,
-        );
-        // Resolve with error
-        streamResolver({
-          error:
-            streamError instanceof Error ? streamError.message : 'Stream error',
-        });
-        global.streamResolvers?.delete(chatId);
-        global.activeStreams?.delete(chatId);
-      }
-    }
-
-    // Revalidate chat cache so other clients can pick up the new message
+    // Revalidate chat cache so polling can pick up the new message
     revalidateTag(`chat-${chatId}`);
 
     console.log('[n8n-callback] Successfully processed callback');
 
     return NextResponse.json({
       ok: true,
-      streamDelivered: !!streamResolver,
+      message: 'Assistant message saved successfully',
     });
   } catch (error: any) {
     console.error('[n8n-callback] Error processing callback:', error);
