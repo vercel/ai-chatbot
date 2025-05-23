@@ -7,9 +7,10 @@ import * as schema from '@/lib/db/schema';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  console.log('[messages API] GET request received for chat:', params.id);
+  const { id } = await params;
+  console.log('[messages API] GET request received for chat:', id);
 
   try {
     // Auth check
@@ -38,17 +39,17 @@ export async function GET(
     // Verify chat ownership
     const chat = await db.query.Chat.findFirst({
       columns: { userId: true },
-      where: eq(schema.Chat.id, params.id),
+      where: eq(schema.Chat.id, id),
     });
 
     if (!chat) {
-      console.error(`[messages API] Chat not found: ${params.id}`);
+      console.error(`[messages API] Chat not found: ${id}`);
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
     }
 
     if (chat.userId !== userId) {
       console.error(
-        `[messages API] Unauthorized access to chat ${params.id} by user ${userId}`,
+        `[messages API] Unauthorized access to chat ${id} by user ${userId}`,
       );
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -70,11 +71,11 @@ export async function GET(
     }
 
     console.log(
-      `[messages API] Fetching messages for chat ${params.id}${sinceDate ? ` since ${sinceDate.toISOString()}` : ''}`,
+      `[messages API] Fetching messages for chat ${id}${sinceDate ? ` since ${sinceDate.toISOString()}` : ''}`,
     );
 
     // Build query conditions
-    const conditions = [eq(schema.Message_v2.chatId, params.id)];
+    const conditions = [eq(schema.Message_v2.chatId, id)];
     if (sinceDate) {
       conditions.push(gt(schema.Message_v2.createdAt, sinceDate));
     }
