@@ -378,16 +378,17 @@ export async function POST(request: Request) {
       );
 
       // For n8n, send a simple plain text stream. Client will use streamProtocol: 'text'.
-      const stream = new ReadableStream({
-        start(controller) {
-          const encoder = new TextEncoder();
-          controller.enqueue(encoder.encode('...')); // Plain text, no SDK prefix needed if client uses streamProtocol: 'text'
-          controller.close();
-        },
-      });
-      return new Response(stream, {
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-      });
+      // const stream = new ReadableStream({
+      //   start(controller) {
+      //     const encoder = new TextEncoder();
+      //     controller.enqueue(encoder.encode('...')); // Plain text, no SDK prefix needed if client uses streamProtocol: 'text'
+      //     controller.close();
+      //   },
+      // });
+      // return new Response(stream, {
+      //   headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      // });
+      return new Response(null, { status: 204 }); // Return No Content
     }
 
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)

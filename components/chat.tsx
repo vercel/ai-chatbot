@@ -61,8 +61,6 @@ export function Chat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    // Conditionally set streamProtocol based on the selectedChatModel
-    streamProtocol: selectedChatModel === 'n8n-assistant' ? 'text' : undefined,
     onFinish: () => {
       console.log(
         '[Chat] onFinish called. selectedChatModel:',
@@ -150,35 +148,76 @@ export function Chat({
 
   // Sync fresh messages when polling detects new data
   useEffect(() => {
-    if (freshMessages && freshMessages.length > messages.length) {
-      const uiMessages = freshMessages.map((dbMessage: any) => {
-        const finalParts =
-          typeof dbMessage.parts === 'string'
-            ? JSON.parse(dbMessage.parts)
-            : dbMessage.parts || [];
+    if (freshMessages && freshMessages.length > 0) {
+      const currentMessageIds = new Set(messages.map((m) => m.id));
+      const newUIMessages = freshMessages
+        .map((dbMessage: any) => {
+          // Explicitly type dbMessage or ensure it's typed by SWR/fetcher
+          // Basic validation
+          if (
+            !dbMessage ||
+            typeof dbMessage !== 'object' ||
+            !dbMessage.id ||
+            !dbMessage.role
+          ) {
+            console.warn(
+              '[Chat DEBUG] Invalid dbMessage structure:',
+              dbMessage,
+            );
+            return null;
+          }
 
-        const finalAttachments =
-          typeof dbMessage.attachments === 'string'
-            ? JSON.parse(dbMessage.attachments)
-            : dbMessage.attachments || [];
+          const finalParts =
+            typeof dbMessage.parts === 'string'
+              ? JSON.parse(dbMessage.parts)
+              : dbMessage.parts || [];
 
-        let messageContent = '';
-        if (finalParts.length > 0 && finalParts[0]?.type === 'text') {
-          messageContent = finalParts[0].text;
+          const finalAttachments =
+            typeof dbMessage.attachments === 'string'
+              ? JSON.parse(dbMessage.attachments)
+              : dbMessage.attachments || [];
+
+          let messageContent = '';
+          if (finalParts.length > 0 && finalParts[0]?.type === 'text') {
+            messageContent = finalParts[0].text;
+          }
+
+          return {
+            id: dbMessage.id,
+            role: dbMessage.role as
+              | 'user'
+              | 'assistant'
+              | 'system'
+              | 'function'
+              | 'tool'
+              | 'data',
+            content: messageContent,
+            parts: finalParts,
+            experimental_attachments: finalAttachments,
+            createdAt: new Date(dbMessage.createdAt), // Ensure createdAt is a Date object
+          };
+        })
+        .filter(Boolean); // Remove any nulls from invalid structures
+
+      let appendedNewMessages = false;
+      newUIMessages.forEach((uiMsg: UIMessage) => {
+        if (uiMsg.role === 'assistant' && !currentMessageIds.has(uiMsg.id)) {
+          console.log(
+            '[Chat DEBUG] Appending new assistant message from poll:',
+            uiMsg,
+          );
+          // Ensure that `append` receives all necessary fields, including `id` and `createdAt`
+          // The `convertToUIMessages` logic seems to handle this already.
+          append(uiMsg, { data: { selectedChatModel } }); // Pass chat specific data if needed by onAppend or body
+          appendedNewMessages = true;
         }
-
-        return {
-          id: dbMessage.id,
-          role: dbMessage.role,
-          content: messageContent,
-          parts: finalParts,
-          experimental_attachments: finalAttachments,
-          createdAt: new Date(dbMessage.createdAt), // Ensure createdAt is a Date object
-        };
       });
-      setMessages(uiMessages);
+
+      // If new messages were appended, the `messages` array in `useChat` will update,
+      // which should trigger re-renders and stop the `isN8nWaiting` condition if appropriate.
+      // No direct setMessages call needed here as append handles it.
     }
-  }, [freshMessages, messages.length, setMessages]);
+  }, [freshMessages, append, messages, selectedChatModel]); // Added append, messages, selectedChatModel to dependency array
 
   useEffect(() => {
     if (initialAssociatedDocument) {
