@@ -98,10 +98,20 @@ export function Chat({
   const router = useRouter();
 
   // Detect if waiting for n8n response (minimal inline check)
-  const isN8nWaiting =
-    selectedChatModel === 'n8n-assistant' &&
-    messages[messages.length - 1]?.role === 'user' &&
-    status === 'submitted';
+  const n8nSelected = selectedChatModel === 'n8n-assistant';
+  const lastMsgUser = messages[messages.length - 1]?.role === 'user';
+  const statusIsSubmitted = status === 'submitted';
+  console.log(
+    '[isN8nWaiting CALC] n8nSelected:',
+    n8nSelected,
+    'lastMsgUser:',
+    lastMsgUser,
+    'statusIsSubmitted:',
+    statusIsSubmitted,
+    'raw_status:',
+    status,
+  );
+  const isN8nWaiting = n8nSelected && lastMsgUser && statusIsSubmitted;
 
   // Override status to keep thinking animation for n8n
   const displayStatus = isN8nWaiting ? 'submitted' : status;
@@ -133,10 +143,22 @@ export function Chat({
     if (freshMessages && freshMessages.length > messages.length) {
       // Convert DB messages to UI format and update state
       const uiMessages = freshMessages.map((dbMessage: any) => {
-        // Extract text content from parts
-        const textContent = dbMessage.parts
+        // Parse parts and attachments from JSON strings to objects
+        const parsedParts =
+          typeof dbMessage.parts === 'string'
+            ? JSON.parse(dbMessage.parts)
+            : dbMessage.parts || [];
+        const parsedAttachments =
+          typeof dbMessage.attachments === 'string'
+            ? JSON.parse(dbMessage.attachments)
+            : dbMessage.attachments || [];
+
+        // Extract text content from the PARSED parts
+        const textContent = parsedParts
           ?.map((part: any) => {
             if (part.type === 'text') return part.text;
+            // According to Vercel AI SDK, reasoning is a top-level field, not in parts.
+            // However, if your n8n workflow puts it in parts, this is fine.
             if (part.type === 'reasoning') return part.reasoning;
             return '';
           })
@@ -146,9 +168,9 @@ export function Chat({
         return {
           id: dbMessage.id,
           role: dbMessage.role,
-          content: textContent || '',
-          parts: dbMessage.parts || [],
-          experimental_attachments: dbMessage.attachments || [],
+          content: textContent || '', // Ensure content is a string
+          parts: parsedParts, // Use the parsed parts
+          experimental_attachments: parsedAttachments, // Use the parsed attachments
           createdAt: dbMessage.createdAt,
         };
       });
