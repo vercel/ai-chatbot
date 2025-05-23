@@ -3,7 +3,7 @@ import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Greeting } from './greeting';
 import { memo } from 'react';
-import type { Vote, DBMessage } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 
@@ -16,7 +16,7 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
-  selectedChatModel: string;
+  isAwaitingN8n?: boolean;
 }
 
 function PureMessages({
@@ -28,32 +28,10 @@ function PureMessages({
   reload,
   isReadonly,
   isArtifactVisible,
-  selectedChatModel,
+  isAwaitingN8n = false,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
-
-  let showThinking = false;
-  if (messages.length > 0) {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.role === 'user') {
-      if (selectedChatModel.startsWith('n8n')) {
-        showThinking = true;
-      } else {
-        showThinking = status === 'submitted';
-      }
-    }
-    if (
-      selectedChatModel.startsWith('n8n') &&
-      lastMessage.role === 'assistant' &&
-      (lastMessage.content === 'Thinking...' ||
-        (Array.isArray(lastMessage.parts) &&
-          lastMessage.parts.some((p: any) => p.text === 'Thinking...'))) &&
-      (lastMessage as any).status !== 'complete'
-    ) {
-      showThinking = true;
-    }
-  }
 
   return (
     <div
@@ -68,11 +46,7 @@ function PureMessages({
           chatId={chatId}
           message={message}
           messages={messages}
-          isLoading={
-            status === 'streaming' &&
-            messages.length - 1 === index &&
-            !selectedChatModel.startsWith('n8n')
-          }
+          isLoading={status === 'streaming' && messages.length - 1 === index}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -86,7 +60,10 @@ function PureMessages({
         />
       ))}
 
-      {showThinking && <ThinkingMessage />}
+      {/* For n8n, rely on isAwaitingN8n; for other models, use status === 'submitted' */}
+      {((!isAwaitingN8n && status === 'submitted') || isAwaitingN8n) &&
+        messages.length > 0 &&
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}
@@ -98,11 +75,13 @@ function PureMessages({
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
+
   if (prevProps.status !== nextProps.status) return false;
+  if (prevProps.status && nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.messages, nextProps.messages)) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
-  if (prevProps.selectedChatModel !== nextProps.selectedChatModel) return false;
+  if (prevProps.isAwaitingN8n !== nextProps.isAwaitingN8n) return false;
 
   return true;
 });
