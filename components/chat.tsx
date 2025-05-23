@@ -2,13 +2,12 @@
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote, Document as DBDocument } from '@/lib/db/schema';
-import { fetcher, generateUUID, isN8nModel } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
@@ -77,25 +76,6 @@ export function Chat({
     },
   });
 
-  // Custom handleSubmit wrapper for N8N models
-  const customHandleSubmit: UseChatHelpers['handleSubmit'] = (
-    event,
-    options,
-  ) => {
-    console.log(
-      '[Chat] CustomHandleSubmit called for model:',
-      selectedChatModel,
-    );
-
-    if (isN8nModel(selectedChatModel)) {
-      console.log('[Chat] N8N model detected, starting thinking animation');
-      setIsN8nThinking(true);
-    }
-
-    // Call original handleSubmit
-    return handleSubmit(event, options);
-  };
-
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
@@ -103,10 +83,6 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-
-  // N8N state management
-  const [isN8nThinking, setIsN8nThinking] = useState(false);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { setArtifact } = useArtifact();
   const searchParams = useSearchParams();
@@ -135,62 +111,6 @@ export function Chat({
     }
   }, [initialAssociatedDocument, setArtifact]);
 
-  // Polling logic for N8N messages
-  useEffect(() => {
-    if (isN8nThinking) {
-      console.log('[Chat] Starting N8N message polling');
-
-      const pollForMessages = async () => {
-        try {
-          const response = await fetch(
-            `/api/chat/${id}/messages?since=${Date.now()}`,
-          );
-          if (response.ok) {
-            const newMessages = await response.json();
-
-            if (newMessages.length > 0) {
-              console.log(
-                '[Chat] New messages received from polling:',
-                newMessages.length,
-              );
-
-              // Add new messages to chat state
-              setMessages((currentMessages) => [
-                ...currentMessages,
-                ...newMessages,
-              ]);
-
-              // Stop thinking animation
-              setIsN8nThinking(false);
-
-              // Clear polling interval
-              if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-                pollIntervalRef.current = null;
-              }
-            }
-          }
-        } catch (error) {
-          console.error('[Chat] Error polling for messages:', error);
-        }
-      };
-
-      // Start polling every 3 seconds
-      pollIntervalRef.current = setInterval(pollForMessages, 3000);
-
-      // Initial poll
-      pollForMessages();
-    }
-
-    // Cleanup function
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    };
-  }, [isN8nThinking, id, setMessages]);
-
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -210,7 +130,6 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
-          isN8nThinking={isN8nThinking}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -219,7 +138,7 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={customHandleSubmit}
+              handleSubmit={handleSubmit}
               status={status}
               stop={stop}
               attachments={attachments}
@@ -237,7 +156,7 @@ export function Chat({
           chatId={id}
           input={input}
           setInput={setInput}
-          handleSubmit={customHandleSubmit}
+          handleSubmit={handleSubmit}
           status={status}
           stop={stop}
           attachments={attachments}

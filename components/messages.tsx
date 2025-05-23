@@ -16,7 +16,6 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
-  isN8nThinking?: boolean;
 }
 
 function PureMessages({
@@ -28,7 +27,6 @@ function PureMessages({
   reload,
   isReadonly,
   isArtifactVisible,
-  isN8nThinking = false,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -60,11 +58,10 @@ function PureMessages({
         />
       ))}
 
-      {/* Show thinking message for standard AI SDK submitted status OR n8n thinking */}
-      {((status === 'submitted' &&
+      {/* Show thinking message for standard AI SDK submitted status */}
+      {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user') ||
-        isN8nThinking) && <ThinkingMessage />}
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}
