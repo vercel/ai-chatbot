@@ -24,12 +24,12 @@ import {
 import { generateTitleFromUserMessage } from '../../actions';
 import { myProvider } from '@/lib/ai/providers';
 import { chatModels } from '@/lib/ai/models';
-import { N8nLanguageModel } from '@/lib/ai/n8n-model';
 import { AISDKExporter } from 'langsmith/vercel';
 import { revalidateTag } from 'next/cache';
 import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 import { assembleTools } from '@/lib/ai/tools/tool-list';
 import MemoryClient from 'mem0ai';
+import { NextResponse } from 'next/server';
 
 const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY || '' });
 
@@ -46,7 +46,7 @@ const n8nWebhookUrls: Record<string, string> = {
 export async function POST(request: Request) {
   try {
     const {
-      id,
+      id: finalChatId,
       messages,
       selectedChatModel,
       documentId,
@@ -112,12 +112,11 @@ export async function POST(request: Request) {
       columns: { id: true },
       where: eq(schema.userProfiles.clerkId, clerkUserId),
     });
-    const userProfileId: string | undefined = profile?.id;
-    if (!userProfileId) {
+    const userId = profile?.id;
+    if (!userId) {
       console.error(`Could not find user profile for Clerk ID: ${clerkUserId}`);
       return new Response('User profile not found', { status: 500 });
     }
-    const userId = userProfileId; // Use the profile UUID as userId internally
     // --- END CLERK AUTH ---
 
     // --- FETCH GOOGLE OAUTH TOKEN (Added) ---
@@ -145,8 +144,6 @@ export async function POST(request: Request) {
       );
     }
     // --- END FETCH GOOGLE OAUTH TOKEN ---
-
-    const finalChatId = id;
 
     const userMessage = getMostRecentUserMessage(messages);
     if (!userMessage) {
@@ -313,11 +310,34 @@ export async function POST(request: Request) {
     );
     // ---- END N8N CHECK LOGS ----
 
-    // Check if selected model is an n8n assistant and trigger workflow asynchronously
+    // --- n8n Async Workflow ---
     if (selectedModelInfo?.isN8n) {
       console.log(
-        `[API Route] Triggering n8n workflow for chat ${finalChatId}`,
+        `[API Route] n8n model selected: ${selectedChatModel}. Triggering async workflow.`,
       );
+
+      // 1. Save placeholder assistant message
+      const placeholderId = generateUUID();
+      const placeholderMessage: typeof schema.Message_v2.$inferInsert = {
+        id: placeholderId,
+        chatId: finalChatId,
+        role: 'assistant',
+        parts: [
+          { type: 'placeholder', text: 'Thinking...', status: 'pending_n8n' },
+        ],
+        attachments: [],
+        createdAt: new Date(),
+      };
+      await saveMessages({ messages: [placeholderMessage] });
+      console.log(
+        `[API Route] Saved n8n placeholder message (ID: ${placeholderId}) for chat ${finalChatId}`,
+      );
+
+      // Revalidate chat messages so SWR picks up the placeholder
+      revalidateTag(`chat-messages-${finalChatId}`);
+      revalidateTag(`chat-${finalChatId}`);
+
+      // 2. Trigger n8n webhook (fire-and-forget)
       const webhookUrl = n8nWebhookUrls[selectedChatModel];
       if (!webhookUrl) {
         console.error(
@@ -326,23 +346,22 @@ export async function POST(request: Request) {
         return new Response('Assistant configuration error', { status: 500 });
       }
 
-      // Build n8n payload
+      let googleToken: string | null = null;
+      const tokenResult = await getGoogleOAuthToken();
+      if (tokenResult.token) googleToken = tokenResult.token;
+
       const payload = {
         chatId: finalChatId,
         userId,
-        messageId: userMessage.id,
-        userMessage:
-          typeof userMessage.content === 'string'
-            ? userMessage.content
-            : JSON.stringify(userMessage.content),
+        userMessageId: userMessage.id,
+        assistantMessageId: placeholderId, // Important: send placeholder ID to n8n
+        userMessage: userMessage.content,
         userMessageParts: userMessage.parts,
-        userMessageDatetime: userMessage.createdAt,
-        history: messages,
+        userMessageDatetime: userMessage.createdAt?.toISOString(),
+        history: messages.slice(0, -1), // History up to the current user message
         ...(googleToken && { google_token: googleToken }),
       };
-      console.log('[API Route] n8n payload:', JSON.stringify(payload, null, 2));
 
-      // Fire n8n webhook without awaiting response
       fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -352,32 +371,16 @@ export async function POST(request: Request) {
           }),
         },
         body: JSON.stringify(payload),
-      })
-        .then((resp) =>
-          console.log(
-            '[API Route] n8n webhook responded with status',
-            resp.status,
-          ),
-        )
-        .catch((error) =>
-          console.error('[API Route] Error triggering n8n webhook:', error),
-        );
+      }).catch((err) =>
+        console.error('[API Route] n8n webhook trigger error:', err),
+      );
+      console.log(`[API Route] Triggered n8n webhook for chat ${finalChatId}`);
 
-      // Immediately stream a Thinking placeholder and close the stream
-      return createDataStreamResponse({
-        execute: async (dataStream) => {
-          dataStream.writeMessageAnnotation({
-            type: 'text-delta',
-            data: 'Thinking...',
-          });
-        },
-        onError: (error) => {
-          console.error(
-            '[API Route] Error streaming Thinking placeholder:',
-            error,
-          );
-          return 'Oops, an error occurred starting the assistant!';
-        },
+      // 3. Return immediate JSON response
+      return NextResponse.json({
+        status: 'n8n_workflow_triggered',
+        chatId: finalChatId,
+        placeholderId,
       });
     }
 
