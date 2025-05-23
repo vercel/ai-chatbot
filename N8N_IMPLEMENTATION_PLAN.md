@@ -105,21 +105,27 @@ _Will document any changes as they occur_
 - [ ] Remove polling logic from chat component
 - [ ] Simplify to use AI SDK patterns properly
 
-## Current Status: ⚠️ **CHANGES COMMITTED, ANALYZED, BUT NOT TESTED**
+## Current Status: ⚠️ **CRITICAL BUGS FIXED - TESTING NEEDED**
 
 ### What's Been Done:
 1. **Database Schema**: Added metadata field (migration pending)
-2. **API Routes**: Updated chat and n8n-callback routes (untested)
+2. **API Routes**: Updated chat and n8n-callback routes (✅ **AUTH BUG FIXED**)
 3. **Frontend**: Removed polling logic (untested)
 4. **Cleanup**: Removed unnecessary files
-5. **Git**: All changes committed and pushed (commit 2f11adc)
+5. **Git**: All changes committed and pushed (commit a3a54ee)
 6. **Analysis**: ✅ **Compared against original Vercel template**
+7. **Critical Fixes**: ✅ **Fixed n8n-callback auth and metadata issues**
+
+### 🚨 **Critical Bugs Fixed (commit a3a54ee)**:
+- ✅ **Fixed environment variable name**: `N8N_CALLBACK_SECRET` → `N8N_CALLBACK_SECRET_KEY`
+- ✅ **Fixed metadata field handling**: Gracefully handles missing `metadata` column
+- ✅ **Added comprehensive logging**: Better debugging for n8n callback flow
+- ✅ **Removed metadata from placeholder**: Won't try to save non-existent field
 
 ### What's NOT Done:
-- ❌ **No testing performed**
+- ❌ **No testing performed on fixes**
 - ❌ **Database migration not applied**
-- ❌ **No verification that n8n flow works**
-- ❌ **No verification that regular chat still works**
+- ⚠️ **HTML response issue should now be resolved**
 - ⚠️ **May have removed too much functionality (auto-resume)**
 
 ### Key Findings from Template Comparison:

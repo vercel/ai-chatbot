@@ -58,60 +58,23 @@ export async function POST(request: Request) {
         ? parts
         : [{ type: 'text', text: responseMessage }];
 
-    // Update the existing placeholder message - FIXED: handle missing metadata field gracefully
+    // Update the existing placeholder message - SIMPLIFIED: no metadata needed
     console.log('[n8n-callback] Attempting to update message in database...');
 
-    try {
-      // Try with metadata field first
-      const updateResult = await db
-        .update(schema.Message_v2)
-        .set({
-          parts: messageParts,
-          metadata: { status: 'completed' }, // Mark as completed
-        })
-        .where(eq(schema.Message_v2.id, messageId))
-        .returning({ id: schema.Message_v2.id });
+    const updateResult = await db
+      .update(schema.Message_v2)
+      .set({
+        parts: messageParts,
+      })
+      .where(eq(schema.Message_v2.id, messageId))
+      .returning({ id: schema.Message_v2.id });
 
-      if (updateResult.length === 0) {
-        console.error('[n8n-callback] No message found with ID:', messageId);
-        return NextResponse.json(
-          { error: 'Message not found' },
-          { status: 404 },
-        );
-      }
-
-      console.log(
-        '[n8n-callback] Successfully updated message with metadata:',
-        messageId,
-      );
-    } catch (dbError: any) {
-      console.log(
-        '[n8n-callback] Metadata field might not exist, trying without it...',
-      );
-      console.log('[n8n-callback] DB Error:', dbError.message);
-
-      // If metadata field doesn't exist, update without it
-      const updateResult = await db
-        .update(schema.Message_v2)
-        .set({
-          parts: messageParts,
-        })
-        .where(eq(schema.Message_v2.id, messageId))
-        .returning({ id: schema.Message_v2.id });
-
-      if (updateResult.length === 0) {
-        console.error('[n8n-callback] No message found with ID:', messageId);
-        return NextResponse.json(
-          { error: 'Message not found' },
-          { status: 404 },
-        );
-      }
-
-      console.log(
-        '[n8n-callback] Successfully updated message without metadata:',
-        messageId,
-      );
+    if (updateResult.length === 0) {
+      console.error('[n8n-callback] No message found with ID:', messageId);
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 });
     }
+
+    console.log('[n8n-callback] Successfully updated message:', messageId);
 
     // Revalidate chat cache so front-end can pick up the updated message
     revalidateTag(`chat-${chatId}`);
