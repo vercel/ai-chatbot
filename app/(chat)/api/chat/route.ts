@@ -345,33 +345,42 @@ export async function POST(request: Request) {
             : JSON.stringify(userMessage.content),
         userMessageParts: userMessage.parts,
         userMessageDatetime: userMessage.createdAt,
-        history: messages.slice(0, -1).map((msg) => ({
-          role: msg.role,
-          content:
-            typeof msg.content === 'string'
-              ? msg.content
-              : JSON.stringify(msg.content),
-          parts: msg.parts,
-          createdAt: msg.createdAt,
-        })),
+        history: messages.slice(0, -1),
         ...(tokenResult.token && { google_token: tokenResult.token }),
       };
 
       console.log('[API Route] n8n payload:', JSON.stringify(payload, null, 2));
 
-      // For n8n models, return a properly formatted stream that keeps the thinking animation
+      // Fire n8n webhook without awaiting response
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
+            Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
+          }),
+        },
+        body: JSON.stringify(payload),
+      })
+        .then((resp) =>
+          console.log(
+            '[API Route] n8n webhook responded with status',
+            resp.status,
+          ),
+        )
+        .catch((error) =>
+          console.error('[API Route] Error triggering n8n webhook:', error),
+        );
+
+      // Return success immediately - frontend will poll for response
+      console.log(
+        '[API Route] n8n webhook triggered successfully, frontend should start polling',
+      );
+
+      // Return streaming response compatible with useChat
       return createDataStreamResponse({
         execute: async (dataStream) => {
-          // Send webhook to n8n
-          await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-n8n-webhook-key': process.env.N8N_WEBHOOK_SECRET_KEY || '',
-            },
-            body: JSON.stringify(payload),
-          });
-          // Keep stream open with empty message
+          // For n8n, send a single empty message to prevent parse errors
           await dataStream.write('2:{"type":"text","text":""}\n');
         },
       });
