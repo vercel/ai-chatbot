@@ -94,16 +94,28 @@ export function Chat({
     messages[messages.length - 1]?.role === 'user' &&
     status === 'ready';
 
-  // Use existing SWR pattern to refresh chat data when n8n responds
-  const { mutate } = useSWRConfig();
+  // Add SWR polling for messages when waiting for n8n
+  const { data: freshMessages } = useSWR(
+    isN8nWaiting ? `/api/messages?chatId=${id}` : null,
+    fetcher,
+    { refreshInterval: 3000 },
+  );
+
+  // Sync fresh messages when polling detects new data
   useEffect(() => {
-    if (isN8nWaiting) {
-      const interval = setInterval(() => {
-        mutate(`/api/chat?id=${id}`); // Revalidate existing chat data
-      }, 3000);
-      return () => clearInterval(interval);
+    if (freshMessages && freshMessages.length > messages.length) {
+      // Convert DB messages to UI format and update state
+      const uiMessages = freshMessages.map((dbMessage: any) => ({
+        id: dbMessage.id,
+        role: dbMessage.role,
+        content: dbMessage.parts?.map((part: any) => part.text).join('') || '',
+        parts: dbMessage.parts || [],
+        experimental_attachments: dbMessage.attachments || [],
+        createdAt: dbMessage.createdAt,
+      }));
+      setMessages(uiMessages);
     }
-  }, [isN8nWaiting, mutate, id]);
+  }, [freshMessages, messages.length, setMessages]);
 
   useEffect(() => {
     if (initialAssociatedDocument) {
