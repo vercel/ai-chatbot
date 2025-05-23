@@ -376,7 +376,10 @@ export async function POST(request: Request) {
       console.log(
         '[API Route] n8n webhook triggered successfully, frontend should start polling',
       );
-      return new Response('OK', { status: 200 });
+      return Response.json(
+        { message: 'N8N webhook triggered successfully' },
+        { status: 200 },
+      );
     }
 
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)
