@@ -36,6 +36,12 @@ declare global {
   var activeStreams:
     | Map<string, { dataStream: any; heartbeatInterval: NodeJS.Timeout }>
     | undefined;
+  var streamResolvers: Map<string, (value: CallbackResult) => void> | undefined;
+}
+
+interface CallbackResult {
+  error?: string;
+  success?: boolean;
 }
 
 const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY || '' });
@@ -353,10 +359,44 @@ export async function POST(request: Request) {
       // Return streaming response that stays alive with heartbeats
       return createDataStreamResponse({
         execute: async (dataStream) => {
-          // Store stream for callback access - simple global Map
+          // Initialize global maps if they don't exist
           if (!global.activeStreams) {
             global.activeStreams = new Map();
           }
+          if (!global.streamResolvers) {
+            global.streamResolvers = new Map();
+          }
+
+          // Create a promise that waits for the callback
+          const completionPromise = new Promise<CallbackResult>(
+            (resolve, reject) => {
+              // Store the resolver so callback can complete the promise
+              if (global.streamResolvers) {
+                global.streamResolvers.set(finalChatId, resolve);
+              }
+
+              // Set timeout to prevent hanging forever (15 minutes max)
+              const timeout = setTimeout(
+                () => {
+                  console.error(
+                    `[API Route] Stream timeout for chat ${finalChatId}`,
+                  );
+                  global.streamResolvers?.delete(finalChatId);
+                  global.activeStreams?.delete(finalChatId);
+                  reject(new Error('n8n response timeout'));
+                },
+                15 * 60 * 1000,
+              ); // 15 minutes
+
+              // Store timeout ID for cleanup
+              if (global.activeStreams) {
+                global.activeStreams.set(finalChatId, {
+                  dataStream,
+                  heartbeatInterval: timeout, // Reuse field for timeout ID
+                });
+              }
+            },
+          );
 
           // Fire n8n webhook without awaiting response
           fetch(webhookUrl, {
@@ -375,35 +415,70 @@ export async function POST(request: Request) {
                 resp.status,
               ),
             )
-            .catch((error) =>
-              console.error('[API Route] Error triggering n8n webhook:', error),
-            );
+            .catch((error: Error) => {
+              console.error('[API Route] Error triggering n8n webhook:', error);
+              // Reject the promise on webhook error
+              const resolver = global.streamResolvers?.get(finalChatId);
+              if (resolver) {
+                global.streamResolvers?.delete(finalChatId);
+                global.activeStreams?.delete(finalChatId);
+                resolver({ error: error.message });
+              }
+            });
 
-          // Keep stream alive with heartbeats every 30 seconds
+          // Send heartbeats every 30 seconds while waiting
           const heartbeatInterval = setInterval(() => {
             try {
               dataStream.writeData({
                 type: 'heartbeat',
                 timestamp: Date.now(),
+                chatId: finalChatId,
               });
+              console.log(`[API Route] Heartbeat sent for chat ${finalChatId}`);
             } catch (error) {
-              console.error('[API Route] Heartbeat failed:', error);
+              console.error(
+                `[API Route] Heartbeat failed for chat ${finalChatId}:`,
+                error,
+              );
               clearInterval(heartbeatInterval);
-              global.activeStreams?.delete(finalChatId);
+              // Don't resolve here - let timeout handle it
             }
           }, 30000);
 
-          // Store stream and cleanup for callback
-          global.activeStreams.set(finalChatId, {
-            dataStream,
-            heartbeatInterval,
-          });
-
           console.log(
-            '[API Route] n8n webhook triggered, stream staying alive with heartbeats',
+            '[API Route] n8n webhook triggered, waiting for callback...',
           );
 
-          // Don't end stream here - callback will handle it
+          try {
+            // Wait for the callback to resolve the promise
+            const result = await completionPromise;
+
+            // Cleanup heartbeat
+            clearInterval(heartbeatInterval);
+
+            if (result.error) {
+              throw new Error(result.error);
+            }
+
+            console.log(`[API Route] Stream completed for chat ${finalChatId}`);
+          } catch (error) {
+            // Cleanup on error
+            clearInterval(heartbeatInterval);
+            global.streamResolvers?.delete(finalChatId);
+            global.activeStreams?.delete(finalChatId);
+
+            // Send error through stream
+            dataStream.writeData({
+              type: 'error',
+              message: error instanceof Error ? error.message : 'Unknown error',
+              chatId: finalChatId,
+            });
+
+            console.error(
+              `[API Route] Stream error for chat ${finalChatId}:`,
+              error,
+            );
+          }
         },
       });
     }
