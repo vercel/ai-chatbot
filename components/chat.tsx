@@ -88,6 +88,23 @@ export function Chat({
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Detect if waiting for n8n response (minimal inline check)
+  const isN8nWaiting =
+    selectedChatModel === 'n8n-assistant' &&
+    messages[messages.length - 1]?.role === 'user' &&
+    status === 'ready';
+
+  // Use existing SWR pattern to refresh chat data when n8n responds
+  const { mutate } = useSWRConfig();
+  useEffect(() => {
+    if (isN8nWaiting) {
+      const interval = setInterval(() => {
+        mutate(`/api/chat?id=${id}`); // Revalidate existing chat data
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [isN8nWaiting, mutate, id]);
+
   useEffect(() => {
     if (initialAssociatedDocument) {
       console.log(
@@ -123,7 +140,7 @@ export function Chat({
 
         <Messages
           chatId={id}
-          status={status}
+          status={isN8nWaiting ? 'submitted' : status}
           votes={votes}
           messages={messages}
           setMessages={setMessages}
