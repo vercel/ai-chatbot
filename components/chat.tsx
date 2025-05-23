@@ -56,7 +56,7 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, selectedChatModel: selectedChatModel },
+    body: { selectedChatModel },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -100,12 +100,15 @@ export function Chat({
   // Detect if waiting for n8n response (minimal inline check)
   const isN8nWaiting =
     selectedChatModel === 'n8n-assistant' &&
-    messages[messages.length - 1]?.role === 'user' &&
-    status === 'ready';
+    messages[messages.length - 1]?.role === 'user';
+
+  // Override status to keep thinking animation for n8n
+  const displayStatus = isN8nWaiting ? 'streaming' : status;
 
   // DEBUG LOGGING - Understanding current behavior
   console.log('[Chat DEBUG] selectedChatModel:', selectedChatModel);
   console.log('[Chat DEBUG] status:', status);
+  console.log('[Chat DEBUG] displayStatus:', displayStatus);
   console.log('[Chat DEBUG] messages length:', messages.length);
   console.log('[Chat DEBUG] last message:', messages[messages.length - 1]);
   console.log(
@@ -128,14 +131,26 @@ export function Chat({
   useEffect(() => {
     if (freshMessages && freshMessages.length > messages.length) {
       // Convert DB messages to UI format and update state
-      const uiMessages = freshMessages.map((dbMessage: any) => ({
-        id: dbMessage.id,
-        role: dbMessage.role,
-        content: dbMessage.parts?.map((part: any) => part.text).join('') || '',
-        parts: dbMessage.parts || [],
-        experimental_attachments: dbMessage.attachments || [],
-        createdAt: dbMessage.createdAt,
-      }));
+      const uiMessages = freshMessages.map((dbMessage: any) => {
+        // Extract text content from parts
+        const textContent = dbMessage.parts
+          ?.map((part: any) => {
+            if (part.type === 'text') return part.text;
+            if (part.type === 'reasoning') return part.reasoning;
+            return '';
+          })
+          .filter(Boolean)
+          .join('');
+
+        return {
+          id: dbMessage.id,
+          role: dbMessage.role,
+          content: textContent || '',
+          parts: dbMessage.parts || [],
+          experimental_attachments: dbMessage.attachments || [],
+          createdAt: dbMessage.createdAt,
+        };
+      });
       setMessages(uiMessages);
     }
   }, [freshMessages, messages.length, setMessages]);
@@ -175,7 +190,7 @@ export function Chat({
 
         <Messages
           chatId={id}
-          status={isN8nWaiting ? 'submitted' : status}
+          status={displayStatus}
           votes={votes}
           messages={messages}
           setMessages={setMessages}
