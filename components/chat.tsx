@@ -79,12 +79,23 @@ export function Chat({
   // For n8n flows, track whether we're awaiting the callback
   const [awaitingN8n, setAwaitingN8n] = useState(false);
 
-  // When using an n8n model and user submission is acknowledged, start polling
+  // When using an n8n model, track when we get the "Thinking..." response
   useEffect(() => {
-    if (selectedChatModel.startsWith('n8n') && status === 'submitted') {
-      setAwaitingN8n(true);
+    if (selectedChatModel.startsWith('n8n') && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      // Check if last message is assistant with "Thinking..." content
+      if (
+        lastMsg.role === 'assistant' &&
+        (lastMsg.content === 'Thinking...' ||
+          (Array.isArray(lastMsg.parts) &&
+            lastMsg.parts.some(
+              (p: any) => p.type === 'text' && p.text === 'Thinking...',
+            )))
+      ) {
+        setAwaitingN8n(true);
+      }
     }
-  }, [status, selectedChatModel]);
+  }, [messages, selectedChatModel]);
 
   // Poll the messages endpoint until the assistant callback arrives
   const { data: dbMessages } = useSWR(

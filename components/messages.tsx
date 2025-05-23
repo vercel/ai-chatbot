@@ -60,11 +60,8 @@ function PureMessages({
         />
       ))}
 
-      {status === 'submitted' &&
-        messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
-
-      {isAwaitingN8n &&
+      {/* For n8n, rely on isAwaitingN8n; for other models, use status === 'submitted' */}
+      {((!isAwaitingN8n && status === 'submitted') || isAwaitingN8n) &&
         messages.length > 0 &&
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 

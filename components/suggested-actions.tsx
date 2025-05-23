@@ -19,8 +19,8 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
     },
     {
       title: 'Find Airbnbs available for a group of 4 in Chamonix',
-      label: `for one week next month, limit $500 per night`,
-      action: `Find Airbnbs available for a group of 4 in Chamonix for one week next month, limit $500 per night`,
+      label: `for one week next month, limit $750 per night`,
+      action: `Find Airbnbs available for a group of 4 in Chamonix for one week next month, limit $750 per night`,
     },
     {
       title: 'Write an email like the client',
