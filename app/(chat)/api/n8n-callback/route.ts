@@ -5,16 +5,33 @@ import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
 
 export async function POST(request: Request) {
+  console.log('[n8n-callback] POST request received');
+
   try {
-    // Verify callback secret if configured
-    const callbackSecret = process.env.N8N_CALLBACK_SECRET;
+    // Verify callback secret if configured - FIXED: use correct env var name
+    const callbackSecret = process.env.N8N_CALLBACK_SECRET_KEY;
+    console.log(
+      '[n8n-callback] Checking auth with secret:',
+      callbackSecret ? 'present' : 'missing',
+    );
+
     if (callbackSecret) {
       const authHeader = request.headers.get('authorization');
+      console.log(
+        '[n8n-callback] Auth header:',
+        authHeader ? 'present' : 'missing',
+      );
+
       if (!authHeader || authHeader !== `Bearer ${callbackSecret}`) {
         console.error('[n8n-callback] Invalid or missing authorization header');
+        console.error('[n8n-callback] Expected:', `Bearer ${callbackSecret}`);
+        console.error('[n8n-callback] Received:', authHeader);
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
+
+    const body = await request.json();
+    console.log('[n8n-callback] Request body:', JSON.stringify(body, null, 2));
 
     const {
       chatId,
@@ -26,7 +43,7 @@ export async function POST(request: Request) {
       messageId: string;
       responseMessage: string;
       parts?: Array<{ type: string; text: string }>;
-    } = await request.json();
+    } = body;
 
     console.log('[n8n-callback] Received callback for chat:', chatId);
     console.log('[n8n-callback] Updating message ID:', messageId);
@@ -41,23 +58,60 @@ export async function POST(request: Request) {
         ? parts
         : [{ type: 'text', text: responseMessage }];
 
-    // Update the existing placeholder message instead of creating new one
-    const updateResult = await db
-      .update(schema.Message_v2)
-      .set({
-        parts: messageParts,
-        metadata: { status: 'completed' }, // Mark as completed
-        // Note: createdAt stays the same, no need to update it
-      })
-      .where(eq(schema.Message_v2.id, messageId))
-      .returning({ id: schema.Message_v2.id });
+    // Update the existing placeholder message - FIXED: handle missing metadata field gracefully
+    console.log('[n8n-callback] Attempting to update message in database...');
 
-    if (updateResult.length === 0) {
-      console.error('[n8n-callback] No message found with ID:', messageId);
-      return NextResponse.json({ error: 'Message not found' }, { status: 404 });
+    try {
+      // Try with metadata field first
+      const updateResult = await db
+        .update(schema.Message_v2)
+        .set({
+          parts: messageParts,
+          metadata: { status: 'completed' }, // Mark as completed
+        })
+        .where(eq(schema.Message_v2.id, messageId))
+        .returning({ id: schema.Message_v2.id });
+
+      if (updateResult.length === 0) {
+        console.error('[n8n-callback] No message found with ID:', messageId);
+        return NextResponse.json(
+          { error: 'Message not found' },
+          { status: 404 },
+        );
+      }
+
+      console.log(
+        '[n8n-callback] Successfully updated message with metadata:',
+        messageId,
+      );
+    } catch (dbError: any) {
+      console.log(
+        '[n8n-callback] Metadata field might not exist, trying without it...',
+      );
+      console.log('[n8n-callback] DB Error:', dbError.message);
+
+      // If metadata field doesn't exist, update without it
+      const updateResult = await db
+        .update(schema.Message_v2)
+        .set({
+          parts: messageParts,
+        })
+        .where(eq(schema.Message_v2.id, messageId))
+        .returning({ id: schema.Message_v2.id });
+
+      if (updateResult.length === 0) {
+        console.error('[n8n-callback] No message found with ID:', messageId);
+        return NextResponse.json(
+          { error: 'Message not found' },
+          { status: 404 },
+        );
+      }
+
+      console.log(
+        '[n8n-callback] Successfully updated message without metadata:',
+        messageId,
+      );
     }
-
-    console.log('[n8n-callback] Successfully updated message:', messageId);
 
     // Revalidate chat cache so front-end can pick up the updated message
     revalidateTag(`chat-${chatId}`);
@@ -67,10 +121,11 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[n8n-callback] Error updating assistant message:', error);
+    console.error('[n8n-callback] Error stack:', error.stack);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 },
     );
   }

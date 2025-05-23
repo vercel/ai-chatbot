@@ -334,11 +334,12 @@ export async function POST(request: Request) {
         parts: [{ type: 'text', text: 'Thinking...' }],
         attachments: [],
         createdAt: new Date(),
-        metadata: { status: 'pending_n8n' }, // Mark as pending n8n completion
+        // Remove metadata since the field doesn't exist yet
       };
 
       let placeholderMessageId: string;
       try {
+        console.log('[API Route] Attempting to save placeholder message...');
         // Save placeholder message and get the generated ID
         await saveMessages({ messages: [placeholderMessage] });
 
@@ -352,8 +353,9 @@ export async function POST(request: Request) {
           '[API Route] Saved placeholder message with ID:',
           placeholderMessageId,
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('[API Route] Failed to save placeholder message:', error);
+        console.error('[API Route] Error details:', error.message);
         return new Response('Failed to create assistant message', {
           status: 500,
         });
