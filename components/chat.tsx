@@ -141,37 +141,29 @@ export function Chat({
   // Sync fresh messages when polling detects new data
   useEffect(() => {
     if (freshMessages && freshMessages.length > messages.length) {
-      // Convert DB messages to UI format and update state
       const uiMessages = freshMessages.map((dbMessage: any) => {
-        // Parse parts and attachments from JSON strings to objects
-        const parsedParts =
+        const finalParts =
           typeof dbMessage.parts === 'string'
             ? JSON.parse(dbMessage.parts)
             : dbMessage.parts || [];
-        const parsedAttachments =
+
+        const finalAttachments =
           typeof dbMessage.attachments === 'string'
             ? JSON.parse(dbMessage.attachments)
             : dbMessage.attachments || [];
 
-        // Extract text content from the PARSED parts
-        const textContent = parsedParts
-          ?.map((part: any) => {
-            if (part.type === 'text') return part.text;
-            // According to Vercel AI SDK, reasoning is a top-level field, not in parts.
-            // However, if your n8n workflow puts it in parts, this is fine.
-            if (part.type === 'reasoning') return part.reasoning;
-            return '';
-          })
-          .filter(Boolean)
-          .join('');
+        let messageContent = '';
+        if (finalParts.length > 0 && finalParts[0]?.type === 'text') {
+          messageContent = finalParts[0].text;
+        }
 
         return {
           id: dbMessage.id,
           role: dbMessage.role,
-          content: textContent || '', // Ensure content is a string
-          parts: parsedParts, // Use the parsed parts
-          experimental_attachments: parsedAttachments, // Use the parsed attachments
-          createdAt: dbMessage.createdAt,
+          content: messageContent,
+          parts: finalParts,
+          experimental_attachments: finalAttachments,
+          createdAt: new Date(dbMessage.createdAt), // Ensure createdAt is a Date object
         };
       });
       setMessages(uiMessages);
