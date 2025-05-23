@@ -3,9 +3,11 @@
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote, Document as DBDocument } from '@/lib/db/schema';
-import { generateUUID } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
@@ -16,8 +18,7 @@ import {
   initialArtifactData,
 } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
-import useSWR from 'swr';
-import { fetcher } from '@/lib/utils';
+import { unstable_serialize } from 'swr/infinite';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
@@ -41,6 +42,8 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
+  // const { mutate } = useSWRConfig(); // Keep mutate import for now if needed elsewhere, but comment out its use here
+
   const {
     messages,
     setMessages,
@@ -59,9 +62,15 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      console.log('[Chat] onFinish called - standard AI SDK behavior');
+      console.log('[Chat] onFinish called. Skipping SWR history mutate.'); // Add log
+      //   revalidate: false,
+      // });
+
+      // COMMENT OUT THIS LINE
+      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Needs to be adapted if history structure changes
     },
     onError: (error) => {
+      // Add error logging
       console.error('[Chat] onError called:', error);
       toast.error('An error occurred, please try again!');
     },
@@ -76,6 +85,8 @@ export function Chat({
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   const { setArtifact } = useArtifact();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     if (initialAssociatedDocument) {

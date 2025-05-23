@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/queries';
-import * as schema from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { saveMessages } from '@/lib/db/queries';
 import { revalidateTag } from 'next/cache';
 
 export async function POST(request: Request) {
   console.log('[n8n-callback] POST request received');
 
   try {
-    // Verify callback secret if configured - FIXED: use correct env var name
+    // Verify callback secret if configured
     const callbackSecret = process.env.N8N_CALLBACK_SECRET_KEY;
     console.log(
       '[n8n-callback] Checking auth with secret:',
@@ -35,57 +33,53 @@ export async function POST(request: Request) {
 
     const {
       chatId,
-      messageId,
       responseMessage,
       parts,
     }: {
       chatId: string;
-      messageId: string;
       responseMessage: string;
       parts?: Array<{ type: string; text: string }>;
     } = body;
 
     console.log('[n8n-callback] Received callback for chat:', chatId);
-    console.log('[n8n-callback] Updating message ID:', messageId);
     console.log(
       '[n8n-callback] Response message length:',
       responseMessage?.length || 0,
     );
 
-    // Build updated message parts
+    // Build message parts
     const messageParts =
       parts && parts.length > 0
         ? parts
         : [{ type: 'text', text: responseMessage }];
 
-    // Update the existing placeholder message - SIMPLIFIED: no metadata needed
-    console.log('[n8n-callback] Attempting to update message in database...');
+    // CREATE new assistant message (don't update placeholder)
+    console.log('[n8n-callback] Creating new assistant message...');
 
-    const updateResult = await db
-      .update(schema.Message_v2)
-      .set({
-        parts: messageParts,
-      })
-      .where(eq(schema.Message_v2.id, messageId))
-      .returning({ id: schema.Message_v2.id });
+    await saveMessages({
+      messages: [
+        {
+          chatId: chatId,
+          role: 'assistant',
+          parts: messageParts,
+          attachments: [],
+          createdAt: new Date(),
+        },
+      ],
+    });
 
-    if (updateResult.length === 0) {
-      console.error('[n8n-callback] No message found with ID:', messageId);
-      return NextResponse.json({ error: 'Message not found' }, { status: 404 });
-    }
+    console.log('[n8n-callback] Successfully created assistant message');
 
-    console.log('[n8n-callback] Successfully updated message:', messageId);
-
-    // Revalidate chat cache so front-end can pick up the updated message
+    // Revalidate chat cache so front-end can pick up the new message
     revalidateTag(`chat-${chatId}`);
 
     console.log(
-      '[n8n-callback] Successfully updated message and revalidated cache',
+      '[n8n-callback] Successfully created message and revalidated cache',
     );
 
     return NextResponse.json({ ok: true });
   } catch (error: any) {
-    console.error('[n8n-callback] Error updating assistant message:', error);
+    console.error('[n8n-callback] Error creating assistant message:', error);
     console.error('[n8n-callback] Error stack:', error.stack);
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },

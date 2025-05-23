@@ -15,7 +15,6 @@ import {
   getChatById,
   saveChat,
   saveMessages,
-  getMessagesByChatId,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -32,7 +31,7 @@ import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 import { assembleTools } from '@/lib/ai/tools/tool-list';
 import MemoryClient from 'mem0ai';
 
-const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY || '' });
+const client = new MemoryClient({ apiKey: process.env.MEM0_API_KEY });
 
 export const maxDuration = 300;
 
@@ -125,21 +124,20 @@ export async function POST(request: Request) {
     console.log(
       `[API /api/chat] Attempting to fetch Google OAuth token for user: ${userId}`,
     );
-    // Track token for n8n calls
-    let googleToken: string | null = null;
     const tokenResult = await getGoogleOAuthToken();
     if (tokenResult.error) {
       // Log error but don't necessarily block the chat flow unless the token is strictly required
       console.warn(
         `[API /api/chat] Failed to get Google OAuth token for user ${userId}: ${tokenResult.error}`,
       );
+      // If the token IS required for the next step, you might return an error here:
+      // return new Response(`Failed to get required Google token: ${tokenResult.error}`, { status: 500 });
     } else if (tokenResult.token) {
       console.log(
         `[API /api/chat] Successfully fetched Google OAuth token for user ${userId}.`,
       );
-      // Store token for use in n8n payload
-      googleToken = tokenResult.token;
       // You can now use tokenResult.token if needed for tools/AI calls later in this function
+      // Example: pass it to streamText options or tool functions
     } else {
       console.warn(
         `[API /api/chat] Google OAuth token fetch for user ${userId} completed but no token was returned.`,
@@ -314,11 +312,14 @@ export async function POST(request: Request) {
     );
     // ---- END N8N CHECK LOGS ----
 
-    // Check if selected model is an n8n assistant and trigger workflow asynchronously
+    // Check if selected model is an n8n assistant
     if (selectedModelInfo?.isN8n) {
+      // ---- START INSIDE N8N IF LOG ----
       console.log(
-        `[API Route] Triggering n8n workflow for chat ${finalChatId}`,
+        `[API Route] Entering N8n model block for model: ${selectedChatModel}`,
       );
+      // ---- END INSIDE N8N IF LOG ----
+
       const webhookUrl = n8nWebhookUrls[selectedChatModel];
       if (!webhookUrl) {
         console.error(
@@ -327,82 +328,133 @@ export async function POST(request: Request) {
         return new Response('Assistant configuration error', { status: 500 });
       }
 
-      // Save placeholder assistant message immediately in database
-      const placeholderMessage = {
-        chatId: finalChatId,
-        role: 'assistant' as const,
-        parts: [{ type: 'text', text: 'Thinking...' }],
-        attachments: [],
-        createdAt: new Date(),
-        // Remove metadata since the field doesn't exist yet
-      };
+      // *** Instantiate the N8nLanguageModel ***
+      const lastUserMessageId = userMessage?.id ?? null;
+      const lastUserMessageCreatedAt = userMessage?.createdAt ?? null;
 
-      let placeholderMessageId: string;
-      try {
-        console.log('[API Route] Attempting to save placeholder message...');
-        // Save placeholder message and get the generated ID
-        await saveMessages({ messages: [placeholderMessage] });
-
-        // Get the saved message to retrieve its generated ID
-        // Note: This is a temporary approach - ideally saveMessages should return the ID
-        const savedMessages = await getMessagesByChatId({ id: finalChatId });
-        const lastMessage = savedMessages[savedMessages.length - 1];
-        placeholderMessageId = lastMessage.id;
-
-        console.log(
-          '[API Route] Saved placeholder message with ID:',
-          placeholderMessageId,
+      if (!lastUserMessageId) {
+        console.warn(
+          '[API Route] Warning: lastUserMessageId is null before passing to N8nModel.',
         );
-      } catch (error: any) {
-        console.error('[API Route] Failed to save placeholder message:', error);
-        console.error('[API Route] Error details:', error.message);
-        return new Response('Failed to create assistant message', {
-          status: 500,
-        });
       }
 
-      // Build n8n payload with placeholder message ID for updating
-      const payload = {
+      const n8nModel = new N8nLanguageModel({
+        webhookUrl: webhookUrl,
+        modelId: selectedChatModel,
         chatId: finalChatId,
-        userId,
-        messageId: placeholderMessageId, // n8n will update this specific message
-        userMessage:
-          typeof userMessage.content === 'string'
-            ? userMessage.content
-            : JSON.stringify(userMessage.content),
-        userMessageParts: userMessage.parts,
-        userMessageDatetime: userMessage.createdAt,
-        history: messages,
-        ...(googleToken && { google_token: googleToken }),
-      };
-      console.log('[API Route] n8n payload:', JSON.stringify(payload, null, 2));
+        userId: userId, // Use profile UUID
+        messageId: lastUserMessageId,
+        datetime: lastUserMessageCreatedAt,
+        googleToken: tokenResult.token, // Pass the fetched token (will be null if fetch failed or no token)
+      });
 
-      // Fire n8n webhook without awaiting response
-      fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
-            Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
-          }),
-        },
-        body: JSON.stringify(payload),
-      })
-        .then((resp) =>
+      // *** USE createDataStreamResponse with streamText and the n8nModel (Restoring Original Logic) ***
+      return createDataStreamResponse({
+        execute: (dataStream) => {
+          const result = streamText({
+            model: n8nModel,
+            // Ensure messages are filtered and asserted correctly
+            messages: messages.filter(
+              (m) => m.role !== 'data',
+            ) as CoreMessage[],
+            maxSteps: 5, // Keep original settings
+            experimental_transform: smoothStream({ chunking: 'word' }),
+            experimental_generateMessageId: generateUUID,
+            onFinish: async ({ response }) => {
+              console.log(
+                '[API Route / N8n / onFinish] Reached onFinish handler.',
+              ); // LOG: Entered handler
+              if (userId) {
+                console.log(
+                  `[API Route / N8n / onFinish] User ID ${userId} present.`,
+                ); // LOG: User ID check
+                try {
+                  console.log(
+                    '[API Route / N8n / onFinish] Attempting to get trailing message ID.',
+                  ); // LOG: Before getTrailingMessageId
+                  const assistantId = getTrailingMessageId({
+                    messages: response.messages.filter(
+                      (message) => message.role === 'assistant',
+                    ),
+                  });
+                  console.log(
+                    `[API Route / N8n / onFinish] Got assistantId: ${assistantId}`,
+                  ); // LOG: After getTrailingMessageId
+                  if (!assistantId) {
+                    console.error(
+                      '[API Route / N8n / onFinish] Error: No assistant message found after stream!',
+                    );
+                    throw new Error(
+                      'No assistant message found after n8n stream!',
+                    );
+                  }
+                  console.log(
+                    '[API Route / N8n / onFinish] Attempting appendResponseMessages.',
+                  ); // LOG: Before append
+                  const [, assistantMessage] = appendResponseMessages({
+                    messages: [userMessage],
+                    responseMessages: response.messages,
+                  });
+                  console.log(
+                    '[API Route / N8n / onFinish] Attempting saveMessages.',
+                  ); // LOG: Before save
+                  const messageToSave =
+                    typeof assistantId === 'string' &&
+                    assistantId.startsWith('msg-')
+                      ? {
+                          // Omit ID if it's temporary
+                          chatId: finalChatId,
+                          role: 'assistant' as const,
+                          parts: assistantMessage.parts ?? [],
+                          attachments:
+                            assistantMessage.experimental_attachments ?? [],
+                          createdAt: new Date(),
+                        }
+                      : {
+                          // Include ID if it seems persistent (or is not a string)
+                          id: assistantId,
+                          chatId: finalChatId,
+                          role: 'assistant' as const,
+                          parts: assistantMessage.parts ?? [],
+                          attachments:
+                            assistantMessage.experimental_attachments ?? [],
+                          createdAt: new Date(),
+                        };
+                  await saveMessages({
+                    messages: [messageToSave], // Pass the conditionally constructed object
+                  });
+                  console.log(
+                    `[API Route / N8n / onFinish] SUCCESS: Saved final n8n message (ID: ${assistantId}) for chat ${finalChatId}`,
+                  ); // LOG: Success
+                } catch (saveError) {
+                  // LOG: Failure
+                  console.error(
+                    '[API Route / N8n / onFinish] FAILURE: Failed to save n8n chat message:',
+                    saveError,
+                  );
+                }
+              } else {
+                console.warn(
+                  '[API Route / N8n / onFinish] User ID not found, cannot save message.',
+                ); // LOG: No user ID
+              }
+            },
+            experimental_telemetry: AISDKExporter.getSettings(),
+          });
+
           console.log(
-            '[API Route] n8n webhook responded with status',
-            resp.status,
-          ),
-        )
-        .catch((error) =>
-          console.error('[API Route] Error triggering n8n webhook:', error),
-        );
-
-      // Return success immediately (no streaming needed)
-      console.log(
-        '[API Route] n8n workflow triggered, returning success immediately',
-      );
-      return new Response('OK', { status: 200 });
+            `[API Route] Calling streamText for N8N chat ${finalChatId} with Langsmith telemetry enabled.`,
+          );
+          result.consumeStream();
+          result.mergeIntoDataStream(dataStream, {
+            sendReasoning: false,
+          });
+        },
+        onError: (error) => {
+          console.error('Error in streamText with n8nModel:', error);
+          return 'Oops, an error occurred communicating with the assistant!';
+        },
+      });
     }
 
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)
