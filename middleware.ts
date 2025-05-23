@@ -8,28 +8,45 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',
   '/api/debug(.*)',
   '/api/n8n-callback',
-  '/api/fetch-messages(.*)',
+  '/api/messages(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  console.log(`[Middleware] Processing route: ${req.nextUrl.pathname}`);
+  const requestedPath = req.nextUrl.pathname;
+  const requestedUrl = req.url;
+  console.log(
+    `[Middleware] Request IN: Path=${requestedPath}, FullURL=${requestedUrl}`,
+  );
+
+  const isPublic = isPublicRoute(req);
+
+  console.log(
+    `[Middleware] Path=${requestedPath}, isPublicRoute evaluated to: ${isPublic}`,
+  );
 
   // If it's NOT a public route, protect it
-  if (!isPublicRoute(req)) {
+  if (!isPublic) {
     try {
       await auth.protect();
-      console.log(`[Middleware] Protected route: ${req.nextUrl.pathname}`);
+      console.log(
+        `[Middleware] Protected route: Path=${requestedPath}, FullURL=${requestedUrl}`,
+      );
     } catch (error) {
       console.log(
-        `[Middleware] Unauthorized access to ${req.nextUrl.pathname}, redirecting to sign-in`,
+        `[Middleware] Unauthorized access to Path=${requestedPath}, FullURL=${requestedUrl}, redirecting to sign-in`,
       );
       const signInUrl = new URL('/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', req.url);
       return NextResponse.redirect(signInUrl);
     }
   } else {
-    console.log(`[Middleware] Public route: ${req.nextUrl.pathname}`);
+    console.log(
+      `[Middleware] Allowing public access to Path=${requestedPath}, FullURL=${requestedUrl}`,
+    );
   }
+  // If public or successfully protected, allow the request to proceed.
+  // For public routes, NextResponse.next() is implicitly handled if no other response is returned.
+  // For protected routes, if auth.protect() doesn't throw/redirect, the request also proceeds.
 });
 
 export const config = {
