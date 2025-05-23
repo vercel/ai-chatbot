@@ -42,7 +42,7 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  // const { mutate } = useSWRConfig(); // Keep mutate import for now if needed elsewhere, but comment out its use here
+  const { mutate } = useSWRConfig(); // Uncommented to use mutate
 
   const {
     messages,
@@ -114,6 +114,14 @@ export function Chat({
     status,
   );
   const isN8nWaiting = n8nSelected && lastMsgUser && statusIsSubmitted;
+
+  // Attempt to clear any potentially stale SWR cache for this specific key
+  // This is a diagnostic step.
+  if (isN8nWaiting) {
+    const swrKey = `/api/(chat)/messages?chatId=${id}`;
+    console.log('[Chat DEBUG] Attempting to mutate SWR cache for key:', swrKey);
+    mutate(swrKey, undefined, { revalidate: false }); // Clear data, don't revalidate immediately
+  }
 
   // Override status to keep thinking animation for n8n
   const displayStatus = isN8nWaiting ? 'submitted' : status;
