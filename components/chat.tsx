@@ -56,7 +56,7 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { selectedChatModel },
+    body: { id, selectedChatModel: selectedChatModel },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -100,10 +100,11 @@ export function Chat({
   // Detect if waiting for n8n response (minimal inline check)
   const isN8nWaiting =
     selectedChatModel === 'n8n-assistant' &&
-    messages[messages.length - 1]?.role === 'user';
+    messages[messages.length - 1]?.role === 'user' &&
+    status === 'ready';
 
   // Override status to keep thinking animation for n8n
-  const displayStatus = isN8nWaiting ? 'streaming' : status;
+  const displayStatus = isN8nWaiting ? 'submitted' : status;
 
   // DEBUG LOGGING - Understanding current behavior
   console.log('[Chat DEBUG] selectedChatModel:', selectedChatModel);
@@ -177,6 +178,13 @@ export function Chat({
       setArtifact({ ...initialArtifactData, isVisible: false });
     }
   }, [initialAssociatedDocument, setArtifact]);
+
+  console.log(
+    '[CRITICAL DEBUG] Final computed displayStatus for Messages component:',
+    displayStatus,
+  );
+  console.log('[CRITICAL DEBUG] useChat status:', status);
+  console.log('[CRITICAL DEBUG] isN8nWaiting:', isN8nWaiting);
 
   return (
     <>
