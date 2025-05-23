@@ -61,6 +61,8 @@ export function Chat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
+    // Conditionally set streamProtocol based on the selectedChatModel
+    streamProtocol: selectedChatModel === 'n8n-assistant' ? 'text' : undefined,
     onFinish: () => {
       console.log(
         '[Chat] onFinish called. selectedChatModel:',

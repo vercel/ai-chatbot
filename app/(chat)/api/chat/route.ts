@@ -377,15 +377,14 @@ export async function POST(request: Request) {
         '[API Route] n8n webhook triggered successfully, frontend should start polling',
       );
 
-      // For n8n, send a simple text stream to indicate processing.
+      // For n8n, send a simple plain text stream. Client will use streamProtocol: 'text'.
       const stream = new ReadableStream({
         start(controller) {
           const encoder = new TextEncoder();
-          controller.enqueue(encoder.encode('...')); // Send a placeholder text, encoded
+          controller.enqueue(encoder.encode('...')); // Plain text, no SDK prefix needed if client uses streamProtocol: 'text'
           controller.close();
         },
       });
-      // Use standard Web API Response for simple text stream
       return new Response(stream, {
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       });
