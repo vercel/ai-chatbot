@@ -376,10 +376,14 @@ export async function POST(request: Request) {
       console.log(
         '[API Route] n8n webhook triggered successfully, frontend should start polling',
       );
-      return Response.json(
-        { message: 'N8N webhook triggered successfully' },
-        { status: 200 },
-      );
+
+      // Return streaming response compatible with useChat
+      return createDataStreamResponse({
+        execute: async (dataStream) => {
+          // For n8n, we don't stream anything - just let the stream complete
+          // The frontend will poll for the actual response via the messages API
+        },
+      });
     }
 
     // STANDARD MODEL LOGIC (From Original, Adapted Tools)
