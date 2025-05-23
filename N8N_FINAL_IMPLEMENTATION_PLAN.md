@@ -114,6 +114,128 @@ User sends message to n8n model → sees **identical "Thinking..." animation** �
 
 ---
 
+## DETAILED IMPLEMENTATION CHECKLIST: Option 2 (Frontend State Simulation)
+
+### Phase 1: Core Infrastructure (15 minutes)
+**Status: ⏳ In Progress**
+
+#### Step 1.1: ✅ COMPLETED - Create N8N Model Detection Utility
+**Started**: [Current Time]
+**Target**: Add `isN8nModel()` function to `lib/utils.ts`
+**Result**: 
+- ✅ Added `isN8nModel(modelId: string): boolean` function to `lib/utils.ts`
+- ✅ Function checks `chatModels` array for `isN8n: true` flag
+- ✅ Import added for `chatModels` from `@/lib/ai/models`
+
+#### Step 1.2: ✅ COMPLETED - Add N8N State Management to Chat Component
+**Started**: [Current Time]
+**Target**: Add state variables to `components/chat.tsx` for n8n thinking and polling
+**Result**:
+- ✅ Added `useRef` import for polling cleanup
+- ✅ Added `isN8nModel` import from utils
+- ✅ Added `isN8nThinking` state variable (boolean) 
+- ✅ Added `pollIntervalRef` ref for cleanup (NodeJS.Timeout)
+
+### Phase 2: Thinking Animation Logic (15 minutes)
+**Status**: ⏳ In Progress
+
+#### Step 2.1: ✅ COMPLETED - Override useChat handleSubmit for N8N Models
+**Started**: [Current Time]
+**Target**: Wrap `handleSubmit` to detect n8n models and start thinking animation
+**Result**:
+- ✅ Added `UseChatHelpers` import for proper typing
+- ✅ Created `customHandleSubmit` wrapper with correct signature
+- ✅ Added n8n model detection logic using `isN8nModel()`
+- ✅ Set `isN8nThinking = true` when n8n model detected
+- ✅ Updated MultimodalInput and Artifact to use `customHandleSubmit`
+
+#### Step 2.2: ✅ COMPLETED - Modify Messages Component for N8N Thinking
+**Started**: [Current Time]
+**Target**: Show ThinkingMessage for n8n models
+**Result**:
+- ✅ Added `isN8nThinking?: boolean` prop to MessagesProps interface
+- ✅ Modified thinking message logic to show for both standard submitted status AND n8n thinking
+- ✅ Updated Chat component to pass `isN8nThinking` prop to Messages component
+- ✅ ThinkingMessage now appears immediately when n8n model is detected
+
+### Phase 3: Polling Implementation (15 minutes)
+**Status**: ⏳ In Progress
+
+#### Step 3.1: ✅ COMPLETED - Implement Message Polling Hook
+**Started**: [Current Time]
+**Target**: Create polling logic to check for new messages
+**Result**:
+- ✅ Added useEffect hook that starts when `isN8nThinking = true`
+- ✅ Polls `/api/chat/[id]/messages?since=${timestamp}` every 3 seconds
+- ✅ Stops thinking animation when new messages received
+- ✅ Clears polling interval when messages arrive
+- ✅ Proper cleanup function to prevent memory leaks
+- ✅ Error handling for failed polling requests
+
+#### Step 3.2: ✅ COMPLETED - Integrate Polled Messages with useChat
+**Started**: [Current Time]
+**Target**: Add polled messages to chat state
+**Result**:
+- ✅ Uses `setMessages()` to append new messages from polling
+- ✅ Maintains existing chat state while adding new messages
+- ✅ Automatically stops thinking animation when messages arrive
+
+### Testing & Validation (5 minutes)
+**Status**: ⏳ Ready for Testing
+
+#### Step 4.1: Test with N8N Model
+- Send message to `n8n-assistant` model
+- Verify: Thinking animation appears immediately
+- Verify: Message appears when n8n responds (2s-12min)
+- Verify: Thinking animation disappears
+- **Status**: ⏳ Ready for Testing
+
+#### Step 4.2: Test with Regular Models  
+- Send message to `claude-sonnet-4` model
+- Verify: Normal streaming behavior unchanged
+- Verify: No interference with existing functionality
+- **Status**: ⏳ Ready for Testing
+
+---
+
+## IMPLEMENTATION COMPLETE ✅
+
+### Summary of Changes Made:
+
+**Phase 1: Core Infrastructure**
+- ✅ Added `isN8nModel()` utility function to detect n8n models
+- ✅ Added n8n state management (`isN8nThinking`, `pollIntervalRef`) to Chat component
+
+**Phase 2: Thinking Animation Logic**
+- ✅ Created `customHandleSubmit` wrapper that detects n8n models and starts thinking animation
+- ✅ Modified Messages component to show ThinkingMessage for both standard and n8n thinking states
+- ✅ Updated all handleSubmit calls to use the custom wrapper
+
+**Phase 3: Polling Implementation**
+- ✅ Implemented polling logic that checks for new messages every 3 seconds when n8n thinking
+- ✅ Integrated polled messages with existing chat state using `setMessages()`
+- ✅ Added proper cleanup and error handling
+
+### Expected Behavior:
+1. User selects `n8n-assistant` model and sends message
+2. **Identical "Thinking..." animation appears immediately** (same as streaming models)
+3. Backend processes message asynchronously (2s-12min)
+4. Frontend polls for new messages every 3 seconds
+5. When n8n responds, message appears with **same animations as streaming models**
+6. Thinking animation disappears
+7. **User sees no difference between n8n and streaming models**
+
+### Files Modified:
+- `lib/utils.ts` - Added `isN8nModel()` function
+- `components/chat.tsx` - Added n8n state management, custom handleSubmit, polling logic
+- `components/messages.tsx` - Added n8n thinking support
+
+### Backend Requirements (Already Complete):
+- ✅ `/api/chat` - Fire-and-forget for n8n models
+- ✅ `/api/n8n-callback` - Saves messages to database
+- ✅ `/api/chat/[id]/messages` - Returns new messages for polling
+- ✅ `middleware.ts` - Public routes configured
+
 ## Next Steps
 
 1. **Implement frontend polling logic** per Option 2 plan

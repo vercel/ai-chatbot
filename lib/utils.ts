@@ -11,9 +11,15 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import type { DBMessage, Document } from '@/lib/db/schema';
+import { chatModels } from '@/lib/ai/models';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function isN8nModel(modelId: string): boolean {
+  const model = chatModels.find((m) => m.id === modelId);
+  return Boolean(model?.isN8n);
 }
 
 interface ApplicationError extends Error {
