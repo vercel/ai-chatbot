@@ -1,7 +1,7 @@
 'use client';
 
 import type { Attachment, UIMessage } from 'ai';
-import { useChat } from '@ai-sdk/react';
+import { useChat, type ChatRequestOptions } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
@@ -42,12 +42,13 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { mutate } = useSWRConfig(); // Uncommented to use mutate
+  const { mutate } = useSWRConfig();
+  const [isN8nProcessing, setIsN8nProcessing] = useState(false);
 
   const {
     messages,
     setMessages,
-    handleSubmit,
+    handleSubmit: originalHandleSubmit,
     input,
     setInput,
     append,
@@ -67,14 +68,11 @@ export function Chat({
         selectedChatModel,
       );
       console.log('[Chat] onFinish status:', status);
-      //   revalidate: false,
-      // });
-
-      // COMMENT OUT THIS LINE
-      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Needs to be adapted if history structure changes
+      if (!isN8nProcessing) {
+        // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Example, adapt if needed
+      }
     },
     onError: (error) => {
-      // Add detailed error logging
       console.error(
         '[Chat] onError called. selectedChatModel:',
         selectedChatModel,
@@ -82,6 +80,9 @@ export function Chat({
       console.error('[Chat] onError details:', error);
       console.error('[Chat] onError status:', status);
       toast.error('An error occurred, please try again!');
+      if (selectedChatModel === 'n8n-assistant') {
+        setIsN8nProcessing(false);
+      }
     },
   });
 
@@ -97,7 +98,60 @@ export function Chat({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Detect if waiting for n8n response (minimal inline check)
+  const handleSubmitIntercept = (
+    eOrOptions?: React.FormEvent<HTMLFormElement> | ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions,
+  ) => {
+    const n8nSelectedNow = selectedChatModel === 'n8n-assistant';
+    let isNewN8nSubmitIntent = false;
+
+    if (n8nSelectedNow) {
+      if (
+        eOrOptions &&
+        'preventDefault' in eOrOptions &&
+        typeof eOrOptions.preventDefault === 'function'
+      ) {
+        isNewN8nSubmitIntent = true;
+      } else if (
+        !eOrOptions &&
+        !chatRequestOptions &&
+        input &&
+        input.trim() !== ''
+      ) {
+        isNewN8nSubmitIntent = true;
+      } else if (
+        chatRequestOptions &&
+        chatRequestOptions.messages &&
+        chatRequestOptions.messages.length > 0
+      ) {
+        isNewN8nSubmitIntent = true;
+      }
+    }
+
+    if (isNewN8nSubmitIntent) {
+      console.log(
+        '[Chat DEBUG] n8n model selected for submit, setting isN8nProcessing to true.',
+      );
+      setIsN8nProcessing(true);
+    }
+
+    if (
+      eOrOptions &&
+      'preventDefault' in eOrOptions &&
+      typeof eOrOptions.preventDefault === 'function'
+    ) {
+      originalHandleSubmit(
+        eOrOptions as React.FormEvent<HTMLFormElement>,
+        chatRequestOptions,
+      );
+    } else {
+      originalHandleSubmit(
+        eOrOptions as ChatRequestOptions,
+        chatRequestOptions,
+      );
+    }
+  };
+
   const n8nSelected = selectedChatModel === 'n8n-assistant';
   const lastMsgUser = messages[messages.length - 1]?.role === 'user';
   const statusIsSubmitted = status === 'submitted';
@@ -113,18 +167,14 @@ export function Chat({
   );
   const isN8nWaiting = n8nSelected && lastMsgUser && statusIsSubmitted;
 
-  // Attempt to clear any potentially stale SWR cache for this specific key
-  // This is a diagnostic step.
   if (isN8nWaiting) {
     const swrKey = `/api/messages-test?chatId=${id}`;
     console.log('[Chat DEBUG] Attempting to mutate SWR cache for key:', swrKey);
-    mutate(swrKey, undefined, { revalidate: false }); // Clear data, don't revalidate immediately
+    mutate(swrKey, undefined, { revalidate: false });
   }
 
-  // Override status to keep thinking animation for n8n
-  const displayStatus = isN8nWaiting ? 'submitted' : status;
+  const displayStatus = isN8nProcessing ? 'submitted' : status;
 
-  // DEBUG LOGGING - Understanding current behavior
   console.log('[Chat DEBUG] selectedChatModel:', selectedChatModel);
   console.log('[Chat DEBUG] status:', status);
   console.log('[Chat DEBUG] displayStatus:', displayStatus);
@@ -136,24 +186,20 @@ export function Chat({
   );
   console.log('[Chat DEBUG] isN8nWaiting:', isN8nWaiting);
 
-  // Add SWR polling for messages when waiting for n8n
   const { data: freshMessages } = useSWR(
-    isN8nWaiting ? `/api/messages-test?chatId=${id}` : null,
+    isN8nProcessing ? `/api/messages-test?chatId=${id}` : null,
     fetcher,
     { refreshInterval: 3000 },
   );
 
-  console.log('[Chat DEBUG] SWR polling active:', !!isN8nWaiting);
+  console.log('[Chat DEBUG] SWR polling active:', !!isN8nProcessing);
   console.log('[Chat DEBUG] freshMessages:', freshMessages);
 
-  // Sync fresh messages when polling detects new data
   useEffect(() => {
     if (freshMessages && freshMessages.length > 0) {
       const currentMessageIds = new Set(messages.map((m) => m.id));
       const newUIMessages = freshMessages
         .map((dbMessage: any) => {
-          // Explicitly type dbMessage or ensure it's typed by SWR/fetcher
-          // Basic validation
           if (
             !dbMessage ||
             typeof dbMessage !== 'object' ||
@@ -194,10 +240,10 @@ export function Chat({
             content: messageContent,
             parts: finalParts,
             experimental_attachments: finalAttachments,
-            createdAt: new Date(dbMessage.createdAt), // Ensure createdAt is a Date object
+            createdAt: new Date(dbMessage.createdAt),
           };
         })
-        .filter(Boolean); // Remove any nulls from invalid structures
+        .filter(Boolean);
 
       let appendedNewMessages = false;
       newUIMessages.forEach((uiMsg: UIMessage) => {
@@ -206,18 +252,26 @@ export function Chat({
             '[Chat DEBUG] Appending new assistant message from poll:',
             uiMsg,
           );
-          // Ensure that `append` receives all necessary fields, including `id` and `createdAt`
-          // The `convertToUIMessages` logic seems to handle this already.
-          append(uiMsg, { data: { selectedChatModel } }); // Pass chat specific data if needed by onAppend or body
+          append(uiMsg);
           appendedNewMessages = true;
         }
       });
 
-      // If new messages were appended, the `messages` array in `useChat` will update,
-      // which should trigger re-renders and stop the `isN8nWaiting` condition if appropriate.
-      // No direct setMessages call needed here as append handles it.
+      if (appendedNewMessages) {
+        console.log(
+          '[Chat DEBUG] n8n message appended, setting isN8nProcessing to false.',
+        );
+        setIsN8nProcessing(false);
+      }
     }
-  }, [freshMessages, append, messages, selectedChatModel]); // Added append, messages, selectedChatModel to dependency array
+  }, [
+    freshMessages,
+    append,
+    messages,
+    selectedChatModel,
+    isN8nProcessing,
+    setIsN8nProcessing,
+  ]);
 
   useEffect(() => {
     if (initialAssociatedDocument) {
@@ -248,6 +302,17 @@ export function Chat({
   );
   console.log('[CRITICAL DEBUG] useChat status:', status);
   console.log('[CRITICAL DEBUG] isN8nWaiting:', isN8nWaiting);
+  console.log('[CRITICAL DEBUG] isN8nProcessing:', isN8nProcessing);
+
+  // Attempt to clear any potentially stale SWR cache for this specific key
+  if (isN8nProcessing && !freshMessages) {
+    const swrKey = `/api/messages-test?chatId=${id}`;
+    console.log(
+      '[Chat DEBUG] Mutating SWR cache for key (on isN8nProcessing start):',
+      swrKey,
+    );
+    mutate(swrKey, undefined, { revalidate: false });
+  }
 
   return (
     <>
@@ -276,7 +341,7 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleSubmitIntercept}
               status={status}
               stop={stop}
               attachments={attachments}
@@ -294,7 +359,7 @@ export function Chat({
           chatId={id}
           input={input}
           setInput={setInput}
-          handleSubmit={handleSubmit}
+          handleSubmit={handleSubmitIntercept}
           status={status}
           stop={stop}
           attachments={attachments}
