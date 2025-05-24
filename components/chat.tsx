@@ -146,7 +146,7 @@ export function Chat({
       n8nSelectedNow,
     );
 
-    // Case 1: Form submission event (e.g., user presses Enter in input or clicks submit button)
+    // Case 1: Form submission event (eventOrOptions is a form event)
     if (
       eventOrOptions &&
       typeof (eventOrOptions as React.FormEvent<HTMLFormElement>)
@@ -165,35 +165,49 @@ export function Chat({
         console.log('[handleSubmitIntercept DEBUG] Case 1: input is empty.');
       }
     }
-    // Case 2: Programmatic call with options as the first argument (e.g., resubmitting a message)
-    else if (
-      eventOrOptions &&
-      typeof eventOrOptions === 'object' &&
-      (eventOrOptions as any).messages
-    ) {
+    // Case 2: Not a form event, BUT there is input. This covers calls like:
+    // handleSubmit() when input is present
+    // handleSubmit(undefined, options) when input is present
+    // handleSubmit(optionsAsFirstArg) when input is present (though optionsAsFirstArg might also contain messages)
+    else if (input.trim() !== '') {
       console.log(
-        '[handleSubmitIntercept DEBUG] Entered Case 2 (Programmatic call with messages).',
+        '[handleSubmitIntercept DEBUG] Entered Case 2 (Not a form event, but input is present).',
       );
-      const messagesInSubmit = (eventOrOptions as any).messages as UIMessage[];
+      // Further check: if eventOrOptions IS an options object with messages, ensure it's a user message for intent.
+      // This handles programmatic submissions like resubmitting a specific user message.
       if (
-        messagesInSubmit.length > 0 &&
-        messagesInSubmit[messagesInSubmit.length - 1].role === 'user'
+        eventOrOptions &&
+        typeof eventOrOptions === 'object' &&
+        (eventOrOptions as any).messages &&
+        Array.isArray((eventOrOptions as any).messages)
       ) {
+        const messagesInSubmit = (eventOrOptions as any)
+          .messages as UIMessage[];
+        if (
+          messagesInSubmit.length > 0 &&
+          messagesInSubmit[messagesInSubmit.length - 1].role === 'user'
+        ) {
+          console.log(
+            '[handleSubmitIntercept DEBUG] Case 2a: Options obj passed as first arg with user message. Setting isNewUserSubmitIntent = true.',
+          );
+          isNewUserSubmitIntent = true;
+        } else {
+          console.log(
+            '[handleSubmitIntercept DEBUG] Case 2b: Options obj passed as first arg but last message not from user or no messages. Relying on non-empty input.',
+          );
+          isNewUserSubmitIntent = true; // Fallback to input driving the intent
+        }
+      } else {
+        // If eventOrOptions is not an options object with messages (e.g., it's undefined, or some other options not containing messages directly as first arg),
+        // then the non-empty input is the primary driver for user submit intent.
         console.log(
-          '[handleSubmitIntercept DEBUG] Case 2: Last message is from user. Setting isNewUserSubmitIntent = true.',
+          '[handleSubmitIntercept DEBUG] Case 2c: Input is present, eventOrOptions is not an options obj with messages. Setting isNewUserSubmitIntent = true based on input.',
         );
         isNewUserSubmitIntent = true;
       }
-    }
-    // Case 3: User pressed Enter, and handleSubmit is called without arguments but input is present.
-    else if (!eventOrOptions && !optionsBundle && input.trim() !== '') {
-      console.log(
-        '[handleSubmitIntercept DEBUG] Entered Case 3 (No event/options, input present). Setting isNewUserSubmitIntent = true.',
-      );
-      isNewUserSubmitIntent = true;
     } else {
       console.log(
-        '[handleSubmitIntercept DEBUG] No case matched for setting isNewUserSubmitIntent.',
+        '[handleSubmitIntercept DEBUG] No case matched for setting isNewUserSubmitIntent (input is empty and not a form event with input).',
       );
     }
 
