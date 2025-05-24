@@ -1,7 +1,7 @@
 import { findParentNode } from '@tiptap/core'
-import { Selection, Transaction } from '@tiptap/pm/state'
-import { CellSelection, Rect, TableMap } from '@tiptap/pm/tables'
-import { Node, ResolvedPos } from '@tiptap/pm/model'
+import type { Selection, Transaction } from '@tiptap/pm/state'
+import { CellSelection, type Rect, TableMap } from '@tiptap/pm/tables'
+import type { Node, ResolvedPos } from '@tiptap/pm/model'
 
 export const isRectSelected = (rect: Rect) => (selection: CellSelection) => {
   const map = TableMap.get(selection.$anchorCell.node(-1))
@@ -237,7 +237,7 @@ export const selectTable = (tr: Transaction) => {
   if (table) {
     const { map } = TableMap.get(table.node)
 
-    if (map && map.length) {
+    if (map?.length) {
       const head = table.start + map[0]
       const anchor = table.start + map[map.length - 1]
       const $head = tr.doc.resolve(head)

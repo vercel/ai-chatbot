@@ -1,4 +1,4 @@
-import { AiToneOption, LanguageOption } from '../components/BlockEditor/types'
+import type { AiToneOption, LanguageOption } from '../components/BlockEditor/types'
 
 export const languages: LanguageOption[] = [
   { name: 'arabic', label: 'Arabic', value: 'ar' as LanguageOption['value'] },

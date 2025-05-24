@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
-import { icons } from 'lucide-react'
+import type { icons } from 'lucide-react'
 import { Icon } from '@/components/ui/Icon'
 
 export type CommandButtonProps = {

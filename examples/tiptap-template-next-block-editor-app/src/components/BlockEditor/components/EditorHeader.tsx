@@ -2,10 +2,10 @@
 
 import { Icon } from '@/components/ui/Icon'
 import { EditorInfo } from './EditorInfo'
-import { EditorUser } from '../types'
-import { WebSocketStatus } from '@hocuspocus/provider'
+import type { EditorUser } from '../types'
+import type { WebSocketStatus } from '@hocuspocus/provider'
 import { Toolbar } from '@/components/ui/Toolbar'
-import { Editor } from '@tiptap/core'
+import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import { useCallback } from 'react'
 

@@ -1,9 +1,9 @@
 'use client'
 
 import Tippy from '@tippyjs/react/headless'
-import React, { useCallback, JSX } from 'react'
+import React, { useCallback, type JSX } from 'react'
 
-import { TippyProps, TooltipProps } from './types'
+import type { TippyProps, TooltipProps } from './types'
 
 const isMac = typeof window !== 'undefined' ? navigator.platform.toUpperCase().indexOf('MAC') >= 0 : false
 

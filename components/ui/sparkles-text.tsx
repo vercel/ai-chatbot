@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, ReactElement, useEffect, useState } from "react";
+import { type CSSProperties, type ReactElement, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
@@ -136,7 +136,7 @@ const Sparkle: React.FC<Sparkle> = ({ id, x, y, color, delay, scale }) => {
         scale: [0, scale, 0],
         rotate: [75, 120, 150],
       }}
-      transition={{ duration: 0.8, repeat: Infinity, delay }}
+      transition={{ duration: 0.8, repeat: Number.POSITIVE_INFINITY, delay }}
       width="21"
       height="21"
       viewBox="0 0 21 21"

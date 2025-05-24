@@ -1,8 +1,8 @@
 'use client'
 
-import { Editor as CoreEditor } from '@tiptap/core'
+import type { Editor as CoreEditor } from '@tiptap/core'
 import { memo } from 'react'
-import { TableOfContentsStorage } from '@tiptap-pro/extension-table-of-contents'
+import type { TableOfContentsStorage } from '@tiptap-pro/extension-table-of-contents'
 import { cn } from '@/lib/utils'
 import { useEditorState } from '@tiptap/react'
 

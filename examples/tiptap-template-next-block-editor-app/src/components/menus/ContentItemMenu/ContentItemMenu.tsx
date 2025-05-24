@@ -1,7 +1,7 @@
 import { Icon } from '@/components/ui/Icon'
 import { Toolbar } from '@/components/ui/Toolbar'
 import DragHandle from '@tiptap-pro/extension-drag-handle-react'
-import { Editor } from '@tiptap/react'
+import type { Editor } from '@tiptap/react'
 
 import * as Popover from '@radix-ui/react-popover'
 import { Surface } from '@/components/ui/Surface'

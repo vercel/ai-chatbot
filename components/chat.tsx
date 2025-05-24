@@ -20,7 +20,6 @@ import {
   initialArtifactData,
 } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
-import { unstable_serialize } from 'swr/infinite';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
@@ -50,7 +49,7 @@ export function Chat({
   const {
     messages,
     setMessages,
-    handleSubmit: originalUseChatHandleSubmit,
+    handleSubmit,
     input,
     setInput,
     append,
@@ -59,30 +58,73 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, selectedChatModel: selectedChatModel },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    onFinish: () => {
+    experimental_prepareRequestBody: (body) => {
       console.log(
-        '[Chat] onFinish called. selectedChatModel:',
-        selectedChatModel,
+        '[CLIENT_PREPARE_BODY_DEBUG] Input to experimental_prepareRequestBody:',
+        JSON.parse(JSON.stringify(body)), // Log the whole body options
       );
-      console.log('[Chat] onFinish status:', status);
-      if (!isN8nProcessing) {
-        // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Example, adapt if needed
+
+      // Assuming body.messages is an array and we need the last one
+      const latestMessage =
+        body.messages && body.messages.length > 0
+          ? body.messages[body.messages.length - 1]
+          : null;
+
+      console.log(
+        '[CLIENT_PREPARE_BODY_DEBUG] Latest message from body.messages:',
+        latestMessage
+          ? JSON.parse(JSON.stringify(latestMessage))
+          : 'No messages in body',
+      );
+
+      const payload = {
+        id: id, // chatId
+        message: latestMessage, // This is the single message object
+        selectedChatModel: selectedChatModel,
+        selectedVisibilityType: selectedVisibilityType,
+        // documentId is NOT sent in this phase
+      };
+
+      console.log(
+        '[CLIENT_PREPARE_BODY_DEBUG] Output payload from experimental_prepareRequestBody:',
+        JSON.parse(JSON.stringify(payload)),
+      );
+      return payload;
+    },
+    onFinish: (message) => {
+      // Added message parameter to log
+      console.log(
+        '[CHAT_ONFINISH_DEBUG] onFinish called. selectedChatModel:',
+        selectedChatModel,
+        ', Message:',
+        message ? JSON.stringify(message) : 'N/A', // Log the message if available
+      );
+      console.log('[CHAT_ONFINISH_DEBUG] Status:', status);
+      if (selectedChatModel === 'n8n-assistant' && isN8nProcessing) {
+        // Check if it was N8N that finished
+        console.log(
+          '[N8N_STATE_DEBUG] N8N model finished, setting isN8nProcessing to false.',
+        );
+        setIsN8nProcessing(false);
       }
+      // mutate(unstable_serialize(getChatHistoryPaginationKey)); // Example, adapt if needed
     },
     onError: (error) => {
       console.error(
-        '[Chat] onError called. selectedChatModel:',
+        '[CHAT_ONERROR_DEBUG] onError called. selectedChatModel:',
         selectedChatModel,
       );
-      console.error('[Chat] onError details:', error);
-      console.error('[Chat] onError status:', status);
+      console.error('[CHAT_ONERROR_DEBUG] Error details:', error);
+      console.error('[CHAT_ONERROR_DEBUG] Status:', status);
       toast.error('An error occurred, please try again!');
       if (selectedChatModel === 'n8n-assistant' && isN8nProcessing) {
+        console.log(
+          '[N8N_STATE_DEBUG] Error during N8N processing, setting isN8nProcessing to false.',
+        );
         setIsN8nProcessing(false);
       }
     },
@@ -100,127 +142,97 @@ export function Chat({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleSubmitIntercept: typeof originalUseChatHandleSubmit = (
+  const handleFormSubmit: typeof handleSubmit = (
     eventOrOptions,
     optionsBundle,
   ) => {
-    const n8nSelectedNow = selectedChatModel === 'n8n-assistant';
-    let isNewUserSubmitIntent = false;
-
-    // Case 1: Form submission event (eventOrOptions is a form event)
-    if (
+    // Log the input value from eventOrOptions if it's an event, or directly if it's options
+    let currentInputValue = '';
+    if (typeof eventOrOptions === 'string') {
+      // if it's just text input
+      currentInputValue = eventOrOptions;
+    } else if (
       eventOrOptions &&
-      typeof (eventOrOptions as React.FormEvent<HTMLFormElement>)
-        .preventDefault === 'function'
+      typeof (eventOrOptions as any).target === 'object'
     ) {
-      if (input.trim() !== '') {
-        isNewUserSubmitIntent = true;
-      }
-    }
-    // Case 2: Not a form event, BUT there is input.
-    else if (input.trim() !== '') {
-      if (
-        eventOrOptions &&
-        typeof eventOrOptions === 'object' &&
-        (eventOrOptions as any).messages &&
-        Array.isArray((eventOrOptions as any).messages)
-      ) {
-        const messagesInSubmit = (eventOrOptions as any)
-          .messages as UIMessage[];
-        if (
-          messagesInSubmit.length > 0 &&
-          messagesInSubmit[messagesInSubmit.length - 1].role === 'user'
-        ) {
-          isNewUserSubmitIntent = true;
-        } else {
-          isNewUserSubmitIntent = true; // Fallback to input driving the intent
-        }
-      } else {
-        isNewUserSubmitIntent = true;
-      }
-    }
-
-    if (n8nSelectedNow && isNewUserSubmitIntent) {
-      if (!isN8nProcessing) {
-        setIsN8nProcessing(true);
-      }
-    }
-
-    // Client-side logging BEFORE calling original handleSubmit
-    console.log(
-      '[Chat.tsx DEBUG] handleSubmitIntercept: Before calling originalUseChatHandleSubmit',
-    );
-    console.log('[Chat.tsx DEBUG] Current input state (from useChat):', input);
-    // Deep copy messages for logging to avoid showing mutated state if originalUseChatHandleSubmit mutates it directly
-    const messagesBeforeSubmit = JSON.parse(JSON.stringify(messages));
-    console.log(
-      '[Chat.tsx DEBUG] Current messages state (from useChat):',
-      messagesBeforeSubmit,
-    );
-    console.log(
-      '[Chat.tsx DEBUG] Calling originalUseChatHandleSubmit with eventOrOptions:',
-      eventOrOptions,
-      'optionsBundle:',
-      optionsBundle,
-    );
-
-    const optionsWithPreparedBody = {
-      ...(optionsBundle || {}),
-      experimental_prepareRequestBody: (defaultSdkBody: {
-        messages: UIMessage[];
-        data?: Record<string, string>;
-      }) => {
-        // defaultSdkBody.messages ALREADY includes the new user message typed in 'input'.
-        // defaultSdkBody.data contains { id: chatId, selectedChatModel: selectedChatModel } if passed via useChat's body option
-        console.log(
-          '[Chat.tsx DEBUG] experimental_prepareRequestBody: default SDK body from useChat:',
-          JSON.parse(JSON.stringify(defaultSdkBody)),
-        );
-
-        const bodyForServer = {
-          id: id, // from Chat.tsx closure (chatId)
-          selectedChatModel: selectedChatModel, // from Chat.tsx closure
-          messages: defaultSdkBody.messages, // these are the messages useChat prepared, including the latest input
-        };
-
-        console.log(
-          '[Chat.tsx DEBUG] experimental_prepareRequestBody: Final body being sent to server:',
-          JSON.parse(JSON.stringify(bodyForServer)),
-        );
-        return bodyForServer;
-      },
-    };
-
-    if (typeof optionsBundle !== 'undefined') {
-      // This path might be tricky if optionsBundle itself contains experimental_prepareRequestBody
-      // Assuming optionsBundle is primarily for attachments for now.
-      // Let's ensure our prepareRequestBody is always part of the final options.
-      const finalOptions = {
-        ...optionsBundle,
-        ...optionsWithPreparedBody, // Our version takes precedence if there's a clash
-      };
-      originalUseChatHandleSubmit(
-        eventOrOptions as React.FormEvent<HTMLFormElement>,
-        finalOptions,
-      );
+      // if it's a form event
+      // This is a simplified way; actual input might be nested differently or in optionsBundle
+      // For robust input logging, you might need to inspect how `handleSubmit` internally gets the input value.
+      currentInputValue = (
+        eventOrOptions as React.FormEvent<HTMLFormElement>
+      ).currentTarget.elements.namedItem('content')
+        ? (
+            (
+              eventOrOptions as React.FormEvent<HTMLFormElement>
+            ).currentTarget.elements.namedItem('content') as HTMLInputElement
+          ).value
+        : input; // Fallback to hook's input state
     } else {
-      originalUseChatHandleSubmit(
-        eventOrOptions as any,
-        optionsWithPreparedBody,
-      );
+      currentInputValue = input; // Fallback to hook's input state if not easily derived
     }
+
+    console.log('[CHAT_HANDLE_SUBMIT_DEBUG] handleFormSubmit called with:', {
+      selectedChatModel,
+      inputValue: currentInputValue, // Log derived/current input
+      isN8nProcessing,
+    });
+
+    const isN8nModel = selectedChatModel === 'n8n-assistant';
+    const hasInput = currentInputValue.trim() !== '';
+
+    console.log(
+      '[N8N_STATE_DEBUG] In handleFormSubmit - isN8nModel:',
+      isN8nModel,
+      ', hasInput:',
+      hasInput,
+      ', current isN8nProcessing state:',
+      isN8nProcessing,
+    );
+
+    if (isN8nModel && hasInput && !isN8nProcessing) {
+      console.log(
+        '[N8N_STATE_DEBUG] Setting isN8nProcessing to true for this N8N message.',
+      );
+      setIsN8nProcessing(true);
+    }
+
+    return handleSubmit(eventOrOptions, optionsBundle);
   };
 
   const displayStatus = isN8nProcessing ? 'submitted' : status;
 
-  const { data: freshMessages } = useSWR(
+  const { data: freshMessages, error: swrError } = useSWR(
     isN8nProcessing ? `/api/messages?chatId=${id}` : null,
-    fetcher,
-    { refreshInterval: 3000 },
+    (url: string) => {
+      console.log('[SWR_POLL_DEBUG] Fetcher called for URL:', url);
+      return fetcher(url);
+    },
+    {
+      refreshInterval: 3000,
+      onError: (err, key) => {
+        console.error(
+          '[SWR_POLL_DEBUG] SWR Error for key:',
+          key,
+          'Error:',
+          err,
+        );
+      },
+    },
   );
+
+  if (swrError) {
+    // Log if SWR itself had an error not caught by its onError
+    console.error('[SWR_POLL_DEBUG] SWR hook encountered an error:', swrError);
+  }
 
   useEffect(() => {
     if (freshMessages && freshMessages.length > 0) {
+      console.log(
+        '[SWR_POLL_DEBUG] SWR returned freshMessages. Count:',
+        freshMessages.length,
+        'Data:',
+        JSON.stringify(freshMessages.slice(-3)),
+      );
       const currentMessageIds = new Set(messages.map((m) => m.id));
       const newUIMessages = freshMessages
         .map((dbMessage: any) => {
@@ -272,14 +284,27 @@ export function Chat({
       let appendedNewMessages = false;
       newUIMessages.forEach((uiMsg: UIMessage) => {
         if (uiMsg.role === 'assistant' && !currentMessageIds.has(uiMsg.id)) {
+          console.log(
+            '[SWR_POLL_DEBUG] Appending new assistant message from SWR poll:',
+            JSON.stringify(uiMsg),
+          );
           append(uiMsg);
           appendedNewMessages = true;
         }
       });
 
       if (appendedNewMessages) {
+        console.log(
+          '[N8N_STATE_DEBUG] New assistant messages appended from SWR, setting isN8nProcessing to false.',
+        );
         setIsN8nProcessing(false);
       }
+    } else if (freshMessages) {
+      // Log if freshMessages is defined but empty (e.g., empty array)
+      console.log(
+        '[SWR_POLL_DEBUG] SWR returned freshMessages, but it is empty or has no new messages to append.',
+        JSON.stringify(freshMessages),
+      );
     }
   }, [
     freshMessages,
@@ -338,7 +363,7 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmitIntercept}
+              handleSubmit={handleFormSubmit}
               status={status}
               stop={stop}
               attachments={attachments}
@@ -356,7 +381,7 @@ export function Chat({
           chatId={id}
           input={input}
           setInput={setInput}
-          handleSubmit={handleSubmitIntercept}
+          handleSubmit={handleFormSubmit}
           status={status}
           stop={stop}
           attachments={attachments}

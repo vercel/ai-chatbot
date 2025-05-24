@@ -1,7 +1,6 @@
-import { smoothStream, streamText, type CoreMessage } from 'ai';
+import { streamText, type CoreMessage } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
-import { updateDocumentPrompt } from '@/lib/ai/prompts';
 import type { JSONContent } from '@tiptap/react';
 import { generateJSON } from '@tiptap/core';
 import Document from '@tiptap/extension-document';

@@ -9,8 +9,6 @@ import {
   type ChatHistory,
 } from '@/components/sidebar-history';
 import type { VisibilityType } from '@/components/visibility-selector';
-import type { Chat as DBChat } from '@/lib/db/schema';
-import { toast } from 'sonner';
 
 export function useChatVisibility({
   chatId,

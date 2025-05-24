@@ -1,5 +1,4 @@
-// import { Webhook } from 'svix'; // No longer needed
-import { headers } from 'next/headers';
+
 // Use "import type" for type-only imports
 import type { WebhookEvent, UserJSON } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server'; // Keep NextResponse as value import
@@ -8,7 +7,6 @@ import { db } from '@/lib/db/queries'; // Corrected import path for db
 import { userProfiles } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'node:crypto'; // <-- Keep as value import
-import { getGoogleOAuthToken } from '@/app/actions/get-google-token';
 import { clerkClient } from '@clerk/nextjs/server';
 import { verifyWebhook } from '@clerk/nextjs/webhooks';
 

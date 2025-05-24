@@ -1,12 +1,12 @@
 import { BubbleMenu as BaseBubbleMenu, useEditorState } from '@tiptap/react'
-import React, { useCallback, useRef, JSX } from 'react'
-import { Instance, sticky } from 'tippy.js'
+import React, { useCallback, useRef, type JSX } from 'react'
+import { type Instance, sticky } from 'tippy.js'
 import { v4 as uuid } from 'uuid'
 
 import { Toolbar } from '@/components/ui/Toolbar'
 import { Icon } from '@/components/ui/Icon'
 import { ImageBlockWidth } from './ImageBlockWidth'
-import { MenuProps } from '@/components/menus/types'
+import type { MenuProps } from '@/components/menus/types'
 import { getRenderContainer } from '@/lib/utils'
 
 export const ImageBlockMenu = ({ editor, appendTo }: MenuProps): JSX.Element => {
@@ -51,7 +51,7 @@ export const ImageBlockMenu = ({ editor, appendTo }: MenuProps): JSX.Element => 
         isImageLeft: ctx.editor.isActive('imageBlock', { align: 'left' }),
         isImageCenter: ctx.editor.isActive('imageBlock', { align: 'center' }),
         isImageRight: ctx.editor.isActive('imageBlock', { align: 'right' }),
-        width: parseInt(ctx.editor.getAttributes('imageBlock')?.width || 0),
+        width: Number.parseInt(ctx.editor.getAttributes('imageBlock')?.width || 0),
       }
     },
   })

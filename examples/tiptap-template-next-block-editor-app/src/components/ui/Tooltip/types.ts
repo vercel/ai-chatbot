@@ -1,5 +1,5 @@
 import React from 'react'
-import { Placement, Props } from 'tippy.js'
+import type { Placement, Props } from 'tippy.js'
 
 export interface TooltipProps {
   children?: string | React.ReactNode

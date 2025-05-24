@@ -1,6 +1,6 @@
 "use client";
 
-import { ComponentPropsWithoutRef, forwardRef } from "react";
+import { type ComponentPropsWithoutRef, forwardRef } from "react";
 
 import {
   Tooltip,

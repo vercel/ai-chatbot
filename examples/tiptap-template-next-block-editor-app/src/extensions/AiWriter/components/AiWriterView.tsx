@@ -1,4 +1,4 @@
-import { NodeViewProps, NodeViewWrapper, useEditorState } from '@tiptap/react'
+import { type NodeViewProps, NodeViewWrapper, useEditorState } from '@tiptap/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { v4 as uuid } from 'uuid'
@@ -8,14 +8,14 @@ import { Panel, PanelHeadline } from '@/components/ui/Panel'
 import { Textarea } from '@/components/ui/Textarea'
 import { Icon } from '@/components/ui/Icon'
 
-import { AiTone, AiToneOption } from '@/components/BlockEditor/types'
+import type { AiTone, AiToneOption } from '@/components/BlockEditor/types'
 import { tones } from '@/lib/constants'
 
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { Toolbar } from '@/components/ui/Toolbar'
 import { Surface } from '@/components/ui/Surface'
 import { DropdownButton } from '@/components/ui/Dropdown'
-import { AiStorage, tryParseToTiptapHTML } from '@/extensions/Ai/index'
+import { type AiStorage, tryParseToTiptapHTML } from '@/extensions/Ai/index'
 
 export interface DataProps {
   text: string

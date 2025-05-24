@@ -1,10 +1,10 @@
-import { EmojiItem } from '@tiptap-pro/extension-emoji'
-import React, { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
+import type { EmojiItem } from '@tiptap-pro/extension-emoji'
+import React, { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Panel'
-import { EmojiListProps } from '../types'
-import { SuggestionKeyDownProps } from '@tiptap/suggestion'
+import type { EmojiListProps } from '../types'
+import type { SuggestionKeyDownProps } from '@tiptap/suggestion'
 
 const EmojiList = forwardRef(
   (props: EmojiListProps, ref: ForwardedRef<{ onKeyDown: (evt: SuggestionKeyDownProps) => boolean }>) => {

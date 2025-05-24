@@ -1,10 +1,7 @@
 'use client'
-
-import { TiptapCollabProvider } from '@hocuspocus/provider'
 import 'iframe-resizer/js/iframeResizer.contentWindow'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { Doc as YDoc } from 'yjs'
+import { useCallback, useEffect, useState } from 'react'
 
 import { BlockEditor } from '@/components/BlockEditor'
 import { createPortal } from 'react-dom'
@@ -47,7 +44,7 @@ export default function Document({ params }: { params: { room: string } }) {
   const searchParams = useSearchParams()
   const providerState = useCollaboration({
     docId: params.room,
-    enabled: parseInt(searchParams?.get('noCollab') as string) !== 1,
+    enabled: Number.parseInt(searchParams?.get('noCollab') as string) !== 1,
   })
 
   useEffect(() => {

@@ -1,8 +1,8 @@
-import { Extension, NodeViewWrapper, NodeViewWrapperProps } from '@tiptap/react'
+import { type Extension, NodeViewWrapper, type NodeViewWrapperProps } from '@tiptap/react'
 import { useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { v4 as uuid } from 'uuid'
-import { ImageOptions } from '@tiptap-pro/extension-ai'
+import type { ImageOptions } from '@tiptap-pro/extension-ai'
 
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 

@@ -1,5 +1,5 @@
-import { Node } from '@tiptap/pm/model'
-import { Editor } from '@tiptap/core'
+import type { Node } from '@tiptap/pm/model'
+import type { Editor } from '@tiptap/core'
 import { useCallback, useState } from 'react'
 
 export const useData = () => {

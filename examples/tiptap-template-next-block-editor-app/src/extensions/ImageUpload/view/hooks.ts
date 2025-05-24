@@ -1,4 +1,4 @@
-import { DragEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { type DragEvent, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { API } from '@/lib/api'
 

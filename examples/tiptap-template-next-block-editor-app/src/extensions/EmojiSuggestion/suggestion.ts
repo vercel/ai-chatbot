@@ -1,11 +1,11 @@
 import { ReactRenderer } from '@tiptap/react'
-import { Editor } from '@tiptap/core'
-import { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion'
-import tippy, { Instance } from 'tippy.js'
+import type { Editor } from '@tiptap/core'
+import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion'
+import tippy from 'tippy.js'
 
 import EmojiList from './components/EmojiList'
-import { KeyboardEvent, RefAttributes } from 'react'
-import { EmojiListProps } from './types'
+import type { RefAttributes } from 'react'
+import type { EmojiListProps } from './types'
 
 export const emojiSuggestion = {
   items: ({ editor, query }: { editor: Editor; query: string }) =>

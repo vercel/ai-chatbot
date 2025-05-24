@@ -1,10 +1,11 @@
 # N8N Bugfix: `experimental_prepareRequestBody` Implementation Checklist
 
-**Overall Goal:** Resolve the N8N bug where it responds to the wrong user message and to prevent duplicate N8N webhook invocations. This will be achieved by aligning client-side message sending and server-side message handling with the Vercel AI Chatbot template, primarily by using `experimental_prepareRequestBody` in `useChat` to send only the latest user message to the backend, and adjusting the backend to reconstruct message history.
+**Overall Goal:** Resolve the N8N bug where it responds to the wrong user message and to prevent duplicate N8N webhook invocations. This will be achieved by aligning client-side message sending and server-side message handling with the Vercel AI Chatbot template, primarily by using `experimental_prepareRequestBody` in `useChat` to send only the latest user message to the backend, and adjusting the backend to reconstruct message history. **Project-specific custom logic for associating new chats with a `documentId` at the point of creation will be deferred and restored in a later phase to simplify initial bugfix implementation.**
 
 **Assistant Instructions for Executing this Checklist:**
 *   Update the status emoji for each item **as you start it** (🟡) and **when you complete it successfully** (🟢).
 *   If any step **fails or cannot be completed as described**, mark it with ⚠️ and **STOP IMMEDIATELY**. Do not proceed to the next step. Await further instructions from the user.
+*   **CRITICAL FILE SEARCH PROTOCOL:** Before concluding any file doesn't exist, use `file_search` and `grep_search` tools to search the entire project. A complete Vercel project WILL have fundamental files. NEVER assume production projects lack basic files.
 *   Perform **one checklist item at a time**.
 *   All `curl` commands must be verified for correct file paths and syntax from the main Vercel AI Chatbot repository: `https://github.com/vercel/ai-chatbot`.
 *   All Context7 MCP tool calls for documentation must use the precise library IDs specified in `project-rules`.
@@ -19,98 +20,48 @@
 ## Phase 0: Pre-computation & Final Plan Approval (YOU ARE HERE)
 ---
 
-1.  🟡 **User Confirmation:** User to confirm they have a backup/commit of `components/chat.tsx`, `app/(chat)/api/chat/route.ts`, and `app/(chat)/api/chat/schema.ts` (if it exists) before live edits begin.
-    *   *Assistant Note: This is a user action. Mark 🟢 when user confirms.*
-2.  🟡 **Final Checklist Review (User):** User to review this entire checklist for completeness, correctness, and adherence to instructions.
-    *   *Assistant Note: Await user approval of this checklist document before proceeding to Phase 1.*
+1.  🟢 **User Confirmation:** User to confirm they have a backup/commit of `components/chat.tsx`, `app/(chat)/api/chat/route.ts`, and `app/(chat)/api/chat/schema.ts` (if it exists) before live edits begin.
+    *   *Assistant Note: COMPLETED - Backup commit f3b8858 created with all current files.*
+2.  🟢 **Final Checklist Review (User):** User to review this entire checklist for completeness, correctness, and adherence to instructions.
+    *   *Assistant Note: COMPLETED - User approved the checklist for implementation.*
 
 ---
-## Phase 1: Client-Side Changes in `components/chat.tsx`
+## ✅ Phase 1: Client-Side Changes in `components/chat.tsx` - COMPLETED (Scope: Template Alignment for Message Sending)
 ---
 
-**Objective:** Modify `components/chat.tsx` to use `experimental_prepareRequestBody` directly within `useChat` options, sending only the latest user message and required identifiers to the backend. Preserve N8N-specific processing logic (`isN8nProcessing` state, SWR polling).
+**Phase 1 Summary (Scope: Template Alignment for Message Sending):**
+- ✅ Analyzed current vs. template implementation patterns for message sending.
+- ✅ Removed complex `handleSubmitIntercept` function (109 lines).
+- ✅ Implemented `experimental_prepareRequestBody` directly in `useChat` options to send only the latest `message` object and standard fields (chatId, selectedChatModel, selectedVisibilityType), as per Vercel template. **Custom `documentId` is NOT included in this payload for this phase.**
+- ✅ Created simple `handleFormSubmit` wrapper for N8N state management.
+- ✅ Preserved all existing N8N logic (SWR polling, state management, etc.).
+- ✅ Updated MultimodalInput and Artifact props.
+- ✅ Verified TypeScript compilation with no errors.
 
-1.  🔴 **Step 1.1: Fetch LATEST Vercel AI SDK Documentation (useChat & experimental_prepareRequestBody)**
-    *   **Action:** Use Context7 MCP to get the latest documentation for `/vercel/ai` focusing on `useChat` and specifically `experimental_prepareRequestBody`.
-    *   **Purpose:** Ensure all subsequent client-side changes are based on the most current SDK patterns.
-    *   **Verification:** Review returned documentation snippets for argument structure, return types, and example usage of `experimental_prepareRequestBody`.
-2.  🔴 **Step 1.2: Fetch LATEST Vercel Template `components/chat.tsx`**
-    *   **Action:** `curl -s https://raw.githubusercontent.com/vercel/ai-chatbot/main/components/chat.tsx`
-    *   **Purpose:** Obtain the most recent reference implementation from the official template.
-    *   **Verification:** Briefly scan the fetched file for `useChat` and `experimental_prepareRequestBody` usage to have a direct comparison point.
-3.  🔴 **Step 1.3: Read Current Project `components/chat.tsx`**
-    *   **Action:** Read the full content of the project's current `components/chat.tsx` (at commit `1b1f7e8`).
-    *   **Purpose:** Load the current code into context for accurate diff generation.
-4.  🔴 **Step 1.4: Plan `handleSubmitIntercept` Removal and `useChat` Modification**
-    *   **Action:** Identify the exact lines of `handleSubmitIntercept` to be removed.
-    *   **Action:** Identify where `experimental_prepareRequestBody` will be added within the `useChat` options object.
-    *   **Action:** Confirm that the `body: { id, selectedChatModel: selectedChatModel }` line in current `useChat` options will be removed.
-5.  🔴 **Step 1.5: Design the `experimental_prepareRequestBody` Function Structure**
-    *   **Action:** Based on Vercel template (`schema.ts` previously fetched) and SDK docs (Step 1.1), define the exact structure of the object to be returned by `experimental_prepareRequestBody`. This payload should be:
-        ```typescript
-        {
-          id: string, // chat ID
-          message: { // single message object
-            id: string,
-            createdAt: Date,
-            role: 'user',
-            content: string,
-            parts: Array<{ type: 'text', text: string }>, // Ensure this structure
-            experimental_attachments?: Array<Attachment>
-          },
-          selectedChatModel: string,
-          // selectedVisibilityType: string // (if we decide to include based on template)
-        }
-        ```
-    *   **Action:** Ensure the `latestMessage.parts` are correctly constructed if `latestMessage.content` exists but `latestMessage.parts` might be undefined (e.g., `parts: latestMessage.parts || [{ type: 'text', text: latestMessage.content }]`).
-    *   **Action:** Add detailed `console.log` statements inside this function to log the input `body` from `useChat` and the final `payload` being returned.
-6.  🔴 **Step 1.6: Plan `isN8nProcessing` Logic Adaptation**
-    *   **Action:** Design the wrapper function `handleFormSubmit` that will be passed to `MultimodalInput`. This wrapper will:
-        1.  Check if `selectedChatModel === 'n8n-assistant'`.
-        2.  Check if it's a new user message submission (e.g., by verifying `input.trim() !== ''`).
-        3.  If both are true and `!isN8nProcessing`, call `setIsN8nProcessing(true)`.
-        4.  Call the original `handleSubmit` from `useChat` with the provided arguments.
-    *   **Verification:** Ensure existing logic for setting `isN8nProcessing` to `false` in `onFinish` (for non-N8N success) and `onError` (for N8N errors) remains or is correctly adapted.
-7.  🔴 **Step 1.7: Prepare `edit_file` for `components/chat.tsx`**
-    *   **Action:** Construct the `code_edit` string for `components/chat.tsx` incorporating all changes from Steps 1.4, 1.5, and 1.6.
-        *   Remove `handleSubmitIntercept`.
-        *   Modify `useChat` options:
-            *   Remove `body: { id, selectedChatModel }`.
-            *   Rename `handleSubmit: originalUseChatHandleSubmit` to `handleSubmit`.
-            *   Add the new `experimental_prepareRequestBody` function.
-        *   Add the `handleFormSubmit` wrapper function.
-        *   Update the `handleSubmit` prop for `MultimodalInput` to use `handleFormSubmit`.
-        *   Ensure all N8N-related state (`isN8nProcessing`), SWR polling, and `useEffect` for polled messages are preserved and correctly integrated.
-    *   **Instruction:** The `instructions` field for `edit_file` should be: "Implement experimental_prepareRequestBody in useChat, remove handleSubmitIntercept, and adapt N8N logic by wrapping handleSubmit."
-8.  🔴 **Step 1.8: Execute `edit_file` for `components/chat.tsx`**
-    *   **Action:** Call `edit_file` with the prepared arguments.
-9.  🔴 **Step 1.9: Review Diff and Verify Changes in `components/chat.tsx`**
-    *   **Action:** Carefully review the diff output from the `edit_file` call.
-    *   **Verification:**
-        *   Confirm `handleSubmitIntercept` is gone.
-        *   Confirm `experimental_prepareRequestBody` is correctly added to `useChat` with the right payload structure and logging.
-        *   Confirm `body` option is removed from `useChat`.
-        *   Confirm `handleFormSubmit` wrapper is present and correctly calls `setIsN8nProcessing` and the original `handleSubmit`.
-        *   Confirm `MultimodalInput` uses `handleFormSubmit`.
-        *   Confirm no other critical logic (especially SWR, other `useEffect` hooks, `isN8nProcessing` in `onFinish`/`onError`) was accidentally removed or broken. Cross-reference with `TEMPLATE_FEATURE_DIFFERENCES.md` to ensure no desired template features were inadvertently removed if they were previously implemented.
-10. 🔴 **Step 1.10: Run Linter/Type-Checker for `components/chat.tsx`**
-    *   **Action:** Propose a terminal command: `pnpm lint:fix` (or equivalent type-checking command like `pnpm typecheck`).
-    *   **Purpose:** Catch any syntax errors, type errors, or linting issues introduced by the changes.
-    *   **Verification:** Confirm command executes successfully and no new errors related to the changes are reported. If errors occur, analyze and propose fixes in a sub-step.
+**Next: Phase 2 - Server-Side Schema (Scope: Template Alignment for Request Validation)**
 
 ---
-## Phase 2: Server-Side Schema `app/(chat)/api/chat/schema.ts`
+## ✅ Phase 2: Server-Side Schema `app/(chat)/api/chat/schema.ts` - COMPLETED (Scope: Template Alignment for Request Validation)
 ---
 
-**Objective:** Ensure a Zod schema exists at `app/(chat)/api/chat/schema.ts` that validates the new request body structure (singular `message` object with `id`, `createdAt`, `role`, `content`, `parts`, `experimental_attachments`) along with `id` (chatId), `selectedChatModel`, and `selectedVisibilityType`, as expected by the `/api/chat` POST endpoint, aligning with the Vercel template.
+**Phase 2 Summary (Scope: Template Alignment for Request Validation):**
+- ✅ Fetched latest Vercel template API validation schema (`app/(chat)/api/chat/schema.ts`).
+- ✅ Discovered project was missing `app/(chat)/api/chat/schema.ts` (API validation).
+- ✅ Confirmed project has `lib/db/schema.ts` (database schema, which includes project-specific `Document.chatId` field - this will be relevant in a later phase).
+- ✅ Created missing API validation schema `app/(chat)/api/chat/schema.ts` based *strictly* on Vercel template for this phase: validates top-level `id` (chatId), a singular `message` object (with its standard fields), `selectedChatModel`, `selectedVisibilityType`. **Custom `documentId` is NOT included in this schema for this phase.**
+- ✅ Adapted `selectedChatModel` enum to include project-specific models like 'n8n-assistant'.
+- ✅ Exported `postRequestBodySchema` and `PostRequestBody` type.
+- ✅ Defined proper message parts structure and attachment validation as per template.
 
-**Directory Context:** The schema file is located at `app/(chat)/api/chat/schema.ts`.
+**Objective (Original - For Reference, Scope for this Phase is Narrower):** Ensure the existing schema at `lib/db/schema.ts` is compatible with the new request body structure, OR create a new Zod schema for API validation if needed, that validates the new request body structure (singular `message` object with `id`, `createdAt`, `role`, `content`, `parts`, `experimental_attachments`) along with `id` (chatId), `selectedChatModel`, and `selectedVisibilityType`, as expected by the `/api/chat` POST endpoint, aligning with the Vercel template. **For this phase, the focus is only on the API validation schema (`app/(chat)/api/chat/schema.ts`) and it will NOT include the custom `documentId` field.**
+
+**Directory Context:** The existing schema file is located at `lib/db/schema.ts` (database schema). May need API validation schema at `app/(chat)/api/chat/schema.ts`.
 
 **Key Schema Elements to Define/Verify:**
 *   **`textPartSchema`**: `z.object({ text: z.string().min(1).max(2000), type: z.enum(['text']) })`
 *   **`postRequestBodySchema`**: A Zod object to validate the entire request body.
     *   `id`: `z.string().uuid()` (This is the Chat ID).
-    *   `message`: `z.object({ ... })` (The single, new user message).
+    *   `message`: `z.object({ ... })` (The single, new user message, with fields as per Vercel template).
         *   `id`: `z.string().uuid()` (ID of the message itself).
         *   `createdAt`: `z.coerce.date()` (Timestamp of message creation).
         *   `role`: `z.enum(['user'])` (Role must be 'user').
@@ -119,199 +70,189 @@
         *   `experimental_attachments`: `z.array(z.object({...})).optional()` (Schema for attachments, if used).
     *   `selectedChatModel`: `z.enum([...])` (e.g., `['chat-model', 'chat-model-reasoning', 'n8n-assistant']` - should reflect models available in *this* project).
     *   `selectedVisibilityType`: `z.enum(['public', 'private'])`.
+    *   **Note:** The project-specific `documentId` field will be added to this schema in a later phase.
 *   **`PostRequestBody` Type Export**: `export type PostRequestBody = z.infer<typeof postRequestBodySchema>;`
 
 **Checklist:**
 
-1.  🔴 **Step 2.1: Fetch LATEST Vercel Template `schema.ts` (AGAIN, for direct reference)**
-    *   **Action:** `curl -s https://raw.githubusercontent.com/vercel/ai-chatbot/main/app/\(chat\)/api/chat/schema.ts`
+1.  🟢 **Step 2.1: Fetch LATEST Vercel Template `schema.ts`**
+    *   **Action:** Find correct Vercel template schema path before attempting curl command (`app/(chat)/api/chat/schema.ts`).
     *   **Purpose:** Get the most up-to-date definitive schema structure from the Vercel template.
     *   **Verification:** Confirm the structure of `postRequestBodySchema`, especially the singular `message` object and its fields (`id`, `createdAt`, `role`, `content`, `parts`), and the top-level `id` (chatId), `selectedChatModel`, `selectedVisibilityType`.
-2.  🔴 **Step 2.2: Check for Existing Project `schema.ts` and Read if Present**
-    *   **Action (List Directory):** Use `list_dir` for `app/(chat)/api/chat/` to confirm if `schema.ts` exists.
-    *   **Action (Read File if Exists):** If `schema.ts` exists, read its full content using `read_file`.
+    *   **COMPLETED:** ✅ Retrieved template schema.ts. Key findings:
+        - Template validates: `{ id: uuid, message: { id, createdAt, role: 'user', content, parts, experimental_attachments }, selectedChatModel: ['chat-model', 'chat-model-reasoning'], selectedVisibilityType: ['public', 'private'] }`. **It does NOT include `documentId`.**
+2.  🟢 **Step 2.2: Check for Existing Project Schemas**
+    *   **Action (Search Comprehensively):** Use `file_search` query "schema".
+    *   **Action (List Directory):** Use `list_dir` for `app/(chat)/api/chat/`.
+    *   **Action (Read File if Exists):** If `app/(chat)/api/chat/schema.ts` exists, read it. Also read `lib/db/schema.ts`.
+    *   **CRITICAL INSTRUCTION:** A complete Vercel project WILL have schema files. If you cannot find the expected schema file, search the entire project before concluding it doesn't exist. NEVER assume a production project lacks fundamental files.
     *   **Purpose:** Understand the current state of the project's schema file, if any.
-3.  🔴 **Step 2.3: Plan `schema.ts` Creation or Modification**
-    *   **Action (If `schema.ts` does NOT exist OR is vastly different):**
-        *   Plan to create/overwrite `app/(chat)/api/chat/schema.ts`.
-        *   The content should be based *directly* on the Vercel template's `schema.ts` (fetched in Step 2.1).
-        *   **Crucially, adapt the `selectedChatModel` enum to include all models relevant to *this* project (e.g., add `'n8n-assistant'`).**
-        *   Ensure it exports `postRequestBodySchema` and the `PostRequestBody` type.
-    *   **Action (If `schema.ts` EXISTS and is similar):**
-        *   Compare its `postRequestBodySchema` with the Vercel template's schema (Step 2.1).
-        *   Plan modifications to align it precisely:
-            *   Ensure the top-level `id` (chatId) is present.
-            *   Ensure the `message` field is singular and its object structure (`id`, `createdAt`, `role`, `content`, `parts`, `experimental_attachments`) matches the template.
-            *   Ensure `selectedChatModel` enum is correct for *this* project.
-            *   Ensure `selectedVisibilityType` is present and correct.
-4.  🔴 **Step 2.4: Prepare `edit_file` for `app/(chat)/api/chat/schema.ts`**
-    *   **Action:** Construct the `code_edit` string.
-        *   If creating/overwriting: the `code_edit` will be the full content derived from the template schema (Step 2.1), with the `selectedChatModel` enum adapted.
-        *   If modifying: the `code_edit` will be a diff to align the existing file.
-    *   **Instruction (for `edit_file` call):** "Create/Update app/(chat)/api/chat/schema.ts to align with Vercel template: validate top-level 'id' (chatId), a singular 'message' object (with 'id', 'createdAt', 'role', 'content', 'parts'), 'selectedChatModel' (adapted for this project), and 'selectedVisibilityType'."
-5.  🔴 **Step 2.5: Execute `edit_file` for `app/(chat)/api/chat/schema.ts`**
+    *   **COMPLETED:** ✅ Found database schema at `lib/db/schema.ts`. Confirmed missing API validation schema `app/(chat)/api/chat/schema.ts`.
+3.  🟢 **Step 2.3: Plan `app/(chat)/api/chat/schema.ts` Creation (Template Alignment)**
+    *   **Action:** Plan to create `app/(chat)/api/chat/schema.ts`.
+    *   The content should be based *directly* on the Vercel template's `schema.ts` (fetched in Step 2.1). **It will NOT include `documentId` at this stage.**
+    *   Adapt `selectedChatModel` enum for this project (e.g., add `'n8n-assistant'`).
+    *   Ensure it exports `postRequestBodySchema` and the `PostRequestBody` type.
+    *   **COMPLETED:** ✅ **PLAN:** Create new `app/(chat)/api/chat/schema.ts` based on Vercel template schema (no `documentId`). Adapt `selectedChatModel` enum.
+4.  🟢 **Step 2.4: Prepare `edit_file` for `app/(chat)/api/chat/schema.ts` (Template Alignment)**
+    *   **Action:** Construct `code_edit` for full content from template schema (Step 2.1), with `selectedChatModel` adapted.
+    *   **Instruction (for `edit_file` call):** "Create app/(chat)/api/chat/schema.ts strictly aligned with Vercel template: validate top-level 'id' (chatId), a singular 'message' object (with standard fields), 'selectedChatModel' (adapted for this project), and 'selectedVisibilityType'. DO NOT include 'documentId' in this schema."
+    *   **COMPLETED:** ✅ Prepared schema content based on Vercel template (no `documentId`) with n8n-assistant model added.
+5.  🟢 **Step 2.5: Execute `edit_file` for `app/(chat)/api/chat/schema.ts`**
     *   **Action:** Call `edit_file` with the prepared arguments.
-6.  🔴 **Step 2.6: Review Diff/Content and Verify `schema.ts`**
+    *   **COMPLETED:** ✅ Created `app/(chat)/api/chat/schema.ts` with proper validation schema.
+6.  🟢 **Step 2.6: Review Diff/Content and Verify `schema.ts` (Template Alignment)**
     *   **Action:** Carefully review the diff output or the full file content if newly created.
     *   **Verification:**
         *   Confirm `postRequestBodySchema` is correctly defined in `app/(chat)/api/chat/schema.ts`.
         *   Verify it includes: `id` (string, for chatId), `message` (object, for the single message, with fields `id`, `createdAt`, `role`, `content`, `parts`), `selectedChatModel` (enum, adapted for this project's models including 'n8n-assistant'), and `selectedVisibilityType`.
+        *   **Verify it does NOT include `documentId`.**
         *   Confirm `PostRequestBody` type is exported.
         *   Confirm `textPartSchema` is defined and used in `message.parts`.
+    *   **COMPLETED:** ✅ Schema created matching Vercel template structure (no `documentId`), with all required fields: id (chatId), message object with parts structure, selectedChatModel enum including 'n8n-assistant', selectedVisibilityType enum, and proper TypeScript exports.
 
 ---
-## Phase 3: Server-Side API Route `app/(chat)/api/chat/route.ts`
+## 🔴 Phase 3: Server-Side API Route `app/(chat)/api/chat/route.ts` (Template Alignment for Message Handling)
 ---
 
-**Objective:** Adapt the `POST` handler in `app/(chat)/api/chat/route.ts` to:
-1.  Correctly parse the new request body (now containing a single `message` object) using the updated `schema.ts`.
+**Objective:** Adapt the `POST` handler in `app/(chat)/api/chat/route.ts` to align with the Vercel template's message handling:
+1.  Correctly parse the new request body (containing a single `message` object, **without custom `documentId` for this phase**) using the schema from Phase 2.
 2.  Fetch previous messages from the database.
 3.  Reconstruct the full message history to be used by AI models.
-4.  Ensure the N8N payload is correctly constructed using the single incoming message and the fetched history.
-5.  Correctly save the new user message to the database.
+4.  Ensure the N8N payload is correctly constructed using the single incoming `message` and the fetched history (maintaining N8N's expected structure).
+5.  Correctly save the new user `message` to the database.
+6.  **Project-specific logic for handling `documentId` to title chats and link Documents to Chats is DEFERRED to a later phase.** New chats in this phase will be titled using `generateTitleFromUserMessage` or similar.
 
 **Directory Context:** The API route file is located at `app/(chat)/api/chat/route.ts`.
 
-**Key Logic Flow Changes in `POST` Handler:**
+**Key Logic Flow Changes in `POST` Handler (This Phase - Template Alignment):**
 *   **Request Parsing:**
     *   `const json = await request.json();`
-    *   `const requestBody = postRequestBodySchema.parse(json);` (Import `postRequestBodySchema` from `./schema`).
-    *   `const { id: chatId, message: newSingleUserMessage, selectedChatModel /*, selectedVisibilityType */ } = requestBody;`
+    *   `const requestBody = postRequestBodySchema.parse(json);` (Import `postRequestBodySchema` from `./schema` - this schema does NOT include `documentId` yet).
+    *   `const { id: chatId, message, selectedChatModel, selectedVisibilityType } = requestBody;` (Note: `documentId` is not parsed here).
 *   **History Reconstruction:**
-    *   `const previousMessagesFromDB = await getMessagesByChatId({ id: chatId });` (Ensure `getMessagesByChatId` returns messages in a format compatible with `appendClientMessage` or plan for transformation).
-    *   `const fullMessagesForAI = appendClientMessage({ messages: previousMessagesFromDB, message: newSingleUserMessage });` (Import `appendClientMessage` from `ai` SDK).
-*   **N8N Payload (Conceptual):**
-    *   `const userMessageContentForN8N = newSingleUserMessage.content;`
-    *   `const historyForN8N = formatMessagesForN8N(previousMessagesFromDB);` (Adapt existing history formatting logic).
+    *   `const previousMessagesFromDB = await getMessagesByChatId({ id: chatId });`
+    *   Map `previousMessagesFromDB` to `UIMessage[]` (e.g., `uiPreviousMessages`).
+    *   `const fullMessagesForAI = appendClientMessage({ messages: uiPreviousMessages, message: message });` (Import `appendClientMessage` from `ai` SDK).
+*   **N8N Payload (Conceptual - Maintaining current N8N structure):**
+    *   `const userMessageContentForN8N = message.content;`
+    *   `const historyForN8N = uiPreviousMessages;` (Or `formatMessagesForN8N(uiPreviousMessages)` if a specific formatting utility is used and necessary, ensuring N8N receives history in the format it expects).
 *   **Saving User Message:**
-    *   The object to save needs `chatId`. `newSingleUserMessage` (from `requestBody.message`) does NOT contain `chatId`.
-    *   Construct the message to save:
+    *   Construct the message to save using `chatId` and fields from the incoming `message` object:
         ```typescript
         const userMessageToSave = {
-          chatId: chatId, // from requestBody.id
-          id: newSingleUserMessage.id,
-          role: newSingleUserMessage.role, // should be 'user'
-          content: newSingleUserMessage.content, // if parts is the source of truth, this might be derived or handled by saveMessages
-          parts: newSingleUserMessage.parts, // ensure this is the primary content storage
-          attachments: newSingleUserMessage.experimental_attachments ?? [],
-          createdAt: newSingleUserMessage.createdAt || new Date(), // ensure createdAt is valid
+          chatId: chatId,
+          id: message.id,
+          role: message.role, // should be 'user'
+          content: message.content, // Or derive from parts if that's the source of truth
+          parts: message.parts,
+          attachments: message.experimental_attachments ?? [],
+          createdAt: message.createdAt || new Date(),
         };
         await saveMessages({ messages: [userMessageToSave] });
         ```
+*   **Chat Creation (New Chats - This Phase):**
+    *   If it's a new chat, the title will be generated using a function like `generateTitleFromUserMessage({ message })` as the `documentId`-based titling is deferred.
 *   **Passing to AI:** Use `fullMessagesForAI` for `streamText` or other AI calls.
 
 **Checklist:**
 
-1.  🔴 **Step 3.1: Fetch LATEST Vercel Template `route.ts` (CRITICAL RE-FETCH)**
+1.  🟢 **Step 3.1: Fetch LATEST Vercel Template `route.ts` (CRITICAL RE-FETCH)**
     *   **Action:** `curl -s https://raw.githubusercontent.com/vercel/ai-chatbot/main/app/\(chat\)/api/chat/route.ts`
-    *   **Purpose:** This is the most critical reference for the server-side logic changes, especially how the template parses the new body, fetches history, and reconstructs the `messages` array for the AI.
-    *   **Verification:** Pay close attention to:
-        *   Import of `postRequestBodySchema` from `./schema`.
-        *   Usage: `requestBody = postRequestBodySchema.parse(json)`.
-        *   Destructuring: `{ id, message, selectedChatModel, selectedVisibilityType } = requestBody`.
+    *   **Purpose:** Confirm template's logic for parsing, history reconstruction, message saving, and chat creation (especially title generation when no `documentId` is involved).
+    *   **Verification:**
+        *   Import of `postRequestBodySchema`.
+        *   Destructuring: `{ id, message, selectedChatModel, selectedVisibilityType } = requestBody`. (Confirm no `documentId`).
         *   Fetching history: `previousMessages = await getMessagesByChatId({ id })`.
         *   Reconstructing messages: `messages = appendClientMessage({ messages: previousMessages, message })`.
-        *   How `saveMessages` is called for the incoming user message (it constructs the object to save, adding `chatId`).
-2.  🔴 **Step 3.2: Fetch LATEST Vercel AI SDK Documentation (Server-Side Utilities)**
-    *   **Action:** Use Context7 MCP for `/vercel/ai`. Topics: `appendClientMessage`, `streamText`, general server-side message handling, `UIMessage` vs. DB message types.
-    *   **Purpose:** Ensure correct usage and understanding of `appendClientMessage` and any type conversions needed between DB message format and `UIMessage` format expected by SDK utilities.
-    *   **Verification:** Check the signature of `appendClientMessage`. Does it expect `UIMessage[]` for `messages` and `UIMessage` for `message`? What does `getMessagesByChatId` return? Is a map/transform needed for `previousMessagesFromDB` before passing to `appendClientMessage`? (The template has `@ts-expect-error` suggesting a potential type mismatch it handles).
-3.  🔴 **Step 3.3: Read Current Project `app/(chat)/api/chat/route.ts`**
-    *   **Action:** Read the full content of the project's current `app/(chat)/api/chat/route.ts`.
-    *   **Purpose:** Load current server-side logic into context for accurate diff generation.
-4.  🔴 **Step 3.4: Plan Request Body Parsing Adaptation**
+        *   New chat creation: How `saveChat` is called, especially `title` generation.
+        *   User message saving.
+2.  🟢 **Step 3.2: Fetch LATEST Vercel AI SDK Documentation (Server-Side Utilities)**
+    *   **Action:** Use Context7 MCP for `/vercel/ai`. Topics: `appendClientMessage`, `streamText`, `UIMessage` vs. DB message types.
+    *   **Purpose:** Reconfirm `appendClientMessage` usage and type needs.
+    *   **Verification:** Signature of `appendClientMessage`. Output of `getMessagesByChatId`. Need for mapping DB messages to `UIMessage`.
+3.  🟢 **Step 3.3: Read Current Project `app/(chat)/api/chat/route.ts`**
+    *   **Action:** Read the full content.
+    *   **Purpose:** Identify current logic accurately to ensure only necessary changes are made for template alignment in this phase, and custom `documentId` logic is correctly isolated for deferral.
+4.  🟢 **Step 3.4: Plan Request Body Parsing Adaptation (Template Alignment)**
     *   **Action:**
-        *   Add `import { postRequestBodySchema } from './schema';`
-        *   Modify the start of the `POST` handler to parse the request using this schema:
+        *   Add `import { postRequestBodySchema } from './schema';` (this schema does NOT include `documentId`).
+        *   Modify `POST` handler to parse using this schema:
             ```typescript
-            // const { messages: clientMessages, id: chatId, selectedChatModel } = await req.json(); // OLD
-            let requestBody; // Or PostRequestBody type
+            let requestBody: PostRequestBody;
             try {
               const json = await request.json();
-              requestBody = postRequestBodySchema.parse(json);
-            } catch (error) {
-              // Handle Zod validation error, e.g., return 400
-              return new Response(JSON.stringify({ error: 'Bad Request', details: error }), { status: 400 });
-            }
-            const { id: chatId, message: newSingleUserMessage, selectedChatModel /*, selectedVisibilityType */ } = requestBody;
+              requestBody = postRequestBodySchema.parse(json); // schema.ts (template aligned, no documentId)
+            } catch (error) { /* ... Zod error handling ... */ }
+            const { id: chatId, message, selectedChatModel, selectedVisibilityType } = requestBody; // No documentId
             ```
-    *   **Verification:** Ensure existing error handling for JSON parsing is maintained or improved.
-5.  🔴 **Step 3.5: Plan Message History Reconstruction**
+    *   **Verification:** Error handling.
+5.  🟢 **Step 3.5: Plan Message History Reconstruction (Template Alignment)**
     *   **Action:**
-        *   Locate where `getMessagesByChatId` is (or would be) called. It should be *after* parsing `chatId` and *before* any AI/N8N calls.
-        *   Plan the call: `const previousMessagesFromDB = await getMessagesByChatId({ id: chatId });`
-        *   Plan the history assembly: `const fullMessagesForAI = appendClientMessage({ messages: previousMessagesFromDB, message: newSingleUserMessage });` (Ensure `appendClientMessage` is imported from `ai`).
-    *   **Action (Type Handling for `previousMessagesFromDB`):**
-        *   Based on Step 3.2, if `getMessagesByChatId` returns a DB-specific type and `appendClientMessage` needs `UIMessage[]`, plan a mapping function or an inline map. Example:
-            ```typescript
-            // Assuming previousMessagesFromDB is DBMessage[] and needs conversion to UIMessage[]
-            // const uiPreviousMessages = previousMessagesFromDB.map(dbMsg => ({ /* map fields */ id: dbMsg.id, role: dbMsg.role, content: dbMsg.content, ...etc. }) as UIMessage);
-            // const fullMessagesForAI = appendClientMessage({ messages: uiPreviousMessages, message: newSingleUserMessage });
-            ```
-            The Vercel template itself has a `@ts-expect-error` here, implying they might do a direct pass-through and rely on structural compatibility or a runtime conversion within `appendClientMessage`. We should aim for type safety if possible, or acknowledge the pattern from the template.
-6.  🔴 **Step 3.6: Plan N8N Payload Construction (Maintaining Current Logic with New Variables)**
+        *   Call: `const previousMessagesFromDB = await getMessagesByChatId({ id: chatId });`
+        *   Map `previousMessagesFromDB` (e.g., `Message_v2[]`) to `UIMessage[]` (call it `uiPreviousMessages`).
+        *   Assemble: `const fullMessagesForAI = appendClientMessage({ messages: uiPreviousMessages, message: message });`
+    *   **Verification:** Plan for type mapping if `getMessagesByChatId` output isn't directly `UIMessage[]`.
+6.  🟢 **Step 3.6: Plan N8N Payload Construction (Maintaining Current N8N Structure, Using New Variables)**
     *   **Action:**
-        *   Locate existing N8N payload logic (e.g., `getMostRecentUserMessage`, `getHistoryExcludingLastUserMessage`, `formatMessagesForN8N`).
-        *   Adapt to use `newSingleUserMessage` and `previousMessagesFromDB`.
-        *   The `userMessageContent` for N8N should now come directly from `newSingleUserMessage.content`.
-        *   The `history` for N8N should be constructed from `previousMessagesFromDB`. The existing utility `getHistoryExcludingLastUserMessage` might be reusable if `previousMessagesFromDB` is in the right format, or a new/adapted formatting function might be needed.
-        *   The core logic should be:
+        *   Adapt existing N8N payload logic.
+        *   User message details from the single `message` object.
+        *   `history` for N8N from `uiPreviousMessages` (mapped from `previousMessagesFromDB`).
             ```typescript
-            const userMessageContentForN8N = newSingleUserMessage.content;
-            // Assuming previousMessagesFromDB might need formatting/conversion to the type formatMessagesForN8N expects
-            const historyForN8N = formatMessagesForN8N(previousMessagesFromDB); // or map previousMessagesFromDB first
-            ```
-    *   **Verification:** Ensure N8N still receives the current user message content distinctly from the historical messages, as per its designed workflow.
-7.  🔴 **Step 3.7: Plan Database `saveMessages` Call for User Message**
-    *   **Action:**
-        *   Locate the `await saveMessages(...)` call for the incoming user message.
-        *   Modify it to save the `newSingleUserMessage`, ensuring `chatId` is included in the object being saved, as the template does.
-            ```typescript
-            const userMessageToSave = {
-              chatId: chatId, // This is crucial
-              id: newSingleUserMessage.id,
-              role: newSingleUserMessage.role as 'user', // Ensure role is correctly typed for DB
-              content: newSingleUserMessage.content,    // Or handle 'parts' as primary
-              parts: newSingleUserMessage.parts,        // If 'parts' is the source of truth for content
-              attachments: newSingleUserMessage.experimental_attachments ?? [],
-              createdAt: newSingleUserMessage.createdAt || new Date(),
+            const userMessageContentForN8N = message.content; // Or JSON.stringify if not string
+            const historyForN8N = uiPreviousMessages; // Or apply existing formatting if needed, e.g., formatMessagesForN8N(uiPreviousMessages)
+            const n8nPayload = {
+              chatId: chatId,
+              userId: userProfileId, // From existing auth logic
+              messageId: message.id,
+              userMessage: userMessageContentForN8N,
+              userMessageParts: message.parts,
+              userMessageDatetime: message.createdAt,
+              history: historyForN8N,
+              // Any other fields N8N currently expects, e.g., google_token
             };
-            await saveMessages({ messages: [userMessageToSave] });
             ```
-    *   **Verification:** Confirm the structure passed to `saveMessages` matches what the DB query expects.
-8.  🔴 **Step 3.8: Plan AI Call Adaptation (e.g., `streamText`)**
-    *   **Action:** Locate the call to `streamText` (or equivalent for non-streaming N8N path).
-    *   **Action:** Ensure the `messages` property in its options now uses `fullMessagesForAI` (the reconstructed complete history including the latest user message).
-9.  🔴 **Step 3.9: Prepare `edit_file` for `app/(chat)/api/chat/route.ts`**
-    *   **Action:** Construct the `code_edit` string incorporating all changes planned in Steps 3.4 through 3.8.
-        *   Import `postRequestBodySchema`.
-        *   Update request parsing.
-        *   Add fetching of `previousMessagesFromDB`.
-        *   Add assembly of `fullMessagesForAI` using `appendClientMessage`.
-        *   Adapt N8N payload creation.
-        *   Adapt `saveMessages` for the user message.
-        *   Ensure AI calls use `fullMessagesForAI`.
-        *   Maintain existing logic for creating/finding chat, auth, rate limiting, etc.
-    *   **Instruction (for `edit_file` call):** "Adapt /api/chat POST route: use schema for single 'message' body, reconstruct history with getMessagesByChatId & appendClientMessage, ensure N8N payload uses new variables, correctly save user message with chatId, and pass full history to AI."
-10. 🔴 **Step 3.10: Execute `edit_file` for `app/(chat)/api/chat/route.ts`**
-    *   **Action:** Call `edit_file` with the prepared arguments.
-11. 🔴 **Step 3.11: Review Diff and Verify Changes in `app/(chat)/api/chat/route.ts`**
-    *   **Action:** Carefully review the diff output from the `edit_file` call.
+    *   **Verification:** Ensure N8N still receives the current user message content distinctly from the historical messages, with identical payload keys as current. **`documentId` is NOT added to N8N payload.**
+7.  🟢 **Step 3.7: Plan Database `saveMessages` Call for User Message (Template Alignment)**
+    *   **Action:** Plan to save the incoming `message` object.
+        ```typescript
+        const userMessageToSave = {
+          chatId: chatId,
+          id: message.id,
+          role: message.role,
+          parts: message.parts, // Ensure these fields exist on 'message'
+          attachments: message.experimental_attachments ?? [],
+          createdAt: message.createdAt || new Date(),
+        };
+        await saveMessages({ messages: [userMessageToSave] });
+        ```
+8.  🟢 **Step 3.8: Plan Chat Creation Logic (New Chats - Template Alignment)**
+    *   **Action:** For new chats (e.g., first message from user for a given `chatId`):
+        *   The server will determine if it's a new chat (e.g., `await getChatById({ id: chatId })` returns null).
+        *   If new, a title will be generated: `const newChatTitle = await generateTitleFromUserMessage({ message });` (or similar utility).
+        *   Call `await saveChat({ id: chatId, userId: userProfileId, title: newChatTitle, visibility: selectedVisibilityType });`.
+    *   **Verification:** This defers the custom `documentId`-based titling.
+9.  🟢 **Step 3.9: Plan AI Call Adaptation (e.g., `streamText`)**
+    *   **Action:** Ensure AI calls like `streamText` use `fullMessagesForAI`.
+    *   **Verification:** Other parameters for `streamText` (system prompt, tools, etc.) should be reviewed to ensure they align with the template or existing project needs that are independent of `documentId`.
+10. 🔴 **Step 3.10: Prepare `edit_file` for `app/(chat)/api/chat/route.ts`**
+    *   **Action:** Construct the `code_edit` string incorporating changes from Steps 3.4-3.9.
+        *   Isolate and temporarily comment out or remove the project's custom `documentId` handling logic within the API route (related to fetching document titles for chat titles and updating `Document.chatId`). This logic will be restored in Phase 6.
+    *   **Instruction (for `edit_file` call):** "Adapt /api/chat POST route for template message flow: use schema for single 'message' body (no documentId), reconstruct history, use template-aligned chat creation (title from message). Temporarily remove/comment custom documentId logic. Ensure N8N payload is correct."
+11. 🔴 **Step 3.11: Execute `edit_file` for `app/(chat)/api/chat/route.ts`**
+12. 🔴 **Step 3.12: Review Diff and Verify Changes in `app/(chat)/api/chat/route.ts`**
     *   **Verification (CRITICAL):**
-        *   Confirm import and use of `postRequestBodySchema`.
-        *   Confirm `chatId`, `newSingleUserMessage`, `selectedChatModel` are correctly destructured.
-        *   Confirm `previousMessagesFromDB` are fetched.
-        *   Confirm `fullMessagesForAI` are assembled using `appendClientMessage` with potentially mapped `previousMessagesFromDB`.
-        *   Confirm N8N payload (`userMessageForN8N`, `historyForN8N`) is derived correctly from `newSingleUserMessage` and `previousMessagesFromDB`.
-        *   Confirm `saveMessages` saves the user message with `chatId` correctly embedded in the message object.
-        *   Confirm `streamText` (or N8N path) uses `fullMessagesForAI`.
-        *   Confirm no other logic (auth, chat creation, rate limits, saving assistant messages) was inadvertently broken.
-12. 🔴 **Step 3.12: Run Linter/Type-Checker for `app/(chat)/api/chat/route.ts`**
-    *   **Action:** Propose a terminal command: `pnpm lint:fix` (or `pnpm typecheck`).
-    *   **Verification:** Confirm command executes successfully and no new errors related to the changes are reported. If errors occur, analyze and propose fixes in a sub-step.
+        *   Confirm parsing of `chatId`, `message` (no `documentId`).
+        *   Confirm `previousMessagesFromDB` fetched, `fullMessagesForAI` assembled.
+        *   Confirm N8N payload uses `message` and `uiPreviousMessages` correctly.
+        *   Confirm user message saved using `message`.
+        *   Confirm new chat titles are generated from `message.content` (not `documentId`).
+        *   Confirm custom `documentId` logic for chat creation/linking is NOT active.
+        *   Confirm AI calls use `fullMessagesForAI`.
+13. 🔴 **Step 3.13: Run Linter/Type-Checker for `app/(chat)/api/chat/route.ts`**
 
 ---
-## Phase 4: Testing and Verification (After Deployment)
+## Phase 4: Testing and Verification (After Deployment of Template-Aligned Message Handling)
 ---
 
 **Objective:** Thoroughly test the changes end-to-end after deploying to Vercel to ensure the bug is fixed and no regressions were introduced, paying close attention to previously observed anomalies, especially the 404 errors for `/api/messages` due to chat creation/visibility issues.
@@ -397,7 +338,7 @@
     *   **Verification:** Ensure these features still work as expected.
 
 ---
-## Phase 5: Final Code Cleanup & Commit
+## Phase 5: Final Code Cleanup & Commit (For Template-Aligned Message Handling)
 ---
 
 1.  🔴 **Step 5.1: Review and Remove/Refine Debug Logs**
@@ -415,6 +356,63 @@
 5.  🔴 **Step 5.5: Push Final Changes**
     *   **Action:** `git push`
 6.  🔴 **Step 5.6: (User Task) Optional: Delete `IMPLEMENTATION_CHECKLIST_N8N_BUGFIX.md` or archive it.**
+
+---
+## 🔴 Phase 6: Restore Custom `documentId` Chat Association
+---
+
+**Objective:** Re-integrate the project's custom functionality where a new chat can be associated with an existing `documentId`, using the document's title for the chat title, and linking the `Document` record to the `Chat` record in the database. This phase builds upon the template-aligned message handling established in Phases 1-3.
+
+**Checklist:**
+
+1.  🔴 **Step 6.1: Update Client-Side `components/chat.tsx` for `documentId`**
+    *   **Action:** Modify `experimental_prepareRequestBody` in `useChat` options.
+        *   Source the `documentId` (e.g., from `initialAssociatedDocument.id` or component state if it can change).
+        *   Add `documentId` to the payload object returned by `experimental_prepareRequestBody`.
+            ```typescript
+            // Example addition to components/chat.tsx experimental_prepareRequestBody
+            // const documentIdToSend = initialAssociatedDocument ? initialAssociatedDocument.id : undefined;
+            return {
+              id: id, // chatId
+              message: latestMessage,
+              selectedChatModel: selectedChatModel,
+              selectedVisibilityType: selectedVisibilityType,
+              documentId: documentIdToSend // ADD THIS
+            };
+            ```
+    *   **Instruction (for `edit_file` call):** "Update experimental_prepareRequestBody in components/chat.tsx to include documentId in the payload sent to /api/chat."
+    *   **Verification:** Test client-side to ensure `documentId` is correctly included when a chat is initiated with an associated document.
+2.  🔴 **Step 6.2: Update API Schema `app/(chat)/api/chat/schema.ts` for `documentId`**
+    *   **Action:** Modify `postRequestBodySchema`.
+        *   Add `documentId: z.string().uuid().optional()` to the schema.
+    *   **Instruction (for `edit_file` call):** "Add 'documentId: z.string().uuid().optional()' to postRequestBodySchema in app/(chat)/api/chat/schema.ts."
+    *   **Verification:** Ensure schema correctly validates requests with or without `documentId`.
+3.  🔴 **Step 6.3: Update Server-Side `app/(chat)/api/chat/route.ts` to Handle `documentId`**
+    *   **Action (Request Parsing):**
+        *   Update destructuring from `requestBody` to include `documentId`:
+            `const { id: chatId, message, selectedChatModel, selectedVisibilityType, documentId } = requestBody;`
+    *   **Action (Chat Creation Logic):**
+        *   Re-integrate/uncomment the custom logic for new chat creation when `documentId` is present:
+            *   If `isNewChatAttempt` AND `documentId` is provided:
+                *   Fetch document title using `documentId` and `userId`.
+                *   Use document title for `saveChat`.
+                *   Update `Document` table to set `chatId` for the given `documentId`.
+            *   Else (if new chat but no `documentId`), use `generateTitleFromUserMessage({ message })`.
+    *   **Instruction (for `edit_file` call):** "Reinstate documentId handling in /api/chat: parse documentId from request, use it for new chat titling, and link Document to Chat in DB."
+    *   **Verification:** Ensure existing chat creation logic that uses `documentId` works as before.
+4.  🔴 **Step 6.4: Testing and Verification (End-to-End for `documentId` feature)**
+    *   **Action:** Thoroughly test scenarios:
+        *   Starting a new chat *with* an associated document: verify chat title, DB link (`Document.chatId`).
+        *   Starting a new chat *without* an associated document: verify chat title generated from message.
+        *   Existing chats (ensure no regressions).
+        *   N8N model chats with and without associated documents.
+    *   **Verification:** Check UI, DB state, and logs.
+5.  🔴 **Step 6.5: Final Linter/Type-Check Pass (After `documentId` Re-integration)**
+6.  🔴 **Step 6.6: Final Code Review (Self/User - After `documentId` Re-integration)**
+7.  🔴 **Step 6.7: Commit Final Changes (Including `documentId` Restoration)**
+    *   **Action:** `git add .`
+    *   **Action:** `git commit -m "feat: Restore custom documentId chat association logic"` (or similar)
+8.  🔴 **Step 6.8: Push Final Changes**
 
 ---
 **Checklist End.** 

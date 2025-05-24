@@ -1,14 +1,11 @@
-import { cookies } from 'next/headers';
+
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Manrope, Fira_Code } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import {
   ClerkProvider,
-  SignInButton,
-  SignUpButton,
   SignedIn,
-  SignedOut,
   UserButton,
 } from '@clerk/nextjs';
 import { OnboardingTrigger } from '@/components/onboarding-trigger';

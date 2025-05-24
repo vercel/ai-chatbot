@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 
-import { LoaderProps, LoadingWrapperProps } from './types'
+import type { LoaderProps, LoadingWrapperProps } from './types'
 
 const LoadingWrapper = ({ label }: LoadingWrapperProps) => {
   return (

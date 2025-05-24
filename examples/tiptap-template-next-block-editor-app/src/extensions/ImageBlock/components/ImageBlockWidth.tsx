@@ -14,7 +14,7 @@ export const ImageBlockWidth = memo(({ onChange, value }: ImageBlockWidthProps) 
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const nextValue = parseInt(e.target.value)
+      const nextValue = Number.parseInt(e.target.value)
       onChange(nextValue)
       setCurrentValue(nextValue)
     },

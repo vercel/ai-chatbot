@@ -1,4 +1,4 @@
-import { Attributes, Extension } from '@tiptap/core'
+import { type Attributes, Extension } from '@tiptap/core'
 import '@tiptap/extension-text-style'
 
 declare module '@tiptap/core' {

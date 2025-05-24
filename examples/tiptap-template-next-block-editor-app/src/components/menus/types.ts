@@ -1,8 +1,8 @@
 import React from 'react'
-import { Editor as CoreEditor } from '@tiptap/core'
-import { Editor } from '@tiptap/react'
-import { EditorState } from '@tiptap/pm/state'
-import { EditorView } from '@tiptap/pm/view'
+import type { Editor as CoreEditor } from '@tiptap/core'
+import type { Editor } from '@tiptap/react'
+import type { EditorState } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 
 export interface MenuProps {
   editor: Editor

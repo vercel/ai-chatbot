@@ -1,5 +1,5 @@
 import { Icon } from '@/components/ui/Icon'
-import { icons } from 'lucide-react'
+import type { icons } from 'lucide-react'
 import { useMemo } from 'react'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { Toolbar } from '@/components/ui/Toolbar'

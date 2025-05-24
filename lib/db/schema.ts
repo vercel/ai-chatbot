@@ -13,8 +13,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-import type { UIMessage } from 'ai';
-
 export const userProfiles = pgTable('User_Profiles', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   clerkId: text('clerk_id').unique(),

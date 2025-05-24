@@ -2,7 +2,7 @@ import { tool } from 'ai';
 import type { DataStreamWriter } from 'ai';
 // import type { User } from '@supabase/supabase-js'; // Remove Supabase User import
 import { z } from 'zod';
-import { getDocumentById, saveDocument } from '@/lib/db/queries';
+import { getDocumentById, } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 import type { Document } from '@/lib/db/schema'; // Import the Document type
 

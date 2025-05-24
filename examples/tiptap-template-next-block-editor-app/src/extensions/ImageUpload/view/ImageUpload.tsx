@@ -1,4 +1,4 @@
-import { Editor, NodeViewWrapper } from '@tiptap/react'
+import { type Editor, NodeViewWrapper } from '@tiptap/react'
 import { useCallback } from 'react'
 
 import { ImageUploader } from './ImageUploader'

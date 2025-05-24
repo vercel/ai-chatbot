@@ -6,7 +6,7 @@ export default function MenuItem ({
   icon, title, action, isActive = null,
 }: {icon?: string, title?: string, action?: () => void, isActive?: (() => boolean) | null } ) {
   return <button
-      className={`menu-item${isActive && isActive() ? ' is-active' : ''}`}
+      className={`menu-item${isActive?.() ? ' is-active' : ''}`}
       onClick={action}
       title={title}
     >

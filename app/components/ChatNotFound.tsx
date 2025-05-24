@@ -6,7 +6,7 @@ export function ChatNotFound() {
   return (
     <div className="flex h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center gap-4">
       <div className="flex items-center gap-2 text-destructive">
-        <ExclamationTriangleIcon className="h-6 w-6" />
+        <ExclamationTriangleIcon className="size-6" />
         <h2 className="text-lg font-semibold">Chat Not Found</h2>
       </div>
       <p className="text-muted-foreground">

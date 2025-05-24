@@ -5,14 +5,6 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Script from 'next/script';
 import { auth, currentUser } from '@clerk/nextjs/server'; // Import Clerk helpers
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
 
 export const experimental_ppr = true;
 

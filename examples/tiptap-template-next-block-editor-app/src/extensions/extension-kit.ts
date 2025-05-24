@@ -1,6 +1,6 @@
 'use client'
 
-import { HocuspocusProvider } from '@hocuspocus/provider'
+import type { HocuspocusProvider } from '@hocuspocus/provider'
 
 import { API } from '@/lib/api'
 

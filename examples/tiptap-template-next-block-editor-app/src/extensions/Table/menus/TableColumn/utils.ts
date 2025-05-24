@@ -1,6 +1,6 @@
-import { Editor } from '@tiptap/react'
-import { EditorState } from '@tiptap/pm/state'
-import { EditorView } from '@tiptap/pm/view'
+import type { Editor } from '@tiptap/react'
+import type { EditorState } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 
 import { isTableSelected } from '../../utils'
 import { Table } from '../..'
@@ -30,7 +30,7 @@ export const isColumnGripSelected = ({
     container = container.parentElement!
   }
 
-  const gripColumn = container && container.querySelector && container.querySelector('a.grip-column.selected')
+  const gripColumn = container?.querySelector?.('a.grip-column.selected')
 
   return !!gripColumn
 }

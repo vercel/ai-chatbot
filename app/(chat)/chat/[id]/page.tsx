@@ -4,11 +4,9 @@ import { redirect, notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import type { UIMessage } from 'ai';
 import type { DBMessage } from '@/lib/db/schema';
-import type { Metadata, ResolvingMetadata } from 'next'; // Add standard types
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models'; // ADD: Import default model
 
 import { Chat } from '@/components/chat';
-import ChatNotFound from '@/components/chat-not-found';
 import { getChat } from '@/app/actions';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 

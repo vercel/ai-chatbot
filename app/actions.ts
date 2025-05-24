@@ -1,6 +1,6 @@
 import { db } from '@/lib/db/queries';
-import { Chat, Message_v2 } from '@/lib/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { Chat, } from '@/lib/db/schema';
+import { eq, } from 'drizzle-orm';
 
 // Removed unused type import
 // import type { message as MessageTableType } from '@/lib/db/schema';

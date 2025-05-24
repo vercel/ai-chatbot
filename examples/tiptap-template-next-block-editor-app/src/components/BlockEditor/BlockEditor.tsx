@@ -15,8 +15,8 @@ import { EditorHeader } from './components/EditorHeader'
 import { TextMenu } from '../menus/TextMenu'
 import { ContentItemMenu } from '../menus/ContentItemMenu'
 import { useSidebar } from '@/hooks/useSidebar'
-import * as Y from 'yjs'
-import { TiptapCollabProvider } from '@hocuspocus/provider'
+import type * as Y from 'yjs'
+import type { TiptapCollabProvider } from '@hocuspocus/provider'
 
 export const BlockEditor = ({
   aiToken,

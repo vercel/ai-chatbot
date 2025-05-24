@@ -9,17 +9,13 @@ import {
   gte,
   inArray,
   lt,
-  or,
   type SQL,
-  sql,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { unstable_cache } from 'next/cache';
-import type { JSONContent } from '@tiptap/react';
 
 import * as schema from './schema';
-import type { ArtifactKind } from '@/components/artifact';
 import type { VisibilityType } from '@/components/visibility-selector';
 
 // Inferred types based on current schema
@@ -34,10 +30,12 @@ export async function saveChat({
   id,
   userId,
   title,
+  visibility,
 }: {
   id: string;
   userId: string;
   title: string;
+  visibility: VisibilityType;
 }) {
   try {
     return await db.insert(schema.Chat).values({
@@ -45,6 +43,7 @@ export async function saveChat({
       createdAt: new Date(),
       userId,
       title,
+      visibility,
     });
   } catch (error) {
     console.error('Failed to save chat in database', {
