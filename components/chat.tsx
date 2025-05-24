@@ -105,32 +105,102 @@ export function Chat({
     eventOrOptions,
     optionsBundle,
   ) => {
+    console.log('[handleSubmitIntercept DEBUG] Called. Input:', input);
+    console.log(
+      '[handleSubmitIntercept DEBUG] eventOrOptions:',
+      eventOrOptions,
+    );
+    console.log(
+      '[handleSubmitIntercept DEBUG] typeof eventOrOptions:',
+      typeof eventOrOptions,
+    );
+    if (eventOrOptions && typeof eventOrOptions === 'object') {
+      console.log(
+        '[handleSubmitIntercept DEBUG] eventOrOptions keys:',
+        Object.keys(eventOrOptions),
+      );
+      if ('preventDefault' in eventOrOptions) {
+        console.log(
+          '[handleSubmitIntercept DEBUG] eventOrOptions has preventDefault property.',
+        );
+      } else {
+        console.log(
+          '[handleSubmitIntercept DEBUG] eventOrOptions does NOT have preventDefault property.',
+        );
+      }
+      if ((eventOrOptions as any).messages) {
+        console.log(
+          '[handleSubmitIntercept DEBUG] eventOrOptions has messages property:',
+          (eventOrOptions as any).messages,
+        );
+      }
+    }
+    console.log('[handleSubmitIntercept DEBUG] optionsBundle:', optionsBundle);
+
     const n8nSelectedNow = selectedChatModel === 'n8n-assistant';
     let isNewUserSubmitIntent = false;
+    console.log(
+      '[handleSubmitIntercept DEBUG] Initial isNewUserSubmitIntent:',
+      isNewUserSubmitIntent,
+      'n8nSelectedNow:',
+      n8nSelectedNow,
+    );
 
+    // Case 1: Form submission event (e.g., user presses Enter in input or clicks submit button)
     if (
       eventOrOptions &&
       typeof (eventOrOptions as React.FormEvent<HTMLFormElement>)
         .preventDefault === 'function'
     ) {
+      console.log(
+        '[handleSubmitIntercept DEBUG] Entered Case 1 (Form submission event).',
+      );
       if (input.trim() !== '') {
+        // Check if there's actual input to send
+        console.log(
+          '[handleSubmitIntercept DEBUG] Case 1: input is not empty. Setting isNewUserSubmitIntent = true.',
+        );
         isNewUserSubmitIntent = true;
+      } else {
+        console.log('[handleSubmitIntercept DEBUG] Case 1: input is empty.');
       }
-    } else if (
+    }
+    // Case 2: Programmatic call with options as the first argument (e.g., resubmitting a message)
+    else if (
       eventOrOptions &&
       typeof eventOrOptions === 'object' &&
       (eventOrOptions as any).messages
     ) {
+      console.log(
+        '[handleSubmitIntercept DEBUG] Entered Case 2 (Programmatic call with messages).',
+      );
       const messagesInSubmit = (eventOrOptions as any).messages as UIMessage[];
       if (
         messagesInSubmit.length > 0 &&
         messagesInSubmit[messagesInSubmit.length - 1].role === 'user'
       ) {
+        console.log(
+          '[handleSubmitIntercept DEBUG] Case 2: Last message is from user. Setting isNewUserSubmitIntent = true.',
+        );
         isNewUserSubmitIntent = true;
       }
-    } else if (!eventOrOptions && !optionsBundle && input.trim() !== '') {
-      isNewUserSubmitIntent = true;
     }
+    // Case 3: User pressed Enter, and handleSubmit is called without arguments but input is present.
+    else if (!eventOrOptions && !optionsBundle && input.trim() !== '') {
+      console.log(
+        '[handleSubmitIntercept DEBUG] Entered Case 3 (No event/options, input present). Setting isNewUserSubmitIntent = true.',
+      );
+      isNewUserSubmitIntent = true;
+    } else {
+      console.log(
+        '[handleSubmitIntercept DEBUG] No case matched for setting isNewUserSubmitIntent.',
+      );
+    }
+
+    console.log(
+      '[handleSubmitIntercept DEBUG] Final isNewUserSubmitIntent before n8n check:',
+      isNewUserSubmitIntent,
+    );
 
     if (n8nSelectedNow && isNewUserSubmitIntent) {
       if (!isN8nProcessing) {
@@ -143,6 +213,10 @@ export function Chat({
           '[Chat DEBUG] n8n model selected, but already processing. Not changing isN8nProcessing.',
         );
       }
+    } else if (n8nSelectedNow && !isNewUserSubmitIntent) {
+      console.log(
+        '[Chat DEBUG] N8N model selected, but isNewUserSubmitIntent is false. Not setting isN8nProcessing.',
+      );
     }
 
     if (typeof optionsBundle !== 'undefined') {
