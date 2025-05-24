@@ -450,52 +450,51 @@ export async function POST(request: Request) {
         `[SERVER_API_CHAT_DEBUG] PRE-FETCH: Target N8N Webhook URL: ${webhookUrl}`,
       );
 
-      fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
-            Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
-          }),
-        },
-        body: JSON.stringify(n8nPayload),
-      })
-        .then(async (resp) => {
-          // Added async here
-          console.log(
-            '[SERVER_API_CHAT_DEBUG] N8N FETCH .THEN: n8n webhook responded. Status:',
-            resp.status,
-          );
-          // Log response body if not OK, as it might contain error details from N8N
-          if (!resp.ok) {
-            try {
-              const errorBody = await resp.text(); // Use .text() for safety, or .json() if N8N sends JSON errors
-              console.error(
-                `[SERVER_API_CHAT_DEBUG] N8N FETCH .THEN: Response not OK. Body: ${errorBody}`,
-              );
-            } catch (bodyError) {
-              console.error(
-                '[SERVER_API_CHAT_DEBUG] N8N FETCH .THEN: Could not parse error response body:',
-                bodyError,
-              );
-            }
-          }
-        })
-        .catch((error) => {
-          console.error(
-            '[SERVER_API_CHAT_DEBUG] N8N FETCH .CATCH: Error triggering n8n webhook:',
-            error, // Log the full error object
-          );
-          // Also log error properties if available
-          if (error instanceof Error) {
-            console.error(
-              `[SERVER_API_CHAT_DEBUG] N8N FETCH .CATCH: Error name: ${error.name}, message: ${error.message}, stack: ${error.stack}`,
-            );
-          }
+      try {
+        const n8nResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(process.env.N8N_WEBHOOK_SECRET_KEY && {
+              Authorization: `Bearer ${process.env.N8N_WEBHOOK_SECRET_KEY}`,
+            }),
+          },
+          body: JSON.stringify(n8nPayload),
         });
 
+        console.log(
+          '[SERVER_API_CHAT_DEBUG] N8N FETCH COMPLETED. Status:',
+          n8nResponse.status,
+        );
+        if (!n8nResponse.ok) {
+          try {
+            const errorBody = await n8nResponse.text();
+            console.error(
+              `[SERVER_API_CHAT_DEBUG] N8N FETCH COMPLETED: Response not OK. Body: ${errorBody}`,
+            );
+          } catch (bodyError) {
+            console.error(
+              '[SERVER_API_CHAT_DEBUG] N8N FETCH COMPLETED: Could not parse error response body:',
+              bodyError,
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          '[SERVER_API_CHAT_DEBUG] N8N FETCH FAILED (Caught Exception):',
+          error, // Log the full error object
+        );
+        if (error instanceof Error) {
+          console.error(
+            `[SERVER_API_CHAT_DEBUG] N8N FETCH FAILED: Error name: ${error.name}, message: ${error.message}, stack: ${error.stack}`,
+          );
+        }
+        // Optional: Consider returning an error to the client if N8N call fails
+        // For now, maintaining original behavior of returning 204 after attempting N8N call.
+      }
+
       console.log(
-        '[SERVER_API_CHAT_DEBUG] POST-FETCH: fetch() call to N8N initiated (non-blocking). Returning 204 to client.',
+        '[SERVER_API_CHAT_DEBUG] POST N8N CALL PROCESSING: Returning 204 to client.',
       );
       return new Response(null, { status: 204 }); // Return No Content
     } else {
