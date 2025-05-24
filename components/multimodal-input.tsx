@@ -106,6 +106,22 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
+    // Client-side logging BEFORE calling props.handleSubmit
+    console.log(
+      '[MultimodalInput.tsx DEBUG] submitForm: Before calling props.handleSubmit',
+    );
+    console.log('[MultimodalInput.tsx DEBUG] Current props.input:', input);
+    // Deep copy messages for logging
+    const messagesAtSubmitTime = JSON.parse(JSON.stringify(messages));
+    console.log(
+      '[MultimodalInput.tsx DEBUG] Current props.messages:',
+      messagesAtSubmitTime,
+    );
+    console.log(
+      '[MultimodalInput.tsx DEBUG] Calling props.handleSubmit with attachments:',
+      attachments,
+    );
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
     });
@@ -124,6 +140,8 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    input,
+    messages,
   ]);
 
   const uploadFile = async (file: File) => {

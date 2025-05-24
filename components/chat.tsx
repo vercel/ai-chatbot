@@ -144,6 +144,24 @@ export function Chat({
       }
     }
 
+    // Client-side logging BEFORE calling original handleSubmit
+    console.log(
+      '[Chat.tsx DEBUG] handleSubmitIntercept: Before calling originalUseChatHandleSubmit',
+    );
+    console.log('[Chat.tsx DEBUG] Current input state (from useChat):', input);
+    // Deep copy messages for logging to avoid showing mutated state if originalUseChatHandleSubmit mutates it directly
+    const messagesBeforeSubmit = JSON.parse(JSON.stringify(messages));
+    console.log(
+      '[Chat.tsx DEBUG] Current messages state (from useChat):',
+      messagesBeforeSubmit,
+    );
+    console.log(
+      '[Chat.tsx DEBUG] Calling originalUseChatHandleSubmit with eventOrOptions:',
+      eventOrOptions,
+      'optionsBundle:',
+      optionsBundle,
+    );
+
     if (typeof optionsBundle !== 'undefined') {
       originalUseChatHandleSubmit(
         eventOrOptions as React.FormEvent<HTMLFormElement>,
