@@ -1,59 +1,49 @@
 # Project Directory Overview (Focus on API Routes)
 
-This document provides an overview of the directory structure within the `app` folder, with a specific focus on API route locations. This is intended as a reference to ensure clarity on where API endpoints are defined.
+This document provides an overview of the directory structure within the `app` folder, with a specific focus on API route locations. This is intended as a reference to ensure clarity on where API endpoints are defined. **Information is based on `find`, `ls`, and `grep` outputs.**
 
-## Main `app` Directory Structure relevant to APIs:
+## Verified API Route Handler Locations (`route.ts` files):
+
+*   `app/api/clerk-token-proxy/route.ts` (serves `/api/clerk-token-proxy`)
+*   `app/api/test-post/route.ts` (serves `/api/test-post`)
+*   `app/api/webhooks/clerk/route.ts` (serves `/api/webhooks/clerk`)
+*   `app/(chat)/api/vote/route.ts` (serves `/api/vote`)
+*   `app/(chat)/api/messages/route.ts` (serves `/api/messages`)
+*   `app/(chat)/api/chat/route.ts` (serves `/api/chat`)
+*   `app/(chat)/api/n8n-callback/route.ts` (serves `/api/n8n-callback`)
+*   `app/(chat)/api/document/route.ts` (serves `/api/document`)
+*   `app/(chat)/api/history/route.ts` (serves `/api/history`)
+*   `app/(chat)/api/files/upload/route.ts` (serves `/api/files/upload`)
+*   `app/(chat)/api/suggestions/route.ts` (serves `/api/suggestions`)
+
+## API Directory Structure (Derived from `find` and `ls`):
 
 ```
 app/
-├── (auth)/                 # Authentication related pages/layouts
-│
 ├── (chat)/                 # Chat interface related pages/layouts
-│   ├── api/                # APIs specific to the chat functionality
-│   │   ├── chat/           # Handles /api/chat (core chat interactions)
-│   │   ├── document/       # Handles /api/document (document/artifact operations)
-│   │   ├── files/          # Handles /api/files
-│   │   │   └── upload/     # Handles /api/files/upload
-│   │   ├── history/        # Handles /api/history (chat history operations)
-│   │   ├── messages/       # Directory for /api/messages (NOTE: route.ts was missing)
-│   │   ├── n8n-callback/   # Handles /api/n8n-callback (webhook from N8N)
-│   │   ├── suggestions/    # Handles /api/suggestions
-│   │   └── vote/           # Handles /api/vote
-│   │
-│   └── chat/
-│       └── [id]/           # Dynamic route for individual chat pages
+│   └── api/                # APIs specific to the chat functionality
+│       ├── chat/           # Implements /api/chat (contains route.ts)
+│       ├── document/       # Implements /api/document (contains route.ts)
+│       ├── files/
+│       │   └── upload/     # Implements /api/files/upload (contains route.ts)
+│       ├── history/        # Implements /api/history (contains route.ts)
+│       ├── messages/       # Implements /api/messages (contains route.ts - MOVED HERE)
+│       ├── n8n-callback/   # Implements /api/n8n-callback (contains route.ts)
+│       ├── suggestions/    # Implements /api/suggestions (contains route.ts)
+│       └── vote/           # Implements /api/vote (contains route.ts)
 │
-├── api/                    # Root API routes (potentially for broader application use)
-│   ├── clerk-token-proxy/  # Handles /api/clerk-token-proxy
-│   ├── messages-test/      # Handles /api/messages-test (message polling - CONTAINS route.ts)
-│   ├── test-post/          # Handles /api/test-post
-│   └── webhooks/           # Handles /api/webhooks
-│       └── clerk/          # Handles /api/webhooks/clerk
+├── api/                    # General APIs not specific to the (chat) UI group
+│   ├── clerk-token-proxy/  # Implements /api/clerk-token-proxy (contains route.ts)
+│   ├── test-post/          # Implements /api/test-post (contains route.ts)
+│   └── webhooks/
+│       └── clerk/          # Implements /api/webhooks/clerk (contains route.ts)
 │
-├── actions/                # Server Actions
-├── components/             # React components (UI)
-│   └── ui/
-├── lib/                    # Library code (utilities, db connections, etc.)
-├── sign-in/                # Sign-in pages
-│   └── [[...sign-in]]/
-└── sign-up/                # Sign-up pages
-    └── [[...sign-up]]/
-
+└── ... (Other top-level app directories and files)
 ```
 
-## Key API Endpoint Locations:
+## Client-Side Usage of Message Polling API:
 
-*   **Core Chat Logic:** `app/(chat)/api/chat/route.ts`
-    *   Handles new message submissions, triggers AI models (including N8N webhooks).
-*   **N8N Callback:** `app/(chat)/api/n8n-callback/route.ts`
-    *   Receives responses from the N8N workflow.
-*   **Message Polling (Intended/Existing):** `app/api/messages-test/route.ts`
-    *   This endpoint exists and is designed for fetching messages for a chat, including authentication and ownership checks.
-    *   The SWR poll in `components/chat.tsx` should target `/api/messages-test`.
-*   **Message Polling (Misconfigured/Missing Route File):** `app/(chat)/api/messages/`
-    *   This directory exists but was found to be missing its `route.ts` file.
-    *   The SWR poll in `components/chat.tsx` was incorrectly pointed here in a recent change, causing 404s.
-*   **Clerk Webhooks:** `app/api/webhooks/clerk/route.ts`
-*   **File Uploads:** `app/(chat)/api/files/upload/route.ts`
+*   `components/chat.tsx` uses `/api/messages?chatId=${id}` for SWR polling and cache mutation.
+*   No references to `/api/messages-test` were found in `.tsx` files.
 
-This overview should help in correctly identifying and referencing API paths. 
+This overview should serve as an accurate reference point going forward. 
