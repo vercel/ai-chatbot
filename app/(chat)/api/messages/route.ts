@@ -27,15 +27,28 @@ export async function GET(request: Request) {
   // --- END AUTH ---
 
   console.log(`[API /api/messages] Chat ID for getChatById: ${chatId}`);
-  const chat = await getChatById({ id: chatId });
+  let chat = await getChatById({ id: chatId });
+  let attempts = 0;
+  const maxAttempts = 3; // Number of retries, so 4 total attempts
+  const retryDelayMs = 300;
+
+  while (!chat && attempts < maxAttempts) {
+    attempts++;
+    console.log(
+      `[API /api/messages] Chat not found on attempt ${attempts} of ${maxAttempts}. Retrying in ${retryDelayMs}ms...`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    chat = await getChatById({ id: chatId });
+  }
+
   console.log(
-    `[API /api/messages] Result from getChatById for ${chatId}:`,
+    `[API /api/messages] Result from getChatById for ${chatId} after initial + ${attempts} attempt(s):`,
     chat ? `Found chat with userId ${chat.userId}` : 'NOT FOUND',
   );
 
   if (!chat) {
     console.error(
-      `[API /api/messages] CRITICAL: Chat not found for ID ${chatId}. Returning 404.`,
+      `[API /api/messages] CRITICAL: Chat not found for ID ${chatId} after ${attempts + 1} total attempts. Returning 404.`,
     );
     return new Response('Chat not found', { status: 404 });
   }
