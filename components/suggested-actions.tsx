@@ -42,6 +42,10 @@ function PureSuggestedActions({
 
   return (
     <div
+      key="overview"
+      className="max-w-3xl mx-auto md:mt-20 px-8 size-full flex flex-col justify-center"
+    >
+      <div
       data-testid="suggested-actions"
       className="grid sm:grid-cols-2 gap-2 w-full"
     >
@@ -74,6 +78,8 @@ function PureSuggestedActions({
         </motion.div>
       ))}
     </div>
+    </div>
+    
   );
 }
 

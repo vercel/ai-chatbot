@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { useChatLayout } from '@/hooks/use-chat-layout';
 
 const PurePreviewMessage = ({
   chatId,
@@ -40,6 +41,7 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const { layout } = useChatLayout();
 
   return (
     <AnimatePresence>
@@ -52,10 +54,15 @@ const PurePreviewMessage = ({
       >
         <div
           className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+            'flex gap-4 w-full',
             {
               'w-full': mode === 'edit',
-              'group-data-[role=user]/message:w-fit': mode !== 'edit',
+              // Bubble layout (original behavior)
+              'group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:w-fit': 
+                layout === 'bubble' && mode !== 'edit',
+              // Wide layout (new behavior)
+              'group-data-[role=user]/message:w-full': 
+                layout === 'wide' && mode !== 'edit',
             },
           )}
         >
@@ -126,8 +133,12 @@ const PurePreviewMessage = ({
                       <div
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
+                          // Bubble layout styling
                           'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                            message.role === 'user',
+                            message.role === 'user' && layout === 'bubble',
+                          // Wide layout styling
+                          'bg-muted/50 px-3 py-2 rounded-lg w-full':
+                            message.role === 'user' && layout === 'wide',
                         })}
                       >
                         <Markdown>{sanitizeText(part.text)}</Markdown>

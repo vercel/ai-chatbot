@@ -220,15 +220,7 @@ function PureMultimodalInput({
         )}
       </AnimatePresence>
 
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <SuggestedActions
-            append={append}
-            chatId={chatId}
-            selectedVisibilityType={selectedVisibilityType}
-          />
-        )}
+     
 
       <input
         type="file"
@@ -262,49 +254,65 @@ function PureMultimodalInput({
         </div>
       )}
 
-      <Textarea
-        data-testid="multimodal-input"
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
+      <div
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
-          className,
+          'relative flex flex-col gap-2 rounded-xl',
+          'bg-white/20 dark:bg-neutral-900/20',
+          'backdrop-blur-xl',
+          'border border-white/20 dark:border-white/10',
+          'shadow-[0_0_1px_1px_rgba(0,0,0,0.05)] dark:shadow-[0_0_1px_1px_rgba(255,255,255,0.05)]',
+          'focus-within:border-white/30 dark:focus-within:border-white/20',
+          'focus-within:shadow-[0_0_15px_2px_rgba(0,0,0,0.1)] dark:focus-within:shadow-[0_0_15px_2px_rgba(255,255,255,0.1)]',
+          'transition-all duration-200'
         )}
-        rows={2}
-        autoFocus
-        onKeyDown={(event) => {
-          if (
-            event.key === 'Enter' &&
-            !event.shiftKey &&
-            !event.nativeEvent.isComposing
-          ) {
-            event.preventDefault();
+      >
+        <Textarea
+          data-testid="multimodal-input"
+          ref={textareaRef}
+          placeholder="Send a message..."
+          value={input}
+          onChange={handleInput}
+          className={cx(
+            'min-h-[24px]  overflow-hidden resize-none rounded-xl !text-base pb-10',
+            '!border-none !ring-0 !ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0',
+            '!bg-transparent placeholder:text-neutral-500 dark:placeholder:text-neutral-400',
+            'text-neutral-800 dark:text-neutral-100',
+            className,
+          )}
+          rows={2}
+          autoFocus
+          onKeyDown={(event) => {
+            if (
+              event.key === 'Enter' &&
+              !event.shiftKey &&
+              !event.nativeEvent.isComposing
+            ) {
+              event.preventDefault();
 
-            if (status !== 'ready') {
-              toast.error('Please wait for the model to finish its response!');
-            } else {
-              submitForm();
+              if (status !== 'ready') {
+                toast.error('Please wait for the model to finish its response!');
+              } else {
+                submitForm();
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
-      </div>
+        <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+          <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        </div>
 
-      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {status === 'submitted' ? (
-          <StopButton stop={stop} setMessages={setMessages} />
-        ) : (
-          <SendButton
-            input={input}
-            submitForm={submitForm}
-            uploadQueue={uploadQueue}
-          />
-        )}
+        <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
+          {status === 'submitted' ? (
+            <StopButton stop={stop} setMessages={setMessages} />
+          ) : (
+            <SendButton
+              input={input}
+              submitForm={submitForm}
+              uploadQueue={uploadQueue}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -333,13 +341,22 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+      className={cx(
+        'h-8 w-8 rounded-full',
+        'bg-transparent',
+        'text-neutral-400 dark:text-neutral-500',
+        'hover:text-neutral-900 dark:hover:text-neutral-100',
+        'border-transparent',
+        'transition-all duration-200',
+        'backdrop-blur-sm'
+      )}
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
       }}
       disabled={status !== 'ready'}
       variant="ghost"
+      size="icon"
     >
       <PaperclipIcon size={14} />
     </Button>
@@ -358,12 +375,22 @@ function PureStopButton({
   return (
     <Button
       data-testid="stop-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className={cx(
+        'h-8 w-8 rounded-full',
+        'bg-transparent',
+        'text-neutral-400 dark:text-neutral-500',
+        'hover:text-neutral-900 dark:hover:text-neutral-100',
+        'border-transparent',
+        'transition-all duration-200',
+        'backdrop-blur-sm'
+      )}
       onClick={(event) => {
         event.preventDefault();
         stop();
         setMessages((messages) => messages);
       }}
+      variant="ghost"
+      size="icon"
     >
       <StopIcon size={14} />
     </Button>
@@ -384,12 +411,22 @@ function PureSendButton({
   return (
     <Button
       data-testid="send-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className={cx(
+        'h-8 w-8 rounded-full',
+        'bg-transparent',
+        'text-neutral-400 dark:text-neutral-500',
+        'hover:text-neutral-900 dark:hover:text-neutral-100',
+        'border-transparent',
+        'transition-all duration-200',
+        'backdrop-blur-sm'
+      )}
       onClick={(event) => {
         event.preventDefault();
         submitForm();
       }}
       disabled={input.length === 0 || uploadQueue.length > 0}
+      variant="ghost"
+      size="icon"
     >
       <ArrowUpIcon size={14} />
     </Button>

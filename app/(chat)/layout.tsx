@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { auth } from '../(auth)/auth';
 import Script from 'next/script';
+import { ChatLayoutProvider } from '@/hooks/use-chat-layout';
 
 export const experimental_ppr = true;
 
@@ -22,8 +23,10 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <SidebarProvider defaultOpen={!isCollapsed}>
-        <AppSidebar user={session?.user} />
-        <SidebarInset>{children}</SidebarInset>
+        <ChatLayoutProvider>
+          <AppSidebar user={session?.user} />
+          <SidebarInset>{children}</SidebarInset>
+        </ChatLayoutProvider>
       </SidebarProvider>
     </>
   );

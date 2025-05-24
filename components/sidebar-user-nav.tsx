@@ -20,13 +20,15 @@ import {
 } from '@/components/ui/sidebar';
 import { useRouter } from 'next/navigation';
 import { toast } from './toast';
-import { LoaderIcon } from './icons';
+import { LoaderIcon, MessageIcon, FileIcon } from './icons';
 import { guestRegex } from '@/lib/constants';
+import { useChatLayout } from '@/hooks/use-chat-layout';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
   const { setTheme, theme } = useTheme();
+  const { layout, setLayout } = useChatLayout();
 
   const isGuest = guestRegex.test(data?.user?.email ?? '');
 
@@ -77,6 +79,23 @@ export function SidebarUserNav({ user }: { user: User }) {
               onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
               {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              data-testid="user-nav-item-layout"
+              className="cursor-pointer flex items-center gap-2"
+              onSelect={() => setLayout(layout === 'bubble' ? 'wide' : 'bubble')}
+            >
+              {layout === 'bubble' ? (
+                <>
+                  <FileIcon size={14} />
+                  Switch to wide layout
+                </>
+              ) : (
+                <>
+                  <MessageIcon size={14} />
+                  Switch to bubble layout
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">

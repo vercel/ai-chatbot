@@ -135,6 +135,8 @@ export function Chat({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          append={append}
+          selectedVisibilityType={ visibilityType}
           isArtifactVisible={isArtifactVisible}
         />
 
