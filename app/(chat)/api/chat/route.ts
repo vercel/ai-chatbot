@@ -438,18 +438,18 @@ export async function POST(request: Request) {
         userMessage: incomingUserMessageFromClient.content,
         userMessageParts: incomingUserMessageFromClient.parts,
         userMessageDatetime: incomingUserMessageFromClient.createdAt,
-        history: [],
+        history: [], // Correctly empty as N8N handles its own history
         ...(tokenResult.token && { google_token: tokenResult.token }),
       };
 
       console.log(
-        '[SERVER_API_CHAT_DEBUG] n8n payload:',
+        '[SERVER_API_CHAT_DEBUG] PRE-FETCH: n8n payload about to be sent:',
         JSON.stringify(n8nPayload, null, 2),
       );
       console.log(
-        '[SERVER_API_CHAT_DEBUG] N8N Payload - history field content:',
-        JSON.stringify(n8nPayload.history, null, 2),
+        `[SERVER_API_CHAT_DEBUG] PRE-FETCH: Target N8N Webhook URL: ${webhookUrl}`,
       );
+
       fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -460,18 +460,43 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify(n8nPayload),
       })
-        .then((resp) =>
+        .then(async (resp) => {
+          // Added async here
           console.log(
-            '[SERVER_API_CHAT_DEBUG] n8n webhook responded with status',
+            '[SERVER_API_CHAT_DEBUG] N8N FETCH .THEN: n8n webhook responded. Status:',
             resp.status,
-          ),
-        )
-        .catch((error) =>
+          );
+          // Log response body if not OK, as it might contain error details from N8N
+          if (!resp.ok) {
+            try {
+              const errorBody = await resp.text(); // Use .text() for safety, or .json() if N8N sends JSON errors
+              console.error(
+                `[SERVER_API_CHAT_DEBUG] N8N FETCH .THEN: Response not OK. Body: ${errorBody}`,
+              );
+            } catch (bodyError) {
+              console.error(
+                '[SERVER_API_CHAT_DEBUG] N8N FETCH .THEN: Could not parse error response body:',
+                bodyError,
+              );
+            }
+          }
+        })
+        .catch((error) => {
           console.error(
-            '[SERVER_API_CHAT_DEBUG] Error triggering n8n webhook:',
-            error,
-          ),
-        );
+            '[SERVER_API_CHAT_DEBUG] N8N FETCH .CATCH: Error triggering n8n webhook:',
+            error, // Log the full error object
+          );
+          // Also log error properties if available
+          if (error instanceof Error) {
+            console.error(
+              `[SERVER_API_CHAT_DEBUG] N8N FETCH .CATCH: Error name: ${error.name}, message: ${error.message}, stack: ${error.stack}`,
+            );
+          }
+        });
+
+      console.log(
+        '[SERVER_API_CHAT_DEBUG] POST-FETCH: fetch() call to N8N initiated (non-blocking). Returning 204 to client.',
+      );
       return new Response(null, { status: 204 }); // Return No Content
     } else {
       // ---- STANDARD MODEL LOGIC (Leverage Vercel AI SDK) ----
