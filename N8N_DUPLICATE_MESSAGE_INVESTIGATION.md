@@ -156,3 +156,24 @@ Following the initial client-side logging, further analysis of browser and Verce
 *   Analyze new browser console logs (especially the `experimental_prepareRequestBody` outputs) and corresponding Vercel server logs for `/api/chat`.
 *   Determine if the "phantom call" still occurs and what `messages` array it sends.
 *   Determine if the "unexpected assistant message" is present in the `defaultSdkBody.messages` logged by `experimental_prepareRequestBody`.
+
+## 9. Code Revert and Strategy Reset (As of Commit `1b1f7e8`)
+
+Subsequent to the investigations and fixes detailed in Section 8, a decision was made to revert the codebase to a prior state to ensure stability and allow for a more structured approach to resolving the N8N duplicate message bug.
+
+*   **9.1. Code Reverted**: All uncommitted changes were discarded, and the workspace was reset to **commit `1b1f7e8` ("Add execution marker to Chat component for deployment verification")**.
+    *   This means that many of the specific code modifications, logging additions (like detailed `experimental_prepareRequestBody` logs), and memoization fixes detailed in Section 8.2 are **no longer present** in the active codebase.
+    *   The SWR polling path correction (from `/api/messages-test` to `/api/messages`) *should* persist if it was committed prior to `1b1f7e8`. (This needs verification against git history if doubt arises).
+
+*   **9.2. Current Understanding of the Bug**:
+    *   The core issue – N8N assistant responding to the wrong user message – is still believed to stem from the client sending a stale/incorrect payload to `/api/chat`.
+    *   The "phantom `/api/chat` call" and the "unexpected assistant message appearing in subsequent payloads" (Findings 8.1) remain strong hypotheses for *how* this stale payload occurs.
+
+*   **9.3. Revised Strategy**:
+    *   The primary strategy is now to **align `components/chat.tsx` (client-side message submission) and `app/(chat)/api/chat/route.ts` (server-side message handling) with the Vercel AI Chatbot template's approach.**
+    *   This involves:
+        1.  **Client (`components/chat.tsx`)**: Implementing `useChat` with `experimental_prepareRequestBody` to send only the *latest user message* object and necessary identifiers (chat ID, model ID) to the backend. This aims to prevent issues with stale `messages` arrays.
+        2.  **Server (`app/(chat)/api/chat/route.ts`)**: Modifying the API route to expect this new, leaner request body (i.e., a single `message` object instead of a full `messages` array). The server will then be responsible for fetching message history from the database and combining it with the new user message before processing or sending to N8N.
+    *   This approach is considered more robust and directly addresses the previously identified root cause of stale data.
+    *   Careful, step-by-step implementation and thorough testing of both client and server changes will be critical.
+    *   The ability for the user to change the AI model on a per-message basis must be incorporated into this new strategy. The `experimental_prepareRequestBody` will need to correctly include the model ID selected for the *current specific submission*. Client-side logic (like `isN8nProcessing`) must also use this per-submission model ID.
