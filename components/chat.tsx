@@ -285,10 +285,11 @@ export function Chat({
       newUIMessages.forEach((uiMsg: UIMessage) => {
         if (uiMsg.role === 'assistant' && !currentMessageIds.has(uiMsg.id)) {
           console.log(
-            '[SWR_POLL_DEBUG] Appending new assistant message from SWR poll:',
+            '[SWR_POLL_DEBUG] Adding new assistant message from SWR poll to local state:',
             JSON.stringify(uiMsg),
           );
-          append(uiMsg);
+          setMessages((prevMessages) => [...prevMessages, uiMsg]);
+          currentMessageIds.add(uiMsg.id);
           appendedNewMessages = true;
         }
       });
@@ -308,7 +309,7 @@ export function Chat({
     }
   }, [
     freshMessages,
-    append,
+    setMessages,
     messages,
     selectedChatModel,
     isN8nProcessing,

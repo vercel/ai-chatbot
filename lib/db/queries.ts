@@ -162,40 +162,29 @@ export async function getChatsByUserId({
 }
 
 export async function getChatById({ id }: { id: string }) {
-  const getChatByIdCached = unstable_cache(
-    async (chatId: string) => {
-      console.log(`Cache miss: Fetching chat ${chatId} from DB`);
-      console.time(`getChatById DB Query - Chat ${chatId}`);
-      try {
-        const [selectedChat] = await db
-          .select()
-          .from(schema.Chat)
-          .where(eq(schema.Chat.id, chatId));
-        console.timeEnd(`getChatById DB Query - Chat ${chatId}`);
-        console.log(
-          `[getChatById CACHED FUNC] DB query for ${chatId} returned:`,
-          selectedChat
-            ? `Chat object (userId: ${selectedChat.userId})`
-            : 'undefined',
-        );
-        return selectedChat;
-      } catch (error) {
-        console.timeEnd(`getChatById DB Query - Chat ${chatId}`);
-        console.error(`Failed to get chat by id ${chatId} from database`, {
-          error,
-          chatId,
-        });
-        throw error;
-      }
-    },
-    ['get-chat-by-id'],
-    {
-      tags: [`chat-${id}`],
-      revalidate: 3600,
-    },
-  );
-
-  return getChatByIdCached(id);
+  console.log(`Bypassing cache: Fetching chat ${id} directly from DB`);
+  console.time(`getChatById DB Query - Chat ${id}`);
+  try {
+    const [selectedChat] = await db
+      .select()
+      .from(schema.Chat)
+      .where(eq(schema.Chat.id, id));
+    console.timeEnd(`getChatById DB Query - Chat ${id}`);
+    console.log(
+      `[getChatById DIRECT FUNC] DB query for ${id} returned:`,
+      selectedChat
+        ? `Chat object (userId: ${selectedChat.userId})`
+        : 'undefined',
+    );
+    return selectedChat;
+  } catch (error) {
+    console.timeEnd(`getChatById DB Query - Chat ${id}`);
+    console.error(`Failed to get chat by id ${id} from database`, {
+      error,
+      chatId: id,
+    });
+    throw error;
+  }
 }
 
 // Version closer to original Vercel repo structure
@@ -634,4 +623,8 @@ export async function getDocumentsByUserId({
     console.error('Failed to get documents by user from database', { error });
     throw error;
   }
+}
+
+export async function getPublicChatById({ id }: { id: string }) {
+  // ... existing code ...
 }
