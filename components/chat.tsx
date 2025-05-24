@@ -81,9 +81,6 @@ export function Chat({
       console.error('[Chat] onError status:', status);
       toast.error('An error occurred, please try again!');
       if (selectedChatModel === 'n8n-assistant' && isN8nProcessing) {
-        console.log(
-          '[Chat DEBUG] Error during n8n processing, setting isN8nProcessing to false.',
-        );
         setIsN8nProcessing(false);
       }
     },
@@ -105,46 +102,8 @@ export function Chat({
     eventOrOptions,
     optionsBundle,
   ) => {
-    console.log('[handleSubmitIntercept DEBUG] Called. Input:', input);
-    console.log(
-      '[handleSubmitIntercept DEBUG] eventOrOptions:',
-      eventOrOptions,
-    );
-    console.log(
-      '[handleSubmitIntercept DEBUG] typeof eventOrOptions:',
-      typeof eventOrOptions,
-    );
-    if (eventOrOptions && typeof eventOrOptions === 'object') {
-      console.log(
-        '[handleSubmitIntercept DEBUG] eventOrOptions keys:',
-        Object.keys(eventOrOptions),
-      );
-      if ('preventDefault' in eventOrOptions) {
-        console.log(
-          '[handleSubmitIntercept DEBUG] eventOrOptions has preventDefault property.',
-        );
-      } else {
-        console.log(
-          '[handleSubmitIntercept DEBUG] eventOrOptions does NOT have preventDefault property.',
-        );
-      }
-      if ((eventOrOptions as any).messages) {
-        console.log(
-          '[handleSubmitIntercept DEBUG] eventOrOptions has messages property:',
-          (eventOrOptions as any).messages,
-        );
-      }
-    }
-    console.log('[handleSubmitIntercept DEBUG] optionsBundle:', optionsBundle);
-
     const n8nSelectedNow = selectedChatModel === 'n8n-assistant';
     let isNewUserSubmitIntent = false;
-    console.log(
-      '[handleSubmitIntercept DEBUG] Initial isNewUserSubmitIntent:',
-      isNewUserSubmitIntent,
-      'n8nSelectedNow:',
-      n8nSelectedNow,
-    );
 
     // Case 1: Form submission event (eventOrOptions is a form event)
     if (
@@ -152,29 +111,12 @@ export function Chat({
       typeof (eventOrOptions as React.FormEvent<HTMLFormElement>)
         .preventDefault === 'function'
     ) {
-      console.log(
-        '[handleSubmitIntercept DEBUG] Entered Case 1 (Form submission event).',
-      );
       if (input.trim() !== '') {
-        // Check if there's actual input to send
-        console.log(
-          '[handleSubmitIntercept DEBUG] Case 1: input is not empty. Setting isNewUserSubmitIntent = true.',
-        );
         isNewUserSubmitIntent = true;
-      } else {
-        console.log('[handleSubmitIntercept DEBUG] Case 1: input is empty.');
       }
     }
-    // Case 2: Not a form event, BUT there is input. This covers calls like:
-    // handleSubmit() when input is present
-    // handleSubmit(undefined, options) when input is present
-    // handleSubmit(optionsAsFirstArg) when input is present (though optionsAsFirstArg might also contain messages)
+    // Case 2: Not a form event, BUT there is input.
     else if (input.trim() !== '') {
-      console.log(
-        '[handleSubmitIntercept DEBUG] Entered Case 2 (Not a form event, but input is present).',
-      );
-      // Further check: if eventOrOptions IS an options object with messages, ensure it's a user message for intent.
-      // This handles programmatic submissions like resubmitting a specific user message.
       if (
         eventOrOptions &&
         typeof eventOrOptions === 'object' &&
@@ -187,50 +129,19 @@ export function Chat({
           messagesInSubmit.length > 0 &&
           messagesInSubmit[messagesInSubmit.length - 1].role === 'user'
         ) {
-          console.log(
-            '[handleSubmitIntercept DEBUG] Case 2a: Options obj passed as first arg with user message. Setting isNewUserSubmitIntent = true.',
-          );
           isNewUserSubmitIntent = true;
         } else {
-          console.log(
-            '[handleSubmitIntercept DEBUG] Case 2b: Options obj passed as first arg but last message not from user or no messages. Relying on non-empty input.',
-          );
           isNewUserSubmitIntent = true; // Fallback to input driving the intent
         }
       } else {
-        // If eventOrOptions is not an options object with messages (e.g., it's undefined, or some other options not containing messages directly as first arg),
-        // then the non-empty input is the primary driver for user submit intent.
-        console.log(
-          '[handleSubmitIntercept DEBUG] Case 2c: Input is present, eventOrOptions is not an options obj with messages. Setting isNewUserSubmitIntent = true based on input.',
-        );
         isNewUserSubmitIntent = true;
       }
-    } else {
-      console.log(
-        '[handleSubmitIntercept DEBUG] No case matched for setting isNewUserSubmitIntent (input is empty and not a form event with input).',
-      );
     }
-
-    console.log(
-      '[handleSubmitIntercept DEBUG] Final isNewUserSubmitIntent before n8n check:',
-      isNewUserSubmitIntent,
-    );
 
     if (n8nSelectedNow && isNewUserSubmitIntent) {
       if (!isN8nProcessing) {
-        console.log(
-          '[Chat DEBUG] n8n model selected for new user submit, setting isN8nProcessing to true.',
-        );
         setIsN8nProcessing(true);
-      } else {
-        console.log(
-          '[Chat DEBUG] n8n model selected, but already processing. Not changing isN8nProcessing.',
-        );
       }
-    } else if (n8nSelectedNow && !isNewUserSubmitIntent) {
-      console.log(
-        '[Chat DEBUG] N8N model selected, but isNewUserSubmitIntent is false. Not setting isN8nProcessing.',
-      );
     }
 
     if (typeof optionsBundle !== 'undefined') {
@@ -245,24 +156,11 @@ export function Chat({
 
   const displayStatus = isN8nProcessing ? 'submitted' : status;
 
-  console.log('[Chat DEBUG] selectedChatModel:', selectedChatModel);
-  console.log('[Chat DEBUG] status:', status);
-  console.log('[Chat DEBUG] displayStatus:', displayStatus);
-  console.log('[Chat DEBUG] messages length:', messages.length);
-  console.log('[Chat DEBUG] last message:', messages[messages.length - 1]);
-  console.log(
-    '[Chat DEBUG] last message role:',
-    messages[messages.length - 1]?.role,
-  );
-
   const { data: freshMessages } = useSWR(
     isN8nProcessing ? `/api/messages-test?chatId=${id}` : null,
     fetcher,
     { refreshInterval: 3000 },
   );
-
-  console.log('[Chat DEBUG] SWR polling active:', !!isN8nProcessing);
-  console.log('[Chat DEBUG] freshMessages:', freshMessages);
 
   useEffect(() => {
     if (freshMessages && freshMessages.length > 0) {
@@ -317,19 +215,12 @@ export function Chat({
       let appendedNewMessages = false;
       newUIMessages.forEach((uiMsg: UIMessage) => {
         if (uiMsg.role === 'assistant' && !currentMessageIds.has(uiMsg.id)) {
-          console.log(
-            '[Chat DEBUG] Appending new assistant message from poll:',
-            uiMsg,
-          );
           append(uiMsg);
           appendedNewMessages = true;
         }
       });
 
       if (appendedNewMessages) {
-        console.log(
-          '[Chat DEBUG] n8n message appended, setting isN8nProcessing to false.',
-        );
         setIsN8nProcessing(false);
       }
     }
@@ -344,10 +235,6 @@ export function Chat({
 
   useEffect(() => {
     if (initialAssociatedDocument) {
-      console.log(
-        'Setting initial artifact from server prop:',
-        initialAssociatedDocument.id,
-      );
       setArtifact({
         isVisible: true,
         documentId: initialAssociatedDocument.id,
@@ -358,26 +245,12 @@ export function Chat({
         boundingBox: initialArtifactData.boundingBox,
       });
     } else {
-      console.log(
-        'No initial artifact associated with this chat, ensuring artifact is hidden.',
-      );
       setArtifact({ ...initialArtifactData, isVisible: false });
     }
   }, [initialAssociatedDocument, setArtifact]);
 
-  console.log(
-    '[CRITICAL DEBUG] Final computed displayStatus for Messages component:',
-    displayStatus,
-  );
-  console.log('[CRITICAL DEBUG] useChat status:', status);
-  console.log('[CRITICAL DEBUG] isN8nProcessing:', isN8nProcessing);
-
   if (isN8nProcessing && !freshMessages) {
     const swrKey = `/api/messages-test?chatId=${id}`;
-    console.log(
-      '[Chat DEBUG] Mutating SWR cache for key (on isN8nProcessing start):',
-      swrKey,
-    );
     mutate(swrKey, undefined, { revalidate: false });
   }
 
