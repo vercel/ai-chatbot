@@ -1,5 +1,6 @@
 // UNIQUE_STRING_FOR_DEBUGGING_VERCEL_DEPLOYMENT_MAY_24_2024_V1
 'use client';
+console.log('CHAT_COMPONENT_EXECUTION_MARKER_V2_MAY_24'); // New marker
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
