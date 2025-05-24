@@ -2,7 +2,16 @@
 
 ## 1. Observed Bug
 
-The N8N-based assistant occasionally processes the user's *previous* message in a conversation thread instead of the *current* (latest) message. This results in the N8N assistant seemingly repeating its response to an earlier query.
+The N8N-based assistant exhibits incorrect behavior, particularly from the second user message onwards in a conversation thread:
+
+*   **Symptom 1: Responding to Previous Message**: The N8N assistant processes and responds to the user's *previous* message instead of the *current* (latest) one.
+*   **Symptom 2: Duplicate N8N Webhook Pings & Incorrect Response**:
+    *   When the **first user message** is sent in a new thread, the N8N webhook receives one ping with this message, and N8N responds correctly.
+    *   When the **second user message** is sent in the same thread, the N8N webhook receives **two distinct pings**:
+        1.  A ping containing the *first user message* (a duplicate).
+        2.  A ping containing the *second (current) user message*.
+    *   N8N then processes and responds *only to the first ping (the duplicate first message)*. The actual second message is effectively ignored by N8N, or its response is superseded.
+    *   This pattern is consistently observed across N8N logs, Vercel server logs (showing multiple calls to `/api/chat` or multiple N8N trigger events), and browser behavior.
 
 ## 2. Key Findings from Server-Side Analysis
 
@@ -166,8 +175,9 @@ Subsequent to the investigations and fixes detailed in Section 8, a decision was
     *   The SWR polling path correction (from `/api/messages-test` to `/api/messages`) *should* persist if it was committed prior to `1b1f7e8`. (This needs verification against git history if doubt arises).
 
 *   **9.2. Current Understanding of the Bug**:
-    *   The core issue – N8N assistant responding to the wrong user message – is still believed to stem from the client sending a stale/incorrect payload to `/api/chat`.
-    *   The "phantom `/api/chat` call" and the "unexpected assistant message appearing in subsequent payloads" (Findings 8.1) remain strong hypotheses for *how* this stale payload occurs.
+    *   The core issue manifests as the N8N assistant responding to the wrong user message. This is strongly correlated with the N8N webhook receiving duplicate pings: for the second user message in a thread, N8N gets a webhook for the first user message (again) and another for the second user message, then incorrectly responds to the first.
+    *   This is believed to stem from the client sending a stale/incorrect payload to `/api/chat` or making duplicate/phantom calls.
+    *   The "phantom `/api/chat` call" and the "unexpected assistant message appearing in subsequent payloads" (Findings 8.1) remain strong hypotheses for *how* these incorrect N8N pings and stale payloads occur.
 
 *   **9.3. Revised Strategy**:
     *   The primary strategy is now to **align `components/chat.tsx` (client-side message submission) and `app/(chat)/api/chat/route.ts` (server-side message handling) with the Vercel AI Chatbot template's approach.**
