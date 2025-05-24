@@ -1,7 +1,7 @@
 'use client';
 
 import type { Attachment, UIMessage } from 'ai';
-import { useChat, type ChatRequestOptions } from '@ai-sdk/react';
+import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
@@ -48,7 +48,7 @@ export function Chat({
   const {
     messages,
     setMessages,
-    handleSubmit: originalHandleSubmit,
+    handleSubmit: originalUseChatHandleSubmit,
     input,
     setInput,
     append,
@@ -80,7 +80,10 @@ export function Chat({
       console.error('[Chat] onError details:', error);
       console.error('[Chat] onError status:', status);
       toast.error('An error occurred, please try again!');
-      if (selectedChatModel === 'n8n-assistant') {
+      if (selectedChatModel === 'n8n-assistant' && isN8nProcessing) {
+        console.log(
+          '[Chat DEBUG] Error during n8n processing, setting isN8nProcessing to false.',
+        );
         setIsN8nProcessing(false);
       }
     },
@@ -98,80 +101,59 @@ export function Chat({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleSubmitIntercept = (
-    eOrOptions?: React.FormEvent<HTMLFormElement> | ChatRequestOptions,
-    chatRequestOptions?: ChatRequestOptions,
+  const handleSubmitIntercept: typeof originalUseChatHandleSubmit = (
+    eventOrOptions,
+    optionsBundle,
   ) => {
     const n8nSelectedNow = selectedChatModel === 'n8n-assistant';
-    let isNewN8nSubmitIntent = false;
+    let isNewUserSubmitIntent = false;
 
-    if (n8nSelectedNow) {
+    if (
+      eventOrOptions &&
+      typeof (eventOrOptions as React.FormEvent<HTMLFormElement>)
+        .preventDefault === 'function'
+    ) {
+      if (input.trim() !== '') {
+        isNewUserSubmitIntent = true;
+      }
+    } else if (
+      eventOrOptions &&
+      typeof eventOrOptions === 'object' &&
+      (eventOrOptions as any).messages
+    ) {
+      const messagesInSubmit = (eventOrOptions as any).messages as UIMessage[];
       if (
-        eOrOptions &&
-        'preventDefault' in eOrOptions &&
-        typeof eOrOptions.preventDefault === 'function'
+        messagesInSubmit.length > 0 &&
+        messagesInSubmit[messagesInSubmit.length - 1].role === 'user'
       ) {
-        isNewN8nSubmitIntent = true;
-      } else if (
-        !eOrOptions &&
-        !chatRequestOptions &&
-        input &&
-        input.trim() !== ''
-      ) {
-        isNewN8nSubmitIntent = true;
-      } else if (
-        chatRequestOptions &&
-        chatRequestOptions.messages &&
-        chatRequestOptions.messages.length > 0
-      ) {
-        isNewN8nSubmitIntent = true;
+        isNewUserSubmitIntent = true;
+      }
+    } else if (!eventOrOptions && !optionsBundle && input.trim() !== '') {
+      isNewUserSubmitIntent = true;
+    }
+
+    if (n8nSelectedNow && isNewUserSubmitIntent) {
+      if (!isN8nProcessing) {
+        console.log(
+          '[Chat DEBUG] n8n model selected for new user submit, setting isN8nProcessing to true.',
+        );
+        setIsN8nProcessing(true);
+      } else {
+        console.log(
+          '[Chat DEBUG] n8n model selected, but already processing. Not changing isN8nProcessing.',
+        );
       }
     }
 
-    if (isNewN8nSubmitIntent) {
-      console.log(
-        '[Chat DEBUG] n8n model selected for submit, setting isN8nProcessing to true.',
-      );
-      setIsN8nProcessing(true);
-    }
-
-    if (
-      eOrOptions &&
-      'preventDefault' in eOrOptions &&
-      typeof eOrOptions.preventDefault === 'function'
-    ) {
-      originalHandleSubmit(
-        eOrOptions as React.FormEvent<HTMLFormElement>,
-        chatRequestOptions,
+    if (typeof optionsBundle !== 'undefined') {
+      originalUseChatHandleSubmit(
+        eventOrOptions as React.FormEvent<HTMLFormElement>,
+        optionsBundle,
       );
     } else {
-      originalHandleSubmit(
-        eOrOptions as ChatRequestOptions,
-        chatRequestOptions,
-      );
+      originalUseChatHandleSubmit(eventOrOptions as any);
     }
   };
-
-  const n8nSelected = selectedChatModel === 'n8n-assistant';
-  const lastMsgUser = messages[messages.length - 1]?.role === 'user';
-  const statusIsSubmitted = status === 'submitted';
-  console.log(
-    '[isN8nWaiting CALC] n8nSelected:',
-    n8nSelected,
-    'lastMsgUser:',
-    lastMsgUser,
-    'statusIsSubmitted:',
-    statusIsSubmitted,
-    'raw_status:',
-    status,
-  );
-  const isN8nWaiting = n8nSelected && lastMsgUser && statusIsSubmitted;
-
-  if (isN8nWaiting) {
-    const swrKey = `/api/messages-test?chatId=${id}`;
-    console.log('[Chat DEBUG] Attempting to mutate SWR cache for key:', swrKey);
-    mutate(swrKey, undefined, { revalidate: false });
-  }
 
   const displayStatus = isN8nProcessing ? 'submitted' : status;
 
@@ -184,7 +166,6 @@ export function Chat({
     '[Chat DEBUG] last message role:',
     messages[messages.length - 1]?.role,
   );
-  console.log('[Chat DEBUG] isN8nWaiting:', isN8nWaiting);
 
   const { data: freshMessages } = useSWR(
     isN8nProcessing ? `/api/messages-test?chatId=${id}` : null,
@@ -301,10 +282,8 @@ export function Chat({
     displayStatus,
   );
   console.log('[CRITICAL DEBUG] useChat status:', status);
-  console.log('[CRITICAL DEBUG] isN8nWaiting:', isN8nWaiting);
   console.log('[CRITICAL DEBUG] isN8nProcessing:', isN8nProcessing);
 
-  // Attempt to clear any potentially stale SWR cache for this specific key
   if (isN8nProcessing && !freshMessages) {
     const swrKey = `/api/messages-test?chatId=${id}`;
     console.log(
