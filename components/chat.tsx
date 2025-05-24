@@ -162,20 +162,57 @@ export function Chat({
       optionsBundle,
     );
 
+    const optionsWithPreparedBody = {
+      ...(optionsBundle || {}),
+      experimental_prepareRequestBody: (defaultSdkBody: {
+        messages: UIMessage[];
+        data?: Record<string, string>;
+      }) => {
+        // defaultSdkBody.messages ALREADY includes the new user message typed in 'input'.
+        // defaultSdkBody.data contains { id: chatId, selectedChatModel: selectedChatModel } if passed via useChat's body option
+        console.log(
+          '[Chat.tsx DEBUG] experimental_prepareRequestBody: default SDK body from useChat:',
+          JSON.parse(JSON.stringify(defaultSdkBody)),
+        );
+
+        const bodyForServer = {
+          id: id, // from Chat.tsx closure (chatId)
+          selectedChatModel: selectedChatModel, // from Chat.tsx closure
+          messages: defaultSdkBody.messages, // these are the messages useChat prepared, including the latest input
+        };
+
+        console.log(
+          '[Chat.tsx DEBUG] experimental_prepareRequestBody: Final body being sent to server:',
+          JSON.parse(JSON.stringify(bodyForServer)),
+        );
+        return bodyForServer;
+      },
+    };
+
     if (typeof optionsBundle !== 'undefined') {
+      // This path might be tricky if optionsBundle itself contains experimental_prepareRequestBody
+      // Assuming optionsBundle is primarily for attachments for now.
+      // Let's ensure our prepareRequestBody is always part of the final options.
+      const finalOptions = {
+        ...optionsBundle,
+        ...optionsWithPreparedBody, // Our version takes precedence if there's a clash
+      };
       originalUseChatHandleSubmit(
         eventOrOptions as React.FormEvent<HTMLFormElement>,
-        optionsBundle,
+        finalOptions,
       );
     } else {
-      originalUseChatHandleSubmit(eventOrOptions as any);
+      originalUseChatHandleSubmit(
+        eventOrOptions as any,
+        optionsWithPreparedBody,
+      );
     }
   };
 
   const displayStatus = isN8nProcessing ? 'submitted' : status;
 
   const { data: freshMessages } = useSWR(
-    isN8nProcessing ? `/api/messages-test?chatId=${id}` : null,
+    isN8nProcessing ? `/api/messages?chatId=${id}` : null,
     fetcher,
     { refreshInterval: 3000 },
   );
@@ -268,7 +305,7 @@ export function Chat({
   }, [initialAssociatedDocument, setArtifact]);
 
   if (isN8nProcessing && !freshMessages) {
-    const swrKey = `/api/messages-test?chatId=${id}`;
+    const swrKey = `/api/messages?chatId=${id}`;
     mutate(swrKey, undefined, { revalidate: false });
   }
 
