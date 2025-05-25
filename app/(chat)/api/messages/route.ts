@@ -50,7 +50,14 @@ export async function GET(request: Request) {
     console.error(
       `[API /api/messages] CRITICAL: Chat not found for ID ${chatId} after ${attempts + 1} total attempts. Returning 404.`,
     );
-    return new Response('Chat not found', { status: 404 });
+    // Return a JSON response for 404
+    return new Response(
+      JSON.stringify({ error: 'Chat not found', messages: [] }),
+      {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }
 
   // Check ownership using the internal profile UUID
