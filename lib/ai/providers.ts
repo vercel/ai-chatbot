@@ -3,7 +3,8 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { xai } from '@ai-sdk/xai';
+import { google } from '@ai-sdk/google'; // Import Google provider
+import { groq } from '@ai-sdk/groq'; // Import Groq provider
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -23,15 +24,18 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
-        'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        // Keep Gemini models (requires GOOGLE_API_KEY environment variable)
+        'gemini-pro': google('gemini-pro'),
+        'gemini-1.5-flash-latest': google('gemini-1.5-flash-latest'),
+        'gemini-1.5-pro-latest': google('gemini-1.5-pro-latest'),
+        // Keep Groq models (requires GROQ_API_KEY environment variable)
+        'llama3-8b-8192': groq('llama3-8b-8192'),
+        'llama3-70b-8192': groq('llama3-70b-8192'),
+        'mixtral-8x7b-32768': groq('mixtral-8x7b-32768'),
+        'gemma-7b-it': groq('gemma-7b-it'),
       },
       imageModels: {
-        'small-model': xai.image('grok-2-image'),
+        // Keep Gemini image models if needed
+        'gemini-pro-vision': google('gemini-pro-vision'),
       },
     });
