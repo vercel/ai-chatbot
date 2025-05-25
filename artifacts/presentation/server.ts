@@ -1,20 +1,20 @@
-import { myProvider } from '@/lib/ai/providers';
-import { sheetPrompt, updateDocumentPrompt } from '@/lib/ai/prompts';
-import { createDocumentHandler } from '@/lib/artifacts/server';
-import { streamObject } from 'ai';
 import { z } from 'zod';
+import { streamObject } from 'ai';
+import { myProvider } from '@/lib/ai/providers';
+import { presentationPrompt, updateDocumentPrompt } from '@/lib/ai/prompts';
+import { createDocumentHandler } from '@/lib/artifacts/server';
 
-export const sheetDocumentHandler = createDocumentHandler({
-  kind: 'sheet',
+export const presentationDocumentHandler = createDocumentHandler({
+  kind: 'presentation',
   onCreateDocument: async ({ title, dataStream, session, id }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
-      system: sheetPrompt,
+      system: presentationPrompt,
       prompt: title,
       schema: z.object({
-        csv: z.string().describe('CSV data'),
+        presentation: z.string().describe('Markdown content for Spectacle presentation with multiple slides'),
       }),
     });
 
@@ -23,23 +23,18 @@ export const sheetDocumentHandler = createDocumentHandler({
 
       if (type === 'object') {
         const { object } = delta;
-        const { csv } = object;
+        const { presentation } = object;
 
-        if (csv) {
+        if (presentation) {
           dataStream.writeData({
-            type: 'sheet-delta',
-            content: csv,
+            type: 'presentation-delta',
+            content: presentation,
           });
 
-          draftContent = csv;
+          draftContent = presentation;
         }
       }
     }
-
-    dataStream.writeData({
-      type: 'sheet-delta',
-      content: draftContent,
-    });
 
     return draftContent;
   },
@@ -48,10 +43,10 @@ export const sheetDocumentHandler = createDocumentHandler({
 
     const { fullStream } = streamObject({
       model: myProvider.languageModel('artifact-model'),
-      system: updateDocumentPrompt(document.content, 'sheet'),
+      system: updateDocumentPrompt(document.content, 'presentation'),
       prompt: description,
       schema: z.object({
-        csv: z.string(),
+        presentation: z.string().describe('Updated Markdown content for Spectacle presentation'),
       }),
     });
 
@@ -60,19 +55,19 @@ export const sheetDocumentHandler = createDocumentHandler({
 
       if (type === 'object') {
         const { object } = delta;
-        const { csv } = object;
+        const { presentation } = object;
 
-        if (csv) {
+        if (presentation) {
           dataStream.writeData({
-            type: 'sheet-delta',
-            content: csv,
+            type: 'presentation-delta',
+            content: presentation,
           });
 
-          draftContent = csv;
+          draftContent = presentation;
         }
       }
     }
 
     return draftContent;
   },
-});
+}); 

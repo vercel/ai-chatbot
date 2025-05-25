@@ -3,9 +3,9 @@ import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
 import { updateDocumentPrompt } from '@/lib/ai/prompts';
 
-export const textDocumentHandler = createDocumentHandler<'text'>({
+export const textDocumentHandler = createDocumentHandler({
   kind: 'text',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream, session, id }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({
@@ -33,7 +33,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ document, description, dataStream, session }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({

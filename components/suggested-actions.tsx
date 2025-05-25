@@ -19,24 +19,24 @@ function PureSuggestedActions({
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Show me listings',
+      label: 'in Buffalo, NY',
+      action: 'Show me real estate listings in Buffalo, NY',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Find properties',
+      label: 'under $300,000',
+      action: 'Find properties for sale under $300,000 in Buffalo',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Search for homes',
+      label: 'with 3+ bedrooms',
+      action: 'Show me homes with 3 or more bedrooms in Buffalo',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Find condos',
+      label: 'in downtown Buffalo',
+      action: 'Show me condominiums available in downtown Buffalo',
     },
   ];
 

@@ -36,6 +36,7 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { getListings } from '@/lib/ai/tools/get-listings';
 
 export const maxDuration = 60;
 
@@ -156,6 +157,7 @@ export async function POST(request: Request) {
               ? []
               : [
                   'getWeather',
+                  'getListings',
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
@@ -164,6 +166,7 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
+            getListings,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({

@@ -25,6 +25,7 @@ import { imageArtifact } from '@/artifacts/image/client';
 import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
+import { presentationArtifact } from '@/artifacts/presentation/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
@@ -34,6 +35,7 @@ export const artifactDefinitions = [
   codeArtifact,
   imageArtifact,
   sheetArtifact,
+  presentationArtifact,
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
@@ -103,6 +105,9 @@ function PureArtifact({
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
   const { open: isSidebarOpen } = useSidebar();
+
+  // Check if we're in presentation mode
+  const isPresentationMode = artifact.kind === 'presentation' && metadata?.isPresenting;
 
   useEffect(() => {
     if (documents && documents.length > 0) {
@@ -279,7 +284,7 @@ function PureArtifact({
             />
           )}
 
-          {!isMobile && (
+          {!isMobile && !isPresentationMode && (
             <motion.div
               className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
               initial={{ opacity: 0, x: 10, scale: 1 }}
@@ -348,7 +353,7 @@ function PureArtifact({
           <motion.div
             className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
             initial={
-              isMobile
+              isMobile || isPresentationMode
                 ? {
                     opacity: 1,
                     x: artifact.boundingBox.left,
@@ -367,7 +372,7 @@ function PureArtifact({
                   }
             }
             animate={
-              isMobile
+              isMobile || isPresentationMode
                 ? {
                     opacity: 1,
                     x: 0,

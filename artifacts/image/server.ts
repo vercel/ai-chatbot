@@ -2,9 +2,9 @@ import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
 import { experimental_generateImage } from 'ai';
 
-export const imageDocumentHandler = createDocumentHandler<'image'>({
+export const imageDocumentHandler = createDocumentHandler({
   kind: 'image',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, dataStream, session, id }) => {
     let draftContent = '';
 
     const { image } = await experimental_generateImage({
@@ -22,7 +22,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ description, dataStream }) => {
+  onUpdateDocument: async ({ description, dataStream, session, document }) => {
     let draftContent = '';
 
     const { image } = await experimental_generateImage({

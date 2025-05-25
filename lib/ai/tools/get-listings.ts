@@ -1,0 +1,116 @@
+import { tool } from 'ai';
+import { z } from 'zod';
+
+export const getListings = tool({
+  description: 'Get real estate listings in a specific area',
+  parameters: z.object({
+    location: z.string().describe('The location to search for listings'),
+  }),
+  execute: async ({ location }) => {
+    // In a real implementation, this would be an actual API call
+    // For demo purposes, returning mock data
+    console.log('getListings', location);
+    const listings = [
+      {
+        id: "1",
+        price: 450000,
+        address: "123 Main St, Buffalo, NY",
+        beds: 3,
+        baths: 2,
+        sqft: 1900,
+        imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Single Family",
+        status: "Active",
+      },
+      {
+        id: "2",
+        price: 350000,
+        address: "45 Elmwood Ave, Buffalo, NY",
+        beds: 2,
+        baths: 1,
+        sqft: 1100,
+        imageUrl: "https://images.unsplash.com/photo-1460518451285-97b6aa326961?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Condo",
+        status: "Pending",
+      },
+      {
+        id: "3",
+        price: 799000,
+        address: "90 Parkside Dr, Amherst, NY",
+        beds: 4,
+        baths: 3,
+        sqft: 2900,
+        imageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Single Family",
+        status: "Active",
+      },
+      {
+        id: "4",
+        price: 525000,
+        address: "18 Delaware Ave, Buffalo, NY",
+        beds: 3,
+        baths: 2.5,
+        sqft: 2100,
+        imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Townhouse",
+        status: "Active",
+      },
+      {
+        id: "5",
+        price: 299000,
+        address: "201 North St, Buffalo, NY",
+        beds: 2,
+        baths: 2,
+        sqft: 950,
+        imageUrl: "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Apartment",
+        status: "Coming Soon",
+      },
+      {
+        id: "6",
+        price: 925000,
+        address: "22 Lakeview Rd, Orchard Park, NY",
+        beds: 5,
+        baths: 4,
+        sqft: 3800,
+        imageUrl: "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Single Family",
+        status: "Active",
+      },
+      {
+        id: "7",
+        price: 415000,
+        address: "334 Forest Ave, Buffalo, NY",
+        beds: 3,
+        baths: 2,
+        sqft: 1700,
+        imageUrl: "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Townhouse",
+        status: "Pending",
+      },
+      {
+        id: "8",
+        price: 199500,
+        address: "11 Main St, Williamsville, NY",
+        beds: 1,
+        baths: 1,
+        sqft: 650,
+        imageUrl: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Condo",
+        status: "Sold",
+      },
+      {
+        id: "9",
+        price: 670000,
+        address: "77 Chestnut Hill, East Aurora, NY",
+        beds: 4,
+        baths: 3.5,
+        sqft: 2600,
+        imageUrl: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80",
+        propertyType: "Single Family",
+        status: "Active",
+      },
+    ];
+    return { listings };
+  },
+}); 
