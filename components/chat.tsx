@@ -20,7 +20,6 @@ import {
   initialArtifactData,
 } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
-import React from 'react';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
@@ -46,7 +45,7 @@ export function Chat({
 }) {
   const { mutate } = useSWRConfig();
   const [isN8nProcessing, setIsN8nProcessing] = useState(false);
-  const [hasMounted, setHasMounted] = React.useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   const {
     messages,
