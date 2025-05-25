@@ -376,3 +376,124 @@
 1.  🔴 **Step 5.1: Review and Remove/Refine Debug Logs**
     *   **Action:** Decide which diagnostic `console.log` statements (added in Step 4.1) can be removed or reduced in verbosity. Critical pathway logs might be kept if deemed useful for future, less verbose.
     *   **Action:** If logs are modified, prepare and execute `edit_file` for `components/chat.tsx` and `app/(chat)/api/chat/route.ts`. Review diffs.
+*   **Action (Detailed Checklist for Log Removal):** The following logs are proposed for removal. Review each line before proceeding with file edits. Edit only one checklist item / line / group of consecutive lines at a time--THIS IS NOT NEGOTIABLE. DO NOT EDIT MULTIPLE NON-CONSECUTIVE LINES IN ONE TOOL CALL. 
+        *   **File: `components/chat.tsx`**
+            - [ ] Line 3: `console.log('CHAT_COMPONENT_EXECUTION_MARKER_V2_MAY_24'); // New marker` (Delete)
+            - [ ] Lines 55-58: `console.log('[CLIENT_PREPARE_BODY_DEBUG] Input to experimental_prepareRequestBody:', JSON.parse(JSON.stringify(body)));` (Delete)
+            - [ ] Lines 65-69: `console.log('[CLIENT_PREPARE_BODY_DEBUG] Latest message from body.messages:', latestMessage ? JSON.parse(JSON.stringify(latestMessage)) : 'No messages in body');` (Delete)
+            - [ ] Lines 79-82: `console.log('[CLIENT_PREPARE_BODY_DEBUG] Output payload from experimental_prepareRequestBody:', JSON.parse(JSON.stringify(payload)));` (Delete)
+            - [ ] Lines 86-91: `console.log('[CHAT_ONFINISH_DEBUG] onFinish called. selectedChatModel:', selectedChatModel, ', Message:', message ? JSON.stringify(message) : 'N/A');` (Delete)
+            - [ ] Line 92: `console.log('[CHAT_ONFINISH_DEBUG] Status:', status);` (Delete)
+            - [ ] Lines 94-96: `console.log('[N8N_STATE_DEBUG] N8N model finished, setting isN8nProcessing to false.');` (Delete)
+            - [ ] Lines 101-103: `console.error('[CHAT_ONERROR_DEBUG] onError called. selectedChatModel:', selectedChatModel);` (Keep)
+            - [ ] Line 104: `console.error('[CHAT_ONERROR_DEBUG] Error details:', error);` (Keep)
+            - [ ] Line 105: `console.error('[CHAT_ONERROR_DEBUG] Status:', status);` (Keep)
+            - [ ] Lines 108-110: `console.log('[N8N_STATE_DEBUG] Error during N8N processing, setting isN8nProcessing to false.');` (Delete)
+            - [ ] Lines 143-147: `console.log('[CHAT_HANDLE_SUBMIT_DEBUG] handleFormSubmit called with:', { selectedChatModel, inputValue: currentInputValue, isN8nProcessing });` (Delete)
+            - [ ] Lines 151-157: `console.log('[N8N_STATE_DEBUG] In handleFormSubmit - isN8nModel:', isN8nModel, ', hasInput:', hasInput, ', current isN8nProcessing state:', isN8nProcessing);` (Delete)
+            - [ ] Lines 159-161: `console.log('[N8N_STATE_DEBUG] Setting isN8nProcessing to true for this N8N message.');` (Delete)
+            - [ ] Line 207: `console.log('[SWR_POLL_DEBUG] Fetcher called for URL:', url);` (Delete)
+            - [ ] Lines 212-217: `console.error('[SWR_POLL_DEBUG] SWR Error for key:', key, 'Error:', err);` (Keep)
+            - [ ] Line 222: `console.error('[SWR_POLL_DEBUG] SWR hook encountered an error:', swrError);` (Keep)
+            - [ ] Lines 227-232: `console.log('[SWR_POLL_DEBUG] SWR returned freshMessages. Count:', freshMessages.length, 'Data:', JSON.stringify(freshMessages.slice(-3)));` (Delete)
+            - [ ] Lines 240-243: `console.warn('[Chat DEBUG] Invalid dbMessage structure:', dbMessage);` (Keep)
+            - [ ] Lines 273-275: `console.log('[N8N_SWR_DEBUG] Hydration guard: hasMounted=true. Proceeding with message processing.');` (Delete)
+            - [ ] Lines 278-281: `console.log('[SWR_POLL_DEBUG] Adding new assistant message from SWR poll to local state:', JSON.stringify(uiMsg));` (Delete)
+            - [ ] Lines 288-290: `console.log('[N8N_STATE_DEBUG] New assistant messages appended from SWR, setting isN8nProcessing to false.');` (Delete)
+            - [ ] Lines 293-295: `console.log('[N8N_SWR_DEBUG] Hydration guard: hasMounted=false. SKIPPING message processing from SWR during initial render.');` (Delete)
+            - [ ] Lines 299-302: `console.log('[SWR_POLL_DEBUG] SWR returned freshMessages, but it is empty or has no new messages to append.', JSON.stringify(freshMessages));` (Delete)
+        *   **File: `app/(chat)/api/chat/route.ts`**
+            - [ ] Line 130: `console.log('[SERVER_API_CHAT_DEBUG] POST handler initiated.');` (Delete)
+            - [ ] Lines 135-138: `console.log('[SERVER_API_CHAT_DEBUG] Raw request.json():', JSON.stringify(json, null, 2));` (Delete)
+            - [ ] Line 140: `console.error('[API /api/chat] Invalid request body:', error);` (Refine to: `console.error('[API /api/chat] Invalid request body (Zod validation error):', (error as z.ZodError).issues);`)
+            - [ ] Lines 149-152: `console.log('[SERVER_API_CHAT_DEBUG] Parsed requestBody (postRequestBodySchema):', JSON.stringify(parsedRequestBody, null, 2));` (Delete)
+            - [ ] Lines 160-164: `console.log('[SERVER_API_CHAT_DEBUG] Destructured chatId:', chatId, ' incomingUserMessageFromClient.id:', incomingUserMessageFromClient.id);` (Delete)
+            - [ ] Lines 221-224: `console.log('[API /api/chat] Received single message (images truncated):', JSON.stringify(loggableMessage, null, 2));` (Delete)
+            - [ ] Line 229: `console.error('[API /api/chat] Unauthorized - No Clerk User ID found');` (Keep)
+            - [ ] Line 236: \`console.error(\`Could not find user profile for Clerk ID: \${clerkUserId}\`);\` (Keep)
+            - [ ] Lines 243-245: \`console.log(\`[SERVER_API_CHAT_DEBUG] Attempting to fetch Google OAuth token for user: \${userId}\`);\` (Delete)
+            - [ ] Lines 249-251: \`console.warn(\`[SERVER_API_CHAT_DEBUG] Failed to get Google OAuth token for user \${userId}: \${tokenResult.error}\`);\` (Keep)
+            - [ ] Lines 255-257: \`console.log(\`[SERVER_API_CHAT_DEBUG] Successfully fetched Google OAuth token for user \${userId}.\`);\` (Delete)
+            - [ ] Lines 261-263: \`console.warn(\`[SERVER_API_CHAT_DEBUG] Google OAuth token fetch for user \${userId} completed but no token was returned.\`);\` (Keep)
+            - [ ] Lines 277-280: `console.log('[SERVER_API_CHAT_DEBUG] Checking for existing chat with getChatById, chatId:', chatId);` (Delete)
+            - [ ] Lines 281-285: \`console.log('[SERVER_API_CHAT_DEBUG] getChatById result:', existingChat ? \`Found chat (userId: \${existingChat.userId})\` : 'Chat not found.');\` (Delete)
+            - [ ] Lines 289-291: \`console.log(\`[SERVER_API_CHAT_DEBUG] Attempting to save as new chat (ID: \${chatId})...\`);\` (Delete)
+            - [ ] Lines 297-299: \`console.log(\`[SERVER_API_CHAT_DEBUG] Generated title for new chat: "\${newChatTitle}"\`);\` (Delete)
+            - [ ] Lines 302-309: `console.log('[SERVER_API_CHAT_DEBUG] Calling saveChat for new chat, ID:', chatId, ' Title:', newChatTitle, ' Visibility:', selectedVisibilityType);` (Delete)
+            - [ ] Line 317: \`console.log(\`[SERVER_API_CHAT_DEBUG] CALLED revalidateTag for chat-\${chatId}\`);\` (Delete)
+            - [ ] Lines 319-321: \`console.log(\`[SERVER_API_CHAT_DEBUG] Saved new chat with ID: \${chatId} and Title: "\${newChatTitle}"\`);\` (Delete)
+            - [ ] Lines 324-326: \`console.warn(\`[SERVER_API_CHAT_DEBUG] Chat (ID: \${chatId}) already exists, likely due to race condition. Proceeding.\`);\` (Keep)
+            - [ ] Lines 328-330: \`console.log(\`[SERVER_API_CHAT_DEBUG] CALLED revalidateTag for chat-\${chatId} (in race condition handler)\`);\` (Delete)
+            - [ ] Lines 332-335: `console.error('[SERVER_API_CHAT_DEBUG] Failed to save chat:', saveError);` (Keep)
+            - [ ] Lines 338-340: \`console.log(\`[SERVER_API_CHAT_DEBUG] Verifying ownership for existing chat (ID: \${chatId})...\`);\` (Delete)
+            - [ ] Lines 342-344: \`console.warn(\`[SERVER_API_CHAT_DEBUG] Unauthorized attempt to access chat (ID: \${chatId}) by user \${userId}.\`);\` (Keep)
+            - [ ] Lines 347-349: \`console.log(\`[SERVER_API_CHAT_DEBUG] Ownership verified for chat (ID: \${chatId}).\`);\` (Delete)
+            - [ ] Lines 355-357: \`console.log(\`[SERVER_API_CHAT_DEBUG] Updated chat \${chatId} visibility to \${selectedVisibilityType}\`);\` (Delete)
+            - [ ] Lines 369-371: \`console.log(\`[SERVER_API_CHAT_DEBUG] Saved user message (ID: \${incomingUserMessageFromClient.id}) for chat \${chatId}\`);\` (Delete)
+            - [ ] Lines 374-377: \`console.error(\`[SERVER_API_CHAT_DEBUG] Failed to save message: Chat (ID: \${chatId}) does not exist.\`, error);\` (Keep)
+            - [ ] Lines 403-406: \`console.error(\`[SERVER_API_CHAT_DEBUG] Failed to save user message (ID: \${incomingUserMessageFromClient.id}) for chat \${chatId}:\`, error);\` (Keep)
+            - [ ] Lines 411-413: \`console.log(\`[SERVER_API_CHAT_DEBUG] Checking model: selectedChatModel = "\${selectedChatModel}"\`);\` (Delete)
+            - [ ] Lines 417-419: \`console.log(\`[SERVER_API_CHAT_DEBUG] Evaluating selectedModelInfo?.isN8n: \${selectedModelInfo?.isN8n}\`);\` (Delete)
+            - [ ] Lines 422-424: \`console.log(\`[SERVER_API_CHAT_DEBUG] Triggering n8n workflow for chat \${chatId}\`);\` (Delete)
+            - [ ] Lines 427-430: \`console.error(\`[SERVER_API_CHAT_DEBUG] Webhook URL for n8n assistant "\${selectedChatModel}" is not configured.\`);\` (Keep)
+            - [ ] Lines 442-445: `console.log('[SERVER_API_CHAT_DEBUG] PRE-FETCH: n8n payload about to be sent:', JSON.stringify(n8nPayload, null, 2));` (Delete)
+            - [ ] Lines 446-448: \`console.log(\`[SERVER_API_CHAT_DEBUG] PRE-FETCH: Target N8N Webhook URL: \${webhookUrl}\`);\` (Delete)
+            - [ ] Lines 461-464: `console.log('[SERVER_API_CHAT_DEBUG] N8N FETCH COMPLETED. Status:', n8nResponse.status);` (Dele
+
+
+---
+## 🔴 Phase 6: Restore Custom `documentId` Chat Association
+---
+
+**Objective:** Re-integrate the project's custom functionality where a new chat can be associated with an existing `documentId`, using the document's title for the chat title, and linking the `Document` record to the `Chat` record in the database. This phase builds upon the template-aligned message handling established in Phases 1-3.
+
+**Checklist:**
+
+1.  🔴 **Step 6.1: Update Client-Side `components/chat.tsx` for `documentId`**
+    *   **Action:** Modify `experimental_prepareRequestBody` in `useChat` options.
+        *   Source the `documentId` (e.g., from `initialAssociatedDocument.id` or component state if it can change).
+        *   Add `documentId` to the payload object returned by `experimental_prepareRequestBody`.
+            ```typescript
+            // Example addition to components/chat.tsx experimental_prepareRequestBody
+            // const documentIdToSend = initialAssociatedDocument ? initialAssociatedDocument.id : undefined;
+            return {
+              id: id, // chatId
+              message: latestMessage,
+              selectedChatModel: selectedChatModel,
+              selectedVisibilityType: selectedVisibilityType,
+              documentId: documentIdToSend // ADD THIS
+            };
+            ```
+    *   **Instruction (for `edit_file` call):** \"Update experimental_prepareRequestBody in components/chat.tsx to include documentId in the payload sent to /api/chat.\"
+    *   **Verification:** Test client-side to ensure `documentId` is correctly included when a chat is initiated with an associated document.
+2.  🔴 **Step 6.2: Update API Schema `app/(chat)/api/chat/schema.ts` for `documentId`**
+    *   **Action:** Modify `postRequestBodySchema`.
+        *   Add `documentId: z.string().uuid().optional()` to the schema.
+    *   **Instruction (for `edit_file` call):** \"Add 'documentId: z.string().uuid().optional()' to postRequestBodySchema in app/(chat)/api/chat/schema.ts.\"
+    *   **Verification:** Ensure schema correctly validates requests with or without `documentId`.
+3.  🔴 **Step 6.3: Update Server-Side `app/(chat)/api/chat/route.ts` to Handle `documentId`**
+    *   **Action (Request Parsing):**
+        *   Update destructuring from `requestBody` to include `documentId`:
+            `const { id: chatId, message, selectedChatModel, selectedVisibilityType, documentId } = requestBody;`
+    *   **Action (Chat Creation Logic):**
+        *   Re-integrate/uncomment the custom logic for new chat creation when `documentId` is present:
+            *   If `isNewChatAttempt` AND `documentId` is provided:
+                *   Fetch document title using `documentId` and `userId`.
+                *   Use document title for `saveChat`.
+                *   Update `Document` table to set `chatId` for the given `documentId`.
+            *   Else (if new chat but no `documentId`), use `generateTitleFromUserMessage({ message })`.
+    *   **Instruction (for `edit_file` call):** \"Reinstate documentId handling in /api/chat: parse documentId from request, use it for new chat titling, and link Document to Chat in DB.\"
+    *   **Verification:** Ensure existing chat creation logic that uses `documentId` works as before.
+4.  🔴 **Step 6.4: Testing and Verification (End-to-End for `documentId` feature)**
+    *   **Action:** Thoroughly test scenarios:
+        *   Starting a new chat *with* an associated document: verify chat title, DB link (`Document.chatId`).
+        *   Starting a new chat *without* an associated document: verify chat title generated from message.
+        *   Existing chats (ensure no regressions).
+        *   N8N model chats with and without associated documents.
+    *   **Verification:** Check UI, DB state, and logs.
+5.  🔴 **Step 6.5: Final Linter/Type-Check Pass (After `documentId` Re-integration)**
+6.  🔴 **Step 6.6: Final Code Review (Self/User - After `documentId` Re-integration)**
+7.  🔴 **Step 6.7: Commit Final Changes (Including `documentId` Restoration)**
+    *   **Action:** `git add .`
+    *   **Action:** `git commit -m "feat: Restore custom documentId chat association logic"` (or similar)
+8.  🔴 **Step 6.8: Push Final Changes**
