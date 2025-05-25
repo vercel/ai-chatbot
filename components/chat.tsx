@@ -20,6 +20,7 @@ import {
   initialArtifactData,
 } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
+import React from 'react';
 
 // Define the shape of the document prop expected from the server
 // Use a subset matching what's selected in page.tsx
@@ -45,6 +46,7 @@ export function Chat({
 }) {
   const { mutate } = useSWRConfig();
   const [isN8nProcessing, setIsN8nProcessing] = useState(false);
+  const [hasMounted, setHasMounted] = React.useState(false);
 
   const {
     messages,
@@ -279,26 +281,35 @@ export function Chat({
             createdAt: new Date(dbMessage.createdAt),
           };
         })
-        .filter(Boolean);
+        .filter((msg: UIMessage | null): msg is UIMessage => msg !== null);
 
-      let appendedNewMessages = false;
-      newUIMessages.forEach((uiMsg: UIMessage) => {
-        if (uiMsg.role === 'assistant' && !currentMessageIds.has(uiMsg.id)) {
-          console.log(
-            '[SWR_POLL_DEBUG] Adding new assistant message from SWR poll to local state:',
-            JSON.stringify(uiMsg),
-          );
-          setMessages((prevMessages) => [...prevMessages, uiMsg]);
-          currentMessageIds.add(uiMsg.id);
-          appendedNewMessages = true;
-        }
-      });
-
-      if (appendedNewMessages) {
+      if (hasMounted) {
         console.log(
-          '[N8N_STATE_DEBUG] New assistant messages appended from SWR, setting isN8nProcessing to false.',
+          '[N8N_SWR_DEBUG] Hydration guard: hasMounted=true. Proceeding with message processing.',
         );
-        setIsN8nProcessing(false);
+        let appendedNewMessages = false;
+        newUIMessages.forEach((uiMsg: UIMessage) => {
+          if (uiMsg.role === 'assistant' && !currentMessageIds.has(uiMsg.id)) {
+            console.log(
+              '[SWR_POLL_DEBUG] Adding new assistant message from SWR poll to local state:',
+              JSON.stringify(uiMsg),
+            );
+            setMessages((prevMessages) => [...prevMessages, uiMsg]);
+            currentMessageIds.add(uiMsg.id);
+            appendedNewMessages = true;
+          }
+        });
+
+        if (appendedNewMessages) {
+          console.log(
+            '[N8N_STATE_DEBUG] New assistant messages appended from SWR, setting isN8nProcessing to false.',
+          );
+          setIsN8nProcessing(false);
+        }
+      } else {
+        console.log(
+          '[N8N_SWR_DEBUG] Hydration guard: hasMounted=false. SKIPPING message processing from SWR during initial render.',
+        );
       }
     } else if (freshMessages) {
       // Log if freshMessages is defined but empty (e.g., empty array)
@@ -314,7 +325,12 @@ export function Chat({
     selectedChatModel,
     isN8nProcessing,
     setIsN8nProcessing,
+    hasMounted,
   ]);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     if (initialAssociatedDocument) {
