@@ -694,8 +694,8 @@ export async function POST(request: Request) {
 
 // Modify DELETE to use Clerk Auth and profile ID
 export async function DELETE(request: Request) {
-  // Get ID from body as per current working version, not searchParams
-  const { id } = await request.json();
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
 
   if (!id) {
     return new Response('Missing chat ID', { status: 400 });
