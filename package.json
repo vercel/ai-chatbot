@@ -58,6 +58,7 @@
     "@radix-ui/react-tabs": "^1.1.4",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@radix-ui/react-visually-hidden": "^1.1.0",
+    "@supabase/supabase-js": "^2.49.8",
     "@tiptap-pro/extension-export": "2.18.0-beta.13",
     "@tiptap-pro/extension-import": "2.18.0-beta.13",
     "@tiptap/core": "^2.11.7",
