@@ -102,7 +102,6 @@ async function createMCPTools({
   };
 
   try {
-    console.log('[debug] Creating MCP tools...', mcpServerConfigs);
     // @PLAN: use robust type for transport, client, and tool metadata
     for (const [name, config] of Object.entries(mcpServerConfigs)) {
       error.name = name;
@@ -169,7 +168,9 @@ export async function initializeTools({
 }: {
   mcpServerConfigs: Record<string, MCPServerConfig>;
 }) {
-  const { tools: mcpTools } = await createMCPTools({ mcpServerConfigs });
+  const { tools: mcpTools, clients } = await createMCPTools({
+    mcpServerConfigs,
+  });
 
   const toolSet = Object.entries(mcpTools).reduce((acc, [name, tool]) => {
     acc[name] = {
@@ -196,10 +197,8 @@ export async function initializeTools({
         return acc;
       }, {} as ToolSet);
     },
-    closeAll: () => {
-      Object.values(mcpTools).forEach((tool) => {
-        tool.client?.close();
-      });
+    closeClients: async () => {
+      return await closeMCPClients(clients);
     },
   };
 }

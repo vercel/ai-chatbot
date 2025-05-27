@@ -95,7 +95,7 @@ export async function POST(request: Request) {
 
     // @PLAN: in multiple steps like tool invocation,
     // clients are created multiple times
-    const { toolSet, tools } = await initializeTools({
+    const { toolSet, tools, closeClients } = await initializeTools({
       mcpServerConfigs: selectedMCPServerConfigs,
     });
 
@@ -181,6 +181,8 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
+
+                await closeClients();
               } catch (error) {
                 console.error(`[error] Failed to save chat`, error);
               }
