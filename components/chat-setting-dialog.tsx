@@ -1,25 +1,23 @@
-import { Settings, SettingsIcon, Usb, Wrench } from 'lucide-react';
+import { Server, Settings, SettingsIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { memo, startTransition, useCallback, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog';
-import { Separator } from './ui/separator';
-import type { ToolMetadata } from '../lib/ai/tools';
-import { ChatSettingsConfig, useChatSetting } from './chat-setting-provider';
+} from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { ChatSettingMCP } from './chat-setting-mcp';
 
-type ChatSettingTabId = 'tools';
+type ChatSettingTabId = 'mcp';
 
 interface ChatSettingTab {
   name: string;
   description: string;
   icon: React.ReactNode;
-  content: (config: ChatSettingsConfig) => React.ReactNode;
+  content: (params?: any) => React.ReactNode;
 }
 
 interface PureChatSettingDialogProps {
@@ -27,85 +25,48 @@ interface PureChatSettingDialogProps {
   setShowSettings: (show: boolean) => void;
 }
 
-const ChatSettingSidebarButton = (
+const ChatSettingSidebarItem = (
   props: ChatSettingTab & {
     id: ChatSettingTabId;
     focus: boolean;
-    setActiveSettingsTab: (tab: ChatSettingTabId) => void;
+    setActiveTabId: (tab: ChatSettingTabId) => void;
   },
 ) => {
-  const { id, name, focus, setActiveSettingsTab } = props;
+  const { id, icon, focus, setActiveTabId } = props;
+
   return (
     <Button
       variant={focus ? 'secondary' : 'ghost'}
       size="sm"
-      className="w-full justify-start"
-      onClick={() => setActiveSettingsTab(id)}
+      className="w-full justify-start font-extrabold"
+      onClick={() => setActiveTabId(id)}
     >
-      <Wrench className="h-4 w-4 mr-2" />
-      {name}
+      {icon}
+      {id.toUpperCase()}
     </Button>
   );
 };
 
-const ChatSettingTools = ({
-  config,
-  onUpdateToolConfig,
-}: {
-  config?: ChatSettingsConfig;
-  onUpdateToolConfig?: (updatedTool: ChatSettingsConfig['tools']) => void;
-}) => {
-  return (
-    <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
-      {Object.entries(config?.tools ?? {}).map(([key, tool]) => (
-        <div key={key} className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-lg">
-              <Usb />
-            </div>
-            <div>
-              <div className="text-sm font-medium">{key}</div>
-              <div className="text-xs text-muted-foreground">
-                {tool.description}
-              </div>
-            </div>
-          </div>
-          <Switch
-            checked={tool.enabled}
-            onCheckedChange={(checked) => {
-              const updatedTool = {
-                ...tool,
-                enabled: checked,
-              };
-              const updatedTools = {
-                ...config?.tools,
-                [key]: updatedTool,
-              };
-              onUpdateToolConfig?.(updatedTools);
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
-
 const CHAT_SETTINGS: Record<ChatSettingTabId, ChatSettingTab> = {
-  tools: {
-    name: 'MCP Tools',
-    description: 'Enable or disable MCP tools',
-    icon: <Wrench className="h-4 w-4" />,
-    content: (params: any) => <ChatSettingTools {...params} />,
+  mcp: {
+    name: 'MCP Servers',
+    description: 'Configure MCP servers for tool execution',
+    icon: <Server className="h-4 w-4" />,
+    content: (params: any) => <ChatSettingMCP {...params} />,
   },
 };
 
-const ChatSettingHeader = ({
-  activeSettingsTab,
-}: { activeSettingsTab: ChatSettingTabId }) => {
-  const { description } = CHAT_SETTINGS[activeSettingsTab];
+const ChatSettingHeader = ({ activeTabId }: { activeTabId: ChatSettingTabId }) => {
+  const { name, icon, description } = CHAT_SETTINGS[activeTabId];
 
   return (
     <div className="mb-2">
+      <h3 className="text-sm font-medium flex items-center gap-2">
+        <>
+          {icon}
+          <span className="font-bold">{name}</span>
+        </>
+      </h3>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );
@@ -115,9 +76,7 @@ const PureChatSettingDialog: React.FC<PureChatSettingDialogProps> = ({
   showSettings,
   setShowSettings,
 }) => {
-  const [activeSettingsTab, setActiveSettingsTab] =
-    useState<ChatSettingTabId>('tools');
-  const { chatSettingConfig, setChatSettingConfig } = useChatSetting();
+  const [activeTabId, setActiveTabId] = useState<ChatSettingTabId>('mcp');
 
   return (
     <Dialog open={showSettings} onOpenChange={setShowSettings}>
@@ -129,39 +88,25 @@ const PureChatSettingDialog: React.FC<PureChatSettingDialogProps> = ({
           </DialogTitle>
           <DialogDescription>Customize your experience.</DialogDescription>
         </DialogHeader>
-
         <div className="flex">
           {/* Sidebar */}
           <div className="w-[180px] border-r p-2 ">
             {Object.entries(CHAT_SETTINGS).map(([key, setting]) => (
-              <ChatSettingSidebarButton
+              <ChatSettingSidebarItem
                 key={key}
                 id={key as ChatSettingTabId}
                 {...setting}
-                focus={activeSettingsTab === key}
-                setActiveSettingsTab={setActiveSettingsTab}
+                focus={activeTabId === key}
+                setActiveTabId={setActiveTabId}
               />
             ))}
           </div>
-          {/* Content List */}
-          <div className="flex-1 p-4">
+          <div className="h-[520px] flex-1 p-4 overflow-y-scroll">
             {/* Header */}
-            <ChatSettingHeader activeSettingsTab={activeSettingsTab} />
+            <ChatSettingHeader activeTabId={activeTabId} />
             <Separator className="my-2" />
-            {/* Content Area */}
-            {activeSettingsTab === 'tools' && (
-              <ChatSettingTools
-                config={chatSettingConfig}
-                onUpdateToolConfig={(updatedTool) => {
-                  startTransition(() => {
-                    setChatSettingConfig({
-                      ...chatSettingConfig,
-                      tools: updatedTool,
-                    });
-                  });
-                }}
-              />
-            )}
+            {/* Content */}
+            {CHAT_SETTINGS[activeTabId].content()}
           </div>
         </div>
       </DialogContent>
@@ -171,9 +116,7 @@ const PureChatSettingDialog: React.FC<PureChatSettingDialogProps> = ({
 
 export const ChatSettingDialog = memo(PureChatSettingDialog);
 
-const PureChatSettingButton: React.FC<{ onClick: () => void }> = ({
-  onClick,
-}) => {
+const PureChatSettingButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
     <Button
       data-testid="settings-button"
