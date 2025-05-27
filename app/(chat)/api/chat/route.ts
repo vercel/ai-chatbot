@@ -1,4 +1,6 @@
 import {
+  type Tool,
+  type ToolSet,
   type UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
@@ -21,10 +23,15 @@ import {
   getTrailingMessageId,
   processToolCalls,
 } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
+import {
+  generateTitleFromUserMessage,
+  initializeTools,
+  queryToolExecution,
+} from '../../actions';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { tools, executableFunctions } from '@/lib/ai/tools';
+import { builtInTools, type ToolExecutionArgs } from '@/lib/ai/tools';
+import type { MCPServerConfig } from '@/lib/ai/mcp';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -33,12 +40,12 @@ export async function POST(request: Request) {
       id,
       messages,
       selectedChatModel,
-      selectedTools,
+      selectedMCPServerConfigs,
     }: {
       id: string;
       messages: Array<UIMessage>;
       selectedChatModel: string;
-      selectedTools: string[];
+      selectedMCPServerConfigs: Record<string, MCPServerConfig>;
     } = await request.json();
 
     const session = await auth();
@@ -86,6 +93,12 @@ export async function POST(request: Request) {
       });
     }
 
+    // @PLAN: in multiple steps like tool invocation,
+    // clients are created multiple times
+    const { toolSet, tools } = await initializeTools({
+      mcpServerConfigs: selectedMCPServerConfigs,
+    });
+
     return createDataStreamResponse({
       execute: async (dataStream) => {
         const { messages: processedMessages, updated } = await processToolCalls(
@@ -93,7 +106,7 @@ export async function POST(request: Request) {
             messages,
             dataStream,
           },
-          executableFunctions,
+          toolSet,
         );
 
         // If the message has been updated, we will update the message in the database.
@@ -120,10 +133,9 @@ export async function POST(request: Request) {
           }
         }
 
-        const executableTools = tools({
+        const activeTools = tools({
           session,
           dataStream,
-          filter: selectedTools ?? [],
         });
 
         const result = streamText({
@@ -134,10 +146,10 @@ export async function POST(request: Request) {
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
-              : Object.keys(executableTools),
+              : Object.keys(activeTools),
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
-          tools: executableTools,
+          tools: activeTools,
           onFinish: async ({ response }) => {
             if (session.user?.id) {
               try {

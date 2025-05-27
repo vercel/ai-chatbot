@@ -9,16 +9,10 @@ import { CircleHelp, Terminal } from 'lucide-react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { Tooltip } from './ui/tooltip';
 import { TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip';
-import { useChatSetting } from './chat-setting-provider';
-
-interface McpCommand {
-  id: string;
-  description: string;
-  parameters: any;
-}
+import { useMCP } from './mcp-provider';
 
 interface ToolSelectDialogProps extends PropsWithChildren {
-  // @FIXME: will be deprecated
+  // @PLAN: will be deprecated
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   input: UseChatHelpers['input'];
   setInput: UseChatHelpers['setInput'];
@@ -61,24 +55,21 @@ export const ToolSelectDialog: React.FC<ToolSelectDialogProps> = ({
   const [showToolSuggestions, setShowToolSuggestions] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
-  const { tools } = useChatSetting();
-
-  const mcpCommands: McpCommand[] = useMemo(
+  const { mcpTools } = useMCP();
+  const mcpCommands = useMemo(
     () =>
-      tools
-        ? Object.keys(tools).map((tool) => {
-            return {
-              id: tool,
-              description: tools[tool].description,
-              parameters: tools[tool].parameters,
-            };
-          })
-        : [],
-    [tools],
+      Object.keys(mcpTools ?? []).map((tool) => {
+        return {
+          id: tool,
+          description: mcpTools[tool]?.description,
+          parameters: mcpTools[tool]?.parameters,
+        };
+      }),
+    [mcpTools],
   );
 
   const filteredSuggestions = mcpCommands.filter((tool) =>
-    tool.id.toLowerCase().includes(searchTerm.toLowerCase()),
+    tool.id?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getSuggestionPosition = () => {

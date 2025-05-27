@@ -6,7 +6,6 @@ import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import type { useChat, UseChatHelpers } from '@ai-sdk/react';
-import type { ToolMetadata } from '../lib/ai/tools';
 
 interface MessagesProps {
   chatId: string;
@@ -43,7 +42,7 @@ function PureMessages({
       {messages.length === 0 && <Greeting />}
 
       {messages.map((message, index) => (
-        // @FIXME: Rendering all of the parts in the mssage cause performance issues
+        // @PLAN: Rendering all of the parts in the mssage cause performance issues
         // After finished, the message will be re-rendered, then flinking
         // The parts should be rendered separately, text is fine, but artifacts are not
         <PreviewMessage

@@ -24,8 +24,8 @@ import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { ToolSelectDialog } from './tool-select-dialog';
 import { ChatSettingDialog, ChatSettingButton } from './chat-setting-dialog';
-import { extractToolNameFromString } from '../lib/utils';
-
+import { extractMCPToolNameFromString } from '../lib/utils';
+import { useMCP } from './mcp-provider';
 function PureMultimodalInput({
   chatId,
   input,
@@ -56,6 +56,7 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
   const [showSettings, setShowSettings] = useState(false);
+  const { setSelectedMCPTools } = useMCP();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -109,17 +110,15 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    const selectedTools = extractToolNameFromString(
-      textareaRef.current?.value || '',
+    setSelectedMCPTools(
+      extractMCPToolNameFromString(textareaRef.current?.value || ''),
     );
 
     handleSubmit(undefined, {
       experimental_attachments: attachments,
-      body: {
-        selectedTools: selectedTools,
-      },
     });
 
+    setSelectedMCPTools([]);
     setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
@@ -229,7 +228,7 @@ function PureMultimodalInput({
         </div>
       )}
 
-      {/* @FIXME: use textareaRef.current?.value instead of wrapping component */}
+      {/* @PLAN: use textareaRef.current?.value instead of wrapping component */}
       <ToolSelectDialog
         textareaRef={textareaRef}
         input={input}

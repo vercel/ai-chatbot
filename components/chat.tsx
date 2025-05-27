@@ -15,6 +15,7 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
+import { useMCP } from './mcp-provider';
 
 export function Chat({
   id,
@@ -30,6 +31,7 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const { getSelectedMCPServerConfigs } = useMCP();
 
   const {
     messages,
@@ -47,6 +49,7 @@ export function Chat({
     body: {
       id,
       selectedChatModel: selectedChatModel,
+      selectedMCPServerConfigs: getSelectedMCPServerConfigs(),
     },
     initialMessages,
     experimental_throttle: 100,

@@ -10,7 +10,7 @@ import {
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { Document } from '@/lib/db/schema';
-import type { ExecutableToolSet } from './ai/tools';
+import type { ToolSet } from './ai/tools';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -184,7 +184,7 @@ export async function processToolCalls(
     dataStream: DataStreamWriter;
     messages: Message[];
   },
-  executeFunctions: ExecutableToolSet,
+  toolSet: ToolSet,
 ): Promise<{ messages: Message[]; updated: boolean }> {
   const lastMessage = messages[messages.length - 1];
   const parts = lastMessage.parts;
@@ -203,7 +203,8 @@ export async function processToolCalls(
       const toolName = toolInvocation.toolName;
 
       if (
-        !(toolName in executeFunctions) ||
+        !(toolName in toolSet) ||
+        !toolSet[toolName].execute ||
         toolInvocation.state !== 'result'
       ) {
         return part;
@@ -212,7 +213,7 @@ export async function processToolCalls(
       let result: any;
 
       if (toolInvocation.result === APPROVAL.YES) {
-        const toolInstance = executeFunctions[toolName];
+        const toolInstance = toolSet[toolName].execute;
         if (toolInstance) {
           result = await toolInstance(toolInvocation.args, {
             messages: convertToCoreMessages(messages),
@@ -286,7 +287,7 @@ export function hasUpdatedMessage(
   );
 }
 
-export function extractToolNameFromString(message: string): string[] {
+export function extractMCPToolNameFromString(message: string): string[] {
   const regex = /@(\w+)/g;
   const matches = message.match(regex);
   if (!matches) {
@@ -295,13 +296,13 @@ export function extractToolNameFromString(message: string): string[] {
   return matches.map((match) => match.replace('@', ''));
 }
 
-export function extractToolNameFromMessage(message: UIMessage): string[] {
+export function extractMCPToolNameFromMessage(message: UIMessage): string[] {
   if (!message || !message.parts) {
     return [];
   }
 
   if (typeof message.parts === 'string') {
-    return extractToolNameFromString(message.parts);
+    return extractMCPToolNameFromString(message.parts);
   }
 
   if (!Array.isArray(message.parts)) {
@@ -310,12 +311,73 @@ export function extractToolNameFromMessage(message: UIMessage): string[] {
 
   return message.parts.reduce((acc, part) => {
     if (typeof part === 'string') {
-      const toolNames = extractToolNameFromString(part);
+      const toolNames = extractMCPToolNameFromString(part);
       acc.push(...toolNames);
     } else if (typeof part === 'object' && part.type === 'text') {
-      const toolNames = extractToolNameFromString(part.text);
+      const toolNames = extractMCPToolNameFromString(part.text);
       acc.push(...toolNames);
     }
     return acc;
   }, [] as string[]);
+}
+
+type DeepMerge<T, U> = {
+  [K in keyof T | keyof U]: K extends keyof U
+    ? K extends keyof T
+      ? T[K] extends object
+        ? U[K] extends object
+          ? DeepMerge<T[K], U[K]>
+          : U[K]
+        : U[K]
+      : U[K]
+    : K extends keyof T
+      ? T[K]
+      : never;
+};
+
+export function deepMerge<
+  T extends Record<string, any>,
+  U extends Record<string, any>,
+>(target: T, source: U): DeepMerge<T, U>;
+
+export function deepMerge<T extends Record<string, any>>(
+  target: T,
+  ...sources: Array<Record<string, any>>
+): T;
+
+export function deepMerge<T extends Record<string, any>>(
+  target: T,
+  ...sources: Array<Record<string, any>>
+): any {
+  // Create deep copy to avoid mutation
+  const result = structuredClone(target);
+
+  for (const source of sources) {
+    const sourceCopy = structuredClone(source);
+    mergeInto(result, sourceCopy);
+  }
+
+  return result;
+}
+
+export function mergeInto(
+  target: Record<string, any>,
+  source: Record<string, any>,
+): void {
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key];
+      const targetValue = target[key];
+
+      if (isObject(sourceValue) && isObject(targetValue)) {
+        mergeInto(targetValue, sourceValue);
+      } else {
+        target[key] = sourceValue;
+      }
+    }
+  }
+}
+
+function isObject(item: unknown): item is Record<string, any> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item);
 }

@@ -23,8 +23,8 @@ import { ToolContentCall } from './tool-content';
 import { ToolPermissionRequest } from './tool-permission-request';
 import { Calculator } from './calculator';
 import { PokemonCarousel } from './pokemon-carousel';
-import { useChatSetting } from '@/components/chat-setting-provider';
 import useSWR from 'swr';
+import { useMCP } from './mcp-provider';
 
 const PurePreviewMessage = ({
   chatId,
@@ -48,9 +48,10 @@ const PurePreviewMessage = ({
   setInput?: UseChatHelpers['setInput'];
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
-
-  const { data, mutate } = useSWR<Record<string, any>>(`/chat/${chatId}`);
-  const { tools } = useChatSetting();
+  const { data: chatConfig, mutate: setChatConfig } = useSWR<
+    Record<string, any>
+  >(`/chat/${chatId}`);
+  const { mcpTools } = useMCP();
 
   const handleApproveResult = ({
     toolName,
@@ -69,9 +70,9 @@ const PurePreviewMessage = ({
     });
 
     if (always) {
-      mutate({
-        ...data,
-        approved: [...(data?.approved ?? []), toolName],
+      setChatConfig({
+        ...chatConfig,
+        approved: [...(chatConfig?.approved ?? []), toolName],
       });
     }
   };
@@ -186,16 +187,16 @@ const PurePreviewMessage = ({
               if (type === 'tool-invocation') {
                 const { toolInvocation } = part;
                 const { toolName, toolCallId, state } = toolInvocation;
-                const tool = tools?.[toolName];
 
                 if (state === 'call') {
                   const { args } = toolInvocation;
 
-                  if (tool?.capabilities === 'executable') {
+                  // Check if the tool is a built-in tool or an MCP tool
+                  if (mcpTools[toolName]) {
                     // If the tool was allowed to execute before, we don't need to ask for permission again
                     if (
-                      data?.approved &&
-                      data?.approved?.indexOf(toolName) !== -1
+                      chatConfig?.approved &&
+                      chatConfig?.approved?.indexOf(toolName) !== -1
                     ) {
                       // return addToolResult directly cause component rendering conflict
                       setTimeout(() => {
@@ -214,7 +215,7 @@ const PurePreviewMessage = ({
                         key={toolCallId}
                         args={args}
                         toolName={toolName}
-                        description={tool?.description ?? ''}
+                        description={mcpTools[toolName]?.description ?? ''}
                         onAllowOnceAction={() => {
                           handleApproveResult({
                             toolName,
@@ -312,7 +313,7 @@ const PurePreviewMessage = ({
                           }}
                         />
                       ) : (
-                        <ToolContentCall // @FIXME: change name to ToolContentResult thenm remote state
+                        <ToolContentCall // @PLAN: change name to ToolContentResult thenm remote state
                           state={state}
                           args={args}
                           result={result}
@@ -349,7 +350,6 @@ export const PreviewMessage = memo(
     if (prevProps.message.id !== nextProps.message.id) return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
-    if (!equal(prevProps.tools, nextProps.tools)) return false;
 
     return true;
   },
