@@ -1,58 +1,48 @@
 'use client';
 
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { useFormState } from 'react-dom';
+import { ReactNode } from 'react';
 
-export function AuthForm({
-  action,
-  children,
-  defaultEmail = '',
-}: {
-  action: (formData: FormData) => void | Promise<void>;
-  children: React.ReactNode;
+interface AuthFormProps {
+  action: (formData: FormData) => void;
   defaultEmail?: string;
-}) {
-  return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      const formData = new FormData(e.currentTarget);
-      action(formData);
-    }} className="flex flex-col gap-4 px-4 sm:px-16">
-      <div className="flex flex-col gap-2">
-        <Label
-          htmlFor="email"
-          className="text-zinc-600 font-normal dark:text-zinc-400"
-        >
-          Email Address
-        </Label>
+  children: ReactNode;
+}
 
-        <Input
+export function AuthForm({ action, defaultEmail = '', children }: AuthFormProps) {
+  const [_, formAction] = useFormState(async (_state, formData) => {
+    action(formData);
+    return {};
+  }, {});
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <div className="space-y-1">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-zinc-200">
+          Email
+        </label>
+        <input
           id="email"
           name="email"
-          className="bg-muted text-md md:text-sm"
           type="email"
-          placeholder="user@acme.com"
-          autoComplete="email"
-          required
-          autoFocus
           defaultValue={defaultEmail}
+          required
+          placeholder="work@email.com"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:bg-zinc-800 dark:text-white"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label
-          htmlFor="password"
-          className="text-zinc-600 font-normal dark:text-zinc-400"
-        >
-          Password
-        </Label>
-
-        <Input
+      <div className="space-y-1">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-zinc-200">
+          Enter password
+        </label>
+        <input
           id="password"
           name="password"
-          className="bg-muted text-md md:text-sm"
           type="password"
           required
+          placeholder="********"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:bg-zinc-800 dark:text-white"
         />
       </div>
 
