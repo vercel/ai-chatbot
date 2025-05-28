@@ -63,7 +63,7 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))',
         },
         sidebar: {
-          DEFAULT: '#f1e7da',
+          DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
           primary: 'hsl(var(--sidebar-primary))',
           'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
