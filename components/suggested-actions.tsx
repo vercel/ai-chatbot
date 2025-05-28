@@ -13,24 +13,24 @@ interface SuggestedActionsProps {
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'Marketing suggestions',
-      label: 'to attract more dental patients.',
-      action: 'Marketing suggestions to attract more dental patients.',
+      title: 'How do I optimise',
+      label: 'patient turnaround time?',
+      action: 'How do I optimise patient turnaround time?',
     },
     {
-      title: 'Hiring Help',
-      label: `find write staff for your dental clinic`,
-      action: `Hiring Help find write staff for your dental clinic`,
+      title: 'How do I improve my',
+      label: `patient satisfaction?`,
+      action: `How do I improve my patient satisfaction?`,
     },
     {
-      title: 'Help me for Patient Analysis',
-      label: `for clinic`,
-      action: `Help me for Patient Analysis for clinic`,
+      title: 'Increase consultation',
+      label: `conversion rate?`,
+      action: `How do I increase my consultation conversion rate?`,
     },
     {
-      title: 'Suggest improvemments ',
-      label: 'based on patient feedback',
-      action: 'Suggest improvemments based on patient feedback ',
+      title: 'How do I improve my',
+      label: `patient satisfaction?`,
+      action: `How do I improve my patient satisfaction?`,
     },
   ];
 
