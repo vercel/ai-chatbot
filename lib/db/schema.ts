@@ -15,6 +15,9 @@ export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  memoryCollectionEnabled: boolean('memoryCollectionEnabled')
+    .notNull()
+    .default(true),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -168,3 +171,19 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const memory = pgTable('Memory', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  content: text('content').notNull(),
+  category: varchar('category', { length: 100 }).notNull(),
+  tags: json('tags').$type<string[]>().notNull().default([]),
+  originalMessage: text('originalMessage'),
+  originalMessageId: uuid('originalMessageId'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Memory = InferSelectModel<typeof memory>;

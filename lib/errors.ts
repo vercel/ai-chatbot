@@ -15,7 +15,8 @@ export type Surface =
   | 'history'
   | 'vote'
   | 'document'
-  | 'suggestions';
+  | 'suggestions'
+  | 'memory';
 
 export type ErrorCode = `${ErrorType}:${Surface}`;
 
@@ -31,6 +32,7 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   vote: 'response',
   document: 'response',
   suggestions: 'response',
+  memory: 'response',
 };
 
 export class ChatSDKError extends Error {
@@ -106,6 +108,17 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
       return 'You need to sign in to view this document. Please sign in and try again.';
     case 'bad_request:document':
       return 'The request to create or update the document was invalid. Please check your input and try again.';
+
+    case 'unauthorized:memory':
+      return 'You need to sign in to access memories. Please sign in and try again.';
+    case 'forbidden:memory':
+      return 'This memory belongs to another user. Please check the memory ID and try again.';
+    case 'not_found:memory':
+      return 'The requested memory was not found. Please check the memory ID and try again.';
+    case 'bad_request:memory':
+      return 'The request to create or update the memory was invalid. Please check your input and try again.';
+    case 'rate_limit:memory':
+      return 'You have reached the maximum number of memories (100). Please delete some memories before creating new ones.';
 
     default:
       return 'Something went wrong. Please try again later.';

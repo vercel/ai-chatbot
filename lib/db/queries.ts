@@ -27,6 +27,8 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  memory,
+  type Memory,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -534,5 +536,225 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       'bad_request:database',
       'Failed to get stream ids by chat id',
     );
+  }
+}
+
+// Memory-related queries
+export async function saveMemory({
+  userId,
+  content,
+  category,
+  tags = [],
+  originalMessage,
+  originalMessageId,
+}: {
+  userId: string;
+  content: string;
+  category: string;
+  tags?: string[];
+  originalMessage?: string;
+  originalMessageId?: string;
+}) {
+  try {
+    const [savedMemory] = await db
+      .insert(memory)
+      .values({
+        userId,
+        content,
+        category,
+        tags,
+        originalMessage,
+        originalMessageId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return savedMemory;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to save memory');
+  }
+}
+
+export async function getMemoriesByUserId({
+  userId,
+  limit = 100,
+}: {
+  userId: string;
+  limit?: number;
+}) {
+  try {
+    return await db
+      .select()
+      .from(memory)
+      .where(eq(memory.userId, userId))
+      .orderBy(desc(memory.updatedAt))
+      .limit(limit);
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get memories by user id',
+    );
+  }
+}
+
+export async function getMemoryById({ id }: { id: string }) {
+  try {
+    const [selectedMemory] = await db
+      .select()
+      .from(memory)
+      .where(eq(memory.id, id));
+    return selectedMemory;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get memory by id',
+    );
+  }
+}
+
+export async function updateMemory({
+  id,
+  content,
+  category,
+  tags,
+}: {
+  id: string;
+  content?: string;
+  category?: string;
+  tags?: string[];
+}) {
+  try {
+    const updateData: Partial<Memory> = {
+      updatedAt: new Date(),
+    };
+
+    if (content !== undefined) updateData.content = content;
+    if (category !== undefined) updateData.category = category;
+    if (tags !== undefined) updateData.tags = tags;
+
+    const [updatedMemory] = await db
+      .update(memory)
+      .set(updateData)
+      .where(eq(memory.id, id))
+      .returning();
+    return updatedMemory;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to update memory');
+  }
+}
+
+export async function deleteMemory({ id }: { id: string }) {
+  try {
+    const [deletedMemory] = await db
+      .delete(memory)
+      .where(eq(memory.id, id))
+      .returning();
+    return deletedMemory;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to delete memory');
+  }
+}
+
+export async function getMemoryCountByUserId({ userId }: { userId: string }) {
+  try {
+    const [stats] = await db
+      .select({ count: count(memory.id) })
+      .from(memory)
+      .where(eq(memory.userId, userId))
+      .execute();
+
+    return stats?.count ?? 0;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get memory count by user id',
+    );
+  }
+}
+
+export async function getUserMemorySettings({ userId }: { userId: string }) {
+  try {
+    const [userSettings] = await db
+      .select({ memoryCollectionEnabled: user.memoryCollectionEnabled })
+      .from(user)
+      .where(eq(user.id, userId));
+    return userSettings;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get user memory settings',
+    );
+  }
+}
+
+export async function updateUserMemorySettings({
+  userId,
+  memoryCollectionEnabled,
+}: {
+  userId: string;
+  memoryCollectionEnabled: boolean;
+}) {
+  try {
+    const [updatedUser] = await db
+      .update(user)
+      .set({ memoryCollectionEnabled })
+      .where(eq(user.id, userId))
+      .returning({ memoryCollectionEnabled: user.memoryCollectionEnabled });
+    return updatedUser;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update user memory settings',
+    );
+  }
+}
+
+export async function searchMemories({
+  userId,
+  searchTerm,
+  category,
+  tags,
+  limit = 50,
+}: {
+  userId: string;
+  searchTerm?: string;
+  category?: string;
+  tags?: string[];
+  limit?: number;
+}) {
+  try {
+    const conditions = [eq(memory.userId, userId)];
+
+    if (category) {
+      conditions.push(eq(memory.category, category));
+    }
+
+    // For simplicity, we'll do a basic text search
+    // In production, you might want to use full-text search or vector search
+    return await db
+      .select()
+      .from(memory)
+      .where(and(...conditions))
+      .orderBy(desc(memory.updatedAt))
+      .limit(limit);
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to search memories');
+  }
+}
+
+export async function getChatIdFromMemoryMessage({
+  originalMessageId,
+}: {
+  originalMessageId: string;
+}) {
+  try {
+    const messageResults = await getMessageById({ id: originalMessageId });
+    if (messageResults && messageResults.length > 0) {
+      return messageResults[0].chatId;
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to get chat ID from memory message:', error);
+    return null;
   }
 }

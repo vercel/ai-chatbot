@@ -16,6 +16,8 @@ import {
   getStreamIdsByChatId,
   saveChat,
   saveMessages,
+  getMemoriesByUserId,
+  getUserMemorySettings,
 } from '@/lib/db/queries';
 import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -36,6 +38,7 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { processMemoryForUser } from '@/lib/ai/memory-classifier';
 
 export const maxDuration = 60;
 
@@ -48,9 +51,13 @@ function getStreamContext() {
         waitUntil: after,
       });
     } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
+      if (
+        error.message.includes('REDIS_URL') ||
+        error.code === 'ERR_INVALID_URL' ||
+        error.message.includes('Invalid URL')
+      ) {
         console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
+          ' > Resumable streams are disabled due to invalid or missing REDIS_URL',
         );
       } else {
         console.error(error);
@@ -141,6 +148,38 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Get user memories and settings for context
+    const [userMemories, userMemorySettings] = await Promise.all([
+      getMemoriesByUserId({ userId: session.user.id, limit: 50 }), // Recent memories for context
+      getUserMemorySettings({ userId: session.user.id }),
+    ]);
+
+    // Format memories for system prompt
+    const memoriesContext =
+      userMemories.length > 0
+        ? userMemories
+            .map((memory) => `[${memory.category}] ${memory.content}`)
+            .join('\n- ')
+        : undefined;
+
+    // Process memory collection in background (don't await)
+    if (userMemorySettings?.memoryCollectionEnabled !== false) {
+      // Extract text content from message parts for memory processing
+      const messageText = message.parts
+        .filter((part) => part.type === 'text')
+        .map((part) => part.text)
+        .join(' ');
+
+      if (messageText.trim()) {
+        after(() =>
+          processMemoryForUser(session.user.id, messageText, message.id).catch(
+            (error) =>
+              console.error('Background memory processing failed:', error),
+          ),
+        );
+      }
+    }
+
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
@@ -148,7 +187,11 @@ export async function POST(request: Request) {
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({
+            selectedChatModel,
+            requestHints,
+            memories: memoriesContext,
+          }),
           messages,
           maxSteps: 5,
           experimental_activeTools:

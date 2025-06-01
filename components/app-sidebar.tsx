@@ -2,6 +2,7 @@
 
 import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
+import { Brain } from 'lucide-react';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
@@ -13,6 +14,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
@@ -57,6 +59,21 @@ export function AppSidebar({ user }: { user: User | undefined }) {
             </Tooltip>
           </div>
         </SidebarMenu>
+
+        {user && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Link
+                href="/memory"
+                onClick={() => setOpenMobile(false)}
+                className="flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors"
+              >
+                <Brain className="h-4 w-4" />
+                Memory
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarHistory user={user} />

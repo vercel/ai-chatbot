@@ -53,16 +53,21 @@ About the origin of user's request:
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  memories,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  memories?: string;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const memoryPrompt = memories
+    ? `\n\nUser's Memory Context:\n${memories}`
+    : '';
 
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${memoryPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${memoryPrompt}\n\n${artifactsPrompt}`;
   }
 };
 
