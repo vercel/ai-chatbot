@@ -11,9 +11,9 @@ export const Greeting = () => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
-        className="text-2xl font-semibold"
+        className="text-2xl text-zinc-800 font-semibold"
       >
-        Hello there!
+        Welcome to Dental-Mind AI Assistant!
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -22,7 +22,7 @@ export const Greeting = () => {
         transition={{ delay: 0.6 }}
         className="text-2xl text-zinc-500"
       >
-        How can I help you today?
+        Lets Start Your Dental Journey with AI!
       </motion.div>
     </div>
   );

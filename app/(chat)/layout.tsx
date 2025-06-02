@@ -10,7 +10,7 @@ export default function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
