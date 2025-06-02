@@ -132,7 +132,7 @@ function PureMultimodalInput({
       const data = await apiClient.uploadFile(file, chatId);
       return {
         url: data.url,
-        name: data.pathname,
+        name: file.name,
         contentType: data.contentType,
       };
     } catch (error) {
