@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { LineGraph, BarGraph, PieChart } from './graphs';
 
 const PurePreviewMessage = ({
   chatId,
@@ -177,6 +178,12 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'lineChart' ? (
+                        <LineGraph result={args} />
+                      ) : toolName === 'barChart' ? (
+                        <BarGraph result={args} />
+                      ) : toolName === 'pieChart' ? (
+                        <PieChart result={args} />
                       ) : null}
                     </div>
                   );
@@ -206,6 +213,12 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'lineChart' ? (
+                        <LineGraph result={result} />
+                      ) : toolName === 'barChart' ? (
+                        <BarGraph result={result} />
+                      ) : toolName === 'pieChart' ? (
+                        <PieChart result={result} />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>
                       )}

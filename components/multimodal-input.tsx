@@ -130,10 +130,10 @@ function PureMultimodalInput({
 
   const uploadFile = async (file: File) => {
     try {
-      const data = await apiClient.uploadFile(file);
+      const data = await apiClient.uploadFile(file, chatId);
       return {
         url: data.url,
-        name: data.pathname,
+        name: file.name,
         contentType: data.contentType,
       };
     } catch (error) {
