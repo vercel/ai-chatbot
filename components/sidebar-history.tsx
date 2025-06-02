@@ -338,7 +338,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               <div className="animate-spin">
                 <LoaderIcon />
               </div>
-              <div>Loading Chats...</div>
+              <div>Loading Conversations...</div>
             </div>
           )}
         </SidebarGroupContent>
