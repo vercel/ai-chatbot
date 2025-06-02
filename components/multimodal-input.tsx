@@ -144,18 +144,51 @@ function PureMultimodalInput({
 
       if (response.ok) {
         const data = await response.json();
-        const { url, pathname, contentType } = data;
+        const {
+          url,
+          pathname,
+          contentType,
+          parsed,
+          parsedContent,
+          isAttachment,
+          error: parseError,
+        } = data;
+
+        // Show parsing status without adding content to chat
+        if (parsed && parsedContent) {
+          const fileExtension = file.name.split('.').pop()?.toLowerCase();
+          const isPDF = fileExtension === 'pdf';
+
+          if (isPDF) {
+            toast.success(
+              `PDF "${file.name}" uploaded successfully! Content ready for AI analysis.`,
+            );
+          } else {
+            toast.success(
+              `File "${file.name}" uploaded and parsed successfully! Content ready for AI analysis.`,
+            );
+          }
+        } else if (parseError) {
+          toast.error(`File "${file.name}" upload failed: ${parseError}`);
+        } else if (data.message) {
+          // Custom message from server
+          toast.success(data.message);
+        }
 
         return {
           url,
-          name: pathname,
+          name: pathname || file.name,
           contentType: contentType,
         };
       }
       const { error } = await response.json();
-      toast.error(error);
+      console.error('Upload API error:', error);
+      toast.error(error || 'Upload failed');
     } catch (error) {
-      toast.error('Failed to upload file, please try again!');
+      console.error('Upload request failed:', error);
+      toast.error(
+        `Failed to upload file: ${error instanceof Error ? error.message : 'Network error'}`,
+      );
     }
   };
 
@@ -235,6 +268,7 @@ function PureMultimodalInput({
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
         multiple
+        accept=".txt,.md,.markdown,.json,.csv,.pdf,.docx,.doc,.jpg,.jpeg,.png,.gif,.webp,.bmp"
         onChange={handleFileChange}
         tabIndex={-1}
       />

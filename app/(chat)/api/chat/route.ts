@@ -5,6 +5,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
+import { AISDKExporter } from 'langsmith/vercel';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -18,6 +19,7 @@ import {
   saveMessages,
   getMemoriesByUserId,
   getUserMemorySettings,
+  getUploadedFilesByUrls,
 } from '@/lib/db/queries';
 import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -41,6 +43,8 @@ import { ChatSDKError } from '@/lib/errors';
 import { processMemoryForUser } from '@/lib/ai/memory-classifier';
 
 export const maxDuration = 60;
+
+// Removed complex provider switching - all files are now parsed as text
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
@@ -69,12 +73,29 @@ function getStreamContext() {
 }
 
 export async function POST(request: Request) {
+  console.log('🔄 Chat API: Starting request processing...');
+
   let requestBody: PostRequestBody;
 
   try {
     const json = await request.json();
+    console.log('📝 Chat API: Raw request data received:', {
+      hasId: !!json.id,
+      hasMessage: !!json.message,
+      messagePartsLength: json.message?.parts?.length || 0,
+      messageAttachmentsLength:
+        json.message?.experimental_attachments?.length || 0,
+      selectedChatModel: json.selectedChatModel,
+      selectedVisibilityType: json.selectedVisibilityType,
+    });
+
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+    console.log('✅ Chat API: Request body validation passed');
+  } catch (error) {
+    console.error('❌ Chat API: Request validation failed:', error);
+    if (error instanceof Error) {
+      console.error('❌ Chat API: Validation error details:', error.message);
+    }
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
@@ -162,6 +183,80 @@ export async function POST(request: Request) {
             .join('\n- ')
         : undefined;
 
+    // Get file context from attachments and prepare for AI model
+    let attachedFilesContext: string | undefined;
+    const fileAttachments: any[] = [];
+
+    if (
+      message.experimental_attachments &&
+      message.experimental_attachments.length > 0
+    ) {
+      console.log('🔄 Processing file attachments for AI context...');
+
+      try {
+        const attachmentUrls = message.experimental_attachments.map(
+          (att) => att.url,
+        );
+        const uploadedFiles = await getUploadedFilesByUrls({
+          urls: attachmentUrls,
+        });
+
+        if (uploadedFiles.length > 0) {
+          console.log(
+            `📁 Found ${uploadedFiles.length} uploaded files for context`,
+          );
+
+          const fileContexts: string[] = [];
+
+          for (const file of uploadedFiles) {
+            const extension = file.fileName.split('.').pop()?.toLowerCase();
+            const isPDF = extension === 'pdf';
+
+            // Find the corresponding attachment
+            const attachment = message.experimental_attachments?.find(
+              (att) => att.url === file.fileUrl,
+            );
+
+            if (isPDF && attachment) {
+              // For PDFs, add to attachments array for AI model
+              fileAttachments.push({
+                name: file.fileName,
+                url: file.fileUrl,
+                contentType: file.mimeType || 'application/pdf',
+              });
+              fileContexts.push(
+                `📄 PDF Document: ${file.fileName} (${Math.round(file.fileSize / 1024)}KB) - Available for direct analysis`,
+              );
+            } else if (
+              file.parsedContent &&
+              file.parsingStatus === 'completed'
+            ) {
+              // For parsed files, include content in context
+              const content = file.parsedContent || '';
+              const contentPreview =
+                content.length > 2000
+                  ? `${content.substring(0, 2000)}...\n[Content truncated - full ${content.length} characters available]`
+                  : content;
+              fileContexts.push(
+                `📄 ${file.fileName} (${Math.round(file.fileSize / 1024)}KB):\n${contentPreview}`,
+              );
+            }
+          }
+
+          if (fileContexts.length > 0) {
+            attachedFilesContext = fileContexts.join(
+              '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n',
+            );
+            console.log(
+              `✅ Prepared context for ${fileContexts.length} files (${fileAttachments.length} as attachments)`,
+            );
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to process file attachments:', error);
+      }
+    }
+
     // Process memory collection in background (don't await)
     if (userMemorySettings?.memoryCollectionEnabled !== false) {
       // Extract text content from message parts for memory processing
@@ -183,6 +278,18 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // All files are now parsed as text content, so no need for provider switching
+
+    // Log context for debugging
+    console.log('🤖 AI Context Summary:');
+    console.log(`   - Memories: ${memoriesContext ? 'Yes' : 'No'}`);
+    console.log(
+      `   - Files: ${fileAttachments.length} attachments, ${attachedFilesContext ? 'Yes' : 'No'} context`,
+    );
+    console.log(
+      `   - File context length: ${attachedFilesContext?.length || 0} chars`,
+    );
+
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
@@ -191,8 +298,12 @@ export async function POST(request: Request) {
             selectedChatModel,
             requestHints,
             memories: memoriesContext,
+            attachedFiles: attachedFilesContext,
           }),
           messages,
+          ...(fileAttachments.length > 0 && {
+            experimental_attachments: fileAttachments,
+          }),
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
@@ -250,10 +361,22 @@ export async function POST(request: Request) {
               }
             }
           },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
+          experimental_telemetry: AISDKExporter.getSettings({
+            runName: `chat-${selectedChatModel}`,
+            metadata: {
+              userId: session.user.id,
+              chatId: id,
+              userType: session.user.type,
+              model: selectedChatModel,
+              hasAttachments: fileAttachments.length > 0,
+              attachmentCount: fileAttachments.length,
+              attachmentFiles: fileAttachments
+                .map((att) => att.name)
+                .join(', '),
+              hasFileContext: !!attachedFilesContext,
+              fileContextLength: attachedFilesContext?.length || 0,
+            },
+          }),
         });
 
         result.consumeStream();

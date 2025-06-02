@@ -29,6 +29,7 @@ import {
   stream,
   memory,
   type Memory,
+  uploadedFile,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -756,5 +757,143 @@ export async function getChatIdFromMemoryMessage({
   } catch (error) {
     console.error('Failed to get chat ID from memory message:', error);
     return null;
+  }
+}
+
+// Uploaded File queries
+export async function saveUploadedFile({
+  userId,
+  fileName,
+  fileType,
+  fileSize,
+  fileUrl,
+  mimeType,
+}: {
+  userId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  fileUrl: string;
+  mimeType?: string;
+}) {
+  try {
+    const [savedFile] = await db
+      .insert(uploadedFile)
+      .values({
+        userId,
+        fileName,
+        fileType,
+        fileSize,
+        fileUrl,
+        mimeType,
+      })
+      .returning();
+    return savedFile;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save uploaded file',
+    );
+  }
+}
+
+export async function updateFileParsing({
+  id,
+  parsedContent,
+  parsingStatus,
+  parsingError,
+}: {
+  id: string;
+  parsedContent?: string;
+  parsingStatus: 'pending' | 'processing' | 'completed' | 'failed';
+  parsingError?: string;
+}) {
+  try {
+    const [updatedFile] = await db
+      .update(uploadedFile)
+      .set({
+        parsedContent,
+        parsingStatus,
+        parsingError,
+        parsedAt: parsingStatus === 'completed' ? new Date() : undefined,
+      })
+      .where(eq(uploadedFile.id, id))
+      .returning();
+    return updatedFile;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update file parsing',
+    );
+  }
+}
+
+export async function getUploadedFileById({ id }: { id: string }) {
+  try {
+    const [file] = await db
+      .select()
+      .from(uploadedFile)
+      .where(eq(uploadedFile.id, id));
+    return file;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get uploaded file',
+    );
+  }
+}
+
+export async function getUploadedFilesByUserId({
+  userId,
+  limit = 50,
+}: {
+  userId: string;
+  limit?: number;
+}) {
+  try {
+    return await db
+      .select()
+      .from(uploadedFile)
+      .where(eq(uploadedFile.userId, userId))
+      .orderBy(desc(uploadedFile.uploadedAt))
+      .limit(limit);
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get uploaded files',
+    );
+  }
+}
+
+export async function deleteUploadedFile({ id }: { id: string }) {
+  try {
+    const [deletedFile] = await db
+      .delete(uploadedFile)
+      .where(eq(uploadedFile.id, id))
+      .returning();
+    return deletedFile;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to delete uploaded file',
+    );
+  }
+}
+
+export async function getUploadedFilesByUrls({
+  urls,
+}: {
+  urls: string[];
+}) {
+  try {
+    return await db
+      .select()
+      .from(uploadedFile)
+      .where(inArray(uploadedFile.fileUrl, urls));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get uploaded files by URLs',
+    );
   }
 }

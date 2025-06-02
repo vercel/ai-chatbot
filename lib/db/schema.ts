@@ -9,6 +9,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -187,3 +188,26 @@ export const memory = pgTable('Memory', {
 });
 
 export type Memory = InferSelectModel<typeof memory>;
+
+export const uploadedFile = pgTable('UploadedFile', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  fileName: text('fileName').notNull(),
+  fileType: varchar('fileType', { length: 50 }).notNull(),
+  fileSize: integer('fileSize').notNull(),
+  fileUrl: text('fileUrl').notNull(),
+  mimeType: varchar('mimeType', { length: 100 }),
+  parsedContent: text('parsedContent'),
+  parsingStatus: varchar('parsingStatus', {
+    enum: ['pending', 'processing', 'completed', 'failed'],
+  })
+    .notNull()
+    .default('pending'),
+  parsingError: text('parsingError'),
+  uploadedAt: timestamp('uploadedAt').notNull().defaultNow(),
+  parsedAt: timestamp('parsedAt'),
+});
+
+export type UploadedFile = InferSelectModel<typeof uploadedFile>;

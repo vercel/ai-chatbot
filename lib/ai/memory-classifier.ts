@@ -2,6 +2,7 @@ import { generateText } from 'ai';
 import { myProvider } from './providers';
 import { getMemoriesByUserId, saveMemory } from '@/lib/db/queries';
 import type { Memory } from '@/lib/db/schema';
+import { AISDKExporter } from 'langsmith/vercel';
 
 // Helper function to extract JSON from markdown code blocks
 function extractJsonFromMarkdown(text: string): string {
@@ -105,6 +106,13 @@ User message: "${messageContent}"
 Existing memories to check against:
 ${existingMemories.map((m) => `- ${m.category}: ${m.content}`).join('\n')}`,
       temperature: 0.1,
+      experimental_telemetry: AISDKExporter.getSettings({
+        runName: 'classify-memory',
+        metadata: {
+          messageLength: messageContent.length,
+          existingMemoriesCount: existingMemories.length,
+        },
+      }),
     });
 
     const cleanedText = extractJsonFromMarkdown(text);
@@ -141,6 +149,14 @@ export async function consolidateMemory(
         .replace('{newCategory}', newMemory.category)
         .replace('{newTags}', newMemory.tags.join(', ')),
       temperature: 0.1,
+      experimental_telemetry: AISDKExporter.getSettings({
+        runName: 'consolidate-memory',
+        metadata: {
+          newMemoryCategory: newMemory.category,
+          newMemoryTagsCount: newMemory.tags.length,
+          existingMemoriesCount: existingMemories.length,
+        },
+      }),
     });
 
     const cleanedText = extractJsonFromMarkdown(text);

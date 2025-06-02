@@ -2,6 +2,32 @@ import type { Attachment } from 'ai';
 
 import { LoaderIcon } from './icons';
 
+const getFileIcon = (fileName: string, contentType?: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+
+  if (contentType?.startsWith('image/')) {
+    return '🖼️';
+  }
+
+  switch (extension) {
+    case 'pdf':
+      return '📄';
+    case 'doc':
+    case 'docx':
+      return '📝';
+    case 'txt':
+    case 'md':
+    case 'markdown':
+      return '📄';
+    case 'json':
+      return '📋';
+    case 'csv':
+      return '📊';
+    default:
+      return '📎';
+  }
+};
+
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
@@ -25,10 +51,12 @@ export const PreviewAttachment = ({
               className="rounded-md size-full object-cover"
             />
           ) : (
-            <div className="" />
+            <div className="text-2xl">
+              {getFileIcon(name ?? '', contentType)}
+            </div>
           )
         ) : (
-          <div className="" />
+          <div className="text-2xl">{getFileIcon(name ?? '')}</div>
         )}
 
         {isUploading && (

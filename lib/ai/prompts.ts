@@ -54,20 +54,25 @@ export const systemPrompt = ({
   selectedChatModel,
   requestHints,
   memories,
+  attachedFiles,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
   memories?: string;
+  attachedFiles?: string;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const memoryPrompt = memories
     ? `\n\nUser's Memory Context:\n${memories}`
     : '';
+  const filesPrompt = attachedFiles
+    ? `\n\n📎 ATTACHED FILES CONTEXT:\nThe user has uploaded the following files for this conversation. Please reference them in your response:\n\n${attachedFiles}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+    : '';
 
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}${memoryPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${memoryPrompt}${filesPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}${memoryPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${memoryPrompt}${filesPrompt}\n\n${artifactsPrompt}`;
   }
 };
 
