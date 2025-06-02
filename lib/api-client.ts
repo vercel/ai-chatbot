@@ -129,7 +129,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async uploadFile(file: File): Promise<{
+  async uploadFile(file: File, chatId: string): Promise<{
     url: string;
     downloadUrl: string;
     pathname: string;
@@ -138,6 +138,8 @@ export class ApiClient {
   }> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('chatId', chatId);
+    
 
     const response = await this.client.post('/api/chats/uploads', formData, {
       headers: {

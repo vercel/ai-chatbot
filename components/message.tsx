@@ -194,7 +194,7 @@ const PurePreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === 'getWeather1' ? (
+                      {toolName === 'getWeather' ? (
                         <Weather weatherAtLocation={result} />
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview
@@ -214,11 +214,11 @@ const PurePreviewMessage = ({
                           isReadonly={isReadonly}
                         />
                       ) : toolName === 'lineChart' ? (
-                        <LineGraph  />
+                        <LineGraph result={result} />
                       ) : toolName === 'barChart' ? (
-                        <BarGraph   />
-                      ) : toolName === 'getWeather' ? (
-                        <PieChart    />
+                        <BarGraph result={result} />
+                      ) : toolName === 'pieChart' ? (
+                        <PieChart result={result} />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>
                       )}
