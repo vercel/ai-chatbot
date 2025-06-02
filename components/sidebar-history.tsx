@@ -80,12 +80,17 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
 export function getChatHistoryPaginationKey(
   pageIndex: number,
   previousPageData: ChatHistory,
+  searchQuery?: string,
 ) {
   if (previousPageData && previousPageData.hasMore === false) {
     return null;
   }
+  if (searchQuery) {
+    return `http://localhost:3001/api/chats/paginated?search=${encodeURIComponent(searchQuery)}`;
+  }
 
-  if (pageIndex === 0) return `http://localhost:3001/api/chats/paginated?limit=${PAGE_SIZE}`;
+  if (pageIndex === 0)
+    return `http://localhost:3001/api/chats/paginated?limit=${PAGE_SIZE}`;
 
   const firstChatFromPage = previousPageData.chats.at(-1);
 
@@ -94,7 +99,10 @@ export function getChatHistoryPaginationKey(
   return `http://localhost:3001/api/chats/paginated?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({ user }: { user: User | undefined }) {
+export function SidebarHistory({
+  user,
+  searchQuery,
+}: { user: User | undefined; searchQuery?: string }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
 
@@ -104,9 +112,14 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     isValidating,
     isLoading,
     mutate,
-  } = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
-    fallbackData: [],
-  });
+  } = useSWRInfinite<ChatHistory>(
+    (pageIndex, previousPageData) =>
+      getChatHistoryPaginationKey(pageIndex, previousPageData, searchQuery),
+    fetcher,
+    {
+      fallbackData: [],
+    },
+  );
 
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -120,34 +133,33 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     ? paginatedChatHistories.every((page) => page.chats.length === 0)
     : false;
 
-    const handleDelete = async () => {
-      const deletePromise = apiClient.deleteChat(deleteId!);
-    
-      toast.promise(deletePromise, {
-        loading: 'Deleting chat...',
-        success: () => {
-          mutate((chatHistories) => {
-            if (chatHistories) {
-              return chatHistories.map((chatHistory) => ({
-                ...chatHistory,
-                chats: chatHistory.chats.filter((chat) => chat.id !== deleteId),
-              }));
-            }
-            return chatHistories;
-          });
-    
-          return 'Chat deleted successfully';
-        },
-        error: 'Failed to delete chat',
-      });
-    
-      setShowDeleteDialog(false);
-    
-      if (deleteId === id) {
-        router.push('/');
-      }
-    };
-    
+  const handleDelete = async () => {
+    const deletePromise = apiClient.deleteChat(deleteId!);
+
+    toast.promise(deletePromise, {
+      loading: 'Deleting chat...',
+      success: () => {
+        mutate((chatHistories) => {
+          if (chatHistories) {
+            return chatHistories.map((chatHistory) => ({
+              ...chatHistory,
+              chats: chatHistory.chats.filter((chat) => chat.id !== deleteId),
+            }));
+          }
+          return chatHistories;
+        });
+
+        return 'Chat deleted successfully';
+      },
+      error: 'Failed to delete chat',
+    });
+
+    setShowDeleteDialog(false);
+
+    if (deleteId === id) {
+      router.push('/');
+    }
+  };
 
   if (!user) {
     return (

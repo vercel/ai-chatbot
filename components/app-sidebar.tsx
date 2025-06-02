@@ -9,6 +9,7 @@ import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
 import { SidebarSetupProgress } from '@/components/sidebar-setup-progress';
 import { SidebarSearchInput } from '@/components/sidebar-search-input';
+
 import {
   Sidebar,
   SidebarContent,
@@ -20,10 +21,12 @@ import {
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { SidebarToggle } from './sidebar-toggle';
+import { useState } from 'react';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile, state } = useSidebar();
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <Sidebar collapsible="icon" className="group-data-[side=left]:border-r-0">
@@ -64,13 +67,17 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <TooltipContent align="end">New Chat</TooltipContent>
                 </Tooltip>
               </div>
-              <SidebarSetupProgress/>
-              <SidebarSearchInput />
+              <SidebarSetupProgress />
+              <SidebarSearchInput
+                query={searchQuery}
+                setQuery={setSearchQuery}
+                onSearch={(q) => setSearchQuery(q)}
+              />
             </>
           )}
           {state === 'collapsed' && (
             <div className="flex flex-col gap-2  w-full">
-              <SidebarSetupProgress  minimal/>
+              <SidebarSetupProgress minimal />
               <SidebarToggle />
             </div>
           )}
@@ -79,14 +86,13 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       {state === 'expanded' && (
         <>
           <SidebarContent>
-            <SidebarHistory user={user} />
+            <SidebarHistory user={user} searchQuery={searchQuery} />
           </SidebarContent>
           <SidebarFooter>
             {user && <SidebarUserNav user={user} />}
           </SidebarFooter>
         </>
       )}
-    
     </Sidebar>
   );
 }
