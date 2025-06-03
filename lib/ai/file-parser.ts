@@ -308,6 +308,25 @@ export async function parseFile(
       case 'txt':
       case 'md':
       case 'markdown':
+      case 'html':
+      case 'xml':
+      case 'rtf':
+      case 'js':
+      case 'ts':
+      case 'py':
+      case 'java':
+      case 'cpp':
+      case 'c':
+      case 'css':
+      case 'scss':
+      case 'less':
+      case 'php':
+      case 'rb':
+      case 'go':
+      case 'rs':
+      case 'swift':
+      case 'kt':
+      case 'sql':
         return await parseTextFile(buffer);
 
       case 'json':
@@ -349,12 +368,28 @@ export async function parseFile(
       case 'gif':
       case 'webp':
       case 'bmp':
+      case 'tiff':
+      case 'tif':
+      case 'svg':
         if (mimeType?.startsWith('image/')) {
           return await parseImageWithAI(buffer, mimeType);
         }
         return {
           success: false,
           error: 'Image parsing requires valid MIME type',
+        };
+
+      case 'pptx':
+      case 'ppt':
+      case 'xlsx':
+      case 'xls':
+      case 'zip':
+      case 'rar':
+      case '7z':
+        // These formats are complex and would need special parsers
+        return {
+          success: false,
+          error: `${fileExtension.toUpperCase()} files are uploaded but cannot be parsed for content. File is still available as an attachment.`,
         };
 
       default: {
@@ -376,7 +411,7 @@ export async function parseFile(
 
         return {
           success: false,
-          error: `Unsupported file type: ${fileExtension}. Supported types: txt, md, json, csv, pdf, docx, jpg, jpeg, png, gif, webp, bmp`,
+          error: `File type ${fileExtension} uploaded successfully but content parsing not supported. File is available as an attachment.`,
         };
       }
     }
@@ -391,20 +426,54 @@ export async function parseFile(
 
 export function getSupportedFileTypes(): string[] {
   return [
+    // Text formats
     'txt',
     'md',
     'markdown',
     'json',
     'csv',
-    'pdf', // Now properly supported with LangChain
+    'xml',
+    'html',
+    'rtf',
+    // Document formats
+    'pdf',
     'docx',
     'doc',
+    'pptx',
+    'ppt',
+    'xlsx',
+    'xls',
+    // Image formats
     'jpg',
     'jpeg',
     'png',
     'gif',
     'webp',
     'bmp',
+    'tiff',
+    'tif',
+    'svg',
+    // Archive formats
+    'zip',
+    'rar',
+    '7z',
+    // Code formats
+    'js',
+    'ts',
+    'py',
+    'java',
+    'cpp',
+    'c',
+    'css',
+    'scss',
+    'less',
+    'php',
+    'rb',
+    'go',
+    'rs',
+    'swift',
+    'kt',
+    'sql',
   ];
 }
 

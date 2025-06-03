@@ -14,6 +14,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
       model: myProvider.languageModel('artifact-model'),
       system: codePrompt,
       prompt: title,
+      maxTokens: 16384,
       schema: z.object({
         code: z.string(),
       }),

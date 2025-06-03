@@ -177,7 +177,7 @@ function PureMultimodalInput({
 
         return {
           url,
-          name: pathname || file.name,
+          name: file.name || pathname || 'uploaded-file',
           contentType: contentType,
         };
       }
@@ -196,23 +196,59 @@ function PureMultimodalInput({
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
 
+      // Add reasonable limit to prevent abuse while still being generous
+      if (files.length > 25) {
+        toast.error('Maximum 25 files per upload. Please select fewer files.');
+        return;
+      }
+
+      // Check total size (200MB limit for batch)
+      const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+      const maxBatchSize = 200 * 1024 * 1024; // 200MB
+      if (totalSize > maxBatchSize) {
+        const totalSizeMB = Math.round(totalSize / (1024 * 1024));
+        toast.error(
+          `Total file size (${totalSizeMB}MB) exceeds 200MB limit. Please select smaller files.`,
+        );
+        return;
+      }
+
       setUploadQueue(files.map((file) => file.name));
 
       try {
         const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined,
-        );
+        const uploadResults = await Promise.allSettled(uploadPromises);
+
+        const successfullyUploadedAttachments = uploadResults
+          .filter(
+            (result) =>
+              result.status === 'fulfilled' && result.value !== undefined,
+          )
+          .map((result) => (result as PromiseFulfilledResult<any>).value);
 
         setAttachments((currentAttachments) => [
           ...currentAttachments,
           ...successfullyUploadedAttachments,
         ]);
+
+        // Log failed uploads for debugging
+        const failedUploads = uploadResults.filter(
+          (result) => result.status === 'rejected',
+        );
+        if (failedUploads.length > 0) {
+          console.error(
+            `${failedUploads.length} file(s) failed to upload:`,
+            failedUploads,
+          );
+        }
       } catch (error) {
         console.error('Error uploading files!', error);
       } finally {
         setUploadQueue([]);
+        // Reset file input to allow selecting the same files again
+        if (event.target) {
+          event.target.value = '';
+        }
       }
     },
     [setAttachments],
@@ -268,7 +304,7 @@ function PureMultimodalInput({
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
         multiple
-        accept=".txt,.md,.markdown,.json,.csv,.pdf,.docx,.doc,.jpg,.jpeg,.png,.gif,.webp,.bmp"
+        accept=".txt,.md,.markdown,.json,.csv,.xml,.html,.rtf,.pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.tif,.svg,.zip,.rar,.7z,.js,.ts,.py,.java,.cpp,.c,.css,.scss,.less,.php,.rb,.go,.rs,.swift,.kt,.sql"
         onChange={handleFileChange}
         tabIndex={-1}
       />

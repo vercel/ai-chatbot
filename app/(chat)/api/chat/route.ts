@@ -210,35 +210,31 @@ export async function POST(request: Request) {
 
           for (const file of uploadedFiles) {
             const extension = file.fileName.split('.').pop()?.toLowerCase();
-            const isPDF = extension === 'pdf';
 
             // Find the corresponding attachment
             const attachment = message.experimental_attachments?.find(
               (att) => att.url === file.fileUrl,
             );
 
-            if (isPDF && attachment) {
-              // For PDFs, add to attachments array for AI model
-              fileAttachments.push({
-                name: file.fileName,
-                url: file.fileUrl,
-                contentType: file.mimeType || 'application/pdf',
-              });
-              fileContexts.push(
-                `📄 PDF Document: ${file.fileName} (${Math.round(file.fileSize / 1024)}KB) - Available for direct analysis`,
-              );
-            } else if (
-              file.parsedContent &&
-              file.parsingStatus === 'completed'
-            ) {
-              // For parsed files, include content in context
+            if (file.parsedContent && file.parsingStatus === 'completed') {
+              // For all parsed files (including PDFs), include content in context
               const content = file.parsedContent || '';
               const contentPreview =
-                content.length > 2000
-                  ? `${content.substring(0, 2000)}...\n[Content truncated - full ${content.length} characters available]`
+                content.length > 5000
+                  ? `${content.substring(0, 5000)}...\n[Content truncated - full ${content.length} characters available]`
                   : content;
               fileContexts.push(
                 `📄 ${file.fileName} (${Math.round(file.fileSize / 1024)}KB):\n${contentPreview}`,
+              );
+            } else if (attachment?.contentType?.startsWith('image/')) {
+              // Only add images as attachments since AI SDK handles them automatically
+              fileAttachments.push({
+                name: file.fileName,
+                url: file.fileUrl,
+                contentType: file.mimeType || attachment.contentType,
+              });
+              fileContexts.push(
+                `🖼️ Image: ${file.fileName} (${Math.round(file.fileSize / 1024)}KB) - Available for visual analysis`,
               );
             }
           }

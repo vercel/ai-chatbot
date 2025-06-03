@@ -12,10 +12,128 @@ import {
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
-  file: z.instanceof(Blob).refine((file) => file.size <= 5 * 1024 * 1024, {
-    message: 'File size should be less than 5MB',
+  file: z.instanceof(Blob).refine((file) => file.size <= 50 * 1024 * 1024, {
+    message: 'File size should be less than 50MB',
   }),
 });
+
+// Map file extensions to valid content types that match the schema
+function getValidContentType(
+  filename: string,
+  browserMimeType?: string,
+): string {
+  const extension = filename.split('.').pop()?.toLowerCase();
+
+  // If browser provided a valid MIME type, use it if it matches our schema
+  if (browserMimeType) {
+    const validTypes = [
+      'image/png',
+      'image/jpg',
+      'image/jpeg',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain',
+      'text/csv',
+      'application/json',
+      'text/markdown',
+    ];
+
+    if (validTypes.includes(browserMimeType)) {
+      return browserMimeType;
+    }
+  }
+
+  // Fallback based on file extension
+  switch (extension) {
+    case 'png':
+      return 'image/png';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'gif':
+      return 'image/gif';
+    case 'webp':
+      return 'image/webp';
+    case 'bmp':
+      return 'image/bmp';
+    case 'tiff':
+    case 'tif':
+      return 'image/tiff';
+    case 'svg':
+      return 'image/svg+xml';
+    case 'pdf':
+      return 'application/pdf';
+    case 'docx':
+      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    case 'doc':
+      return 'application/msword';
+    case 'pptx':
+      return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    case 'ppt':
+      return 'application/vnd.ms-powerpoint';
+    case 'xlsx':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    case 'xls':
+      return 'application/vnd.ms-excel';
+    case 'txt':
+      return 'text/plain';
+    case 'csv':
+      return 'text/csv';
+    case 'json':
+      return 'application/json';
+    case 'xml':
+      return 'application/xml';
+    case 'html':
+      return 'text/html';
+    case 'rtf':
+      return 'application/rtf';
+    case 'md':
+    case 'markdown':
+      return 'text/markdown';
+    case 'js':
+      return 'application/javascript';
+    case 'ts':
+      return 'application/typescript';
+    case 'py':
+      return 'text/x-python';
+    case 'java':
+      return 'text/x-java-source';
+    case 'cpp':
+    case 'c':
+      return 'text/x-c';
+    case 'css':
+      return 'text/css';
+    case 'scss':
+    case 'less':
+      return 'text/css';
+    case 'php':
+      return 'application/x-httpd-php';
+    case 'rb':
+      return 'application/x-ruby';
+    case 'go':
+      return 'text/x-go';
+    case 'rs':
+      return 'text/x-rust';
+    case 'swift':
+      return 'text/x-swift';
+    case 'kt':
+      return 'text/x-kotlin';
+    case 'sql':
+      return 'application/sql';
+    case 'zip':
+      return 'application/zip';
+    case 'rar':
+      return 'application/x-rar-compressed';
+    case '7z':
+      return 'application/x-7z-compressed';
+    default:
+      return 'application/octet-stream';
+  }
+}
 
 export async function POST(request: Request) {
   console.log('🔄 Starting file upload process...');
@@ -132,6 +250,7 @@ export async function POST(request: Request) {
             parsedContent: parseResult.content,
             metadata: parseResult.metadata,
             message: `${filename} uploaded and parsed successfully!`,
+            contentType: getValidContentType(filename, mimeType),
           });
         } else {
           await updateFileParsing({
@@ -146,6 +265,7 @@ export async function POST(request: Request) {
             fileId: savedFile.id,
             parsed: false,
             error: parseResult.error,
+            contentType: getValidContentType(filename, mimeType),
           });
         }
       } catch (parseError) {
@@ -166,6 +286,7 @@ export async function POST(request: Request) {
           fileId: savedFile.id,
           parsed: false,
           error: `File uploaded but parsing failed: ${errorMessage}`,
+          contentType: getValidContentType(filename, mimeType),
         });
       }
     } catch (error) {

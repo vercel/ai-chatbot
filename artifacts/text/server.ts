@@ -46,6 +46,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       system: updateDocumentPrompt(document.content, 'text'),
       experimental_transform: smoothStream({ chunking: 'word' }),
       prompt: description,
+      maxTokens: 16384,
       experimental_providerMetadata: {
         openai: {
           prediction: {

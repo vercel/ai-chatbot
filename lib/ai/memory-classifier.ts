@@ -106,6 +106,7 @@ User message: "${messageContent}"
 Existing memories to check against:
 ${existingMemories.map((m) => `- ${m.category}: ${m.content}`).join('\n')}`,
       temperature: 0.1,
+      maxTokens: 1024, // Sufficient for classification JSON response
       experimental_telemetry: AISDKExporter.getSettings({
         runName: 'classify-memory',
         metadata: {
@@ -149,6 +150,7 @@ export async function consolidateMemory(
         .replace('{newCategory}', newMemory.category)
         .replace('{newTags}', newMemory.tags.join(', ')),
       temperature: 0.1,
+      maxTokens: 1024, // Sufficient for consolidation JSON response
       experimental_telemetry: AISDKExporter.getSettings({
         runName: 'consolidate-memory',
         metadata: {
