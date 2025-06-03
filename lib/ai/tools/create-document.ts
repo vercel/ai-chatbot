@@ -1,7 +1,7 @@
 import { generateUUID } from '@/lib/utils';
-import { DataStreamWriter, tool } from 'ai';
+import { tool, type UIMessageStreamWriter } from 'ai';
 import { z } from 'zod';
-import { Session } from 'next-auth';
+import type { Session } from 'next-auth';
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
@@ -9,10 +9,13 @@ import {
 
 interface CreateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
+  streamWriter: UIMessageStreamWriter;
 }
 
-export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
+export const createDocument = ({
+  session,
+  streamWriter,
+}: CreateDocumentProps) =>
   tool({
     description:
       'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
@@ -23,24 +26,24 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
     execute: async ({ title, kind }) => {
       const id = generateUUID();
 
-      dataStream.writeData({
-        type: 'kind',
-        content: kind,
+      streamWriter.write({
+        type: 'data-artifacts-kind',
+        data: kind,
       });
 
-      dataStream.writeData({
-        type: 'id',
-        content: id,
+      streamWriter.write({
+        type: 'data-artifacts-id',
+        data: id,
       });
 
-      dataStream.writeData({
-        type: 'title',
-        content: title,
+      streamWriter.write({
+        type: 'data-artifacts-title',
+        data: title,
       });
 
-      dataStream.writeData({
-        type: 'clear',
-        content: '',
+      streamWriter.write({
+        type: 'data-artifacts-clear',
+        data: '',
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -55,11 +58,11 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       await documentHandler.onCreateDocument({
         id,
         title,
-        dataStream,
+        streamWriter,
         session,
       });
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      streamWriter.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

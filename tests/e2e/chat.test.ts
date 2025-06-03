@@ -90,7 +90,7 @@ test.describe('Chat activity', () => {
     await chatPage.sendUserMessage('Who painted this?');
 
     const userMessage = await chatPage.getRecentUserMessage();
-    expect(userMessage.attachments).toHaveLength(1);
+    expect(userMessage.files).toHaveLength(1);
 
     await chatPage.isGenerationComplete();
 
@@ -152,12 +152,12 @@ test.describe('Chat activity', () => {
   });
 
   test('auto-scrolls to bottom after submitting new messages', async () => {
-    await chatPage.sendMultipleMessages(5, (i) => `filling message #${i}`);
+    await chatPage.sendMultipleMessages(5, () => 'Why is the sky blue?');
     await chatPage.waitForScrollToBottom();
   });
 
   test('scroll button appears when user scrolls up, hides on click', async () => {
-    await chatPage.sendMultipleMessages(5, (i) => `filling message #${i}`);
+    await chatPage.sendMultipleMessages(5, () => 'Why is the sky blue?');
     await expect(chatPage.scrollToBottomButton).not.toBeVisible();
 
     await chatPage.scrollToTop();

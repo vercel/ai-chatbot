@@ -1,30 +1,43 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useRef } from 'react';
-import { artifactDefinitions, ArtifactKind } from './artifact';
-import { Suggestion } from '@/lib/db/schema';
+import { useEffect, useMemo, useRef } from 'react';
+import { artifactDefinitions } from './artifact';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
+import type { DataUIPart } from 'ai';
+import { useChatStore } from './chat-store';
 
-export type DataStreamDelta = {
+export interface DataStreamDelta extends DataUIPart<any> {
   type:
-    | 'text-delta'
-    | 'code-delta'
-    | 'sheet-delta'
-    | 'image-delta'
-    | 'title'
-    | 'id'
-    | 'suggestion'
-    | 'clear'
-    | 'finish'
-    | 'kind';
-  content: string | Suggestion;
-};
+    | 'data-artifacts-text-delta'
+    | 'data-artifacts-code-delta'
+    | 'data-artifacts-sheet-delta'
+    | 'data-artifacts-image-delta'
+    | 'data-artifacts-title'
+    | 'data-artifacts-id'
+    | 'data-artifacts-suggestion'
+    | 'data-artifacts-clear'
+    | 'data-artifacts-finish'
+    | 'data-artifacts-kind';
+  value: any;
+}
 
 export function DataStreamHandler({ id }: { id: string }) {
-  const { data: dataStream } = useChat({ id });
+  const chatStore = useChatStore();
+  const { messages } = useChat({ chatId: id, chatStore });
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
+
+  const dataStream = useMemo(() => {
+    const mostRecentMessage = messages.at(-1);
+
+    // @ts-expect-error fix type error
+    const dataParts: DataUIPart<any>[] = mostRecentMessage
+      ? mostRecentMessage.parts.filter((part) => part.type.startsWith('data-'))
+      : [];
+
+    return dataParts;
+  }, [messages]);
 
   useEffect(() => {
     if (!dataStream?.length) return;
@@ -32,13 +45,14 @@ export function DataStreamHandler({ id }: { id: string }) {
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
 
-    (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
+    newDeltas.forEach((delta) => {
       const artifactDefinition = artifactDefinitions.find(
         (artifactDefinition) => artifactDefinition.kind === artifact.kind,
       );
 
       if (artifactDefinition?.onStreamPart) {
         artifactDefinition.onStreamPart({
+          // @ts-expect-error fix type error
           streamPart: delta,
           setArtifact,
           setMetadata,
@@ -51,35 +65,35 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
 
         switch (delta.type) {
-          case 'id':
+          case 'data-artifacts-id':
             return {
               ...draftArtifact,
-              documentId: delta.content as string,
+              documentId: delta.data,
               status: 'streaming',
             };
 
-          case 'title':
+          case 'data-artifacts-title':
             return {
               ...draftArtifact,
-              title: delta.content as string,
+              title: delta.data,
               status: 'streaming',
             };
 
-          case 'kind':
+          case 'data-artifacts-suggestion':
             return {
               ...draftArtifact,
-              kind: delta.content as ArtifactKind,
+              kind: delta.data,
               status: 'streaming',
             };
 
-          case 'clear':
+          case 'data-artifacts-clear':
             return {
               ...draftArtifact,
               content: '',
               status: 'streaming',
             };
 
-          case 'finish':
+          case 'data-artifacts-finish':
             return {
               ...draftArtifact,
               status: 'idle',

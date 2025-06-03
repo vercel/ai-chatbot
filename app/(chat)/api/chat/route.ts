@@ -1,9 +1,11 @@
 import {
-  appendClientMessage,
-  appendResponseMessages,
-  createDataStream,
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
   smoothStream,
+  stepCountIs,
   streamText,
+  type UIMessage,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
@@ -17,15 +19,9 @@ import {
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import { generateUUID, getTrailingMessageId } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
 import {
@@ -36,6 +32,12 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { createDocument } from '@/lib/ai/tools/create-document';
+import { updateDocument } from '@/lib/ai/tools/update-document';
+import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
+import { generateTitleFromUserMessage } from '../../actions';
+import { convertToStringStream, generateUUID } from '@/lib/utils';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
 
 export const maxDuration = 60;
 
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
     });
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse();
+      return new ChatSDKError('forbidden:api').toResponse();
     }
 
     const chat = await getChatById({ id });
@@ -113,12 +115,6 @@ export async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
-      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
-      messages: previousMessages,
-      message,
-    });
-
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
@@ -135,7 +131,7 @@ export async function POST(request: Request) {
           id: message.id,
           role: 'user',
           parts: message.parts,
-          attachments: message.experimental_attachments ?? [],
+          attachments: [],
           createdAt: new Date(),
         },
       ],
@@ -144,68 +140,25 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    const stream = createDataStream({
-      execute: (dataStream) => {
+    // @ts-expect-error type mismatch converting from DBMessage to UIMessage
+    const messages: UIMessage[] = [...previousMessages, message];
+
+    const stream = createUIMessageStream({
+      execute: ({ writer: streamWriter }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
+          messages: convertToModelMessages(messages),
+          stopWhen: stepCountIs(5),
+          experimental_transform: [smoothStream()],
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
+            createDocument: createDocument({ session, streamWriter }),
+            updateDocument: updateDocument({ session, streamWriter }),
             requestSuggestions: requestSuggestions({
               session,
-              dataStream,
+              streamWriter,
             }),
-          },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
-
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [message],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
-              }
-            }
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
@@ -213,14 +166,29 @@ export async function POST(request: Request) {
           },
         });
 
-        result.consumeStream();
+        streamWriter.merge(
+          result.toUIMessageStream({
+            sendReasoning: true,
+            newMessageId: generateUUID(),
+            onFinish: async ({ responseMessage }) => {
+              await saveMessages({
+                messages: [
+                  {
+                    ...responseMessage,
+                    createdAt: new Date(),
+                    attachments: [],
+                    chatId: id,
+                  },
+                ],
+              });
+            },
+          }),
+        );
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+        result.consumeStream();
       },
       onError: () => {
-        return 'Oops, an error occurred!';
+        return 'Oops! Something went wrong, please try again later.';
       },
     });
 
@@ -228,10 +196,12 @@ export async function POST(request: Request) {
 
     if (streamContext) {
       return new Response(
-        await streamContext.resumableStream(streamId, () => stream),
+        await streamContext.resumableStream(streamId, () =>
+          convertToStringStream(stream),
+        ),
       );
     } else {
-      return new Response(stream);
+      return createUIMessageStreamResponse({ stream });
     }
   } catch (error) {
     if (error instanceof ChatSDKError) {
@@ -289,13 +259,12 @@ export async function GET(request: Request) {
     return new ChatSDKError('not_found:stream').toResponse();
   }
 
-  const emptyDataStream = createDataStream({
+  const emptyDataStream = createUIMessageStream({
     execute: () => {},
   });
 
-  const stream = await streamContext.resumableStream(
-    recentStreamId,
-    () => emptyDataStream,
+  const stream = await streamContext.resumableStream(recentStreamId, () =>
+    convertToStringStream(emptyDataStream),
   );
 
   /*
@@ -320,11 +289,11 @@ export async function GET(request: Request) {
       return new Response(emptyDataStream, { status: 200 });
     }
 
-    const restoredStream = createDataStream({
-      execute: (buffer) => {
-        buffer.writeData({
-          type: 'append-message',
-          message: JSON.stringify(mostRecentMessage),
+    const restoredStream = createUIMessageStream({
+      execute: ({ writer }) => {
+        writer.write({
+          type: 'data-append-in-flight-message',
+          data: mostRecentMessage,
         });
       },
     });

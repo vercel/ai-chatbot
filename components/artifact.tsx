@@ -1,4 +1,4 @@
-import type { Attachment, UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -28,6 +28,7 @@ import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
+import type { Attachment } from '@/lib/types';
 
 export const artifactDefinitions = [
   textArtifact,

@@ -186,13 +186,13 @@ export class ChatPage {
       .innerText()
       .catch(() => null);
 
-    const hasAttachments = await lastMessageElement
-      .getByTestId('message-attachments')
+    const hasFiles = await lastMessageElement
+      .getByTestId('message-files')
       .isVisible()
       .catch(() => false);
 
-    const attachments = hasAttachments
-      ? await lastMessageElement.getByTestId('message-attachments').all()
+    const files = hasFiles
+      ? await lastMessageElement.getByTestId('message-files').all()
       : [];
 
     const page = this.page;
@@ -200,7 +200,7 @@ export class ChatPage {
     return {
       element: lastMessageElement,
       content,
-      attachments,
+      files,
       async edit(newMessage: string) {
         await page.getByTestId('message-edit-button').click();
         await page.getByTestId('message-editor').fill(newMessage);

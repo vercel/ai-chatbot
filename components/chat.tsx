@@ -1,15 +1,13 @@
 'use client';
 
-import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
@@ -18,12 +16,14 @@ import { toast } from './toast';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
+import { Messages } from './messages';
+import type { Attachment } from '@/lib/types';
+import { useChatStore } from './chat-store';
+import { useAutoResume } from '@/hooks/use-auto-resume';
 
 export function Chat({
   id,
-  initialMessages,
   initialChatModel,
   initialVisibilityType,
   isReadonly,
@@ -31,7 +31,6 @@ export function Chat({
   autoResume,
 }: {
   id: string;
-  initialMessages: Array<UIMessage>;
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
@@ -45,6 +44,8 @@ export function Chat({
     initialVisibilityType,
   });
 
+  const chatStore = useChatStore();
+
   const {
     messages,
     setMessages,
@@ -56,20 +57,12 @@ export function Chat({
     stop,
     reload,
     experimental_resume,
-    data,
+    error,
   } = useChat({
-    id,
-    initialMessages,
+    chatId: id,
     experimental_throttle: 100,
-    sendExtraMessageFields: true,
     generateId: generateUUID,
-    fetch: fetchWithErrorHandlers,
-    experimental_prepareRequestBody: (body) => ({
-      id,
-      message: body.messages.at(-1),
-      selectedChatModel: initialChatModel,
-      selectedVisibilityType: visibilityType,
-    }),
+    chatStore,
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
@@ -92,7 +85,7 @@ export function Chat({
     if (query && !hasAppendedQuery) {
       append({
         role: 'user',
-        content: query,
+        parts: [{ type: 'text', text: query }],
       });
 
       setHasAppendedQuery(true);
@@ -110,9 +103,8 @@ export function Chat({
 
   useAutoResume({
     autoResume,
-    initialMessages,
     experimental_resume,
-    data,
+    messages,
     setMessages,
   });
 

@@ -1,29 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
-import type { UIMessage } from 'ai';
+import { useEffect, useMemo } from 'react';
+import type { DataUIPart, UIMessage } from 'ai';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { DataPart } from '@/lib/types';
 
 export interface UseAutoResumeParams {
   autoResume: boolean;
-  initialMessages: UIMessage[];
   experimental_resume: UseChatHelpers['experimental_resume'];
-  data: UseChatHelpers['data'];
+  messages: UseChatHelpers['messages'];
   setMessages: UseChatHelpers['setMessages'];
 }
 
 export function useAutoResume({
   autoResume,
-  initialMessages,
   experimental_resume,
-  data,
+  messages,
   setMessages,
 }: UseAutoResumeParams) {
   useEffect(() => {
     if (!autoResume) return;
 
-    const mostRecentMessage = initialMessages.at(-1);
+    const mostRecentMessage = messages.at(-1);
 
     if (mostRecentMessage?.role === 'user') {
       experimental_resume();
@@ -33,15 +30,25 @@ export function useAutoResume({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const dataStream = useMemo(() => {
+    const mostRecentMessage = messages.at(-1);
+
+    // @ts-expect-error fix type error
+    const dataParts: DataUIPart<any>[] = mostRecentMessage
+      ? mostRecentMessage.parts.filter((part) => part.type.startsWith('data-'))
+      : [];
+
+    return dataParts;
+  }, [messages]);
+
   useEffect(() => {
-    if (!data) return;
-    if (data.length === 0) return;
+    if (dataStream.length === 0) return;
 
-    const dataPart = data[0] as DataPart;
+    const dataPart = dataStream.at(-1) as DataUIPart<any>;
 
-    if (dataPart.type === 'append-message') {
-      const message = JSON.parse(dataPart.message) as UIMessage;
-      setMessages([...initialMessages, message]);
+    if (dataPart.type === 'data-append-in-flight-message') {
+      const message = JSON.parse(dataPart.data) as UIMessage;
+      setMessages([...messages, message]);
     }
-  }, [data, initialMessages, setMessages]);
+  }, [messages, setMessages, dataStream]);
 }
