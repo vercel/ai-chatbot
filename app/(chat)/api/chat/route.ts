@@ -2,6 +2,7 @@ import {
   appendClientMessage,
   appendResponseMessages,
   createDataStream,
+  experimental_createMCPClient,
   smoothStream,
   streamText,
 } from 'ai';
@@ -22,7 +23,6 @@ import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -144,6 +144,15 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    const mcpClient = await experimental_createMCPClient({
+      transport: {
+        url: `${new URL(request.url).origin}/mcp/sse`,
+        type: 'sse',
+      },
+    });
+
+    const mcpTools = await mcpClient.tools();
+
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
@@ -152,18 +161,11 @@ export async function POST(request: Request) {
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
+            selectedChatModel === 'chat-model-reasoning' ? [] : undefined,
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
           tools: {
-            getWeather,
+            ...mcpTools,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
@@ -172,6 +174,8 @@ export async function POST(request: Request) {
             }),
           },
           onFinish: async ({ response }) => {
+            mcpClient.close();
+
             if (session.user?.id) {
               try {
                 const assistantId = getTrailingMessageId({
@@ -203,13 +207,16 @@ export async function POST(request: Request) {
                   ],
                 });
               } catch (_) {
-                console.error('Failed to save chat');
+                console.log('Failed to save chat');
               }
             }
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
+          },
+          onError: (error) => {
+            console.error(error);
           },
         });
 
