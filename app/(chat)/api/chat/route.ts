@@ -220,8 +220,8 @@ export async function POST(request: Request) {
               // For all parsed files (including PDFs), include content in context
               const content = file.parsedContent || '';
               const contentPreview =
-                content.length > 5000
-                  ? `${content.substring(0, 5000)}...\n[Content truncated - full ${content.length} characters available]`
+                content.length > 500000
+                  ? `${content.substring(0, 500000)}...\n[Content truncated - full ${content.length} characters available]`
                   : content;
               fileContexts.push(
                 `📄 ${file.fileName} (${Math.round(file.fileSize / 1024)}KB):\n${contentPreview}`,
