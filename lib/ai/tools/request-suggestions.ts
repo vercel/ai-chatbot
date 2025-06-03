@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { Session } from 'next-auth';
-import { DataStreamWriter, streamObject, tool } from 'ai';
+import type { Session } from 'next-auth';
+import { type DataStreamWriter, streamObject, tool } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 import { generateUUID } from '@/lib/utils';
 import { myProvider } from '../providers';
+import { AISDKExporter } from 'langsmith/vercel';
 
 interface RequestSuggestionsProps {
   session: Session;
@@ -40,11 +41,16 @@ export const requestSuggestions = ({
         system:
           'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
         prompt: document.content,
+        maxTokens: 10000,
         output: 'array',
         schema: z.object({
           originalSentence: z.string().describe('The original sentence'),
           suggestedSentence: z.string().describe('The suggested sentence'),
           description: z.string().describe('The description of the suggestion'),
+        }),
+        experimental_telemetry: AISDKExporter.getSettings({
+          runName: 'request-suggestions',
+          metadata: { documentId },
         }),
       });
 

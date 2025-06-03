@@ -3,6 +3,7 @@ import { streamObject } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
 import { codePrompt, updateDocumentPrompt } from '@/lib/ai/prompts';
 import { createDocumentHandler } from '@/lib/artifacts/server';
+import { AISDKExporter } from 'langsmith/vercel';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
@@ -13,8 +14,13 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
       model: myProvider.languageModel('artifact-model'),
       system: codePrompt,
       prompt: title,
+      maxTokens: 16384,
       schema: z.object({
         code: z.string(),
+      }),
+      experimental_telemetry: AISDKExporter.getSettings({
+        runName: 'create-code-document',
+        metadata: { title },
       }),
     });
 
@@ -47,6 +53,10 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
       prompt: description,
       schema: z.object({
         code: z.string(),
+      }),
+      experimental_telemetry: AISDKExporter.getSettings({
+        runName: 'update-code-document',
+        metadata: { description },
       }),
     });
 

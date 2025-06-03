@@ -1,0 +1,14 @@
+This is a test document for the AI chatbot file upload feature.
+
+The document contains information about the implementation of a robust file upload system with:
+
+1. Support for multiple file types (PDF, TXT, DOC, DOCX, CSV, JSON, MD, images)
+2. AI-powered content parsing and extraction
+3. Automatic context integration for chat conversations
+4. Clean and minimalistic user interface
+5. Proper error handling and user feedback
+
+The system is designed to handle files up to 5MB and provides instant parsing upon upload.
+Files are stored in Vercel Blob storage and parsed content is saved in the database for quick retrieval.
+
+This implementation follows best practices for file handling and provides a seamless user experience. 

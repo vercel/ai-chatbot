@@ -9,12 +9,16 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  memoryCollectionEnabled: boolean('memoryCollectionEnabled')
+    .notNull()
+    .default(true),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -168,3 +172,42 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const memory = pgTable('Memory', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  content: text('content').notNull(),
+  category: varchar('category', { length: 100 }).notNull(),
+  tags: json('tags').$type<string[]>().notNull().default([]),
+  originalMessage: text('originalMessage'),
+  originalMessageId: uuid('originalMessageId'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Memory = InferSelectModel<typeof memory>;
+
+export const uploadedFile = pgTable('UploadedFile', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  fileName: text('fileName').notNull(),
+  fileType: varchar('fileType', { length: 50 }).notNull(),
+  fileSize: integer('fileSize').notNull(),
+  fileUrl: text('fileUrl').notNull(),
+  mimeType: varchar('mimeType', { length: 100 }),
+  parsedContent: text('parsedContent'),
+  parsingStatus: varchar('parsingStatus', {
+    enum: ['pending', 'processing', 'completed', 'failed'],
+  })
+    .notNull()
+    .default('pending'),
+  parsingError: text('parsingError'),
+  uploadedAt: timestamp('uploadedAt').notNull().defaultNow(),
+  parsedAt: timestamp('parsedAt'),
+});
+
+export type UploadedFile = InferSelectModel<typeof uploadedFile>;

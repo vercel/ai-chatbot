@@ -19,6 +19,7 @@ import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
+import { useChatModel } from '@/hooks/use-chat-model';
 import { ChatSDKError } from '@/lib/errors';
 
 export function Chat({
@@ -39,6 +40,7 @@ export function Chat({
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const { selectedChatModel, updateChatModel } = useChatModel(initialChatModel);
 
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -67,7 +69,7 @@ export function Chat({
     experimental_prepareRequestBody: (body) => ({
       id,
       message: body.messages.at(-1),
-      selectedChatModel: initialChatModel,
+      selectedChatModel: selectedChatModel,
       selectedVisibilityType: visibilityType,
     }),
     onFinish: () => {
@@ -121,10 +123,11 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
+          selectedModelId={selectedChatModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
+          onModelChange={updateChatModel}
         />
 
         <Messages

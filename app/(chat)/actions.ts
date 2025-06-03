@@ -9,6 +9,7 @@ import {
 } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
+import { AISDKExporter } from 'langsmith/vercel';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -28,6 +29,10 @@ export async function generateTitleFromUserMessage({
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
     prompt: JSON.stringify(message),
+    maxTokens: 256,
+    experimental_telemetry: AISDKExporter.getSettings({
+      runName: 'generate-title',
+    }),
   });
 
   return title;

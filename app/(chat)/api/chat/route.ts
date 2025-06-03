@@ -5,6 +5,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
+import { AISDKExporter } from 'langsmith/vercel';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -16,6 +17,9 @@ import {
   getStreamIdsByChatId,
   saveChat,
   saveMessages,
+  getMemoriesByUserId,
+  getUserMemorySettings,
+  getUploadedFilesByUrls,
 } from '@/lib/db/queries';
 import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -36,8 +40,11 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { processMemoryForUser } from '@/lib/ai/memory-classifier';
 
 export const maxDuration = 60;
+
+// Removed complex provider switching - all files are now parsed as text
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
@@ -48,9 +55,13 @@ function getStreamContext() {
         waitUntil: after,
       });
     } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
+      if (
+        error.message.includes('REDIS_URL') ||
+        error.code === 'ERR_INVALID_URL' ||
+        error.message.includes('Invalid URL')
+      ) {
         console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
+          ' > Resumable streams are disabled due to invalid or missing REDIS_URL',
         );
       } else {
         console.error(error);
@@ -62,12 +73,29 @@ function getStreamContext() {
 }
 
 export async function POST(request: Request) {
+  console.log('🔄 Chat API: Starting request processing...');
+
   let requestBody: PostRequestBody;
 
   try {
     const json = await request.json();
+    console.log('📝 Chat API: Raw request data received:', {
+      hasId: !!json.id,
+      hasMessage: !!json.message,
+      messagePartsLength: json.message?.parts?.length || 0,
+      messageAttachmentsLength:
+        json.message?.experimental_attachments?.length || 0,
+      selectedChatModel: json.selectedChatModel,
+      selectedVisibilityType: json.selectedVisibilityType,
+    });
+
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+    console.log('✅ Chat API: Request body validation passed');
+  } catch (error) {
+    console.error('❌ Chat API: Request validation failed:', error);
+    if (error instanceof Error) {
+      console.error('❌ Chat API: Validation error details:', error.message);
+    }
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
@@ -141,15 +169,137 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Get user memories and settings for context
+    const [userMemories, userMemorySettings] = await Promise.all([
+      getMemoriesByUserId({ userId: session.user.id, limit: 50 }), // Recent memories for context
+      getUserMemorySettings({ userId: session.user.id }),
+    ]);
+
+    // Format memories for system prompt
+    const memoriesContext =
+      userMemories.length > 0
+        ? userMemories
+            .map((memory) => `[${memory.category}] ${memory.content}`)
+            .join('\n- ')
+        : undefined;
+
+    // Get file context from attachments and prepare for AI model
+    let attachedFilesContext: string | undefined;
+    const fileAttachments: any[] = [];
+
+    if (
+      message.experimental_attachments &&
+      message.experimental_attachments.length > 0
+    ) {
+      console.log('🔄 Processing file attachments for AI context...');
+
+      try {
+        const attachmentUrls = message.experimental_attachments.map(
+          (att) => att.url,
+        );
+        const uploadedFiles = await getUploadedFilesByUrls({
+          urls: attachmentUrls,
+        });
+
+        if (uploadedFiles.length > 0) {
+          console.log(
+            `📁 Found ${uploadedFiles.length} uploaded files for context`,
+          );
+
+          const fileContexts: string[] = [];
+
+          for (const file of uploadedFiles) {
+            const extension = file.fileName.split('.').pop()?.toLowerCase();
+
+            // Find the corresponding attachment
+            const attachment = message.experimental_attachments?.find(
+              (att) => att.url === file.fileUrl,
+            );
+
+            if (file.parsedContent && file.parsingStatus === 'completed') {
+              // For all parsed files (including PDFs), include content in context
+              const content = file.parsedContent || '';
+              const contentPreview =
+                content.length > 500000
+                  ? `${content.substring(0, 500000)}...\n[Content truncated - full ${content.length} characters available]`
+                  : content;
+              fileContexts.push(
+                `📄 ${file.fileName} (${Math.round(file.fileSize / 1024)}KB):\n${contentPreview}`,
+              );
+            } else if (attachment?.contentType?.startsWith('image/')) {
+              // Only add images as attachments since AI SDK handles them automatically
+              fileAttachments.push({
+                name: file.fileName,
+                url: file.fileUrl,
+                contentType: file.mimeType || attachment.contentType,
+              });
+              fileContexts.push(
+                `🖼️ Image: ${file.fileName} (${Math.round(file.fileSize / 1024)}KB) - Available for visual analysis`,
+              );
+            }
+          }
+
+          if (fileContexts.length > 0) {
+            attachedFilesContext = fileContexts.join(
+              '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n',
+            );
+            console.log(
+              `✅ Prepared context for ${fileContexts.length} files (${fileAttachments.length} as attachments)`,
+            );
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to process file attachments:', error);
+      }
+    }
+
+    // Process memory collection in background (don't await)
+    if (userMemorySettings?.memoryCollectionEnabled !== false) {
+      // Extract text content from message parts for memory processing
+      const messageText = message.parts
+        .filter((part) => part.type === 'text')
+        .map((part) => part.text)
+        .join(' ');
+
+      if (messageText.trim()) {
+        after(() =>
+          processMemoryForUser(session.user.id, messageText, message.id).catch(
+            (error) =>
+              console.error('Background memory processing failed:', error),
+          ),
+        );
+      }
+    }
+
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
+
+    // All files are now parsed as text content, so no need for provider switching
+
+    // Log context for debugging
+    console.log('🤖 AI Context Summary:');
+    console.log(`   - Memories: ${memoriesContext ? 'Yes' : 'No'}`);
+    console.log(
+      `   - Files: ${fileAttachments.length} attachments, ${attachedFilesContext ? 'Yes' : 'No'} context`,
+    );
+    console.log(
+      `   - File context length: ${attachedFilesContext?.length || 0} chars`,
+    );
 
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({
+            selectedChatModel,
+            requestHints,
+            memories: memoriesContext,
+            attachedFiles: attachedFilesContext,
+          }),
           messages,
+          ...(fileAttachments.length > 0 && {
+            experimental_attachments: fileAttachments,
+          }),
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
@@ -207,10 +357,22 @@ export async function POST(request: Request) {
               }
             }
           },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
+          experimental_telemetry: AISDKExporter.getSettings({
+            runName: `chat-${selectedChatModel}`,
+            metadata: {
+              userId: session.user.id,
+              chatId: id,
+              userType: session.user.type,
+              model: selectedChatModel,
+              hasAttachments: fileAttachments.length > 0,
+              attachmentCount: fileAttachments.length,
+              attachmentFiles: fileAttachments
+                .map((att) => att.name)
+                .join(', '),
+              hasFileContext: !!attachedFilesContext,
+              fileContextLength: attachedFilesContext?.length || 0,
+            },
+          }),
         });
 
         result.consumeStream();
