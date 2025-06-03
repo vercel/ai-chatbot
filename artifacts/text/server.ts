@@ -5,7 +5,7 @@ import { updateDocumentPrompt } from '@/lib/ai/prompts';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
   kind: 'text',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, streamWriter }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({
@@ -22,7 +22,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       if (type === 'text') {
         draftContent += delta.text;
 
-        dataStream.write({
+        streamWriter.write({
           type: 'data-artifacts-text-delta',
           data: delta.text,
         });
@@ -31,7 +31,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ document, description, streamWriter }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({
@@ -54,7 +54,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
 
       if (type === 'text') {
         draftContent += delta.text;
-        dataStream.write({
+        streamWriter.write({
           type: 'data-artifacts-text-delta',
           data: delta.text,
         });

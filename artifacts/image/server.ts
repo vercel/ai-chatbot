@@ -4,7 +4,7 @@ import { experimental_generateImage } from 'ai';
 
 export const imageDocumentHandler = createDocumentHandler<'image'>({
   kind: 'image',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title, streamWriter }) => {
     let draftContent = '';
 
     const { image } = await experimental_generateImage({
@@ -15,14 +15,14 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     draftContent = image.base64;
 
-    dataStream.write({
+    streamWriter.write({
       type: 'data-artifacts-image-delta',
       data: image.base64,
     });
 
     return draftContent;
   },
-  onUpdateDocument: async ({ description, dataStream }) => {
+  onUpdateDocument: async ({ description, streamWriter }) => {
     let draftContent = '';
 
     const { image } = await experimental_generateImage({
@@ -33,7 +33,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
 
     draftContent = image.base64;
 
-    dataStream.write({
+    streamWriter.write({
       type: 'data-artifacts-image-delta',
       data: image.base64,
     });

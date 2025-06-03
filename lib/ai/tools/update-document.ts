@@ -6,10 +6,13 @@ import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 
 interface UpdateDocumentProps {
   session: Session;
-  dataStream: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter;
 }
 
-export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
+export const updateDocument = ({
+  session,
+  streamWriter,
+}: UpdateDocumentProps) =>
   tool({
     description: 'Update a document with the given description.',
     parameters: z.object({
@@ -27,7 +30,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         };
       }
 
-      dataStream.write({
+      streamWriter.write({
         type: 'data-artifacts-clear',
         data: document.title,
       });
@@ -44,11 +47,11 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       await documentHandler.onUpdateDocument({
         document,
         description,
-        dataStream,
+        streamWriter,
         session,
       });
 
-      dataStream.write({ type: 'data-artifacts-finish', data: '' });
+      streamWriter.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

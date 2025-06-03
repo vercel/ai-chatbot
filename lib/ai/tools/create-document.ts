@@ -9,10 +9,13 @@ import {
 
 interface CreateDocumentProps {
   session: Session;
-  dataStream: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter;
 }
 
-export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
+export const createDocument = ({
+  session,
+  streamWriter,
+}: CreateDocumentProps) =>
   tool({
     description:
       'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
@@ -23,22 +26,22 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
     execute: async ({ title, kind }) => {
       const id = generateUUID();
 
-      dataStream.write({
+      streamWriter.write({
         type: 'data-artifacts-kind',
         data: kind,
       });
 
-      dataStream.write({
+      streamWriter.write({
         type: 'data-artifacts-id',
         data: id,
       });
 
-      dataStream.write({
+      streamWriter.write({
         type: 'data-artifacts-title',
         data: title,
       });
 
-      dataStream.write({
+      streamWriter.write({
         type: 'data-artifacts-clear',
         data: '',
       });
@@ -55,11 +58,11 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       await documentHandler.onCreateDocument({
         id,
         title,
-        dataStream,
+        streamWriter,
         session,
       });
 
-      dataStream.write({ type: 'data-artifacts-finish', data: '' });
+      streamWriter.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

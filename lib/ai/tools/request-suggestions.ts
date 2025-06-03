@@ -8,12 +8,12 @@ import { myProvider } from '../providers';
 
 interface RequestSuggestionsProps {
   session: Session;
-  dataStream: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter;
 }
 
 export const requestSuggestions = ({
   session,
-  dataStream,
+  streamWriter,
 }: RequestSuggestionsProps) =>
   tool({
     description: 'Request suggestions for a document',
@@ -58,7 +58,7 @@ export const requestSuggestions = ({
           isResolved: false,
         };
 
-        dataStream.write({
+        streamWriter.write({
           type: 'data-artifacts-suggestion',
           data: suggestion,
         });

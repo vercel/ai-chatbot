@@ -2,8 +2,8 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  maxSteps,
   smoothStream,
+  stepCountIs,
   streamText,
   type UIMessage,
 } from 'ai';
@@ -144,20 +144,20 @@ export async function POST(request: Request) {
     const messages: UIMessage[] = [...previousMessages, message];
 
     const stream = createUIMessageStream({
-      execute: (dataStream) => {
+      execute: ({ writer: streamWriter }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(messages),
-          continueUntil: maxSteps(5),
+          stopWhen: stepCountIs(5),
           experimental_transform: [smoothStream()],
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
+            createDocument: createDocument({ session, streamWriter }),
+            updateDocument: updateDocument({ session, streamWriter }),
             requestSuggestions: requestSuggestions({
               session,
-              dataStream,
+              streamWriter,
             }),
           },
           experimental_telemetry: {
@@ -166,7 +166,7 @@ export async function POST(request: Request) {
           },
         });
 
-        dataStream.merge(
+        streamWriter.merge(
           result.toUIMessageStream({
             sendReasoning: true,
             newMessageId: generateUUID(),
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
 
         result.consumeStream();
       },
-      onError: (error) => {
+      onError: () => {
         return 'Oops! Something went wrong, please try again later.';
       },
     });
@@ -290,8 +290,8 @@ export async function GET(request: Request) {
     }
 
     const restoredStream = createUIMessageStream({
-      execute: (buffer) => {
-        buffer.write({
+      execute: ({ writer }) => {
+        writer.write({
           type: 'data-append-in-flight-message',
           data: mostRecentMessage,
         });

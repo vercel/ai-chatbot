@@ -6,12 +6,12 @@ import React, {
   useContext,
   useMemo,
 } from 'react';
-import { defaultChatStore, type UIMessage } from 'ai';
-import { fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
-import { zodSchema } from '@ai-sdk/provider-utils';
+import { DefaultChatTransport, type UIMessage } from 'ai';
+import { generateUUID } from '@/lib/utils';
 import { messageMetadataSchema } from '@/lib/types';
+import { createChatStore } from '@ai-sdk/react';
 
-type ChatStoreType = ReturnType<typeof defaultChatStore>;
+type ChatStoreType = ReturnType<typeof createChatStore>;
 
 const ChatStoreContext = createContext<ChatStoreType | null>(null);
 
@@ -42,17 +42,18 @@ export function ChatStoreProvider({
 }: Props) {
   const store = useMemo(
     () =>
-      defaultChatStore({
-        api: '/api/chat',
-        fetch: fetchWithErrorHandlers,
-        messageMetadataSchema: zodSchema(messageMetadataSchema),
-        generateId: generateUUID,
-        prepareRequestBody: (body) => ({
-          id,
-          message: body.messages.at(-1),
-          selectedChatModel: initialChatModel,
-          selectedVisibilityType: visibilityType,
+      createChatStore({
+        transport: new DefaultChatTransport({
+          api: '/api/chat',
+          prepareRequestBody: (body) => ({
+            id,
+            message: body.messages.at(-1),
+            selectedChatModel: initialChatModel,
+            selectedVisibilityType: visibilityType,
+          }),
         }),
+        messageMetadataSchema: messageMetadataSchema,
+        generateId: generateUUID,
         chats: {
           [id]: {
             messages: initialMessages,
