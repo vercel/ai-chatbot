@@ -18,25 +18,6 @@ import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import type { Session } from 'next-auth';
 
-// Simple chevron right component
-const ChevronRightIcon = ({ size = 16 }: { size?: number }) => (
-  <svg
-    height={size}
-    width={size}
-    viewBox="0 0 16 16"
-    style={{ color: 'currentcolor' }}
-  >
-    <path
-      d="M6 12L10 8L6 4"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 export function ModelSelector({
   session,
   selectedModelId,
@@ -135,19 +116,14 @@ export function ModelSelector({
           {availableProviders.map((provider) => (
             <DropdownMenuSub key={provider.id}>
               <DropdownMenuSubTrigger className="px-3 py-2 cursor-default hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-150">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex flex-col items-start gap-0.5">
-                    <span className="text-sm font-medium text-black dark:text-white">
-                      {provider.name}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {provider.models.length} model
-                      {provider.models.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  <div className="opacity-50">
-                    <ChevronRightIcon size={12} />
-                  </div>
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className="text-sm font-medium text-black dark:text-white">
+                    {provider.name}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {provider.models.length} model
+                    {provider.models.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
               </DropdownMenuSubTrigger>
 
