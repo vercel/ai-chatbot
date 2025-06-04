@@ -296,7 +296,7 @@ function PureMultimodalInput({
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {status === 'submitted' ? (
+        {(status === 'submitted' || status === 'streaming') ? (
           <StopButton stop={stop} setMessages={setMessages} />
         ) : (
           <SendButton
