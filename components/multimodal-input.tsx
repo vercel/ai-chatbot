@@ -166,6 +166,7 @@ function PureMultimodalInput({
     },
     [setAttachments],
   );
+  const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
 
   return (
     <div className="relative w-full flex flex-col gap-4">
@@ -239,12 +240,44 @@ function PureMultimodalInput({
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start gap-2">
         <AttachmentsButton fileInputRef={fileInputRef} status={status} />
         <VoiceRecorder
-          onTranscriptionComplete={(text) => {
-            setInput(text);
-            adjustHeight();
+          onVoiceMessage={async (audioBlob) => {
+            setIsSubmittingVoice(true); // Show loader
+
+            const audioFile = new File([audioBlob], 'voice-message.webm', {
+              type: 'audio/webm',
+            });
+
+            const uploaded = await uploadFile(audioFile);
+
+            if (uploaded) {
+              // Append a new message immediately with the voice attachment
+
+              append({
+                id: `voice-${Date.now()}`, // Unique ID for new message
+                role: 'user',
+                content: '',
+                attachments: [uploaded],
+                type: 'attachment', // or your custom message type for audio
+                createdAt: new Date(),
+              });
+
+              // Clear input and attachments if needed
+              // setInput('');
+              // setAttachments([]);
+            } else {
+              toast.error('Failed to upload voice message');
+            }
+
+            setIsSubmittingVoice(false);
           }}
-          status={status === 'ready' ? 'idle' : status === 'submitted' ? 'transcribing' : 'recording'}
-          disabled={status !== 'ready'}
+          status={
+            status === 'ready'
+              ? 'idle'
+              : status === 'submitted'
+                ? 'transcribing'
+                : 'recording'
+          }
+          disabled={status !== 'ready' || isSubmittingVoice}
         />
       </div>
 
