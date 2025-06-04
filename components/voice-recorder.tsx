@@ -4,18 +4,23 @@ import { MicIcon } from './icons';
 import { toast } from 'sonner';
 import cx from 'classnames';
 import LoadingPill from './loadingPills';
+import { CheckIcon } from 'lucide-react';
 
-// Type declarations for Web Speech API (same as you already had)...
+// interface VoiceRecorderProps {
+//   onTranscriptionComplete: (text: string) => void;
+//   status: 'idle' | 'recording' | 'transcribing';
+//   disabled?: boolean;
+// }
 
 interface VoiceRecorderProps {
-  onTranscriptionComplete: (text: string) => void;
+  onVoiceMessage: (audio: Blob) => void;
   status: 'idle' | 'recording' | 'transcribing';
   disabled?: boolean;
 }
-
 export function VoiceRecorder({
-  onTranscriptionComplete,
+  // onTranscriptionComplete,
   status,
+  onVoiceMessage,
   disabled,
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
@@ -64,29 +69,29 @@ export function VoiceRecorder({
         }
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: 'audio/wav',
-        });
+      // mediaRecorder.onstop = async () => {
+      //   const audioBlob = new Blob(audioChunksRef.current, {
+      //     type: 'audio/wav',
+      //   });
 
-        const recognition = new (
-          window.SpeechRecognition || window.webkitSpeechRecognition
-        )();
-        recognition.continuous = false;
-        recognition.interimResults = false;
+      //   const recognition = new (
+      //     window.SpeechRecognition || window.webkitSpeechRecognition
+      //   )();
+      //   recognition.continuous = false;
+      //   recognition.interimResults = false;
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          const transcript = event.results[0][0].transcript;
-          onTranscriptionComplete(transcript);
-        };
+      //   recognition.onresult = (event: SpeechRecognitionEvent) => {
+      //     const transcript = event.results[0][0].transcript;
+      //     onTranscriptionComplete(transcript);
+      //   };
 
-        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-          toast.error('Error transcribing audio. Please try again.');
-          console.error('Speech recognition error:', event.error);
-        };
+      //   recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      //     toast.error('Error transcribing audio. Please try again.');
+      //     console.error('Speech recognition error:', event.error);
+      //   };
 
-        recognition.start();
-      };
+      //   recognition.start();
+      // };
 
       mediaRecorder.start();
       setIsRecording(true);
@@ -115,10 +120,38 @@ export function VoiceRecorder({
     }
   };
 
-  const stopRecording = (event: React.MouseEvent) => {
-    event.preventDefault();
+  // const stopRecording = (event: React.MouseEvent) => {
+  //   event.preventDefault();
 
+  //   if (mediaRecorderRef.current && isRecording) {
+  //     mediaRecorderRef.current.stop();
+  //     mediaRecorderRef.current.stream
+  //       .getTracks()
+  //       .forEach((track) => track.stop());
+  //     setIsRecording(false);
+  //   }
+  // };
+  const cancelRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
+    }
+    setIsRecording(false);
+    audioChunksRef.current = []; // discard audio
+  };
+
+  const sendRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: 'audio/webm',
+        });
+        onVoiceMessage(audioBlob);
+        audioChunksRef.current = [];
+      };
+
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream
         .getTracks()
@@ -128,11 +161,23 @@ export function VoiceRecorder({
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-2">
       {isRecording ? (
-        <button onClick={stopRecording} disabled={disabled}>
-          <LoadingPill seconds={recordingTime} />
-        </button>
+        <>
+          <button onClick={cancelRecording} disabled={disabled}>
+            <LoadingPill seconds={recordingTime} />
+          </button>
+          <Button
+            onClick={sendRecording} // You can replace this with a custom "send" handler if needed
+            disabled={disabled}
+            variant="ghost"
+            className="text-black-600"
+            title="Send"
+            size="icon"
+          >
+            <CheckIcon size={16} />{' '}
+          </Button>
+        </>
       ) : (
         <Button
           data-testid="voice-recorder-button"
