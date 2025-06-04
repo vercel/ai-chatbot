@@ -162,12 +162,18 @@ function PureMultimodalInput({
         console.error('Error uploading files!', error);
       } finally {
         setUploadQueue([]);
+        resetFileInput();
       }
     },
     [setAttachments],
   );
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
 
+  const resetFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
   return (
     <div className="relative w-full flex flex-col gap-4">
       {messages.length === 0 &&
@@ -191,7 +197,16 @@ function PureMultimodalInput({
           className="flex flex-row gap-2 overflow-x-scroll items-end"
         >
           {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+            <PreviewAttachment
+              key={attachment.url}
+              attachment={attachment}
+              onCancel={() => {
+                setAttachments((prev) =>
+                  prev.filter((a) => a.url !== attachment.url),
+                );
+                resetFileInput();
+              }}
+            />
           ))}
 
           {uploadQueue.map((filename) => (
@@ -203,6 +218,10 @@ function PureMultimodalInput({
                 contentType: '',
               }}
               isUploading={true}
+              onCancel={() => {
+                setUploadQueue((prev) => prev.filter((f) => f !== filename));
+                resetFileInput();
+              }}
             />
           ))}
         </div>
