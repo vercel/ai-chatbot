@@ -1,4 +1,4 @@
-export const DEFAULT_CHAT_MODEL: string = 'chat-model';
+export const DEFAULT_CHAT_MODEL: string = 'dma-chat';
 
 export interface ChatModel {
   id: string;
@@ -8,12 +8,12 @@ export interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'DMA-1',
+    id: 'dma-chat',
     name: 'DMA-1',
     description: 'Primary model for all-purpose chat',
   },
   {
-    id: 'DMA-THINK',
+    id: 'dma-think',
     name: 'DMA-THINK',
     description: 'Uses advanced reasoning',
   },

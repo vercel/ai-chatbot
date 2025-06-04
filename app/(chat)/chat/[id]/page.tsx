@@ -57,7 +57,7 @@ export default function Page({ params }: { params:Promise<{ id: string }>  }) {
         const convertedMessages = convertToUIMessages(messagesFromDb);
 
         // Get chat model from localStorage
-        const chatModel = localStorage.getItem('chat-model') || DEFAULT_CHAT_MODEL;
+        const chatModel = localStorage.getItem('model') || DEFAULT_CHAT_MODEL;
 
         setChat(chatData);
         setMessages(convertedMessages);

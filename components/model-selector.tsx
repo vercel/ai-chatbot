@@ -29,9 +29,9 @@ export function ModelSelector({
   const userType = 'regular';
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
-  );
+  const availableChatModels = chatModels.filter((chatModel) => {
+    availableChatModelIds.includes(chatModel.id);
+  });
 
   const selectedChatModel = useMemo(
     () =>
@@ -72,7 +72,7 @@ export function ModelSelector({
 
                 startTransition(() => {
                   setOptimisticModelId(id);
-                  saveChatModelAsCookie(id);
+                  localStorage.setItem('model', id);
                 });
               }}
               data-active={id === optimisticModelId}

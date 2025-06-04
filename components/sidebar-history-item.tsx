@@ -1,4 +1,4 @@
-import { Chat } from '@/lib/db/schema';
+import { Chat } from '@/lib/api-client.types';
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -25,6 +25,7 @@ import {
 } from './icons';
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { VisibilityType } from './visibility-selector';
 
 const PureChatItem = ({
   chat,
@@ -39,7 +40,7 @@ const PureChatItem = ({
 }) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
-    initialVisibility: chat.visibility,
+    initialVisibility: chat.visibility as VisibilityType,
   });
 
   return (
@@ -86,14 +87,16 @@ const PureChatItem = ({
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType('public');
+                    setVisibilityType('organisation');
                   }}
                 >
                   <div className="flex flex-row gap-2 items-center">
                     <GlobeIcon />
-                    <span>Public</span>
+                    <span>Organization</span>
                   </div>
-                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
+                  {visibilityType === 'organisation' ? (
+                    <CheckCircleFillIcon />
+                  ) : null}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>

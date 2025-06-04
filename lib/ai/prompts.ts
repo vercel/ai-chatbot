@@ -59,7 +59,7 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === 'chat-model-reasoning') {
+  if (selectedChatModel === 'dma-think') {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;

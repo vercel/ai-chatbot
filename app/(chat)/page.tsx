@@ -30,7 +30,7 @@ export default function Page() {
         // setId(chatResponse.id);
 
         // Get chat model from localStorage
-        const chatModel = localStorage.getItem('chat-model') || DEFAULT_CHAT_MODEL;
+        const chatModel = localStorage.getItem('model') || DEFAULT_CHAT_MODEL;
         setSelectedModel(chatModel);
         setIsLoading(false);
       } catch (error) {
