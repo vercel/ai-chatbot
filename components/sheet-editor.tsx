@@ -25,7 +25,7 @@ const PureSpreadsheetEditor = ({
   status,
   isCurrentVersion,
 }: SheetEditorProps) => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   const parseData = useMemo(() => {
     if (!content) return Array(MIN_ROWS).fill(Array(MIN_COLS).fill(''));
@@ -111,7 +111,7 @@ const PureSpreadsheetEditor = ({
 
   return (
     <DataGrid
-      className={theme === 'dark' ? 'rdg-dark' : 'rdg-light'}
+      className={resolvedTheme === 'dark' ? 'rdg-dark' : 'rdg-light'}
       columns={columns}
       rows={localRows}
       enableVirtualization
