@@ -67,7 +67,9 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+  } catch (error) {
+    console.error("[DEBUG] #3 API error:", error);
+
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
@@ -219,7 +221,8 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: () => {
+      onError: (error) => {
+        console.error("[DEBUG] #1 API error:", error);
         return 'Oops, an error occurred!';
       },
     });
@@ -234,6 +237,8 @@ export async function POST(request: Request) {
       return new Response(stream);
     }
   } catch (error) {
+    console.error("[DEBUG] #2 API error:", error);
+
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
