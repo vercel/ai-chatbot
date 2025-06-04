@@ -1,6 +1,7 @@
 import {
   appendClientMessage,
   appendResponseMessages,
+  convertToCoreMessages,
   createDataStream,
   smoothStream,
   streamText,
@@ -113,11 +114,24 @@ export async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
+    const correctedMessages = previousMessages.map((msg) => {
+      if (msg.role === 'user' && msg.attachments) {
+        const { attachments, ...rest } = msg;
+        return {
+          ...rest,
+          experimental_attachments: attachments,
+        };
+      }
+      return msg;
+    });
+
     const messages = appendClientMessage({
       // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
-      messages: previousMessages,
+      messages: correctedMessages,
       message,
     });
+
+    const coreMessages = convertToCoreMessages(messages);
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -149,7 +163,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
+          messages: coreMessages,
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
