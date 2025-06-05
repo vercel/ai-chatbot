@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
@@ -13,6 +14,7 @@ import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
+  const t = useTranslations('Auth');
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
@@ -28,22 +30,22 @@ export default function Page() {
 
   useEffect(() => {
     if (state.status === 'user_exists') {
-      toast({ type: 'error', description: 'Account already exists!' });
+      toast({ type: 'error', description: t('accountAlreadyExists') });
     } else if (state.status === 'failed') {
-      toast({ type: 'error', description: 'Failed to create account!' });
+      toast({ type: 'error', description: t('failedToCreateAccount') });
     } else if (state.status === 'invalid_data') {
       toast({
         type: 'error',
-        description: 'Failed validating your submission!',
+        description: t('failedValidatingSubmission'),
       });
     } else if (state.status === 'success') {
-      toast({ type: 'success', description: 'Account created successfully!' });
+      toast({ type: 'success', description: t('accountCreatedSuccessfully') });
 
       setIsSuccessful(true);
       updateSession();
       router.refresh();
     }
-  }, [state]);
+  }, [state, t]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);
@@ -54,22 +56,24 @@ export default function Page() {
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
       <div className="w-full max-w-md overflow-hidden rounded-2xl gap-12 flex flex-col">
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign Up</h3>
+          <h3 className="text-xl font-semibold dark:text-zinc-50">
+            {t('signUp')}
+          </h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Create an account with your email and password
+            {t('createAccountEmailPassword')}
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
+          <SubmitButton isSuccessful={isSuccessful}>{t('signUp')}</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {'Already have an account? '}
+            {t('alreadyHaveAccount')}{' '}
             <Link
               href="/login"
               className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
             >
-              Sign in
+              {t('signInInstead')}
             </Link>
-            {' instead.'}
+            {t('instead')}
           </p>
         </AuthForm>
       </div>

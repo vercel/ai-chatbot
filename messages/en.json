@@ -1,0 +1,159 @@
+{
+  "Common": {
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending...",
+    "loading": "Loading",
+    "submit": "Submit",
+    "copy": "Copy",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "more": "More",
+    "share": "Share",
+    "private": "Private",
+    "public": "Public",
+    "continue": "Continue"
+  },
+  "Greeting": {
+    "hello": "Hello there!",
+    "howCanIHelp": "How can I help you today?"
+  },
+  "Message": {
+    "editMessage": "Edit message",
+    "copyToClipboard": "Copy to clipboard",
+    "copiedToClipboard": "Copied to clipboard",
+    "noTextToCopy": "No text to copy",
+    "upvoteResponse": "Upvote Response",
+    "downvoteResponse": "Downvote Response",
+    "upvotingResponse": "Upvoting Response...",
+    "upvotedResponse": "Upvoted Response!",
+    "failedToUpvote": "Failed to upvote response.",
+    "downvotingResponse": "Downvoting Response...",
+    "downvotedResponse": "Downvoted Response!",
+    "failedToDownvote": "Failed to downvote response.",
+    "thinking": "Hmm..."
+  },
+  "Artifact": {
+    "viewChanges": "View changes",
+    "viewPreviousVersion": "View Previous version",
+    "viewNextVersion": "View Next version",
+    "addFinalPolish": "Add final polish",
+    "requestSuggestions": "Request suggestions",
+    "polishPrompt": "Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.",
+    "suggestionsPrompt": "Please add suggestions you have that could improve the writing.",
+    "run": "Run",
+    "openFile": "Open File",
+    "openFileInNewTab": "Open file in new tab",
+    "creating": "Creating",
+    "created": "Created",
+    "updating": "Updating",
+    "updated": "Updated",
+    "addingSuggestions": "Adding suggestions",
+    "addedSuggestionsTo": "Added suggestions to"
+  },
+  "Layout": {
+    "title": "Next.js Chatbot Template",
+    "description": "Next.js chatbot template using the AI SDK."
+  },
+  "Error": {
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Please try again",
+    "failedToExecute": "Failed to execute",
+    "uploadFailed": "Failed to upload file, please try again!",
+    "waitForResponse": "Please wait for the model to finish its response!",
+    "viewingFilesNotSupported": "Viewing files in shared chats is currently not supported."
+  },
+  "Tooltip": {
+    "submitForm": "Submit form"
+  },
+  "Auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign out",
+    "emailAddress": "Email Address",
+    "password": "Password",
+    "emailPlaceholder": "user@acme.com",
+    "useEmailPassword": "Use your email and password to sign in",
+    "createAccountEmailPassword": "Create an account with your email and password",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signInInstead": "Sign in",
+    "signUpFree": "Sign up",
+    "instead": " instead.",
+    "forFree": " for free.",
+    "invalidCredentials": "Invalid credentials!",
+    "accountAlreadyExists": "Account already exists!",
+    "failedToCreateAccount": "Failed to create account!",
+    "failedValidatingSubmission": "Failed validating your submission!",
+    "accountCreatedSuccessfully": "Account created successfully!"
+  },
+  "Chat": {
+    "sendMessage": "Send message",
+    "sendingMessage": "Sending...",
+    "messageSent": "Message sent",
+    "startConversation": "Start conversation",
+    "description": "Your AI Assistant",
+    "placeholder": "Send a message...",
+    "newChat": "New Chat",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "lastWeek": "Last week",
+    "lastMonth": "Last month",
+    "older": "Older",
+    "reachedEnd": "You've reached the end",
+    "loadingChats": "Loading chats...",
+    "deletingChat": "Deleting chat...",
+    "chatDeletedSuccessfully": "Chat deleted successfully",
+    "failedToDeleteChat": "Failed to delete chat",
+    "loginToSaveChats": "Login to save chats",
+    "conversationsWillAppear": "Your conversations will appear here",
+    "deployWithVercel": "Deploy with Vercel"
+  },
+  "DeleteDialog": {
+    "areYouSure": "Are you absolutely sure?",
+    "cannotBeUndone": "This action cannot be undone. This will permanently delete your chat and remove it from our servers."
+  },
+  "SuggestedActions": {
+    "nextjsTitle": "What are the advantages",
+    "nextjsLabel": "of using Next.js?",
+    "nextjsAction": "What are the advantages of using Next.js?",
+    "algorithmTitle": "Write code to",
+    "algorithmLabel": "demonstrate Dijkstra's algorithm",
+    "algorithmAction": "Write code to demonstrate Dijkstra's algorithm",
+    "essayTitle": "Help me write an essay",
+    "essayLabel": "about Silicon Valley",
+    "essayAction": "Help me write an essay about Silicon Valley",
+    "weatherTitle": "What is the weather",
+    "weatherLabel": "in San Francisco?",
+    "weatherAction": "What is the weather in San Francisco?"
+  },
+  "Visibility": {
+    "private": "Private",
+    "privateDescription": "Only you can access this chat",
+    "public": "Public",
+    "publicDescription": "Anyone with the link can access this chat"
+  },
+  "Models": {
+    "chatModelName": "Chat model",
+    "chatModelDescription": "Primary model for all-purpose chat",
+    "reasoningModelName": "Reasoning model",
+    "reasoningModelDescription": "Uses advanced reasoning"
+  },
+  "UserNav": {
+    "guest": "Guest",
+    "toggleDarkMode": "Toggle dark mode",
+    "toggleLightMode": "Toggle light mode",
+    "loginToAccount": "Login to your account",
+    "signOut": "Sign out",
+    "loadingAuthStatus": "Loading auth status",
+    "checkingAuthStatus": "Checking authentication status, please try again!",
+    "switchToEnglish": "Switch to English",
+    "switchToChinese": "切换到中文",
+    "language": "Language"
+  }
+}

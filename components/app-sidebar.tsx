@@ -2,6 +2,7 @@
 
 import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
@@ -21,6 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
+  const t = useTranslations('Chat');
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0">
@@ -53,7 +55,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <PlusIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent align="end">New Chat</TooltipContent>
+              <TooltipContent align="end">{t('newChat')}</TooltipContent>
             </Tooltip>
           </div>
         </SidebarMenu>
@@ -61,7 +63,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <SidebarContent>
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter className="gap-0 -mx-2">
+        {user && <SidebarUserNav user={user} />}
+      </SidebarFooter>
     </Sidebar>
   );
 }

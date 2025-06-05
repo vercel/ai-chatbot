@@ -15,6 +15,16 @@ export async function saveChatModelAsCookie(model: string) {
   cookieStore.set('chat-model', model);
 }
 
+export async function saveLocaleCookie(locale: string) {
+  const cookieStore = await cookies();
+  cookieStore.set('locale', locale, {
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+}
+
 export async function generateTitleFromUserMessage({
   message,
 }: {

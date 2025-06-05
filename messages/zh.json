@@ -1,0 +1,159 @@
+{
+  "Common": {
+    "cancel": "取消",
+    "send": "发送",
+    "sending": "发送中...",
+    "loading": "加载中",
+    "submit": "提交",
+    "copy": "复制",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "close": "关闭",
+    "yes": "是",
+    "no": "否",
+    "ok": "确定",
+    "more": "更多",
+    "share": "分享",
+    "private": "私密",
+    "public": "公开",
+    "continue": "继续"
+  },
+  "Greeting": {
+    "hello": "你好！",
+    "howCanIHelp": "我能为您做什么？"
+  },
+  "Message": {
+    "editMessage": "编辑消息",
+    "copyToClipboard": "复制到剪贴板",
+    "copiedToClipboard": "已复制到剪贴板",
+    "noTextToCopy": "没有文本可复制",
+    "upvoteResponse": "赞",
+    "downvoteResponse": "踩",
+    "upvotingResponse": "正在点赞...",
+    "upvotedResponse": "点赞成功！",
+    "failedToUpvote": "点赞失败。",
+    "downvotingResponse": "正在点踩...",
+    "downvotedResponse": "点踩成功！",
+    "failedToDownvote": "点踩失败。",
+    "thinking": "思考中..."
+  },
+  "Artifact": {
+    "viewChanges": "查看更改",
+    "viewPreviousVersion": "查看上一版本",
+    "viewNextVersion": "查看下一版本",
+    "addFinalPolish": "添加最终修饰",
+    "requestSuggestions": "请求建议",
+    "polishPrompt": "请添加最终修饰，检查语法，添加段落标题以便更好地组织结构，并确保所有内容阅读流畅。",
+    "suggestionsPrompt": "请添加您认为可以改进写作的建议。",
+    "run": "运行",
+    "openFile": "打开文件",
+    "openFileInNewTab": "在新标签页中打开文件",
+    "creating": "创建中",
+    "created": "已创建",
+    "updating": "更新中",
+    "updated": "已更新",
+    "addingSuggestions": "添加建议中",
+    "addedSuggestionsTo": "已添加建议到"
+  },
+  "Layout": {
+    "title": "WorkInt 聊天机器人",
+    "description": "基于 AI SDK 的 Next.js 聊天机器人模板。"
+  },
+  "Error": {
+    "somethingWentWrong": "出了点问题",
+    "tryAgain": "请重试",
+    "failedToExecute": "执行失败",
+    "uploadFailed": "文件上传失败，请重试！",
+    "waitForResponse": "请等待模型完成回复！",
+    "viewingFilesNotSupported": "当前不支持在共享聊天中查看文件。"
+  },
+  "Tooltip": {
+    "submitForm": "提交表单"
+  },
+  "Auth": {
+    "signIn": "登录",
+    "signUp": "注册",
+    "signOut": "退出登录",
+    "emailAddress": "邮箱地址",
+    "password": "密码",
+    "emailPlaceholder": "user@acme.com",
+    "useEmailPassword": "使用您的邮箱和密码登录",
+    "createAccountEmailPassword": "使用邮箱和密码创建账户",
+    "alreadyHaveAccount": "已有账户？",
+    "dontHaveAccount": "还没有账户？",
+    "signInInstead": "登录",
+    "signUpFree": "免费注册",
+    "instead": "。",
+    "forFree": "。",
+    "invalidCredentials": "用户名或密码错误！",
+    "accountAlreadyExists": "账户已存在！",
+    "failedToCreateAccount": "创建账户失败！",
+    "failedValidatingSubmission": "提交验证失败！",
+    "accountCreatedSuccessfully": "账户创建成功！"
+  },
+  "Chat": {
+    "newChat": "新对话",
+    "sendMessage": "发送消息",
+    "sendingMessage": "发送中...",
+    "messageSent": "消息已发送",
+    "startConversation": "开始对话",
+    "description": "你的AI助手",
+    "placeholder": "发送消息...",
+    "today": "今天",
+    "yesterday": "昨天",
+    "lastWeek": "上周",
+    "lastMonth": "上个月",
+    "older": "更早",
+    "reachedEnd": "已到达底部",
+    "loadingChats": "加载聊天记录...",
+    "deletingChat": "删除聊天中...",
+    "chatDeletedSuccessfully": "聊天记录已成功删除",
+    "failedToDeleteChat": "删除聊天记录失败",
+    "loginToSaveChats": "登录以保存聊天记录",
+    "conversationsWillAppear": "您的对话将会出现在这里",
+    "deployWithVercel": "使用 Vercel 部署"
+  },
+  "DeleteDialog": {
+    "areYouSure": "您确定要删除吗？",
+    "cannotBeUndone": "此操作无法撤销。这将永久删除您的对话并从我们的服务器中移除。"
+  },
+  "SuggestedActions": {
+    "nextjsTitle": "Next.js的优势",
+    "nextjsLabel": "有哪些？",
+    "nextjsAction": "Next.js的优势有哪些？",
+    "algorithmTitle": "编写代码",
+    "algorithmLabel": "演示Dijkstra算法",
+    "algorithmAction": "编写代码演示Dijkstra算法",
+    "essayTitle": "帮我写一篇文章",
+    "essayLabel": "关于硅谷",
+    "essayAction": "帮我写一篇关于硅谷的文章",
+    "weatherTitle": "旧金山的天气",
+    "weatherLabel": "怎么样？",
+    "weatherAction": "旧金山的天气怎么样？"
+  },
+  "Visibility": {
+    "private": "私有",
+    "privateDescription": "只有您可以访问此对话",
+    "public": "公开",
+    "publicDescription": "任何拥有链接的人都可以访问此对话"
+  },
+  "Models": {
+    "chatModelName": "聊天模型",
+    "chatModelDescription": "用于通用聊天的主要模型",
+    "reasoningModelName": "推理模型",
+    "reasoningModelDescription": "使用高级推理功能"
+  },
+  "UserNav": {
+    "guest": "访客",
+    "toggleDarkMode": "切换深色模式",
+    "toggleLightMode": "切换浅色模式",
+    "loginToAccount": "登录账户",
+    "signOut": "退出登录",
+    "loadingAuthStatus": "正在加载认证状态",
+    "checkingAuthStatus": "正在检查认证状态，请重试！",
+    "switchToEnglish": "切换到英文",
+    "switchToChinese": "切换到中文",
+    "language": "语言"
+  }
+}

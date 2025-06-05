@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
+import { useTranslations } from 'next-intl';
 
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -13,6 +14,7 @@ import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 import type { Session } from 'next-auth';
+import type { ChatModel } from '@/lib/ai/models';
 
 function PureChatHeader({
   chatId,
@@ -20,15 +22,18 @@ function PureChatHeader({
   selectedVisibilityType,
   isReadonly,
   session,
+  chatModels,
 }: {
   chatId: string;
   selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
+  chatModels: ChatModel[];
 }) {
   const router = useRouter();
   const { open } = useSidebar();
+  const t = useTranslations('Chat');
 
   const { width: windowWidth } = useWindowSize();
 
@@ -48,10 +53,10 @@ function PureChatHeader({
               }}
             >
               <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
+              <span className="md:sr-only">{t('newChat')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
+          <TooltipContent>{t('newChat')}</TooltipContent>
         </Tooltip>
       )}
 
@@ -59,6 +64,7 @@ function PureChatHeader({
         <ModelSelector
           session={session}
           selectedModelId={selectedModelId}
+          chatModels={chatModels}
           className="order-1 md:order-2"
         />
       )}
@@ -80,7 +86,7 @@ function PureChatHeader({
           target="_noblank"
         >
           <VercelIcon size={16} />
-          Deploy with Vercel
+          {t('deployWithVercel')}
         </Link>
       </Button>
     </header>
@@ -88,5 +94,9 @@ function PureChatHeader({
 }
 
 export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
-  return prevProps.selectedModelId === nextProps.selectedModelId;
+  if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
+  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+    return false;
+
+  return true;
 });

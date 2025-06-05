@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { Chat } from '@/components/chat';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { DEFAULT_CHAT_MODEL, getChatModels } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { auth } from '../(auth)/auth';
@@ -15,6 +15,7 @@ export default async function Page() {
   }
 
   const id = generateUUID();
+  const chatModels = await getChatModels();
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
@@ -31,6 +32,7 @@ export default async function Page() {
           isReadonly={false}
           session={session}
           autoResume={false}
+          chatModels={chatModels}
         />
         <DataStreamHandler id={id} />
       </>
@@ -48,6 +50,7 @@ export default async function Page() {
         isReadonly={false}
         session={session}
         autoResume={false}
+        chatModels={chatModels}
       />
       <DataStreamHandler id={id} />
     </>

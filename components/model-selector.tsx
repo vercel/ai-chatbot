@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
+import type { ChatModel } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
@@ -20,10 +20,12 @@ import type { Session } from 'next-auth';
 export function ModelSelector({
   session,
   selectedModelId,
+  chatModels,
   className,
 }: {
   session: Session;
   selectedModelId: string;
+  chatModels: ChatModel[];
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
   const [optimisticModelId, setOptimisticModelId] =

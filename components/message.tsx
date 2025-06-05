@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
+import { useTranslations } from 'next-intl';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
@@ -40,6 +41,7 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const t = useTranslations();
 
   return (
     <AnimatePresence>
@@ -119,7 +121,9 @@ const PurePreviewMessage = ({
                               <PencilEditIcon />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
+                          <TooltipContent>
+                            {t('Message.editMessage')}
+                          </TooltipContent>
                         </Tooltip>
                       )}
 
@@ -253,6 +257,7 @@ export const PreviewMessage = memo(
 
 export const ThinkingMessage = () => {
   const role = 'assistant';
+  const t = useTranslations('Message');
 
   return (
     <motion.div
@@ -276,7 +281,7 @@ export const ThinkingMessage = () => {
 
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
+            {t('thinking')}
           </div>
         </div>
       </div>

@@ -27,6 +27,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
+import { useTranslations } from 'next-intl';
 
 function PureMultimodalInput({
   chatId,
@@ -59,6 +60,8 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+
+  const t = useTranslations();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -155,7 +158,7 @@ function PureMultimodalInput({
       const { error } = await response.json();
       toast.error(error);
     } catch (error) {
-      toast.error('Failed to upload file, please try again!');
+      toast.error(t('Error.uploadFailed'));
     }
   };
 
@@ -265,7 +268,7 @@ function PureMultimodalInput({
       <Textarea
         data-testid="multimodal-input"
         ref={textareaRef}
-        placeholder="Send a message..."
+        placeholder={t('Chat.placeholder')}
         value={input}
         onChange={handleInput}
         className={cx(
@@ -283,7 +286,7 @@ function PureMultimodalInput({
             event.preventDefault();
 
             if (status !== 'ready') {
-              toast.error('Please wait for the model to finish its response!');
+              toast.error(t('Error.waitForResponse'));
             } else {
               submitForm();
             }
