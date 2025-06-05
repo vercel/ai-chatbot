@@ -2,15 +2,21 @@ import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Layout');
+
+  return {
+    metadataBase: new URL('https://chat.vercel.ai'),
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
 export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
@@ -53,9 +59,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       // `next-themes` injects an extra classname to the body element to avoid
       // visual flicker before hydration. Hence the `suppressHydrationWarning`
       // prop is necessary to avoid the React hydration mismatch warning.
@@ -78,7 +87,9 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <SessionProvider>{children}</SessionProvider>
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>

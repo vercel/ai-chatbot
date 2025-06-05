@@ -1,6 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
+import { useTranslations } from 'next-intl';
 
 import { LoaderIcon } from '@/components/icons';
 
@@ -14,6 +15,7 @@ export function SubmitButton({
   isSuccessful: boolean;
 }) {
   const { pending } = useFormStatus();
+  const t = useTranslations();
 
   return (
     <Button
@@ -31,7 +33,9 @@ export function SubmitButton({
       )}
 
       <output aria-live="polite" className="sr-only">
-        {pending || isSuccessful ? 'Loading' : 'Submit form'}
+        {pending || isSuccessful
+          ? t('Common.loading')
+          : t('Tooltip.submitForm')}
       </output>
     </Button>
   );

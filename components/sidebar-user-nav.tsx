@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { User } from 'next-auth';
 import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 
 import {
   DropdownMenu,
@@ -22,13 +23,32 @@ import { useRouter } from 'next/navigation';
 import { toast } from './toast';
 import { LoaderIcon } from './icons';
 import { guestRegex } from '@/lib/constants';
+import { saveLocaleCookie } from '@/app/(chat)/actions';
+import { useLocale } from 'next-intl';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
-  const { setTheme, resolvedTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+  const t = useTranslations('UserNav');
+  const locale = useLocale();
 
   const isGuest = guestRegex.test(data?.user?.email ?? '');
+
+  const switchLanguage = async () => {
+    const newLocale = locale === 'zh' ? 'en' : 'zh';
+    try {
+      await saveLocaleCookie(newLocale);
+      // Force a full page refresh to apply the new locale
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to switch language:', error);
+      toast({
+        type: 'error',
+        description: 'Failed to switch language',
+      });
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -40,7 +60,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                 <div className="flex flex-row gap-2">
                   <div className="size-6 bg-zinc-500/30 rounded-full animate-pulse" />
                   <span className="bg-zinc-500/30 text-transparent rounded-md animate-pulse">
-                    Loading auth status
+                    {t('loadingAuthStatus')}
                   </span>
                 </div>
                 <div className="animate-spin text-zinc-500">
@@ -60,7 +80,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   className="rounded-full"
                 />
                 <span data-testid="user-email" className="truncate">
-                  {isGuest ? 'Guest' : user?.email}
+                  {isGuest ? t('guest') : user?.email}
                 </span>
                 <ChevronUp className="ml-auto" />
               </SidebarMenuButton>
@@ -74,9 +94,16 @@ export function SidebarUserNav({ user }: { user: User }) {
             <DropdownMenuItem
               data-testid="user-nav-item-theme"
               className="cursor-pointer"
-              onSelect={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
-              {`Toggle ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
+              {theme === 'light' ? t('toggleDarkMode') : t('toggleLightMode')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              data-testid="user-nav-item-language"
+              className="cursor-pointer"
+              onSelect={switchLanguage}
+            >
+              {locale === 'zh' ? t('switchToEnglish') : t('switchToChinese')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">
@@ -87,8 +114,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   if (status === 'loading') {
                     toast({
                       type: 'error',
-                      description:
-                        'Checking authentication status, please try again!',
+                      description: t('checkingAuthStatus'),
                     });
 
                     return;
@@ -103,7 +129,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   }
                 }}
               >
-                {isGuest ? 'Login to your account' : 'Sign out'}
+                {isGuest ? t('loginToAccount') : t('signOut')}
               </button>
             </DropdownMenuItem>
           </DropdownMenuContent>

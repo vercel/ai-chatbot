@@ -1,3 +1,5 @@
+'use client';
+
 import type { Chat } from '@/lib/db/schema';
 import {
   SidebarMenuAction,
@@ -25,6 +27,7 @@ import {
 } from './icons';
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { useTranslations } from 'next-intl';
 
 const PureChatItem = ({
   chat,
@@ -41,6 +44,7 @@ const PureChatItem = ({
     chatId: chat.id,
     initialVisibilityType: chat.visibility,
   });
+  const t = useTranslations();
 
   return (
     <SidebarMenuItem>
@@ -57,7 +61,7 @@ const PureChatItem = ({
             showOnHover={!isActive}
           >
             <MoreHorizontalIcon />
-            <span className="sr-only">More</span>
+            <span className="sr-only">{t('Common.more')}</span>
           </SidebarMenuAction>
         </DropdownMenuTrigger>
 
@@ -65,7 +69,7 @@ const PureChatItem = ({
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
               <ShareIcon />
-              <span>Share</span>
+              <span>{t('Common.share')}</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
@@ -77,7 +81,7 @@ const PureChatItem = ({
                 >
                   <div className="flex flex-row gap-2 items-center">
                     <LockIcon size={12} />
-                    <span>Private</span>
+                    <span>{t('Common.private')}</span>
                   </div>
                   {visibilityType === 'private' ? (
                     <CheckCircleFillIcon />
@@ -91,7 +95,7 @@ const PureChatItem = ({
                 >
                   <div className="flex flex-row gap-2 items-center">
                     <GlobeIcon />
-                    <span>Public</span>
+                    <span>{t('Common.public')}</span>
                   </div>
                   {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
                 </DropdownMenuItem>
@@ -104,7 +108,7 @@ const PureChatItem = ({
             onSelect={() => onDelete(chat.id)}
           >
             <TrashIcon />
-            <span>Delete</span>
+            <span>{t('Common.delete')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -112,7 +116,4 @@ const PureChatItem = ({
   );
 };
 
-export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
-  if (prevProps.isActive !== nextProps.isActive) return false;
-  return true;
-});
+export const ChatItem = memo(PureChatItem, () => true);

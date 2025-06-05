@@ -10,7 +10,7 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
 
@@ -90,8 +90,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
             onSaveContent={onSaveContent}
           />
 
-          {metadata &&
-          metadata.suggestions &&
+          {metadata?.suggestions &&
           metadata.suggestions.length > 0 ? (
             <div className="md:hidden h-dvh w-12 shrink-0" />
           ) : null}
@@ -102,7 +101,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
   actions: [
     {
       icon: <ClockRewind size={18} />,
-      description: 'View changes',
+      description: '查看更改',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('toggle');
       },
@@ -116,7 +115,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     },
     {
       icon: <UndoIcon size={18} />,
-      description: 'View Previous version',
+      description: '查看上一版本',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('prev');
       },
@@ -130,7 +129,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     },
     {
       icon: <RedoIcon size={18} />,
-      description: 'View Next version',
+      description: '查看下一版本',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('next');
       },
@@ -144,33 +143,32 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     },
     {
       icon: <CopyIcon size={18} />,
-      description: 'Copy to clipboard',
+      description: '复制到剪贴板',
       onClick: ({ content }) => {
         navigator.clipboard.writeText(content);
-        toast.success('Copied to clipboard!');
+        toast.success('已复制到剪贴板！');
       },
     },
   ],
   toolbar: [
     {
       icon: <PenIcon />,
-      description: 'Add final polish',
+      description: '添加最终修饰',
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
           content:
-            'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
+            '请添加最终修饰，检查语法，添加段落标题以便更好地组织结构，并确保所有内容阅读流畅。',
         });
       },
     },
     {
       icon: <MessageIcon />,
-      description: 'Request suggestions',
+      description: '请求建议',
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
-          content:
-            'Please add suggestions you have that could improve the writing.',
+          content: '请添加您认为可以改进写作的建议。',
         });
       },
     },

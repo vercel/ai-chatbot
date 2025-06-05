@@ -1,8 +1,13 @@
+'use client';
+
 import Form from 'next/form';
+import { useTranslations } from 'next-intl';
 
 import { signOut } from '@/app/(auth)/auth';
 
 export const SignOutForm = () => {
+  const t = useTranslations('Auth');
+
   return (
     <Form
       className="w-full"
@@ -18,7 +23,7 @@ export const SignOutForm = () => {
         type="submit"
         className="w-full text-left px-1 py-0.5 text-red-500"
       >
-        Sign out
+        {t('signOut')}
       </button>
     </Form>
   );
