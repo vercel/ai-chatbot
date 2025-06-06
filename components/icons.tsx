@@ -1,12 +1,13 @@
 /**
  * @file components/icons.tsx
  * @description Набор SVG-иконок, используемых в приложении.
- * @version 1.2.0
+ * @version 1.3.0
  * @date 2025-06-06
- * @updated Все иконки были отрефакторены для приема `className` и других стандартных пропсов SVG.
+ * @updated Добавлена иконка MessageCircleReplyIcon.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-06): Добавлена иконка MessageCircleReplyIcon для функции "Обсудить в чате".
  * v1.2.0 (2025-06-06): Рефакторинг всех иконок для поддержки `className`.
  * v1.1.0 (2025-06-05): Добавлены MessageCircleIcon, FileTextIcon. Обновлена дата.
  * v1.0.0 (2025-05-25): Начальная версия файла с существующим набором иконок.
@@ -659,6 +660,26 @@ export const MessageIcon = ({ size = 16, ...rest }: IconProps) => {
     </svg>
   );
 };
+
+export const MessageCircleReplyIcon = ({ size = 18, ...rest }: IconProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...rest}
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="m15 10-4-4-4 4"/>
+      <path d="m11 14v-7"/>
+    </svg>
+);
+
 
 export const CrossIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg

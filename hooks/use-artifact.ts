@@ -1,12 +1,13 @@
 /**
  * @file hooks/use-artifact.ts
  * @description Хук для управления глобальным состоянием артефакта.
- * @version 1.1.0
- * @date 2025-06-05
- * @updated Добавлено управление режимом отображения (displayMode) для поддержки split-view и full-view.
+ * @version 1.2.0
+ * @date 2025-06-06
+ * @updated Добавлено поле saveStatus для отслеживания состояния сохранения артефакта.
  */
 
 /** HISTORY:
+ * v1.2.0 (2025-06-06): Добавлено поле `saveStatus` ('idle' | 'saving' | 'saved').
  * v1.1.0 (2025-06-05): Добавлены 'displayMode' и 'toggleDisplayMode' для управления режимами отображения.
  * v1.0.0 (2025-05-25): Начальная версия хука.
  */
@@ -23,6 +24,7 @@ export const initialArtifactData: UIArtifact = {
   kind: 'text',
   title: '',
   status: 'idle',
+  saveStatus: 'saved', // Начальное состояние - "сохранено"
   isVisible: false,
   displayMode: 'split',
   boundingBox: {

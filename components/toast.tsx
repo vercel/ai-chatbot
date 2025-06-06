@@ -1,19 +1,35 @@
+/**
+ * @file components/toast.tsx
+ * @description Компонент для отображения уведомлений.
+ * @version 1.1.0
+ * @date 2025-06-06
+ * @updated Добавлен тип 'loading' для отображения статуса загрузки.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-06): Добавлен тип 'loading' с иконкой LoaderIcon.
+ * v1.0.0 (2025-06-06): Начальная версия компонента.
+ */
 'use client';
 
 import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 import { toast as sonnerToast } from 'sonner';
-import { CheckCircleFillIcon, WarningIcon } from './icons';
+import { CheckCircleFillIcon, WarningIcon, LoaderIcon } from './icons';
 import { cn } from '@/lib/utils';
 
-const iconsByType: Record<'success' | 'error', ReactNode> = {
+const iconsByType: Record<'success' | 'error' | 'loading', ReactNode> = {
   success: <CheckCircleFillIcon />,
   error: <WarningIcon />,
+  loading: <LoaderIcon className="animate-spin" />,
 };
 
 export function toast(props: Omit<ToastProps, 'id'>) {
+  // sonner.toast.custom возвращает ID, который можно использовать для sonner.dismiss()
   return sonnerToast.custom((id) => (
     <Toast id={id} type={props.type} description={props.description} />
-  ));
+  ), {
+     duration: props.type === 'loading' ? 60000 : 4000, // Увеличиваем время жизни для загрузки
+  });
 }
 
 function Toast(props: ToastProps) {
@@ -52,7 +68,7 @@ function Toast(props: ToastProps) {
         <div
           data-type={type}
           className={cn(
-            'data-[type=error]:text-red-600 data-[type=success]:text-green-600',
+            'data-[type=error]:text-red-600 data-[type=success]:text-green-600 data-[type=loading]:text-blue-600',
             { 'pt-1': multiLine },
           )}
         >
@@ -68,6 +84,8 @@ function Toast(props: ToastProps) {
 
 interface ToastProps {
   id: string | number;
-  type: 'success' | 'error';
+  type: 'success' | 'error' | 'loading';
   description: string;
 }
+
+// END OF: components/toast.tsx

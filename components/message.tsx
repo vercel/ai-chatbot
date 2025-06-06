@@ -1,41 +1,42 @@
 /**
  * @file components/message.tsx
  * @description Компонент для отображения одного сообщения в чате.
- * @version 1.2.0
+ * @version 1.2.1
  * @date 2025-06-06
- * @updated Исправлены ошибки типизации, связанные с отсутствием переменной 'type' при обходе message.parts.
+ * @updated Исправлены стили Tailwind.
  */
 
 /** HISTORY:
+ * v1.2.1 (2025-06-06): Исправлены стили Tailwind.
  * v1.2.0 (2025-06-06): Исправлены ошибки типизации (TS2304, TS2339).
  * v1.1.0 (2025-06-06): Добавлены новые действия с сообщениями (копирование, удаление, перегенерация).
  * v1.0.0 (2025-06-06): Начальная версия.
  */
 
-'use client';
+'use client'
 
-import type { UIMessage } from 'ai';
-import cx from 'classnames';
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall, DocumentToolResult } from './document';
-import { CopyIcon, PencilEditIcon, SparklesIcon, TrashIcon } from './icons';
-import { Markdown } from './markdown';
-import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
-import equal from 'fast-deep-equal';
-import { cn, sanitizeText } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
-import { MessageReasoning } from './message-reasoning';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import { useCopyToClipboard } from 'usehooks-ts';
-import { toast } from './toast';
-import { deleteMessage, regenerateAssistantResponse } from '@/app/(main)/chat/actions';
+import type { UIMessage } from 'ai'
+import cx from 'classnames'
+import { AnimatePresence, motion } from 'framer-motion'
+import { memo, useState } from 'react'
+import type { Vote } from '@/lib/db/schema'
+import { DocumentToolCall, DocumentToolResult } from './document'
+import { CopyIcon, PencilEditIcon, SparklesIcon, TrashIcon } from './icons'
+import { Markdown } from './markdown'
+import { MessageActions } from './message-actions'
+import { PreviewAttachment } from './preview-attachment'
+import { Weather } from './weather'
+import equal from 'fast-deep-equal'
+import { cn, sanitizeText } from '@/lib/utils'
+import { Button } from './ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { MessageEditor } from './message-editor'
+import { DocumentPreview } from './document-preview'
+import { MessageReasoning } from './message-reasoning'
+import type { UseChatHelpers } from '@ai-sdk/react'
+import { useCopyToClipboard } from 'usehooks-ts'
+import { toast } from './toast'
+import { deleteMessage, regenerateAssistantResponse } from '@/app/(main)/chat/actions'
 
 const PurePreviewMessage = ({
   chatId,
@@ -56,40 +57,40 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
   requiresScrollPadding: boolean;
 }) => {
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
-  const [, copyToClipboard] = useCopyToClipboard();
+  const [mode, setMode] = useState<'view' | 'edit'>('view')
+  const [, copyToClipboard] = useCopyToClipboard()
 
   const handleCopy = () => {
     const textContent = message.parts
       .filter(part => part.type === 'text')
       // @ts-ignore
       .map(part => part.text)
-      .join('\n');
-    copyToClipboard(textContent);
-    toast({ type: 'success', description: 'Сообщение скопировано.' });
-  };
+      .join('\n')
+    copyToClipboard(textContent)
+    toast({ type: 'success', description: 'Сообщение скопировано.' })
+  }
 
   const handleDelete = async () => {
     try {
       // Оптимистичное удаление на клиенте
-      setMessages((messages) => messages.filter((m) => m.id !== message.id));
-      await deleteMessage({ messageId: message.id });
-      toast({ type: 'success', description: 'Сообщение удалено.' });
+      setMessages((messages) => messages.filter((m) => m.id !== message.id))
+      await deleteMessage({ messageId: message.id })
+      toast({ type: 'success', description: 'Сообщение удалено.' })
     } catch (error) {
-      toast({ type: 'error', description: 'Не удалось удалить сообщение.' });
+      toast({ type: 'error', description: 'Не удалось удалить сообщение.' })
       // Можно вернуть сообщение обратно в список, если удаление не удалось
-      setMessages((messages) => [...messages, message].sort((a,b) => (a.createdAt || 0) > (b.createdAt || 0) ? 1 : -1));
+      setMessages((messages) => [...messages, message].sort((a, b) => (a.createdAt || 0) > (b.createdAt || 0) ? 1 : -1))
     }
-  };
+  }
 
   const handleRegenerate = async () => {
     try {
       // Оптимистичное удаление ответа
-      setMessages((messages) => messages.filter((m) => m.id !== message.id));
-      await regenerateAssistantResponse({ assistantMessageId: message.id });
-      reload();
+      setMessages((messages) => messages.filter((m) => m.id !== message.id))
+      await regenerateAssistantResponse({ assistantMessageId: message.id })
+      reload()
     } catch (error) {
-      toast({ type: 'error', description: 'Не удалось перегенерировать ответ.' });
+      toast({ type: 'error', description: 'Не удалось перегенерировать ответ.' })
     }
   }
 
@@ -112,9 +113,10 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div
+              className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
-                <SparklesIcon size={14} />
+                <SparklesIcon size={14}/>
               </div>
             </div>
           )}
@@ -140,8 +142,8 @@ const PurePreviewMessage = ({
               )}
 
             {message.parts?.map((part, index) => {
-              const { type } = part;
-              const key = `message-${message.id}-part-${index}`;
+              const { type } = part
+              const key = `message-${message.id}-part-${index}`
 
               if (type === 'reasoning') {
                 return (
@@ -150,48 +152,56 @@ const PurePreviewMessage = ({
                     isLoading={isLoading}
                     reasoning={part.reasoning}
                   />
-                );
+                )
               }
 
               if (type === 'text') {
                 if (mode === 'view') {
                   return (
                     <div key={key} className="flex flex-row gap-2 items-start">
-                      <div className="flex-grow">
-                         <div
-                            data-testid="message-content"
-                            className={cn('flex flex-col gap-4', {
-                              'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                                message.role === 'user',
-                            })}
-                          >
-                            <Markdown>{sanitizeText(part.text)}</Markdown>
-                          </div>
+                      <div className="grow">
+                        <div
+                          data-testid="message-content"
+                          className={cn('flex flex-col gap-4', {
+                            'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                              message.role === 'user',
+                          })}
+                        >
+                          <Markdown>{sanitizeText(part.text)}</Markdown>
+                        </div>
                       </div>
                       {!isReadonly && (
-                        <div className="flex-shrink-0 flex items-center opacity-0 group-hover/message:opacity-100 transition-opacity">
+                        <div
+                          className="shrink-0 flex items-center opacity-0 group-hover/message:opacity-100 transition-opacity">
                           {message.role === 'user' ? (
                             <>
                               <Tooltip>
-                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleCopy}><CopyIcon size={14} /></Button></TooltipTrigger>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
+                                                                onClick={handleCopy}><CopyIcon
+                                  size={14}/></Button></TooltipTrigger>
                                 <TooltipContent>Скопировать</TooltipContent>
                               </Tooltip>
                               <Tooltip>
-                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMode('edit')}><PencilEditIcon size={14} /></Button></TooltipTrigger>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
+                                                                onClick={() => setMode('edit')}><PencilEditIcon
+                                  size={14}/></Button></TooltipTrigger>
                                 <TooltipContent>Редактировать</TooltipContent>
                               </Tooltip>
                             </>
                           ) : (
-                            <MessageActions chatId={chatId} message={message} vote={vote} isLoading={isLoading} />
+                            <MessageActions chatId={chatId} message={message} vote={vote} isLoading={isLoading}/>
                           )}
-                           <Tooltip>
-                              <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={handleDelete}><TrashIcon size={14} /></Button></TooltipTrigger>
-                              <TooltipContent>Удалить</TooltipContent>
-                            </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild><Button variant="ghost" size="icon"
+                                                            className="size-7 text-destructive"
+                                                            onClick={handleDelete}><TrashIcon
+                              size={14}/></Button></TooltipTrigger>
+                            <TooltipContent>Удалить</TooltipContent>
+                          </Tooltip>
                         </div>
                       )}
                     </div>
-                  );
+                  )
                 }
 
                 if (mode === 'edit') {
@@ -205,16 +215,16 @@ const PurePreviewMessage = ({
                         reload={reload}
                       />
                     </div>
-                  );
+                  )
                 }
               }
 
               if (type === 'tool-invocation') {
-                const { toolInvocation } = part;
-                const { toolName, toolCallId, state } = toolInvocation;
+                const { toolInvocation } = part
+                const { toolName, toolCallId, state } = toolInvocation
 
                 if (state === 'call') {
-                  const { args } = toolInvocation;
+                  const { args } = toolInvocation
 
                   return (
                     <div
@@ -224,9 +234,9 @@ const PurePreviewMessage = ({
                       })}
                     >
                       {toolName === 'getWeather' ? (
-                        <Weather />
+                        <Weather/>
                       ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args} />
+                        <DocumentPreview isReadonly={isReadonly} args={args}/>
                       ) : toolName === 'updateDocument' ? (
                         <DocumentToolCall
                           type="update"
@@ -241,16 +251,16 @@ const PurePreviewMessage = ({
                         />
                       ) : null}
                     </div>
-                  );
+                  )
                 }
 
                 if (state === 'result') {
-                  const { result } = toolInvocation;
+                  const { result } = toolInvocation
 
                   return (
                     <div key={toolCallId}>
                       {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result} />
+                        <Weather weatherAtLocation={result}/>
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview
                           isReadonly={isReadonly}
@@ -272,7 +282,7 @@ const PurePreviewMessage = ({
                         <pre>{JSON.stringify(result, null, 2)}</pre>
                       )}
                     </div>
-                  );
+                  )
                 }
               }
             })}
@@ -281,25 +291,25 @@ const PurePreviewMessage = ({
         </div>
       </motion.div>
     </AnimatePresence>
-  );
-};
+  )
+}
 
 export const PreviewMessage = memo(
   PurePreviewMessage,
   (prevProps, nextProps) => {
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (prevProps.message.id !== nextProps.message.id) return false;
+    if (prevProps.isLoading !== nextProps.isLoading) return false
+    if (prevProps.message.id !== nextProps.message.id) return false
     if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
-      return false;
-    if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
+      return false
+    if (!equal(prevProps.message.parts, nextProps.message.parts)) return false
+    if (!equal(prevProps.vote, nextProps.vote)) return false
 
-    return true;
+    return true
   },
-);
+)
 
 export const ThinkingMessage = () => {
-  const role = 'assistant';
+  const role = 'assistant'
 
   return (
     <motion.div
@@ -318,7 +328,7 @@ export const ThinkingMessage = () => {
         )}
       >
         <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
+          <SparklesIcon size={14}/>
         </div>
 
         <div className="flex flex-col gap-2 w-full">
@@ -328,7 +338,7 @@ export const ThinkingMessage = () => {
         </div>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
 // END OF: components/message.tsx

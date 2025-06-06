@@ -1,22 +1,21 @@
 /**
  * @file components/sidebar-history-item.tsx
  * @description Элемент истории чата в сайдбаре.
- * @version 1.0.1
+ * @version 1.1.0
  * @date 2025-06-06
- * @updated Исправлена ошибка TS2322 (несуществующий пропс `className` у иконок).
+ * @updated Добавлена логика показа уведомления о загрузке при клике.
  */
 
 /** HISTORY:
+ * v1.1.0 (2025-06-06): При клике теперь показывается toast-уведомление о загрузке чата.
  * v1.0.1 (2025-06-06): Исправлена передача `className` иконкам.
  * v1.0.0 (2025-06-06): Начальная версия, адаптированная под новый упрощенный компонент сайдбара.
  */
 
-import type { Chat } from '@/lib/db/schema';
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from './ui/sidebar';
-import Link from 'next/link';
+import type { Chat } from '@/lib/db/schema'
+import { SidebarMenuButton, SidebarMenuItem, } from './ui/sidebar'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,20 +25,14 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import {
-  CheckCircleFillIcon,
-  GlobeIcon,
-  LockIcon,
-  MoreHorizontalIcon,
-  ShareIcon,
-  TrashIcon,
-} from './icons';
-import { memo } from 'react';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { Button } from './ui/button';
-import { cn } from '@/lib/utils';
-import type { VisibilityType } from '@/lib/types';
+} from './ui/dropdown-menu'
+import { CheckCircleFillIcon, GlobeIcon, LockIcon, MoreHorizontalIcon, ShareIcon, TrashIcon, } from './icons'
+import { memo } from 'react'
+import { useChatVisibility } from '@/hooks/use-chat-visibility'
+import { Button } from './ui/button'
+import { cn } from '@/lib/utils'
+import type { VisibilityType } from '@/lib/types'
+import { toast } from './toast'
 
 const PureChatItem = ({
   chat,
@@ -55,35 +48,48 @@ const PureChatItem = ({
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibilityType: chat.visibility as VisibilityType,
-  });
+  })
+
+  const router = useRouter()
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isActive) {
+      e.preventDefault()
+      return
+    }
+    e.preventDefault()
+    toast({ type: 'loading', description: `Загружаем чат "${chat.title}"...` })
+    setOpenMobile(false)
+    router.push(`/chat/${chat.id}`)
+  }
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+        <Link href={`/chat/${chat.id}`} onClick={handleLinkClick}>
           <span>{chat.title}</span>
         </Link>
       </SidebarMenuButton>
 
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
-           <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-1 text-muted-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
-                isActive ? 'opacity-100' : 'opacity-0 group-hover/menu-item:opacity-100'
-              )}
-            >
-              <MoreHorizontalIcon className="size-4" />
-              <span className="sr-only">More</span>
-            </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-1 text-muted-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+              isActive ? 'opacity-100' : 'opacity-0 group-hover/menu-item:opacity-100'
+            )}
+          >
+            <MoreHorizontalIcon className="size-4"/>
+            <span className="sr-only">More</span>
+          </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent side="bottom" align="end">
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-              <ShareIcon />
+              <ShareIcon/>
               <span>Share</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
@@ -91,28 +97,28 @@ const PureChatItem = ({
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType('private');
+                    setVisibilityType('private')
                   }}
                 >
                   <div className="flex flex-row gap-2 items-center">
-                    <LockIcon size={12} />
+                    <LockIcon size={12}/>
                     <span>Private</span>
                   </div>
                   {visibilityType === 'private' ? (
-                    <CheckCircleFillIcon />
+                    <CheckCircleFillIcon/>
                   ) : null}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType('public');
+                    setVisibilityType('public')
                   }}
                 >
                   <div className="flex flex-row gap-2 items-center">
-                    <GlobeIcon />
+                    <GlobeIcon/>
                     <span>Public</span>
                   </div>
-                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
+                  {visibilityType === 'public' ? <CheckCircleFillIcon/> : null}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
@@ -122,18 +128,18 @@ const PureChatItem = ({
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
             onSelect={() => onDelete(chat.id)}
           >
-            <TrashIcon />
+            <TrashIcon/>
             <span>Delete</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
-  );
-};
+  )
+}
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
-  if (prevProps.isActive !== nextProps.isActive) return false;
-  return true;
-});
+  if (prevProps.isActive !== nextProps.isActive) return false
+  return true
+})
 
 // END OF: components/sidebar-history-item.tsx

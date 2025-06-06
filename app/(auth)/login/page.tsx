@@ -1,53 +1,53 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
-import { toast } from '@/components/toast';
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useActionState, useEffect, useState } from 'react'
+import { toast } from '@/components/toast'
 
-import { AuthForm } from '@/components/auth-form';
-import { SubmitButton } from '@/components/submit-button';
+import { AuthForm } from '@/components/auth-form'
+import { SubmitButton } from '@/components/submit-button'
 
-import { login, type LoginActionState } from '../actions';
-import { useSession } from 'next-auth/react';
+import { login, type LoginActionState } from '../actions'
+import { useSession } from 'next-auth/react'
 
-export default function Page() {
-  const router = useRouter();
+export default function Page () {
+  const router = useRouter()
 
-  const [email, setEmail] = useState('');
-  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [email, setEmail] = useState('')
+  const [isSuccessful, setIsSuccessful] = useState(false)
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
     {
       status: 'idle',
     },
-  );
+  )
 
-  const { update: updateSession } = useSession();
+  const { update: updateSession } = useSession()
 
   useEffect(() => {
     if (state.status === 'failed') {
       toast({
         type: 'error',
         description: 'Invalid credentials!',
-      });
+      })
     } else if (state.status === 'invalid_data') {
       toast({
         type: 'error',
         description: 'Failed validating your submission!',
-      });
+      })
     } else if (state.status === 'success') {
-      setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      setIsSuccessful(true)
+      updateSession()
+      router.refresh()
     }
-  }, [state.status]);
+  }, [state.status, router, updateSession])
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    formAction(formData);
-  };
+    setEmail(formData.get('email') as string)
+    formAction(formData)
+  }
 
   return (
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
@@ -61,7 +61,7 @@ export default function Page() {
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {"Don't have an account? "}
+            {'Don\'t have an account? '}
             <Link
               href="/register"
               className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
@@ -73,5 +73,5 @@ export default function Page() {
         </AuthForm>
       </div>
     </div>
-  );
+  )
 }
