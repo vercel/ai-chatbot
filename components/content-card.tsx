@@ -1,19 +1,18 @@
 /**
  * @file components/content-card.tsx
  * @description Компонент карточки для одного элемента контента.
- * @version 1.1.0
+ * @version 1.2.0
  * @date 2025-06-06
- * @updated Исправлена логика "Обсудить в чате" для корректной работы без перезагрузки страницы.
+ * @updated Функция "Обсудить в чате" теперь вызывает новый API-маршрут.
  */
 
 /** HISTORY:
+ * v1.2.0 (2025-06-06): `handleDiscuss` теперь использует API-маршрут `/api/chat/discuss-artifact`.
  * v1.1.0 (2025-06-06): Исправлена логика навигации в `handleDiscuss`.
  * v1.0.5 (2025-06-06): Исправлены стили и добавлена доступность (a11y).
  * v1.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
  * v1.0.3 (2025-06-06): Добавлено обязательное поле `args: {}` в объект toolInvocation.
  * v1.0.2 (2025-06-06): Исправлен импорт типа UIMessage на Message as UIMessage.
- * v1.0.1 (2025-06-06): Исправлены ошибки TypeScript, связанные с импортом типов и структурой объекта.
- * v1.0.0 (2025-06-06): Начальная версия компонента.
  */
 'use client'
 
@@ -39,9 +38,8 @@ import {
 import { deleteContent } from '@/app/(main)/content/actions'
 import { toast } from '@/components/toast'
 import type { ContentDocument } from './content-grid-display'
-import { generateUUID } from '@/lib/utils'
-import type { Message as UIMessage, UseChatHelpers } from 'ai/react'
-import { usePathname, useRouter } from 'next/navigation'
+import type { UseChatHelpers } from 'ai/react'
+import { useRouter } from 'next/navigation'
 
 interface ContentCardProps {
   document: ContentDocument;
@@ -57,10 +55,9 @@ const kindIcons = {
   sheet: BoxIcon,
 }
 
-export function ContentCard ({ document, onRefresh, onCardClick, setMessages }: ContentCardProps) {
+export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
-  const pathname = usePathname()
   const Icon = kindIcons[document.kind] || FileIcon
 
   const handleDelete = async () => {
@@ -77,41 +74,8 @@ export function ContentCard ({ document, onRefresh, onCardClick, setMessages }: 
 
   const handleDiscuss = (e: React.MouseEvent) => {
     e.stopPropagation() // Предотвращаем клик по всей карточке
-
-    const textContent = 'Давайте обсудим следующий документ:'
-    const newUserMessage: UIMessage = {
-      id: generateUUID(),
-      role: 'user',
-      createdAt: new Date(),
-      content: textContent, // Добавлено обязательное поле
-      parts: [
-        { type: 'text', text: textContent },
-        {
-          type: 'tool-invocation',
-          toolInvocation: {
-            toolName: 'createDocument',
-            toolCallId: generateUUID(),
-            state: 'result',
-            args: {},
-            result: {
-              id: document.id,
-              title: document.title,
-              kind: document.kind,
-              content: `Документ "${document.title}" добавлен в чат для обсуждения.`,
-            },
-          }
-        },
-      ],
-    }
-
-    setMessages((currentMessages: UIMessage[]) => [...currentMessages, newUserMessage])
-
-    // Если мы не на странице чата, переходим на главную
-    if (!pathname.startsWith('/chat') && pathname !== '/') {
-      router.push('/')
-    }
-
-    toast({ type: 'success', description: `"${document.title}" добавлен в чат.` })
+    toast({ type: 'loading', description: 'Создание чата для обсуждения...' })
+    router.push(`/api/chat/discuss-artifact?artifactId=${document.id}`)
   }
 
   return (

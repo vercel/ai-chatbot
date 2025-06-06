@@ -1,18 +1,18 @@
 /**
  * @file components/artifact-actions.tsx
  * @description Компонент с действиями для артефакта.
- * @version 2.1.0
+ * @version 2.2.0
  * @date 2025-06-06
- * @updated Исправлена логика "Обсудить в чате", чтобы не перезагружать страницу, если чат уже открыт, и добавлено закрытие панели артефакта.
+ * @updated Функция "Обсудить в чате" теперь вызывает новый API-маршрут.
  */
 
 /** HISTORY:
+ * v2.2.0 (2025-06-06): `handleDiscuss` теперь использует API-маршрут `/api/chat/discuss-artifact`.
  * v2.1.0 (2025-06-06): Исправлена логика "Обсудить в чате".
  * v2.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
  * v2.0.3 (2025-06-06): Добавлено обязательное поле `args: {}` в объект toolInvocation.
  * v2.0.2 (2025-06-06): Исправлен импорт типа UIMessage на Message as UIMessage.
  * v2.0.1 (2025-06-06): Исправлена ошибка типа для `tool-invocation` и импорт `toast`.
- * v2.0.0 (2025-06-06): Реализована клиентская логика "Обсудить в чате" и индикатор сохранения.
  */
 
 import { Button } from './ui/button'
@@ -20,11 +20,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { artifactDefinitions, type UIArtifact } from './artifact'
 import { type Dispatch, memo, type SetStateAction, useState } from 'react'
 import type { ArtifactActionContext } from './create-artifact'
-import { cn, generateUUID } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { toast } from '@/components/toast'
 import { CheckCircleFillIcon, LoaderIcon, MessageCircleReplyIcon, VercelIcon } from './icons'
-import { usePathname, useRouter } from 'next/navigation'
-import { type Message as UIMessage, useChat } from 'ai/react'
+import { useRouter } from 'next/navigation'
 import { useArtifact } from '@/hooks/use-artifact'
 
 interface ArtifactActionsProps {
@@ -61,8 +60,6 @@ function PureArtifactActions ({
 }: ArtifactActionsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const pathname = usePathname()
-  const { setMessages } = useChat()
   const { setArtifact } = useArtifact()
 
   const artifactDefinition = artifactDefinitions.find(
@@ -74,44 +71,9 @@ function PureArtifactActions ({
   }
 
   const handleDiscuss = () => {
-    const textContent = 'Давайте обсудим следующий документ:'
-    const newUserMessage: UIMessage = {
-      id: generateUUID(),
-      role: 'user',
-      createdAt: new Date(),
-      content: textContent,
-      parts: [
-        {
-          type: 'text',
-          text: textContent,
-        },
-        {
-          type: 'tool-invocation',
-          toolInvocation: {
-            toolName: 'createDocument',
-            toolCallId: generateUUID(),
-            state: 'result',
-            args: {},
-            result: {
-              id: artifact.documentId,
-              title: artifact.title,
-              kind: artifact.kind,
-              content: `Документ "${artifact.title}" добавлен в чат для обсуждения.`,
-            },
-          },
-        },
-      ],
-    }
-
-    setMessages(currentMessages => [...currentMessages, newUserMessage])
+    toast({ type: 'loading', description: 'Создание чата для обсуждения...' })
     setArtifact(prev => ({ ...prev, isVisible: false }))
-
-    // Если мы не на странице чата, переходим на главную
-    if (!pathname.startsWith('/chat') && pathname !== '/') {
-      router.push('/')
-    }
-
-    toast({ type: 'success', description: `Артефакт "${artifact.title}" добавлен в чат.` })
+    router.push(`/api/chat/discuss-artifact?artifactId=${artifact.documentId}`)
   }
 
   const actionContext: ArtifactActionContext = {

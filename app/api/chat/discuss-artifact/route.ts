@@ -1,9 +1,15 @@
 /**
  * @file app/api/chat/discuss-artifact/route.ts
  * @description API маршрут для создания чата с контекстом артефакта.
- * @version 1.0.0
+ * @version 1.2.0
  * @date 2025-06-06
- * @updated Начальная версия.
+ * @updated Добавлено создание ответного сообщения от ассистента для корректного состояния чата.
+ */
+
+/** HISTORY:
+ * v1.2.0 (2025-06-06): Добавлено автоматическое ответное сообщение от ассистента.
+ * v1.1.0 (2025-06-06): Изменена структура сообщения на `tool-invocation`.
+ * v1.0.0 (2025-06-06): Начальная версия.
  */
 
 import { NextResponse } from 'next/server';
@@ -14,6 +20,18 @@ import { ChatSDKError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
+const assistantResponses = [
+    "Отлично, давайте обсудим. Готов приступать!",
+    "Хорошо! Готов к обсуждению. Какие у вас есть вопросы?",
+    "Документ перед глазами. С чего начнем?",
+    "Конечно, давайте поговорим об этом. Что вы хотите узнать?",
+];
+
+function getRandomResponse() {
+    const randomIndex = Math.floor(Math.random() * assistantResponses.length);
+    return assistantResponses[randomIndex];
+}
+
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -23,7 +41,6 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const artifactId = searchParams.get('artifactId');
-    let chatId = searchParams.get('chatId');
 
     if (!artifactId) {
       return new ChatSDKError('bad_request:api', 'artifactId является обязательным параметром.').toResponse();
@@ -34,37 +51,56 @@ export async function GET(request: Request) {
       return new ChatSDKError('forbidden:api', 'Документ не найден или доступ запрещен.').toResponse();
     }
 
-    const messageContent = `Давай обсудим этот документ: [${document.title}](/notes?openDocId=${document.id})`;
-    const messageId = generateUUID();
+    const newChatId = generateUUID();
+    const newChatTitle = `Обсуждение: ${document.title}`;
 
-    // Если chatId не предоставлен, создаем новый чат
-    if (!chatId) {
-      const newChatId = generateUUID();
-      const newChatTitle = `Обсуждение: ${document.title}`;
-
-      await saveChat({
-        id: newChatId,
-        userId: session.user.id,
-        title: newChatTitle,
-        visibility: 'private',
-      });
-      chatId = newChatId;
-    }
-
-    // Добавляем системное/пользовательское сообщение в чат
-    await saveMessages({
-      messages: [{
-        id: messageId,
-        chatId: chatId,
-        role: 'user', // Отображаем как сообщение пользователя для наглядности
-        parts: [{ type: 'text', text: messageContent }],
-        attachments: [],
-        createdAt: new Date(),
-      }],
+    await saveChat({
+      id: newChatId,
+      userId: session.user.id,
+      title: newChatTitle,
+      visibility: 'private',
     });
 
-    // Редирект на страницу чата
-    const chatUrl = new URL(`/chat/${chatId}`, request.url);
+    const userMessage = {
+      id: generateUUID(),
+      chatId: newChatId,
+      role: 'user',
+      parts: [
+        { type: 'text', text: 'Давайте обсудим следующий документ:' },
+        {
+          type: 'tool-invocation',
+          toolInvocation: {
+            toolName: 'createDocument',
+            toolCallId: generateUUID(),
+            state: 'result',
+            args: {},
+            result: {
+              id: document.id,
+              title: document.title,
+              kind: document.kind,
+              content: `Документ "${document.title}" добавлен в чат для обсуждения.`,
+            },
+          }
+        }
+      ],
+      attachments: [],
+      createdAt: new Date(),
+    };
+
+    const assistantMessage = {
+      id: generateUUID(),
+      chatId: newChatId,
+      role: 'assistant',
+      parts: [{ type: 'text', text: getRandomResponse() }],
+      attachments: [],
+      createdAt: new Date(Date.now() + 1), // Чуть позже, для порядка
+    };
+
+    await saveMessages({
+      messages: [userMessage, assistantMessage],
+    });
+
+    const chatUrl = new URL(`/chat/${newChatId}`, request.url);
     return NextResponse.redirect(chatUrl.toString());
 
   } catch (error) {

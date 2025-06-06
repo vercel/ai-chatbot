@@ -1,12 +1,13 @@
 /**
  * @file components/toast.tsx
  * @description Компонент для отображения уведомлений.
- * @version 1.2.0
+ * @version 1.2.1
  * @date 2025-06-06
- * @updated Компонент-обертка теперь экспортирует метод `dismiss` из `sonner` для унификации API.
+ * @updated Уменьшен таймаут для `loading`-уведомлений до 10 секунд.
  */
 
 /** HISTORY:
+ * v1.2.1 (2025-06-06): Уменьшен таймаут для `loading` до 10000 мс.
  * v1.2.0 (2025-06-06): Добавлен экспорт `dismiss` для создания единого API уведомлений.
  * v1.1.0 (2025-06-06): Добавлен тип 'loading' с иконкой LoaderIcon.
  * v1.0.0 (2025-06-06): Начальная версия компонента.
@@ -29,7 +30,7 @@ function customToast (props: Omit<ToastProps, 'id'>) {
   return sonnerToast.custom((id) => (
     <Toast id={id} type={props.type} description={props.description}/>
   ), {
-    duration: props.type === 'loading' ? 60000 : 4000,
+    duration: props.type === 'loading' ? 10000 : 4000, // Уменьшен таймаут
   })
 }
 

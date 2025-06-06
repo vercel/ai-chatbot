@@ -1,12 +1,13 @@
 /**
  * @file components/message.tsx
  * @description Компонент для отображения одного сообщения в чате.
- * @version 1.2.1
+ * @version 1.3.0
  * @date 2025-06-06
- * @updated Исправлены стили Tailwind.
+ * @updated Логика `handleDelete` изменена для обновления UI после успешного ответа от сервера.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-06): `handleDelete` теперь обновляет UI после ответа сервера.
  * v1.2.1 (2025-06-06): Исправлены стили Tailwind.
  * v1.2.0 (2025-06-06): Исправлены ошибки типизации (TS2304, TS2339).
  * v1.1.0 (2025-06-06): Добавлены новые действия с сообщениями (копирование, удаление, перегенерация).
@@ -71,15 +72,12 @@ const PurePreviewMessage = ({
   }
 
   const handleDelete = async () => {
-    try {
-      // Оптимистичное удаление на клиенте
+    const result = await deleteMessage({ messageId: message.id })
+    if (result.success) {
       setMessages((messages) => messages.filter((m) => m.id !== message.id))
-      await deleteMessage({ messageId: message.id })
       toast({ type: 'success', description: 'Сообщение удалено.' })
-    } catch (error) {
-      toast({ type: 'error', description: 'Не удалось удалить сообщение.' })
-      // Можно вернуть сообщение обратно в список, если удаление не удалось
-      setMessages((messages) => [...messages, message].sort((a, b) => (a.createdAt || 0) > (b.createdAt || 0) ? 1 : -1))
+    } else {
+      toast({ type: 'error', description: result.error || 'Не удалось удалить сообщение.' })
     }
   }
 
