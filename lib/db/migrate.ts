@@ -3,9 +3,12 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
+// Load .env.local as a priority when the file exists
 config({
   path: '.env.local',
 });
+// Calling just `config()` will load .env as a fallback
+config(); 
 
 const runMigrate = async () => {
   if (!process.env.POSTGRES_URL) {
