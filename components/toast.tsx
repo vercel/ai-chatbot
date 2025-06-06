@@ -1,59 +1,66 @@
 /**
  * @file components/toast.tsx
  * @description Компонент для отображения уведомлений.
- * @version 1.1.0
+ * @version 1.2.0
  * @date 2025-06-06
- * @updated Добавлен тип 'loading' для отображения статуса загрузки.
+ * @updated Компонент-обертка теперь экспортирует метод `dismiss` из `sonner` для унификации API.
  */
 
 /** HISTORY:
+ * v1.2.0 (2025-06-06): Добавлен экспорт `dismiss` для создания единого API уведомлений.
  * v1.1.0 (2025-06-06): Добавлен тип 'loading' с иконкой LoaderIcon.
  * v1.0.0 (2025-06-06): Начальная версия компонента.
  */
-'use client';
+'use client'
 
-import React, { useEffect, useRef, useState, type ReactNode } from 'react';
-import { toast as sonnerToast } from 'sonner';
-import { CheckCircleFillIcon, WarningIcon, LoaderIcon } from './icons';
-import { cn } from '@/lib/utils';
+import React, { type ReactNode, useEffect, useRef, useState } from 'react'
+import { toast as sonnerToast } from 'sonner'
+import { CheckCircleFillIcon, LoaderIcon, WarningIcon } from './icons'
+import { cn } from '@/lib/utils'
 
 const iconsByType: Record<'success' | 'error' | 'loading', ReactNode> = {
-  success: <CheckCircleFillIcon />,
-  error: <WarningIcon />,
-  loading: <LoaderIcon className="animate-spin" />,
-};
-
-export function toast(props: Omit<ToastProps, 'id'>) {
-  // sonner.toast.custom возвращает ID, который можно использовать для sonner.dismiss()
-  return sonnerToast.custom((id) => (
-    <Toast id={id} type={props.type} description={props.description} />
-  ), {
-     duration: props.type === 'loading' ? 60000 : 4000, // Увеличиваем время жизни для загрузки
-  });
+  success: <CheckCircleFillIcon/>,
+  error: <WarningIcon/>,
+  loading: <LoaderIcon className="animate-spin"/>,
 }
 
-function Toast(props: ToastProps) {
-  const { id, type, description } = props;
+// Создаем функцию-обертку
+function customToast (props: Omit<ToastProps, 'id'>) {
+  return sonnerToast.custom((id) => (
+    <Toast id={id} type={props.type} description={props.description}/>
+  ), {
+    duration: props.type === 'loading' ? 60000 : 4000,
+  })
+}
 
-  const descriptionRef = useRef<HTMLDivElement>(null);
-  const [multiLine, setMultiLine] = useState(false);
+// Прикрепляем метод `dismiss` к нашей функции
+customToast.dismiss = sonnerToast.dismiss
+
+// Экспортируем нашу кастомную функцию как `toast`
+export { customToast as toast }
+
+function Toast (props: ToastProps) {
+  const { id, type, description } = props
+
+  const descriptionRef = useRef<HTMLDivElement>(null)
+  const [multiLine, setMultiLine] = useState(false)
 
   useEffect(() => {
-    const el = descriptionRef.current;
-    if (!el) return;
+    const el = descriptionRef.current
+    if (!el) return
 
     const update = () => {
-      const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight);
-      const lines = Math.round(el.scrollHeight / lineHeight);
-      setMultiLine(lines > 1);
-    };
+      const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight)
+      const lines = Math.round(el.scrollHeight / lineHeight)
+      setMultiLine(lines > 1)
+    }
 
-    update(); // initial check
-    const ro = new ResizeObserver(update); // re-check on width changes
-    ro.observe(el);
+    update() // initial check
+    const ro = new ResizeObserver(update) // re-check on width changes
+    ro.observe(el)
 
-    return () => ro.disconnect();
-  }, [description]);
+    return () => ro.disconnect()
+  }, [description])
 
   return (
     <div className="flex w-full toast-mobile:w-[356px] justify-center">
@@ -79,7 +86,7 @@ function Toast(props: ToastProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 interface ToastProps {

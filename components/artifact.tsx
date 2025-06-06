@@ -1,20 +1,19 @@
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 1.4.1
+ * @version 1.5.1
  * @date 2025-06-06
- * @updated Исправлены классы Tailwind (h-full/w-full -> size-full).
+ * @updated Заменен импорт `sonner` на локальную обертку `toast` для консистентности.
  */
 
 /** HISTORY:
+ * v1.5.1 (2025-06-06): Заменен импорт `sonner` на локальную обертку `toast`.
+ * v1.5.0 (2025-06-06): Добавлено скрытие toast-уведомления после завершения загрузки данных.
  * v1.4.1 (2025-06-06): Исправлены классы Tailwind.
  * v1.4.0 (2025-06-06): Добавлено управление `saveStatus` и вызов `toast.dismiss()` после загрузки данных.
  * v1.3.2 (2025-06-06): Добавлены недостающие пропсы в Toolbar.
  * v1.3.1 (2025-06-06): Исправлен тип 'status' для Toolbar.
  * v1.3.0 (2025-06-05): Исправлена логика кнопки fullscreen.
- * v1.2.0 (2025-06-05): Удалены классы `fixed`, `top`, `right` и т.д. для работы в Flexbox-макете.
- * v1.1.0 (2025-06-05): Добавлена кнопка переключения displayMode и логика для split/full view.
- * v1.0.0 (2025-05-25): Начальная версия компонента.
  */
 import type { Attachment, UIMessage } from 'ai'
 import { formatDistance } from 'date-fns'
@@ -38,7 +37,7 @@ import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { FullscreenIcon } from './icons'
 import type { Session } from 'next-auth'
-import { toast } from 'sonner'
+import { toast } from './toast'
 
 export const artifactDefinitions = [
   textArtifact,

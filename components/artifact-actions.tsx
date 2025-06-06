@@ -1,12 +1,13 @@
 /**
  * @file components/artifact-actions.tsx
  * @description Компонент с действиями для артефакта.
- * @version 2.0.4
+ * @version 2.1.0
  * @date 2025-06-06
- * @updated Исправлена ошибка типа: добавлено обязательное поле `content` в объект Message.
+ * @updated Исправлена логика "Обсудить в чате", чтобы не перезагружать страницу, если чат уже открыт, и добавлено закрытие панели артефакта.
  */
 
 /** HISTORY:
+ * v2.1.0 (2025-06-06): Исправлена логика "Обсудить в чате".
  * v2.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
  * v2.0.3 (2025-06-06): Добавлено обязательное поле `args: {}` в объект toolInvocation.
  * v2.0.2 (2025-06-06): Исправлен импорт типа UIMessage на Message as UIMessage.
@@ -22,7 +23,7 @@ import type { ArtifactActionContext } from './create-artifact'
 import { cn, generateUUID } from '@/lib/utils'
 import { toast } from '@/components/toast'
 import { CheckCircleFillIcon, LoaderIcon, MessageCircleReplyIcon, VercelIcon } from './icons'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { type Message as UIMessage, useChat } from 'ai/react'
 import { useArtifact } from '@/hooks/use-artifact'
 
@@ -60,6 +61,7 @@ function PureArtifactActions ({
 }: ArtifactActionsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const { setMessages } = useChat()
   const { setArtifact } = useArtifact()
 
@@ -77,7 +79,7 @@ function PureArtifactActions ({
       id: generateUUID(),
       role: 'user',
       createdAt: new Date(),
-      content: textContent, // Добавлено обязательное поле
+      content: textContent,
       parts: [
         {
           type: 'text',
@@ -104,7 +106,8 @@ function PureArtifactActions ({
     setMessages(currentMessages => [...currentMessages, newUserMessage])
     setArtifact(prev => ({ ...prev, isVisible: false }))
 
-    if (!window.location.pathname.startsWith('/chat')) {
+    // Если мы не на странице чата, переходим на главную
+    if (!pathname.startsWith('/chat') && pathname !== '/') {
       router.push('/')
     }
 

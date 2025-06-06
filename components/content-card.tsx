@@ -1,12 +1,13 @@
 /**
  * @file components/content-card.tsx
  * @description Компонент карточки для одного элемента контента.
- * @version 1.0.5
+ * @version 1.1.0
  * @date 2025-06-06
- * @updated Исправлены классы Tailwind и добавлена доступность для интерактивного div.
+ * @updated Исправлена логика "Обсудить в чате" для корректной работы без перезагрузки страницы.
  */
 
 /** HISTORY:
+ * v1.1.0 (2025-06-06): Исправлена логика навигации в `handleDiscuss`.
  * v1.0.5 (2025-06-06): Исправлены стили и добавлена доступность (a11y).
  * v1.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
  * v1.0.3 (2025-06-06): Добавлено обязательное поле `args: {}` в объект toolInvocation.
@@ -40,7 +41,7 @@ import { toast } from '@/components/toast'
 import type { ContentDocument } from './content-grid-display'
 import { generateUUID } from '@/lib/utils'
 import type { Message as UIMessage, UseChatHelpers } from 'ai/react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface ContentCardProps {
   document: ContentDocument;
@@ -59,6 +60,7 @@ const kindIcons = {
 export function ContentCard ({ document, onRefresh, onCardClick, setMessages }: ContentCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const Icon = kindIcons[document.kind] || FileIcon
 
   const handleDelete = async () => {
@@ -103,7 +105,12 @@ export function ContentCard ({ document, onRefresh, onCardClick, setMessages }: 
     }
 
     setMessages((currentMessages: UIMessage[]) => [...currentMessages, newUserMessage])
-    router.push('/')
+
+    // Если мы не на странице чата, переходим на главную
+    if (!pathname.startsWith('/chat') && pathname !== '/') {
+      router.push('/')
+    }
+
     toast({ type: 'success', description: `"${document.title}" добавлен в чат.` })
   }
 
