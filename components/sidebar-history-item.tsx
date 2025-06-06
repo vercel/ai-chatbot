@@ -26,23 +26,27 @@ import {
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { VisibilityType } from './visibility-selector';
+import { useShareDialog } from './share-dialog-context';
 
 const PureChatItem = ({
   chat,
   isActive,
   onDelete,
   setOpenMobile,
+  handleOpenPopup,
 }: {
   chat: Chat;
   isActive: boolean;
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
+  handleOpenPopup: (chatId: string) => void;
 }) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibility: chat.visibility as VisibilityType,
   });
 
+  const { openShareDialog } = useShareDialog();
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
@@ -88,6 +92,13 @@ const PureChatItem = ({
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
                     setVisibilityType('organisation');
+                    const summary = chat.messages
+                      ? chat.messages
+                          .slice(0, 2)
+                          .map((m) => m.text)
+                          .join(' ')
+                      : chat.title;
+                    openShareDialog(chat.id, 'organisation', summary);
                   }}
                 >
                   <div className="flex flex-row gap-2 items-center">
