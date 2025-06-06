@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const kind = searchParams.get('kind') as ArtifactKind | null;
     const limitParam = searchParams.get('limit');
-    const limit = limitParam ? parseInt(limitParam, 10) : 5;
+    const limit = limitParam ? Number.parseInt(limitParam, 10) : 5;
 
-    if (isNaN(limit) || limit <= 0 || limit > 20) {
+    if (Number.isNaN(limit) || limit <= 0 || limit > 20) {
         // SYS_LOGGER.warn({ limitParam }, 'SYS_APP_API_DOC_RECENT: Invalid limit parameter');
         return new ChatSDKError('bad_request:api', 'Invalid limit parameter. Must be between 1 and 20.').toResponse();
     }

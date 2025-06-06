@@ -42,7 +42,6 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { FullscreenIcon } from './icons';
-import { cn } from '@/lib/utils';
 import type { Session } from 'next-auth';
 
 export const artifactDefinitions = [

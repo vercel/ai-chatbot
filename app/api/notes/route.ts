@@ -32,14 +32,14 @@ export async function GET(request: NextRequest) {
     const pageSizeParam = searchParams.get('pageSize');
     const searchQuery = searchParams.get('searchQuery') || undefined;
 
-    const page = pageParam ? parseInt(pageParam, 10) : 1;
-    const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
+    const page = pageParam ? Number.parseInt(pageParam, 10) : 1;
+    const pageSize = pageSizeParam ? Number.parseInt(pageSizeParam, 10) : 10;
 
-    if (isNaN(page) || page <= 0) {
+    if (Number.isNaN(page) || page <= 0) {
       // SYS_LOGGER.warn({ pageParam }, 'SYS_APP_API_NOTES_LIST: Invalid page parameter');
       return new ChatSDKError('bad_request:api', 'Invalid page parameter.').toResponse();
     }
-    if (isNaN(pageSize) || pageSize <= 0 || pageSize > 50) {
+    if (Number.isNaN(pageSize) || pageSize <= 0 || pageSize > 50) {
       // SYS_LOGGER.warn({ pageSizeParam }, 'SYS_APP_API_NOTES_LIST: Invalid pageSize parameter');
       return new ChatSDKError('bad_request:api', 'Invalid pageSize parameter. Must be between 1 and 50.').toResponse();
     }

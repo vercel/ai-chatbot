@@ -56,7 +56,7 @@ export function useChatVisibility({
 
     // Итерируемся по массиву страниц от useSWRInfinite
     for (const page of chatHistoryCache.data) {
-      if (page && page.chats) {
+      if (page?.chats) {
         const chat = page.chats.find((c: Chat) => c.id === chatId);
         if (chat) return chat.visibility;
       }

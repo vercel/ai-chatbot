@@ -14,7 +14,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { UIArtifact, ArtifactDisplayMode } from '@/components/artifact';
+import type { UIArtifact, } from '@/components/artifact';
 import { useCallback, useMemo } from 'react';
 
 export const initialArtifactData: UIArtifact = {
