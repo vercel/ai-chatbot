@@ -56,6 +56,8 @@ export default function NotesPage({
   );
 }
 
+const skeletonKeys = ['s1', 's2', 's3', 's4', 's5']
+
 function DataTableSkeleton() {
   return (
     <div className="space-y-4">
@@ -67,8 +69,8 @@ function DataTableSkeleton() {
       <div className="border rounded-md">
         <div className="p-4">
           <Skeleton className="h-8 w-full mb-4" />
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full mb-2" />
+          {skeletonKeys.map((key) => (
+            <Skeleton key={key} className="h-10 w-full mb-2" />
           ))}
         </div>
         <div className="p-4 border-t flex justify-between items-center">

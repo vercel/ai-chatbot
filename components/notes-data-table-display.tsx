@@ -62,6 +62,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+const skeletonKeys = ['s1', 's2', 's3', 's4', 's5']
+
 export interface NotesDocument extends Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind'> {}
 
 interface NotesDataTableDisplayProps {
@@ -214,16 +216,16 @@ export function NotesDataTableDisplay({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px] hidden sm:table-cell"></TableHead>
+              <TableHead className="w-[50px] hidden sm:table-cell" />
               <TableHead>Название</TableHead>
               <TableHead className="hidden md:table-cell w-[200px]">Дата создания</TableHead>
               <TableHead className="w-[80px] text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && documents.length === 0 ? (
-              [...Array(5)].map((_, i) => (
-                <TableRow key={`skeleton-${i}`}>
+              {isLoading && documents.length === 0 ? (
+                skeletonKeys.map((key) => (
+                  <TableRow key={`skeleton-${key}`}>
                   <TableCell className="hidden sm:table-cell"><Skeleton className="h-6 w-6 rounded-full" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-3/4" /></TableCell>
                   <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-2/3" /></TableCell>
@@ -307,7 +309,7 @@ export function NotesDataTableDisplay({
           <AlertDialogHeader>
             <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
             <AlertDialogDescription>
-              Это действие нельзя отменить. Заметка "{documentToDelete?.title}" будет удалена навсегда.
+              Это действие нельзя отменить. Заметка &quot;{documentToDelete?.title}&quot; будет удалена навсегда.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

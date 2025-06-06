@@ -67,6 +67,8 @@ export const PreviewAttachment = ({
 
       {showPreview && (
         <div
+          role="button"
+          aria-label="Закрыть превью"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
           onClick={() => setShowPreview(false)}
         >
