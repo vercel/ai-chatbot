@@ -1,3 +1,15 @@
+/**
+ * @file components/sidebar-history.tsx
+ * @description Компонент для отображения истории чатов в сайдбаре.
+ * @version 1.0.0
+ * @date 2025-06-06
+ * @updated Начальная версия, адаптированная под новый упрощенный компонент сайдбара.
+ */
+
+/** HISTORY:
+ * v1.0.0 (2025-06-06): Начальная версия, адаптированная под новый упрощенный компонент сайдбара.
+ */
+
 'use client';
 
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
@@ -18,7 +30,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -151,11 +162,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   if (!user) {
     return (
       <SidebarGroup>
-        <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             Login to save and revisit previous chats!
           </div>
-        </SidebarGroupContent>
       </SidebarGroup>
     );
   }
@@ -166,7 +175,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
           Today
         </div>
-        <SidebarGroupContent>
           <div className="flex flex-col">
             {[44, 32, 28, 64, 52].map((item) => (
               <div
@@ -184,7 +192,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               </div>
             ))}
           </div>
-        </SidebarGroupContent>
       </SidebarGroup>
     );
   }
@@ -192,11 +199,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   if (hasEmptyChatHistory) {
     return (
       <SidebarGroup>
-        <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             Your conversations will appear here once you start chatting!
           </div>
-        </SidebarGroupContent>
       </SidebarGroup>
     );
   }
@@ -204,7 +209,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   return (
     <>
       <SidebarGroup>
-        <SidebarGroupContent>
           <SidebarMenu>
             {paginatedChatHistories &&
               (() => {
@@ -340,7 +344,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               <div>Loading Chats...</div>
             </div>
           )}
-        </SidebarGroupContent>
       </SidebarGroup>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -363,3 +366,5 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     </>
   );
 }
+
+// END OF: components/sidebar-history.tsx

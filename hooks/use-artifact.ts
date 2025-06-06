@@ -1,7 +1,20 @@
+/**
+ * @file hooks/use-artifact.ts
+ * @description Хук для управления глобальным состоянием артефакта.
+ * @version 1.1.0
+ * @date 2025-06-05
+ * @updated Добавлено управление режимом отображения (displayMode) для поддержки split-view и full-view.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-05): Добавлены 'displayMode' и 'toggleDisplayMode' для управления режимами отображения.
+ * v1.0.0 (2025-05-25): Начальная версия хука.
+ */
+
 'use client';
 
 import useSWR from 'swr';
-import { UIArtifact } from '@/components/artifact';
+import { UIArtifact, ArtifactDisplayMode } from '@/components/artifact';
 import { useCallback, useMemo } from 'react';
 
 export const initialArtifactData: UIArtifact = {
@@ -11,6 +24,7 @@ export const initialArtifactData: UIArtifact = {
   title: '',
   status: 'idle',
   isVisible: false,
+  displayMode: 'split',
   boundingBox: {
     top: 0,
     left: 0,
@@ -63,6 +77,13 @@ export function useArtifact() {
     [setLocalArtifact],
   );
 
+  const toggleDisplayMode = useCallback(() => {
+    setArtifact((current) => ({
+      ...current,
+      displayMode: current.displayMode === 'split' ? 'full' : 'split',
+    }));
+  }, [setArtifact]);
+
   const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
     useSWR<any>(
       () =>
@@ -77,9 +98,18 @@ export function useArtifact() {
     () => ({
       artifact,
       setArtifact,
+      toggleDisplayMode,
       metadata: localArtifactMetadata,
       setMetadata: setLocalArtifactMetadata,
     }),
-    [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata],
+    [
+      artifact,
+      setArtifact,
+      toggleDisplayMode,
+      localArtifactMetadata,
+      setLocalArtifactMetadata,
+    ],
   );
 }
+
+// END OF: hooks/use-artifact.ts

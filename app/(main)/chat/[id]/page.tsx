@@ -1,3 +1,14 @@
+/**
+ * @file app/(main)/chat/[id]/page.tsx
+ * @description Страница отображения конкретного чата.
+ * @version 1.0.0
+ * @date 2025-06-06
+ * @updated Удален неиспользуемый проп `initialVisibilityType`.
+ */
+
+/** HISTORY:
+ * v1.0.0 (2025-06-06): Удален проп `initialVisibilityType`.
+ */
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
@@ -61,7 +72,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           id={chat.id}
           initialMessages={convertToUIMessages(messagesFromDb)}
           initialChatModel={DEFAULT_CHAT_MODEL}
-          initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
           session={session}
           autoResume={true}
@@ -77,7 +87,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         id={chat.id}
         initialMessages={convertToUIMessages(messagesFromDb)}
         initialChatModel={chatModelFromCookie.value}
-        initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}
         session={session}
         autoResume={true}
@@ -86,3 +95,5 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     </>
   );
 }
+
+// END OF: app/(main)/chat/[id]/page.tsx

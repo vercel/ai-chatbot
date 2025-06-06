@@ -1,6 +1,18 @@
+/**
+ * @file components/sidebar-history-item.tsx
+ * @description Элемент истории чата в сайдбаре.
+ * @version 1.0.1
+ * @date 2025-06-06
+ * @updated Исправлена ошибка TS2322 (несуществующий пропс `className` у иконок).
+ */
+
+/** HISTORY:
+ * v1.0.1 (2025-06-06): Исправлена передача `className` иконкам.
+ * v1.0.0 (2025-06-06): Начальная версия, адаптированная под новый упрощенный компонент сайдбара.
+ */
+
 import type { Chat } from '@/lib/db/schema';
 import {
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from './ui/sidebar';
@@ -25,6 +37,9 @@ import {
 } from './icons';
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
+import type { VisibilityType } from '@/lib/types';
 
 const PureChatItem = ({
   chat,
@@ -39,7 +54,7 @@ const PureChatItem = ({
 }) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
-    initialVisibilityType: chat.visibility,
+    initialVisibilityType: chat.visibility as VisibilityType,
   });
 
   return (
@@ -52,13 +67,17 @@ const PureChatItem = ({
 
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
-          <SidebarMenuAction
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5"
-            showOnHover={!isActive}
-          >
-            <MoreHorizontalIcon />
-            <span className="sr-only">More</span>
-          </SidebarMenuAction>
+           <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-1 text-muted-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+                isActive ? 'opacity-100' : 'opacity-0 group-hover/menu-item:opacity-100'
+              )}
+            >
+              <MoreHorizontalIcon className="size-4" />
+              <span className="sr-only">More</span>
+            </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent side="bottom" align="end">
@@ -116,3 +135,5 @@ export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) return false;
   return true;
 });
+
+// END OF: components/sidebar-history-item.tsx

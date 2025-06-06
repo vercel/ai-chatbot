@@ -1,31 +1,45 @@
+/**
+ * @file components/chat.tsx
+ * @description Основной компонент чата.
+ * @version 1.3.1
+ * @date 2025-06-06
+ * @updated Удален неиспользуемый проп initialVisibilityType и исправлена логика onFinish.
+ */
+
+/** HISTORY:
+ * v1.3.1 (2025-06-06): Удален проп `initialVisibilityType` и исправлена логика `onFinish`.
+ * v1.3.0 (2025-06-05): Перестроен макет на flex, удален ChatHeader.
+ * v1.2.1 (2025-06-05): Исправлен импорт useSWRConfig.
+ * v1.2.0 (2025-06-05): Удален ChatHeader, добавлена передача контекста в глобальный Header.
+ * v1.1.0 (2025-06-05): Удален компонент Artifact, теперь он управляется layout'ом.
+ * v1.0.0 (2025-05-25): Начальная версия компонента.
+ */
+
 'use client';
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
-import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import type { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
+import type { VisibilityType } from '@/lib/types';
+import { useArtifact } from '@/hooks/use-artifact';
 
 export function Chat({
   id,
   initialMessages,
   initialChatModel,
-  initialVisibilityType,
   isReadonly,
   session,
   autoResume,
@@ -33,17 +47,27 @@ export function Chat({
   id: string;
   initialMessages: Array<UIMessage>;
   initialChatModel: string;
-  initialVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
-  const { visibilityType } = useChatVisibility({
-    chatId: id,
-    initialVisibilityType,
-  });
+  // Это поле больше не используется, но мы оставим логику для SWR на случай,
+  // если понадобится передавать тип видимости в будущем.
+  const initialVisibilityType: VisibilityType = 'private';
+
+  useEffect(() => {
+    mutate('active-chat-context', {
+      chatId: id,
+      visibility: initialVisibilityType,
+    });
+
+    return () => {
+      mutate('active-chat-context', null);
+    };
+  }, [id, initialVisibilityType, mutate]);
+
 
   const {
     messages,
@@ -68,9 +92,11 @@ export function Chat({
       id,
       message: body.messages.at(-1),
       selectedChatModel: initialChatModel,
-      selectedVisibilityType: visibilityType,
+      selectedVisibilityType: initialVisibilityType,
     }),
     onFinish: () => {
+      // Re-validate the chat history after a new message has been generated.
+      // The `status` check for 'stopped' is removed as it's no longer a valid status.
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
@@ -85,6 +111,22 @@ export function Chat({
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
+  const discussArtifactId = searchParams.get('discussArtifact');
+
+  const { setArtifact } = useArtifact();
+
+  useEffect(() => {
+    if (discussArtifactId) {
+       append({
+        role: 'user',
+        content: `Давай обсудим этот документ: /notes?openDocId=${discussArtifactId}`,
+      });
+      setArtifact((prev) => ({ ...prev, documentId: discussArtifactId, isVisible: true, displayMode: 'split' }));
+      // Очищаем URL после использования
+      window.history.replaceState({}, '', `/chat/${id}`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discussArtifactId, id]);
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
@@ -117,64 +159,39 @@ export function Chat({
   });
 
   return (
-    <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader
-          chatId={id}
-          selectedModelId={initialChatModel}
-          selectedVisibilityType={initialVisibilityType}
-          isReadonly={isReadonly}
-          session={session}
-        />
-
+    <div className="flex flex-col h-full bg-background">
+      <div className="flex-grow overflow-y-auto">
         <Messages
-          chatId={id}
-          status={status}
-          votes={votes}
-          messages={messages}
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
-        />
-
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          {!isReadonly && (
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              status={status}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
-              selectedVisibilityType={visibilityType}
-            />
-          )}
-        </form>
+            chatId={id}
+            status={status}
+            votes={votes}
+            messages={messages}
+            setMessages={setMessages}
+            reload={reload}
+            isReadonly={isReadonly}
+            isArtifactVisible={isArtifactVisible}
+          />
       </div>
 
-      <Artifact
-        chatId={id}
-        input={input}
-        setInput={setInput}
-        handleSubmit={handleSubmit}
-        status={status}
-        stop={stop}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        append={append}
-        messages={messages}
-        setMessages={setMessages}
-        reload={reload}
-        votes={votes}
-        isReadonly={isReadonly}
-        selectedVisibilityType={visibilityType}
-      />
-    </>
+      <div className="w-full max-w-3xl mx-auto px-4 pb-4">
+        {!isReadonly && (
+          <MultimodalInput
+            chatId={id}
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+            status={status}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            messages={messages}
+            append={append}
+            session={session}
+            initialChatModel={initialChatModel}
+          />
+        )}
+      </div>
+    </div>
   );
 }
+
+// END OF: components/chat.tsx

@@ -1,3 +1,17 @@
+/**
+ * @file components/message.tsx
+ * @description Компонент для отображения одного сообщения в чате.
+ * @version 1.2.0
+ * @date 2025-06-06
+ * @updated Исправлены ошибки типизации, связанные с отсутствием переменной 'type' при обходе message.parts.
+ */
+
+/** HISTORY:
+ * v1.2.0 (2025-06-06): Исправлены ошибки типизации (TS2304, TS2339).
+ * v1.1.0 (2025-06-06): Добавлены новые действия с сообщениями (копирование, удаление, перегенерация).
+ * v1.0.0 (2025-06-06): Начальная версия.
+ */
+
 'use client';
 
 import type { UIMessage } from 'ai';
@@ -6,7 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import { CopyIcon, PencilEditIcon, SparklesIcon, TrashIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
@@ -19,6 +33,9 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { useCopyToClipboard } from 'usehooks-ts';
+import { toast } from './toast';
+import { deleteMessage, regenerateAssistantResponse } from '@/app/(main)/chat/actions';
 
 const PurePreviewMessage = ({
   chatId,
@@ -40,6 +57,41 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [, copyToClipboard] = useCopyToClipboard();
+
+  const handleCopy = () => {
+    const textContent = message.parts
+      .filter(part => part.type === 'text')
+      // @ts-ignore
+      .map(part => part.text)
+      .join('\n');
+    copyToClipboard(textContent);
+    toast({ type: 'success', description: 'Сообщение скопировано.' });
+  };
+
+  const handleDelete = async () => {
+    try {
+      // Оптимистичное удаление на клиенте
+      setMessages((messages) => messages.filter((m) => m.id !== message.id));
+      await deleteMessage({ messageId: message.id });
+      toast({ type: 'success', description: 'Сообщение удалено.' });
+    } catch (error) {
+      toast({ type: 'error', description: 'Не удалось удалить сообщение.' });
+      // Можно вернуть сообщение обратно в список, если удаление не удалось
+      setMessages((messages) => [...messages, message].sort((a,b) => (a.createdAt || 0) > (b.createdAt || 0) ? 1 : -1));
+    }
+  };
+
+  const handleRegenerate = async () => {
+    try {
+      // Оптимистичное удаление ответа
+      setMessages((messages) => messages.filter((m) => m.id !== message.id));
+      await regenerateAssistantResponse({ assistantMessageId: message.id });
+      reload();
+    } catch (error) {
+      toast({ type: 'error', description: 'Не удалось перегенерировать ответ.' });
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -105,33 +157,39 @@ const PurePreviewMessage = ({
                 if (mode === 'view') {
                   return (
                     <div key={key} className="flex flex-row gap-2 items-start">
-                      {message.role === 'user' && !isReadonly && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              data-testid="message-edit-button"
-                              variant="ghost"
-                              className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                              onClick={() => {
-                                setMode('edit');
-                              }}
-                            >
-                              <PencilEditIcon />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
-                        </Tooltip>
-                      )}
-
-                      <div
-                        data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                            message.role === 'user',
-                        })}
-                      >
-                        <Markdown>{sanitizeText(part.text)}</Markdown>
+                      <div className="flex-grow">
+                         <div
+                            data-testid="message-content"
+                            className={cn('flex flex-col gap-4', {
+                              'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                                message.role === 'user',
+                            })}
+                          >
+                            <Markdown>{sanitizeText(part.text)}</Markdown>
+                          </div>
                       </div>
+                      {!isReadonly && (
+                        <div className="flex-shrink-0 flex items-center opacity-0 group-hover/message:opacity-100 transition-opacity">
+                          {message.role === 'user' ? (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleCopy}><CopyIcon size={14} /></Button></TooltipTrigger>
+                                <TooltipContent>Скопировать</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMode('edit')}><PencilEditIcon size={14} /></Button></TooltipTrigger>
+                                <TooltipContent>Редактировать</TooltipContent>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <MessageActions chatId={chatId} message={message} vote={vote} isLoading={isLoading} />
+                          )}
+                           <Tooltip>
+                              <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={handleDelete}><TrashIcon size={14} /></Button></TooltipTrigger>
+                              <TooltipContent>Удалить</TooltipContent>
+                            </Tooltip>
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -139,8 +197,6 @@ const PurePreviewMessage = ({
                 if (mode === 'edit') {
                   return (
                     <div key={key} className="flex flex-row gap-2 items-start">
-                      <div className="size-8" />
-
                       <MessageEditor
                         key={message.id}
                         message={message}
@@ -221,15 +277,6 @@ const PurePreviewMessage = ({
               }
             })}
 
-            {!isReadonly && (
-              <MessageActions
-                key={`action-${message.id}`}
-                chatId={chatId}
-                message={message}
-                vote={vote}
-                isLoading={isLoading}
-              />
-            )}
           </div>
         </div>
       </motion.div>
@@ -283,3 +330,5 @@ export const ThinkingMessage = () => {
     </motion.div>
   );
 };
+
+// END OF: components/message.tsx

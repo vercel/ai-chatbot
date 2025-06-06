@@ -1,0 +1,44 @@
+{
+  "output": {
+    "filePath": "_welcome-craft.xml",
+    "style": "xml",
+    "parsableStyle": false,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 5,
+    "showLineNumbers": false,
+    "copyToClipboard": false
+  },
+  "include": [],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": false,
+    "customPatterns": [
+      ".git",
+      "data",
+      ".husky",
+      "pnpm*.*",
+      "_archive/",
+      //      "_test-results.json",
+      //      "docs/",
+      //        "src/",
+      //      "src/",
+      //      "src/vibe-story/database/api/",
+      "logs",
+      ".idea",
+      ".run",
+      ".aider",
+      "*.patch",
+      "*.log",
+      "LICENSE"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

@@ -1,11 +1,30 @@
-export const BotIcon = () => {
+/**
+ * @file components/icons.tsx
+ * @description Набор SVG-иконок, используемых в приложении.
+ * @version 1.2.0
+ * @date 2025-06-06
+ * @updated Все иконки были отрефакторены для приема `className` и других стандартных пропсов SVG.
+ */
+
+/** HISTORY:
+ * v1.2.0 (2025-06-06): Рефакторинг всех иконок для поддержки `className`.
+ * v1.1.0 (2025-06-05): Добавлены MessageCircleIcon, FileTextIcon. Обновлена дата.
+ * v1.0.0 (2025-05-25): Начальная версия файла с существующим набором иконок.
+ */
+import type { SVGProps } from 'react';
+
+type IconProps = SVGProps<SVGSVGElement> & { size?: number };
+
+export const BotIcon = (props: IconProps) => {
+  const { size = 16, ...rest } = props;
   return (
     <svg
-      height="16"
+      height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
-      width="16"
+      width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -17,15 +36,17 @@ export const BotIcon = () => {
   );
 };
 
-export const UserIcon = () => {
+export const UserIcon = (props: IconProps) => {
+  const { size = 16, ...rest } = props;
   return (
     <svg
       data-testid="geist-icon"
-      height="16"
+      height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
-      width="16"
+      width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -37,14 +58,16 @@ export const UserIcon = () => {
   );
 };
 
-export const AttachmentIcon = () => {
+export const AttachmentIcon = (props: IconProps) => {
+  const { size = 16, ...rest } = props;
   return (
     <svg
-      height="16"
+      height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
-      width="16"
+      width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -56,7 +79,7 @@ export const AttachmentIcon = () => {
   );
 };
 
-export const VercelIcon = ({ size = 17 }) => {
+export const VercelIcon = ({ size = 17, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -64,6 +87,7 @@ export const VercelIcon = ({ size = 17 }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -75,14 +99,16 @@ export const VercelIcon = ({ size = 17 }) => {
   );
 };
 
-export const GitIcon = () => {
+export const GitIcon = (props: IconProps) => {
+  const { size = 16, ...rest } = props;
   return (
     <svg
-      height="16"
+      height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
-      width="16"
+      width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <g clipPath="url(#clip0_872_3147)">
         <path
@@ -101,7 +127,7 @@ export const GitIcon = () => {
   );
 };
 
-export const BoxIcon = ({ size = 16 }: { size: number }) => {
+export const BoxIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -109,6 +135,7 @@ export const BoxIcon = ({ size = 16 }: { size: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -120,7 +147,7 @@ export const BoxIcon = ({ size = 16 }: { size: number }) => {
   );
 };
 
-export const HomeIcon = ({ size = 16 }: { size: number }) => {
+export const HomeIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -128,6 +155,7 @@ export const HomeIcon = ({ size = 16 }: { size: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -139,7 +167,7 @@ export const HomeIcon = ({ size = 16 }: { size: number }) => {
   );
 };
 
-export const GPSIcon = ({ size = 16 }: { size: number }) => {
+export const GPSIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -147,6 +175,7 @@ export const GPSIcon = ({ size = 16 }: { size: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         d="M1 6L15 1L10 15L7.65955 8.91482C7.55797 8.65073 7.34927 8.44203 7.08518 8.34045L1 6Z"
@@ -160,7 +189,7 @@ export const GPSIcon = ({ size = 16 }: { size: number }) => {
   );
 };
 
-export const InvoiceIcon = ({ size = 16 }: { size: number }) => {
+export const InvoiceIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -168,6 +197,7 @@ export const InvoiceIcon = ({ size = 16 }: { size: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -179,7 +209,7 @@ export const InvoiceIcon = ({ size = 16 }: { size: number }) => {
   );
 };
 
-export const LogoOpenAI = ({ size = 16 }: { size?: number }) => {
+export const LogoOpenAI = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -187,6 +217,7 @@ export const LogoOpenAI = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         d="M14.9449 6.54871C15.3128 5.45919 15.1861 4.26567 14.5978 3.27464C13.7131 1.75461 11.9345 0.972595 10.1974 1.3406C9.42464 0.481584 8.3144 -0.00692594 7.15045 7.42132e-05C5.37487 -0.00392587 3.79946 1.1241 3.2532 2.79113C2.11256 3.02164 1.12799 3.72615 0.551837 4.72468C-0.339497 6.24071 -0.1363 8.15175 1.05451 9.45178C0.686626 10.5413 0.813308 11.7348 1.40162 12.7258C2.28637 14.2459 4.06498 15.0279 5.80204 14.6599C6.5743 15.5189 7.68504 16.0074 8.849 15.9999C10.6256 16.0044 12.2015 14.8754 12.7478 13.2069C13.8884 12.9764 14.873 12.2718 15.4491 11.2733C16.3394 9.75728 16.1357 7.84774 14.9454 6.54771L14.9449 6.54871ZM8.85001 14.9544C8.13907 14.9554 7.45043 14.7099 6.90468 14.2604C6.92951 14.2474 6.97259 14.2239 7.00046 14.2069L10.2293 12.3668C10.3945 12.2743 10.4959 12.1008 10.4949 11.9133V7.42173L11.8595 8.19925C11.8742 8.20625 11.8838 8.22025 11.8858 8.23625V11.9558C11.8838 13.6099 10.5263 14.9509 8.85001 14.9544ZM2.32133 12.2028C1.9651 11.5958 1.8369 10.8843 1.95902 10.1938C1.98284 10.2078 2.02489 10.2333 2.05479 10.2503L5.28366 12.0903C5.44733 12.1848 5.65003 12.1848 5.81421 12.0903L9.75604 9.84429V11.3993C9.75705 11.4153 9.74945 11.4308 9.73678 11.4408L6.47295 13.3004C5.01915 14.1264 3.1625 13.6354 2.32184 12.2028H2.32133ZM1.47155 5.24819C1.82626 4.64017 2.38619 4.17516 3.05305 3.93366C3.05305 3.96116 3.05152 4.00966 3.05152 4.04366V7.72424C3.05051 7.91124 3.15186 8.08475 3.31654 8.17725L7.25838 10.4228L5.89376 11.2003C5.88008 11.2093 5.86285 11.2108 5.84765 11.2043L2.58331 9.34327C1.13255 8.51426 0.63494 6.68272 1.47104 5.24869L1.47155 5.24819ZM12.6834 7.82274L8.74157 5.57669L10.1062 4.79968C10.1199 4.79068 10.1371 4.78918 10.1523 4.79568L13.4166 6.65522C14.8699 7.48373 15.3681 9.31827 14.5284 10.7523C14.1732 11.3593 13.6138 11.8243 12.9474 12.0663V8.27575C12.9489 8.08875 12.8481 7.91574 12.6839 7.82274H12.6834ZM14.0414 5.8057C14.0176 5.7912 13.9756 5.7662 13.9457 5.7492L10.7168 3.90916C10.5531 3.81466 10.3504 3.81466 10.1863 3.90916L6.24442 6.15521V4.60017C6.2434 4.58417 6.251 4.56867 6.26367 4.55867L9.52751 2.70063C10.9813 1.87311 12.84 2.36563 13.6781 3.80066C14.0323 4.40667 14.1605 5.11618 14.0404 5.8057H14.0414ZM5.50257 8.57726L4.13744 7.79974C4.12275 7.79274 4.11312 7.77874 4.11109 7.76274V4.04316C4.11211 2.38713 5.47368 1.0451 7.15197 1.0461C7.86189 1.0461 8.54902 1.2921 9.09476 1.74011C9.06993 1.75311 9.02737 1.77661 8.99899 1.79361L5.77012 3.63365C5.60493 3.72615 5.50358 3.89916 5.50459 4.08666L5.50257 8.57626V8.57726ZM6.24391 7.00022L7.99972 5.9997L9.75553 6.99972V9.00027L7.99972 10.0003L6.24391 9.00027V7.00022Z"
@@ -196,7 +227,7 @@ export const LogoOpenAI = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const LogoGoogle = ({ size = 16 }: { size?: number }) => {
+export const LogoGoogle = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       data-testid="geist-icon"
@@ -205,6 +236,7 @@ export const LogoGoogle = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         d="M8.15991 6.54543V9.64362H12.4654C12.2763 10.64 11.709 11.4837 10.8581 12.0509L13.4544 14.0655C14.9671 12.6692 15.8399 10.6182 15.8399 8.18188C15.8399 7.61461 15.789 7.06911 15.6944 6.54552L8.15991 6.54543Z"
@@ -226,7 +258,8 @@ export const LogoGoogle = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const LogoAnthropic = () => {
+export const LogoAnthropic = (props: IconProps) => {
+  const { width = 18, height = 18, ...rest } = props;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -235,8 +268,9 @@ export const LogoAnthropic = () => {
       y="0px"
       viewBox="0 0 92.2 65"
       style={{ color: 'currentcolor', fill: 'currentcolor' }}
-      width="18px"
-      height="18px"
+      width={width}
+      height={height}
+      {...rest}
     >
       <path
         d="M66.5,0H52.4l25.7,65h14.1L66.5,0z M25.7,0L0,65h14.4l5.3-13.6h26.9L51.8,65h14.4L40.5,0C40.5,0,25.7,0,25.7,0z
@@ -246,7 +280,7 @@ export const LogoAnthropic = () => {
   );
 };
 
-export const RouteIcon = ({ size = 16 }: { size?: number }) => {
+export const RouteIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -254,6 +288,7 @@ export const RouteIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -265,7 +300,7 @@ export const RouteIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const FileIcon = ({ size = 16 }: { size?: number }) => {
+export const FileIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -273,6 +308,7 @@ export const FileIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -284,7 +320,7 @@ export const FileIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const LoaderIcon = ({ size = 16 }: { size?: number }) => {
+export const LoaderIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -292,6 +328,7 @@ export const LoaderIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <g clipPath="url(#clip0_2393_1490)">
         <path d="M8 0V4" stroke="currentColor" strokeWidth="1.5" />
@@ -359,7 +396,7 @@ export const LoaderIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const UploadIcon = ({ size = 16 }: { size?: number }) => {
+export const UploadIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       data-testid="geist-icon"
@@ -368,6 +405,7 @@ export const UploadIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -379,7 +417,7 @@ export const UploadIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const MenuIcon = ({ size = 16 }: { size?: number }) => {
+export const MenuIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -387,6 +425,7 @@ export const MenuIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -398,7 +437,7 @@ export const MenuIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PencilEditIcon = ({ size = 16 }: { size?: number }) => {
+export const PencilEditIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -406,6 +445,7 @@ export const PencilEditIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -417,7 +457,7 @@ export const PencilEditIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const CheckedSquare = ({ size = 16 }: { size?: number }) => {
+export const CheckedSquare = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -425,6 +465,7 @@ export const CheckedSquare = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -436,7 +477,7 @@ export const CheckedSquare = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const UncheckedSquare = ({ size = 16 }: { size?: number }) => {
+export const UncheckedSquare = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -444,6 +485,7 @@ export const UncheckedSquare = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <rect
         x="1"
@@ -458,7 +500,7 @@ export const UncheckedSquare = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const MoreIcon = ({ size = 16 }: { size?: number }) => {
+export const MoreIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -466,6 +508,7 @@ export const MoreIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -477,7 +520,7 @@ export const MoreIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const TrashIcon = ({ size = 16 }: { size?: number }) => {
+export const TrashIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -485,6 +528,7 @@ export const TrashIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -496,7 +540,7 @@ export const TrashIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const InfoIcon = ({ size = 16 }: { size?: number }) => {
+export const InfoIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -504,6 +548,7 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -515,7 +560,7 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
+export const ArrowUpIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -523,6 +568,7 @@ export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -534,13 +580,14 @@ export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const StopIcon = ({ size = 16 }: { size?: number }) => {
+export const StopIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -552,7 +599,7 @@ export const StopIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
+export const PaperclipIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -561,6 +608,7 @@ export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
       width={size}
       style={{ color: 'currentcolor' }}
       className="-rotate-45"
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -572,7 +620,7 @@ export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const MoreHorizontalIcon = ({ size = 16 }: { size?: number }) => {
+export const MoreHorizontalIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -580,6 +628,7 @@ export const MoreHorizontalIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -591,7 +640,7 @@ export const MoreHorizontalIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const MessageIcon = ({ size = 16 }: { size?: number }) => {
+export const MessageIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -599,6 +648,7 @@ export const MessageIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -610,13 +660,14 @@ export const MessageIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const CrossIcon = ({ size = 16 }: { size?: number }) => (
+export const CrossIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -627,13 +678,14 @@ export const CrossIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const CrossSmallIcon = ({ size = 16 }: { size?: number }) => (
+export const CrossSmallIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -644,13 +696,14 @@ export const CrossSmallIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const UndoIcon = ({ size = 16 }: { size?: number }) => (
+export const UndoIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -661,13 +714,14 @@ export const UndoIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const RedoIcon = ({ size = 16 }: { size?: number }) => (
+export const RedoIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -678,13 +732,14 @@ export const RedoIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const DeltaIcon = ({ size = 16 }: { size?: number }) => (
+export const DeltaIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -695,13 +750,14 @@ export const DeltaIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const PenIcon = ({ size = 16 }: { size?: number }) => (
+export const PenIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -712,13 +768,14 @@ export const PenIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const SummarizeIcon = ({ size = 16 }: { size?: number }) => (
+export const SummarizeIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -729,13 +786,14 @@ export const SummarizeIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const SidebarLeftIcon = ({ size = 16 }: { size?: number }) => (
+export const SidebarLeftIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -746,13 +804,14 @@ export const SidebarLeftIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const PlusIcon = ({ size = 16 }: { size?: number }) => (
+export const PlusIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -763,13 +822,14 @@ export const PlusIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const CopyIcon = ({ size = 16 }: { size?: number }) => (
+export const CopyIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -780,13 +840,14 @@ export const CopyIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const ThumbUpIcon = ({ size = 16 }: { size?: number }) => (
+export const ThumbUpIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -797,13 +858,14 @@ export const ThumbUpIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const ThumbDownIcon = ({ size = 16 }: { size?: number }) => (
+export const ThumbDownIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -814,13 +876,14 @@ export const ThumbDownIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
+export const ChevronDownIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -831,13 +894,14 @@ export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
+export const SparklesIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       d="M2.5 0.5V0H3.5V0.5C3.5 1.60457 4.39543 2.5 5.5 2.5H6V3V3.5H5.5C4.39543 3.5 3.5 4.39543 3.5 5.5V6H3H2.5V5.5C2.5 4.39543 1.60457 3.5 0.5 3.5H0V3V2.5H0.5C1.60457 2.5 2.5 1.60457 2.5 0.5Z"
@@ -854,7 +918,7 @@ export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => {
+export const CheckCircleFillIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -862,6 +926,7 @@ export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -873,7 +938,7 @@ export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
+export const GlobeIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -881,6 +946,7 @@ export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -892,7 +958,7 @@ export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const LockIcon = ({ size = 16 }: { size?: number }) => {
+export const LockIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -900,6 +966,7 @@ export const LockIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -911,7 +978,7 @@ export const LockIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const EyeIcon = ({ size = 16 }: { size?: number }) => {
+export const EyeIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -919,6 +986,7 @@ export const EyeIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -930,7 +998,7 @@ export const EyeIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ShareIcon = ({ size = 16 }: { size?: number }) => {
+export const ShareIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -938,6 +1006,7 @@ export const ShareIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -949,7 +1018,7 @@ export const ShareIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const CodeIcon = ({ size = 16 }: { size?: number }) => {
+export const CodeIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -957,6 +1026,7 @@ export const CodeIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -968,7 +1038,7 @@ export const CodeIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PlayIcon = ({ size = 16 }: { size?: number }) => {
+export const PlayIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -976,6 +1046,7 @@ export const PlayIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -987,7 +1058,7 @@ export const PlayIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PythonIcon = ({ size = 16 }: { size?: number }) => {
+export const PythonIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -995,6 +1066,7 @@ export const PythonIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         d="M7.90474 0.00013087C7.24499 0.00316291 6.61494 0.0588153 6.06057 0.15584C4.42745 0.441207 4.13094 1.0385 4.13094 2.14002V3.59479H7.9902V4.07971H4.13094H2.68259C1.56099 4.07971 0.578874 4.7465 0.271682 6.01496C-0.0826597 7.4689 -0.0983767 8.37619 0.271682 9.89434C0.546012 11.0244 1.20115 11.8296 2.32276 11.8296H3.64966V10.0856C3.64966 8.82574 4.75179 7.71441 6.06057 7.71441H9.91533C10.9884 7.71441 11.845 6.84056 11.845 5.77472V2.14002C11.845 1.10556 10.9626 0.328487 9.91533 0.15584C9.25237 0.046687 8.56448 -0.00290121 7.90474 0.00013087ZM5.81768 1.17017C6.21631 1.17017 6.54185 1.49742 6.54185 1.89978C6.54185 2.30072 6.21631 2.62494 5.81768 2.62494C5.41761 2.62494 5.09351 2.30072 5.09351 1.89978C5.09351 1.49742 5.41761 1.17017 5.81768 1.17017Z"
@@ -1008,7 +1080,7 @@ export const PythonIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const TerminalWindowIcon = ({ size = 16 }: { size?: number }) => {
+export const TerminalWindowIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -1016,6 +1088,7 @@ export const TerminalWindowIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -1027,7 +1100,7 @@ export const TerminalWindowIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const TerminalIcon = ({ size = 16 }: { size?: number }) => {
+export const TerminalIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -1035,6 +1108,7 @@ export const TerminalIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -1046,7 +1120,7 @@ export const TerminalIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ClockRewind = ({ size = 16 }: { size?: number }) => {
+export const ClockRewind = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -1054,6 +1128,7 @@ export const ClockRewind = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -1065,7 +1140,7 @@ export const ClockRewind = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const LogsIcon = ({ size = 16 }: { size?: number }) => {
+export const LogsIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -1073,6 +1148,7 @@ export const LogsIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -1084,7 +1160,7 @@ export const LogsIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ImageIcon = ({ size = 16 }: { size?: number }) => {
+export const ImageIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -1092,6 +1168,7 @@ export const ImageIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -1103,13 +1180,14 @@ export const ImageIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const FullscreenIcon = ({ size = 16 }: { size?: number }) => (
+export const FullscreenIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -1120,13 +1198,14 @@ export const FullscreenIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const DownloadIcon = ({ size = 16 }: { size?: number }) => (
+export const DownloadIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fillRule="evenodd"
@@ -1137,13 +1216,14 @@ export const DownloadIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const LineChartIcon = ({ size = 16 }: { size?: number }) => (
+export const LineChartIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
     width={size}
     style={{ color: 'currentcolor' }}
+    {...rest}
   >
     <path
       fill="currentColor"
@@ -1154,7 +1234,7 @@ export const LineChartIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const WarningIcon = ({ size = 16 }: { size?: number }) => {
+export const WarningIcon = ({ size = 16, ...rest }: IconProps) => {
   return (
     <svg
       height={size}
@@ -1162,6 +1242,7 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      {...rest}
     >
       <path
         fillRule="evenodd"
@@ -1172,3 +1253,120 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+// Новые иконки для сайдбара
+export const MessageCircleIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+  </svg>
+);
+
+export const FileTextIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
+    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    <path d="M10 9H8" />
+    <path d="M16 13H8" />
+    <path d="M16 17H8" />
+  </svg>
+);
+
+export const ChevronLeftIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+
+export const SunIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="m17.66 17.66 1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="m6.34 17.66-1.41 1.41" />
+    <path d="m19.07 4.93-1.41 1.41" />
+  </svg>
+);
+
+export const MoonIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+  </svg>
+);
+
+export const LaptopIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
+    <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55A1 1 0 0 1 20.24 20H3.76a1 1 0 0 1-.97-1.45L4 16" />
+  </svg>
+);
+
+// END OF: components/icons.tsx

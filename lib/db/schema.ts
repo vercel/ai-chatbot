@@ -1,3 +1,16 @@
+/**
+ * @file lib/db/schema.ts
+ * @description Определения таблиц базы данных с использованием Drizzle ORM.
+ * @version 1.1.0
+ * @date 2025-06-05
+ * @updated Исправлено имя колонки для типа документа с 'text' на 'kind' в таблице 'Document' для соответствия миграциям и логике приложения.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-05): Исправлено имя колонки для типа документа на 'kind' в таблице 'Document'.
+ * v1.0.0 (2025-05-25): Начальная версия файла схемы.
+ */
+
 import type { InferSelectModel } from 'drizzle-orm';
 import {
   pgTable,
@@ -109,7 +122,8 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
+    // Исправлено: имя колонки должно быть 'kind'
+    kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')
@@ -168,3 +182,5 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// END OF: lib/db/schema.ts

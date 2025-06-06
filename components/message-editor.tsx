@@ -1,11 +1,25 @@
+/**
+ * @file components/message-editor.tsx
+ * @description Компонент для редактирования сообщения пользователя.
+ * @version 1.1.0
+ * @date 2025-06-06
+ * @updated Исправлен баг с пустым полем, обновлена логика сохранения для удаления только ответа ассистента.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-06): Исправлена инициализация состояния, логика сохранения заменена на deleteAssistantResponse.
+ * v1.0.0 (2025-06-06): Начальная версия.
+ */
+
 'use client';
 
-import { ChatRequestOptions, Message } from 'ai';
+import { Message } from 'ai';
 import { Button } from './ui/button';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Textarea } from './ui/textarea';
-import { deleteTrailingMessages } from '@/app/(chat)/actions';
+import { deleteAssistantResponse } from '@/app/(main)/chat/actions';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { toast } from './toast';
 
 export type MessageEditorProps = {
   message: Message;
@@ -21,12 +35,14 @@ export function MessageEditor({
   reload,
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
   const [draftContent, setDraftContent] = useState<string>(message.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // Устанавливаем фокус и перемещаем курсор в конец текста при открытии редактора
     if (textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(draftContent.length, draftContent.length);
       adjustHeight();
     }
   }, []);
@@ -41,6 +57,31 @@ export function MessageEditor({
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDraftContent(event.target.value);
     adjustHeight();
+  };
+
+  const handleSave = async () => {
+    setIsSubmitting(true);
+    try {
+      // Обновляем сообщение на клиенте для мгновенного отклика
+      setMessages((messages) =>
+        messages.map((m) =>
+          m.id === message.id
+            ? { ...m, content: draftContent, parts: [{ type: 'text', text: draftContent }] }
+            : m,
+        ),
+      );
+      // Удаляем только следующий ответ ассистента
+      await deleteAssistantResponse({ userMessageId: message.id });
+
+      // Перегенерируем ответ
+      reload();
+      setMode('view');
+    } catch (error) {
+      toast({type: 'error', description: "Не удалось сохранить изменения."});
+      console.error("Failed to save edited message:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -61,44 +102,20 @@ export function MessageEditor({
             setMode('view');
           }}
         >
-          Cancel
+          Отмена
         </Button>
         <Button
           data-testid="message-editor-send-button"
           variant="default"
           className="h-fit py-2 px-3"
-          disabled={isSubmitting}
-          onClick={async () => {
-            setIsSubmitting(true);
-
-            await deleteTrailingMessages({
-              id: message.id,
-            });
-
-            // @ts-expect-error todo: support UIMessage in setMessages
-            setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
-
-              if (index !== -1) {
-                const updatedMessage = {
-                  ...message,
-                  content: draftContent,
-                  parts: [{ type: 'text', text: draftContent }],
-                };
-
-                return [...messages.slice(0, index), updatedMessage];
-              }
-
-              return messages;
-            });
-
-            setMode('view');
-            reload();
-          }}
+          disabled={isSubmitting || draftContent === message.content}
+          onClick={handleSave}
         >
-          {isSubmitting ? 'Sending...' : 'Send'}
+          {isSubmitting ? 'Сохранение...' : 'Сохранить и отправить'}
         </Button>
       </div>
     </div>
   );
 }
+
+// END OF: components/message-editor.tsx

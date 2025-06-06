@@ -1,3 +1,16 @@
+/**
+ * @file app/api/chat/route.ts
+ * @description API маршрут для обработки запросов чата.
+ * @version 1.1.0
+ * @date 2025-06-06
+ * @updated Исправлен неверный путь импорта для generateTitleFromUserMessage.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-06): Исправлен путь импорта для generateTitleFromUserMessage на абсолютный с алиасом.
+ * v1.0.0 (2025-06-06): Начальная версия файла.
+ */
+
 import {
   appendClientMessage,
   appendResponseMessages,
@@ -18,7 +31,7 @@ import {
   saveMessages,
 } from '@/lib/db/queries';
 import { generateUUID, getTrailingMessageId } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
+import { generateTitleFromUserMessage } from '@/app/(main)/chat/actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
@@ -183,6 +196,7 @@ export async function POST(request: Request) {
                 });
 
                 if (!assistantId) {
+                  console.log('onFinish: Error, no assistantId')
                   throw new Error('No assistant message found!');
                 }
 
@@ -204,8 +218,8 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-              } catch (_) {
-                console.error('Failed to save chat');
+              } catch (error) {
+                console.error('Failed to save chat', error);
               }
             }
           },
@@ -364,3 +378,5 @@ export async function DELETE(request: Request) {
 
   return Response.json(deletedChat, { status: 200 });
 }
+
+// END OF: app/api/chat/route.ts

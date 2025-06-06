@@ -1,3 +1,10 @@
+/**
+ * @file components/document.tsx
+ * @description Компоненты для отображения результатов вызова тулзов, связанных с документами.
+ * @version 1.0.0
+ * @date 2025-06-06
+ * @updated Добавлен недостающий проп 'displayMode' при вызове setArtifact.
+ */
 import { memo } from 'react';
 
 import type { ArtifactKind } from './artifact';
@@ -64,6 +71,7 @@ function PureDocumentToolResult({
           title: result.title,
           isVisible: true,
           status: 'idle',
+          displayMode: 'split',
           boundingBox,
         });
       }}
@@ -149,3 +157,5 @@ function PureDocumentToolCall({
 }
 
 export const DocumentToolCall = memo(PureDocumentToolCall, () => true);
+
+// END OF: components/document.tsx

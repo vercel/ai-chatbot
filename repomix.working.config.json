@@ -1,0 +1,52 @@
+{
+  "output": {
+    "filePath": "_welcome-craft-working.xml",
+    "style": "xml",
+    "parsableStyle": false,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 5,
+    "showLineNumbers": false,
+    "copyToClipboard": false
+  },
+  "include": [],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "_archive/",
+      "data",
+
+      //      "docs/",
+      //      "docs/RULEZZ.md",
+
+      "examples/",
+      //      "examples/fixtures/",
+//      "src/",
+      "src/tools/",
+//      "test/",
+      "test/app/",
+      "test/components/",
+//      "test/integration",
+//      "test/lib/",
+      "test/tools/",
+
+      "*.json",
+      "logs",
+      ".idea",
+      ".run",
+      ".aider",
+      "*.patch",
+      "*.log",
+      "LICENSE"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

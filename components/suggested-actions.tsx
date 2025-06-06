@@ -1,10 +1,17 @@
+/**
+ * @file components/suggested-actions.tsx
+ * @description Компонент с предлагаемыми действиями для начала чата.
+ * @version 1.0.0
+ * @date 2025-06-06
+ * @updated Исправлен импорт типа VisibilityType.
+ */
 'use client';
 
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 import { memo } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { VisibilityType } from './visibility-selector';
+import type { VisibilityType } from '@/lib/types';
 
 interface SuggestedActionsProps {
   chatId: string;
@@ -87,3 +94,4 @@ export const SuggestedActions = memo(
     return true;
   },
 );
+// END OF: components/suggested-actions.tsx
