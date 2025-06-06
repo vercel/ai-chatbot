@@ -241,13 +241,15 @@ export function NotesDataTableClientWrapper({ userId, openDocId }: { userId: str
   );
 }
 
+const skeletonKeys = ['s1', 's2', 's3', 's4', 's5']
+
 function DataTableSkeletonPreview() {
   return (
     <div className="border rounded-md">
       <div className="p-4">
         <Skeleton className="h-8 w-full mb-4" />
-        {[...Array(PAGE_SIZE / 2)].map((_, i) => (
-          <Skeleton key={i} className="h-10 w-full mb-2" />
+        {skeletonKeys.map((key) => (
+          <Skeleton key={key} className="h-10 w-full mb-2" />
         ))}
       </div>
       <div className="p-4 border-t flex justify-between items-center">
