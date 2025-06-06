@@ -64,7 +64,7 @@ function PureMultimodalInput({
     if (textareaRef.current) {
       adjustHeight();
     }
-  }, []);
+  }, [input, isLoading]);
 
   const adjustHeight = () => {
     if (textareaRef.current) {
