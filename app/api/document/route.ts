@@ -1,3 +1,11 @@
+/**
+ * @file app/api/document/route.ts
+ * @description API маршрут для работы с документами.
+ * @version 1.0.0
+ * @date 2025-06-06
+ * @updated Добавлена передача `authorId` при сохранении документа.
+ */
+
 import { auth } from '@/app/(auth)/auth';
 import type { ArtifactKind } from '@/components/artifact';
 import {
@@ -79,6 +87,7 @@ export async function POST(request: Request) {
     title,
     kind,
     userId: session.user.id,
+    authorId: session.user.id, // Пользователь является автором изменения
   });
 
   return Response.json(document, { status: 200 });
@@ -124,3 +133,5 @@ export async function DELETE(request: Request) {
 
   return Response.json(documentsDeleted, { status: 200 });
 }
+
+// END OF: app/api/document/route.ts

@@ -1,5 +1,18 @@
-import type { ArtifactKind } from '@/components/artifact';
-import type { Geo } from '@vercel/functions';
+/**
+ * @file lib/ai/prompts.ts
+ * @description Управление системными промптами для AI-моделей.
+ * @version 1.1.0
+ * @date 2025-06-06
+ * @updated Добавлена логика для включения контекста активного артефакта в системный промпт.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-06): Добавлена функция `getArtifactContextPrompt` и обновлен `systemPrompt`.
+ * v1.0.0 (2025-05-25): Начальная версия.
+ */
+
+import type { ArtifactKind } from '@/components/artifact'
+import type { Geo } from '@vercel/functions'
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -30,10 +43,10 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
-`;
+`
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly assistant! Keep your responses concise and helpful.'
 
 export interface RequestHints {
   latitude: Geo['latitude'];
@@ -42,29 +55,45 @@ export interface RequestHints {
   country: Geo['country'];
 }
 
-export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
+export interface ArtifactContext {
+  id: string;
+  title: string;
+  kind: ArtifactKind;
+}
+
+const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 About the origin of user's request:
 - lat: ${requestHints.latitude}
 - lon: ${requestHints.longitude}
 - city: ${requestHints.city}
 - country: ${requestHints.country}
-`;
+`
+
+const getArtifactContextPrompt = (artifactContext: ArtifactContext) => `
+You are currently working with an active document in the user interface. Here are its details:
+- ID: ${artifactContext.id}
+- Title: ${artifactContext.title}
+- Kind: ${artifactContext.kind}
+
+If you need the full content of this document to fulfill the user's request, you MUST use the 'getDocument' tool with the provided ID. Do not ask the user for the content.
+`
 
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  artifactContext,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  artifactContext?: ArtifactContext;
 }) => {
-  const requestPrompt = getRequestPromptFromHints(requestHints);
+  const requestPrompt = getRequestPromptFromHints(requestHints)
+  const artifactContextPrompt = artifactContext ? getArtifactContextPrompt(artifactContext) : ''
 
-  if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
-  } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
-  }
-};
+  const basePrompt = selectedChatModel === 'chat-model-reasoning' ? regularPrompt : `${regularPrompt}\n\n${artifactsPrompt}`
+
+  return `${basePrompt}\n\n${requestPrompt}\n\n${artifactContextPrompt}`
+}
 
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:
@@ -90,11 +119,11 @@ def factorial(n):
     return result
 
 print(f"Factorial of 5 is: {factorial(5)}")
-`;
+`
 
 export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
-`;
+`
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
@@ -118,4 +147,6 @@ Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : '';
+        : ''
+
+// END OF: lib/ai/prompts.ts

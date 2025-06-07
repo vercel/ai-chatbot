@@ -1,12 +1,13 @@
 /**
  * @file app/(main)/content/actions.ts
  * @description Server Actions для управления контентом (артефактами).
- * @version 1.0.0
+ * @version 1.0.1
  * @date 2025-06-06
- * @updated Начальная версия с действием для удаления контента.
+ * @updated Исправлена ошибка доступа к свойству 'userId' после изменения структуры getDocumentById.
  */
 
 /** HISTORY:
+ * v1.0.1 (2025-06-06): Исправлен доступ к свойству `userId`.
  * v1.0.0 (2025-06-06): Созданы Server Actions для управления контентом.
  */
 
@@ -30,8 +31,8 @@ export async function deleteContent (documentId: string): Promise<DeleteContentR
   }
 
   try {
-    const doc = await getDocumentById({ id: documentId })
-    if (!doc || doc.userId !== session.user.id) {
+    const docResult = await getDocumentById({ id: documentId })
+    if (!docResult || !docResult.doc || docResult.doc.userId !== session.user.id) {
       return { success: false, error: 'Контент не найден или доступ запрещен.', errorCode: 'forbidden:document' }
     }
 

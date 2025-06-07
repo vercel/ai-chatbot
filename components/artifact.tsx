@@ -1,26 +1,23 @@
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 1.5.1
+ * @version 1.5.2
  * @date 2025-06-06
- * @updated Заменен импорт `sonner` на локальную обертку `toast` для консистентности.
+ * @updated Удалена логика, связанная с голосованием (проп votes).
  */
 
 /** HISTORY:
+ * v1.5.2 (2025-06-06): Удален проп `votes`.
  * v1.5.1 (2025-06-06): Заменен импорт `sonner` на локальную обертку `toast`.
  * v1.5.0 (2025-06-06): Добавлено скрытие toast-уведомления после завершения загрузки данных.
  * v1.4.1 (2025-06-06): Исправлены классы Tailwind.
- * v1.4.0 (2025-06-06): Добавлено управление `saveStatus` и вызов `toast.dismiss()` после загрузки данных.
- * v1.3.2 (2025-06-06): Добавлены недостающие пропсы в Toolbar.
- * v1.3.1 (2025-06-06): Исправлен тип 'status' для Toolbar.
- * v1.3.0 (2025-06-05): Исправлена логика кнопки fullscreen.
  */
 import type { Attachment, UIMessage } from 'ai'
 import { formatDistance } from 'date-fns'
 import { type Dispatch, memo, type SetStateAction, useCallback, useEffect, useState, } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts'
-import type { Document, Vote } from '@/lib/db/schema'
+import type { Document } from '@/lib/db/schema'
 import { fetcher } from '@/lib/utils'
 import { Toolbar } from './toolbar'
 import { VersionFooter } from './version-footer'
@@ -66,12 +63,10 @@ export interface UIArtifact {
 }
 
 function PureArtifact ({
-  chatId,
   append,
   status,
   stop,
   setMessages,
-  session,
 }: {
   chatId: string;
   input: string;
@@ -82,7 +77,7 @@ function PureArtifact ({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
-  votes: Array<Vote> | undefined;
+  votes: undefined; // Removed
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];

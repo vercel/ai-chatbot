@@ -1,13 +1,14 @@
 /**
  * @file lib/db/queries.ts
  * @description Функции для выполнения запросов к базе данных.
- * @version 1.6.0
+ * @version 1.7.0
  * @date 2025-06-06
- * @updated Обобщены функции getRecent... и getPaged... для работы со всеми типами контента, а не только 'text'.
+ * @updated Добавлен authorId в saveDocument, getDocumentById расширен для работы с версиями, удалены функции голосования.
  */
 
 /** HISTORY:
- * v1.6.0 (2025-06-06): Функции `getRecentTextDocumentsByUserId` и `getPagedTextDocumentsByUserId` переименованы и обобщены для работы со всеми видами контента.
+ * v1.7.0 (2025-06-06): Добавлена поддержка `authorId` и версионирования в `getDocumentById`. Удалены функции, связанные с голосованием.
+ * v1.6.0 (2025-06-06): Функции `getRecent...` и `getPaged...` обобщены для работы со всеми видами контента.
  * v1.5.1 (2025-06-06): Исправлен путь импорта VisibilityType.
  * v1.5.0 (2025-06-06): Добавлены deleteMessageById, getMessageWithSiblings. saveChat сделан идемпотентным.
  * v1.4.0 (2025-06-06): Исправлена ошибка SQL в getPagedTextDocumentsByUserId.
@@ -32,7 +33,6 @@ import {
   suggestion,
   user,
   type User,
-  vote,
 } from './schema'
 import type { ArtifactKind } from '@/components/artifact'
 import { generateUUID } from '../utils'
@@ -112,7 +112,7 @@ export async function saveChat ({
 
 export async function deleteChatById ({ id }: { id: string }) {
   try {
-    await db.delete(vote).where(eq(vote.chatId, id))
+    // Таблицы vote уже не будет, Drizzle вернет ошибку, если оставить
     await db.delete(message).where(eq(message.chatId, id))
     await db.delete(stream).where(eq(stream.chatId, id))
 
@@ -248,62 +248,20 @@ export async function getMessagesByChatId ({ id }: { id: string }) {
   }
 }
 
-export async function voteMessage ({
-  chatId,
-  messageId,
-  type,
-}: {
-  chatId: string;
-  messageId: string;
-  type: 'up' | 'down';
-}) {
-  try {
-    const [existingVote] = await db
-      .select()
-      .from(vote)
-      .where(and(eq(vote.messageId, messageId)))
-
-    if (existingVote) {
-      return await db
-        .update(vote)
-        .set({ isUpvoted: type === 'up' })
-        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)))
-    }
-    return await db.insert(vote).values({
-      chatId,
-      messageId,
-      isUpvoted: type === 'up',
-    })
-  } catch (error) {
-    console.error(`SYS_VS_DB: Failed to vote message ${messageId} in chat ${chatId} (type: ${type})`, error)
-    throw new ChatSDKError('bad_request:database', 'Failed to vote message')
-  }
-}
-
-export async function getVotesByChatId ({ id }: { id: string }) {
-  try {
-    return await db.select().from(vote).where(eq(vote.chatId, id))
-  } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get votes by chat id ${id}`, error)
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to get votes by chat id',
-    )
-  }
-}
-
 export async function saveDocument ({
   id,
   title,
   kind,
   content,
   userId,
+  authorId,
 }: {
   id: string;
   title: string;
   kind: ArtifactKind;
   content: string;
   userId: string;
+  authorId: string | null;
 }) {
   try {
     return await db
@@ -314,6 +272,7 @@ export async function saveDocument ({
         kind,
         content,
         userId,
+        authorId,
         createdAt: new Date(),
       })
       .returning()
@@ -341,17 +300,35 @@ export async function getDocumentsById ({ id }: { id: string }): Promise<Array<D
   }
 }
 
-export async function getDocumentById ({ id }: { id: string }): Promise<DBDocument | undefined> {
+export async function getDocumentById ({ id, version }: { id: string; version?: number | null }): Promise<{
+  doc: DBDocument,
+  totalVersions: number
+} | undefined> {
   try {
-    const [selectedDocument] = await db
+    const allVersions = await db
       .select()
       .from(document)
       .where(eq(document.id, id))
-      .orderBy(desc(document.createdAt))
+      .orderBy(asc(document.createdAt))
 
-    return selectedDocument
+    if (allVersions.length === 0) {
+      return undefined
+    }
+
+    const totalVersions = allVersions.length
+    let selectedDocument: DBDocument
+
+    if (version != null && version > 0 && version <= totalVersions) {
+      // Версия 1-индексированная
+      selectedDocument = allVersions[version - 1]
+    } else {
+      // Последняя версия по умолчанию
+      selectedDocument = allVersions[totalVersions - 1]
+    }
+
+    return { doc: selectedDocument, totalVersions }
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get document by id ${id}`, error)
+    console.error(`SYS_VS_DB: Failed to get document by id ${id} (version: ${version})`, error)
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get document by id',
@@ -439,7 +416,7 @@ export async function getMessageById ({ id }: { id: string }): Promise<DBMessage
 
 export async function deleteMessageById ({ messageId }: { messageId: string }): Promise<DBMessage | undefined> {
   try {
-    await db.delete(vote).where(eq(vote.messageId, messageId))
+    // Таблицы vote уже не будет, Drizzle вернет ошибку, если оставить
     const [deletedMessage] = await db.delete(message).where(eq(message.id, messageId)).returning()
     return deletedMessage
   } catch (error) {
@@ -483,12 +460,7 @@ export async function deleteMessagesByChatIdAfterTimestamp ({
     const messageIds = messagesToDelete.map((msg) => msg.id)
 
     if (messageIds.length > 0) {
-      await db
-        .delete(vote)
-        .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
-        )
-
+      // Таблицы vote уже не будет, Drizzle вернет ошибку, если оставить
       return await db
         .delete(message)
         .where(

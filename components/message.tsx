@@ -1,17 +1,15 @@
 /**
  * @file components/message.tsx
  * @description Компонент для отображения одного сообщения в чате.
- * @version 1.3.0
+ * @version 1.6.0
  * @date 2025-06-06
- * @updated Логика `handleDelete` изменена для обновления UI после успешного ответа от сервера.
+ * @updated Удален циклический импорт, компоненты PreviewMessage и ThinkingMessage теперь экспортируются.
  */
 
 /** HISTORY:
- * v1.3.0 (2025-06-06): `handleDelete` теперь обновляет UI после ответа сервера.
- * v1.2.1 (2025-06-06): Исправлены стили Tailwind.
- * v1.2.0 (2025-06-06): Исправлены ошибки типизации (TS2304, TS2339).
- * v1.1.0 (2025-06-06): Добавлены новые действия с сообщениями (копирование, удаление, перегенерация).
- * v1.0.0 (2025-06-06): Начальная версия.
+ * v1.6.0 (2025-06-06): Исправлена циклическая зависимость.
+ * v1.5.0 (2025-06-06): Восстановлены действия для сообщений ассистента.
+ * v1.4.0 (2025-06-06): Удалена логика голосования.
  */
 
 'use client'
@@ -20,11 +18,9 @@ import type { UIMessage } from 'ai'
 import cx from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
 import { memo, useState } from 'react'
-import type { Vote } from '@/lib/db/schema'
 import { DocumentToolCall, DocumentToolResult } from './document'
-import { CopyIcon, PencilEditIcon, SparklesIcon, TrashIcon } from './icons'
+import { CopyIcon, PencilEditIcon, SparklesIcon, TrashIcon, RedoIcon } from './icons'
 import { Markdown } from './markdown'
-import { MessageActions } from './message-actions'
 import { PreviewAttachment } from './preview-attachment'
 import { Weather } from './weather'
 import equal from 'fast-deep-equal'
@@ -42,7 +38,6 @@ import { deleteMessage, regenerateAssistantResponse } from '@/app/(main)/chat/ac
 const PurePreviewMessage = ({
   chatId,
   message,
-  vote,
   isLoading,
   setMessages,
   reload,
@@ -51,7 +46,7 @@ const PurePreviewMessage = ({
 }: {
   chatId: string;
   message: UIMessage;
-  vote: Vote | undefined;
+  vote: undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
@@ -67,6 +62,12 @@ const PurePreviewMessage = ({
       // @ts-ignore
       .map(part => part.text)
       .join('\n')
+
+    if (!textContent) {
+        toast({type: 'error', description: 'Нечего копировать.'})
+        return;
+    }
+
     copyToClipboard(textContent)
     toast({ type: 'success', description: 'Сообщение скопировано.' })
   }
@@ -82,6 +83,7 @@ const PurePreviewMessage = ({
   }
 
   const handleRegenerate = async () => {
+    toast({ type: 'loading', description: 'Перегенерация ответа...' });
     try {
       // Оптимистичное удаление ответа
       setMessages((messages) => messages.filter((m) => m.id !== message.id))
@@ -171,24 +173,29 @@ const PurePreviewMessage = ({
                       {!isReadonly && (
                         <div
                           className="shrink-0 flex items-center opacity-0 group-hover/message:opacity-100 transition-opacity">
-                          {message.role === 'user' ? (
-                            <>
-                              <Tooltip>
-                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
-                                                                onClick={handleCopy}><CopyIcon
-                                  size={14}/></Button></TooltipTrigger>
-                                <TooltipContent>Скопировать</TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
-                                                                onClick={() => setMode('edit')}><PencilEditIcon
-                                  size={14}/></Button></TooltipTrigger>
-                                <TooltipContent>Редактировать</TooltipContent>
-                              </Tooltip>
-                            </>
-                          ) : (
-                            <MessageActions chatId={chatId} message={message} vote={vote} isLoading={isLoading}/>
-                          )}
+                            {message.role === 'user' ? (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={handleCopy}><CopyIcon size={14}/></Button></TooltipTrigger>
+                                        <TooltipContent>Скопировать</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={() => setMode('edit')}><PencilEditIcon size={14}/></Button></TooltipTrigger>
+                                        <TooltipContent>Редактировать</TooltipContent>
+                                    </Tooltip>
+                                </>
+                            ) : (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={handleCopy}><CopyIcon size={14}/></Button></TooltipTrigger>
+                                        <TooltipContent>Скопировать</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={handleRegenerate}><RedoIcon size={14}/></Button></TooltipTrigger>
+                                        <TooltipContent>Перегенерировать</TooltipContent>
+                                    </Tooltip>
+                                </>
+                            )}
                           <Tooltip>
                             <TooltipTrigger asChild><Button variant="ghost" size="icon"
                                                             className="size-7 text-destructive"
@@ -300,7 +307,9 @@ export const PreviewMessage = memo(
     if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
       return false
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false
-    if (!equal(prevProps.vote, nextProps.vote)) return false
+
+    // Vote is removed
+    // if (!equal(prevProps.vote, nextProps.vote)) return false
 
     return true
   },

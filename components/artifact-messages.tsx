@@ -1,17 +1,23 @@
-import { PreviewMessage, ThinkingMessage } from './message';
-import type { Vote } from '@/lib/db/schema';
-import type { UIMessage } from 'ai';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
-import type { UIArtifact } from './artifact';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import { motion } from 'framer-motion';
-import { useMessages } from '@/hooks/use-messages';
+/**
+ * @file components/artifact-messages.tsx
+ * @description Компонент для отображения сообщений в панели артефакта.
+ * @version 1.1.0
+ * @date 2025-06-06
+ * @updated Исправлен импорт из './message' после устранения циклической зависимости.
+ */
+import { PreviewMessage, ThinkingMessage } from './message'
+import type { UIMessage } from 'ai'
+import { memo } from 'react'
+import equal from 'fast-deep-equal'
+import type { UIArtifact } from './artifact'
+import type { UseChatHelpers } from '@ai-sdk/react'
+import { motion } from 'framer-motion'
+import { useMessages } from '@/hooks/use-messages'
 
 interface ArtifactMessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
-  votes: Array<Vote> | undefined;
+  votes: undefined; // Removed
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
@@ -19,10 +25,9 @@ interface ArtifactMessagesProps {
   artifactStatus: UIArtifact['status'];
 }
 
-function PureArtifactMessages({
+function PureArtifactMessages ({
   chatId,
   status,
-  votes,
   messages,
   setMessages,
   reload,
@@ -37,7 +42,7 @@ function PureArtifactMessages({
   } = useMessages({
     chatId,
     status,
-  });
+  })
 
   return (
     <div
@@ -50,11 +55,7 @@ function PureArtifactMessages({
           key={message.id}
           message={message}
           isLoading={status === 'streaming' && index === messages.length - 1}
-          vote={
-            votes
-              ? votes.find((vote) => vote.messageId === message.id)
-              : undefined
-          }
+          vote={undefined} // Removed
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
@@ -66,7 +67,7 @@ function PureArtifactMessages({
 
       {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage/>}
 
       <motion.div
         ref={messagesEndRef}
@@ -75,10 +76,10 @@ function PureArtifactMessages({
         onViewportEnter={onViewportEnter}
       />
     </div>
-  );
+  )
 }
 
-function areEqual(
+function areEqual (
   prevProps: ArtifactMessagesProps,
   nextProps: ArtifactMessagesProps,
 ) {
@@ -86,14 +87,16 @@ function areEqual(
     prevProps.artifactStatus === 'streaming' &&
     nextProps.artifactStatus === 'streaming'
   )
-    return true;
+    return true
 
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.status && nextProps.status) return false;
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (!equal(prevProps.votes, nextProps.votes)) return false;
+  if (prevProps.status !== nextProps.status) return false
+  if (prevProps.status && nextProps.status) return false
+  if (prevProps.messages.length !== nextProps.messages.length) return false
+  if (!equal(prevProps.votes, nextProps.votes)) return false
 
-  return true;
+  return true
 }
 
-export const ArtifactMessages = memo(PureArtifactMessages, areEqual);
+export const ArtifactMessages = memo(PureArtifactMessages, areEqual)
+
+// END OF: components/artifact-messages.tsx

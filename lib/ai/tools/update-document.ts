@@ -1,8 +1,15 @@
-import { type DataStreamWriter, tool } from 'ai';
-import type { Session } from 'next-auth';
-import { z } from 'zod';
-import { getDocumentById, } from '@/lib/db/queries';
-import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
+/**
+ * @file lib/ai/tools/update-document.ts
+ * @description Инструмент для обновления документа.
+ * @version 1.0.0
+ * @date 2025-06-06
+ * @updated Исправлена ошибка доступа к свойствам документа после изменения структуры getDocumentById.
+ */
+import { type DataStreamWriter, tool } from 'ai'
+import type { Session } from 'next-auth'
+import { z } from 'zod'
+import { getDocumentById, } from '@/lib/db/queries'
+import { documentHandlersByArtifactKind } from '@/lib/artifacts/server'
 
 interface UpdateDocumentProps {
   session: Session;
@@ -19,26 +26,28 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         .describe('The description of changes that need to be made'),
     }),
     execute: async ({ id, description }) => {
-      const document = await getDocumentById({ id });
+      const documentResult = await getDocumentById({ id })
 
-      if (!document) {
+      if (!documentResult) {
         return {
           error: 'Document not found',
-        };
+        }
       }
+
+      const document = documentResult.doc
 
       dataStream.writeData({
         type: 'clear',
         content: document.title,
-      });
+      })
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
           documentHandlerByArtifactKind.kind === document.kind,
-      );
+      )
 
       if (!documentHandler) {
-        throw new Error(`No document handler found for kind: ${document.kind}`);
+        throw new Error(`No document handler found for kind: ${document.kind}`)
       }
 
       await documentHandler.onUpdateDocument({
@@ -46,15 +55,16 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         description,
         dataStream,
         session,
-      });
+      })
 
-      dataStream.writeData({ type: 'finish', content: '' });
+      dataStream.writeData({ type: 'finish', content: '' })
 
       return {
         id,
         title: document.title,
         kind: document.kind,
         content: 'The document has been updated successfully.',
-      };
+      }
     },
-  });
+  })
+// END OF: lib/ai/tools/update-document.ts

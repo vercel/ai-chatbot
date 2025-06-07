@@ -1,18 +1,16 @@
 /**
  * @file components/chat.tsx
  * @description Основной компонент чата.
- * @version 1.4.1
+ * @version 1.9.0
  * @date 2025-06-06
- * @updated Импорт `toast` заменен на локальную обертку для консистентности.
+ * @updated Удалена логика и пропсы, связанные с голосованием (`votes`, `useSWR`).
  */
 
 /** HISTORY:
- * v1.4.1 (2025-06-06): Заменен импорт `toast` на локальную обертку.
- * v1.4.0 (2025-06-06): Добавлена обработка `discussArtifactId` и `toast.dismiss()`.
- * v1.3.2 (2025-06-06): Устранен дублирующийся импорт и исправлены классы Tailwind.
- * v1.3.1 (2025-06-06): Удален неиспользуемый проп initialVisibilityType и исправлена логика onFinish.
- * v1.3.0 (2025-06-05): Перестроен макет на flex, удален ChatHeader.
- * v1.2.1 (2025-06-05): Исправлен импорт useSWRConfig.
+ * v1.9.0 (2025-06-06): Удалена логика и пропсы, связанные с голосованием.
+ * v1.8.0 (2025-06-06): Удалена опция `body` из `useChat`, контекст артефакта теперь передается в `MultimodalInput`.
+ * v1.7.0 (2025-06-06): Удалена логика с композитным ID в пользу стандартного реактивного свойства `body`.
+ * v1.6.0 (2025-06-06): Добавлен композитный `id` для `useChat` для решения проблемы с "замороженным" состоянием.
  */
 
 'use client'
@@ -20,9 +18,8 @@
 import type { Attachment, UIMessage } from 'ai'
 import { useChat } from '@ai-sdk/react'
 import { useEffect, useState } from 'react'
-import useSWR, { useSWRConfig } from 'swr'
-import type { Vote } from '@/lib/db/schema'
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils'
+import { useSWRConfig } from 'swr'
+import { fetchWithErrorHandlers, generateUUID } from '@/lib/utils'
 import { MultimodalInput } from './multimodal-input'
 import { Messages } from './messages'
 import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact'
@@ -51,10 +48,11 @@ export function Chat ({
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig()
+  const { artifact, setArtifact } = useArtifact()
   const initialVisibilityType: VisibilityType = 'private'
 
   useEffect(() => {
-    toast.dismiss() // Скрываем все предыдущие уведомления при загрузке чата.
+    toast.dismiss()
 
     mutate('active-chat-context', {
       chatId: id,
@@ -85,12 +83,6 @@ export function Chat ({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     fetch: fetchWithErrorHandlers,
-    experimental_prepareRequestBody: (body) => ({
-      id,
-      message: body.messages.at(-1),
-      selectedChatModel: initialChatModel,
-      selectedVisibilityType: initialVisibilityType,
-    }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey))
     },
@@ -107,8 +99,6 @@ export function Chat ({
   const searchParams = useSearchParams()
   const query = searchParams.get('query')
   const discussArtifactId = searchParams.get('discussArtifact')
-
-  const { setArtifact } = useArtifact()
 
   useEffect(() => {
     if (discussArtifactId) {
@@ -135,11 +125,6 @@ export function Chat ({
     }
   }, [query, append, hasAppendedQuery, id])
 
-  const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-    fetcher,
-  )
-
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible)
 
@@ -157,7 +142,7 @@ export function Chat ({
         <Messages
           chatId={id}
           status={status}
-          votes={votes}
+          votes={undefined} // Votes are removed
           messages={messages}
           setMessages={setMessages}
           reload={reload}
@@ -180,6 +165,7 @@ export function Chat ({
             append={append}
             session={session}
             initialChatModel={initialChatModel}
+            artifact={artifact}
           />
         )}
       </div>

@@ -1,12 +1,13 @@
 /**
  * @file app/api/chat/discuss-artifact/route.ts
  * @description API маршрут для создания чата с контекстом артефакта.
- * @version 1.2.0
+ * @version 1.2.1
  * @date 2025-06-06
- * @updated Добавлено создание ответного сообщения от ассистента для корректного состояния чата.
+ * @updated Исправлена ошибка доступа к свойствам документа после изменения структуры getDocumentById.
  */
 
 /** HISTORY:
+ * v1.2.1 (2025-06-06): Исправлен доступ к свойствам документа.
  * v1.2.0 (2025-06-06): Добавлено автоматическое ответное сообщение от ассистента.
  * v1.1.0 (2025-06-06): Изменена структура сообщения на `tool-invocation`.
  * v1.0.0 (2025-06-06): Начальная версия.
@@ -46,10 +47,12 @@ export async function GET(request: Request) {
       return new ChatSDKError('bad_request:api', 'artifactId является обязательным параметром.').toResponse();
     }
 
-    const document = await getDocumentById({ id: artifactId });
-    if (!document || document.userId !== session.user.id) {
+    const documentResult = await getDocumentById({ id: artifactId });
+    if (!documentResult || !documentResult.doc || documentResult.doc.userId !== session.user.id) {
       return new ChatSDKError('forbidden:api', 'Документ не найден или доступ запрещен.').toResponse();
     }
+
+    const document = documentResult.doc;
 
     const newChatId = generateUUID();
     const newChatTitle = `Обсуждение: ${document.title}`;

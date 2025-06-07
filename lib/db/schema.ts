@@ -1,12 +1,13 @@
 /**
  * @file lib/db/schema.ts
  * @description Определения таблиц базы данных с использованием Drizzle ORM.
- * @version 1.1.0
- * @date 2025-06-05
- * @updated Исправлено имя колонки для типа документа с 'text' на 'kind' в таблице 'Document' для соответствия миграциям и логике приложения.
+ * @version 1.2.0
+ * @date 2025-06-06
+ * @updated Добавлено поле `authorId` в таблицу `Document` и удалены таблицы, связанные с голосованием.
  */
 
 /** HISTORY:
+ * v1.2.0 (2025-06-06): Добавлено поле `authorId` и удалены таблицы голосования.
  * v1.1.0 (2025-06-05): Исправлено имя колонки для типа документа на 'kind' в таблице 'Document'.
  * v1.0.0 (2025-05-25): Начальная версия файла схемы.
  */
@@ -73,48 +74,6 @@ export const message = pgTable('Message_v2', {
 
 export type DBMessage = InferSelectModel<typeof message>;
 
-// DEPRECATED: The following schema is deprecated and will be removed in the future.
-// Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
-export const voteDeprecated = pgTable(
-  'Vote',
-  {
-    chatId: uuid('chatId')
-      .notNull()
-      .references(() => chat.id),
-    messageId: uuid('messageId')
-      .notNull()
-      .references(() => messageDeprecated.id),
-    isUpvoted: boolean('isUpvoted').notNull(),
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.chatId, table.messageId] }),
-    };
-  },
-);
-
-export type VoteDeprecated = InferSelectModel<typeof voteDeprecated>;
-
-export const vote = pgTable(
-  'Vote_v2',
-  {
-    chatId: uuid('chatId')
-      .notNull()
-      .references(() => chat.id),
-    messageId: uuid('messageId')
-      .notNull()
-      .references(() => message.id),
-    isUpvoted: boolean('isUpvoted').notNull(),
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.chatId, table.messageId] }),
-    };
-  },
-);
-
-export type Vote = InferSelectModel<typeof vote>;
-
 export const document = pgTable(
   'Document',
   {
@@ -122,13 +81,13 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    // Исправлено: имя колонки должно быть 'kind'
     kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
+    authorId: uuid('authorId').references(() => user.id), // ID пользователя или null для AI
   },
   (table) => {
     return {
