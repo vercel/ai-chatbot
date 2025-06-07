@@ -1,15 +1,15 @@
 /**
  * @file components/ui/sidebar.tsx
  * @description Компоненты для создания боковой панели.
- * @version 1.2.0
+ * @version 1.3.0
  * @date 2025-06-06
- * @updated Упрощен компонент, удалена логика с fixed position и z-index для работы внутри ResizablePanel.
+ * @updated Добавлен стиль justify-center для кнопок в свернутом состоянии для корректного отображения иконок.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-06): Добавлено центрирование для иконок в свернутом режиме.
  * v1.2.0 (2025-06-06): Убран SidebarInset, удалена вся логика с `position: fixed` и `peer-data-*`.
  * v1.1.0 (2025-06-05): Изменены стили focus-visible для SidebarMenuButton.
- * v1.0.0 (2025-06-05): Начальная версия.
  */
 
 'use client'
@@ -196,7 +196,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "h-full text-sidebar-foreground flex flex-col bg-sidebar",
+          'h-full text-sidebar-foreground flex flex-col bg-sidebar',
           className
         )}
         data-state={state}
@@ -235,7 +235,6 @@ const SidebarTrigger = React.forwardRef<
   )
 })
 SidebarTrigger.displayName = 'SidebarTrigger'
-
 
 const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
@@ -360,7 +359,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = 'SidebarMenuItem'
 
 const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none transition-[width,height,padding] focus-visible:bg-sidebar-accent focus-visible:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[state=collapsed]:!size-8 group-data-[state=collapsed]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none transition-[width,height,padding] focus-visible:bg-sidebar-accent focus-visible:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[state=collapsed]:!size-8 group-data-[state=collapsed]:!p-2 group-data-[state=collapsed]:!justify-center [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
   {
     variants: {
       variant: {

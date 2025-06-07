@@ -1,12 +1,14 @@
 /**
  * @file app/api/chat/route.ts
  * @description API маршрут для обработки запросов чата.
- * @version 1.5.1
+ * @version 1.7.0
  * @date 2025-06-06
- * @updated Тип возвращаемого значения `enrichMessagesWithArtifacts` изменен на `Promise<CoreMessage[]>` для устранения ошибки.
+ * @updated Добавлена логика реконструкции контекста артефакта из истории сообщений.
  */
 
 /** HISTORY:
+ * v1.7.0 (2025-06-06): Добавлена логика реконструкции контекста артефакта.
+ * v1.6.0 (2025-06-06): Добавлена логика для включения контекста активного артефакта в системный промпт.
  * v1.5.1 (2025-06-06): Исправлен тип возвращаемого значения `enrichMessagesWithArtifacts`.
  * v1.5.0 (2025-06-06): Добавлено обогащение сообщений метаданными артефактов.
  * v1.4.1 (2025-06-06): Добавлено `as UIMessage` при вызове `generateTitleFromUserMessage`.
@@ -139,6 +141,30 @@ async function enrichMessagesWithArtifacts (messages: PostRequestBody['messages'
   return enrichedMessages as CoreMessage[]
 }
 
+function getContextFromHistory (messages: PostRequestBody['messages']): ArtifactContext | undefined {
+  // Итерируемся в обратном порядке
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (message.parts) {
+      for (const part of message.parts) {
+        // @ts-ignore
+        if (part.type === 'tool-invocation' && part.toolInvocation.state === 'result') {
+          // @ts-ignore
+          const { toolName, result } = part.toolInvocation
+          if (result && result.id && ['createDocument', 'updateDocument', 'getDocument'].includes(toolName)) {
+            return {
+              id: result.id,
+              title: result.title,
+              kind: result.kind,
+            }
+          }
+        }
+      }
+    }
+  }
+  return undefined
+}
+
 export async function POST (request: Request) {
   let requestBody: PostRequestBody
 
@@ -211,10 +237,11 @@ export async function POST (request: Request) {
       country,
     }
 
-    const artifactContext: ArtifactContext | undefined =
+    // Определяем контекст артефакта
+    let artifactContext: ArtifactContext | undefined =
       activeArtifactId && activeArtifactTitle && activeArtifactKind
         ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
-        : undefined
+        : getContextFromHistory(messages)
 
     await saveMessages({
       messages: [

@@ -1,12 +1,14 @@
 /**
  * @file components/message.tsx
  * @description Компонент для отображения одного сообщения в чате.
- * @version 1.6.0
- * @date 2025-06-06
- * @updated Удален циклический импорт, компоненты PreviewMessage и ThinkingMessage теперь экспортируются.
+ * @version 1.8.0
+ * @date 2025-06-07
+ * @updated Результат вызова инструмента `getDocument` больше не рендерится, чтобы избежать показа JSON в чате.
  */
 
 /** HISTORY:
+ * v1.8.0 (2025-06-07): Исключен рендеринг для `tool-result` от `getDocument`.
+ * v1.7.0 (2025-06-06): Добавлена логика для скрытия raw-результатов инструментов (`tool-result`), если для них нет специального UI.
  * v1.6.0 (2025-06-06): Исправлена циклическая зависимость.
  * v1.5.0 (2025-06-06): Восстановлены действия для сообщений ассистента.
  * v1.4.0 (2025-06-06): Удалена логика голосования.
@@ -262,34 +264,23 @@ const PurePreviewMessage = ({
                 if (state === 'result') {
                   const { result } = toolInvocation
 
-                  return (
-                    <div key={toolCallId}>
-                      {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result}/>
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview
-                          isReadonly={isReadonly}
-                          result={result}
-                        />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolResult
-                          type="update"
-                          result={result}
-                          isReadonly={isReadonly}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolResult
-                          type="request-suggestions"
-                          result={result}
-                          isReadonly={isReadonly}
-                        />
-                      ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
-                      )}
-                    </div>
-                  )
+                  // Отображаем только те результаты инструментов, для которых есть специальный UI
+                  switch (toolName) {
+                    case 'getWeather':
+                      return <Weather key={toolCallId} weatherAtLocation={result}/>
+                    case 'createDocument':
+                    case 'updateDocument':
+                    case 'requestSuggestions':
+                       return <DocumentPreview key={toolCallId} isReadonly={isReadonly} result={result}/>
+                    // Все остальные результаты инструментов, особенно getDocument, просто игнорируются
+                    case 'getDocument':
+                    default:
+                      return null
+                  }
                 }
               }
+
+              return null
             })}
 
           </div>

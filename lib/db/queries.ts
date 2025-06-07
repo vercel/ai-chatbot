@@ -1,18 +1,15 @@
 /**
  * @file lib/db/queries.ts
  * @description Функции для выполнения запросов к базе данных.
- * @version 1.7.0
+ * @version 1.8.0
  * @date 2025-06-06
- * @updated Добавлен authorId в saveDocument, getDocumentById расширен для работы с версиями, удалены функции голосования.
+ * @updated Добавлена конфигурация idle_timeout и max_lifetime для postgres-js для предотвращения ошибок "Socket closed unexpectedly".
  */
 
 /** HISTORY:
+ * v1.8.0 (2025-06-06): Добавлена конфигурация для postgres-js для стабильной работы в serverless-среде.
  * v1.7.0 (2025-06-06): Добавлена поддержка `authorId` и версионирования в `getDocumentById`. Удалены функции, связанные с голосованием.
  * v1.6.0 (2025-06-06): Функции `getRecent...` и `getPaged...` обобщены для работы со всеми видами контента.
- * v1.5.1 (2025-06-06): Исправлен путь импорта VisibilityType.
- * v1.5.0 (2025-06-06): Добавлены deleteMessageById, getMessageWithSiblings. saveChat сделан идемпотентным.
- * v1.4.0 (2025-06-06): Исправлена ошибка SQL в getPagedTextDocumentsByUserId.
- * v1.3.2 (2025-06-05): Модифицированы запросы getRecentTextDocumentsByUserId и getPagedTextDocumentsByUserId.
  */
 
 import 'server-only'
@@ -41,7 +38,10 @@ import type { VisibilityType } from '@/lib/types'
 import { ChatSDKError } from '../errors'
 
 // biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!)
+const client = postgres(process.env.POSTGRES_URL!, {
+  idle_timeout: 20, // Автоматическое закрытие неактивных соединений через 20 секунд
+  max_lifetime: 60 * 5, // Принудительное пересоздание соединения каждые 5 минут
+})
 const db = drizzle(client)
 
 export async function getUser (email: string): Promise<Array<User>> {
@@ -103,7 +103,7 @@ export async function saveChat ({
       userId,
       title,
       visibility,
-    }).onConflictDoNothing() // Сделали операцию идемпотентной
+    }).onConflictDoNothing()
   } catch (error) {
     console.error(`SYS_VS_DB: Failed to save chat ${id} for user ${userId}`, error)
     throw new ChatSDKError('bad_request:database', 'Failed to save chat')
@@ -112,7 +112,6 @@ export async function saveChat ({
 
 export async function deleteChatById ({ id }: { id: string }) {
   try {
-    // Таблицы vote уже не будет, Drizzle вернет ошибку, если оставить
     await db.delete(message).where(eq(message.chatId, id))
     await db.delete(stream).where(eq(stream.chatId, id))
 
@@ -416,7 +415,6 @@ export async function getMessageById ({ id }: { id: string }): Promise<DBMessage
 
 export async function deleteMessageById ({ messageId }: { messageId: string }): Promise<DBMessage | undefined> {
   try {
-    // Таблицы vote уже не будет, Drizzle вернет ошибку, если оставить
     const [deletedMessage] = await db.delete(message).where(eq(message.id, messageId)).returning()
     return deletedMessage
   } catch (error) {
@@ -460,7 +458,6 @@ export async function deleteMessagesByChatIdAfterTimestamp ({
     const messageIds = messagesToDelete.map((msg) => msg.id)
 
     if (messageIds.length > 0) {
-      // Таблицы vote уже не будет, Drizzle вернет ошибку, если оставить
       return await db
         .delete(message)
         .where(

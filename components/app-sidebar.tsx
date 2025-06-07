@@ -1,16 +1,15 @@
 /**
  * @file components/app-sidebar.tsx
  * @description Компонент боковой панели приложения с навигацией.
- * @version 1.7.0
+ * @version 1.8.0
  * @date 2025-06-06
- * @updated Раздел "Заметки" переименован в "Контент" и теперь отображает все типы артефактов. Иконка заменена.
+ * @updated Восстановлена правильная HTML-структура (SidebarMenuItem внутри SidebarMenu) для устранения маркеров списка.
  */
 
 /** HISTORY:
+ * v1.8.0 (2025-06-06): Исправлена структура SidebarMenu/SidebarMenuItem для устранения бага с маркерами.
  * v1.7.0 (2025-06-06): Рефакторинг "Заметки" -> "Контент". Обновлены API-вызовы, ссылки и иконка.
  * v1.6.1 (2025-06-06): Исправлена передача `className` иконкам.
- * v1.6.0 (2025-06-06): Исправлены импорты удаленных компонентов, заменен SidebarMenuSkeleton на Skeleton.
- * v1.5.0 (2025-06-05): Удален UserNav и логотип (перенесены в Header), триггер в футере выровнен по правому краю.
  */
 
 'use client'
@@ -88,7 +87,7 @@ export function AppSidebar ({ user }: { user: User | undefined }) {
     data: recentContent,
     isLoading: isLoadingRecentContent,
   } = useSWR<Array<Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>>>(
-    user ? `/api/content/recent?limit=5` : null, // Обновленный API-эндпоинт
+    user ? `/api/content/recent?limit=5` : null,
     fetcher,
     { revalidateOnFocus: false }
   )
@@ -123,34 +122,36 @@ export function AppSidebar ({ user }: { user: User | undefined }) {
     <Sidebar>
       <SidebarContent className="p-2">
         <SidebarGroup>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => {
-                if (sidebarState === 'collapsed') {
-                  router.push('/')
-                } else {
-                  setIsChatSectionCollapsed(!isChatSectionCollapsed)
-                }
-                setOpenMobile(false)
-              }}
-              isActive={isChatActive}
-              tooltip={{ children: 'AI Чат', side: 'right' }}
-              className="justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <MessageCircleIcon size={18}/>
-                {sidebarState === 'expanded' && <span>AI Чат</span>}
-              </div>
-              {sidebarState === 'expanded' && (
-                <ChevronDownIcon
-                  size={16}
-                  className={`transition-transform duration-200 ${
-                    isChatSectionCollapsed ? '-rotate-90' : 'rotate-0'
-                  }`}
-                />
-              )}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => {
+                  if (sidebarState === 'collapsed') {
+                    router.push('/')
+                  } else {
+                    setIsChatSectionCollapsed(!isChatSectionCollapsed)
+                  }
+                  setOpenMobile(false)
+                }}
+                isActive={isChatActive}
+                tooltip={{ children: 'AI Чат', side: 'right' }}
+                className="justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <MessageCircleIcon size={18}/>
+                  {sidebarState === 'expanded' && <span>AI Чат</span>}
+                </div>
+                {sidebarState === 'expanded' && (
+                  <ChevronDownIcon
+                    size={16}
+                    className={`transition-transform duration-200 ${
+                      isChatSectionCollapsed ? '-rotate-90' : 'rotate-0'
+                    }`}
+                  />
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
           {!isChatSectionCollapsed && sidebarState === 'expanded' && (
             <SidebarHistory user={user}/>
           )}
@@ -158,34 +159,36 @@ export function AppSidebar ({ user }: { user: User | undefined }) {
 
         {user && (
           <SidebarGroup>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => {
-                  if (sidebarState === 'collapsed') {
-                    router.push('/content') // Обновленный маршрут
-                  } else {
-                    setIsContentSectionCollapsed(!isContentSectionCollapsed)
-                  }
-                  setOpenMobile(false)
-                }}
-                isActive={isContentActive}
-                tooltip={{ children: 'Контент', side: 'right' }}
-                className="justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  <BoxIcon size={18}/> {/* Новая иконка */}
-                  {sidebarState === 'expanded' && <span>Контент</span>}
-                </div>
-                {sidebarState === 'expanded' && (
-                  <ChevronDownIcon
-                    size={16}
-                    className={`transition-transform duration-200 ${
-                      isContentSectionCollapsed ? '-rotate-90' : 'rotate-0'
-                    }`}
-                  />
-                )}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => {
+                    if (sidebarState === 'collapsed') {
+                      router.push('/content') // Обновленный маршрут
+                    } else {
+                      setIsContentSectionCollapsed(!isContentSectionCollapsed)
+                    }
+                    setOpenMobile(false)
+                  }}
+                  isActive={isContentActive}
+                  tooltip={{ children: 'Контент', side: 'right' }}
+                  className="justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <BoxIcon size={18}/> {/* Новая иконка */}
+                    {sidebarState === 'expanded' && <span>Контент</span>}
+                  </div>
+                  {sidebarState === 'expanded' && (
+                    <ChevronDownIcon
+                      size={16}
+                      className={`transition-transform duration-200 ${
+                        isContentSectionCollapsed ? '-rotate-90' : 'rotate-0'
+                      }`}
+                    />
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
             {!isContentSectionCollapsed && sidebarState === 'expanded' && (
               <SidebarMenu>
                 {isLoadingRecentContent && (
