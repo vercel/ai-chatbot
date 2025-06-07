@@ -1,12 +1,14 @@
 /**
  * @file components/theme-switcher.tsx
  * @description Компонент для переключения режима отображения (светлый/темный/системный).
- * @version 1.1.0
- * @date 2025-06-05
+ * @version 1.1.1
+ * @date 2024-07-12
  * @updated Переделан на использование ToggleGroup для более интуитивного выбора.
+ * @updated Improved theme selection highlight via toggle component update.
  */
 
 /** HISTORY:
+ * v1.1.1 (2024-07-12): Improved theme selection highlight via toggle component update.
  * v1.1.0 (2025-06-05): Заменен DropdownMenu на ToggleGroup.
  * v1.0.0 (2025-06-05): Начальная версия компонента.
  */
