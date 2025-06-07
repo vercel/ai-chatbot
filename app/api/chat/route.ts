@@ -89,7 +89,7 @@ async function enrichMessagesWithArtifacts (messages: PostRequestBody['messages'
           // @ts-ignore
           const result = part.toolInvocation.result as any
           // @ts-ignore
-          if (result && result.id && ['createDocument', 'updateDocument', 'getDocument'].includes(part.toolInvocation.toolName)) {
+          if (result?.id && ['createDocument', 'updateDocument', 'getDocument'].includes(part.toolInvocation.toolName)) {
             artifactIds.add(result.id)
           }
         }
@@ -119,7 +119,7 @@ async function enrichMessagesWithArtifacts (messages: PostRequestBody['messages'
       if (part.type === 'tool-invocation' && part.toolInvocation.state === 'result') {
         // @ts-ignore
         const result = part.toolInvocation.result as any
-        const freshMeta = result && result.id ? artifactMetadata.get(result.id) : undefined
+        const freshMeta = result?.id ? artifactMetadata.get(result.id) : undefined
 
         if (freshMeta) {
           const enrichedResult = {
@@ -151,7 +151,7 @@ function getContextFromHistory (messages: PostRequestBody['messages']): Artifact
         if (part.type === 'tool-invocation' && part.toolInvocation.state === 'result') {
           // @ts-ignore
           const { toolName, result } = part.toolInvocation
-          if (result && result.id && ['createDocument', 'updateDocument', 'getDocument'].includes(toolName)) {
+          if (result?.id && ['createDocument', 'updateDocument', 'getDocument'].includes(toolName)) {
             return {
               id: result.id,
               title: result.title,
@@ -238,7 +238,7 @@ export async function POST (request: Request) {
     }
 
     // Определяем контекст артефакта
-    let artifactContext: ArtifactContext | undefined =
+    const artifactContext: ArtifactContext | undefined =
       activeArtifactId && activeArtifactTitle && activeArtifactKind
         ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
         : getContextFromHistory(messages)
