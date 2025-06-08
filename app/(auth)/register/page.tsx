@@ -1,3 +1,15 @@
+/**
+ * @file app/(auth)/register/page.tsx
+ * @description Страница регистрации пользователя.
+ * @version 1.0.1
+ * @date 2025-06-07
+ * @updated Исправлен бесконечный цикл переадресации после успешной регистрации.
+ */
+
+/** HISTORY:
+ * v1.0.1 (2025-06-07): Заменен router.refresh() на router.push('/') для корректного редиректа.
+ * v1.0.0 (2025-05-25): Начальная версия.
+ */
 'use client'
 
 import Link from 'next/link'
@@ -9,7 +21,6 @@ import { SubmitButton } from '@/components/submit-button'
 
 import { register, type RegisterActionState } from '../actions'
 import { toast } from '@/components/toast'
-import { useSession } from 'next-auth/react'
 
 export default function Page () {
   const router = useRouter()
@@ -23,8 +34,6 @@ export default function Page () {
       status: 'idle',
     },
   )
-
-  const { update: updateSession } = useSession()
 
   useEffect(() => {
     if (state.status === 'user_exists') {
@@ -40,10 +49,10 @@ export default function Page () {
       toast({ type: 'success', description: 'Account created successfully!' })
 
       setIsSuccessful(true)
-      updateSession()
-      router.refresh()
+      // Прямое перенаправление на главную страницу вместо обновления текущей
+      router.push('/')
     }
-  }, [state, router, updateSession])
+  }, [state, router])
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string)
@@ -76,3 +85,5 @@ export default function Page () {
     </div>
   )
 }
+
+// END OF: app/(auth)/register/page.tsx

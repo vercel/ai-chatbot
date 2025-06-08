@@ -1,9 +1,14 @@
 /**
  * @file tests/e2e/session.test.ts
  * @description E2E тесты для сессий пользователей.
- * @version 1.0.2
- * @date 2025-06-06
- * @updated Исправлен импорт типа Request - теперь он импортируется из @playwright/test.
+ * @version 1.0.3
+ * @date 2025-06-07
+ * @updated Тест выхода из системы теперь проверяет перенаправление на страницу /login.
+ */
+
+/** HISTORY:
+ * v1.0.3 (2025-06-07): Тест выхода из системы обновлен для проверки редиректа на /login.
+ * v1.0.2 (2025-06-06): Исправлен импорт типа Request.
  */
 import { expect, test } from '../fixtures';
 import type { Request } from '@playwright/test';
@@ -55,8 +60,9 @@ test.describe
       const userNavMenu = page.getByTestId('user-nav-menu');
       await expect(userNavMenu).toBeVisible();
 
-      const authMenuItem = page.getByTestId('user-nav-item-auth');
-      await expect(authMenuItem).toContainText('Login to your account');
+      // For guests, the menu item should prompt to log in, not sign out.
+      const loginMenuItem = page.getByText('Log in');
+      await expect(loginMenuItem).toBeVisible();
     });
 
     test('Do not authenticate as guest user when an existing non-guest session is active', async ({
@@ -102,7 +108,7 @@ test.describe
       await sidebarToggleButton.click();
 
       const userEmail = page.getByTestId('user-email');
-      await expect(userEmail).toContainText('Guest');
+      await expect(userEmail).toContainText('guest-');
     });
   });
 
@@ -139,12 +145,28 @@ test.describe
       await page.waitForURL('/');
       await expect(page.getByPlaceholder('Send a message...')).toBeVisible();
 
+      await authPage.openSidebar();
       const userEmail = await page.getByTestId('user-email');
       await expect(userEmail).toHaveText(testUser.email);
     });
 
-    test('Log out as non-guest user', async () => {
-      await authPage.logout(testUser.email, testUser.password);
+    test('Log out as non-guest user', async ({ page }) => {
+      await authPage.login(testUser.email, testUser.password);
+      await page.waitForURL('/');
+
+      await authPage.openSidebar();
+
+      const userNavButton = page.getByTestId('user-nav-button');
+      await userNavButton.click();
+
+      const userNavMenu = page.getByTestId('user-nav-menu');
+      await expect(userNavMenu).toBeVisible();
+
+      const authMenuItem = page.getByText('Log out');
+      await authMenuItem.click();
+
+      await page.waitForURL('/login');
+      await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
     });
 
     test('Do not force create a guest session if non-guest session already exists', async ({
@@ -152,6 +174,7 @@ test.describe
     }) => {
       await authPage.login(testUser.email, testUser.password);
       await page.waitForURL('/');
+      await authPage.openSidebar();
 
       const userEmail = await page.getByTestId('user-email');
       await expect(userEmail).toHaveText(testUser.email);
@@ -167,7 +190,7 @@ test.describe
       await authPage.login(testUser.email, testUser.password);
       await page.waitForURL('/');
 
-      authPage.openSidebar();
+      await authPage.openSidebar();
 
       const userNavButton = page.getByTestId('user-nav-button');
       await expect(userNavButton).toBeVisible();
@@ -176,8 +199,8 @@ test.describe
       const userNavMenu = page.getByTestId('user-nav-menu');
       await expect(userNavMenu).toBeVisible();
 
-      const authMenuItem = page.getByTestId('user-nav-item-auth');
-      await expect(authMenuItem).toContainText('Sign out');
+      const authMenuItem = page.getByText('Log out');
+      await expect(authMenuItem).toBeVisible();
     });
 
     test('Do not navigate to /register for non-guest users', async ({

@@ -1,3 +1,15 @@
+/**
+ * @file app/(auth)/login/page.tsx
+ * @description Страница входа пользователя.
+ * @version 1.0.1
+ * @date 2025-06-07
+ * @updated Исправлен бесконечный цикл переадресации после успешного входа.
+ */
+
+/** HISTORY:
+ * v1.0.1 (2025-06-07): Заменен router.refresh() на router.push('/') для корректного редиректа.
+ * v1.0.0 (2025-05-25): Начальная версия.
+ */
 'use client'
 
 import Link from 'next/link'
@@ -9,7 +21,6 @@ import { AuthForm } from '@/components/auth-form'
 import { SubmitButton } from '@/components/submit-button'
 
 import { login, type LoginActionState } from '../actions'
-import { useSession } from 'next-auth/react'
 
 export default function Page () {
   const router = useRouter()
@@ -24,8 +35,6 @@ export default function Page () {
     },
   )
 
-  const { update: updateSession } = useSession()
-
   useEffect(() => {
     if (state.status === 'failed') {
       toast({
@@ -39,10 +48,10 @@ export default function Page () {
       })
     } else if (state.status === 'success') {
       setIsSuccessful(true)
-      updateSession()
-      router.refresh()
+      // Прямое перенаправление на главную страницу вместо обновления текущей
+      router.push('/')
     }
-  }, [state.status, router, updateSession])
+  }, [state.status, router])
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string)
@@ -75,3 +84,5 @@ export default function Page () {
     </div>
   )
 }
+
+// END OF: app/(auth)/login/page.tsx

@@ -1,12 +1,13 @@
 /**
  * @file components/share-dialog.tsx
  * @description Диалоговое окно для управления публикацией и копирования ссылки на чат.
- * @version 2.0.0
- * @date 2025-06-06
- * @updated Полный редизайн UX. Убрана лишняя кнопка. Кнопка "Копировать" теперь делает чат публичным.
+ * @version 2.1.0
+ * @date 2025-06-07
+ * @updated Добавлен информационный блок, объясняющий подсветку кнопки "Share".
  */
 
 /** HISTORY:
+ * v2.1.0 (2025-06-07): Добавлен информационный блок с иконкой.
  * v2.0.0 (2025-06-06): Редизайн UX в соответствии с новыми требованиями.
  * v1.0.0 (2025-06-05): Начальная версия компонента.
  */
@@ -24,7 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CopyIcon } from '@/components/icons';
+import { CopyIcon, InfoIcon } from '@/components/icons';
 import { toast } from '@/components/toast';
 import { updateChatVisibility } from '@/app/(main)/chat/actions';
 import type { VisibilityType } from '@/lib/types';
@@ -94,7 +95,15 @@ export function ShareDialog({
             <CopyIcon />
           </Button>
         </div>
-        <DialogFooter className="sm:justify-start">
+
+        <div className="flex items-start space-x-2 text-muted-foreground mt-2 p-2 bg-muted/50 rounded-md">
+            <InfoIcon className="size-4 shrink-0 mt-0.5"/>
+            <p className="text-xs">
+              Кнопка "Share" в шапке приложения подсвечивается для чатов, у которых включён режим "Поделиться".
+            </p>
+        </div>
+
+        <DialogFooter className="sm:justify-start pt-2">
            {visibility === 'public' ? (
              <Button type="button" variant="destructive" onClick={handleStopSharing}>
               Закрыть доступ

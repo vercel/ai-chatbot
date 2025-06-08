@@ -1,3 +1,15 @@
+/**
+ * @file components/ui/toggle-group.tsx
+ * @description Компонент для группы переключателей.
+ * @version 1.1.0
+ * @date 2025-06-07
+ * @updated Изменены стили для визуального объединения кнопок в единый блок.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-07): Стили изменены для создания визуально слитной группы.
+ * v1.0.0 (2025-05-25): Начальная версия.
+ */
 "use client"
 
 import * as React from "react"
@@ -21,7 +33,7 @@ const ToggleGroup = React.forwardRef<
 >(({ className, variant, size, children, ...props }, ref) => (
   <ToggleGroupPrimitive.Root
     ref={ref}
-    className={cn("flex items-center justify-center gap-1", className)}
+    className={cn("flex items-center justify-center", className)}
     {...props}
   >
     <ToggleGroupContext.Provider value={{ variant, size }}>
@@ -47,6 +59,11 @@ const ToggleGroupItem = React.forwardRef<
           variant: context.variant || variant,
           size: context.size || size,
         }),
+        "data-[state=on]:z-10",
+        "focus-visible:z-10",
+        "[&:not(:first-child)]:ml-[-1px]",
+        "[&:not(:first-child)]:rounded-l-none",
+        "[&:not(:last-child)]:rounded-r-none",
         className
       )}
       {...props}
@@ -59,3 +76,5 @@ const ToggleGroupItem = React.forwardRef<
 ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName
 
 export { ToggleGroup, ToggleGroupItem }
+
+// END OF: components/ui/toggle-group.tsx
