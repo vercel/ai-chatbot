@@ -1,12 +1,13 @@
 /**
  * @file components/chat-input.tsx
  * @description Компонент для ввода сообщений, включая текст и файлы с авто-созданием артефактов.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Рефакторинг. Переименован. Внедрена логика авто-создания артефакта при загрузке файла.
+ * @version 2.0.1
+ * @date 2025-06-10
+ * @updated Set correct message role to 'tool' when appending artifact creation results (TS2322).
  */
 
 /** HISTORY:
+ * v2.0.1 (2025-06-10): Fixed TS2322 by changing message role to 'tool' when appending artifact creation tool results.
  * v2.0.0 (2025-06-09): Переименован, добавлено авто-создание артефактов.
  * v1.7.0 (2025-06-07): Исправлена логика загрузки файлов на client-side.
  */
@@ -118,7 +119,7 @@ export function ChatInput ({
 
           append({
             id: generateUUID(),
-            role: 'user',
+            role: 'tool', // Changed from 'user'
             content: '',
             parts: [{
               type: 'tool-result',
