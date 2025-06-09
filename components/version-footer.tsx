@@ -1,13 +1,25 @@
 'use client';
 
+/**
+ * @file components/version-footer.tsx
+ * @description Component to display footer controls when viewing a previous version of an artifact.
+ * @version 1.0.0
+ * @date 2025-06-10
+ * @updated Initial version incorporating fixes for type errors and updated imports.
+ */
+
+/** HISTORY:
+ * v1.0.0 (2025-06-10): Initial version. Fixed type imports (Artifact instead of Document), utility function name (getArtifactTimestampByIndex), and artifact ID property (artifactId).
+ */
+
 import { isAfter } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import type { Document } from '@/lib/db/schema';
-import { getDocumentTimestampByIndex } from '@/lib/utils';
+import type { Artifact } from '@/lib/db/schema';
+import { getArtifactTimestampByIndex } from '@/lib/utils';
 
 import { LoaderIcon } from './icons';
 import { Button } from './ui/button';
@@ -15,7 +27,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 
 interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
-  documents: Array<Document> | undefined;
+  documents: Array<Artifact> | undefined;
   currentVersionIndex: number;
 }
 
@@ -56,9 +68,9 @@ export const VersionFooter = ({
             setIsMutating(true);
 
             mutate(
-              `/api/document?id=${artifact.documentId}`,
+              `/api/document?id=${artifact.artifactId}`,
               await fetch(
-                `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
+                `/api/document?id=${artifact.artifactId}&timestamp=${getArtifactTimestampByIndex(
                   documents,
                   currentVersionIndex,
                 )}`,
@@ -73,7 +85,7 @@ export const VersionFooter = ({
                         isAfter(
                           new Date(document.createdAt),
                           new Date(
-                            getDocumentTimestampByIndex(
+                            getArtifactTimestampByIndex(
                               documents,
                               currentVersionIndex,
                             ),
@@ -105,3 +117,4 @@ export const VersionFooter = ({
     </motion.div>
   );
 };
+// END OF: components/version-footer.tsx

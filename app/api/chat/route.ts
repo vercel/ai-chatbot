@@ -1,14 +1,17 @@
 /**
  * @file app/api/chat/route.ts
  * @description API маршрут для обработки запросов чата, переписанный под новую архитектуру.
- * @version 4.1.0
- * @date 2025-06-09
- * @updated Исправлены ошибки типизации и вызов toAIStreamResponse.
+ * @version 4.1.3
+ * @date 2025-06-10
+ * @updated Updated to use toDataStreamResponse method from AI SDK and fixed other type errors.
  */
 
 /** HISTORY:
  * v4.1.0 (2025-06-09): Исправлены ошибки типизации и toAIStreamResponse.
  * v4.0.0 (2025-06-09): Полный рефакторинг под новую архитектуру.
+ * v4.1.1 (2025-06-10): Fixed TS2339 by casting part.toolInvocation to any in transformToCoreMessages for 'tool-invocation' part type.
+ * v4.1.2 (2025-06-10): Fixed TS2678 by casting uiMessage.role to string in switch statement in transformToCoreMessages.
+ * v4.1.3 (2025-06-10): Replaced 'toAIStreamResponse' with 'toDataStreamResponse' based on AI SDK changes (TS2551).
  */
 
 import {
@@ -51,7 +54,7 @@ async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMe
   const coreMessages: CoreMessage[] = []
 
   for (const uiMessage of uiMessages) {
-    switch (uiMessage.role) {
+    switch (uiMessage.role as string) {
       case 'user': {
         const contentParts: (TextPart | ImagePart)[] = [{ type: 'text', text: uiMessage.content }]
         if (uiMessage.experimental_attachments) {
@@ -78,7 +81,8 @@ async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMe
               assistantContentParts.push(part)
               break
             case 'tool-invocation': {
-              const { state, toolCallId, toolName, args, result } = part.toolInvocation
+              const ti = part.toolInvocation as any;
+              const { state, toolCallId, toolName, args, result } = ti;
               if (state === 'call') {
                 assistantContentParts.push({ type: 'tool-call', toolCallId, toolName, args })
               } else if (state === 'result') {
@@ -209,7 +213,7 @@ export async function POST (request: Request) {
       },
     })
 
-    return result.toAIStreamResponse()
+    return result.toDataStreamResponse()
 
   } catch (error) {
     logger.error({ err: error as Error }, 'Failed to process chat POST request')

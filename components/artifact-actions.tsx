@@ -1,12 +1,13 @@
 /**
  * @file components/artifact-actions.tsx
  * @description Компонент с действиями для артефакта.
- * @version 2.2.0
- * @date 2025-06-06
- * @updated Функция "Обсудить в чате" теперь вызывает новый API-маршрут.
+ * @version 2.2.1
+ * @date 2025-06-10
+ * @updated Corrected property access to 'artifactId' on UIArtifact type (TS2339).
  */
 
 /** HISTORY:
+ * v2.2.1 (2025-06-10): Fixed TS2339 by ensuring correct 'artifactId' property is used from UIArtifact type.
  * v2.2.0 (2025-06-06): `handleDiscuss` теперь использует API-маршрут `/api/chat/discuss-artifact`.
  * v2.1.0 (2025-06-06): Исправлена логика "Обсудить в чате".
  * v2.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
@@ -73,7 +74,7 @@ function PureArtifactActions ({
   const handleDiscuss = () => {
     toast({ type: 'loading', description: 'Создание чата для обсуждения...' })
     setArtifact(prev => ({ ...prev, isVisible: false }))
-    router.push(`/api/chat/discuss-artifact?artifactId=${artifact.documentId}`)
+    router.push(`/api/chat/discuss-artifact?artifactId=${artifact.artifactId}`)
   }
 
   const actionContext: ArtifactActionContext = {

@@ -1,12 +1,13 @@
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 2.1.0
- * @date 2025-06-09
- * @updated Исправлены ошибки типизации и импортов.
+ * @version 2.1.1
+ * @date 2025-06-10
+ * @updated Corrected prop name passed to VersionFooter (documents instead of artifacts).
  */
 
 /** HISTORY:
+ * v2.1.1 (2025-06-10): Renamed 'artifacts' prop to 'documents' when passing to VersionFooter to match component's expected props (TS2322).
  * v2.1.0 (2025-06-09): Исправлены ошибки типизации.
  * v2.0.0 (2025-06-09): Адаптирован под новую архитектуру.
  */
@@ -250,7 +251,7 @@ function PureArtifact ({
       {!isCurrentVersion && (
         <VersionFooter
           currentVersionIndex={currentVersionIndex}
-          artifacts={artifacts}
+          documents={artifacts}
           handleVersionChange={handleVersionChange}
         />
       )}
