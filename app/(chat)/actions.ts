@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api-client';
 
 export async function saveChatModelAsCookie(model: string) {
   // This should be handled by the frontend state management
+  localStorage.setItem('model', model);
   return model;
 }
 

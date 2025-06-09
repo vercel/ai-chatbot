@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
+import { startTransition, useMemo, useOptimistic, useState, useEffect } from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -23,22 +23,23 @@ export function ModelSelector({
   selectedModelId: string;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  const [modelId, setModelId] = useState(() => {
+    return localStorage.getItem('model') || selectedModelId;
+  });
 
   const userType = 'regular';
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
   const availableChatModels = chatModels.filter((chatModel) => {
-    availableChatModelIds.includes(chatModel.id);
+    return availableChatModelIds.includes(chatModel.id);
   });
 
   const selectedChatModel = useMemo(
     () =>
       availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
+        (chatModel) => chatModel.id === modelId,
       ),
-    [optimisticModelId, availableChatModels],
+    [modelId, availableChatModels],
   );
 
   return (
@@ -71,11 +72,11 @@ export function ModelSelector({
                 setOpen(false);
 
                 startTransition(() => {
-                  setOptimisticModelId(id);
+                  setModelId(id);
                   localStorage.setItem('model', id);
                 });
               }}
-              data-active={id === optimisticModelId}
+              data-active={id === modelId}
               asChild
             >
               <button
