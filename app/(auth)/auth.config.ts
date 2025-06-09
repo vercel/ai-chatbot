@@ -2,38 +2,36 @@ import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
   pages: {
+    // Set signIn to your custom login page
     signIn: '/login',
     newUser: '/',
     error: '/login',
   },
-  providers: [
-    // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
-    // while this file is also used in non-Node.js environments
-  ],
+  providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
       const isOnRegister = nextUrl.pathname.startsWith('/register');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
-
+      const isOnAuth = nextUrl.pathname.startsWith('/api/auth');
+      
+      // Allow auth routes to pass through
+      if (isOnAuth) {
+        return true;
+      }
+      // Redirect logged-in users away from auth pages
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+        return Response.redirect(new URL('/', nextUrl));
       }
-
+      // Allow access to register and login pages for non-authenticated users
       if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+        return true;
       }
-
-      if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+      // For all other routes, require authentication
+      if (!isLoggedIn) {
+        // Redirect to login but allow the OAuth flow to work
+        return false;
       }
-
-      if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
-      }
-
       return true;
     },
   },

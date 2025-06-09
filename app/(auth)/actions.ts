@@ -1,9 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-
 import { createUser, getUser } from '@/lib/db/queries';
-
 import { signIn } from './auth';
 
 const authFormSchema = z.object({
@@ -36,7 +34,6 @@ export const login = async (
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
     }
-
     return { status: 'failed' };
   }
 };
@@ -66,6 +63,7 @@ export const register = async (
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
+    
     await createUser(validatedData.email, validatedData.password);
     await signIn('credentials', {
       email: validatedData.email,
@@ -78,28 +76,19 @@ export const register = async (
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
     }
-
     return { status: 'failed' };
   }
 };
 
-export interface GoogleSignInState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed';
-}
-
+// Server action for Google sign-in (optional - you can handle this client-side)
 export const signInWithGoogle = async () => {
-  await signIn('google');
-  // try {
-  //   await signIn('google', { 
-  //     callbackUrl: '/',
-  //     // redirect: false 
-  //   });
-    
-  //   // if (result?.error) {
-  //   //   return { status: 'failed' };
-  //   // }
-  //   return { status: 'success' };
-  // } catch (error) {
-  //   return { status: 'failed' };
-  // }
+  try {
+    await signIn('google', { 
+      callbackUrl: '/',
+      redirectTo: '/'
+    });
+  } catch (error) {
+    console.error('Google sign-in error:', error);
+    throw error;
+  }
 };

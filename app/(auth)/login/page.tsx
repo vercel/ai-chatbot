@@ -2,13 +2,16 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
+import { signIn } from 'next-auth/react';
 import { toast } from '@/components/toast';
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
+import { LogoGoogle } from '@/components/google-logo';
 import { login, type LoginActionState } from '../actions';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
@@ -51,6 +54,38 @@ export default function LoginPage() {
     formAction(formData);
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleLoading(true);
+      console.log('Starting Google sign in...');
+      
+      // Direct redirect to Google OAuth - this should work now
+      const result = await signIn('google', {
+        callbackUrl: '/',
+        redirect: true, // Explicitly enable redirect
+      });
+      
+      console.log('Sign in result:', result);
+      
+      // This code won't execute if redirect is successful
+      if (result?.error) {
+        console.error('Sign in error:', result.error);
+        toast({
+          type: 'error',
+          description: 'Failed to sign in with Google',
+        });
+        setIsGoogleLoading(false);
+      }
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      toast({
+        type: 'error',
+        description: 'An error occurred during Google sign in',
+      });
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Left side - Illustration */}
@@ -79,44 +114,69 @@ export default function LoginPage() {
               <p className="text-gray-600 text-lg">Enter your provided credentials</p>
             </div>
           
-          {/* Show placeholder while loading */}
-          {showPlaceholder && (
-            <div className="space-y-4 animate-pulse">
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
+            {/* Show placeholder while loading */}
+            {showPlaceholder && (
+              <div className="space-y-4 animate-pulse">
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
+                <div className="h-10 bg-[#00B24B] rounded"></div>
                 <div className="h-10 bg-gray-200 rounded"></div>
               </div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-20"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-              </div>
-              <div className="h-10 bg-[#00B24B] rounded"></div>
-            </div>
-          )}
-          
-          {/* Custom Auth Form */}
-          <div className={showPlaceholder ? 'opacity-0 absolute' : 'opacity-100'}>
-            <div className="space-y-4">
-              <AuthForm action={handleSubmit} defaultEmail={email}>
-                <SubmitButton 
-                  isSuccessful={isSuccessful}
-                  className="w-full h-11"
-                >
-                  Sign in
-                </SubmitButton>
-                <p className="text-center text-sm text-gray-600 mt-4">
-                  {"Don't have an account? "}
-                  <Link
-                    href="/register"
-                    className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+            )}
+            
+            {/* Custom Auth Form */}
+            <div className={showPlaceholder ? 'opacity-0 absolute' : 'opacity-100'}>
+              <div className="space-y-4">
+                <AuthForm action={handleSubmit} defaultEmail={email}>
+                  <SubmitButton 
+                    isSuccessful={isSuccessful}
+                    className="w-full h-11"
                   >
-                    Sign up
-                  </Link>
-                  {' for free.'}
-                </p>
-              </AuthForm>
+                    Sign in
+                  </SubmitButton>
+                  
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-gray-500">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    disabled={isGoogleLoading}
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 w-full"
+                  >
+                    <span className="mr-2">
+                      <LogoGoogle />
+                    </span>
+                    {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
+                  </button>
+                  
+                  <p className="text-center text-sm text-gray-600 mt-4">
+                    {"Don't have an account? "}
+                    <Link
+                      href="/register"
+                      className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      Sign up
+                    </Link>
+                    {' for free.'}
+                  </p>
+                </AuthForm>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
