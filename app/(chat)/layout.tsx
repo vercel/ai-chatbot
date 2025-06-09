@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { Children, useEffect, useState } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Script from 'next/script';
+import { ShareDialogProvider } from '@/components/share-dialog-context';
 
 export default function Layout({
   children,
@@ -46,10 +47,12 @@ export default function Layout({
         src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
         strategy="beforeInteractive"
       />
-      <SidebarProvider defaultOpen={!isCollapsed}>
-        <AppSidebar user={user} />
-        <SidebarInset>{children}</SidebarInset>
-      </SidebarProvider>
+      <ShareDialogProvider>
+        <SidebarProvider defaultOpen={!isCollapsed}>
+          <AppSidebar user={user} />
+          <SidebarInset>{children}</SidebarInset>
+        </SidebarProvider>
+      </ShareDialogProvider>
     </>
   );
 }
