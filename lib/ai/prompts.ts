@@ -1,12 +1,13 @@
 /**
  * @file lib/ai/prompts.ts
  * @description Управление системными промптами для AI-моделей.
- * @version 1.6.0
+ * @version 1.7.0
  * @date 2025-06-09
- * @updated Уточнены инструкции в `artifactsPrompt` для корректного получения ID артефакта из контекста.
+ * @updated Усилены и детализированы инструкции в `artifactsPrompt` для более точного выбора инструментов.
  */
 
 /** HISTORY:
+ * v1.7.0 (2025-06-09): Усилены инструкции по работе с артефактами для корректного выбора create/update.
  * v1.6.0 (2025-06-09): Уточнены инструкции по работе с ID артефактов.
  * v1.5.0 (2025-06-07): Добавлены инструкции по работе с изображениями через create/updateDocument.
  * v1.4.0 (2025-06-06): Инструкции поведению переведены на русский язык.
@@ -54,44 +55,42 @@ const personaAndBehaviorPrompt = `
 6. Если запрос пользователя связан с использованием инструментов, делай немедленный вызов без подтверждения
 у пользователя. Стремись к нужному пользователю результату. Можешь свободно использовать имеющиеся инструменты 
 для выполнения задач пользователя. 
-
-**Твоя цель — быть незаметным, но эффективным помощником. Ты получаешь сырые данные, обрабатываешь их внутри и представляешь пользователю только конечный, отполированный результат или понятный следующий шаг на русском языке.**
 `
 
 export const artifactsPrompt = `
-Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
+**Руководство по работе с артефактами (документами, изображениями и т.д.)**
 
-This is a guide for using artifacts tools: \`createDocument\` and \`updateDocument\`, which render content on a artifacts beside the conversation.
+Артефакты - это специальный пользовательский интерфейс для создания и редактирования контента, который отображается справа от диалога.
 
-**Работа с изображениями и другими артефактами:**
+**Ключевое правило:** Твоя задача — правильно выбрать между созданием нового артефакта (\`createDocument\`) и обновлением существующего (\`updateDocument\`).
 
-- **Создание нового артефакта (включая изображение):** Используй \`createDocument\` с параметром \`kind\` ('text', 'image', 'code', 'sheet'). Для изображений в поле \`title\` передавай детальное текстовое описание (промпт) для генерации.
-- **Получение ID:** После успешного вызова \`createDocument\`, в твоем контексте появится результат работы инструмента (\`tool-result\`) с уникальным ID созданного документа (например, \`"id": "a1b2c3d4-..."\`).
-- **Редактирование артефакта:** Если пользователь просит изменить только что созданный артефакт (например, "раскрась эту картинку" или "перепиши этот текст"), ты **ДОЛЖЕН** использовать инструмент \`updateDocument\`.
-- **Правило ID:** Для вызова \`updateDocument\` в параметр \`id\` передавай **тот самый UUID**, который ты получил на предыдущем шаге из \`tool-result\`. Не придумывай ID и не используй плейсхолдеры.
+---
 
-**When to use \`createDocument\`:**
-- For substantial content (>10 lines) or code
-- For creating a new image from a text description.
-- For content users will likely save/reuse (emails, code, essays, etc.)
-- When explicitly requested to create a document
-- For when content contains a single code snippet
+**Когда использовать \`createDocument\`:**
 
-**When NOT to use \`createDocument\`:**
-- For informational/explanatory content
-- For conversational responses
-- When asked to keep it in chat
+*   **Только для нового контента.** Когда пользователь явно просит создать что-то с нуля: "напиши эссе", "создай код", "сгенерируй картинку".
+*   **Примеры:** "напиши эссе о Кремниевой долине", "создай код для алгоритма Дейкстры", "нарисуй тропический остров".
 
-**Using \`updateDocument\`:**
-- For modifying an existing document, including images based on a text description.
-- Default to full document rewrites for major changes
-- Use targeted updates only for specific, isolated changes
-- Follow user instructions for which parts to modify
+**Когда использовать \`updateDocument\`:**
 
-**When NOT to use \`updateDocument\`:**
-- Immediately after creating a document
+*   **Всегда для изменения существующего артефакта.** Если в контексте уже есть активный документ (ты видишь его ID и заголовок в \`artifactContext\`), и пользователь просит его изменить, ты **ОБЯЗАН** использовать \`updateDocument\`.
+*   **Примеры:**
+    *   После создания текста: "сделай этот текст более формальным", "добавь заключение".
+    *   После создания изображения: "раскрась эту картинку", "добавь на картинку солнце".
+    *   После создания кода: "оптимизируй этот код", "добавь комментарии".
+*   **Правило ID:** Для вызова \`updateDocument\` в параметр \`id\` передавай **тот самый UUID**, который ты видишь в \`artifactContext\`. Не придумывай ID и не используй плейсхолдеры.
 
-Do not update document right after creating it. Wait for user feedback or request to update it.
+**Когда НЕ использовать \`createDocument\`:**
+
+*   **Никогда для редактирования.** Если пользователь говорит "измени это", "дополни это", "переделай", не создавай новый документ. Используй \`updateDocument\`.
+*   Для коротких ответов или объяснений. Держи их в чате.
+
+**Работа с изображениями:**
+
+*   **Создание:** \`createDocument({ kind: 'image', title: 'детальное описание картинки' })\`
+*   **Изменение:** \`updateDocument({ id: 'UUID_из_контекста', description: 'описание изменений' })\`
+
+Твоя задача — точно следовать этим инструкциям, чтобы обеспечить плавное взаимодействие с пользователем.
 `
 
 export const regularPrompt =
@@ -125,6 +124,7 @@ You are currently working with an active document. Here are its details:
 - Kind: ${artifactContext.kind}
 
 If you need the full content of this document to fulfill the user's request, you MUST use the 'getDocument' tool with the provided ID. Do not ask the user for the content.
+If the user asks to modify this document, you MUST use the 'updateDocument' tool with the provided ID.
 `
 
 export const systemPrompt = ({

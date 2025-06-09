@@ -1,109 +1,31 @@
 /**
  * @file lib/artifacts/server.ts
- * @description Серверная логика для обработки артефактов.
- * @version 1.1.0
- * @date 2025-06-07
- * @updated Удален ошибочный импорт `updateDocumentSummary`.
+ * @description Центральный экспорт обработчиков артефактов.
+ * @version 1.3.0
+ * @date 2025-06-09
+ * @updated Рефакторинг для разрыва циклической зависимости. Фабричная функция вынесена в factory.ts.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-09): Фабрика `createDocumentHandler` вынесена для устранения циклической зависимости.
+ * v1.2.1 (2025-06-09): Исправлена ошибка инициализации логгера путем переноса его создания внутрь `createDocumentHandler`.
+ * v1.2.0 (2025-06-09): Внедрена система структурированного логирования.
  * v1.1.0 (2025-06-07): Удален неиспользуемый и несуществующий импорт.
- * v1.0.0 (2025-06-06): Добавлена передача `authorId` при сохранении документа.
  */
 import { codeDocumentHandler } from '@/artifacts/code/server'
 import { imageDocumentHandler } from '@/artifacts/image/server'
 import { sheetDocumentHandler } from '@/artifacts/sheet/server'
 import { textDocumentHandler } from '@/artifacts/text/server'
-import type { ArtifactKind } from '@/components/artifact'
-import type { DataStreamWriter } from 'ai'
-import type { Document } from '../db/schema'
-import { saveDocument } from '../db/queries'
-import type { Session } from 'next-auth'
+import type { CreateDocumentCallbackProps, UpdateDocumentCallbackProps, DocumentHandler } from './factory';
 
-export interface SaveDocumentProps {
-  id: string;
-  title: string;
-  kind: ArtifactKind;
-  content: string;
-  userId: string;
-}
 
-export interface CreateDocumentCallbackProps {
-  id: string;
-  title: string;
-  dataStream: DataStreamWriter;
-  session: Session;
-}
+export type { CreateDocumentCallbackProps, UpdateDocumentCallbackProps, DocumentHandler };
 
-export interface UpdateDocumentCallbackProps {
-  document: Document;
-  description: string;
-  dataStream: DataStreamWriter;
-  session: Session;
-}
-
-export interface DocumentHandler<T = ArtifactKind> {
-  kind: T;
-  onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<void>;
-  onUpdateDocument: (args: UpdateDocumentCallbackProps) => Promise<void>;
-}
-
-export function createDocumentHandler<T extends ArtifactKind> (config: {
-  kind: T;
-  onCreateDocument: (params: CreateDocumentCallbackProps) => Promise<string>;
-  onUpdateDocument: (params: UpdateDocumentCallbackProps) => Promise<string>;
-}): DocumentHandler<T> {
-  return {
-    kind: config.kind,
-    onCreateDocument: async (args: CreateDocumentCallbackProps) => {
-      const draftContent = await config.onCreateDocument({
-        id: args.id,
-        title: args.title,
-        dataStream: args.dataStream,
-        session: args.session,
-      })
-
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.id,
-          title: args.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-          authorId: null, // Created by AI
-        })
-      }
-
-      return
-    },
-    onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
-      const draftContent = await config.onUpdateDocument({
-        document: args.document,
-        description: args.description,
-        dataStream: args.dataStream,
-        session: args.session,
-      })
-
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.document.id,
-          title: args.document.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-          authorId: null, // Updated by AI
-        })
-      }
-
-      return
-    },
-  }
-}
 
 /*
  * Use this array to define the document handlers for each artifact kind.
  */
-export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
+export const documentHandlersByArtifactKind: Array<DocumentHandler<any>> = [
   textDocumentHandler,
   codeDocumentHandler,
   imageDocumentHandler,

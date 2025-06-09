@@ -1,15 +1,15 @@
 /**
  * @file lib/db/queries.ts
  * @description Функции для выполнения запросов к базе данных.
- * @version 1.9.0
- * @date 2025-06-07
- * @updated Интегрирован асинхронный вызов генератора саммари в `saveDocument`, запросы теперь возвращают поле `summary`.
+ * @version 1.11.0
+ * @date 2025-06-09
+ * @updated Удалены функции `createStreamId` и `getStreamIdsByChatId` после отказа от кастомной реализации возобновляемых стримов.
  */
 
 /** HISTORY:
- * v1.9.0 (2025-06-07): Добавлен вызов `generateAndSaveSummary` в `saveDocument` и поле `summary` в возвращаемые данные.
- * v1.8.0 (2025-06-06): Добавлена конфигурация для postgres-js для стабильной работы в serverless-среде.
- * v1.7.0 (2025-06-06): Добавлена поддержка `authorId` и версионирования в `getDocumentById`.
+ * v1.11.0 (2025-06-09): Удалены неиспользуемые функции для работы со стримами.
+ * v1.10.1 (2025-06-09): Удалены неиспользуемые функции для работы со стримами.
+ * v1.10.0 (2025-06-09): Внедрена система структурированного логирования.
  */
 
 import 'server-only'
@@ -17,6 +17,7 @@ import 'server-only'
 import { and, asc, count, desc, eq, gt, gte, ilike, inArray, lt, sql, type SQL, } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { createLogger } from '@fab33/sys-logger'
 
 import {
   chat,
@@ -25,7 +26,6 @@ import {
   document,
   type Document as DBDocument,
   message,
-  stream,
   type Suggestion,
   suggestion,
   user,
@@ -38,6 +38,8 @@ import type { VisibilityType } from '@/lib/types'
 import { ChatSDKError } from '../errors'
 import { generateAndSaveSummary } from '../ai/summarizer'
 
+const logger = createLogger('lib:db:queries');
+
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!, {
   idle_timeout: 20,
@@ -46,10 +48,13 @@ const client = postgres(process.env.POSTGRES_URL!, {
 export const db = drizzle(client)
 
 export async function getUser (email: string): Promise<Array<User>> {
+  logger.trace({ email }, 'Entering getUser');
   try {
-    return await db.select().from(user).where(eq(user.email, email))
+    const result = await db.select().from(user).where(eq(user.email, email));
+    logger.trace({ result }, 'Exiting getUser');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get user by email for ${email}`, error)
+    logger.error({ email, err: error as Error }, 'Failed to get user by email');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get user by email',
@@ -58,27 +63,33 @@ export async function getUser (email: string): Promise<Array<User>> {
 }
 
 export async function createUser (email: string, password: string) {
-  const hashedPassword = generateHashedPassword(password)
-
+  logger.trace({ email }, 'Entering createUser');
+  const hashedPassword = generateHashedPassword(password);
   try {
-    return await db.insert(user).values({ email, password: hashedPassword })
+    const result = await db.insert(user).values({ email, password: hashedPassword });
+    logger.trace('Exiting createUser');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to create user for ${email}`, error)
+    logger.error({ email, err: error as Error }, 'Failed to create user');
     throw new ChatSDKError('bad_request:database', 'Failed to create user')
   }
 }
 
 export async function createGuestUser () {
-  const email = `guest-${Date.now()}`
-  const password = generateHashedPassword(generateUUID())
+  logger.trace('Entering createGuestUser');
+  const email = `guest-${Date.now()}`;
+  const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password }).returning({
+    const result = await db.insert(user).values({ email, password }).returning({
       id: user.id,
       email: user.email,
-    })
+    });
+    logger.info({ userId: result[0]?.id }, 'Guest user created');
+    logger.trace({ result }, 'Exiting createGuestUser');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to create guest user`, error)
+    logger.error({ err: error as Error }, 'Failed to create guest user');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to create guest user',
@@ -97,32 +108,41 @@ export async function saveChat ({
   title: string;
   visibility: VisibilityType;
 }) {
+  const childLogger = logger.child({ chatId: id, userId });
+  childLogger.trace({ title, visibility }, 'Entering saveChat');
   try {
-    return await db.insert(chat).values({
+    const result = await db.insert(chat).values({
       id,
       createdAt: new Date(),
       userId,
       title,
       visibility,
-    }).onConflictDoNothing()
+    }).onConflictDoNothing();
+    childLogger.info('Chat saved successfully');
+    childLogger.trace({ result }, 'Exiting saveChat');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to save chat ${id} for user ${userId}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to save chat');
     throw new ChatSDKError('bad_request:database', 'Failed to save chat')
   }
 }
 
 export async function deleteChatById ({ id }: { id: string }) {
+  const childLogger = logger.child({ chatId: id });
+  childLogger.trace('Entering deleteChatById');
   try {
-    await db.delete(message).where(eq(message.chatId, id))
-    await db.delete(stream).where(eq(stream.chatId, id))
+    await db.delete(message).where(eq(message.chatId, id));
 
     const [chatsDeleted] = await db
       .delete(chat)
       .where(eq(chat.id, id))
-      .returning()
-    return chatsDeleted
+      .returning();
+
+    childLogger.info('Chat deleted successfully');
+    childLogger.trace({ chatsDeleted }, 'Exiting deleteChatById');
+    return chatsDeleted;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to delete chat by id ${id}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to delete chat by id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to delete chat by id',
@@ -141,8 +161,10 @@ export async function getChatsByUserId ({
   startingAfter: string | null;
   endingBefore: string | null;
 }) {
+  const childLogger = logger.child({ userId: id, limit, startingAfter, endingBefore });
+  childLogger.trace('Entering getChatsByUserId');
   try {
-    const extendedLimit = limit + 1
+    const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
       db
@@ -154,54 +176,58 @@ export async function getChatsByUserId ({
             : eq(chat.userId, id),
         )
         .orderBy(desc(chat.createdAt))
-        .limit(extendedLimit)
+        .limit(extendedLimit);
 
-    let filteredChats: Array<Chat> = []
+    let filteredChats: Array<Chat> = [];
 
     if (startingAfter) {
+      childLogger.debug('Paginating forward');
       const [selectedChat] = await db
         .select()
         .from(chat)
         .where(eq(chat.id, startingAfter))
-        .limit(1)
+        .limit(1);
 
       if (!selectedChat) {
-        console.warn(`SYS_VS_DB: Chat for starting_after not found: ${startingAfter}`)
+        childLogger.warn('Chat for starting_after not found');
         throw new ChatSDKError(
           'not_found:database',
           `Chat with id ${startingAfter} not found`,
         )
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt))
+      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
     } else if (endingBefore) {
+      childLogger.debug('Paginating backward');
       const [selectedChat] = await db
         .select()
         .from(chat)
         .where(eq(chat.id, endingBefore))
-        .limit(1)
+        .limit(1);
 
       if (!selectedChat) {
-        console.warn(`SYS_VS_DB: Chat for ending_before not found: ${endingBefore}`)
+        childLogger.warn('Chat for ending_before not found');
         throw new ChatSDKError(
           'not_found:database',
           `Chat with id ${endingBefore} not found`,
         )
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt))
+      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
     } else {
-      filteredChats = await query()
+      childLogger.debug('Fetching first page');
+      filteredChats = await query();
     }
 
-    const hasMore = filteredChats.length > limit
-
-    return {
+    const hasMore = filteredChats.length > limit;
+    const result = {
       chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
       hasMore,
-    }
+    };
+    childLogger.trace({ result }, 'Exiting getChatsByUserId');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get chats by user id ${id}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get chats by user id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chats by user id',
@@ -210,12 +236,15 @@ export async function getChatsByUserId ({
 }
 
 export async function getChatById ({ id }: { id: string }) {
+  const childLogger = logger.child({ chatId: id });
+  childLogger.trace('Entering getChatById');
   try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id))
-    return selectedChat
+    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
+    childLogger.trace({ selectedChat }, 'Exiting getChatById');
+    return selectedChat;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get chat by id ${id}`, error)
-    throw new ChatSDKError('bad_request:database', 'Failed to get chat by id')
+    childLogger.error({ err: error as Error }, 'Failed to get chat by id');
+    throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
   }
 }
 
@@ -224,23 +253,32 @@ export async function saveMessages ({
 }: {
   messages: Array<DBMessage>;
 }) {
+  const childLogger = logger.child({ messagesCount: messagesToSave.length });
+  childLogger.trace('Entering saveMessages');
   try {
-    return await db.insert(message).values(messagesToSave)
+    const result = await db.insert(message).values(messagesToSave);
+    childLogger.info('Messages saved successfully');
+    childLogger.trace({ result }, 'Exiting saveMessages');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to save ${messagesToSave.length} messages`, error)
-    throw new ChatSDKError('bad_request:database', 'Failed to save messages')
+    childLogger.error({ err: error as Error }, 'Failed to save messages');
+    throw new ChatSDKError('bad_request:database', 'Failed to save messages');
   }
 }
 
 export async function getMessagesByChatId ({ id }: { id: string }) {
+  const childLogger = logger.child({ chatId: id });
+  childLogger.trace('Entering getMessagesByChatId');
   try {
-    return await db
+    const result = await db
       .select()
       .from(message)
       .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt))
+      .orderBy(asc(message.createdAt));
+    childLogger.trace({ messagesCount: result.length }, 'Exiting getMessagesByChatId');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get messages by chat id ${id}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get messages by chat id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get messages by chat id',
@@ -263,6 +301,8 @@ export async function saveDocument ({
   userId: string;
   authorId: string | null;
 }) {
+  const childLogger = logger.child({ documentId: id, userId, kind });
+  childLogger.trace({ title, authorId }, 'Entering saveDocument');
   try {
     const [savedDocument] = await db
       .insert(document)
@@ -277,30 +317,37 @@ export async function saveDocument ({
       })
       .returning();
 
-    // Запускаем генерацию саммари асинхронно, не блокируя основной поток
+    childLogger.info('Document saved successfully');
+
     if (savedDocument && savedDocument.content) {
-      generateAndSaveSummary(id, savedDocument.content, kind).catch(console.error);
+      childLogger.debug('Scheduling summary generation');
+      generateAndSaveSummary(id, savedDocument.content, kind).catch(err => {
+        childLogger.error({ err }, 'Async summary generation failed');
+      });
     }
 
+    childLogger.trace({ savedDocument }, 'Exiting saveDocument');
     return [savedDocument];
 
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to save document ${id} (kind: ${kind}) for user ${userId}`, error)
-    throw new ChatSDKError('bad_request:database', 'Failed to save document')
+    childLogger.error({ err: error as Error }, 'Failed to save document');
+    throw new ChatSDKError('bad_request:database', 'Failed to save document');
   }
 }
 
 export async function getDocumentsById ({ id }: { id: string }): Promise<Array<DBDocument>> {
+  const childLogger = logger.child({ documentId: id });
+  childLogger.trace('Entering getDocumentsById');
   try {
     const documentsResult = await db
       .select()
       .from(document)
       .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt))
-
-    return documentsResult
+      .orderBy(asc(document.createdAt));
+    childLogger.trace({ versionsCount: documentsResult.length }, 'Exiting getDocumentsById');
+    return documentsResult;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get documents by id ${id}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get documents by id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get documents by id',
@@ -312,31 +359,36 @@ export async function getDocumentById ({ id, version }: { id: string; version?: 
   doc: DBDocument,
   totalVersions: number
 } | undefined> {
+  const childLogger = logger.child({ documentId: id, version });
+  childLogger.trace('Entering getDocumentById');
   try {
     const allVersions = await db
       .select()
       .from(document)
       .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt))
+      .orderBy(asc(document.createdAt));
 
     if (allVersions.length === 0) {
-      return undefined
+      childLogger.warn('Document not found');
+      return undefined;
     }
 
-    const totalVersions = allVersions.length
-    let selectedDocument: DBDocument
+    const totalVersions = allVersions.length;
+    let selectedDocument: DBDocument;
 
     if (version != null && version > 0 && version <= totalVersions) {
       // Версия 1-индексированная
-      selectedDocument = allVersions[version - 1]
+      selectedDocument = allVersions[version - 1];
     } else {
       // Последняя версия по умолчанию
-      selectedDocument = allVersions[totalVersions - 1]
+      selectedDocument = allVersions[totalVersions - 1];
     }
 
-    return { doc: selectedDocument, totalVersions }
+    const result = { doc: selectedDocument, totalVersions };
+    childLogger.trace({ result }, 'Exiting getDocumentById');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get document by id ${id} (version: ${version})`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get document by id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get document by id',
@@ -351,6 +403,8 @@ export async function deleteDocumentsByIdAfterTimestamp ({
   id: string;
   timestamp: Date;
 }) {
+  const childLogger = logger.child({ documentId: id, timestamp });
+  childLogger.trace('Entering deleteDocumentsByIdAfterTimestamp');
   try {
     await db
       .delete(suggestion)
@@ -361,12 +415,16 @@ export async function deleteDocumentsByIdAfterTimestamp ({
         ),
       )
 
-    return await db
+    const result = await db
       .delete(document)
       .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
-      .returning()
+      .returning();
+
+    childLogger.info(`${result.length} document versions deleted`);
+    childLogger.trace({ result }, 'Exiting deleteDocumentsByIdAfterTimestamp');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to delete documents by id ${id} after timestamp ${timestamp}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to delete documents by id after timestamp');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to delete documents by id after timestamp',
@@ -379,10 +437,15 @@ export async function saveSuggestions ({
 }: {
   suggestions: Array<Suggestion>;
 }) {
+  const childLogger = logger.child({ suggestionsCount: suggestionsToSave.length });
+  childLogger.trace('Entering saveSuggestions');
   try {
-    return await db.insert(suggestion).values(suggestionsToSave)
+    const result = await db.insert(suggestion).values(suggestionsToSave);
+    childLogger.info('Suggestions saved successfully');
+    childLogger.trace({ result }, 'Exiting saveSuggestions');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to save ${suggestionsToSave.length} suggestions`, error)
+    childLogger.error({ err: error as Error }, 'Failed to save suggestions');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to save suggestions',
@@ -395,13 +458,17 @@ export async function getSuggestionsByDocumentId ({
 }: {
   documentId: string;
 }) {
+  const childLogger = logger.child({ documentId });
+  childLogger.trace('Entering getSuggestionsByDocumentId');
   try {
-    return await db
+    const result = await db
       .select()
       .from(suggestion)
-      .where(and(eq(suggestion.documentId, documentId)))
+      .where(and(eq(suggestion.documentId, documentId)));
+    childLogger.trace({ suggestionsCount: result.length }, 'Exiting getSuggestionsByDocumentId');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get suggestions by document id ${documentId}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get suggestions by document id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get suggestions by document id',
@@ -410,11 +477,14 @@ export async function getSuggestionsByDocumentId ({
 }
 
 export async function getMessageById ({ id }: { id: string }): Promise<DBMessage | undefined> {
+  const childLogger = logger.child({ messageId: id });
+  childLogger.trace('Entering getMessageById');
   try {
-    const [result] = await db.select().from(message).where(eq(message.id, id))
-    return result
+    const [result] = await db.select().from(message).where(eq(message.id, id));
+    childLogger.trace({ result }, 'Exiting getMessageById');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get message by id ${id}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get message by id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get message by id',
@@ -423,30 +493,44 @@ export async function getMessageById ({ id }: { id: string }): Promise<DBMessage
 }
 
 export async function deleteMessageById ({ messageId }: { messageId: string }): Promise<DBMessage | undefined> {
+  const childLogger = logger.child({ messageId });
+  childLogger.trace('Entering deleteMessageById');
   try {
-    const [deletedMessage] = await db.delete(message).where(eq(message.id, messageId)).returning()
-    return deletedMessage
+    const [deletedMessage] = await db.delete(message).where(eq(message.id, messageId)).returning();
+    childLogger.info('Message deleted successfully');
+    childLogger.trace({ deletedMessage }, 'Exiting deleteMessageById');
+    return deletedMessage;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to delete message by id ${messageId}`, error)
-    throw new ChatSDKError('bad_request:database', 'Failed to delete message')
+    childLogger.error({ err: error as Error }, 'Failed to delete message by id');
+    throw new ChatSDKError('bad_request:database', 'Failed to delete message');
   }
 }
 
 export async function getMessageWithSiblings ({ messageId }: { messageId: string }) {
-  const targetMessage = await getMessageById({ id: messageId })
-  if (!targetMessage) return null
+  const childLogger = logger.child({ messageId });
+  childLogger.trace('Entering getMessageWithSiblings');
+  const targetMessage = await getMessageById({ id: messageId });
+  if (!targetMessage) {
+    childLogger.warn('Target message not found');
+    return null;
+  }
 
-  const allMessages = await getMessagesByChatId({ id: targetMessage.chatId })
-  const targetIndex = allMessages.findIndex(m => m.id === messageId)
+  const allMessages = await getMessagesByChatId({ id: targetMessage.chatId });
+  const targetIndex = allMessages.findIndex(m => m.id === messageId);
 
-  if (targetIndex === -1) return null
+  if (targetIndex === -1) {
+    childLogger.warn('Target message not found in chat history');
+    return null;
+  }
 
-  return {
+  const result = {
     previous: targetIndex > 0 ? allMessages[targetIndex - 1] : undefined,
     current: targetMessage,
     next: targetIndex < allMessages.length - 1 ? allMessages[targetIndex + 1] : undefined,
     all: allMessages,
-  }
+  };
+  childLogger.trace({ ...result, all: `[${result.all.length} messages]` }, 'Exiting getMessageWithSiblings');
+  return result;
 }
 
 export async function deleteMessagesByChatIdAfterTimestamp ({
@@ -456,25 +540,28 @@ export async function deleteMessagesByChatIdAfterTimestamp ({
   chatId: string;
   timestamp: Date;
 }) {
+  const childLogger = logger.child({ chatId, timestamp });
+  childLogger.trace('Entering deleteMessagesByChatIdAfterTimestamp');
   try {
     const messagesToDelete = await db
       .select({ id: message.id })
       .from(message)
       .where(
         and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
-      )
+      );
 
-    const messageIds = messagesToDelete.map((msg) => msg.id)
+    const messageIds = messagesToDelete.map((msg) => msg.id);
 
     if (messageIds.length > 0) {
+      childLogger.info(`Deleting ${messageIds.length} messages`);
       return await db
         .delete(message)
         .where(
           and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
-        )
+        );
     }
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to delete messages by chat id ${chatId} after timestamp ${timestamp}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to delete messages by chat id after timestamp');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to delete messages by chat id after timestamp',
@@ -489,10 +576,15 @@ export async function updateChatVisiblityById ({
   chatId: string;
   visibility: VisibilityType;
 }) {
+  const childLogger = logger.child({ chatId, visibility });
+  childLogger.trace('Entering updateChatVisiblityById');
   try {
-    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId))
+    const result = await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+    childLogger.info('Chat visibility updated');
+    childLogger.trace({ result }, 'Exiting updateChatVisiblityById');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to update chat visibility by id ${chatId} to ${visibility}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to update chat visibility by id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to update chat visibility by id',
@@ -504,10 +596,12 @@ export async function getMessageCountByUserId ({
   id,
   differenceInHours,
 }: { id: string; differenceInHours: number }) {
+  const childLogger = logger.child({ userId: id, differenceInHours });
+  childLogger.trace('Entering getMessageCountByUserId');
   try {
     const targetDate = new Date(
       Date.now() - differenceInHours * 60 * 60 * 1000,
-    )
+    );
 
     const [stats] = await db
       .select({ count: count(message.id) })
@@ -520,53 +614,16 @@ export async function getMessageCountByUserId ({
           eq(message.role, 'user'),
         ),
       )
-      .execute()
+      .execute();
 
-    return stats?.count ?? 0
+    const result = stats?.count ?? 0;
+    childLogger.trace({ result }, 'Exiting getMessageCountByUserId');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get message count by user id ${id} for last ${differenceInHours} hours`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get message count by user id');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get message count by user id',
-    )
-  }
-}
-
-export async function createStreamId ({
-  streamId,
-  chatId,
-}: {
-  streamId: string;
-  chatId: string;
-}) {
-  try {
-    await db
-      .insert(stream)
-      .values({ id: streamId, chatId, createdAt: new Date() })
-  } catch (error) {
-    console.error(`SYS_VS_DB: Failed to create stream id ${streamId} for chat ${chatId}`, error)
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to create stream id',
-    )
-  }
-}
-
-export async function getStreamIdsByChatId ({ chatId }: { chatId: string }) {
-  try {
-    const streamIds = await db
-      .select({ id: stream.id })
-      .from(stream)
-      .where(eq(stream.chatId, chatId))
-      .orderBy(asc(stream.createdAt))
-      .execute()
-
-    return streamIds.map(({ id }) => id)
-  } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get stream ids by chat id ${chatId}`, error)
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to get stream ids by chat id',
     )
   }
 }
@@ -580,6 +637,8 @@ export async function getRecentContentByUserId ({
   limit?: number;
   kind?: ArtifactKind;
 }): Promise<Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'kind' | 'content' | 'summary'>[]> {
+  const childLogger = logger.child({ userId, limit, kind });
+  childLogger.trace('Entering getRecentContentByUserId');
   try {
     const rn = sql<number>`row_number
     () OVER (PARTITION BY
@@ -626,9 +685,10 @@ export async function getRecentContentByUserId ({
       .orderBy(desc(latestVersionsSubquery.createdAt))
       .limit(limit)
 
-    return documentsResult
+    childLogger.trace({ documentsCount: documentsResult.length }, 'Exiting getRecentContentByUserId');
+    return documentsResult;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get recent content for user ${userId}, kind ${kind}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get recent content for user');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get recent content',
@@ -649,6 +709,8 @@ export async function getPagedContentByUserId ({
   searchQuery?: string;
   kind?: ArtifactKind;
 }): Promise<{ data: Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind' | 'summary'>[], totalCount: number }> {
+  const childLogger = logger.child({ userId, page, pageSize, searchQuery, kind });
+  childLogger.trace('Entering getPagedContentByUserId');
   try {
     const offset = (page - 1) * pageSize
     const rn = sql<number>`row_number
@@ -703,13 +765,16 @@ export async function getPagedContentByUserId ({
 
     const data = await dataQuery
 
-    return {
+    const result = {
       data,
       totalCount: totalCountResult[0]?.count ?? 0,
-    }
+    };
+
+    childLogger.trace({ dataCount: result.data.length, totalCount: result.totalCount }, 'Exiting getPagedContentByUserId');
+    return result;
 
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to get paged content for user ${userId}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to get paged content for user');
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get paged content',
@@ -724,6 +789,8 @@ export async function deleteDocumentCompletelyById ({
   documentId: string;
   userId: string;
 }): Promise<{ deletedSuggestionsCount: number; deletedDocumentVersionsCount: number }> {
+  const childLogger = logger.child({ documentId, userId });
+  childLogger.trace('Entering deleteDocumentCompletelyById');
   try {
     const userDocuments = await db
       .select({ id: document.id })
@@ -732,7 +799,7 @@ export async function deleteDocumentCompletelyById ({
       .limit(1)
 
     if (userDocuments.length === 0) {
-      console.warn(`SYS_VS_DB: Attempt to delete document ${documentId} not belonging to user ${userId} or not found`)
+      childLogger.warn('Document not found or access denied for deletion');
       throw new ChatSDKError(
         'forbidden:database',
         'Document not found or access denied.',
@@ -749,12 +816,15 @@ export async function deleteDocumentCompletelyById ({
       .where(eq(document.id, documentId))
       .returning({ id: document.id, createdAt: document.createdAt })
 
-    return {
+    const result = {
       deletedSuggestionsCount: deletedSuggestionsResult.length,
       deletedDocumentVersionsCount: deletedDocumentsResult.length,
-    }
+    };
+    childLogger.info('Document and associated suggestions deleted completely', result);
+    childLogger.trace({ result }, 'Exiting deleteDocumentCompletelyById');
+    return result;
   } catch (error) {
-    console.error(`SYS_VS_DB: Failed to delete document ${documentId} completely for user ${userId}`, error)
+    childLogger.error({ err: error as Error }, 'Failed to delete document completely');
     if (error instanceof ChatSDKError) throw error
     throw new ChatSDKError(
       'bad_request:database',

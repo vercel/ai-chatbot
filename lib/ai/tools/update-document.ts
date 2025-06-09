@@ -1,29 +1,32 @@
 /**
  * @file lib/ai/tools/update-document.ts
  * @description Инструмент для обновления существующего документа.
- * @version 2.0.0
+ * @version 2.6.0
  * @date 2025-06-09
- * @updated Добавлена Zod-валидация на входе для проверки формата UUID и улучшено описание инструмента.
+ * @updated Инструмент теперь вызывает обработчик, который возвращает обновленный контент, и затем возвращает результат.
  */
 
 /**
  * HISTORY:
- * v2.0.0 (2025-06-09): Добавлена входная валидация параметров. Инструмент теперь возвращает ошибку, если ID не является валидным UUID. Улучшены описания для AI.
- * v1.0.0 (2025-06-06): Исправлена ошибка доступа к свойствам документа после изменения структуры getDocumentById.
+ * v2.6.0 (2025-06-09): Переход на архитектуру "черного ящика".
+ * v2.5.0 (2025-06-09): Очистка кода от `dataStream`.
+ * v2.4.0 (2025-06-09): Очистка кода от @ts-ignore.
  */
 
-import { type DataStreamWriter, tool } from 'ai'
+import { tool } from 'ai'
 import type { Session } from 'next-auth'
 import { z } from 'zod'
 import { getDocumentById, } from '@/lib/db/queries'
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server'
+import { createLogger } from '@fab33/sys-logger'
+
+const logger = createLogger('lib:ai:tools:update-document')
 
 interface UpdateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
 }
 
-export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
+export const updateDocument = ({ session }: UpdateDocumentProps) =>
   tool({
     description: 'Update an existing document, such as an essay, code, or image, using a text description of the desired changes. You must provide the document\'s unique UUID.',
     parameters: z.object({
@@ -33,7 +36,9 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         .describe('A detailed text description of the changes to be made to the document.'),
     }),
     execute: async (args) => {
-      // --- Входная валидация ---
+      const childLogger = logger.child({ documentId: args.id, userId: session.user?.id })
+      childLogger.trace({ description: args.description }, 'Entering updateDocument tool')
+
       const validationSchema = z.object({
         id: z.string().uuid({ message: 'Invalid document ID. Please provide a valid UUID. You can find the ID in the result of the tool that created the document.' }),
         description: z.string(),
@@ -42,25 +47,20 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       try {
         validationSchema.parse(args)
       } catch (error) {
-        // Возвращаем ошибку модели, чтобы она могла исправиться
+        childLogger.warn({ err: error }, 'Validation failed for updateDocument arguments')
         return { error: (error as z.ZodError).issues[0].message }
       }
 
       const { id, description } = args
-      // --- Конец валидации ---
 
       const documentResult = await getDocumentById({ id })
 
       if (!documentResult) {
+        childLogger.warn('Document not found')
         return { error: `Document with ID '${id}' not found.` }
       }
 
       const document = documentResult.doc
-
-      dataStream.writeData({
-        type: 'clear',
-        content: document.title,
-      })
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
@@ -68,24 +68,26 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       )
 
       if (!documentHandler) {
+        childLogger.error({ kind: document.kind }, 'No document handler found for kind')
         throw new Error(`No document handler found for kind: ${document.kind}`)
       }
 
+      childLogger.info('Executing document handler for update')
       await documentHandler.onUpdateDocument({
         document,
         description,
-        dataStream,
         session,
       })
 
-      dataStream.writeData({ type: 'finish', content: '' })
-
-      return {
+      const result = {
         id,
         title: document.title,
         kind: document.kind,
         content: 'The document has been updated successfully.',
       }
+      childLogger.trace({ result }, 'Exiting updateDocument tool')
+      return result
     },
   })
+
 // END OF: lib/ai/tools/update-document.ts

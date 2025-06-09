@@ -1,15 +1,16 @@
 /**
  * @file components/chat.tsx
  * @description Основной компонент чата.
- * @version 1.9.1
- * @date 2025-06-07
- * @updated Добавлен useEffect для обработки события `user-message-update` и синхронизации состояния.
+ * @version 1.9.3
+ * @date 2025-06-09
+ * @updated Добавлена обработка нового события `artifact-created` для отображения артефакта.
  */
 
 /** HISTORY:
+ * v1.9.3 (2025-06-09): Добавлена обработка события `artifact-created`.
+ * v1.9.2 (2025-06-09): Добавлена десериализация JSON для `user-message-update`.
  * v1.9.1 (2025-06-07): Добавлена обработка события `user-message-update` из DataStream.
  * v1.9.0 (2025-06-06): Удалена логика и пропсы, связанные с голосованием.
- * v1.8.0 (2025-06-06): Удалена опция `body` из `useChat`, контекст артефакта теперь передается в `MultimodalInput`.
  */
 
 'use client'
@@ -64,6 +65,7 @@ export function Chat ({
   }, [id, initialVisibilityType, mutate])
 
   const {
+    data,
     messages,
     setMessages,
     handleSubmit,
@@ -74,7 +76,6 @@ export function Chat ({
     stop,
     reload,
     experimental_resume,
-    data,
   } = useChat({
     id,
     initialMessages,
@@ -98,18 +99,38 @@ export function Chat ({
   // Обработка кастомных событий из DataStream
   useEffect(() => {
     if (!data) return;
-    const lastData = data[data.length-1] as any; // Используем any для гибкости
+    const lastData = data[data.length-1] as any;
 
     if(lastData?.type === 'user-message-update' && lastData.data) {
-        setMessages(currentMessages =>
-            currentMessages.map(msg =>
-                msg.id === lastData.data.id
-                ? { ...msg, parts: lastData.data.parts, experimental_attachments: undefined }
-                : msg
+        try {
+            const updatedMessage = JSON.parse(lastData.data);
+            setMessages(currentMessages =>
+                currentMessages.map(msg =>
+                    msg.id === updatedMessage.id ? updatedMessage : msg
+                )
             )
-        )
+        } catch (e) {
+            console.error("Failed to parse user-message-update data", e);
+        }
+    } else if (lastData?.type === 'artifact-created' && lastData.data) {
+        try {
+            const artifactData = JSON.parse(lastData.data);
+            setArtifact({
+                documentId: artifactData.id,
+                kind: artifactData.kind,
+                title: artifactData.title,
+                content: artifactData.content ?? '',
+                status: 'idle',
+                saveStatus: 'saved',
+                isVisible: true,
+                displayMode: 'split',
+                boundingBox: { top: 0, left: 0, width: 0, height: 0 },
+            });
+        } catch(e) {
+            console.error("Failed to parse artifact-created data", e);
+        }
     }
-  }, [data, setMessages]);
+  }, [data, setMessages, setArtifact]);
 
 
   const searchParams = useSearchParams()

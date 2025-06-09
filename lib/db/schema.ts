@@ -1,16 +1,15 @@
 /**
  * @file lib/db/schema.ts
  * @description Определения таблиц базы данных с использованием Drizzle ORM.
- * @version 1.3.0
- * @date 2025-06-07
- * @updated Добавлено поле `summary` в таблицу `Document` для хранения краткого содержания артефакта.
+ * @version 1.4.0
+ * @date 2025-06-09
+ * @updated Удалена таблица `stream`, так как кастомная реализация возобновляемых стримов упразднена.
  */
 
 /** HISTORY:
+ * v1.4.0 (2025-06-09): Удалена неиспользуемая таблица `stream`.
+ * v1.3.1 (2025-06-09): Удалена неиспользуемая таблица `stream`.
  * v1.3.0 (2025-06-07): Добавлено поле `summary` в таблицу `Document`.
- * v1.2.0 (2025-06-06): Добавлено поле `authorId` и удалены таблицы голосования.
- * v1.1.0 (2025-06-05): Исправлено имя колонки для типа документа на 'kind' в таблице 'Document'.
- * v1.0.0 (2025-05-25): Начальная версия файла схемы.
  */
 
 import type { InferSelectModel } from 'drizzle-orm';
@@ -125,23 +124,5 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
-
-export const stream = pgTable(
-  'Stream',
-  {
-    id: uuid('id').notNull().defaultRandom(),
-    chatId: uuid('chatId').notNull(),
-    createdAt: timestamp('createdAt').notNull(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.id] }),
-    chatRef: foreignKey({
-      columns: [table.chatId],
-      foreignColumns: [chat.id],
-    }),
-  }),
-);
-
-export type Stream = InferSelectModel<typeof stream>;
 
 // END OF: lib/db/schema.ts
