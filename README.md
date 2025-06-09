@@ -12,6 +12,8 @@
 
 ### 1. Серверное логирование (`@fab33/sys-logger`)
 
+Устанавливать отсюда: "@fab33/sys-logger": "git+https://github.com/deksden/sys-logger.git#main",
+
 На стороне сервера (API-маршруты, server actions, утилиты в `lib/`) используется структурированный логгер.
 
 **Основные возможности:**
