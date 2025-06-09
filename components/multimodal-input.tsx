@@ -1,16 +1,15 @@
 /**
  * @file components/multimodal-input.tsx
  * @description Компонент для ввода мультимодальных сообщений, включая текст и вложения.
- * @version 1.5.1
- * @date 2025-06-06
- * @updated Исправлены ошибки типизации при формировании `options.body` для `handleSubmit`.
+ * @version 1.7.0
+ * @date 2025-06-07
+ * @updated Исправлена логика загрузки файлов на client-side в соответствии с API @vercel/blob/client.
  */
 
 /** HISTORY:
+ * v1.7.0 (2025-06-07): Заменен ручной fetch на `upload` из `@vercel/blob/client` для корректной загрузки.
+ * v1.6.0 (2025-06-07): Переход на client-side upload для Vercel Blob.
  * v1.5.1 (2025-06-06): Исправлены ошибки типизации для `options.body`.
- * v1.5.0 (2025-06-06): Добавлена передача контекста артефакта через `handleSubmit`.
- * v1.4.0 (2025-06-06): Убрана рамка у Textarea при фокусе. Кнопка отправки стала круглой и с рамкой.
- * v1.3.0 (2025-06-06): Исправлены стили Textarea и кнопки отправки.
  */
 
 'use client'
@@ -18,8 +17,8 @@
 import type { Attachment, UIMessage } from 'ai'
 import type React from 'react'
 import { type ChangeEvent, type Dispatch, type SetStateAction, useCallback, useRef, useState, } from 'react'
-import { toast } from 'sonner'
 import Textarea from 'react-textarea-autosize'
+import { upload } from '@vercel/blob/client'
 
 import { ArrowUpIcon, PaperclipIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
@@ -29,6 +28,7 @@ import type { UseChatHelpers } from '@ai-sdk/react'
 import { ModelSelector } from './model-selector'
 import type { Session } from 'next-auth'
 import type { UIArtifact } from './artifact'
+import { toast } from './toast'
 
 function PureMultimodalInput ({
   chatId,
@@ -58,11 +58,11 @@ function PureMultimodalInput ({
   artifact: UIArtifact; // Принимаем artifact как проп
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [uploadQueue, setUploadQueue] = useState<Array<string>>([])
+  const [uploadingFiles, setUploadingFiles] = useState<Array<string>>([])
 
   const submitForm = useCallback(() => {
     if (status !== 'ready') {
-      toast.error('Please wait for the model to finish its response!')
+      toast({ type: 'error', description: 'Please wait for the model to finish its response!' })
       return
     }
 
@@ -71,7 +71,7 @@ function PureMultimodalInput ({
       body: {
         id: chatId,
         selectedChatModel: initialChatModel,
-        selectedVisibilityType: 'private', // Это поле пока статично
+        selectedVisibilityType: 'private',
       }
     }
 
@@ -93,45 +93,35 @@ function PureMultimodalInput ({
     setInput('')
   }, [status, chatId, handleSubmit, attachments, setAttachments, setInput, initialChatModel, artifact])
 
-  const uploadFile = async (file: File) => {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const { url, pathname, contentType } = data
-        return { url, name: pathname, contentType: contentType }
-      }
-      const { error } = await response.json()
-      toast.error(error)
-    } catch (error) {
-      toast.error('Failed to upload file, please try again!')
-    }
-  }
-
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || [])
-      setUploadQueue(files.map((file) => file.name))
+      if (!files.length) return
+
+      setUploadingFiles(files.map(file => file.name))
 
       try {
-        const uploadPromises = files.map((file) => uploadFile(file))
+        const uploadPromises = files.map(async (file) => {
+          const newBlob = await upload(file.name, file, {
+            access: 'public',
+            handleUploadUrl: '/api/files/upload',
+          })
+
+          return { url: newBlob.url, name: newBlob.pathname, contentType: newBlob.contentType }
+        })
+
         const uploadedAttachments = await Promise.all(uploadPromises)
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined,
-        )
-        // @ts-ignore
-        setAttachments((current) => [...current, ...successfullyUploadedAttachments])
+
+        setAttachments((current) => [...current, ...uploadedAttachments])
+
       } catch (error) {
-        console.error('Error uploading files!', error)
+        console.error('SYS_UPLOAD_ERR:', error)
+        toast({ type: 'error', description: 'Failed to upload files, please try again!' })
       } finally {
-        setUploadQueue([])
+        setUploadingFiles([])
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
       }
     },
     [setAttachments],
@@ -141,7 +131,7 @@ function PureMultimodalInput ({
     <div className="relative w-full flex flex-col gap-2">
       {messages.length === 0 &&
         attachments.length === 0 &&
-        uploadQueue.length === 0 && (
+        uploadingFiles.length === 0 && (
           <SuggestedActions
             append={append}
             chatId={chatId}
@@ -160,7 +150,7 @@ function PureMultimodalInput ({
       />
 
       <div className="flex flex-col w-full p-2 bg-muted dark:bg-zinc-800 rounded-2xl border dark:border-zinc-700">
-        {(attachments.length > 0 || uploadQueue.length > 0) && (
+        {(attachments.length > 0 || uploadingFiles.length > 0) && (
           <div
             data-testid="attachments-preview"
             className="flex flex-row gap-2 overflow-x-scroll items-end p-2 border-b dark:border-zinc-700"
@@ -172,7 +162,7 @@ function PureMultimodalInput ({
                 onRemove={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
               />
             ))}
-            {uploadQueue.map((filename) => (
+            {uploadingFiles.map((filename) => (
               <PreviewAttachment
                 key={filename}
                 attachment={{ url: '', name: filename, contentType: '' }}
@@ -205,7 +195,7 @@ function PureMultimodalInput ({
               variant="ghost"
               size="icon"
               onClick={() => fileInputRef.current?.click()}
-              disabled={status !== 'ready'}
+              disabled={status !== 'ready' || uploadingFiles.length > 0}
             >
               <PaperclipIcon size={18}/>
             </Button>
@@ -227,7 +217,7 @@ function PureMultimodalInput ({
                 e.preventDefault()
                 submitForm()
               }}
-              disabled={input.length === 0 || uploadQueue.length > 0 || status !== 'ready'}
+              disabled={input.length === 0 || uploadingFiles.length > 0 || status !== 'ready'}
             >
               <ArrowUpIcon size={18}/>
             </Button>

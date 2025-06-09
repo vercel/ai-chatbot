@@ -1,11 +1,24 @@
+/**
+ * @file artifacts/image/client.tsx
+ * @description Клиентская часть для артефакта типа "изображение".
+ * @version 1.1.0
+ * @date 2025-06-07
+ * @updated Добавлены кнопки и логика для работы с версиями (аналогично текстовому редактору).
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-07): Внедрены действия для версионирования.
+ * v1.0.0 (2025-06-07): Начальная версия.
+ */
+
 import { Artifact } from '@/components/create-artifact';
-import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
+import { ClockRewind, CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
 import { ImageEditor } from '@/components/image-editor';
 import { toast } from 'sonner';
 
 export const imageArtifact = new Artifact({
   kind: 'image',
-  description: 'Useful for image generation',
+  description: 'Useful for image generation and editing',
   onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === 'image-delta') {
       setArtifact((draftArtifact) => ({
@@ -19,6 +32,19 @@ export const imageArtifact = new Artifact({
   content: ImageEditor,
   actions: [
     {
+      icon: <ClockRewind size={18} />,
+      description: 'View changes',
+      onClick: ({ handleVersionChange }) => {
+        handleVersionChange('toggle');
+      },
+      isDisabled: ({ currentVersionIndex, setMetadata }) => {
+        if (currentVersionIndex === 0) {
+          return true;
+        }
+        return false;
+      },
+    },
+    {
       icon: <UndoIcon size={18} />,
       description: 'View Previous version',
       onClick: ({ handleVersionChange }) => {
@@ -28,7 +54,6 @@ export const imageArtifact = new Artifact({
         if (currentVersionIndex === 0) {
           return true;
         }
-
         return false;
       },
     },
@@ -42,35 +67,28 @@ export const imageArtifact = new Artifact({
         if (isCurrentVersion) {
           return true;
         }
-
         return false;
       },
     },
     {
       icon: <CopyIcon size={18} />,
       description: 'Copy image to clipboard',
-      onClick: ({ content }) => {
-        const img = new Image();
-        img.src = `data:image/png;base64,${content}`;
-
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0);
-          canvas.toBlob((blob) => {
-            if (blob) {
-              navigator.clipboard.write([
-                new ClipboardItem({ 'image/png': blob }),
-              ]);
-            }
-          }, 'image/png');
-        };
-
-        toast.success('Copied image to clipboard!');
+      onClick: async ({ content }) => {
+        try {
+          const response = await fetch(content);
+          const blob = await response.blob();
+          await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type]: blob }),
+          ]);
+          toast.success('Image copied to clipboard!');
+        } catch (error) {
+          console.error('Failed to copy image:', error);
+          toast.error('Failed to copy image to clipboard.');
+        }
       },
     },
   ],
   toolbar: [],
 });
+
+// END OF: artifacts/image/client.tsx

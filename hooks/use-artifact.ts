@@ -1,12 +1,13 @@
 /**
  * @file hooks/use-artifact.ts
  * @description Хук для управления глобальным состоянием артефакта.
- * @version 1.2.0
- * @date 2025-06-06
- * @updated Добавлено поле saveStatus для отслеживания состояния сохранения артефакта.
+ * @version 1.3.0
+ * @date 2025-06-09
+ * @updated Изменено начальное значение documentId на null для предотвращения невалидных API-запросов.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-09): documentId теперь инициализируется как null вместо 'init'.
  * v1.2.0 (2025-06-06): Добавлено поле `saveStatus` ('idle' | 'saving' | 'saved').
  * v1.1.0 (2025-06-05): Добавлены 'displayMode' и 'toggleDisplayMode' для управления режимами отображения.
  * v1.0.0 (2025-05-25): Начальная версия хука.
@@ -19,12 +20,12 @@ import type { UIArtifact, } from '@/components/artifact';
 import { useCallback, useMemo } from 'react';
 
 export const initialArtifactData: UIArtifact = {
-  documentId: 'init',
+  documentId: null, // Инициализируем как null, а не 'init'
   content: '',
   kind: 'text',
   title: '',
   status: 'idle',
-  saveStatus: 'saved', // Начальное состояние - "сохранено"
+  saveStatus: 'saved',
   isVisible: false,
   displayMode: 'split',
   boundingBox: {

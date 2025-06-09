@@ -1,16 +1,15 @@
 /**
  * @file components/chat.tsx
  * @description Основной компонент чата.
- * @version 1.9.0
- * @date 2025-06-06
- * @updated Удалена логика и пропсы, связанные с голосованием (`votes`, `useSWR`).
+ * @version 1.9.1
+ * @date 2025-06-07
+ * @updated Добавлен useEffect для обработки события `user-message-update` и синхронизации состояния.
  */
 
 /** HISTORY:
+ * v1.9.1 (2025-06-07): Добавлена обработка события `user-message-update` из DataStream.
  * v1.9.0 (2025-06-06): Удалена логика и пропсы, связанные с голосованием.
  * v1.8.0 (2025-06-06): Удалена опция `body` из `useChat`, контекст артефакта теперь передается в `MultimodalInput`.
- * v1.7.0 (2025-06-06): Удалена логика с композитным ID в пользу стандартного реактивного свойства `body`.
- * v1.6.0 (2025-06-06): Добавлен композитный `id` для `useChat` для решения проблемы с "замороженным" состоянием.
  */
 
 'use client'
@@ -95,6 +94,23 @@ export function Chat ({
       }
     },
   })
+
+  // Обработка кастомных событий из DataStream
+  useEffect(() => {
+    if (!data) return;
+    const lastData = data[data.length-1] as any; // Используем any для гибкости
+
+    if(lastData?.type === 'user-message-update' && lastData.data) {
+        setMessages(currentMessages =>
+            currentMessages.map(msg =>
+                msg.id === lastData.data.id
+                ? { ...msg, parts: lastData.data.parts, experimental_attachments: undefined }
+                : msg
+            )
+        )
+    }
+  }, [data, setMessages]);
+
 
   const searchParams = useSearchParams()
   const query = searchParams.get('query')

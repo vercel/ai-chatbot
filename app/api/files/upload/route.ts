@@ -1,68 +1,50 @@
-import { put } from '@vercel/blob';
+/**
+ * @file app/api/files/upload/route.ts
+ * @description API-маршрут для client-side загрузки файлов в Vercel Blob.
+ * @version 1.0.0
+ * @date 2025-06-07
+ * @updated Переход от проксирования файла к генерации токена для прямой загрузки клиентом.
+ */
+
+/** HISTORY:
+ * v1.0.0 (2025-06-07): Начальная версия с использованием handleUpload для генерации токена.
+ */
+
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
 import { auth } from '@/app/(auth)/auth';
-
-// Use Blob instead of File since File is not available in Node.js environment
-const FileSchema = z.object({
-  file: z
-    .instanceof(Blob)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: 'File size should be less than 5MB',
-    })
-    // Update the file type based on the kind of files you want to accept
-    .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), {
-      message: 'File type should be JPEG or PNG',
-    }),
-});
-
-export async function POST(request: Request) {
-  const session = await auth();
-
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (request.body === null) {
-    return new Response('Request body is empty', { status: 400 });
-  }
-
+import { ChatSDKError } from '@/lib/errors';
+ 
+export async function POST(request: Request): Promise<NextResponse> {
+  const body = (await request.json()) as HandleUploadBody;
+ 
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as Blob;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    const session = await auth();
+    if (!session?.user?.id) {
+        return new ChatSDKError('unauthorized:api', 'User not authenticated.').toResponse();
     }
 
-    const validatedFile = FileSchema.safeParse({ file });
-
-    if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
-        .map((error) => error.message)
-        .join(', ');
-
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
-    }
-
-    // Get filename from formData since Blob doesn't have name property
-    const filename = (formData.get('file') as File).name;
-    const fileBuffer = await file.arrayBuffer();
-
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: 'public',
-      });
-
-      return NextResponse.json(data);
-    } catch (error) {
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
-    }
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async (pathname: string) => {
+        return {
+          allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif'],
+          tokenPayload: JSON.stringify({
+            userId: session.user.id,
+          }),
+        };
+      },
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        console.log('SYS_BLOB_UPLOAD: blob upload completed', blob, tokenPayload);
+      },
+    });
+ 
+    return NextResponse.json(jsonResponse);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 },
-    );
+    console.error('SYS_API_UPLOAD: Error handling file upload', error);
+    return new ChatSDKError('bad_request:api', 'Failed to handle file upload.').toResponse()
   }
 }
+
+// END OF: app/api/files/upload/route.ts

@@ -1,3 +1,18 @@
+/**
+ * @file lib/errors.ts
+ * @description Централизованный класс для обработки ошибок в приложении.
+ * @version 1.1.0
+ * @date 2025-06-07
+ * @updated Метод `toResponse` теперь использует `NextResponse` для совместимости с Next.js API Routes.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-07): Заменен `Response.json` на `NextResponse.json` в `toResponse`.
+ * v1.0.0 (2025-06-06): Начальная версия класса ошибок.
+ */
+
+import { NextResponse } from 'next/server';
+
 export type ErrorType =
   | 'bad_request'
   | 'unauthorized'
@@ -63,13 +78,13 @@ export class ChatSDKError extends Error {
         cause,
       });
 
-      return Response.json(
+      return NextResponse.json(
         { code: '', message: 'Something went wrong. Please try again later.' },
         { status: statusCode },
       );
     }
 
-    return Response.json({ code, message, cause }, { status: statusCode });
+    return NextResponse.json({ code, message, cause }, { status: statusCode });
   }
 }
 
@@ -130,3 +145,5 @@ function getStatusCodeByType(type: ErrorType) {
       return 500;
   }
 }
+
+// END OF: lib/errors.ts

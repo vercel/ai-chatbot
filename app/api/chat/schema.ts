@@ -1,37 +1,35 @@
 /**
  * @file app/api/chat/schema.ts
  * @description Схемы валидации для API чата.
- * @version 1.4.0
- * @date 2025-06-06
- * @updated Схема `partSchema` сделана более гибкой с использованием `z.union`.
+ * @version 1.5.0
+ * @date 2025-06-07
+ * @updated Схема `messageSchema.id` теперь принимает `z.string()` вместо `z.string().uuid()` для совместимости с ID от AI SDK.
  */
 
 /** HISTORY:
+ * v1.5.0 (2025-06-07): Ослаблена валидация ID сообщения до z.string() для поддержки ID от AI SDK.
  * v1.4.0 (2025-06-06): Уточнена схема partSchema для соответствия типам AI SDK.
  * v1.3.0 (2025-06-06): Поле `role` теперь валидируется как `['user', 'assistant', 'system', 'data']`.
- * v1.2.0 (2025-06-06): Заменено поле `message` на `messages: z.array(...)`.
  */
 
 import { z } from 'zod'
 import { artifactKinds } from '@/lib/artifacts/server'
 
-// Схема, которая соответствует базовой части, чтобы TypeScript был доволен
 const basePartSchema = z.object({
   type: z.string(),
 })
 
-// Мы не можем знать все типы, которые может прислать AI SDK,
-// поэтому используем z.any() и passthrough для остальных свойств.
 const partSchema = z.union([
   z.object({ type: z.literal('text'), text: z.string() }),
   z.object({ type: z.literal('tool-invocation'), toolInvocation: z.any() }),
-  // Добавьте другие известные типы по мере необходимости
 ]).or(basePartSchema.passthrough())
 
 const messageSchema = z.object({
-  id: z.string().uuid(),
+  // ИЗМЕНЕНИЕ: Ослабляем валидацию с .uuid() до просто .string()
+  // Это позволяет принимать как UUID от наших клиентов, так и строковые ID (например, 'msg-...') от AI SDK
+  id: z.string(),
   createdAt: z.coerce.date().optional(),
-  role: z.enum(['user', 'assistant', 'system', 'data', 'tool']), // 'tool' добавлен для полноты
+  role: z.enum(['user', 'assistant', 'system', 'data', 'tool']),
   content: z.string(),
   parts: z.array(partSchema).optional(),
   experimental_attachments: z

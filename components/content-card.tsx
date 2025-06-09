@@ -1,18 +1,15 @@
 /**
  * @file components/content-card.tsx
  * @description Компонент карточки для одного элемента контента.
- * @version 1.2.0
- * @date 2025-06-06
- * @updated Функция "Обсудить в чате" теперь вызывает новый API-маршрут.
+ * @version 1.3.0
+ * @date 2025-06-07
+ * @updated Добавлено отображение поля `summary` на карточке.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-07): Добавлено отображение `summary`.
  * v1.2.0 (2025-06-06): `handleDiscuss` теперь использует API-маршрут `/api/chat/discuss-artifact`.
  * v1.1.0 (2025-06-06): Исправлена логика навигации в `handleDiscuss`.
- * v1.0.5 (2025-06-06): Исправлены стили и добавлена доступность (a11y).
- * v1.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
- * v1.0.3 (2025-06-06): Добавлено обязательное поле `args: {}` в объект toolInvocation.
- * v1.0.2 (2025-06-06): Исправлен импорт типа UIMessage на Message as UIMessage.
  */
 'use client'
 
@@ -40,6 +37,7 @@ import { toast } from '@/components/toast'
 import type { ContentDocument } from './content-grid-display'
 import type { UseChatHelpers } from 'ai/react'
 import { useRouter } from 'next/navigation'
+import { Skeleton } from './ui/skeleton'
 
 interface ContentCardProps {
   document: ContentDocument;
@@ -73,7 +71,7 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
   }
 
   const handleDiscuss = (e: React.MouseEvent) => {
-    e.stopPropagation() // Предотвращаем клик по всей карточке
+    e.stopPropagation()
     toast({ type: 'loading', description: 'Создание чата для обсуждения...' })
     router.push(`/api/chat/discuss-artifact?artifactId=${document.id}`)
   }
@@ -120,9 +118,19 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div>
+        <div className="flex flex-col gap-2">
           <h3 className="text-base font-semibold leading-tight mb-1 truncate">{document.title}</h3>
-          <p className="text-xs text-muted-foreground">
+
+          {document.summary ? (
+            <p className="text-xs text-muted-foreground line-clamp-2">{document.summary}</p>
+          ) : (
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-4/5"/>
+              <Skeleton className="h-3 w-3/5"/>
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground pt-1">
             {`Обновлено ${formatDistanceToNow(new Date(document.createdAt), { addSuffix: true, locale: ru })}`}
           </p>
         </div>

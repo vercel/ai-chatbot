@@ -9,9 +9,7 @@
     "start": "next start",
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
-
     "typecheck": "tsc --noEmit -p tsconfig.json",
-
     "format": "biome format --write",
     "repomix:working": "repomix -c repomix.working.config.json",
     "repomix:all": "repomix",
@@ -33,6 +31,7 @@
     "@codemirror/state": "^6.5.0",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
+    "@fab33/sys-logger": "git+https://github.com/deksden/sys-logger.git#main",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.200.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -73,6 +72,7 @@
     "next-themes": "^0.3.0",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
+    "pino-pretty": "^13.0.0",
     "postgres": "^3.4.4",
     "prosemirror-example-setup": "^1.2.3",
     "prosemirror-inputrules": "^1.4.0",

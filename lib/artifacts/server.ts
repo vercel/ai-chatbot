@@ -1,9 +1,14 @@
 /**
  * @file lib/artifacts/server.ts
  * @description Серверная логика для обработки артефактов.
- * @version 1.0.0
- * @date 2025-06-06
- * @updated Добавлена передача `authorId` при сохранении документа.
+ * @version 1.1.0
+ * @date 2025-06-07
+ * @updated Удален ошибочный импорт `updateDocumentSummary`.
+ */
+
+/** HISTORY:
+ * v1.1.0 (2025-06-07): Удален неиспользуемый и несуществующий импорт.
+ * v1.0.0 (2025-06-06): Добавлена передача `authorId` при сохранении документа.
  */
 import { codeDocumentHandler } from '@/artifacts/code/server'
 import { imageDocumentHandler } from '@/artifacts/image/server'

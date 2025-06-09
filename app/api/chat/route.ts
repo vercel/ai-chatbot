@@ -1,26 +1,30 @@
 /**
  * @file app/api/chat/route.ts
  * @description API маршрут для обработки запросов чата.
- * @version 1.7.0
- * @date 2025-06-06
- * @updated Добавлена логика реконструкции контекста артефакта из истории сообщений.
+ * @version 2.3.0
+ * @date 2025-06-09
+ * @updated Исправлены ошибки типов TypeScript в `transformToCoreMessages` (TS2339, TS2678).
  */
 
 /** HISTORY:
- * v1.7.0 (2025-06-06): Добавлена логика реконструкции контекста артефакта.
- * v1.6.0 (2025-06-06): Добавлена логика для включения контекста активного артефакта в системный промпт.
- * v1.5.1 (2025-06-06): Исправлен тип возвращаемого значения `enrichMessagesWithArtifacts`.
- * v1.5.0 (2025-06-06): Добавлено обогащение сообщений метаданными артефактов.
- * v1.4.1 (2025-06-06): Добавлено `as UIMessage` при вызове `generateTitleFromUserMessage`.
+ * v2.3.0 (2025-06-09): Исправлена типизация при деструктуризации `toolInvocation` и обработка ролей сообщений.
+ * v2.2.0 (2025-06-07): Исправлены ошибки TypeScript (импорт, обработка ролей).
+ * v2.1.0 (2025-06-07): Исправлены ошибки TypeScript при обработке изображений и сообщений.
+ * v2.0.0 (2025-06-07): Исправлена ошибка с UUID, удален инструмент generateOrModifyImage, добавлена передача картинок в модель.
  */
 
 import {
   appendResponseMessages,
+  type CoreAssistantMessage,
   type CoreMessage,
   createDataStream,
+  type DataStreamWriter,
+  type ImagePart,
   type Message,
-  smoothStream,
   streamText,
+  type TextPart,
+  type ToolCallPart,
+  type ToolResultPart,
   type UIMessage,
 } from 'ai'
 import { auth, type UserType } from '@/app/(auth)/auth'
@@ -36,14 +40,13 @@ import {
   saveChat,
   saveMessages,
 } from '@/lib/db/queries'
-import { generateUUID, getTrailingMessageId } from '@/lib/utils'
+import { generateUUID } from '@/lib/utils'
 import { generateTitleFromUserMessage } from '@/app/(main)/chat/actions'
 import { createDocument } from '@/lib/ai/tools/create-document'
 import { updateDocument } from '@/lib/ai/tools/update-document'
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions'
 import { getWeather } from '@/lib/ai/tools/get-weather'
 import { getDocument } from '@/lib/ai/tools/get-document'
-import { isProductionEnvironment } from '@/lib/constants'
 import { myProvider } from '@/lib/ai/providers'
 import { entitlementsByUserType } from '@/lib/ai/entitlements'
 import { type PostRequestBody, postRequestBodySchema } from './schema'
@@ -78,71 +81,95 @@ function getStreamContext () {
   return globalStreamContext
 }
 
-async function enrichMessagesWithArtifacts (messages: PostRequestBody['messages']): Promise<CoreMessage[]> {
-  const artifactIds = new Set<string>()
+/**
+ * @description Преобразует массив сообщений из формата UI (`UIMessage[]`) в формат, понятный ядру AI (`CoreMessage[]`).
+ * @important ЭТО КРИТИЧЕСКИ ВАЖНАЯ ФУНКЦИЯ. Не удаляйте этот JSDoc.
+ * AI SDK использует два разных типа для сообщений:
+ * 1. `UIMessage` (из `@ai-sdk/react`): используется в хуке `useChat`. Содержит полную информацию для рендеринга UI,
+ *    включая промежуточные шаги (`step-start`, `tool-invocation` и т.д.).
+ * 2. `CoreMessage` (из `ai`): используется в серверных функциях, таких как `streamText`. Ожидает "чистую" историю
+ *    диалога: только сообщения пользователя, финальные текстовые ответы ассистента (`text` и `tool-call`) и результаты вызова инструментов (`tool-result`).
+ *
+ * Эта функция решает проблему `AI_TypeValidationError`, преобразуя "сырые" `UIMessage` в валидные `CoreMessage`,
+ * отфильтровывая ненужные для модели части (`step-start`, `reasoning`) и корректно форматируя вызовы и результаты инструментов.
+ *
+ * @see https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat
+ * @see https://ai-sdk.dev/docs/reference/ai-sdk-core/core-message
+ *
+ * @param {UIMessage[]} uiMessages - Массив сообщений из клиентского хука `useChat`.
+ * @returns {Promise<CoreMessage[]>} - Промис, который разрешается в массив сообщений, готовый для передачи в `streamText`.
+ */
+async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMessage[]> {
+  const coreMessages: CoreMessage[] = []
 
-  for (const message of messages) {
-    if (message.parts) {
-      for (const part of message.parts) {
-        // @ts-ignore
-        if (part.type === 'tool-invocation' && part.toolInvocation.state === 'result') {
-          // @ts-ignore
-          const result = part.toolInvocation.result as any
-          // @ts-ignore
-          if (result?.id && ['createDocument', 'updateDocument', 'getDocument'].includes(part.toolInvocation.toolName)) {
-            artifactIds.add(result.id)
+  for (const uiMessage of uiMessages) {
+    switch (uiMessage.role) {
+      case 'user': {
+        const contentParts: (TextPart | ImagePart)[] = [{ type: 'text', text: uiMessage.content }]
+        if (uiMessage.experimental_attachments) {
+          for (const attachment of uiMessage.experimental_attachments) {
+            if (attachment.contentType?.startsWith('image')) {
+              const response = await fetch(attachment.url)
+              const imageBuffer = await response.arrayBuffer()
+              contentParts.push({ type: 'image', image: Buffer.from(imageBuffer), mimeType: attachment.contentType })
+            }
           }
         }
+        coreMessages.push({ role: 'user', content: contentParts })
+        break
       }
-    }
-  }
 
-  if (artifactIds.size === 0) {
-    return messages as CoreMessage[]
-  }
+      case 'assistant': {
+        const assistantContentParts: (TextPart | ToolCallPart)[] = []
+        const toolResultParts: ToolResultPart[] = []
 
-  const artifactMetadata = new Map<string, { doc: DBDocument, totalVersions: number }>()
-  for (const id of artifactIds) {
-    const meta = await getDocumentById({ id })
-    if (meta) {
-      artifactMetadata.set(id, meta)
-    }
-  }
-
-  const enrichedMessages = messages.map(message => {
-    if (!message.parts) {
-      return message
-    }
-
-    const newParts = message.parts.map(part => {
-      // @ts-ignore
-      if (part.type === 'tool-invocation' && part.toolInvocation.state === 'result') {
-        // @ts-ignore
-        const result = part.toolInvocation.result as any
-        const freshMeta = result?.id ? artifactMetadata.get(result.id) : undefined
-
-        if (freshMeta) {
-          const enrichedResult = {
-            ...result,
-            title: freshMeta.doc.title,
-            totalVersions: freshMeta.totalVersions,
-            lastVersionAuthorId: freshMeta.doc.authorId
+        for (const part of uiMessage.parts ?? []) {
+          // @ts-ignore - 'type' is a common property, but TS struggles with the union
+          switch (part.type) {
+            case 'text':
+              assistantContentParts.push(part)
+              break
+            case 'tool-invocation': {
+              const { state, toolCallId, toolName, args } = part.toolInvocation
+              if (state === 'call') {
+                assistantContentParts.push({ type: 'tool-call', toolCallId, toolName, args })
+              } else if (state === 'result') {
+                toolResultParts.push({ type: 'tool-result', toolCallId, toolName, result: part.toolInvocation.result })
+              }
+              break
+            }
           }
-          // @ts-ignore
-          return { ...part, toolInvocation: { ...part.toolInvocation, result: enrichedResult } }
         }
+
+        if (assistantContentParts.length > 0) {
+          coreMessages.push({
+            role: 'assistant',
+            content: assistantContentParts,
+          } as CoreAssistantMessage)
+        }
+
+        if (toolResultParts.length > 0) {
+          coreMessages.push({
+            role: 'tool',
+            content: toolResultParts,
+          })
+        }
+        break
       }
-      return part
-    })
 
-    return { ...message, parts: newParts }
-  })
-
-  return enrichedMessages as CoreMessage[]
+      case 'system':
+      case 'data':
+        // Эти роли совместимы и могут быть переданы напрямую.
+        // Роль 'tool' не может прийти от UI, она создается здесь из 'assistant' сообщения.
+        coreMessages.push(uiMessage as CoreMessage)
+        break
+    }
+  }
+  return coreMessages
 }
 
+
 function getContextFromHistory (messages: PostRequestBody['messages']): ArtifactContext | undefined {
-  // Итерируемся в обратном порядке
   for (let i = messages.length - 1; i >= 0; i--) {
     const message = messages[i]
     if (message.parts) {
@@ -165,201 +192,136 @@ function getContextFromHistory (messages: PostRequestBody['messages']): Artifact
   return undefined
 }
 
+
 export async function POST (request: Request) {
-  let requestBody: PostRequestBody
-
   try {
-    const json = await request.json()
-    requestBody = postRequestBodySchema.parse(json)
-  } catch (error) {
-    console.error('[DEBUG] #3 API error:', error)
-    return new ChatSDKError('bad_request:api').toResponse()
-  }
+    const requestBody = postRequestBodySchema.parse(await request.json())
 
-  try {
     const {
-      id,
+      id: chatId,
       messages,
       selectedChatModel,
       selectedVisibilityType,
       activeArtifactId,
       activeArtifactTitle,
       activeArtifactKind
-    } = requestBody
+    } = requestBody;
 
-    const session = await auth()
-
+    const session = await auth();
     if (!session?.user) {
-      return new ChatSDKError('unauthorized:chat').toResponse()
+      return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
-    const userType: UserType = session.user.type
-    const latestMessage = messages.at(-1)
-
-    if (!latestMessage) {
-      return new ChatSDKError('bad_request:api', 'No message found in request.').toResponse()
-    }
-
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    })
-
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse()
-    }
-
-    const chat = await getChatById({ id })
-
-    if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message: latestMessage as UIMessage,
-      })
-
-      await saveChat({
-        id,
-        userId: session.user.id,
-        title,
-        visibility: selectedVisibilityType,
-      })
-    } else {
-      if (chat.userId !== session.user.id) {
-        return new ChatSDKError('forbidden:chat').toResponse()
-      }
-    }
-
-    const { longitude, latitude, city, country } = geolocation(request)
-
-    const requestHints: RequestHints = {
-      longitude,
-      latitude,
-      city,
-      country,
-    }
-
-    // Определяем контекст артефакта
-    const artifactContext: ArtifactContext | undefined =
-      activeArtifactId && activeArtifactTitle && activeArtifactKind
-        ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
-        : getContextFromHistory(messages)
-
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: latestMessage.id,
-          role: 'user',
-          parts: latestMessage.parts ?? [{ type: 'text', text: latestMessage.content }],
-          attachments: latestMessage.experimental_attachments ?? [],
-          createdAt: new Date(),
-        },
-      ],
-    })
-
-    const streamId = generateUUID()
-    await createStreamId({ streamId, chatId: id })
-
-    const enrichedMessages = await enrichMessagesWithArtifacts(messages)
+    const streamId = generateUUID();
 
     const stream = createDataStream({
-      execute: (dataStream) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints, artifactContext }),
-          messages: enrichedMessages,
-          maxSteps: 6,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                'getWeather',
-                'createDocument',
-                'updateDocument',
-                'requestSuggestions',
-                'getDocument'
-              ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          tools: {
-            getWeather,
-            getDocument,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                })
+      execute: async (writer: DataStreamWriter) => {
+        try {
+          const userType: UserType = session.user.type;
+          const latestMessage = messages.at(-1);
 
-                if (!assistantId) {
-                  console.log('onFinish: Error, no assistantId')
-                  throw new Error('No assistant message found!')
-                }
+          if (!latestMessage) {
+            throw new ChatSDKError('bad_request:api', 'No message found in request.');
+          }
 
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [latestMessage as Message],
-                  responseMessages: response.messages,
-                })
+          const messageCount = await getMessageCountByUserId({ id: session.user.id, differenceInHours: 24 });
 
-                await saveMessages({
-                  messages: [
-                    {
+          if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+            throw new ChatSDKError('rate_limit:chat');
+          }
+
+          const chat = await getChatById({ id: chatId });
+
+          if (!chat) {
+            const title = await generateTitleFromUserMessage({ message: latestMessage as UIMessage });
+            await saveChat({ id: chatId, userId: session.user.id, title, visibility: selectedVisibilityType });
+          } else {
+            if (chat.userId !== session.user.id) {
+              throw new ChatSDKError('forbidden:chat');
+            }
+          }
+
+          const { longitude, latitude, city, country } = geolocation(request);
+          const requestHints: RequestHints = { longitude, latitude, city, country };
+
+          const artifactContext: ArtifactContext | undefined =
+            activeArtifactId && activeArtifactTitle && activeArtifactKind
+              ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
+              : getContextFromHistory(messages);
+
+          await saveMessages({ messages: [{
+            chatId: chatId,
+            id: latestMessage.id,
+            role: 'user',
+            parts: latestMessage.parts ?? [{ type: 'text', text: latestMessage.content }],
+            attachments: latestMessage.experimental_attachments ?? [],
+            createdAt: new Date(),
+          }]});
+
+          await createStreamId({ streamId, chatId });
+
+          const coreMessagesForModel = await transformToCoreMessages(messages as UIMessage[]);
+
+          const result = streamText({
+            model: myProvider.languageModel(selectedChatModel),
+            system: systemPrompt({ selectedChatModel, requestHints, artifactContext }),
+            messages: coreMessagesForModel,
+            maxSteps: 6,
+            tools: {
+              getWeather,
+              getDocument,
+              createDocument: createDocument({ session, dataStream: writer }),
+              updateDocument: updateDocument({ session, dataStream: writer }),
+              requestSuggestions: requestSuggestions({ session, dataStream: writer }),
+            },
+            onFinish: async ({ response }) => {
+              if (session.user?.id) {
+                try {
+                  const [, assistantMessage] = appendResponseMessages({ messages: [latestMessage as Message], responseMessages: response.messages });
+                  const assistantId = generateUUID();
+                  await saveMessages({
+                    messages: [{
                       id: assistantId,
-                      chatId: id,
+                      chatId: chatId,
                       role: assistantMessage.role,
                       parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
+                      attachments: assistantMessage.experimental_attachments ?? [],
                       createdAt: new Date(),
-                    },
-                  ],
-                })
-              } catch (error) {
-                console.error('Failed to save chat', error)
+                    }]
+                  });
+                } catch (error) {
+                  console.error('Failed to save chat', error);
+                }
               }
-            }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        })
+            },
+          });
 
-        result.consumeStream()
+          result.mergeIntoDataStream(writer);
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        })
-      },
-      onError: (error) => {
-        console.error('[DEBUG] #1 API error:', error)
-        return 'Oops, an error occurred!'
-      },
-    })
+        } catch (error) {
+          console.error('[DEBUG] #2 API error:', error);
+          if (error instanceof ChatSDKError) {
+            writer.writeData({ type: 'error', error: error.message });
+          } else {
+            writer.writeData({ type: 'error', error: 'An unexpected error occurred.' });
+          }
+        }
+      }
+    });
 
-    const streamContext = getStreamContext()
-
+    const streamContext = getStreamContext();
     if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream),
-      )
+      return new Response(await streamContext.resumableStream(streamId, () => stream));
     } else {
-      return new Response(stream)
+      return new Response(stream);
     }
-  } catch (error) {
-    console.error('[DEBUG] #2 API error:', error)
 
+  } catch (error) {
+    console.error('[DEBUG] #1 API error:', error);
     if (error instanceof ChatSDKError) {
-      return error.toResponse()
+      return error.toResponse();
     }
+    return new ChatSDKError('bad_request:api', 'Failed to process request.').toResponse();
   }
 }
 
@@ -412,9 +374,7 @@ export async function GET (request: Request) {
     return new ChatSDKError('not_found:stream').toResponse()
   }
 
-  const emptyDataStream = createDataStream({
-    execute: () => {},
-  })
+  const emptyDataStream = createDataStream({ execute: () => {} })
 
   const stream = await streamContext.resumableStream(
     recentStreamId,

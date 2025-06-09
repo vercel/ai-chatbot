@@ -1,15 +1,15 @@
 /**
  * @file lib/db/queries.ts
  * @description Функции для выполнения запросов к базе данных.
- * @version 1.8.0
- * @date 2025-06-06
- * @updated Добавлена конфигурация idle_timeout и max_lifetime для postgres-js для предотвращения ошибок "Socket closed unexpectedly".
+ * @version 1.9.0
+ * @date 2025-06-07
+ * @updated Интегрирован асинхронный вызов генератора саммари в `saveDocument`, запросы теперь возвращают поле `summary`.
  */
 
 /** HISTORY:
+ * v1.9.0 (2025-06-07): Добавлен вызов `generateAndSaveSummary` в `saveDocument` и поле `summary` в возвращаемые данные.
  * v1.8.0 (2025-06-06): Добавлена конфигурация для postgres-js для стабильной работы в serverless-среде.
- * v1.7.0 (2025-06-06): Добавлена поддержка `authorId` и версионирования в `getDocumentById`. Удалены функции, связанные с голосованием.
- * v1.6.0 (2025-06-06): Функции `getRecent...` и `getPaged...` обобщены для работы со всеми видами контента.
+ * v1.7.0 (2025-06-06): Добавлена поддержка `authorId` и версионирования в `getDocumentById`.
  */
 
 import 'server-only'
@@ -36,13 +36,14 @@ import { generateUUID } from '../utils'
 import { generateHashedPassword } from './utils'
 import type { VisibilityType } from '@/lib/types'
 import { ChatSDKError } from '../errors'
+import { generateAndSaveSummary } from '../ai/summarizer'
 
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!, {
-  idle_timeout: 20, // Автоматическое закрытие неактивных соединений через 20 секунд
-  max_lifetime: 60 * 5, // Принудительное пересоздание соединения каждые 5 минут
+  idle_timeout: 20,
+  max_lifetime: 60 * 5,
 })
-const db = drizzle(client)
+export const db = drizzle(client)
 
 export async function getUser (email: string): Promise<Array<User>> {
   try {
@@ -263,7 +264,7 @@ export async function saveDocument ({
   authorId: string | null;
 }) {
   try {
-    return await db
+    const [savedDocument] = await db
       .insert(document)
       .values({
         id,
@@ -274,7 +275,15 @@ export async function saveDocument ({
         authorId,
         createdAt: new Date(),
       })
-      .returning()
+      .returning();
+
+    // Запускаем генерацию саммари асинхронно, не блокируя основной поток
+    if (savedDocument && savedDocument.content) {
+      generateAndSaveSummary(id, savedDocument.content, kind).catch(console.error);
+    }
+
+    return [savedDocument];
+
   } catch (error) {
     console.error(`SYS_VS_DB: Failed to save document ${id} (kind: ${kind}) for user ${userId}`, error)
     throw new ChatSDKError('bad_request:database', 'Failed to save document')
@@ -570,7 +579,7 @@ export async function getRecentContentByUserId ({
   userId: string;
   limit?: number;
   kind?: ArtifactKind;
-}): Promise<Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>[]> {
+}): Promise<Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'kind' | 'content' | 'summary'>[]> {
   try {
     const rn = sql<number>`row_number
     () OVER (PARTITION BY
@@ -586,6 +595,7 @@ export async function getRecentContentByUserId ({
         id: document.id,
         title: document.title,
         content: document.content,
+        summary: document.summary,
         kind: document.kind,
         createdAt: document.createdAt,
         userId: document.userId,
@@ -609,6 +619,7 @@ export async function getRecentContentByUserId ({
         createdAt: latestVersionsSubquery.createdAt,
         kind: latestVersionsSubquery.kind,
         content: latestVersionsSubquery.content,
+        summary: latestVersionsSubquery.summary,
       })
       .from(latestVersionsSubquery)
       .where(and(...whereConditions))
@@ -637,7 +648,7 @@ export async function getPagedContentByUserId ({
   pageSize?: number;
   searchQuery?: string;
   kind?: ArtifactKind;
-}): Promise<{ data: Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind'>[], totalCount: number }> {
+}): Promise<{ data: Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind' | 'summary'>[], totalCount: number }> {
   try {
     const offset = (page - 1) * pageSize
     const rn = sql<number>`row_number
@@ -660,6 +671,7 @@ export async function getPagedContentByUserId ({
         id: document.id,
         title: document.title,
         content: document.content,
+        summary: document.summary,
         kind: document.kind,
         createdAt: document.createdAt,
         userId: document.userId,
@@ -676,6 +688,7 @@ export async function getPagedContentByUserId ({
         createdAt: latestVersionsSubquery.createdAt,
         content: latestVersionsSubquery.content,
         kind: latestVersionsSubquery.kind,
+        summary: latestVersionsSubquery.summary,
       })
       .from(latestVersionsSubquery)
       .where(eq(latestVersionsSubquery.rn, 1))

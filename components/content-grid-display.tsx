@@ -1,12 +1,13 @@
 /**
  * @file components/content-grid-display.tsx
  * @description Компонент для отображения контента в виде сетки карточек.
- * @version 1.0.1
- * @date 2025-06-06
- * @updated Исправлена проблема с key в цикле.
+ * @version 1.1.0
+ * @date 2025-06-07
+ * @updated Добавлено поле `summary` в интерфейс `ContentDocument`.
  */
 
 /** HISTORY:
+ * v1.1.0 (2025-06-07): Интерфейс `ContentDocument` теперь включает `summary`.
  * v1.0.1 (2025-06-06): Исправлена проблема с key в цикле.
  * v1.0.0 (2025-06-06): Начальная версия компонента.
  */
@@ -22,7 +23,7 @@ import type { UseChatHelpers } from '@ai-sdk/react'
 
 const skeletonKeys = Array.from({ length: 4 }, (_, i) => `sk-${i}`)
 
-export interface ContentDocument extends Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind'> {}
+export interface ContentDocument extends Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind' | 'summary'> {}
 
 interface ContentGridDisplayProps {
   documents: ContentDocument[];

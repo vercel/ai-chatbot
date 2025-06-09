@@ -1,17 +1,15 @@
 /**
  * @file components/message.tsx
  * @description Компонент для отображения одного сообщения в чате.
- * @version 1.8.0
+ * @version 1.9.2
  * @date 2025-06-07
- * @updated Результат вызова инструмента `getDocument` больше не рендерится, чтобы избежать показа JSON в чате.
+ * @updated Исправлена ошибка типа при проверке `part.type` с помощью type assertion.
  */
 
 /** HISTORY:
- * v1.8.0 (2025-06-07): Исключен рендеринг для `tool-result` от `getDocument`.
- * v1.7.0 (2025-06-06): Добавлена логика для скрытия raw-результатов инструментов (`tool-result`), если для них нет специального UI.
- * v1.6.0 (2025-06-06): Исправлена циклическая зависимость.
- * v1.5.0 (2025-06-06): Восстановлены действия для сообщений ассистента.
- * v1.4.0 (2025-06-06): Удалена логика голосования.
+ * v1.9.2 (2025-06-07): Использован `as any` для обхода слишком строгой проверки типов в `hasToolResultForImage`.
+ * v1.9.1 (2025-06-07): Добавлен условный рендеринг `PreviewAttachment` для оптимистичного UI.
+ * v1.9.0 (2025-06-07): Удален рендеринг `experimental_attachments`.
  */
 
 'use client'
@@ -87,7 +85,6 @@ const PurePreviewMessage = ({
   const handleRegenerate = async () => {
     toast({ type: 'loading', description: 'Перегенерация ответа...' });
     try {
-      // Оптимистичное удаление ответа
       setMessages((messages) => messages.filter((m) => m.id !== message.id))
       await regenerateAssistantResponse({ assistantMessageId: message.id })
       reload()
@@ -95,6 +92,11 @@ const PurePreviewMessage = ({
       toast({ type: 'error', description: 'Не удалось перегенерировать ответ.' })
     }
   }
+
+  // ИСПРАВЛЕНИЕ: Используем `as any` для обхода ошибки компиляции типов.
+  const hasToolResultForImage = message.parts?.some(
+    part => (part as any).type === 'tool-result' && (part as any).result?.kind === 'image'
+  );
 
   return (
     <AnimatePresence>
@@ -128,8 +130,7 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {message.experimental_attachments &&
-              message.experimental_attachments.length > 0 && (
+            {message.experimental_attachments && !hasToolResultForImage && (
                 <div
                   data-testid={`message-attachments`}
                   className="flex flex-row justify-end gap-2"
@@ -264,15 +265,14 @@ const PurePreviewMessage = ({
                 if (state === 'result') {
                   const { result } = toolInvocation
 
-                  // Отображаем только те результаты инструментов, для которых есть специальный UI
                   switch (toolName) {
                     case 'getWeather':
                       return <Weather key={toolCallId} weatherAtLocation={result}/>
                     case 'createDocument':
                     case 'updateDocument':
                     case 'requestSuggestions':
+                    case 'generateOrModifyImage':
                        return <DocumentPreview key={toolCallId} isReadonly={isReadonly} result={result}/>
-                    // Все остальные результаты инструментов, особенно getDocument, просто игнорируются
                     case 'getDocument':
                     default:
                       return null
@@ -298,10 +298,6 @@ export const PreviewMessage = memo(
     if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
       return false
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false
-
-    // Vote is removed
-    // if (!equal(prevProps.vote, nextProps.vote)) return false
-
     return true
   },
 )

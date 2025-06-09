@@ -1,12 +1,13 @@
 /**
  * @file components/document-preview.tsx
- * @description Компоненты для отображения превью документов в чате. Реализует ленивую загрузку.
- * @version 1.1.0
- * @date 2025-06-06
- * @updated Реализована ленивая загрузка контента и показ скелетона загрузки.
+ * @description Компоненты для отображения превью документов в чате. Реализует ленивую загрузку и легковесные превью.
+ * @version 1.2.0
+ * @date 2025-06-07
+ * @updated Реализован диспетчер превью, показывающий саммари для текстовых артефактов и ImageEditor для картинок.
  */
 
 /** HISTORY:
+ * v1.2.0 (2025-06-07): Рефакторинг для показа легковесных превью (саммари) вместо полных редакторов.
  * v1.1.0 (2025-06-06): Добавлена логика ленивой загрузки контента с отображением скелетона.
  * v1.0.0 (2025-06-06): Начальная версия компонента.
  */
@@ -17,12 +18,9 @@ import { cn, fetcher } from '@/lib/utils'
 import type { Document } from '@/lib/db/schema'
 import { InlineDocumentSkeleton } from './document-skeleton'
 import useSWR from 'swr'
-import { Editor } from './text-editor'
 import { DocumentToolCall, DocumentToolResult } from './document'
-import { CodeEditor } from './code-editor'
 import { useArtifact } from '@/hooks/use-artifact'
 import equal from 'fast-deep-equal'
-import { SpreadsheetEditor } from './sheet-editor'
 import { ImageEditor } from './image-editor'
 import { toast } from './toast'
 
@@ -40,11 +38,14 @@ export function DocumentPreview ({
   const { artifact, setArtifact } = useArtifact()
   const documentId = result?.id ?? args?.id ?? artifact.documentId
 
-  const { data: documents, isLoading: isDocumentsFetching } = useSWR<
+  const { data: documents, isLoading: isDocumentsFetching, mutate } = useSWR<
     Array<Document>
-  >(documentId ? `/api/document?id=${documentId}` : null, fetcher)
+  >(documentId ? `/api/document?id=${documentId}` : null, fetcher, {
+    // Включаем периодическую перепроверку для подгрузки саммари
+    refreshInterval: (data) => (data && data.length > 0 && !data[data.length - 1].summary ? 3000 : 0),
+  })
 
-  const previewDocument = useMemo(() => documents?.[0], [documents])
+  const previewDocument = useMemo(() => documents?.[documents.length - 1], [documents])
   const hitboxRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -84,8 +85,7 @@ export function DocumentPreview ({
     }
   }
 
-  // Пока данные не загружены (либо первичная загрузка, либо стриминг), показываем скелет
-  if (isDocumentsFetching || (artifact.status === 'streaming' && artifact.documentId === documentId)) {
+  if (isDocumentsFetching && !previewDocument) {
     return <LoadingSkeleton artifactKind={result?.kind ?? args?.kind ?? artifact.kind}/>
   }
 
@@ -102,8 +102,8 @@ export function DocumentPreview ({
       />
       <DocumentHeader
         title={document.title}
-        kind={document.kind}
-        isStreaming={false} // Стриминг уже обработан выше
+        kind={document.kind as ArtifactKind}
+        isStreaming={artifact.status === 'streaming' && artifact.documentId === documentId}
       />
       <DocumentContent document={document}/>
     </div>
@@ -124,15 +124,9 @@ const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
         <FullscreenIcon/>
       </div>
     </div>
-    {artifactKind === 'image' ? (
-      <div className="overflow-y-scroll border rounded-b-2xl bg-muted border-t-0 dark:border-zinc-700">
-        <div className="animate-pulse h-[257px] bg-muted-foreground/20 w-full"/>
-      </div>
-    ) : (
-      <div className="overflow-y-scroll border rounded-b-2xl p-8 pt-4 bg-muted border-t-0 dark:border-zinc-700">
-        <InlineDocumentSkeleton/>
-      </div>
-    )}
+    <div className="overflow-y-scroll border rounded-b-2xl p-8 pt-4 bg-muted border-t-0 dark:border-zinc-700 h-[257px]">
+      <InlineDocumentSkeleton/>
+    </div>
   </div>
 )
 
@@ -237,50 +231,36 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 
 const DocumentContent = ({ document }: { document: Document }) => {
   const { artifact } = useArtifact()
+  const kind = document.kind as ArtifactKind
 
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
-      'p-4 sm:px-14 sm:py-16': document.kind === 'text',
-      'p-0': document.kind === 'code',
-    },
+      'p-6': kind !== 'image',
+    }
   )
-
-  const commonProps = {
-    content: document.content ?? '',
-    isCurrentVersion: true,
-    currentVersionIndex: 0,
-    status: artifact.status,
-    saveContent: () => {},
-    suggestions: [],
-  }
 
   return (
     <div className={containerClassName}>
-      {document.kind === 'text' ? (
-        <Editor {...commonProps} onSaveContent={() => {}}/>
-      ) : document.kind === 'code' ? (
-        <div className="flex flex-1 relative w-full">
-          <div className="absolute inset-0">
-            <CodeEditor {...commonProps} onSaveContent={() => {}}/>
-          </div>
-        </div>
-      ) : document.kind === 'sheet' ? (
-        <div className="flex flex-1 relative size-full p-4">
-          <div className="absolute inset-0">
-            <SpreadsheetEditor {...commonProps} />
-          </div>
-        </div>
-      ) : document.kind === 'image' ? (
+      {kind === 'image' ? (
         <ImageEditor
           title={document.title}
           content={document.content ?? ''}
-          isCurrentVersion={true}
-          currentVersionIndex={0}
           status={artifact.status}
           isInline={true}
         />
-      ) : null}
+      ) : (
+        <div className="prose dark:prose-invert prose-sm">
+          {document.summary ? (
+            <p className="text-muted-foreground italic">{document.summary}</p>
+          ) : (
+            <div className="space-y-2">
+              <div className="animate-pulse rounded-lg h-4 bg-muted-foreground/20 w-3/4"/>
+              <div className="animate-pulse rounded-lg h-4 bg-muted-foreground/20 w-1/2"/>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

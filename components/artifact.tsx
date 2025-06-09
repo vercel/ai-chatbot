@@ -1,16 +1,16 @@
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 1.5.2
- * @date 2025-06-06
- * @updated Удалена логика, связанная с голосованием (проп votes).
+ * @version 1.6.0
+ * @date 2025-06-09
+ * @updated Обновлен интерфейс UIArtifact и проверки documentId для работы с null вместо 'init'.
  */
 
 /** HISTORY:
+ * v1.6.0 (2025-06-09): `documentId` теперь может быть null, проверки обновлены.
  * v1.5.2 (2025-06-06): Удален проп `votes`.
  * v1.5.1 (2025-06-06): Заменен импорт `sonner` на локальную обертку `toast`.
  * v1.5.0 (2025-06-06): Добавлено скрытие toast-уведомления после завершения загрузки данных.
- * v1.4.1 (2025-06-06): Исправлены классы Tailwind.
  */
 import type { Attachment, UIMessage } from 'ai'
 import { formatDistance } from 'date-fns'
@@ -47,7 +47,7 @@ export type ArtifactDisplayMode = 'split' | 'full';
 
 export interface UIArtifact {
   title: string;
-  documentId: string;
+  documentId: string | null; // Обновленный тип
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
@@ -77,7 +77,7 @@ function PureArtifact ({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
-  votes: undefined; // Removed
+  votes: undefined;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
@@ -93,7 +93,8 @@ function PureArtifact ({
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    artifact.documentId !== 'init' && artifact.status !== 'streaming'
+    // Используем простую проверку на truthiness
+    artifact.documentId && artifact.status !== 'streaming'
       ? `/api/document?id=${artifact.documentId}`
       : null,
     fetcher,
@@ -101,7 +102,7 @@ function PureArtifact ({
 
   useEffect(() => {
     if (!isDocumentsFetching) {
-      toast.dismiss() // Закрываем уведомление о загрузке, когда данные получены
+      toast.dismiss()
     }
   }, [isDocumentsFetching])
 
@@ -133,7 +134,7 @@ function PureArtifact ({
 
   const handleContentChange = useCallback(
     (updatedContent: string) => {
-      if (!artifact) return
+      if (!artifact.documentId) return;
 
       setArtifact(draft => ({ ...draft, saveStatus: 'saving' }))
 
@@ -175,7 +176,7 @@ function PureArtifact ({
         { revalidate: false },
       )
     },
-    [artifact, mutate, setArtifact],
+    [artifact.documentId, artifact.title, artifact.kind, mutate, setArtifact],
   )
 
   const debouncedHandleContentChange = useDebounceCallback(
@@ -240,7 +241,8 @@ function PureArtifact ({
   )
 
   useEffect(() => {
-    if (artifact.documentId !== 'init' && artifactDefinition?.initialize) {
+    // Используем простую проверку на truthiness
+    if (artifact.documentId && artifactDefinition?.initialize) {
       artifactDefinition.initialize({
         documentId: artifact.documentId,
         setMetadata,

@@ -1,12 +1,13 @@
 /**
  * @file lib/db/schema.ts
  * @description Определения таблиц базы данных с использованием Drizzle ORM.
- * @version 1.2.0
- * @date 2025-06-06
- * @updated Добавлено поле `authorId` в таблицу `Document` и удалены таблицы, связанные с голосованием.
+ * @version 1.3.0
+ * @date 2025-06-07
+ * @updated Добавлено поле `summary` в таблицу `Document` для хранения краткого содержания артефакта.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-07): Добавлено поле `summary` в таблицу `Document`.
  * v1.2.0 (2025-06-06): Добавлено поле `authorId` и удалены таблицы голосования.
  * v1.1.0 (2025-06-05): Исправлено имя колонки для типа документа на 'kind' в таблице 'Document'.
  * v1.0.0 (2025-05-25): Начальная версия файла схемы.
@@ -81,6 +82,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
+    summary: text('summary').notNull().default(''),
     kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
       .notNull()
       .default('text'),

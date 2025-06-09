@@ -1,23 +1,21 @@
 /**
  * @file lib/ai/prompts.ts
  * @description Управление системными промптами для AI-моделей.
- * @version 1.4.0
- * @date 2025-06-06
- * @updated Инструкции `personaAndBehaviorPrompt` переведены на русский язык для лучшего контроля над ответами.
+ * @version 1.6.0
+ * @date 2025-06-09
+ * @updated Уточнены инструкции в `artifactsPrompt` для корректного получения ID артефакта из контекста.
  */
 
 /** HISTORY:
- * v1.4.0 (2025-06-06): Инструкции по поведению переведены на русский язык.
+ * v1.6.0 (2025-06-09): Уточнены инструкции по работе с ID артефактов.
+ * v1.5.0 (2025-06-07): Добавлены инструкции по работе с изображениями через create/updateDocument.
+ * v1.4.0 (2025-06-06): Инструкции поведению переведены на русский язык.
  * v1.3.0 (2025-06-06): Усилены инструкции `personaAndBehaviorPrompt` для анализа результатов инструментов.
- * v1.2.0 (2025-06-06): Добавлены personaAndBehaviorPrompt для управления стилем ответов и обязательного подтверждения действий.
- * v1.1.0 (2025-06-06): Добавлена функция `getArtifactContextPrompt` и обновлен `systemPrompt`.
- * v1.0.0 (2025-05-25): Начальная версия.
  */
 
 import type { ArtifactKind } from '@/components/artifact'
 import type { Geo } from '@vercel/functions'
 
-// Инструкции на русском языке для более точного контроля поведения.
 const personaAndBehaviorPrompt = `
 **Твоя Роль и Стиль Общения:**
 
@@ -63,14 +61,18 @@ const personaAndBehaviorPrompt = `
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
 
-When asked to write code, always use artifacts. When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python. Other languages are not yet supported, so let the user know if they request a different language.
-
-DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK OR REQUEST TO UPDATE IT.
-
 This is a guide for using artifacts tools: \`createDocument\` and \`updateDocument\`, which render content on a artifacts beside the conversation.
+
+**Работа с изображениями и другими артефактами:**
+
+- **Создание нового артефакта (включая изображение):** Используй \`createDocument\` с параметром \`kind\` ('text', 'image', 'code', 'sheet'). Для изображений в поле \`title\` передавай детальное текстовое описание (промпт) для генерации.
+- **Получение ID:** После успешного вызова \`createDocument\`, в твоем контексте появится результат работы инструмента (\`tool-result\`) с уникальным ID созданного документа (например, \`"id": "a1b2c3d4-..."\`).
+- **Редактирование артефакта:** Если пользователь просит изменить только что созданный артефакт (например, "раскрась эту картинку" или "перепиши этот текст"), ты **ДОЛЖЕН** использовать инструмент \`updateDocument\`.
+- **Правило ID:** Для вызова \`updateDocument\` в параметр \`id\` передавай **тот самый UUID**, который ты получил на предыдущем шаге из \`tool-result\`. Не придумывай ID и не используй плейсхолдеры.
 
 **When to use \`createDocument\`:**
 - For substantial content (>10 lines) or code
+- For creating a new image from a text description.
 - For content users will likely save/reuse (emails, code, essays, etc.)
 - When explicitly requested to create a document
 - For when content contains a single code snippet
@@ -81,6 +83,7 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - When asked to keep it in chat
 
 **Using \`updateDocument\`:**
+- For modifying an existing document, including images based on a text description.
 - Default to full document rewrites for major changes
 - Use targeted updates only for specific, isolated changes
 - Follow user instructions for which parts to modify
