@@ -1,15 +1,14 @@
 /**
- * @file components/multimodal-input.tsx
- * @description Компонент для ввода мультимодальных сообщений, включая текст и вложения.
- * @version 1.7.0
- * @date 2025-06-07
- * @updated Исправлена логика загрузки файлов на client-side в соответствии с API @vercel/blob/client.
+ * @file components/chat-input.tsx
+ * @description Компонент для ввода сообщений, включая текст и файлы с авто-созданием артефактов.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Рефакторинг. Переименован. Внедрена логика авто-создания артефакта при загрузке файла.
  */
 
 /** HISTORY:
- * v1.7.0 (2025-06-07): Заменен ручной fetch на `upload` из `@vercel/blob/client` для корректной загрузки.
- * v1.6.0 (2025-06-07): Переход на client-side upload для Vercel Blob.
- * v1.5.1 (2025-06-06): Исправлены ошибки типизации для `options.body`.
+ * v2.0.0 (2025-06-09): Переименован, добавлено авто-создание артефактов.
+ * v1.7.0 (2025-06-07): Исправлена логика загрузки файлов на client-side.
  */
 
 'use client'
@@ -29,8 +28,25 @@ import { ModelSelector } from './model-selector'
 import type { Session } from 'next-auth'
 import type { UIArtifact } from './artifact'
 import { toast } from './toast'
+import { generateUUID } from '@/lib/utils'
 
-function PureMultimodalInput ({
+async function createArtifactFromUpload (url: string, name: string, type: string) {
+  const response = await fetch('/api/artifacts/create-from-upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url,
+      title: name,
+      kind: type.startsWith('image/') ? 'image' : 'text'
+    })
+  })
+  if (!response.ok) {
+    throw new Error('Failed to create artifact from upload')
+  }
+  return response.json()
+}
+
+export function ChatInput ({
   chatId,
   input,
   setInput,
@@ -55,7 +71,7 @@ function PureMultimodalInput ({
   handleSubmit: UseChatHelpers['handleSubmit'];
   session: Session;
   initialChatModel: string;
-  artifact: UIArtifact; // Принимаем artifact как проп
+  artifact: UIArtifact;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadingFiles, setUploadingFiles] = useState<Array<string>>([])
@@ -67,31 +83,19 @@ function PureMultimodalInput ({
     }
 
     const options: Parameters<typeof handleSubmit>[1] = {
-      experimental_attachments: attachments,
       body: {
         id: chatId,
         selectedChatModel: initialChatModel,
         selectedVisibilityType: 'private',
+        activeArtifactId: artifact.isVisible ? artifact.artifactId : undefined,
+        activeArtifactTitle: artifact.isVisible ? artifact.title : undefined,
+        activeArtifactKind: artifact.isVisible ? artifact.kind : undefined,
       }
-    }
-
-    if (artifact.isVisible && artifact.documentId !== 'init') {
-      if (!options.body) {
-        options.body = {}
-      }
-      // @ts-ignore
-      options.body.activeArtifactId = artifact.documentId
-      // @ts-ignore
-      options.body.activeArtifactTitle = artifact.title
-      // @ts-ignore
-      options.body.activeArtifactKind = artifact.kind
     }
 
     handleSubmit(undefined, options)
-
-    setAttachments([])
     setInput('')
-  }, [status, chatId, handleSubmit, attachments, setAttachments, setInput, initialChatModel, artifact])
+  }, [status, chatId, handleSubmit, setInput, initialChatModel, artifact])
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -99,20 +103,32 @@ function PureMultimodalInput ({
       if (!files.length) return
 
       setUploadingFiles(files.map(file => file.name))
+      toast({ type: 'loading', description: `Uploading ${files.length} file(s)...` })
 
       try {
-        const uploadPromises = files.map(async (file) => {
+        for (const file of files) {
           const newBlob = await upload(file.name, file, {
             access: 'public',
             handleUploadUrl: '/api/files/upload',
           })
 
-          return { url: newBlob.url, name: newBlob.pathname, contentType: newBlob.contentType }
-        })
+          toast({ type: 'loading', description: `Creating artifact for ${file.name}...` })
 
-        const uploadedAttachments = await Promise.all(uploadPromises)
+          const artifactMetadata = await createArtifactFromUpload(newBlob.url, newBlob.pathname, newBlob.contentType)
 
-        setAttachments((current) => [...current, ...uploadedAttachments])
+          append({
+            id: generateUUID(),
+            role: 'user',
+            content: '',
+            parts: [{
+              type: 'tool-result',
+              toolCallId: generateUUID(),
+              toolName: 'artifactCreate',
+              result: artifactMetadata
+            }]
+          })
+        }
+        toast({ type: 'success', description: 'Artifact(s) created successfully!' })
 
       } catch (error) {
         console.error('SYS_UPLOAD_ERR:', error)
@@ -124,18 +140,16 @@ function PureMultimodalInput ({
         }
       }
     },
-    [setAttachments],
+    [append],
   )
 
   return (
     <div className="relative w-full flex flex-col gap-2">
       {messages.length === 0 &&
-        attachments.length === 0 &&
         uploadingFiles.length === 0 && (
           <SuggestedActions
             append={append}
             chatId={chatId}
-            // @ts-ignore
             selectedVisibilityType={'private'}
           />
         )}
@@ -150,18 +164,11 @@ function PureMultimodalInput ({
       />
 
       <div className="flex flex-col w-full p-2 bg-muted dark:bg-zinc-800 rounded-2xl border dark:border-zinc-700">
-        {(attachments.length > 0 || uploadingFiles.length > 0) && (
+        {uploadingFiles.length > 0 && (
           <div
             data-testid="attachments-preview"
             className="flex flex-row gap-2 overflow-x-scroll items-end p-2 border-b dark:border-zinc-700"
           >
-            {attachments.map((attachment, idx) => (
-              <PreviewAttachment
-                key={attachment.url}
-                attachment={attachment}
-                onRemove={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
-              />
-            ))}
             {uploadingFiles.map((filename) => (
               <PreviewAttachment
                 key={filename}
@@ -173,7 +180,7 @@ function PureMultimodalInput ({
         )}
 
         <Textarea
-          data-testid="multimodal-input"
+          data-testid="chat-input"
           placeholder="Send a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -228,5 +235,4 @@ function PureMultimodalInput ({
   )
 }
 
-export const MultimodalInput = PureMultimodalInput
-// END OF: components/multimodal-input.tsx
+// END OF: components/chat-input.tsx

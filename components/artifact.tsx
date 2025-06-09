@@ -1,32 +1,29 @@
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 1.7.0
+ * @version 2.1.0
  * @date 2025-06-09
- * @updated Внедрена система клиентского логирования для отладки жизненного цикла и взаимодействий.
+ * @updated Исправлены ошибки типизации и импортов.
  */
 
 /** HISTORY:
- * v1.7.0 (2025-06-09): Внедрена система клиентского логирования.
- * v1.6.0 (2025-06-09): `documentId` теперь может быть null, проверки обновлены.
- * v1.5.2 (2025-06-06): Удален проп `votes`.
- * v1.5.1 (2025-06-06): Заменен импорт `sonner` на локальную обертку `toast`.
- * v1.5.0 (2025-06-06): Добавлено скрытие toast-уведомления после завершения загрузки данных.
+ * v2.1.0 (2025-06-09): Исправлены ошибки типизации.
+ * v2.0.0 (2025-06-09): Адаптирован под новую архитектуру.
  */
 import type { Attachment, UIMessage } from 'ai'
 import { formatDistance } from 'date-fns'
 import { type Dispatch, memo, type SetStateAction, useCallback, useEffect, useState, } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts'
-import type { Document } from '@/lib/db/schema'
+import type { Artifact as DBArtifact } from '@/lib/db/schema'
 import { fetcher } from '@/lib/utils'
 import { Toolbar } from './toolbar'
 import { VersionFooter } from './version-footer'
 import { ArtifactActions } from './artifact-actions'
 import { ArtifactCloseButton } from './artifact-close-button'
-import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact'
+import { useArtifact } from '@/hooks/use-artifact'
 import { imageArtifact } from '@/artifacts/image/client'
-import { codeArtifact } from '@/artifacts/code/client'
+import { codeArtifact } from '@/artifacts/code/client' // Исправлено
 import { sheetArtifact } from '@/artifacts/sheet/client'
 import { textArtifact } from '@/artifacts/text/client'
 import equal from 'fast-deep-equal'
@@ -38,7 +35,7 @@ import type { Session } from 'next-auth'
 import { toast } from './toast'
 import { createClientLogger } from '@/lib/client-logger'
 
-const logger = createClientLogger('Artifact');
+const logger = createClientLogger('Artifact')
 
 export const artifactDefinitions = [
   textArtifact,
@@ -51,7 +48,7 @@ export type ArtifactDisplayMode = 'split' | 'full';
 
 export interface UIArtifact {
   title: string;
-  documentId: string | null;
+  artifactId: string | null;
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
@@ -81,7 +78,6 @@ function PureArtifact ({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
-  votes: undefined;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
@@ -90,224 +86,121 @@ function PureArtifact ({
   session: Session | null
 }) {
   const { artifact, setArtifact, metadata, setMetadata, toggleDisplayMode } = useArtifact()
-  const artifactLogger = logger.child({ documentId: artifact.documentId, kind: artifact.kind });
+  const artifactLogger = logger.child({ artifactId: artifact.artifactId, kind: artifact.kind })
 
   const [isToolbarVisible, setIsToolbarVisible] = useState(false)
 
   const {
-    data: documents,
-    isLoading: isDocumentsFetching,
-    mutate: mutateDocuments,
-  } = useSWR<Array<Document>>(
-    artifact.documentId && artifact.status !== 'streaming'
-      ? `/api/document?id=${artifact.documentId}`
+    data: artifacts,
+    isLoading: isArtifactsFetching,
+    mutate: mutateArtifacts,
+  } = useSWR<Array<DBArtifact>>(
+    artifact.artifactId && artifact.status !== 'streaming'
+      ? `/api/artifact?id=${artifact.artifactId}`
       : null,
     fetcher,
   )
 
   useEffect(() => {
-    const childLogger = logger.child({ documentId: artifact.documentId });
-    childLogger.debug('Fetching documents...', { isDocumentsFetching });
-    if (!isDocumentsFetching) {
+    if (!isArtifactsFetching) {
       toast.dismiss()
-      childLogger.info('Documents fetched or cache used.', { documentsCount: documents?.length });
     }
-  }, [isDocumentsFetching, documents, artifact.documentId]);
+  }, [isArtifactsFetching])
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit')
-  const [document, setDocument] = useState<Document | null>(null)
+  const [currentArtifact, setCurrentArtifact] = useState<DBArtifact | null>(null)
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1)
 
   useEffect(() => {
-    const childLogger = logger.child({ documentId: artifact.documentId });
-    childLogger.trace('Documents data updated', { documentsCount: documents?.length });
-    if (documents && documents.length > 0) {
-      const mostRecentDocument = documents.at(-1)
-
-      if (mostRecentDocument) {
-        childLogger.debug('Setting local document state from fetched data', { newVersion: documents.length });
-        setDocument(mostRecentDocument)
-        setCurrentVersionIndex(documents.length - 1)
-        setArtifact((currentArtifact) => ({
-          ...currentArtifact,
-          content: mostRecentDocument.content ?? '',
+    if (artifacts && artifacts.length > 0) {
+      const mostRecentArtifact = artifacts.at(-1)
+      if (mostRecentArtifact) {
+        setCurrentArtifact(mostRecentArtifact)
+        setCurrentVersionIndex(artifacts.length - 1)
+        setArtifact((current) => ({
+          ...current,
+          content: mostRecentArtifact.content ?? '',
           saveStatus: 'saved'
         }))
       }
     }
-  }, [documents, setArtifact, artifact.documentId])
-
-  useEffect(() => {
-    if (artifact.status !== 'streaming') {
-        mutateDocuments();
-    }
-  }, [artifact.status, mutateDocuments]);
+  }, [artifacts, setArtifact])
 
   const { mutate } = useSWRConfig()
 
-  const handleContentChange = useCallback(
-    (updatedContent: string) => {
-      const childLogger = logger.child({ documentId: artifact.documentId });
-      if (!artifact.documentId) {
-        childLogger.warn('Attempted to save content without documentId');
-        return;
-      }
+  const handleContentChange = useCallback((updatedContent: string) => {
+    const { artifactId, title, kind } = artifact
+    if (!artifactId) return
+    setArtifact(draft => ({ ...draft, saveStatus: 'saving' }))
+    mutate(`/api/artifact?id=${artifactId}`, async () => {
+      await fetch(`/api/artifact?id=${artifactId}`, {
+        method: 'POST',
+        body: JSON.stringify({ title, content: updatedContent, kind }),
+      })
+      setArtifact(draft => ({ ...draft, saveStatus: 'saved' }))
+    })
+  }, [artifact, mutate, setArtifact])
 
-      childLogger.trace('Entering handleContentChange');
-      setArtifact(draft => ({ ...draft, saveStatus: 'saving' }));
-      childLogger.debug('Save status set to "saving"');
+  const debouncedHandleContentChange = useDebounceCallback(handleContentChange, 2000)
 
-      mutate<Array<Document>>(
-        `/api/document?id=${artifact.documentId}`,
-        async (currentDocuments) => {
-          childLogger.trace('Optimistic update SWR cache for document');
-          if (!currentDocuments) return undefined
+  const saveContent = useCallback((updatedContent: string, debounce: boolean) => {
+    if (currentArtifact && updatedContent !== currentArtifact.content) {
+      setArtifact(draft => ({ ...draft, saveStatus: 'idle' }))
+      if (debounce) debouncedHandleContentChange(updatedContent)
+      else handleContentChange(updatedContent)
+    }
+  }, [currentArtifact, debouncedHandleContentChange, handleContentChange, setArtifact])
 
-          const currentDocument = currentDocuments.at(-1)
-
-          if (!currentDocument || !currentDocument.content) {
-            setArtifact(draft => ({ ...draft, saveStatus: 'idle' }))
-            childLogger.warn('No current document or content to update, reverting save status');
-            return currentDocuments
-          }
-
-          if (currentDocument.content !== updatedContent) {
-            childLogger.info('Content changed, posting new version to server');
-            await fetch(`/api/document?id=${artifact.documentId}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                title: artifact.title,
-                content: updatedContent,
-                kind: artifact.kind,
-              }),
-            })
-
-            setArtifact(draft => ({ ...draft, saveStatus: 'saved' }))
-            childLogger.info('Save status set to "saved"');
-
-            const newDocument = {
-              ...currentDocument,
-              content: updatedContent,
-              createdAt: new Date(),
-            }
-
-            return [...currentDocuments, newDocument]
-          }
-          setArtifact(draft => ({ ...draft, saveStatus: 'saved' }))
-          childLogger.debug('Content unchanged, save status set to "saved" without POST');
-          return currentDocuments
-        },
-        { revalidate: false },
-      )
-    },
-    [artifact.documentId, artifact.title, artifact.kind, mutate, setArtifact],
-  )
-
-  const debouncedHandleContentChange = useDebounceCallback(
-    handleContentChange,
-    2000,
-  )
-
-  const saveContent = useCallback(
-    (updatedContent: string, debounce: boolean) => {
-      const childLogger = logger.child({ documentId: artifact.documentId });
-      childLogger.trace('Entering saveContent', { debounce });
-      if (document && updatedContent !== document.content) {
-        setArtifact(draft => ({ ...draft, saveStatus: 'idle' }));
-        childLogger.debug('Content changed, save status set to "idle"');
-
-        if (debounce) {
-          debouncedHandleContentChange(updatedContent)
-        } else {
-          handleContentChange(updatedContent)
-        }
-      }
-    },
-    [document, debouncedHandleContentChange, handleContentChange, setArtifact, artifact.documentId],
-  )
-
-  function getDocumentContentById (index: number) {
-    if (!documents) return ''
-    if (!documents[index]) return ''
-    return documents[index].content ?? ''
-  }
+  const getArtifactContentByIdx = (index: number) => artifacts?.[index]?.content ?? ''
 
   const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
-    const childLogger = logger.child({ documentId: artifact.documentId });
-    childLogger.info('Handling version change', { type });
-    if (!documents) return
-
+    if (!artifacts) return
     if (type === 'latest') {
-      setCurrentVersionIndex(documents.length - 1)
+      setCurrentVersionIndex(artifacts.length - 1)
       setMode('edit')
-    }
-
-    if (type === 'toggle') {
-      setMode((mode) => (mode === 'edit' ? 'diff' : 'edit'))
-    }
-
-    if (type === 'prev') {
-      if (currentVersionIndex > 0) {
-        setCurrentVersionIndex((index) => index - 1)
-      }
-    } else if (type === 'next') {
-      if (currentVersionIndex < documents.length - 1) {
-        setCurrentVersionIndex((index) => index + 1)
-      }
+    } else if (type === 'toggle') {
+      setMode((m) => (m === 'edit' ? 'diff' : 'edit'))
+    } else if (type === 'prev' && currentVersionIndex > 0) {
+      setCurrentVersionIndex(i => i - 1)
+    } else if (type === 'next' && currentVersionIndex < artifacts.length - 1) {
+      setCurrentVersionIndex(i => i + 1)
     }
   }
 
-  const isCurrentVersion =
-    documents && documents.length > 0
-      ? currentVersionIndex === documents.length - 1
-      : true
-
-  const { width: windowWidth } = useWindowSize()
-  const isMobile = windowWidth ? windowWidth < 768 : false
+  const isCurrentVersion = artifacts ? currentVersionIndex === artifacts.length - 1 : true
+  const { width } = useWindowSize()
+  const isMobile = width ? width < 768 : false
 
   const artifactDefinition = artifactDefinitions.find(
     (definition) => definition.kind === artifact.kind,
   )
 
   useEffect(() => {
-    const childLogger = logger.child({ documentId: artifact.documentId });
-    if (artifact.documentId && artifactDefinition?.initialize) {
-      childLogger.info('Initializing artifact definition');
-      artifactDefinition.initialize({
-        documentId: artifact.documentId,
-        setMetadata,
-      })
+    if (artifact.artifactId && artifactDefinition?.initialize) {
+      artifactDefinition.initialize({ documentId: artifact.artifactId, setMetadata })
     }
-  }, [artifact.documentId, artifactDefinition, setMetadata])
+  }, [artifact.artifactId, artifactDefinition, setMetadata])
 
   if (!artifactDefinition || !artifact.isVisible || isMobile) {
-    if(!artifact.isVisible) logger.debug('Artifact is not visible, rendering null');
-    if(isMobile) logger.debug('Is mobile, rendering null');
-    if(!artifactDefinition) logger.warn('Artifact definition not found, rendering null');
     return null
   }
 
   return (
-    <div
-      data-testid="artifact"
-      className="flex flex-col size-full bg-background border-l dark:border-zinc-700"
-    >
+    <div data-testid="artifact" className="flex flex-col size-full bg-background border-l dark:border-zinc-700">
       <div className="p-2 flex flex-row justify-between items-start border-b dark:border-zinc-700">
         <div className="flex flex-row gap-4 items-start">
           <ArtifactCloseButton/>
-
           <div className="flex flex-col">
             <div className="font-medium">{artifact.title}</div>
-            {document ? (
+            {currentArtifact ? (
               <div className="text-sm text-muted-foreground">
-                {`Updated ${formatDistance(new Date(document.createdAt), new Date(), { addSuffix: true })}`}
+                {`Updated ${formatDistance(new Date(currentArtifact.createdAt), new Date(), { addSuffix: true })}`}
               </div>
             ) : (
               <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse"/>
             )}
           </div>
         </div>
-
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -317,7 +210,6 @@ function PureArtifact ({
             </TooltipTrigger>
             <TooltipContent>{artifact.displayMode === 'split' ? 'Enter Fullscreen' : 'Exit Fullscreen'}</TooltipContent>
           </Tooltip>
-
           <ArtifactActions
             artifact={artifact}
             currentVersionIndex={currentVersionIndex}
@@ -329,15 +221,10 @@ function PureArtifact ({
           />
         </div>
       </div>
-
       <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
         <artifactDefinition.content
           title={artifact.title}
-          content={
-            isCurrentVersion
-              ? artifact.content
-              : getDocumentContentById(currentVersionIndex)
-          }
+          content={isCurrentVersion ? artifact.content : getArtifactContentByIdx(currentVersionIndex)}
           mode={mode}
           status={artifact.status}
           currentVersionIndex={currentVersionIndex}
@@ -345,12 +232,11 @@ function PureArtifact ({
           onSaveContent={saveContent}
           isInline={false}
           isCurrentVersion={isCurrentVersion}
-          getDocumentContentById={getDocumentContentById}
-          isLoading={isDocumentsFetching && !artifact.content}
+          getDocumentContentById={getArtifactContentByIdx}
+          isLoading={isArtifactsFetching && !artifact.content}
           metadata={metadata}
           setMetadata={setMetadata}
         />
-
         {isCurrentVersion && <Toolbar
           append={append}
           status={status}
@@ -361,11 +247,10 @@ function PureArtifact ({
           setMessages={setMessages}
         />}
       </div>
-
       {!isCurrentVersion && (
         <VersionFooter
           currentVersionIndex={currentVersionIndex}
-          documents={documents}
+          artifacts={artifacts}
           handleVersionChange={handleVersionChange}
         />
       )}

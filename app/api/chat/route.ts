@@ -1,15 +1,14 @@
 /**
  * @file app/api/chat/route.ts
- * @description API маршрут для обработки запросов чата.
- * @version 3.1.0
+ * @description API маршрут для обработки запросов чата, переписанный под новую архитектуру.
+ * @version 4.1.0
  * @date 2025-06-09
- * @updated Упрощен код для соответствия новой архитектуре инструментов. Удалена логика resumable-stream.
+ * @updated Исправлены ошибки типизации и вызов toAIStreamResponse.
  */
 
 /** HISTORY:
- * v3.1.0 (2025-06-09): Финальный рефакторинг, удалена логика resumable-stream и createDataStream.
- * v3.0.1 (2025-06-09): Исправлен вызов на `toDataStreamResponse`.
- * v3.0.0 (2025-06-09): Рефакторинг для использования `toAIStreamResponse` и удаления кастомной логики стриминга.
+ * v4.1.0 (2025-06-09): Исправлены ошибки типизации и toAIStreamResponse.
+ * v4.0.0 (2025-06-09): Полный рефакторинг под новую архитектуру.
  */
 
 import {
@@ -18,7 +17,6 @@ import {
   type ImagePart,
   type Message,
   streamText,
-  StreamingTextResponse,
   type TextPart,
   type ToolCallPart,
   type ToolResultPart,
@@ -26,20 +24,16 @@ import {
 } from 'ai'
 import { auth, type UserType } from '@/app/(auth)/auth'
 import { type ArtifactContext, type RequestHints, systemPrompt } from '@/lib/ai/prompts'
-import {
-  deleteChatById,
-  getChatById,
-  getMessageCountByUserId,
-  saveChat,
-  saveMessages,
-} from '@/lib/db/queries'
+import { deleteChatSoftById, getChatById, getMessageCountByUserId, saveChat, saveMessages, } from '@/lib/db/queries'
 import { generateUUID } from '@/lib/utils'
 import { generateTitleFromUserMessage } from '@/app/(main)/chat/actions'
-import { createDocument } from '@/lib/ai/tools/create-document'
-import { updateDocument } from '@/lib/ai/tools/update-document'
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions'
+import { artifactCreate } from '@/lib/ai/tools/artifactCreate'
+import { artifactUpdate } from '@/lib/ai/tools/artifactUpdate'
+import { artifactEnhance } from '@/lib/ai/tools/artifactEnhance'
 import { getWeather } from '@/lib/ai/tools/get-weather'
-import { getDocument } from '@/lib/ai/tools/get-document'
+import { artifactContent } from '@/lib/ai/tools/artifactContent'
+import { artifactDelete } from '@/lib/ai/tools/artifactDelete'
+import { artifactRestore } from '@/lib/ai/tools/artifactRestore'
 import { myProvider } from '@/lib/ai/providers'
 import { entitlementsByUserType } from '@/lib/ai/entitlements'
 import { type PostRequestBody, postRequestBodySchema } from './schema'
@@ -47,19 +41,13 @@ import { geolocation } from '@vercel/functions'
 import { ChatSDKError } from '@/lib/errors'
 import { createLogger } from '@fab33/sys-logger'
 
-const parentLogger = createLogger('api:chat:route');
+const parentLogger = createLogger('api:chat:route')
 
 export const maxDuration = 60
 
-/**
- * @description Преобразует массив сообщений из формата UI (`UIMessage[]`) в формат, понятный ядру AI (`CoreMessage[]`).
- * @important ЭТО КРИТИЧЕСКИ ВАЖНАЯ ФУНКЦИЯ. Не удаляйте этот JSDoc.
- * @see https://ai-sdk.dev/docs/ai-sdk-ui/use-chat
- * @see https://ai-sdk.dev/docs/ai-sdk-core/core-message
- */
 async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMessage[]> {
-  const logger = parentLogger.child({ function: 'transformToCoreMessages' });
-  logger.trace({ messagesCount: uiMessages.length }, 'Entering transformToCoreMessages');
+  const logger = parentLogger.child({ function: 'transformToCoreMessages' })
+  logger.trace({ messagesCount: uiMessages.length }, 'Entering transformToCoreMessages')
   const coreMessages: CoreMessage[] = []
 
   for (const uiMessage of uiMessages) {
@@ -67,7 +55,6 @@ async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMe
       case 'user': {
         const contentParts: (TextPart | ImagePart)[] = [{ type: 'text', text: uiMessage.content }]
         if (uiMessage.experimental_attachments) {
-          logger.debug('Processing attachments for user message');
           for (const attachment of uiMessage.experimental_attachments) {
             if (attachment.contentType?.startsWith('image')) {
               const response = await fetch(attachment.url)
@@ -85,51 +72,38 @@ async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMe
         const toolResultParts: ToolResultPart[] = []
 
         for (const part of uiMessage.parts ?? []) {
-          // @ts-ignore - 'type' is a common property, but TS struggles with the union
+          // @ts-ignore
           switch (part.type) {
             case 'text':
               assistantContentParts.push(part)
               break
             case 'tool-invocation': {
-              const { state, toolCallId, toolName, args } = part.toolInvocation
+              const { state, toolCallId, toolName, args, result } = part.toolInvocation
               if (state === 'call') {
-                logger.debug({ toolName, toolCallId }, 'Transforming tool-call part');
                 assistantContentParts.push({ type: 'tool-call', toolCallId, toolName, args })
               } else if (state === 'result') {
-                logger.debug({ toolName, toolCallId }, 'Transforming tool-result part');
-                toolResultParts.push({ type: 'tool-result', toolCallId, toolName, result: part.toolInvocation.result })
+                toolResultParts.push({ type: 'tool-result', toolCallId, toolName, result })
               }
               break
             }
           }
         }
 
-        if (assistantContentParts.length > 0) {
-          coreMessages.push({
-            role: 'assistant',
-            content: assistantContentParts,
-          })
-        }
-
-        if (toolResultParts.length > 0) {
-          coreMessages.push({
-            role: 'tool',
-            content: toolResultParts,
-          })
-        }
+        if (assistantContentParts.length > 0) coreMessages.push({ role: 'assistant', content: assistantContentParts })
+        if (toolResultParts.length > 0) coreMessages.push({ role: 'tool', content: toolResultParts })
         break
       }
 
       case 'system':
       case 'data':
+      case 'tool':
         coreMessages.push(uiMessage as CoreMessage)
         break
     }
   }
-  logger.trace({ coreMessagesCount: coreMessages.length }, 'Exiting transformToCoreMessages');
+  logger.trace({ coreMessagesCount: coreMessages.length }, 'Exiting transformToCoreMessages')
   return coreMessages
 }
-
 
 function getContextFromHistory (messages: PostRequestBody['messages']): ArtifactContext | undefined {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -140,12 +114,8 @@ function getContextFromHistory (messages: PostRequestBody['messages']): Artifact
         if (part.type === 'tool-invocation' && part.toolInvocation.state === 'result') {
           // @ts-ignore
           const { toolName, result } = part.toolInvocation
-          if (result?.id && ['createDocument', 'updateDocument', 'getDocument'].includes(toolName)) {
-            return {
-              id: result.id,
-              title: result.title,
-              kind: result.kind,
-            }
+          if (result?.artifactId && ['artifactCreate', 'artifactUpdate', 'artifactContent'].includes(toolName)) {
+            return { id: result.artifactId, title: result.artifactTitle, kind: result.artifactKind }
           }
         }
       }
@@ -154,15 +124,11 @@ function getContextFromHistory (messages: PostRequestBody['messages']): Artifact
   return undefined
 }
 
-
 export async function POST (request: Request) {
-  const logger = parentLogger.child({ requestId: generateUUID(), method: 'POST' });
-  logger.trace('Entering POST /api/chat');
+  const logger = parentLogger.child({ requestId: generateUUID(), method: 'POST' })
+  logger.trace('Entering POST /api/chat')
   try {
     const requestBody = postRequestBodySchema.parse(await request.json())
-    logger.debug({ requestBody: { ...requestBody, messages: `[${requestBody.messages.length} messages]` } }, 'Request body parsed');
-
-
     const {
       id: chatId,
       messages,
@@ -171,65 +137,49 @@ export async function POST (request: Request) {
       activeArtifactId,
       activeArtifactTitle,
       activeArtifactKind
-    } = requestBody;
-
-    const session = await auth();
+    } = requestBody
+    const session = await auth()
     if (!session?.user) {
-      logger.warn('Unauthorized chat request');
-      return new ChatSDKError('unauthorized:chat').toResponse();
+      return new ChatSDKError('unauthorized:chat').toResponse()
     }
-
-    const childLogger = logger.child({ chatId, userId: session.user.id });
-
-    const userType: UserType = session.user.type;
-    const latestMessage = messages.at(-1);
-
+    const childLogger = logger.child({ chatId, userId: session.user.id })
+    const latestMessage = messages.at(-1)
     if (!latestMessage) {
-      throw new ChatSDKError('bad_request:api', 'No message found in request.');
+      throw new ChatSDKError('bad_request:api', 'No message found in request.')
+    }
+    const messageCount = await getMessageCountByUserId({ id: session.user.id, differenceInHours: 24 })
+    if (messageCount > entitlementsByUserType[session.user.type as UserType].maxMessagesPerDay) {
+      throw new ChatSDKError('rate_limit:chat')
     }
 
-    const messageCount = await getMessageCountByUserId({ id: session.user.id, differenceInHours: 24 });
-    childLogger.debug({ messageCount }, 'User message count retrieved');
-
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      throw new ChatSDKError('rate_limit:chat');
-    }
-
-    const chat = await getChatById({ id: chatId });
-
+    const chat = await getChatById({ id: chatId })
     if (!chat) {
-      childLogger.info('Chat not found, creating a new one.');
-      const title = await generateTitleFromUserMessage({ message: latestMessage as UIMessage });
-      await saveChat({ id: chatId, userId: session.user.id, title, visibility: selectedVisibilityType });
-    } else {
-      if (chat.userId !== session.user.id) {
-        childLogger.warn('Attempt to access forbidden chat');
-        throw new ChatSDKError('forbidden:chat');
-      }
+      const title = await generateTitleFromUserMessage({ message: latestMessage as UIMessage })
+      await saveChat({ id: chatId, userId: session.user.id, title, visibility: selectedVisibilityType })
+    } else if (chat.userId !== session.user.id) {
+      throw new ChatSDKError('forbidden:chat')
     }
 
-    const { longitude, latitude, city, country } = geolocation(request);
-    const requestHints: RequestHints = { longitude, latitude, city, country };
-    childLogger.debug({ requestHints }, 'Geolocation hints');
+    const { longitude, latitude, city, country } = geolocation(request)
+    const requestHints: RequestHints = { longitude, latitude, city, country }
+    const artifactContext = activeArtifactId && activeArtifactTitle && activeArtifactKind
+      ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
+      : getContextFromHistory(messages)
 
-    const artifactContext: ArtifactContext | undefined =
-      activeArtifactId && activeArtifactTitle && activeArtifactKind
-        ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
-        : getContextFromHistory(messages);
-    childLogger.debug({ artifactContext }, 'Artifact context determined');
+    await saveMessages({
+      messages: [{
+        chatId,
+        id: latestMessage.id,
+        role: 'user',
+        parts: latestMessage.parts ?? [{ type: 'text', text: latestMessage.content }],
+        attachments: latestMessage.experimental_attachments ?? [],
+        createdAt: new Date(),
+      }]
+    })
 
-    await saveMessages({ messages: [{
-      chatId: chatId,
-      id: latestMessage.id,
-      role: 'user',
-      parts: latestMessage.parts ?? [{ type: 'text', text: latestMessage.content }],
-      attachments: latestMessage.experimental_attachments ?? [],
-      createdAt: new Date(),
-    }]});
+    const coreMessagesForModel = await transformToCoreMessages(messages as UIMessage[])
 
-    const coreMessagesForModel = await transformToCoreMessages(messages as UIMessage[]);
-
-    childLogger.info('Starting text stream with AI model');
+    childLogger.info('Starting text stream with AI model')
     const result = await streamText({
       model: myProvider.languageModel(selectedChatModel),
       system: systemPrompt({ selectedChatModel, requestHints, artifactContext }),
@@ -237,74 +187,54 @@ export async function POST (request: Request) {
       maxSteps: 6,
       tools: {
         getWeather,
-        getDocument,
-        createDocument: createDocument({ session }),
-        updateDocument: updateDocument({ session }),
-        requestSuggestions: requestSuggestions({ session }),
+        artifactContent,
+        artifactCreate: artifactCreate({ session }),
+        artifactUpdate: artifactUpdate({ session }),
+        artifactEnhance: artifactEnhance({ session }),
+        artifactDelete: artifactDelete({ session }),
+        artifactRestore: artifactRestore({ session }),
       },
       onFinish: async ({ response }) => {
-        childLogger.info('Text stream finished, saving assistant response');
-        if (session.user?.id) {
-          try {
-            const [, assistantMessage] = appendResponseMessages({ messages: [latestMessage as Message], responseMessages: response.messages });
-            const assistantId = generateUUID();
-            await saveMessages({
-              messages: [{
-                id: assistantId,
-                chatId: chatId,
-                role: assistantMessage.role,
-                parts: assistantMessage.parts,
-                attachments: assistantMessage.experimental_attachments ?? [],
-                createdAt: new Date(),
-              }]
-            });
-          } catch (error) {
-            childLogger.error({ err: error as Error }, 'Failed to save assistant chat message');
-          }
-        }
+        childLogger.info('Text stream finished, saving assistant response')
+        const [, assistantMessage] = appendResponseMessages({
+          messages: [latestMessage as Message],
+          responseMessages: response.messages
+        })
+        await saveMessages({
+          messages: [{
+            id: generateUUID(), chatId, role: assistantMessage.role, parts: assistantMessage.parts,
+            attachments: assistantMessage.experimental_attachments ?? [], createdAt: new Date(),
+          }]
+        })
       },
-    });
+    })
 
-    return result.toDataStreamResponse();
+    return result.toAIStreamResponse()
 
   } catch (error) {
-    logger.error({ err: error as Error }, 'Failed to process chat POST request');
-    if (error instanceof ChatSDKError) {
-      return error.toResponse();
-    }
-    return new ChatSDKError('bad_request:api', 'Failed to process request.').toResponse();
+    logger.error({ err: error as Error }, 'Failed to process chat POST request')
+    if (error instanceof ChatSDKError) return error.toResponse()
+    return new ChatSDKError('bad_request:api', 'Failed to process request.').toResponse()
   }
 }
 
-
 export async function DELETE (request: Request) {
-  const logger = parentLogger.child({ method: 'DELETE' });
-  logger.trace('Entering DELETE /api/chat');
+  const logger = parentLogger.child({ method: 'DELETE' })
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
 
-  if (!id) {
-    return new ChatSDKError('bad_request:api').toResponse()
-  }
+  if (!id) return new ChatSDKError('bad_request:api').toResponse()
 
-  const childLogger = logger.child({ chatId: id });
   const session = await auth()
-
-  if (!session?.user) {
-    childLogger.warn('Unauthorized attempt to delete chat');
-    return new ChatSDKError('unauthorized:chat').toResponse()
-  }
+  if (!session?.user) return new ChatSDKError('unauthorized:chat').toResponse()
 
   const chat = await getChatById({ id })
-
-  if (chat.userId !== session.user.id) {
-    childLogger.warn('Forbidden attempt to delete chat');
+  if (!chat || chat.userId !== session.user.id) {
     return new ChatSDKError('forbidden:chat').toResponse()
   }
 
-  const deletedChat = await deleteChatById({ id })
-
-  childLogger.info('Chat deleted successfully');
+  const deletedChat = await deleteChatSoftById({ id, userId: session.user.id })
+  logger.info('Chat soft-deleted successfully')
   return Response.json(deletedChat, { status: 200 })
 }
 

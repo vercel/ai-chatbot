@@ -1,18 +1,14 @@
 /**
- * @file app/api/content/route.ts
- * @description API маршрут для получения контента пользователя с пагинацией и поиском.
+ * @file app/api/artifacts/route.ts
+ * @description API маршрут для получения артефактов пользователя с пагинацией и поиском.
  * @version 1.0.0
- * @date 2025-06-06
- * @updated Начальная версия маршрута.
- */
-
-/** HISTORY:
- * v1.0.0 (2025-06-06): Начальная версия маршрута для получения списка контента.
+ * @date 2025-06-09
+ * @updated Переименован из content, адаптирован под новую схему.
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/(auth)/auth'
-import { getPagedContentByUserId } from '@/lib/db/queries'
+import { getPagedArtifactsByUserId } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
 import type { ArtifactKind } from '@/components/artifact'
 
@@ -43,7 +39,7 @@ export async function GET (request: NextRequest) {
 
     const queryParams = { userId: session.user.id, page, pageSize, searchQuery, kind }
 
-    const result = await getPagedContentByUserId(queryParams)
+    const result = await getPagedArtifactsByUserId(queryParams)
 
     return NextResponse.json(result)
 
@@ -51,9 +47,9 @@ export async function GET (request: NextRequest) {
     if (error instanceof ChatSDKError) {
       return error.toResponse()
     }
-    console.error('SYS_API_CONTENT_LIST: Unexpected error', error)
-    return new ChatSDKError('bad_request:api', 'An unexpected error occurred while fetching content.').toResponse()
+    console.error('SYS_API_ARTIFACTS_LIST: Unexpected error', error)
+    return new ChatSDKError('bad_request:api', 'An unexpected error occurred while fetching artifacts.').toResponse()
   }
 }
 
-// END OF: app/api/content/route.ts
+// END OF: app/api/artifacts/route.ts

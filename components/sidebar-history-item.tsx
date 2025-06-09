@@ -1,15 +1,14 @@
 /**
  * @file components/sidebar-history-item.tsx
- * @description Элемент истории чата в сайдбаре.
- * @version 1.1.0
- * @date 2025-06-06
- * @updated Добавлена логика показа уведомления о загрузке при клике.
+ * @description Элемент истории чата в сайдбаре с меню действий.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Добавлено меню действий "Переименовать" и обновлена логика "Удалить".
  */
 
 /** HISTORY:
- * v1.1.0 (2025-06-06): При клике теперь показывается toast-уведомление о загрузке чата.
- * v1.0.1 (2025-06-06): Исправлена передача `className` иконкам.
- * v1.0.0 (2025-06-06): Начальная версия, адаптированная под новый упрощенный компонент сайдбара.
+ * v2.0.0 (2025-06-09): Добавлено меню с переименованием, удаление теперь мягкое.
+ * v1.1.0 (2025-06-06): Добавлена логика показа уведомления о загрузке при клике.
  */
 
 import type { Chat } from '@/lib/db/schema'
@@ -26,7 +25,15 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-import { CheckCircleFillIcon, GlobeIcon, LockIcon, MoreHorizontalIcon, ShareIcon, TrashIcon, } from './icons'
+import {
+  CheckCircleFillIcon,
+  GlobeIcon,
+  LockIcon,
+  MoreHorizontalIcon,
+  PencilEditIcon,
+  ShareIcon,
+  TrashIcon,
+} from './icons'
 import { memo } from 'react'
 import { useChatVisibility } from '@/hooks/use-chat-visibility'
 import { Button } from './ui/button'
@@ -38,11 +45,13 @@ const PureChatItem = ({
   chat,
   isActive,
   onDelete,
+  onRename,
   setOpenMobile,
 }: {
   chat: Chat;
   isActive: boolean;
   onDelete: (chatId: string) => void;
+  onRename: (chatId: string, currentTitle: string) => void;
   setOpenMobile: (open: boolean) => void;
 }) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
@@ -87,9 +96,16 @@ const PureChatItem = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent side="bottom" align="end">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onSelect={() => onRename(chat.id, chat.title)}
+          >
+            <PencilEditIcon className="mr-2 size-4"/>
+            <span>Переименовать</span>
+          </DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-              <ShareIcon/>
+              <ShareIcon className="mr-2 size-4"/>
               <span>Share</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
@@ -128,8 +144,8 @@ const PureChatItem = ({
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
             onSelect={() => onDelete(chat.id)}
           >
-            <TrashIcon/>
-            <span>Delete</span>
+            <TrashIcon className="mr-2 size-4"/>
+            <span>В корзину</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -139,6 +155,7 @@ const PureChatItem = ({
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) return false
+  if (prevProps.chat.title !== nextProps.chat.title) return false
   return true
 })
 

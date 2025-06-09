@@ -1,16 +1,10 @@
 /**
- * @file components/content-grid-client-wrapper.tsx
- * @description Клиентский компонент-обертка для сетки контента, управляющий состоянием и загрузкой данных.
- * @version 1.0.1
- * @date 2025-06-06
- * @updated Исправлены стили Tailwind и проблема с key в цикле.
+ * @file components/artifact-grid-client-wrapper.tsx
+ * @description Клиентский компонент-обертка для сетки артефактов.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Адаптирован под новую архитектуру Artifact.
  */
-
-/** HISTORY:
- * v1.0.1 (2025-06-06): Исправлены стили Tailwind и проблема с key в цикле.
- * v1.0.0 (2025-06-06): Начальная версия компонента.
- */
-
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
@@ -19,30 +13,28 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PlusIcon } from '@/components/icons'
-import { type ContentDocument, ContentGridDisplay } from './content-grid-display'
+import { type ArtifactDocument, ArtifactGridDisplay } from './artifact-grid-display'
 import { useDebounceCallback } from 'usehooks-ts'
 import { toast } from '@/components/toast'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useArtifact } from '@/hooks/use-artifact'
 import type { ArtifactKind } from './artifact'
 import { fetcher } from '@/lib/utils'
-import { useChat } from '@ai-sdk/react'
 
 const PAGE_SIZE = 12
 const skeletonKeys = Array.from({ length: PAGE_SIZE }, (_, i) => `sk-item-${i}`)
 
-interface ContentApiResponse {
-  data: ContentDocument[];
+interface ArtifactApiResponse {
+  data: ArtifactDocument[];
   totalCount: number;
 }
 
-export function ContentGridClientWrapper ({ userId, openDocId }: { userId: string; openDocId?: string }) {
+export function ArtifactGridClientWrapper ({ userId, openArtifactId }: { userId: string; openArtifactId?: string }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const { setArtifact } = useArtifact()
-  const { setMessages } = useChat() // Для добавления артефакта в чат
 
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1)
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
@@ -72,8 +64,8 @@ export function ContentGridClientWrapper ({ userId, openDocId }: { userId: strin
     router.push(`${pathname}${finalQuery}`, { scroll: false })
   }, [currentPage, searchTerm, router, pathname, createQueryString])
 
-  const { data, error, isLoading, mutate } = useSWR<ContentApiResponse>(
-    `/api/content?page=${currentPage}&pageSize=${PAGE_SIZE}&searchQuery=${encodeURIComponent(searchTerm)}`,
+  const { data, error, isLoading, mutate } = useSWR<ArtifactApiResponse>(
+    `/api/artifacts?page=${currentPage}&pageSize=${PAGE_SIZE}&searchQuery=${encodeURIComponent(searchTerm)}`,
     fetcher,
     {
       keepPreviousData: true,
@@ -81,11 +73,11 @@ export function ContentGridClientWrapper ({ userId, openDocId }: { userId: strin
     },
   )
 
-  const handleCardClick = (doc: ContentDocument) => {
+  const handleCardClick = (doc: ArtifactDocument) => {
     if (doc.kind) {
       toast({ type: 'loading', description: `Открываю "${doc.title}"...` })
       setArtifact({
-        documentId: doc.id,
+        artifactId: doc.id,
         title: doc.title,
         kind: doc.kind as ArtifactKind,
         content: doc.content || '',
@@ -96,21 +88,20 @@ export function ContentGridClientWrapper ({ userId, openDocId }: { userId: strin
         boundingBox: { top: 0, left: 0, width: 0, height: 0 },
       })
     } else {
-      toast({ type: 'error', description: 'Не удалось определить тип документа.' })
+      toast({ type: 'error', description: 'Не удалось определить тип артефакта.' })
     }
   }
 
   useEffect(() => {
-    if (openDocId && data?.data) {
-      const docToOpen = data.data.find(doc => doc.id === openDocId)
+    if (openArtifactId && data?.data) {
+      const docToOpen = data.data.find(doc => doc.id === openArtifactId)
       if (docToOpen) {
         handleCardClick(docToOpen)
-        const newQuery = createQueryString({ openDocId: undefined })
+        const newQuery = createQueryString({ openArtifactId: undefined })
         router.replace(`${pathname}?${newQuery}`, { scroll: false })
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openDocId, data])
+  }, [openArtifactId, data, createQueryString, pathname, router])
 
   const totalPages = data ? Math.ceil(data.totalCount / PAGE_SIZE) : 0
 
@@ -121,7 +112,7 @@ export function ContentGridClientWrapper ({ userId, openDocId }: { userId: strin
   }
 
   if (error) {
-    return <div className="text-destructive">Ошибка загрузки контента: {error.message}</div>
+    return <div className="text-destructive">Ошибка загрузки артефактов: {error.message}</div>
   }
 
   return (
@@ -141,8 +132,8 @@ export function ContentGridClientWrapper ({ userId, openDocId }: { userId: strin
       {isLoading && !data ? (
         <GridSkeletonPreview/>
       ) : (
-        <ContentGridDisplay
-          documents={data?.data || []}
+        <ArtifactGridDisplay
+          artifacts={data?.data || []}
           isLoading={isLoading}
           page={currentPage}
           totalCount={data?.totalCount || 0}
@@ -150,7 +141,6 @@ export function ContentGridClientWrapper ({ userId, openDocId }: { userId: strin
           onPageChange={handlePageChange}
           onRefresh={mutate}
           onCardClick={handleCardClick}
-          setMessages={setMessages}
         />
       )}
     </div>
@@ -179,4 +169,4 @@ function GridSkeletonPreview () {
   )
 }
 
-// END OF: components/content-grid-client-wrapper.tsx
+// END OF: components/artifact-grid-client-wrapper.tsx

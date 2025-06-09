@@ -1,49 +1,36 @@
 /**
  * @file lib/artifacts/factory.ts
- * @description Фабричная функция для создания обработчиков документов (артефактов).
- * @version 1.4.0
+ * @description Фабричная функция для создания обработчиков артефактов.
+ * @version 1.5.0
  * @date 2025-06-09
- * @updated Сигнатуры обработчиков изменены. Теперь они возвращают Promise<string> и не принимают dataStream, следуя паттерну "черного ящика".
+ * @updated Переход на `saveArtifact` и тип `Artifact`.
  */
 
 /** HISTORY:
+ * v1.5.0 (2025-06-09): Переход на `saveArtifact` и тип `Artifact`.
  * v1.4.0 (2025-06-09): Обработчики теперь возвращают Promise<string> и не принимают dataStream.
- * v1.3.0 (2025-06-09): Фабрика `createDocumentHandler` вынесена для устранения циклической зависимости.
  */
 
 import type { Session } from 'next-auth'
 import { createLogger } from '@fab33/sys-logger'
 
 import type { ArtifactKind } from '@/components/artifact'
-import { saveDocument } from '../db/queries'
-import type { Document } from '../db/schema'
+import { saveArtifact } from '../db/queries'
+import type { Artifact } from '../db/schema'
 
-/**
- * @description Определяет параметры для колбека создания документа.
- * В рамках архитектуры "черного ящика", этот колбек не имеет прямого доступа к стриму.
- * Его задача - сгенерировать контент и вернуть его.
- * @see https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling
- */
 export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
   session: Session;
+  prompt: string;
 }
 
-/**
- * @description Определяет параметры для колбека обновления документа.
- */
 export interface UpdateDocumentCallbackProps {
-  document: Document;
+  document: Artifact; // Используем новый тип
   description: string;
   session: Session;
 }
 
-/**
- * @description Обработчик документа. Отвечает за логику создания и обновления контента для конкретного типа артефакта.
- * @method onCreateDocument - Асинхронно генерирует и возвращает контент нового документа.
- * @method onUpdateDocument - Асинхронно генерирует и возвращает обновленный контент существующего документа.
- */
 export interface DocumentHandler<T = ArtifactKind> {
   kind: T;
   onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<string>;
@@ -64,11 +51,11 @@ export function createDocumentHandler<T extends ArtifactKind> (config: {
       const childLogger = handlerLogger.child({ documentId: args.id, function: 'onCreateDocument' })
       childLogger.trace({ title: args.title }, 'Entering handler')
 
-      const draftContent = await config.onCreateDocument(args);
+      const draftContent = await config.onCreateDocument(args)
 
       if (args.session?.user?.id) {
-        childLogger.info('Saving newly created document')
-        await saveDocument({
+        childLogger.info('Saving newly created artifact')
+        await saveArtifact({ // Используем новую функцию
           id: args.id,
           title: args.title,
           content: draftContent,
@@ -78,17 +65,17 @@ export function createDocumentHandler<T extends ArtifactKind> (config: {
         })
       }
       childLogger.trace('Exiting handler')
-      return draftContent;
+      return draftContent
     },
     onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
       const childLogger = handlerLogger.child({ documentId: args.document.id, function: 'onUpdateDocument' })
       childLogger.trace({ description: args.description }, 'Entering handler')
 
-      const draftContent = await config.onUpdateDocument(args);
+      const draftContent = await config.onUpdateDocument(args)
 
       if (args.session?.user?.id) {
-        childLogger.info('Saving updated document')
-        await saveDocument({
+        childLogger.info('Saving updated artifact')
+        await saveArtifact({ // Используем новую функцию для создания новой версии
           id: args.document.id,
           title: args.document.title,
           content: draftContent,
@@ -98,7 +85,7 @@ export function createDocumentHandler<T extends ArtifactKind> (config: {
         })
       }
       childLogger.trace('Exiting handler')
-      return draftContent;
+      return draftContent
     },
   }
 }

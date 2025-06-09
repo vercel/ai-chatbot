@@ -1,17 +1,14 @@
 /**
  * @file app/(main)/chat/actions.ts
  * @description Server Actions для управления чатом и сообщениями.
- * @version 1.3.0
- * @date 2025-06-06
- * @updated Экшен `deleteMessage` теперь возвращает статус успеха для корректного обновления UI.
+ * @version 1.4.0
+ * @date 2025-06-09
+ * @updated Исправлены импорты из `lib/db/queries` после рефакторинга.
  */
 
 /** HISTORY:
+ * v1.4.0 (2025-06-09): Исправлены импорты на новые функции.
  * v1.3.0 (2025-06-06): `deleteMessage` теперь возвращает `{ success: boolean }`.
- * v1.2.1 (2025-06-06): Исправлена ошибка деструктуризации, обновлен импорт типа.
- * v1.2.0 (2025-06-06): Добавлены новые серверные экшены для управления сообщениями.
- * v1.1.0 (2025-06-06): Переименован файл и обновлен путь импорта.
- * v1.0.0 (2025-05-25): Начальная версия.
  */
 
 'use server'
@@ -102,9 +99,6 @@ export async function deleteMessage ({ messageId }: { messageId: string }): Prom
     if (!message) {
       return { success: false, error: 'Сообщение не найдено.' }
     }
-
-    // Здесь можно добавить проверку, что сообщение принадлежит пользователю
-    // (через chat.userId), но для простоты опустим.
 
     await deleteMessageById({ messageId })
     revalidatePath(`/chat/${message.chatId}`)

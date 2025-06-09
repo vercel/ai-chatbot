@@ -1,68 +1,73 @@
 #!/bin/bash
+#
+# @file refactor_structure.sh
+# @description Скрипт для полного рефакторинга файловой структуры и нейминга с "Content/Document" на "Artifact".
+# @version 1.0.0
+# @date 2025-06-09
+#
 
-# Скрипт для рефакторинга структуры папок в Next.js проекте.
-# Переносит страницы чата и заметок под общий layout в группе (main).
-
-# Останавливаем выполнение при любой ошибке, чтобы избежать частичного рефакторинга
 set -e
+
+echo "🚀 Запуск комплексного рефакторинга структуры проекта..."
+
+# --- Функция для вывода сообщений ---
+log_action() {
+  echo "  -> $1"
+}
 
 # --- Переменные ---
 APP_DIR="app"
-MAIN_LAYOUT_GROUP_DIR="$APP_DIR/(main)"
-CHAT_SOURCE_DIR="$APP_DIR/(chat)"
-NOTES_SOURCE_DIR="$APP_DIR/(notes)"
+COMPONENTS_DIR="components"
+AI_TOOLS_DIR="lib/ai/tools"
+MAIN_GROUP_DIR="$APP_DIR/(main)"
+API_DIR="$APP_DIR/api"
 
-echo "🚀 Начинаем рефакторинг структуры файлов для создания общей группы макета..."
-
-# 1. Создаем новую директорию для группы (main), если она не существует
-if [ ! -d "$MAIN_LAYOUT_GROUP_DIR" ]; then
-  mkdir -p "$MAIN_LAYOUT_GROUP_DIR"
-  echo "✅ Создана директория: $MAIN_LAYOUT_GROUP_DIR"
-else
-  echo "☑️  Директория $MAIN_LAYOUT_GROUP_DIR уже существует, пропускаем создание."
+# --- Шаг 1: Переименование директорий ---
+log_action "1. Переименование директорий..."
+if [ -d "$MAIN_GROUP_DIR/content" ]; then
+  mv "$MAIN_GROUP_DIR/content" "$MAIN_GROUP_DIR/artifacts"
+  echo "     ✅ Директория $MAIN_GROUP_DIR/content -> $MAIN_GROUP_DIR/artifacts"
+fi
+if [ -d "$API_DIR/content" ]; then
+  mv "$API_DIR/content" "$API_DIR/artifacts"
+  echo "     ✅ Директория $API_DIR/content -> $API_DIR/artifacts"
+fi
+if [ -d "$API_DIR/document" ]; then
+  mv "$API_DIR/document" "$API_DIR/artifact"
+  echo "     ✅ Директория $API_DIR/document -> $API_DIR/artifact"
 fi
 
-# 2. Перемещаем основной layout из (chat) в (main)
-if [ -f "$CHAT_SOURCE_DIR/layout.tsx" ]; then
-  mv "$CHAT_SOURCE_DIR/layout.tsx" "$MAIN_LAYOUT_GROUP_DIR/layout.tsx"
-  echo "✅ Перемещен layout: $CHAT_SOURCE_DIR/layout.tsx -> $MAIN_LAYOUT_GROUP_DIR/layout.tsx"
-else
-  echo "⚠️ Файл $CHAT_SOURCE_DIR/layout.tsx не найден, пропускаем."
-fi
+# --- Шаг 2: Переименование файлов компонентов и действий ---
+log_action "2. Переименование файлов..."
+# Компоненты
+mv "$COMPONENTS_DIR/multimodal-input.tsx" "$COMPONENTS_DIR/chat-input.tsx" 2>/dev/null || echo "     ⚠️ Не найден multimodal-input.tsx"
+mv "$COMPONENTS_DIR/document-preview.tsx" "$COMPONENTS_DIR/artifact-preview.tsx" 2>/dev/null || echo "     ⚠️ Не найден document-preview.tsx"
+mv "$COMPONENTS_DIR/content-card.tsx" "$COMPONENTS_DIR/artifact-card.tsx" 2>/dev/null || echo "     ⚠️ Не найден content-card.tsx"
+mv "$COMPONENTS_DIR/content-grid-client-wrapper.tsx" "$COMPONENTS_DIR/artifact-grid-client-wrapper.tsx" 2>/dev/null || echo "     ⚠️ Не найден content-grid-client-wrapper.tsx"
+mv "$COMPONENTS_DIR/content-grid-display.tsx" "$COMPONENTS_DIR/artifact-grid-display.tsx" 2>/dev/null || echo "     ⚠️ Не найден content-grid-display.tsx"
+echo "     ✅ Файлы компонентов переименованы."
 
-# 3. Перемещаем страницы чата
-# Перемещаем корневую страницу чата
-if [ -f "$CHAT_SOURCE_DIR/page.tsx" ]; then
-  mv "$CHAT_SOURCE_DIR/page.tsx" "$MAIN_LAYOUT_GROUP_DIR/page.tsx"
-  echo "✅ Перемещена корневая страница чата: $CHAT_SOURCE_DIR/page.tsx -> $MAIN_LAYOUT_GROUP_DIR/page.tsx"
-else
-  echo "⚠️ Файл $CHAT_SOURCE_DIR/page.tsx не найден, пропускаем."
-fi
+# --- Шаг 3: Удаление устаревших файлов ---
+log_action "3. Удаление устаревших файлов..."
+rm -f "$COMPONENTS_DIR/data-stream-handler.tsx"
+rm -f "$COMPONENTS_DIR/artifact-messages.tsx"
+rm -f "$AI_TOOLS_DIR/create-document.ts"
+rm -f "$AI_TOOLS_DIR/update-document.ts"
+rm -f "$AI_TOOLS_DIR/get-document.ts"
+rm -f "$AI_TOOLS_DIR/request-suggestions.ts"
+echo "     ✅ Устаревшие файлы удалены."
 
-# Перемещаем директорию с динамическими страницами чата
-if [ -d "$CHAT_SOURCE_DIR/chat" ]; then
-  mv "$CHAT_SOURCE_DIR/chat" "$MAIN_LAYOUT_GROUP_DIR/chat"
-  echo "✅ Перемещена директория чатов: $CHAT_SOURCE_DIR/chat -> $MAIN_LAYOUT_GROUP_DIR/chat"
-else
-  echo "⚠️ Директория $CHAT_SOURCE_DIR/chat не найдена, пропускаем."
-fi
+# --- Шаг 4: Создание заглушек для новых инструментов ---
+log_action "4. Создание заглушек для новых AI инструментов..."
+touch "$AI_TOOLS_DIR/artifactCreate.ts"
+touch "$AI_TOOLS_DIR/artifactUpdate.ts"
+touch "$AI_TOOLS_DIR/artifactEnhance.ts"
+touch "$AI_TOOLS_DIR/artifactContent.ts"
+touch "$AI_TOOLS_DIR/artifactDelete.ts"
+touch "$AI_TOOLS_DIR/artifactRestore.ts"
+echo "     ✅ Файлы-заглушки для инструментов созданы."
 
-# 4. Перемещаем страницы заметок
-if [ -d "$NOTES_SOURCE_DIR/notes" ]; then
-  mv "$NOTES_SOURCE_DIR/notes" "$MAIN_LAYOUT_GROUP_DIR/notes"
-  echo "✅ Перемещена директория заметок: $NOTES_SOURCE_DIR/notes -> $MAIN_LAYOUT_GROUP_DIR/notes"
-else
-  echo "⚠️ Директория $NOTES_SOURCE_DIR/notes не найдена, пропускаем."
-fi
 
-# 5. Информация по очистке
-echo " "
-echo "ℹ️  Примечание по очистке:"
-echo "Старые директории $CHAT_SOURCE_DIR и $NOTES_SOURCE_DIR не были удалены полностью, "
-echo "так как они могут содержать важные API-маршруты. "
-echo "Скрипт переместил только UI-компоненты (страницы и layout)."
-echo "Вы можете вручную удалить оставшиеся пустые директории, если уверены, что они не нужны."
-echo " "
-
-echo "🎉 Рефакторинг успешно завершен!"
-echo "Пожалуйста, проверьте изменения с помощью 'git status' и закоммитьте их."
+echo "🎉 Рефакторинг файловой структуры завершен!"
+echo "➡️  Дайте команду 'chmod +x refactor_structure.sh' и затем './refactor_structure.sh' для применения изменений."
+echo "➡️  После этого я сгенерирую новое содержимое для всех измененных и созданных файлов."

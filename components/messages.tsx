@@ -1,9 +1,14 @@
 /**
  * @file components/messages.tsx
  * @description Компонент для отображения списка сообщений в чате.
- * @version 1.2.0
- * @date 2025-06-06
- * @updated Удален импорт и проп `Vote`. Исправлен импорт из './message'.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Сделан универсальным, удалена зависимость от artifact-messages.
+ */
+
+/** HISTORY:
+ * v2.0.0 (2025-06-09): Сделан универсальным компонентом для отображения сообщений.
+ * v1.2.0 (2025-06-06): Удален импорт и проп `Vote`.
  */
 import type { UIMessage } from 'ai'
 import { PreviewMessage, ThinkingMessage } from './message'
@@ -17,7 +22,6 @@ import { useMessages } from '@/hooks/use-messages'
 interface MessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
-  votes: undefined; // Removed
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
@@ -57,7 +61,7 @@ function PureMessages ({
           chatId={chatId}
           message={message}
           isLoading={status === 'streaming' && messages.length - 1 === index}
-          vote={undefined} // Removed
+          vote={undefined}
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
@@ -85,14 +89,6 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.status !== nextProps.status) return false
   if (prevProps.messages.length !== nextProps.messages.length) return false
   if (!equal(prevProps.messages, nextProps.messages)) return false
-
-  // Votes are removed, so no need to compare them.
-  // if (!equal(prevProps.votes, nextProps.votes)) return false;
-
-  // This condition was blocking updates when the artifact panel was open.
-  // It should be safe to remove as other checks handle memoization correctly.
-  // if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
-
   return true
 })
 

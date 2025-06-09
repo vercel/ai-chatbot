@@ -1,15 +1,14 @@
 /**
  * @file artifacts/code/server.ts
  * @description Серверный обработчик для артефактов типа "код".
- * @version 1.3.0
+ * @version 1.4.0
  * @date 2025-06-09
- * @updated Рефакторинг. Обработчик теперь возвращает сгенерированный код, а не пишет в стрим.
+ * @updated Исправлена ошибка отсутствия `await` при работе с `streamObject`.
  */
 
 /** HISTORY:
- * v1.3.0 (2025-06-09): Обработчик теперь возвращает контент.
- * v1.2.0 (2025-06-09): Добавлена проверка на `dataStream`.
- * v1.1.0 (2025-06-09): Обновлен импорт `createDocumentHandler`.
+ * v1.4.0 (2025-06-09): Добавлен `await` для `streamObject`.
+ * v1.3.0 (2025-06-09): Обработчик теперь возвращает сгенерированный код, а не пишет в стрим.
  */
 
 import { z } from 'zod'
@@ -20,11 +19,11 @@ import { createDocumentHandler } from '@/lib/artifacts/factory'
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
-  onCreateDocument: async ({ title }) => {
+  onCreateDocument: async ({ prompt }) => {
     const { object } = await streamObject({
       model: myProvider.languageModel('artifact-model'),
       system: codePrompt,
-      prompt: title,
+      prompt: prompt,
       schema: z.object({
         code: z.string(),
       }),

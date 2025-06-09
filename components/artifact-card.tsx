@@ -1,15 +1,14 @@
 /**
- * @file components/content-card.tsx
- * @description Компонент карточки для одного элемента контента.
- * @version 1.3.0
- * @date 2025-06-07
- * @updated Добавлено отображение поля `summary` на карточке.
+ * @file components/artifact-card.tsx
+ * @description Компонент карточки для одного артефакта.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Переименован, добавлены новые действия, адаптирован под новую архитектуру.
  */
 
 /** HISTORY:
- * v1.3.0 (2025-06-07): Добавлено отображение `summary`.
- * v1.2.0 (2025-06-06): `handleDiscuss` теперь использует API-маршрут `/api/chat/discuss-artifact`.
- * v1.1.0 (2025-06-06): Исправлена логика навигации в `handleDiscuss`.
+ * v2.0.0 (2025-06-09): Рефакторинг в ArtifactCard, добавлены новые действия.
+ * v1.3.0 (2025-06-07): Добавлено отображение поля `summary`.
  */
 'use client'
 
@@ -30,20 +29,21 @@ import {
   ImageIcon,
   MessageCircleReplyIcon,
   MoreHorizontalIcon,
+  PencilEditIcon,
   TrashIcon
 } from '@/components/icons'
-import { deleteContent } from '@/app/(main)/content/actions'
+import { deleteArtifact } from '@/app/(main)/artifacts/actions'
 import { toast } from '@/components/toast'
-import type { ContentDocument } from './content-grid-display'
-import type { UseChatHelpers } from 'ai/react'
+import type { Artifact as DBArtifact } from '@/lib/db/schema'
 import { useRouter } from 'next/navigation'
 import { Skeleton } from './ui/skeleton'
 
-interface ContentCardProps {
-  document: ContentDocument;
+export interface ArtifactDocument extends Pick<DBArtifact, 'id' | 'title' | 'createdAt' | 'content' | 'kind' | 'summary'> {}
+
+interface ArtifactCardProps {
+  artifact: ArtifactDocument;
   onRefresh: () => void;
-  onCardClick: (doc: ContentDocument) => void;
-  setMessages: UseChatHelpers['setMessages'];
+  onCardClick: (doc: ArtifactDocument) => void;
 }
 
 const kindIcons = {
@@ -53,19 +53,19 @@ const kindIcons = {
   sheet: BoxIcon,
 }
 
-export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardProps) {
+export function ArtifactCard ({ artifact, onRefresh, onCardClick }: ArtifactCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
-  const Icon = kindIcons[document.kind] || FileIcon
+  const Icon = kindIcons[artifact.kind] || FileIcon
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    const result = await deleteContent(document.id)
+    const result = await deleteArtifact(artifact.id)
     if (result.success) {
-      toast({ type: 'success', description: `"${document.title}" удален.` })
+      toast({ type: 'success', description: `Артефакт "${artifact.title}" перемещен в корзину.` })
       onRefresh()
     } else {
-      toast({ type: 'error', description: result.error || 'Не удалось удалить контент.' })
+      toast({ type: 'error', description: result.error || 'Не удалось удалить артефакт.' })
     }
     setIsDeleting(false)
   }
@@ -73,7 +73,12 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
   const handleDiscuss = (e: React.MouseEvent) => {
     e.stopPropagation()
     toast({ type: 'loading', description: 'Создание чата для обсуждения...' })
-    router.push(`/api/chat/discuss-artifact?artifactId=${document.id}`)
+    router.push(`/api/chat/discuss-artifact?artifactId=${artifact.id}`)
+  }
+
+  const handleRename = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    toast({ type: 'success', description: 'Функция переименования будет добавлена в будущем.' })
   }
 
   return (
@@ -81,12 +86,8 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
       role="button"
       tabIndex={0}
       className="group relative flex flex-col rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => onCardClick(document)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          onCardClick(document)
-        }
-      }}
+      onClick={() => onCardClick(artifact)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onCardClick(artifact) }}
     >
       <div className="p-4 grow flex flex-col justify-between">
         <div className="flex items-start justify-between">
@@ -95,34 +96,34 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="size-8 p-0 opacity-0 group-hover:opacity-100"
                       onClick={(e) => e.stopPropagation()}>
-                <span className="sr-only">Открыть меню</span>
                 <MoreHorizontalIcon className="size-4"/>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem onClick={handleRename}>
+                <PencilEditIcon className="mr-2 size-4"/>
+                Переименовать
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDiscuss}>
                 <MessageCircleReplyIcon className="mr-2 size-4"/>
                 Обсудить в чате
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleDelete()
-                }}
+                onClick={handleDelete}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 disabled={isDeleting}
               >
                 <TrashIcon className="mr-2 size-4"/>
-                {isDeleting ? 'Удаление...' : 'Удалить'}
+                {isDeleting ? 'Удаление...' : 'В корзину'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         <div className="flex flex-col gap-2">
-          <h3 className="text-base font-semibold leading-tight mb-1 truncate">{document.title}</h3>
+          <h3 className="text-base font-semibold leading-tight mb-1 truncate">{artifact.title}</h3>
 
-          {document.summary ? (
-            <p className="text-xs text-muted-foreground line-clamp-2">{document.summary}</p>
+          {artifact.summary ? (
+            <p className="text-xs text-muted-foreground line-clamp-2">{artifact.summary}</p>
           ) : (
             <div className="space-y-1">
               <Skeleton className="h-3 w-4/5"/>
@@ -131,7 +132,7 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
           )}
 
           <p className="text-xs text-muted-foreground pt-1">
-            {`Обновлено ${formatDistanceToNow(new Date(document.createdAt), { addSuffix: true, locale: ru })}`}
+            {`Обновлено ${formatDistanceToNow(new Date(artifact.createdAt), { addSuffix: true, locale: ru })}`}
           </p>
         </div>
       </div>
@@ -139,4 +140,4 @@ export function ContentCard ({ document, onRefresh, onCardClick }: ContentCardPr
   )
 }
 
-// END OF: components/content-card.tsx
+// END OF: components/artifact-card.tsx

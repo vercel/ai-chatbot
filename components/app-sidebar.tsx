@@ -1,15 +1,14 @@
 /**
  * @file components/app-sidebar.tsx
  * @description Компонент боковой панели приложения с навигацией.
- * @version 1.8.0
- * @date 2025-06-06
- * @updated Восстановлена правильная HTML-структура (SidebarMenuItem внутри SidebarMenu) для устранения маркеров списка.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Рефакторинг. "Контент" переименован в "Артефакты", обновлены маршруты и API-вызовы.
  */
 
 /** HISTORY:
- * v1.8.0 (2025-06-06): Исправлена структура SidebarMenu/SidebarMenuItem для устранения бага с маркерами.
- * v1.7.0 (2025-06-06): Рефакторинг "Заметки" -> "Контент". Обновлены API-вызовы, ссылки и иконка.
- * v1.6.1 (2025-06-06): Исправлена передача `className` иконкам.
+ * v2.0.0 (2025-06-09): Рефакторинг "Контент" -> "Артефакты", обновлены маршруты и API.
+ * v1.8.0 (2025-06-06): Исправлена структура SidebarMenu/SidebarMenuItem.
  */
 
 'use client'
@@ -30,7 +29,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { useLocalStorage } from 'usehooks-ts'
-import type { Document as DBDocument } from '@/lib/db/schema'
+import type { Artifact as DBArtifact } from '@/lib/db/schema'
 import useSWR from 'swr'
 import { fetcher } from '@/lib/utils'
 import { useArtifact } from '@/hooks/use-artifact'
@@ -38,13 +37,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from './toast'
 import type { ArtifactKind } from './artifact'
 
-interface SidebarContentItemProps {
-  document: Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>;
+interface SidebarArtifactItemProps {
+  artifact: Pick<DBArtifact, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>;
   isActive: boolean;
   onClick: () => void;
 }
 
-function SidebarContentItem ({ document: doc, isActive, onClick }: SidebarContentItemProps) {
+function SidebarArtifactItem ({ artifact: doc, isActive, onClick }: SidebarArtifactItemProps) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -74,38 +73,38 @@ export function AppSidebar ({ user }: { user: User | undefined }) {
     false,
     { initializeWithValue: false }
   )
-  const [isContentSectionCollapsed, setIsContentSectionCollapsed] = useLocalStorage(
-    'sidebar:isContentSectionCollapsed',
+  const [isArtifactsSectionCollapsed, setIsArtifactsSectionCollapsed] = useLocalStorage(
+    'sidebar:isArtifactsSectionCollapsed',
     true,
     { initializeWithValue: false }
   )
 
   const isChatActive = pathname.startsWith('/chat') || pathname === '/'
-  const isContentActive = pathname.startsWith('/content')
+  const isArtifactsActive = pathname.startsWith('/artifacts')
 
   const {
-    data: recentContent,
-    isLoading: isLoadingRecentContent,
-  } = useSWR<Array<Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>>>(
-    user ? `/api/content/recent?limit=5` : null,
+    data: recentArtifacts,
+    isLoading: isLoadingRecentArtifacts,
+  } = useSWR<Array<Pick<DBArtifact, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>>>(
+    user ? `/api/artifacts/recent?limit=5` : null,
     fetcher,
     { revalidateOnFocus: false }
   )
 
   const { setArtifact } = useArtifact()
   const artifactHook = useArtifact()
-  const activeDocumentId = artifactHook.artifact.isVisible ? artifactHook.artifact.documentId : null
+  const activeArtifactId = artifactHook.artifact.isVisible ? artifactHook.artifact.artifactId : null
 
-  const handleContentClick = (doc: Pick<DBDocument, 'id' | 'title' | 'kind' | 'content'>) => {
+  const handleArtifactClick = (doc: Pick<DBArtifact, 'id' | 'title' | 'kind' | 'content'>) => {
     if (!doc.kind) {
-      console.error('SYS_COMP_APP_SIDEBAR: Document kind is undefined, cannot open artifact.', doc)
-      toast({ type: 'error', description: 'Не удалось определить тип контента.' })
+      console.error('SYS_COMP_APP_SIDEBAR: Artifact kind is undefined, cannot open.', doc)
+      toast({ type: 'error', description: 'Не удалось определить тип артефакта.' })
       return
     }
     toast({ type: 'loading', description: `Открываю "${doc.title}"...` })
-    router.push(`/content?openDocId=${doc.id}`)
+    router.push(`/artifacts?openArtifactId=${doc.id}`)
     setArtifact({
-      documentId: doc.id,
+      artifactId: doc.id,
       title: doc.title,
       kind: doc.kind as ArtifactKind,
       content: doc.content || '',
@@ -164,62 +163,62 @@ export function AppSidebar ({ user }: { user: User | undefined }) {
                 <SidebarMenuButton
                   onClick={() => {
                     if (sidebarState === 'collapsed') {
-                      router.push('/content') // Обновленный маршрут
+                      router.push('/artifacts')
                     } else {
-                      setIsContentSectionCollapsed(!isContentSectionCollapsed)
+                      setIsArtifactsSectionCollapsed(!isArtifactsSectionCollapsed)
                     }
                     setOpenMobile(false)
                   }}
-                  isActive={isContentActive}
-                  tooltip={{ children: 'Контент', side: 'right' }}
+                  isActive={isArtifactsActive}
+                  tooltip={{ children: 'Артефакты', side: 'right' }}
                   className="justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <BoxIcon size={18}/> {/* Новая иконка */}
-                    {sidebarState === 'expanded' && <span>Контент</span>}
+                    <BoxIcon size={18}/>
+                    {sidebarState === 'expanded' && <span>Мои Артефакты</span>}
                   </div>
                   {sidebarState === 'expanded' && (
                     <ChevronDownIcon
                       size={16}
                       className={`transition-transform duration-200 ${
-                        isContentSectionCollapsed ? '-rotate-90' : 'rotate-0'
+                        isArtifactsSectionCollapsed ? '-rotate-90' : 'rotate-0'
                       }`}
                     />
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-            {!isContentSectionCollapsed && sidebarState === 'expanded' && (
+            {!isArtifactsSectionCollapsed && sidebarState === 'expanded' && (
               <SidebarMenu>
-                {isLoadingRecentContent && (
+                {isLoadingRecentArtifacts && (
                   <div className="flex flex-col gap-1 px-2">
                     <Skeleton className="h-7 w-4/5"/>
                     <Skeleton className="h-7 w-3/5"/>
                   </div>
                 )}
-                {!isLoadingRecentContent && recentContent?.map((doc) => (
-                  <SidebarContentItem
+                {!isLoadingRecentArtifacts && recentArtifacts?.map((doc) => (
+                  <SidebarArtifactItem
                     key={doc.id}
-                    document={doc}
-                    isActive={activeDocumentId === doc.id}
-                    onClick={() => handleContentClick(doc)}
+                    artifact={doc}
+                    isActive={activeArtifactId === doc.id}
+                    onClick={() => handleArtifactClick(doc)}
                   />
                 ))}
-                {!isLoadingRecentContent && (!recentContent || recentContent.length === 0) && (
-                  <div className="px-2 py-1 text-xs text-sidebar-foreground/70 text-center">Нет недавнего
-                    контента.</div>
+                {!isLoadingRecentArtifacts && (!recentArtifacts || recentArtifacts.length === 0) && (
+                  <div className="px-2 py-1 text-xs text-sidebar-foreground/70 text-center">Нет недавних
+                    артефактов.</div>
                 )}
                 <SidebarMenuItem className="mt-1">
                   <SidebarMenuButton
                     onClick={() => {
-                      router.push('/content') // Обновленный маршрут
+                      router.push('/artifacts')
                       setOpenMobile(false)
                     }}
                     variant="outline"
                     size="sm"
                     className="w-full justify-center"
                   >
-                    <span>Весь контент</span>
+                    <span>Все артефакты</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

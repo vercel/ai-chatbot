@@ -1,32 +1,32 @@
 /**
- * @file app/(main)/content/page.tsx
- * @description Страница для отображения и управления всем контентом пользователя.
- * @version 1.0.1
- * @date 2025-06-06
- * @updated Исправлена проблема с key в цикле.
+ * @file app/(main)/artifacts/page.tsx
+ * @description Страница для отображения и управления всеми артефактами пользователя.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Переименован "Контент" в "Артефакты", обновлены компоненты.
  */
 
 /** HISTORY:
+ * v2.0.0 (2025-06-09): Переименовано в "Артефакты".
  * v1.0.1 (2025-06-06): Исправлена проблема с key в цикле.
- * v1.0.0 (2025-06-06): Создана страница для раздела "Контент", заменяющая "Заметки".
  */
 'use client'
 
 import { Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
-import { ContentGridClientWrapper } from '@/components/content-grid-client-wrapper'
+import { ArtifactGridClientWrapper } from '@/components/artifact-grid-client-wrapper'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const skeletonKeys = Array.from({ length: 8 }, (_, i) => `sk-${i}`)
 
-export default function ContentPage ({
+export default function ArtifactsPage ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { data: session, status } = useSession()
-  const openDocId = searchParams?.openDocId as string | undefined
+  const openArtifactId = searchParams?.openArtifactId as string | undefined
 
   if (status === 'loading') {
     return <GridSkeleton/>
@@ -41,7 +41,7 @@ export default function ContentPage ({
       <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8 flex-1">
         <header className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Мой Контент
+            Мои Артефакты
           </h1>
           <p className="text-muted-foreground">
             Здесь вы можете управлять всеми вашими артефактами: текстами, кодом и другими материалами.
@@ -49,7 +49,7 @@ export default function ContentPage ({
         </header>
 
         <Suspense fallback={<GridSkeleton/>}>
-          <ContentGridClientWrapper userId={session.user.id} openDocId={openDocId}/>
+          <ArtifactGridClientWrapper userId={session.user.id} openArtifactId={openArtifactId}/>
         </Suspense>
       </div>
     </div>
@@ -76,4 +76,4 @@ function GridSkeleton () {
   )
 }
 
-// END OF: app/(main)/content/page.tsx
+// END OF: app/(main)/artifacts/page.tsx

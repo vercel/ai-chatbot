@@ -1,40 +1,33 @@
 /**
- * @file components/content-grid-display.tsx
- * @description Компонент для отображения контента в виде сетки карточек.
- * @version 1.1.0
- * @date 2025-06-07
- * @updated Добавлено поле `summary` в интерфейс `ContentDocument`.
+ * @file components/artifact-grid-display.tsx
+ * @description Компонент для отображения артефактов в виде сетки карточек.
+ * @version 2.0.0
+ * @date 2025-06-09
+ * @updated Переименован из ContentGridDisplay и адаптирован под новую архитектуру.
  */
 
-/** HISTORY:
- * v1.1.0 (2025-06-07): Интерфейс `ContentDocument` теперь включает `summary`.
- * v1.0.1 (2025-06-06): Исправлена проблема с key в цикле.
- * v1.0.0 (2025-06-06): Начальная версия компонента.
- */
 'use client'
 
 import type { MouseEvent } from 'react'
 import { Pagination, PaginationContent, PaginationLink, } from '@/components/ui/pagination'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import type { Document as DBDocument } from '@/lib/db/schema'
-import { ContentCard } from './content-card'
-import type { UseChatHelpers } from '@ai-sdk/react'
+import type { Artifact as DBArtifact } from '@/lib/db/schema'
+import { ArtifactCard } from './artifact-card'
 
 const skeletonKeys = Array.from({ length: 4 }, (_, i) => `sk-${i}`)
 
-export interface ContentDocument extends Pick<DBDocument, 'id' | 'title' | 'createdAt' | 'content' | 'kind' | 'summary'> {}
+export interface ArtifactDocument extends Pick<DBArtifact, 'id' | 'title' | 'createdAt' | 'content' | 'kind' | 'summary'> {}
 
-interface ContentGridDisplayProps {
-  documents: ContentDocument[];
+interface ArtifactGridDisplayProps {
+  artifacts: ArtifactDocument[];
   isLoading: boolean;
   page: number;
   totalCount: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   onRefresh: () => void;
-  onCardClick: (doc: ContentDocument) => void;
-  setMessages: UseChatHelpers['setMessages'];
+  onCardClick: (doc: ArtifactDocument) => void;
 }
 
 function DisabledPaginationLink ({ href, onClick, isDisabled, children, className }: {
@@ -64,26 +57,21 @@ function DisabledPaginationLink ({ href, onClick, isDisabled, children, classNam
   )
 }
 
-export function ContentGridDisplay ({
-  documents,
+export function ArtifactGridDisplay ({
+  artifacts,
   isLoading,
   page,
   totalPages,
   onPageChange,
   onRefresh,
   onCardClick,
-  setMessages,
-}: ContentGridDisplayProps) {
-
-  // ... (логика пагинации, если нужна, может быть вынесена в отдельный хук)
-  // Для простоты оставим текущую реализацию из таблицы
+}: ArtifactGridDisplayProps) {
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {documents.map((doc) => (
-          <ContentCard key={doc.id} document={doc} onRefresh={onRefresh} onCardClick={onCardClick}
-                       setMessages={setMessages}/>
+        {artifacts.map((doc) => (
+          <ArtifactCard key={doc.id} artifact={doc} onRefresh={onRefresh} onCardClick={onCardClick}/>
         ))}
         {isLoading && skeletonKeys.map((key) => (
           <div key={key} className="flex flex-col space-y-3">
@@ -95,7 +83,7 @@ export function ContentGridDisplay ({
           </div>
         ))}
       </div>
-      {documents.length === 0 && !isLoading && (
+      {artifacts.length === 0 && !isLoading && (
         <div className="col-span-full h-48 flex items-center justify-center text-muted-foreground">
           Ничего не найдено. Попробуйте другой поисковый запрос.
         </div>
@@ -112,4 +100,4 @@ export function ContentGridDisplay ({
   )
 }
 
-// END OF: components/content-grid-display.tsx
+// END OF: components/artifact-grid-display.tsx

@@ -1,94 +1,92 @@
 /**
  * @file app/api/chat/discuss-artifact/route.ts
  * @description API маршрут для создания чата с контекстом артефакта.
- * @version 1.2.1
- * @date 2025-06-06
- * @updated Исправлена ошибка доступа к свойствам документа после изменения структуры getDocumentById.
+ * @version 1.3.0
+ * @date 2025-06-09
+ * @updated Адаптирован под новую архитектуру Artifact.
  */
 
 /** HISTORY:
- * v1.2.1 (2025-06-06): Исправлен доступ к свойствам документа.
- * v1.2.0 (2025-06-06): Добавлено автоматическое ответное сообщение от ассистента.
- * v1.1.0 (2025-06-06): Изменена структура сообщения на `tool-invocation`.
- * v1.0.0 (2025-06-06): Начальная версия.
+ * v1.3.0 (2025-06-09): Адаптация под Artifact.
+ * v1.2.1 (2025-06-06): Исправлена ошибка доступа к свойствам документа.
  */
 
-import { NextResponse } from 'next/server';
-import { auth } from '@/app/(auth)/auth';
-import { getDocumentById, saveChat, saveMessages } from '@/lib/db/queries';
-import { generateUUID } from '@/lib/utils';
-import { ChatSDKError } from '@/lib/errors';
+import { NextResponse } from 'next/server'
+import { auth } from '@/app/(auth)/auth'
+import { getArtifactById, saveChat, saveMessages } from '@/lib/db/queries'
+import { generateUUID } from '@/lib/utils'
+import { ChatSDKError } from '@/lib/errors'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
 const assistantResponses = [
-    "Отлично, давайте обсудим. Готов приступать!",
-    "Хорошо! Готов к обсуждению. Какие у вас есть вопросы?",
-    "Документ перед глазами. С чего начнем?",
-    "Конечно, давайте поговорим об этом. Что вы хотите узнать?",
-];
+  'Отлично, давайте обсудим. Готов приступать!',
+  'Хорошо! Готов к обсуждению. Какие у вас есть вопросы?',
+  'Артефакт перед глазами. С чего начнем?',
+  'Конечно, давайте поговорим об этом. Что вы хотите узнать?',
+]
 
-function getRandomResponse() {
-    const randomIndex = Math.floor(Math.random() * assistantResponses.length);
-    return assistantResponses[randomIndex];
+function getRandomResponse () {
+  const randomIndex = Math.floor(Math.random() * assistantResponses.length)
+  return assistantResponses[randomIndex]
 }
 
-export async function GET(request: Request) {
+export async function GET (request: Request) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session?.user?.id) {
-      return new ChatSDKError('unauthorized:api', 'Пользователь не авторизован.').toResponse();
+      return new ChatSDKError('unauthorized:api', 'Пользователь не авторизован.').toResponse()
     }
 
-    const { searchParams } = new URL(request.url);
-    const artifactId = searchParams.get('artifactId');
+    const { searchParams } = new URL(request.url)
+    const artifactId = searchParams.get('artifactId')
 
     if (!artifactId) {
-      return new ChatSDKError('bad_request:api', 'artifactId является обязательным параметром.').toResponse();
+      return new ChatSDKError('bad_request:api', 'artifactId является обязательным параметром.').toResponse()
     }
 
-    const documentResult = await getDocumentById({ id: artifactId });
-    if (!documentResult || !documentResult.doc || documentResult.doc.userId !== session.user.id) {
-      return new ChatSDKError('forbidden:api', 'Документ не найден или доступ запрещен.').toResponse();
+    const artifactResult = await getArtifactById({ id: artifactId })
+    if (!artifactResult || !artifactResult.doc || artifactResult.doc.userId !== session.user.id) {
+      return new ChatSDKError('forbidden:api', 'Артефакт не найден или доступ запрещен.').toResponse()
     }
 
-    const document = documentResult.doc;
+    const artifact = artifactResult.doc
 
-    const newChatId = generateUUID();
-    const newChatTitle = `Обсуждение: ${document.title}`;
+    const newChatId = generateUUID()
+    const newChatTitle = `Обсуждение: ${artifact.title}`
 
     await saveChat({
       id: newChatId,
       userId: session.user.id,
       title: newChatTitle,
       visibility: 'private',
-    });
+    })
 
     const userMessage = {
       id: generateUUID(),
       chatId: newChatId,
       role: 'user',
       parts: [
-        { type: 'text', text: 'Давайте обсудим следующий документ:' },
+        { type: 'text', text: 'Давайте обсудим следующий артефакт:' },
         {
           type: 'tool-invocation',
           toolInvocation: {
-            toolName: 'createDocument',
+            toolName: 'artifactContent',
             toolCallId: generateUUID(),
             state: 'result',
-            args: {},
+            args: { artifactId: artifact.id },
             result: {
-              id: document.id,
-              title: document.title,
-              kind: document.kind,
-              content: `Документ "${document.title}" добавлен в чат для обсуждения.`,
+              artifactId: artifact.id,
+              artifactTitle: artifact.title,
+              artifactKind: artifact.kind,
+              description: `Артефакт "${artifact.title}" добавлен в чат для обсуждения.`,
             },
           }
         }
       ],
       attachments: [],
       createdAt: new Date(),
-    };
+    }
 
     const assistantMessage = {
       id: generateUUID(),
@@ -96,22 +94,22 @@ export async function GET(request: Request) {
       role: 'assistant',
       parts: [{ type: 'text', text: getRandomResponse() }],
       attachments: [],
-      createdAt: new Date(Date.now() + 1), // Чуть позже, для порядка
-    };
+      createdAt: new Date(Date.now() + 1),
+    }
 
     await saveMessages({
       messages: [userMessage, assistantMessage],
-    });
+    })
 
-    const chatUrl = new URL(`/chat/${newChatId}`, request.url);
-    return NextResponse.redirect(chatUrl.toString());
+    const chatUrl = new URL(`/chat/${newChatId}`, request.url)
+    return NextResponse.redirect(chatUrl.toString())
 
   } catch (error) {
-    console.error('SYS_API_DISCUSS_ARTIFACT: Ошибка при создании чата для обсуждения артефакта', error);
+    console.error('SYS_API_DISCUSS_ARTIFACT: Ошибка при создании чата для обсуждения', error)
     if (error instanceof ChatSDKError) {
-      return error.toResponse();
+      return error.toResponse()
     }
-    return new ChatSDKError('bad_request:api', 'Не удалось создать чат для обсуждения.').toResponse();
+    return new ChatSDKError('bad_request:api', 'Не удалось создать чат для обсуждения.').toResponse()
   }
 }
 
