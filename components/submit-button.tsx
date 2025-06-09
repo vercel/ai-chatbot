@@ -10,10 +10,12 @@ export function SubmitButton({
   children,
   isSuccessful,
   isLoading,
+  onClick,
 }: {
   children: React.ReactNode;
   isSuccessful: boolean;
   isLoading?: boolean;
+  onClick?: () => void;
 }) {
   const { pending } = useFormStatus();
 
@@ -23,6 +25,7 @@ export function SubmitButton({
       aria-disabled={pending || isSuccessful || isLoading}
       disabled={pending || isSuccessful || isLoading}
       className="relative w-full bg-black text-white rounded-md py-2"
+      onClick={onClick}
     >
       {children}
 

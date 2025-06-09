@@ -21,9 +21,22 @@ export default function Layout({
     // Get user info from localStorage
     const token = localStorage.getItem('token');
     if (token) {
-      // You might want to decode the JWT token here to get user info
-      // For now, we'll just set a basic user object
-      setUser({ email: 'user@example.com' });
+      try {
+        // Manual JWT decode (no dependency)
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join(''),
+        );
+        const decoded = JSON.parse(jsonPayload);
+        console.log('Decoded JWT:', decoded); // Debug: check payload
+        setUser({ email: decoded.email });
+      } catch (e) {
+        setUser(null);
+      }
     }
   }, []);
 
