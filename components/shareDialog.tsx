@@ -34,28 +34,46 @@ export function ShareDialog({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    toast.success('Link copied!');
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        // Fallback for non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopied(true);
+      toast.success('Link copied!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('Failed to copy link');
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl p-6 sm:max-w-md w-full space-y-6 shadow-xl border border-gray-700 bg-black">
-        <DialogTitle className="text-2xl font-semibold flex items-center gap-2 text-white">
-          <LinkIcon className="w-5 h-5 text-gray-400" />
+      <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] rounded-2xl p-6 sm:max-w-md w-full space-y-6 shadow-xl border border-sidebar-border bg-sidebar text-sidebar-foreground z-50">
+        <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
+          <LinkIcon className="w-5 h-5 text-sidebar-foreground/70" />
           Share this chat
         </DialogTitle>
         {summary && (
-          <DialogDescription className="text-sm text-gray-300">
+          <DialogDescription className="text-sm text-sidebar-foreground/70">
             {summary}
           </DialogDescription>
         )}
 
-        <div className="flex items-center gap-3 border border-gray-700 rounded-lg px-4 py-2 bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500 transition">
+        <div className="flex items-center gap-3 border border-sidebar-border rounded-lg px-4 py-2 bg-sidebar-accent focus-within:ring-2 focus-within:ring-sidebar-ring transition">
           <input
-            className="flex-1 bg-transparent outline-none text-sm text-white"
+            className="flex-1 bg-transparent outline-none text-sm"
             readOnly
             value={shareUrl}
           />
@@ -63,7 +81,7 @@ export function ShareDialog({
             variant="secondary"
             size="sm"
             onClick={handleCopy}
-            className="gap-1 bg-gray-800 text-white hover:bg-gray-700"
+            className="gap-1 bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80"
           >
             {copied ? (
               <>
@@ -81,9 +99,9 @@ export function ShareDialog({
 
         <AlertDialogFooter>
           <Button
-            variant="ghost"
+            variant="default"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto text-gray-300 hover:bg-gray-800"
+            className="w-full sm:w-auto bg-black text-white hover:bg-black/90"
           >
             Close
           </Button>
