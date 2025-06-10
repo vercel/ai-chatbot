@@ -35,6 +35,19 @@ export const chat = pgTable('Chat', {
 
 export type Chat = InferSelectModel<typeof chat>;
 
+// Password Reset Token Table
+export const passwordResetToken = pgTable('PasswordResetToken', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  token: varchar('token', { length: 255 }).notNull().unique(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type PasswordResetToken = InferSelectModel<typeof passwordResetToken>;
+
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://github.com/vercel/ai-chatbot/blob/main/docs/04-migrate-to-parts.md
 export const messageDeprecated = pgTable('Message', {

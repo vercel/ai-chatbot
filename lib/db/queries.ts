@@ -14,6 +14,8 @@ import {
   vote,
   type DBMessage,
   Chat,
+  passwordResetToken,
+  type PasswordResetToken,
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
 
@@ -131,6 +133,103 @@ export async function findOrCreateGoogleUser(
     return newUser;
   } catch (error) {
     console.error('Failed to find or create Google user');
+    throw error;
+  }
+}
+
+// Password Reset Functions
+export async function createPasswordResetToken(userId: string): Promise<string> {
+  try {
+    // Generate a secure random token
+    const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    
+    // Delete any existing tokens for this user
+    await db.delete(passwordResetToken).where(eq(passwordResetToken.userId, userId));
+    
+    // Create new token
+    await db.insert(passwordResetToken).values({
+      userId,
+      token,
+      expiresAt,
+      createdAt: new Date(),
+    });
+    
+    return token;
+  } catch (error) {
+    console.error('Failed to create password reset token');
+    throw error;
+  }
+}
+
+export async function getPasswordResetToken(token: string): Promise<PasswordResetToken | null> {
+  try {
+    const [resetToken] = await db
+      .select()
+      .from(passwordResetToken)
+      .where(eq(passwordResetToken.token, token))
+      .limit(1);
+    
+    return resetToken || null;
+  } catch (error) {
+    console.error('Failed to get password reset token');
+    throw error;
+  }
+}
+
+export async function deletePasswordResetToken(token: string) {
+  try {
+    return await db.delete(passwordResetToken).where(eq(passwordResetToken.token, token));
+  } catch (error) {
+    console.error('Failed to delete password reset token');
+    throw error;
+  }
+}
+
+export async function resetUserPassword(userId: string, newPassword: string): Promise<User> {
+  try {
+    const salt = genSaltSync(10);
+    const hash = hashSync(newPassword, salt);
+    
+    const [updatedUser] = await db
+      .update(user)
+      .set({ password: hash })
+      .where(eq(user.id, userId))
+      .returning();
+    
+    return updatedUser;
+  } catch (error) {
+    console.error('Failed to reset user password');
+    throw error;
+  }
+}
+
+export async function isPasswordResetTokenValid(token: string): Promise<boolean> {
+  try {
+    const resetToken = await getPasswordResetToken(token);
+    
+    if (!resetToken) {
+      return false;
+    }
+    
+    // Check if token has expired
+    const now = new Date();
+    return resetToken.expiresAt > now;
+  } catch (error) {
+    console.error('Failed to validate password reset token');
+    return false;
+  }
+}
+
+// Clean up expired tokens (should be run periodically)
+export async function cleanupExpiredPasswordResetTokens() {
+  try {
+    const now = new Date();
+    return await db
+      .delete(passwordResetToken)
+      .where(lt(passwordResetToken.expiresAt, now));
+  } catch (error) {
+    console.error('Failed to cleanup expired password reset tokens');
     throw error;
   }
 }
@@ -532,6 +631,9 @@ export async function deleteUser(id: string) {
     // Delete user's documents and suggestions
     await db.delete(suggestion).where(eq(suggestion.documentId, id));
     await db.delete(document).where(eq(document.userId, id));
+    
+    // Delete user's password reset tokens
+    await db.delete(passwordResetToken).where(eq(passwordResetToken.userId, id));
     
     // Finally delete the user
     return await db.delete(user).where(eq(user.id, id));

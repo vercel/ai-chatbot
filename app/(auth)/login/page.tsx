@@ -141,6 +141,16 @@ export default function LoginPage() {
                     Sign in
                   </SubmitButton>
                   
+                  {/* Forgot Password Link */}
+                  <p className="text-center text-sm text-gray-600 mt-2">
+                    <Link
+                      href="/forgot-password"
+                      className="text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      Forgot your password?
+                    </Link>
+                  </p>
+                  
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t border-gray-300" />
