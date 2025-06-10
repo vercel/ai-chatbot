@@ -1,38 +1,37 @@
+'use client' // <-- УЖЕ БЫЛО, НО ЛОГИКА ИЗМЕНЕНА
+
 /**
  * @file app/(main)/artifacts/page.tsx
  * @description Страница для отображения и управления всеми артефактами пользователя.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Переименован "Контент" в "Артефакты", обновлены компоненты.
+ * @version 2.1.0
+ * @date 2025-06-11
+ * @updated Refactored to use `useSearchParams` hook to avoid runtime errors in client components.
  */
 
 /** HISTORY:
+ * v2.1.0 (2025-06-11): Refactored to use `useSearchParams` hook.
  * v2.0.0 (2025-06-09): Переименовано в "Артефакты".
- * v1.0.1 (2025-06-06): Исправлена проблема с key в цикле.
  */
-'use client'
 
 import { Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { redirect } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation' // <-- ИЗМЕНЕН ИМПОРТ
 import { ArtifactGridClientWrapper } from '@/components/artifact-grid-client-wrapper'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const skeletonKeys = Array.from({ length: 8 }, (_, i) => `sk-${i}`)
 
-export default function ArtifactsPage ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+// Оборачиваем основной компонент в Suspense Boundary, чтобы useSearchParams не вызывал ошибок
+function ArtifactsPageContent () {
   const { data: session, status } = useSession()
-  const openArtifactId = searchParams?.openArtifactId as string | undefined
+  const searchParams = useSearchParams() // <-- ИСПОЛЬЗУЕМ ХУК
+  const openArtifactId = searchParams.get('openArtifactId') as string | undefined // <-- ПОЛУЧАЕМ ПАРАМЕТР
 
   if (status === 'loading') {
     return <GridSkeleton/>
   }
 
-  if (!session?.user?.id) {
+  if (status === 'unauthenticated' || !session?.user?.id) {
     redirect('/login')
   }
 
@@ -48,11 +47,21 @@ export default function ArtifactsPage ({
           </p>
         </header>
 
+        {/* Suspense здесь уже не для `searchParams`, а для `ArtifactGridClientWrapper` */}
         <Suspense fallback={<GridSkeleton/>}>
           <ArtifactGridClientWrapper userId={session.user.id} openArtifactId={openArtifactId}/>
         </Suspense>
       </div>
     </div>
+  )
+}
+
+export default function ArtifactsPage () {
+  return (
+    // Обертка в Suspense на верхнем уровне обязательна для useSearchParams
+    <Suspense fallback={<GridSkeleton/>}>
+      <ArtifactsPageContent/>
+    </Suspense>
   )
 }
 

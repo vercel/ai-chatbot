@@ -1,12 +1,13 @@
 /**
  * @file app/api/chat/route.ts
  * @description API маршрут для обработки запросов чата, переписанный под новую архитектуру.
- * @version 5.4.0
+ * @version 5.4.1
  * @date 2025-06-10
- * @updated Исправлены все ошибки типизации путем явного парсинга тела запроса через Zod-схему.
+ * @updated Добавлена отказоустойчивость: улучшена обработка ошибок InvalidToolArgumentsError и добавлена проверка в onFinish для предотвращения падений.
  */
 
 /** HISTORY:
+ * v5.4.1 (2025-06-10): Улучшена обработка ошибок InvalidToolArgumentsError и добавлена проверка в onFinish.
  * v5.4.0 (2025-06-10): Исправлены ошибки типизации (TS18046, TS2322, TS2769, TS2345) через явный парсинг `postRequestBodySchema`.
  * v5.3.0 (2025-06-10): Updated tool imports to reflect new directory structure.
  * v5.2.0 (2025-06-10): Removed invalid 'onStart' and 'onChunk' callbacks from streamText to fix TS2353.
@@ -15,7 +16,15 @@
  * v4.1.3 (2025-06-10): Replaced 'toAIStreamResponse' with 'toDataStreamResponse' based on AI SDK changes (TS2551).
  */
 
-import { appendResponseMessages, type CoreMessage, type Message, streamText, type UIMessage, } from 'ai'
+import {
+  appendResponseMessages,
+  type CoreMessage,
+  InvalidToolArgumentsError,
+  type Message,
+  streamText,
+  TypeValidationError,
+  type UIMessage
+} from 'ai'
 import { auth, type UserType } from '@/app/(auth)/auth'
 import { type ArtifactContext, type RequestHints, systemPrompt } from '@/lib/ai/prompts'
 import { deleteChatSoftById, getChatById, getMessageCountByUserId, saveChat, saveMessages, } from '@/lib/db/queries'
@@ -34,6 +43,7 @@ import { type PostRequestBody, postRequestBodySchema } from './schema'
 import { geolocation } from '@vercel/functions'
 import { ChatSDKError } from '@/lib/errors'
 import { createLogger } from '@fab33/sys-logger'
+import { z } from 'zod'
 
 const parentLogger = createLogger('api:chat:route')
 
@@ -62,7 +72,6 @@ export async function POST (request: Request) {
   const logger = parentLogger.child({ requestId: generateUUID(), method: 'POST' })
   logger.trace('Entering POST /api/chat')
   try {
-    // Явный парсинг и валидация тела запроса
     const requestBody = postRequestBodySchema.parse(await request.json())
     const {
       id: chatId,
@@ -139,6 +148,12 @@ export async function POST (request: Request) {
           messages: [latestMessage as Message],
           responseMessages: response.messages
         })
+
+        if (!assistantMessage) {
+          childLogger.warn('onFinish callback executed, but no valid assistant message was generated. This can happen after a tool call error. Skipping message save.')
+          return
+        }
+
         await saveMessages({
           messages: [{
             id: generateUUID(),
@@ -158,6 +173,21 @@ export async function POST (request: Request) {
     return result.toDataStreamResponse()
 
   } catch (error) {
+    if (error instanceof InvalidToolArgumentsError) {
+      const zodIssues = (error.cause instanceof TypeValidationError) ? (error.cause.cause as z.ZodError)?.issues : 'N/A'
+      logger.error({
+        err: error,
+        toolName: error.toolName,
+        toolArgs: error.toolArgs,
+        zodIssues,
+      }, `Invalid tool arguments for tool: ${error.toolName}`)
+
+      return new ChatSDKError(
+        'bad_request:api',
+        `Произошла внутренняя ошибка при вызове инструмента. Пожалуйста, попробуйте переформулировать запрос.`
+      ).toResponse()
+    }
+
     logger.error({ err: error as Error }, 'Failed to process chat POST request')
     if (error instanceof ChatSDKError) return error.toResponse()
     return new ChatSDKError('bad_request:api', 'Failed to process request.').toResponse()

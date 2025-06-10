@@ -1,15 +1,10 @@
-import { TerminalWindowIcon, LoaderIcon, CrossSmallIcon } from './icons';
-import { Button } from './ui/button';
-import {
-  type Dispatch,
-  type SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { cn } from '@/lib/utils';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+'use client' // <-- ДОБАВЛЕНО
+
+import { CrossSmallIcon, LoaderIcon, TerminalWindowIcon } from './icons'
+import { Button } from './ui/button'
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef, useState, } from 'react'
+import { cn } from '@/lib/utils'
+import { useArtifactSelector } from '@/hooks/use-artifact'
 
 export interface ConsoleOutputContent {
   type: 'text' | 'image';
@@ -27,54 +22,54 @@ interface ConsoleProps {
   setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
 }
 
-export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
-  const [height, setHeight] = useState<number>(300);
-  const [isResizing, setIsResizing] = useState(false);
-  const consoleEndRef = useRef<HTMLDivElement>(null);
+export function Console ({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
+  const [height, setHeight] = useState<number>(300)
+  const [isResizing, setIsResizing] = useState(false)
+  const consoleEndRef = useRef<HTMLDivElement>(null)
 
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible)
 
-  const minHeight = 100;
-  const maxHeight = 800;
+  const minHeight = 100
+  const maxHeight = 800
 
   const startResizing = useCallback(() => {
-    setIsResizing(true);
-  }, []);
+    setIsResizing(true)
+  }, [])
 
   const stopResizing = useCallback(() => {
-    setIsResizing(false);
-  }, []);
+    setIsResizing(false)
+  }, [])
 
   const resize = useCallback(
     (e: MouseEvent) => {
       if (isResizing) {
-        const newHeight = window.innerHeight - e.clientY;
+        const newHeight = window.innerHeight - e.clientY
         if (newHeight >= minHeight && newHeight <= maxHeight) {
-          setHeight(newHeight);
+          setHeight(newHeight)
         }
       }
     },
     [isResizing],
-  );
+  )
 
   useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
+    window.addEventListener('mousemove', resize)
+    window.addEventListener('mouseup', stopResizing)
     return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
-    };
-  }, [resize, stopResizing]);
+      window.removeEventListener('mousemove', resize)
+      window.removeEventListener('mouseup', stopResizing)
+    }
+  }, [resize, stopResizing])
 
   useEffect(() => {
-    consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [consoleOutputs]);
+    consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [consoleOutputs])
 
   useEffect(() => {
     if (!isArtifactVisible) {
-      setConsoleOutputs([]);
+      setConsoleOutputs([])
     }
-  }, [isArtifactVisible, setConsoleOutputs]);
+  }, [isArtifactVisible, setConsoleOutputs])
 
   return consoleOutputs.length > 0 ? (
     <>
@@ -95,10 +90,11 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         )}
         style={{ height }}
       >
-        <div className="flex flex-row justify-between items-center w-full h-fit border-b dark:border-zinc-700 border-zinc-200 px-2 py-1 sticky top-0 z-50 bg-muted">
+        <div
+          className="flex flex-row justify-between items-center w-full h-fit border-b dark:border-zinc-700 border-zinc-200 px-2 py-1 sticky top-0 z-50 bg-muted">
           <div className="text-sm pl-2 dark:text-zinc-50 text-zinc-800 flex flex-row gap-3 items-center">
             <div className="text-muted-foreground">
-              <TerminalWindowIcon />
+              <TerminalWindowIcon/>
             </div>
             <div>Console</div>
           </div>
@@ -108,7 +104,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
             size="icon"
             onClick={() => setConsoleOutputs([])}
           >
-            <CrossSmallIcon />
+            <CrossSmallIcon/>
           </Button>
         </div>
 
@@ -135,15 +131,15 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
               ) ? (
                 <div className="flex flex-row gap-2">
                   <div className="animate-spin size-fit self-center mb-auto mt-0.5">
-                    <LoaderIcon />
+                    <LoaderIcon/>
                   </div>
                   <div className="text-muted-foreground">
                     {consoleOutput.status === 'in_progress'
                       ? 'Initializing...'
                       : consoleOutput.status === 'loading_packages'
                         ? consoleOutput.contents.map((content) =>
-                            content.type === 'text' ? content.value : null,
-                          )
+                          content.type === 'text' ? content.value : null,
+                        )
                         : null}
                   </div>
                 </div>
@@ -171,9 +167,9 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
               )}
             </div>
           ))}
-          <div ref={consoleEndRef} />
+          <div ref={consoleEndRef}/>
         </div>
       </div>
     </>
-  ) : null;
+  ) : null
 }

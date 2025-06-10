@@ -1,17 +1,18 @@
 /**
  * @file artifacts/kinds/artifact-tools.ts
  * @description Центральный реестр (barrel file) для инструментов-обработчиков артефактов.
- * @version 1.0.0
+ * @version 1.1.0
  * @date 2025-06-10
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 /** HISTORY:
+ * v1.1.0 (2025-06-10): Импорт ArtifactKind теперь из lib/types.
  * v1.0.0 (2025-06-10): Initial version. Defines the ArtifactTool contract and exports all available tools.
  */
 import type { Session } from 'next-auth'
 import type { Artifact } from '@/lib/db/schema'
-import type { ArtifactKind } from '@/components/artifact'
-
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 // Import individual tools
 import { textTool } from './text/server'
 import { codeTool } from './code/server'

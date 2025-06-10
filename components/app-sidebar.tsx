@@ -1,13 +1,14 @@
 /**
  * @file components/app-sidebar.tsx
  * @description Компонент боковой панели приложения с навигацией.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Рефакторинг. "Контент" переименован в "Артефакты", обновлены маршруты и API-вызовы.
+ * @version 2.1.0
+ * @date 2025-06-10
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 /** HISTORY:
- * v2.0.0 (2025-06-09): Рефакторинг "Контент" -> "Артефакты", обновлены маршруты и API.
+ * v2.1.0 (2025-06-10): Импорт ArtifactKind из lib/types.
+ * v2.0.0 (2025-06-09): Рефакторинг. "Контент" переименован в "Артефакты", обновлены маршруты и API-вызовы.
  * v1.8.0 (2025-06-06): Исправлена структура SidebarMenu/SidebarMenuItem.
  */
 
@@ -33,9 +34,9 @@ import type { Artifact as DBArtifact } from '@/lib/db/schema'
 import useSWR from 'swr'
 import { fetcher } from '@/lib/utils'
 import { useArtifact } from '@/hooks/use-artifact'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from './ui/skeleton'
 import { toast } from './toast'
-import type { ArtifactKind } from './artifact'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 interface SidebarArtifactItemProps {
   artifact: Pick<DBArtifact, 'id' | 'title' | 'createdAt' | 'kind' | 'content'>;

@@ -1,18 +1,19 @@
 /**
  * @file lib/ai/prompts.ts
  * @description Управление системными промптами для AI-моделей.
- * @version 1.8.0
+ * @version 1.9.0
  * @date 2025-06-10
- * @updated Updated tool names to reflect new artifact-centric approach.
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 /** HISTORY:
+ * v1.9.0 (2025-06-10): Импорт ArtifactKind из lib/types.
  * v1.8.0 (2025-06-10): Updated tool names to artifactCreate/artifactUpdate.
  * v1.7.0 (2025-06-09): Усилены инструкции по работе с артефактами для корректного выбора create/update.
  * v1.6.0 (2025-06-09): Уточнены инструкции по работе с ID артефактов.
  */
 
-import type { ArtifactKind } from '@/components/artifact'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 import type { Geo } from '@vercel/functions'
 
 const personaAndBehaviorPrompt = `
@@ -107,7 +108,7 @@ export interface ArtifactContext {
   kind: ArtifactKind;
 }
 
-const getRequestPromptFromHints = (requestHints: RequestHints) => `\
+const getRequestPromptFromHints = (requestHints: RequestHints) => `
 About the origin of user's request:
 - lat: ${requestHints.latitude}
 - lon: ${requestHints.longitude}
@@ -177,19 +178,19 @@ export const updateDocumentPrompt = (
   type: ArtifactKind,
 ) =>
   type === 'text'
-    ? `\
+    ? `
 Improve the following contents of the document based on the given prompt.
 
 ${currentContent}
 `
     : type === 'code'
-      ? `\
+      ? `
 Improve the following code snippet based on the given prompt.
 
 ${currentContent}
 `
       : type === 'sheet'
-        ? `\
+        ? `
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}

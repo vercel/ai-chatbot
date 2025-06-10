@@ -1,13 +1,14 @@
 /**
  * @file artifacts/tools/artifactEnhance.ts
  * @description Инструмент для "улучшения" артефакта по предопределенному рецепту.
- * @version 2.0.0
- * @date 2025-06-10
- * @updated Refactored to use the ArtifactTool registry for dispatching logic.
+ * @version 2.1.0
+ * @date 2025-06-11
+ * @updated Добавлена проверка типа артефакта. Улучшение теперь работает только для текста.
  */
 
 /** HISTORY:
- * v2.0.0 (2025-06-10): Refactored to use ArtifactTool registry.
+ * v2.1.0 (2025-06-11): Добавлена проверка типа артефакта.
+ * v2.0.0 (2025-06-10): Refactored to use the ArtifactTool registry for dispatching logic.
  * v1.2.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
  */
 
@@ -50,6 +51,15 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
       }
 
       const { doc: artifact, totalVersions } = artifactResult
+
+      // --- НОВОЕ ИЗМЕНЕНИЕ ---
+      // Проверяем, что артефакт текстовый. Если нет - возвращаем ошибку.
+      if (artifact.kind !== 'text') {
+        const errorMessage = `The "${recipe}" feature is currently only available for text artifacts.`
+        childLogger.warn(`Enhance recipe '${recipe}' is not applicable for artifact kind '${artifact.kind}'.`)
+        return { error: errorMessage }
+      }
+      // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
       const newVersionDate = new Date()
       // 1. Create a new artifact version row

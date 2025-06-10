@@ -1,20 +1,21 @@
 /**
  * @file app/api/artifact/route.ts
  * @description API маршрут для работы с артефактами.
- * @version 1.1.0
- * @date 2025-06-09
- * @updated Исправлены типы ошибок и логика для соответствия новой схеме.
+ * @version 1.2.0
+ * @date 2025-06-10
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 /** HISTORY:
- * v1.1.0 (2025-06-09): Адаптация под новую схему и типы ошибок.
+ * v1.2.0 (2025-06-10): Импорт ArtifactKind из lib/types.
+ * v1.1.0 (2025-06-09): Исправлены типы ошибок и логика для соответствия новой схеме.
  * v1.0.0 (2025-06-09): Переименован из document, адаптирован под новую схему и логику.
  */
 
 import { auth } from '@/app/(auth)/auth'
-import type { ArtifactKind } from '@/components/artifact'
 import { deleteArtifactVersionsAfterTimestamp, getArtifactsById, saveArtifact, } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 export async function GET (request: Request) {
   const { searchParams } = new URL(request.url)

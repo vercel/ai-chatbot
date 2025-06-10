@@ -1,17 +1,18 @@
 /**
  * @file components/artifact-preview.tsx
  * @description Компонент для отображения превью артефактов в чате.
- * @version 2.1.0
+ * @version 2.3.0
  * @date 2025-06-10
- * @updated Добавлена проверка на наличие ошибки в `result` для предотвращения TS2339.
+ * @updated Исправлены ошибки типизации (TS2322) путем явного приведения типов.
  */
 
 /** HISTORY:
- * v2.1.0 (2025-06-10): Добавлена проверка на ошибку в `result`.
+ * v2.3.0 (2025-06-10): Исправлены ошибки типизации.
+ * v2.2.0 (2025-06-10): Импорт ArtifactKind из lib/types.
+ * v2.1.0 (2025-06-10): Добавлена проверка на наличие ошибки в `result`.
  * v2.0.0 (2025-06-09): Переименован, адаптирован под ArtifactMetadata и SWR.
  */
 import { memo, type MouseEvent, useCallback, useMemo, useRef, } from 'react'
-import type { ArtifactKind } from './artifact'
 import { BoxIcon, CodeIcon, FileIcon, FullscreenIcon, ImageIcon, WarningIcon } from './icons'
 import { cn, fetcher } from '@/lib/utils'
 import type { Artifact as DBArtifact } from '@/lib/db/schema'
@@ -21,6 +22,7 @@ import { useArtifact } from '@/hooks/use-artifact'
 import { ImageEditor } from './image-editor'
 import { toast } from './toast'
 import type { artifactCreate } from '@/artifacts/tools/artifactCreate'
+import type { ArtifactKind } from '@/lib/types'
 
 type ArtifactToolResult = Awaited<ReturnType<ReturnType<typeof artifactCreate>['execute']>>;
 
@@ -64,8 +66,8 @@ export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
     toast({ type: 'loading', description: `Открываю артефакт "${artifactTitle}"...` })
     setArtifact({
       artifactId: artifactId,
-      kind: artifactKind,
-      title: artifactTitle,
+      kind: artifactKind as ArtifactKind, // Явное приведение типа
+      title: artifactTitle as string, // Явное приведение типа
       content: fullArtifact?.content ?? '',
       status: 'idle',
       saveStatus: 'saved',
@@ -84,14 +86,14 @@ export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
     <div className="relative w-full cursor-pointer" ref={hitboxRef} onClick={handleOpenArtifact} role="button"
          tabIndex={0}>
       <ArtifactHeader
-        title={artifactTitle}
-        kind={artifactKind}
-        description={description}
+        title={artifactTitle as string} // Явное приведение типа
+        kind={artifactKind as ArtifactKind} // Явное приведение типа
+        description={description as string} // Явное приведение типа
       />
       <div
         className={cn('h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700', { 'p-6': artifactKind !== 'image' })}>
         {isLoading && !fullArtifact ? <InlineDocumentSkeleton/> :
-          artifactKind === 'image' ? <ImageEditor title={artifactTitle}
+          artifactKind === 'image' ? <ImageEditor title={artifactTitle as string} // Явное приведение типа
                                                   content={fullArtifact?.content ?? ''} status="idle"
                                                   isInline={true}/> :
             <div className="prose dark:prose-invert prose-sm">

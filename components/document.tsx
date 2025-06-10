@@ -1,23 +1,22 @@
 /**
  * @file components/document.tsx
  * @description Компоненты для отображения результатов вызова тулзов, связанных с документами.
- * @version 1.2.1
+ * @version 1.3.0
  * @date 2025-06-10
- * @updated Used 'artifactId' instead of 'documentId' in setArtifact call (TS2353).
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-10): Импорт ArtifactKind из lib/types.
  * v1.2.1 (2025-06-10): Corrected object literal for setArtifact: changed 'documentId' to 'artifactId' to match UIArtifact type (TS2353).
  * v1.2.0 (2025-06-06): Восстановлена утерянная функция getActionText и исправлен импорт toast.
- * v1.1.0 (2025-06-06): Исправлена ошибка типа TS2739: добавлено свойство `saveStatus`.
- * v1.0.0 (2025-06-06): Добавлен недостающий проп 'displayMode' при вызове setArtifact.
  */
 import { memo } from 'react'
 
-import type { ArtifactKind } from './artifact'
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from './icons'
 import { toast } from '@/components/toast'
 import { useArtifact } from '@/hooks/use-artifact'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 const getActionText = (
   type: 'create' | 'update' | 'request-suggestions',

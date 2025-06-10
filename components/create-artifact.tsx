@@ -1,13 +1,14 @@
 /**
  * @file components/create-artifact.tsx
  * @description Defines the structure and configuration for different artifact types.
- * @version 1.0.0
+ * @version 1.1.0
  * @date 2025-06-10
- * @updated Initial version. Fixed TS2307 by removing DataStreamDelta import and typing streamPart as any due to removal of DataStreamHandler.
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 /** HISTORY:
- * v1.0.0 (2025-06-10): Initial version. Addressed TS2307 concerning missing './data-stream-handler'. Typed 'streamPart' in onStreamPart as 'any' as DataStreamDelta is obsolete.
+ * v1.1.0 (2025-06-10): Импорт ArtifactKind из lib/types.
+ * v1.0.0 (2025-06-10): Initial version. Fixed TS2307 by removing DataStreamDelta import and typing streamPart as any due to removal of DataStreamHandler.
  */
 
 import type { Suggestion } from '@/lib/db/schema'

@@ -1,16 +1,18 @@
+'use client'
+
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 2.2.0
+ * @version 2.4.0
  * @date 2025-06-10
- * @updated Добавлен экспорт `artifactKinds` для использования в Zod-схемах и исправлена ошибка типизации в VersionFooter.
+ * @updated Определения artifactKinds и ArtifactKind теперь импортируются из lib/types.
  */
 
 /** HISTORY:
- * v2.2.0 (2025-06-10): Добавлен экспорт `artifactKinds` и исправлена ошибка TS2322 в VersionFooter.
+ * v2.4.0 (2025-06-10): Определения artifactKinds и ArtifactKind теперь импортируются из lib/types.
+ * v2.3.0 (2025-06-11): Added 'use client' directive.
+ * v2.2.0 (2025-06-10): Добавлен экспорт `artifactKinds` и исправлена ошибка типизации в VersionFooter.
  * v2.1.1 (2025-06-10): Renamed 'artifacts' prop to 'documents' when passing to VersionFooter to match component's expected props (TS2322).
- * v2.1.0 (2025-06-09): Исправлены ошибки типизации.
- * v2.0.0 (2025-06-09): Адаптирован под новую архитектуру.
  */
 import type { Attachment, UIMessage } from 'ai'
 import { formatDistance } from 'date-fns'
@@ -36,6 +38,7 @@ import { FullscreenIcon } from './icons'
 import type { Session } from 'next-auth'
 import { toast } from './toast'
 import { createClientLogger } from '@/lib/client-logger'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 const logger = createClientLogger('Artifact')
 
@@ -45,9 +48,7 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
 ]
-// Создаем массив строк для использования в Zod
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
-export type ArtifactKind = (typeof artifactKinds)[number];
+
 export type ArtifactDisplayMode = 'split' | 'full';
 
 export interface UIArtifact {

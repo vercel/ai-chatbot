@@ -1,9 +1,9 @@
 /**
  * @file components/artifact-grid-client-wrapper.tsx
  * @description Клиентский компонент-обертка для сетки артефактов.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Адаптирован под новую архитектуру Artifact.
+ * @version 2.1.0
+ * @date 2025-06-10
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 'use client'
 
@@ -18,8 +18,8 @@ import { useDebounceCallback } from 'usehooks-ts'
 import { toast } from '@/components/toast'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useArtifact } from '@/hooks/use-artifact'
-import type { ArtifactKind } from './artifact'
 import { fetcher } from '@/lib/utils'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 const PAGE_SIZE = 12
 const skeletonKeys = Array.from({ length: PAGE_SIZE }, (_, i) => `sk-item-${i}`)

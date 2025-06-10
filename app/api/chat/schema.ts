@@ -1,12 +1,13 @@
 /**
  * @file app/api/chat/schema.ts
  * @description Схемы валидации для API чата.
- * @version 1.5.1
+ * @version 1.6.0
  * @date 2025-06-10
- * @updated `activeArtifactKind` теперь использует `z.enum(artifactKinds)` вместо `ArtifactKind`.
+ * @updated Импорт artifactKinds теперь из общего lib/types.
  */
 
 /** HISTORY:
+ * v1.6.0 (2025-06-10): Импорт artifactKinds теперь из общего lib/types.
  * v1.5.1 (2025-06-10): `activeArtifactKind` теперь использует `z.enum(artifactKinds)`.
  * v1.5.0 (2025-06-07): Ослаблена валидация ID сообщения до z.string() для поддержки ID от AI SDK.
  * v1.4.0 (2025-06-06): Уточнена схема partSchema для соответствия типам AI SDK.
@@ -14,7 +15,7 @@
  */
 
 import { z } from 'zod'
-import { artifactKinds } from '@/components/artifact'
+import { artifactKinds } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 const basePartSchema = z.object({
   type: z.string(),

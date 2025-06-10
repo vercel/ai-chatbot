@@ -1,19 +1,17 @@
+'use client'; // <-- ДОБАВЛЕНО
+
 /**
  * @file components/artifact-actions.tsx
  * @description Компонент с действиями для артефакта.
- * @version 2.2.1
- * @date 2025-06-10
- * @updated Corrected property access to 'artifactId' on UIArtifact type (TS2339).
+ * @version 2.3.0
+ * @date 2025-06-11
+ * @updated Added 'use client' directive to resolve React hook errors.
  */
 
 /** HISTORY:
- * v2.2.1 (2025-06-10): Fixed TS2339 by ensuring correct 'artifactId' property is used from UIArtifact type.
+ * v2.3.0 (2025-06-11): Added 'use client' directive.
+ * v2.2.1 (2025-06-10): Corrected property access to 'artifactId' on UIArtifact type (TS2339).
  * v2.2.0 (2025-06-06): `handleDiscuss` теперь использует API-маршрут `/api/chat/discuss-artifact`.
- * v2.1.0 (2025-06-06): Исправлена логика "Обсудить в чате".
- * v2.0.4 (2025-06-06): Добавлено обязательное поле `content` в создаваемый объект UIMessage.
- * v2.0.3 (2025-06-06): Добавлено обязательное поле `args: {}` в объект toolInvocation.
- * v2.0.2 (2025-06-06): Исправлен импорт типа UIMessage на Message as UIMessage.
- * v2.0.1 (2025-06-06): Исправлена ошибка типа для `tool-invocation` и импорт `toast`.
  */
 
 import { Button } from './ui/button'

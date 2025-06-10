@@ -1,16 +1,16 @@
 /**
  * @file app/api/artifacts/recent/route.ts
  * @description API маршрут для получения списка недавних артефактов пользователя.
- * @version 1.1.0
- * @date 2025-06-09
- * @updated Исправлен вызов функции на getRecentArtifactsByUserId.
+ * @version 1.2.0
+ * @date 2025-06-10
+ * @updated Импорт ArtifactKind теперь из общего файла lib/types.
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/(auth)/auth'
 import { getRecentArtifactsByUserId } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
-import type { ArtifactKind } from '@/components/artifact'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 export const dynamic = 'force-dynamic'
 

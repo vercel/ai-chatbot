@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
-import { useWindowSize } from 'usehooks-ts';
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
+import { useWindowSize } from 'usehooks-ts'
 
-import type { UISuggestion } from '@/lib/editor/suggestions';
+import type { UISuggestion } from '@/lib/editor/suggestions'
 
-import { CrossIcon, MessageIcon } from './icons';
-import { Button } from './ui/button';
-import { cn } from '@/lib/utils';
-import type { ArtifactKind } from './artifact';
+import { CrossIcon, MessageIcon } from './icons'
+import { Button } from './ui/button'
+import { cn } from '@/lib/utils'
+import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 export const Suggestion = ({
   suggestion,
@@ -20,8 +20,8 @@ export const Suggestion = ({
   onApply: () => void;
   artifactKind: ArtifactKind;
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const { width: windowWidth } = useWindowSize();
+  const [isExpanded, setIsExpanded] = useState(false)
+  const { width: windowWidth } = useWindowSize()
 
   return (
     <AnimatePresence>
@@ -32,11 +32,11 @@ export const Suggestion = ({
             'sticky top-0 right-4': artifactKind === 'code',
           })}
           onClick={() => {
-            setIsExpanded(true);
+            setIsExpanded(true)
           }}
           whileHover={{ scale: 1.1 }}
         >
-          <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
+          <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14}/>
         </motion.div>
       ) : (
         <motion.div
@@ -50,17 +50,17 @@ export const Suggestion = ({
         >
           <div className="flex flex-row items-center justify-between">
             <div className="flex flex-row items-center gap-2">
-              <div className="size-4 bg-muted-foreground/25 rounded-full" />
+              <div className="size-4 bg-muted-foreground/25 rounded-full"/>
               <div className="font-medium">Assistant</div>
             </div>
             <button
               type="button"
               className="text-xs text-gray-500 cursor-pointer"
               onClick={() => {
-                setIsExpanded(false);
+                setIsExpanded(false)
               }}
             >
-              <CrossIcon size={12} />
+              <CrossIcon size={12}/>
             </button>
           </div>
           <div>{suggestion.description}</div>
@@ -74,5 +74,5 @@ export const Suggestion = ({
         </motion.div>
       )}
     </AnimatePresence>
-  );
-};
+  )
+}
