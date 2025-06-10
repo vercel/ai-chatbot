@@ -7,7 +7,7 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { Attachment, UIMessage } from 'ai';
 import { apiClient } from '@/lib/api-client';
-import {use} from 'react';
+import { use } from 'react';
 import { promises } from 'dns';
 
 type DBMessage = {
@@ -18,7 +18,7 @@ type DBMessage = {
   createdAt: Date;
 };
 
-export default function Page({ params }: { params:Promise<{ id: string }>  }) {
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [chat, setChat] = useState<any>(null);
   const [messages, setMessages] = useState<Array<UIMessage>>([]);
@@ -28,7 +28,6 @@ export default function Page({ params }: { params:Promise<{ id: string }>  }) {
   const { id } = use(params);
 
   useEffect(() => {
-    
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -86,7 +85,33 @@ export default function Page({ params }: { params:Promise<{ id: string }>  }) {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center px-4 py-8">
+        <div className="space-y-6  animate-pulse w-full max-w-3xl">
+          {/* Title Placeholder */}
+          <div className="h-6 bg-gray-100 rounded w-5/6 mx-auto"></div>
+
+          {/* Paragraph Block */}
+          <div className="space-y-2">
+            <div className="h-60 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-10 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-10 bg-gray-200 rounded w-4/6"></div>
+          </div>
+
+          {/* Step Section Blocks */}
+          {[1, 2, 3].map((_, index) => (
+            <div key={index} className="space-y-3">
+              <div className="h-20 bg-gray-200 rounded w-5/6 mx-auto"></div>
+              <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6 mx-auto"></div>
+            </div>
+          ))}
+
+          {/* Input Field Placeholder */}
+          {/* <div className="h-10 bg-gray-200 rounded w-full mt-6"></div> */}
+        </div>
+      </div>
+    );
   }
 
   if (!chat) {
@@ -101,9 +126,9 @@ export default function Page({ params }: { params:Promise<{ id: string }>  }) {
         selectedChatModel={selectedModel}
         selectedVisibilityType={chat.visibility}
         isReadonly={false} // You might want to implement proper readonly logic based on user permissions
-        session={{ 
+        session={{
           user: { id: '1', email: 'user@example.com', type: 'regular' },
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
         }}
       />
       <DataStreamHandler id={id} />

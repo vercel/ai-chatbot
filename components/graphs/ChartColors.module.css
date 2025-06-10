@@ -18,11 +18,11 @@
     --border: 36 45% 60%;
     --input: 36 45% 60%;
     --ring: 36 45% 30%;
-    --chart-1: 25 34% 28%;
-    --chart-2: 26 36% 34%;
-    --chart-3: 28 40% 40%;
-    --chart-4: 31 41% 48%;
-    --chart-5: 35 43% 53%;
+    --chart-1: hsl(25 34% 28%);
+    --chart-2: hsl(26 36% 34%);
+    --chart-3: hsl(28 40% 40%);
+    --chart-4: hsl(31 41% 48%);
+    --chart-5: hsl(35 43% 53%);
     --color-bar: hsl(var(--foreground));
     --color-desktop: hsl(var(--chart-1));
     --color-mobile: hsl(var(--chart-2));
