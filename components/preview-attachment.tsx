@@ -44,8 +44,8 @@ export const PreviewAttachment = ({
             {onCancel && (
               <button
                 onClick={onCancel}
-                className="absolute top-1 right-1 text-black text-xs font-bold leading-none hover:opacity-70"
-                aria-label="Cancel upload"
+                className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded-full bg-white text-black text-lg text-[10px] leading-none hover:opacity-80 shadow"
+                aria-label="Remove attachment"
               >
                 ×
               </button>
@@ -56,7 +56,7 @@ export const PreviewAttachment = ({
         {!isUploading && onCancel && (
           <button
             onClick={onCancel}
-            className="absolute top-1 right-1 text-black text-xs font-bold leading-none hover:opacity-70"
+            className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded-full bg-white text-black text-lg text-[10px] leading-none hover:opacity-80 shadow"
             aria-label="Remove attachment"
           >
             ×
