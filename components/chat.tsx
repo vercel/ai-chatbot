@@ -20,6 +20,8 @@ import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
+import { GoogleDrivePicker } from './google-drive-picker';
+import { GoogleDriveFile } from '@/lib/google-drive';
 
 export function Chat({
   id,
@@ -107,6 +109,14 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const [selectedFile, setSelectedFile] = useState<GoogleDriveFile | null>(null);
+
+  const handleFileSelect = (file: GoogleDriveFile) => {
+    setSelectedFile(file);
+    // Add the file content to the chat context
+    const fileContent = `File: ${file.name}\nType: ${file.mimeType}\nLink: ${file.webViewLink}`;
+    // You can add this content to your chat context or send it as a message
+  };
 
   useAutoResume({
     autoResume,
@@ -140,20 +150,23 @@ export function Chat({
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           {!isReadonly && (
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              status={status}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
-              selectedVisibilityType={visibilityType}
-            />
+            <div className="flex gap-2">
+              <GoogleDrivePicker onFileSelect={handleFileSelect} />
+              <MultimodalInput
+                chatId={id}
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                status={status}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                setMessages={setMessages}
+                append={append}
+                selectedVisibilityType={visibilityType}
+              />
+            </div>
           )}
         </form>
       </div>
@@ -175,6 +188,12 @@ export function Chat({
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
       />
+
+      {selectedFile && (
+        <div className="mt-2 text-sm text-gray-500">
+          Selected file: {selectedFile.name}
+        </div>
+      )}
     </>
   );
 }

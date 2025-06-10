@@ -10,4 +10,5 @@ export const authConfig = {
     // while this file is also used in non-Node.js environments
   ],
   callbacks: {},
+  secret: process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;

@@ -7,7 +7,6 @@ import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
 import type { Document } from '@/lib/db/schema';
-import { getDocumentTimestampByIndex } from '@/lib/utils';
 
 import { LoaderIcon } from './icons';
 import { Button } from './ui/button';
@@ -58,10 +57,7 @@ export const VersionFooter = ({
             mutate(
               `/api/document?id=${artifact.documentId}`,
               await fetch(
-                `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
-                  documents,
-                  currentVersionIndex,
-                )}`,
+                `/api/document?id=${artifact.documentId}&timestamp=${documents?.[currentVersionIndex]?.createdAt}`,
                 {
                   method: 'DELETE',
                 },
@@ -72,12 +68,7 @@ export const VersionFooter = ({
                       ...documents.filter((document) =>
                         isAfter(
                           new Date(document.createdAt),
-                          new Date(
-                            getDocumentTimestampByIndex(
-                              documents,
-                              currentVersionIndex,
-                            ),
-                          ),
+                          new Date(documents?.[currentVersionIndex]?.createdAt),
                         ),
                       ),
                     ]
