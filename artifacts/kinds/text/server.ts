@@ -1,25 +1,24 @@
 /**
  * @file artifacts/text/server.ts
  * @description Серверный обработчик для текстовых артефактов.
- * @version 1.3.0
- * @date 2025-06-09
- * @updated Рефакторинг. Обработчик теперь возвращает сгенерированный текст, а не пишет в стрим.
+ * @version 2.0.0
+ * @date 2025-06-10
+ * @updated Refactored to export a standalone `textTool` object, removing the factory function.
  */
 
 /** HISTORY:
- * v1.3.0 (2025-06-09): Обработчик теперь возвращает контент.
- * v1.2.0 (2025-06-09): Добавлена проверка на `dataStream`.
- * v1.1.0 (2025-06-09): Обновлен импорт `createDocumentHandler`.
+ * v2.0.0 (2025-06-10): Refactored to export a standalone tool object.
+ * v1.3.0 (2025-06-09): Рефакторинг. Обработчик теперь возвращает сгенерированный текст.
  */
 
 import { streamText } from 'ai'
 import { myProvider } from '@/lib/ai/providers'
-import { createDocumentHandler } from '@/lib/artifacts/factory'
 import { updateDocumentPrompt } from '@/lib/ai/prompts'
+import type { ArtifactTool } from '@/artifacts/kinds/artifact-tools'
 
-export const textDocumentHandler = createDocumentHandler<'text'>({
+export const textTool: ArtifactTool = {
   kind: 'text',
-  onCreateDocument: async ({ title }) => {
+  create: async ({ title }) => {
     const { text } = await streamText({
       model: myProvider.languageModel('artifact-model'),
       system:
@@ -28,7 +27,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
     })
     return text
   },
-  onUpdateDocument: async ({ document, description }) => {
+  update: async ({ document, description }) => {
     const { text } = await streamText({
       model: myProvider.languageModel('artifact-model'),
       system: updateDocumentPrompt(document.content, 'text'),
@@ -44,6 +43,6 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
     })
     return text
   },
-})
+}
 
 // END OF: artifacts/text/server.ts

@@ -1,42 +1,33 @@
 /**
  * @file app/api/chat/route.ts
  * @description API маршрут для обработки запросов чата, переписанный под новую архитектуру.
- * @version 4.1.3
+ * @version 5.4.0
  * @date 2025-06-10
- * @updated Updated to use toDataStreamResponse method from AI SDK and fixed other type errors.
+ * @updated Исправлены все ошибки типизации путем явного парсинга тела запроса через Zod-схему.
  */
 
 /** HISTORY:
- * v4.1.0 (2025-06-09): Исправлены ошибки типизации и toAIStreamResponse.
- * v4.0.0 (2025-06-09): Полный рефакторинг под новую архитектуру.
- * v4.1.1 (2025-06-10): Fixed TS2339 by casting part.toolInvocation to any in transformToCoreMessages for 'tool-invocation' part type.
- * v4.1.2 (2025-06-10): Fixed TS2678 by casting uiMessage.role to string in switch statement in transformToCoreMessages.
+ * v5.4.0 (2025-06-10): Исправлены ошибки типизации (TS18046, TS2322, TS2769, TS2345) через явный парсинг `postRequestBodySchema`.
+ * v5.3.0 (2025-06-10): Updated tool imports to reflect new directory structure.
+ * v5.2.0 (2025-06-10): Removed invalid 'onStart' and 'onChunk' callbacks from streamText to fix TS2353.
+ * v5.1.0 (2025-06-10): Added comprehensive logging callbacks to streamText to diagnose the missing response issue.
+ * v5.0.0 (2025-06-10): Removed manual message conversion (`transformToCoreMessages`) and now pass request messages directly to `streamText`. Added JSDoc explaining the change.
  * v4.1.3 (2025-06-10): Replaced 'toAIStreamResponse' with 'toDataStreamResponse' based on AI SDK changes (TS2551).
  */
 
-import {
-  appendResponseMessages,
-  type CoreMessage,
-  type ImagePart,
-  type Message,
-  streamText,
-  type TextPart,
-  type ToolCallPart,
-  type ToolResultPart,
-  type UIMessage,
-} from 'ai'
+import { appendResponseMessages, type CoreMessage, type Message, streamText, type UIMessage, } from 'ai'
 import { auth, type UserType } from '@/app/(auth)/auth'
 import { type ArtifactContext, type RequestHints, systemPrompt } from '@/lib/ai/prompts'
 import { deleteChatSoftById, getChatById, getMessageCountByUserId, saveChat, saveMessages, } from '@/lib/db/queries'
 import { generateUUID } from '@/lib/utils'
 import { generateTitleFromUserMessage } from '@/app/(main)/chat/actions'
-import { artifactCreate } from '@/lib/ai/tools/artifactCreate'
-import { artifactUpdate } from '@/lib/ai/tools/artifactUpdate'
-import { artifactEnhance } from '@/lib/ai/tools/artifactEnhance'
+import { artifactCreate } from '@/artifacts/tools/artifactCreate'
+import { artifactUpdate } from '@/artifacts/tools/artifactUpdate'
+import { artifactEnhance } from '@/artifacts/tools/artifactEnhance'
 import { getWeather } from '@/lib/ai/tools/get-weather'
-import { artifactContent } from '@/lib/ai/tools/artifactContent'
-import { artifactDelete } from '@/lib/ai/tools/artifactDelete'
-import { artifactRestore } from '@/lib/ai/tools/artifactRestore'
+import { artifactContent } from '@/artifacts/tools/artifactContent'
+import { artifactDelete } from '@/artifacts/tools/artifactDelete'
+import { artifactRestore } from '@/artifacts/tools/artifactRestore'
 import { myProvider } from '@/lib/ai/providers'
 import { entitlementsByUserType } from '@/lib/ai/entitlements'
 import { type PostRequestBody, postRequestBodySchema } from './schema'
@@ -47,67 +38,6 @@ import { createLogger } from '@fab33/sys-logger'
 const parentLogger = createLogger('api:chat:route')
 
 export const maxDuration = 60
-
-async function transformToCoreMessages (uiMessages: UIMessage[]): Promise<CoreMessage[]> {
-  const logger = parentLogger.child({ function: 'transformToCoreMessages' })
-  logger.trace({ messagesCount: uiMessages.length }, 'Entering transformToCoreMessages')
-  const coreMessages: CoreMessage[] = []
-
-  for (const uiMessage of uiMessages) {
-    switch (uiMessage.role as string) {
-      case 'user': {
-        const contentParts: (TextPart | ImagePart)[] = [{ type: 'text', text: uiMessage.content }]
-        if (uiMessage.experimental_attachments) {
-          for (const attachment of uiMessage.experimental_attachments) {
-            if (attachment.contentType?.startsWith('image')) {
-              const response = await fetch(attachment.url)
-              const imageBuffer = await response.arrayBuffer()
-              contentParts.push({ type: 'image', image: Buffer.from(imageBuffer), mimeType: attachment.contentType })
-            }
-          }
-        }
-        coreMessages.push({ role: 'user', content: contentParts })
-        break
-      }
-
-      case 'assistant': {
-        const assistantContentParts: (TextPart | ToolCallPart)[] = []
-        const toolResultParts: ToolResultPart[] = []
-
-        for (const part of uiMessage.parts ?? []) {
-          // @ts-ignore
-          switch (part.type) {
-            case 'text':
-              assistantContentParts.push(part)
-              break
-            case 'tool-invocation': {
-              const ti = part.toolInvocation as any;
-              const { state, toolCallId, toolName, args, result } = ti;
-              if (state === 'call') {
-                assistantContentParts.push({ type: 'tool-call', toolCallId, toolName, args })
-              } else if (state === 'result') {
-                toolResultParts.push({ type: 'tool-result', toolCallId, toolName, result })
-              }
-              break
-            }
-          }
-        }
-
-        if (assistantContentParts.length > 0) coreMessages.push({ role: 'assistant', content: assistantContentParts })
-        if (toolResultParts.length > 0) coreMessages.push({ role: 'tool', content: toolResultParts })
-        break
-      }
-
-      case 'system':
-      case 'data':
-      case 'tool':
-        coreMessages.push(uiMessage as CoreMessage)
-        break
-    }
-  }
-  logger.trace({ coreMessagesCount: coreMessages.length }, 'Exiting transformToCoreMessages')
-  return coreMessages
-}
 
 function getContextFromHistory (messages: PostRequestBody['messages']): ArtifactContext | undefined {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -132,6 +62,7 @@ export async function POST (request: Request) {
   const logger = parentLogger.child({ requestId: generateUUID(), method: 'POST' })
   logger.trace('Entering POST /api/chat')
   try {
+    // Явный парсинг и валидация тела запроса
     const requestBody = postRequestBodySchema.parse(await request.json())
     const {
       id: chatId,
@@ -142,15 +73,19 @@ export async function POST (request: Request) {
       activeArtifactTitle,
       activeArtifactKind
     } = requestBody
+
     const session = await auth()
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse()
     }
+
     const childLogger = logger.child({ chatId, userId: session.user.id })
+
     const latestMessage = messages.at(-1)
     if (!latestMessage) {
       throw new ChatSDKError('bad_request:api', 'No message found in request.')
     }
+
     const messageCount = await getMessageCountByUserId({ id: session.user.id, differenceInHours: 24 })
     if (messageCount > entitlementsByUserType[session.user.type as UserType].maxMessagesPerDay) {
       throw new ChatSDKError('rate_limit:chat')
@@ -166,6 +101,7 @@ export async function POST (request: Request) {
 
     const { longitude, latitude, city, country } = geolocation(request)
     const requestHints: RequestHints = { longitude, latitude, city, country }
+
     const artifactContext = activeArtifactId && activeArtifactTitle && activeArtifactKind
       ? { id: activeArtifactId, title: activeArtifactTitle, kind: activeArtifactKind }
       : getContextFromHistory(messages)
@@ -181,13 +117,12 @@ export async function POST (request: Request) {
       }]
     })
 
-    const coreMessagesForModel = await transformToCoreMessages(messages as UIMessage[])
-
     childLogger.info('Starting text stream with AI model')
+
     const result = await streamText({
       model: myProvider.languageModel(selectedChatModel),
       system: systemPrompt({ selectedChatModel, requestHints, artifactContext }),
-      messages: coreMessagesForModel,
+      messages: messages as CoreMessage[],
       maxSteps: 6,
       tools: {
         getWeather,
@@ -198,19 +133,26 @@ export async function POST (request: Request) {
         artifactDelete: artifactDelete({ session }),
         artifactRestore: artifactRestore({ session }),
       },
-      onFinish: async ({ response }) => {
-        childLogger.info('Text stream finished, saving assistant response')
+      onFinish: async ({ response, finishReason, usage }) => {
+        childLogger.info({ finishReason, usage }, 'Text stream finished, saving assistant response')
         const [, assistantMessage] = appendResponseMessages({
           messages: [latestMessage as Message],
           responseMessages: response.messages
         })
         await saveMessages({
           messages: [{
-            id: generateUUID(), chatId, role: assistantMessage.role, parts: assistantMessage.parts,
-            attachments: assistantMessage.experimental_attachments ?? [], createdAt: new Date(),
+            id: generateUUID(),
+            chatId,
+            role: assistantMessage.role,
+            parts: assistantMessage.parts,
+            attachments: assistantMessage.experimental_attachments ?? [],
+            createdAt: new Date(),
           }]
         })
       },
+      onError: (error) => {
+        childLogger.error({ err: error as unknown as Error }, 'An error occurred during the stream.')
+      }
     })
 
     return result.toDataStreamResponse()

@@ -1,18 +1,27 @@
 /**
- * @file lib/ai/tools/artifactUpdate.ts
+ * @file artifacts/tools/artifactUpdate.ts
  * @description AI-инструмент для обновления существующего артефакта.
- * @version 1.0.0
- * @date 2025-06-09
+ * @version 2.0.0
+ * @date 2025-06-10
+ * @updated Refactored to use the ArtifactTool registry for dispatching update logic.
+ */
+
+/** HISTORY:
+ * v2.0.0 (2025-06-10): Refactored to use ArtifactTool registry.
+ * v1.1.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
+ * v1.0.0 (2025-06-09): Initial version.
  */
 
 import { tool } from 'ai'
 import type { Session } from 'next-auth'
 import { z } from 'zod'
-import { getArtifactById } from '@/lib/db/queries'
-import { documentHandlersByArtifactKind } from '@/lib/artifacts/server'
+import { getArtifactById, saveArtifact } from '@/lib/db/queries'
+import { artifactTools } from '@/artifacts/kinds/artifact-tools'
 import { createLogger } from '@fab33/sys-logger'
+import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
+import { generateAndSaveSummary } from '@/lib/ai/summarizer'
 
-const logger = createLogger('lib:ai:tools:artifactUpdate')
+const logger = createLogger('artifacts:tools:artifactUpdate')
 
 interface UpdateArtifactProps {
   session: Session;
@@ -22,7 +31,7 @@ export const artifactUpdate = ({ session }: UpdateArtifactProps) =>
   tool({
     description: 'Updates an existing artifact (text, code, image, etc.) based on a detailed prompt describing the changes. Requires the artifact\'s unique ID.',
     parameters: z.object({
-      id: z.string().uuid().describe('The UUID of the artifact to update. This ID must be from the current context.'),
+      id: z.string().describe('The UUID of the artifact to update. This ID must be from the current context.'),
       prompt: z.string().describe('A detailed text description of the changes to be made.'),
     }),
     execute: async ({ id, prompt }) => {
@@ -38,26 +47,38 @@ export const artifactUpdate = ({ session }: UpdateArtifactProps) =>
 
       const { doc: artifact, totalVersions } = artifactResult
 
-      const documentHandler = documentHandlersByArtifactKind.find(
-        (handler) => handler.kind === artifact.kind,
-      )
+      const handler = artifactTools.find((h) => h.kind === artifact.kind)
 
-      if (!documentHandler) {
-        childLogger.error({ kind: artifact.kind }, 'No document handler found for kind')
-        throw new Error(`No document handler found for kind: ${artifact.kind}`)
+      if (!handler?.update) {
+        const errorMsg = `Update operation for artifact of kind '${artifact.kind}' is not supported.`
+        childLogger.error(errorMsg)
+        return { error: errorMsg }
       }
 
-      childLogger.info('Executing document handler for update')
-      await documentHandler.onUpdateDocument({
+      const newContent = await handler.update({
         document: artifact,
-        // @ts-ignore - Assuming handler is updated to accept prompt
         description: prompt,
         session,
       })
 
+      await saveArtifact({
+        id: artifact.id,
+        title: artifact.title,
+        content: newContent,
+        kind: artifact.kind,
+        userId: session.user!.id!,
+        authorId: null, // Updated by AI
+      })
+
+      childLogger.info({ kind: artifact.kind, title: artifact.title }, 'Artifact updated. Starting summary generation.')
+
+      // We don't await this, it runs in the background
+      generateAndSaveSummary(id, newContent, artifact.kind);
+
       const newVersion = totalVersions + 1
 
       const result = {
+        toolName: AI_TOOL_NAMES.ARTIFACT_UPDATE,
         artifactId: id,
         artifactKind: artifact.kind,
         artifactTitle: artifact.title,
@@ -73,4 +94,4 @@ export const artifactUpdate = ({ session }: UpdateArtifactProps) =>
     },
   })
 
-// END OF: lib/ai/tools/artifactUpdate.ts
+// END OF: artifacts/tools/artifactUpdate.ts

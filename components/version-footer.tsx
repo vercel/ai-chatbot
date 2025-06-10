@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /**
  * @file components/version-footer.tsx
@@ -12,18 +12,18 @@
  * v1.0.0 (2025-06-10): Initial version. Fixed type imports (Artifact instead of Document), utility function name (getArtifactTimestampByIndex), and artifact ID property (artifactId).
  */
 
-import { isAfter } from 'date-fns';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { useSWRConfig } from 'swr';
-import { useWindowSize } from 'usehooks-ts';
+import { isAfter } from 'date-fns'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { useSWRConfig } from 'swr'
+import { useWindowSize } from 'usehooks-ts'
 
-import type { Artifact } from '@/lib/db/schema';
-import { getArtifactTimestampByIndex } from '@/lib/utils';
+import type { Artifact } from '@/lib/db/schema'
+import { getArtifactTimestampByIndex } from '@/lib/utils'
 
-import { LoaderIcon } from './icons';
-import { Button } from './ui/button';
-import { useArtifact } from '@/hooks/use-artifact';
+import { LoaderIcon } from './icons'
+import { Button } from './ui/button'
+import { useArtifact } from '@/hooks/use-artifact'
 
 interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
@@ -36,15 +36,15 @@ export const VersionFooter = ({
   documents,
   currentVersionIndex,
 }: VersionFooterProps) => {
-  const { artifact } = useArtifact();
+  const { artifact } = useArtifact()
 
-  const { width } = useWindowSize();
-  const isMobile = width < 768;
+  const { width } = useWindowSize()
+  const isMobile = width < 768
 
-  const { mutate } = useSWRConfig();
-  const [isMutating, setIsMutating] = useState(false);
+  const { mutate } = useSWRConfig()
+  const [isMutating, setIsMutating] = useState(false)
 
-  if (!documents) return;
+  if (!documents) return
 
   return (
     <motion.div
@@ -65,7 +65,7 @@ export const VersionFooter = ({
         <Button
           disabled={isMutating}
           onClick={async () => {
-            setIsMutating(true);
+            setIsMutating(true)
 
             mutate(
               `/api/document?id=${artifact.artifactId}`,
@@ -81,40 +81,40 @@ export const VersionFooter = ({
               {
                 optimisticData: documents
                   ? [
-                      ...documents.filter((document) =>
-                        isAfter(
-                          new Date(document.createdAt),
-                          new Date(
-                            getArtifactTimestampByIndex(
-                              documents,
-                              currentVersionIndex,
-                            ),
+                    ...documents.filter((document) =>
+                      isAfter(
+                        new Date(document.createdAt),
+                        new Date(
+                          getArtifactTimestampByIndex(
+                            documents,
+                            currentVersionIndex,
                           ),
                         ),
                       ),
-                    ]
+                    ),
+                  ]
                   : [],
               },
-            );
+            )
           }}
         >
           <div>Restore this version</div>
           {isMutating && (
             <div className="animate-spin">
-              <LoaderIcon />
+              <LoaderIcon/>
             </div>
           )}
         </Button>
         <Button
           variant="outline"
           onClick={() => {
-            handleVersionChange('latest');
+            handleVersionChange('latest')
           }}
         >
           Back to latest version
         </Button>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 // END OF: components/version-footer.tsx

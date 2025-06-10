@@ -1,73 +1,80 @@
 #!/bin/bash
 #
-# @file refactor_structure.sh
-# @description Скрипт для полного рефакторинга файловой структуры и нейминга с "Content/Document" на "Artifact".
+# @file refactor_artifacts.sh
+# @description Скрипт для полного рефакторинга файловой структуры, связанной с артефактами.
 # @version 1.0.0
-# @date 2025-06-09
+# @date 2025-06-10
 #
 
 set -e
 
-echo "🚀 Запуск комплексного рефакторинга структуры проекта..."
+echo "🚀 Запуск рефакторинга файловой структуры артефактов..."
 
 # --- Функция для вывода сообщений ---
 log_action() {
   echo "  -> $1"
 }
 
-# --- Переменные ---
-APP_DIR="app"
-COMPONENTS_DIR="components"
-AI_TOOLS_DIR="lib/ai/tools"
-MAIN_GROUP_DIR="$APP_DIR/(main)"
-API_DIR="$APP_DIR/api"
+# --- Основные директории ---
+ARTIFACTS_DIR="artifacts"
+TOOLS_DIR="$ARTIFACTS_DIR/tools"
+KINDS_DIR="$ARTIFACTS_DIR/kinds"
+OLD_TOOLS_DIR="lib/ai/tools"
+OLD_ARTIFACTS_LIB_DIR="lib/artifacts"
 
-# --- Шаг 1: Переименование директорий ---
-log_action "1. Переименование директорий..."
-if [ -d "$MAIN_GROUP_DIR/content" ]; then
-  mv "$MAIN_GROUP_DIR/content" "$MAIN_GROUP_DIR/artifacts"
-  echo "     ✅ Директория $MAIN_GROUP_DIR/content -> $MAIN_GROUP_DIR/artifacts"
+# --- Шаг 1: Создание новых директорий ---
+log_action "1. Создание новых директорий..."
+mkdir -p "$TOOLS_DIR"
+mkdir -p "$KINDS_DIR"
+echo "     ✅ Директории $TOOLS_DIR и $KINDS_DIR созданы."
+
+# --- Шаг 2: Перемещение реализаций по типам артефактов ---
+log_action "2. Перемещение реализаций по типам артефактов..."
+if [ -d "$ARTIFACTS_DIR/code" ]; then
+    mv "$ARTIFACTS_DIR/code" "$KINDS_DIR/code"
+    echo "     ✅ Перемещено: $ARTIFACTS_DIR/code -> $KINDS_DIR/code"
 fi
-if [ -d "$API_DIR/content" ]; then
-  mv "$API_DIR/content" "$API_DIR/artifacts"
-  echo "     ✅ Директория $API_DIR/content -> $API_DIR/artifacts"
+if [ -d "$ARTIFACTS_DIR/image" ]; then
+    mv "$ARTIFACTS_DIR/image" "$KINDS_DIR/image"
+    echo "     ✅ Перемещено: $ARTIFACTS_DIR/image -> $KINDS_DIR/image"
 fi
-if [ -d "$API_DIR/document" ]; then
-  mv "$API_DIR/document" "$API_DIR/artifact"
-  echo "     ✅ Директория $API_DIR/document -> $API_DIR/artifact"
+if [ -d "$ARTIFACTS_DIR/sheet" ]; then
+    mv "$ARTIFACTS_DIR/sheet" "$KINDS_DIR/sheet"
+    echo "     ✅ Перемещено: $ARTIFACTS_DIR/sheet -> $KINDS_DIR/sheet"
+fi
+if [ -d "$ARTIFACTS_DIR/text" ]; then
+    mv "$ARTIFACTS_DIR/text" "$KINDS_DIR/text"
+    echo "     ✅ Перемещено: $ARTIFACTS_DIR/text -> $KINDS_DIR/text"
 fi
 
-# --- Шаг 2: Переименование файлов компонентов и действий ---
-log_action "2. Переименование файлов..."
-# Компоненты
-mv "$COMPONENTS_DIR/multimodal-input.tsx" "$COMPONENTS_DIR/chat-input.tsx" 2>/dev/null || echo "     ⚠️ Не найден multimodal-input.tsx"
-mv "$COMPONENTS_DIR/document-preview.tsx" "$COMPONENTS_DIR/artifact-preview.tsx" 2>/dev/null || echo "     ⚠️ Не найден document-preview.tsx"
-mv "$COMPONENTS_DIR/content-card.tsx" "$COMPONENTS_DIR/artifact-card.tsx" 2>/dev/null || echo "     ⚠️ Не найден content-card.tsx"
-mv "$COMPONENTS_DIR/content-grid-client-wrapper.tsx" "$COMPONENTS_DIR/artifact-grid-client-wrapper.tsx" 2>/dev/null || echo "     ⚠️ Не найден content-grid-client-wrapper.tsx"
-mv "$COMPONENTS_DIR/content-grid-display.tsx" "$COMPONENTS_DIR/artifact-grid-display.tsx" 2>/dev/null || echo "     ⚠️ Не найден content-grid-display.tsx"
-echo "     ✅ Файлы компонентов переименованы."
+# --- Шаг 3: Перемещение AI-инструментов ---
+log_action "3. Перемещение AI-инструментов..."
+if [ -d "$OLD_TOOLS_DIR" ]; then
+    # Игнорируем constants.ts и get-weather.ts, так как они не относятся к артефактам напрямую
+    find "$OLD_TOOLS_DIR" -name "artifact*.ts" -exec mv {} "$TOOLS_DIR/" \;
+    echo "     ✅ Инструменты артефактов перемещены в $TOOLS_DIR"
+else
+    echo "     ⚠️ Директория $OLD_TOOLS_DIR не найдена."
+fi
 
-# --- Шаг 3: Удаление устаревших файлов ---
-log_action "3. Удаление устаревших файлов..."
-rm -f "$COMPONENTS_DIR/data-stream-handler.tsx"
-rm -f "$COMPONENTS_DIR/artifact-messages.tsx"
-rm -f "$AI_TOOLS_DIR/create-document.ts"
-rm -f "$AI_TOOLS_DIR/update-document.ts"
-rm -f "$AI_TOOLS_DIR/get-document.ts"
-rm -f "$AI_TOOLS_DIR/request-suggestions.ts"
-echo "     ✅ Устаревшие файлы удалены."
+# --- Шаг 4: Создание нового barrel-файла ---
+log_action "4. Создание barrel-файла..."
+touch "$KINDS_DIR/artifact-tools.ts"
+echo "     ✅ Пустой файл $KINDS_DIR/artifact-tools.ts создан."
 
-# --- Шаг 4: Создание заглушек для новых инструментов ---
-log_action "4. Создание заглушек для новых AI инструментов..."
-touch "$AI_TOOLS_DIR/artifactCreate.ts"
-touch "$AI_TOOLS_DIR/artifactUpdate.ts"
-touch "$AI_TOOLS_DIR/artifactEnhance.ts"
-touch "$AI_TOOLS_DIR/artifactContent.ts"
-touch "$AI_TOOLS_DIR/artifactDelete.ts"
-touch "$AI_TOOLS_DIR/artifactRestore.ts"
-echo "     ✅ Файлы-заглушки для инструментов созданы."
+# --- Шаг 5: Удаление старых директорий и файлов ---
+log_action "5. Удаление устаревших файлов и директорий..."
+if [ -d "$OLD_ARTIFACTS_LIB_DIR" ]; then
+    rm -rf "$OLD_ARTIFACTS_LIB_DIR"
+    echo "     ✅ Удалена директория $OLD_ARTIFACTS_LIB_DIR."
+fi
+# Очистка старой директории инструментов, оставляя только не-артефактные
+if [ -d "$OLD_TOOLS_DIR" ]; then
+    find "$OLD_TOOLS_DIR" -name "artifact*.ts" -type f -delete
+    echo "     ✅ Удалены старые копии инструментов артефактов из $OLD_TOOLS_DIR"
+fi
 
 
 echo "🎉 Рефакторинг файловой структуры завершен!"
-echo "➡️  Дайте команду 'chmod +x refactor_structure.sh' и затем './refactor_structure.sh' для применения изменений."
+echo "➡️  Дайте права на выполнение 'chmod +x refactor_artifacts.sh' и запустите './refactor_artifacts.sh' для применения изменений."
 echo "➡️  После этого я сгенерирую новое содержимое для всех измененных и созданных файлов."

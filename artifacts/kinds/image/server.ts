@@ -1,34 +1,37 @@
 /**
  * @file artifacts/image/server.ts
  * @description Серверный обработчик для артефактов-изображений.
- * @version 2.3.0
- * @date 2025-06-09
- * @updated Рефакторинг. Обработчик теперь возвращает URL изображения, а не пишет в стрим.
+ * @version 3.0.0
+ * @date 2025-06-10
+ * @updated Refactored to export a standalone `imageTool` object, removing the factory function.
  */
 
 /** HISTORY:
- * v2.3.0 (2025-06-09): Обработчик теперь возвращает URL.
- * v2.2.0 (2025-06-09): Добавлена проверка на `dataStream` перед записью.
- * v2.1.0 (2025-06-09): Обновлен импорт `createDocumentHandler`.
+ * v3.0.0 (2025-06-10): Refactored to export a standalone tool object.
+ * v2.4.0 (2025-06-10): Added `providerOptions` to `generateText` to request the correct image modality.
+ * v2.3.0 (2025-06-09): Рефакторинг. Обработчик теперь возвращает URL изображения.
  */
 
 import { myProvider } from '@/lib/ai/providers'
-import { createDocumentHandler } from '@/lib/artifacts/factory'
 import { type CoreMessage, type GeneratedFile, generateText } from 'ai'
 import { put } from '@vercel/blob'
 import { generateUUID } from '@/lib/utils'
 import { ChatSDKError } from '@/lib/errors'
+import type { ArtifactTool } from '@/artifacts/kinds/artifact-tools'
 
-export const imageDocumentHandler = createDocumentHandler<'image'>({
+export const imageTool: ArtifactTool = {
   kind: 'image',
-  onCreateDocument: async ({ title }) => {
+  create: async ({ prompt }) => {
     const { files } = await generateText({
       model: myProvider.languageModel('omni-image-model'),
-      prompt: title,
+      prompt,
+      providerOptions: {
+        google: { responseModalities: ['IMAGE', 'TEXT'] },
+      },
     })
 
     const imagePart = files.find(
-      (p: GeneratedFile): p is GeneratedFile => p.mimeType?.startsWith('image/')
+      (p: GeneratedFile): p is GeneratedFile => p.mimeType?.startsWith('image/'),
     )
 
     if (!imagePart || !imagePart.uint8Array) {
@@ -39,10 +42,9 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     const filename = `${generateUUID()}.png`
 
     const { url } = await put(filename, imageBuffer, { access: 'public' })
-
     return url
   },
-  onUpdateDocument: async ({ document, description }) => {
+  update: async ({ document, description }) => {
     const imageUrl = document.content
     if (!imageUrl) {
       throw new ChatSDKError('bad_request:api', 'Cannot update image: source document content (URL) is empty.')
@@ -59,17 +61,20 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
       role: 'user',
       content: [
         { type: 'text', text: description },
-        { type: 'image', image: imageBufferOriginal }
-      ]
+        { type: 'image', image: imageBufferOriginal },
+      ],
     }]
 
     const { files } = await generateText({
       model: myProvider.languageModel('omni-image-model'),
       messages,
+      providerOptions: {
+        google: { responseModalities: ['IMAGE', 'TEXT'] },
+      },
     })
 
     const imagePart = files.find(
-      (p: GeneratedFile): p is GeneratedFile => p.mimeType?.startsWith('image/')
+      (p: GeneratedFile): p is GeneratedFile => p.mimeType?.startsWith('image/'),
     )
     if (!imagePart || !imagePart.uint8Array) {
       throw new ChatSDKError('bad_request:api', 'Image editing failed: no image data received from the model.')
@@ -79,9 +84,8 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     const filename = `${generateUUID()}.png`
 
     const { url } = await put(filename, imageBufferNew, { access: 'public' })
-
     return url
   },
-})
+}
 
 // END OF: artifacts/image/server.ts

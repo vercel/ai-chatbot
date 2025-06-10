@@ -1,14 +1,14 @@
 /**
- * @file lib/ai/tools/artifactEnhance.ts
+ * @file artifacts/tools/artifactEnhance.ts
  * @description Инструмент для "улучшения" артефакта по предопределенному рецепту.
- * @version 1.1.0
- * @date 2025-06-09
- * @updated Исправлена логика работы с `streamObject` и сохранения новой версии артефакта.
+ * @version 2.0.0
+ * @date 2025-06-10
+ * @updated Refactored to use the ArtifactTool registry for dispatching logic.
  */
 
 /** HISTORY:
- * v1.1.0 (2025-06-09): Исправлена работа с `await`, добавлено создание новой версии артефакта.
- * v1.0.0 (2025-06-09): Начальная версия.
+ * v2.0.0 (2025-06-10): Refactored to use ArtifactTool registry.
+ * v1.2.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
  */
 
 import { streamObject, tool } from 'ai'
@@ -16,11 +16,12 @@ import type { Session } from 'next-auth'
 import { z } from 'zod'
 import { getArtifactById, saveArtifact, saveSuggestions } from '@/lib/db/queries'
 import { createLogger } from '@fab33/sys-logger'
-import { myProvider } from '../providers'
+import { myProvider } from '@/lib/ai/providers'
 import { generateUUID } from '@/lib/utils'
 import type { Suggestion } from '@/lib/db/schema'
+import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
 
-const logger = createLogger('lib:ai:tools:artifactEnhance')
+const logger = createLogger('artifacts:tools:artifactEnhance')
 
 interface EnhanceArtifactProps {
   session: Session;
@@ -35,7 +36,7 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
   tool({
     description: 'Enhances a document by applying a specific recipe, like "polish" or "suggest". This creates a new version of the artifact with suggestions.',
     parameters: z.object({
-      id: z.string().uuid().describe('The UUID of the artifact to enhance.'),
+      id: z.string().describe('The UUID of the artifact to enhance.'),
       recipe: z.enum(['polish', 'suggest']).describe('The enhancement recipe to apply.'),
     }),
     execute: async ({ id, recipe }) => {
@@ -62,7 +63,7 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
       const prompt = recipes[recipe]
       const suggestions: Array<Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>> = []
 
-      const { object } = await streamObject({
+      const { object: objectPromise } = await streamObject({
         model: myProvider.languageModel('artifact-model'),
         system: prompt,
         prompt: artifact.content ?? '',
@@ -74,9 +75,10 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
           }))
         }),
       })
+      const resolvedObject = await objectPromise
 
-      if (object.suggestions) {
-        for (const item of object.suggestions) {
+      if (resolvedObject.suggestions) {
+        for (const item of resolvedObject.suggestions) {
           if (item?.originalSentence && item?.suggestedSentence && item?.description) {
             suggestions.push({
               originalText: item.originalSentence,
@@ -97,7 +99,7 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
         await saveSuggestions({
           suggestions: suggestions.map((s) => ({
             ...s,
-            userId: session.user!.id,
+            userId: session.user!.id!,
             createdAt: new Date(),
             documentCreatedAt: newVersionDate,
           })),
@@ -106,6 +108,7 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
 
       const newVersionNumber = totalVersions + 1
       const result = {
+        toolName: AI_TOOL_NAMES.ARTIFACT_ENHANCE,
         artifactId: id,
         artifactKind: artifact.kind,
         artifactTitle: artifact.title,
@@ -121,4 +124,4 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
     },
   })
 
-// END OF: lib/ai/tools/artifactEnhance.ts
+// END OF: artifacts/tools/artifactEnhance.ts

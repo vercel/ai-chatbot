@@ -1,12 +1,15 @@
 /**
  * @file components/message.tsx
  * @description Компонент для отображения одного сообщения в чате.
- * @version 1.9.2
- * @date 2025-06-07
- * @updated Исправлена ошибка типа при проверке `part.type` с помощью type assertion.
+ * @version 2.0.0
+ * @date 2025-06-10
+ * @updated Renders ArtifactPreview for artifact-related tool results and uses AI_TOOL_NAMES constants.
  */
 
 /** HISTORY:
+ * v2.0.0 (2025-06-10): Updated to handle new artifact tool names using AI_TOOL_NAMES and render ArtifactPreview component.
+ * v1.9.4 (2025-06-10): Fixed TS2304 by adding DocumentToolResult to the import statement from './document'.
+ * v1.9.3 (2025-06-10): Fixed TS2307 by removing import for missing DocumentPreview and updated logic to use DocumentToolCall and DocumentToolResult components for relevant tool invocations.
  * v1.9.2 (2025-06-07): Использован `as any` для обхода слишком строгой проверки типов в `hasToolResultForImage`.
  * v1.9.1 (2025-06-07): Добавлен условный рендеринг `PreviewAttachment` для оптимистичного UI.
  * v1.9.0 (2025-06-07): Удален рендеринг `experimental_attachments`.
@@ -18,8 +21,8 @@ import type { UIMessage } from 'ai'
 import cx from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
 import { memo, useState } from 'react'
-import { DocumentToolCall, } from './document'
-import { CopyIcon, PencilEditIcon, SparklesIcon, TrashIcon, RedoIcon } from './icons'
+import { DocumentToolCall } from './document'
+import { CopyIcon, PencilEditIcon, RedoIcon, SparklesIcon, TrashIcon } from './icons'
 import { Markdown } from './markdown'
 import { PreviewAttachment } from './preview-attachment'
 import { Weather } from './weather'
@@ -28,12 +31,13 @@ import { cn, sanitizeText } from '@/lib/utils'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { MessageEditor } from './message-editor'
-import { DocumentPreview } from './document-preview'
 import { MessageReasoning } from './message-reasoning'
 import type { UseChatHelpers } from '@ai-sdk/react'
 import { useCopyToClipboard } from 'usehooks-ts'
 import { toast } from './toast'
 import { deleteMessage, regenerateAssistantResponse } from '@/app/(main)/chat/actions'
+import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
+import { ArtifactPreview } from './artifact-preview'
 
 const PurePreviewMessage = ({
   chatId,
@@ -64,8 +68,8 @@ const PurePreviewMessage = ({
       .join('\n')
 
     if (!textContent) {
-        toast({type: 'error', description: 'Нечего копировать.'})
-        return;
+      toast({ type: 'error', description: 'Нечего копировать.' })
+      return
     }
 
     copyToClipboard(textContent)
@@ -83,7 +87,7 @@ const PurePreviewMessage = ({
   }
 
   const handleRegenerate = async () => {
-    toast({ type: 'loading', description: 'Перегенерация ответа...' });
+    toast({ type: 'loading', description: 'Перегенерация ответа...' })
     try {
       setMessages((messages) => messages.filter((m) => m.id !== message.id))
       await regenerateAssistantResponse({ assistantMessageId: message.id })
@@ -93,10 +97,9 @@ const PurePreviewMessage = ({
     }
   }
 
-  // ИСПРАВЛЕНИЕ: Используем `as any` для обхода ошибки компиляции типов.
   const hasToolResultForImage = message.parts?.some(
     part => (part as any).type === 'tool-result' && (part as any).result?.kind === 'image'
-  );
+  )
 
   return (
     <AnimatePresence>
@@ -131,18 +134,18 @@ const PurePreviewMessage = ({
             })}
           >
             {message.experimental_attachments && !hasToolResultForImage && (
-                <div
-                  data-testid={`message-attachments`}
-                  className="flex flex-row justify-end gap-2"
-                >
-                  {message.experimental_attachments.map((attachment) => (
-                    <PreviewAttachment
-                      key={attachment.url}
-                      attachment={attachment}
-                    />
-                  ))}
-                </div>
-              )}
+              <div
+                data-testid={`message-attachments`}
+                className="flex flex-row justify-end gap-2"
+              >
+                {message.experimental_attachments.map((attachment) => (
+                  <PreviewAttachment
+                    key={attachment.url}
+                    attachment={attachment}
+                  />
+                ))}
+              </div>
+            )}
 
             {message.parts?.map((part, index) => {
               const { type } = part
@@ -176,29 +179,37 @@ const PurePreviewMessage = ({
                       {!isReadonly && (
                         <div
                           className="shrink-0 flex items-center opacity-0 group-hover/message:opacity-100 transition-opacity">
-                            {message.role === 'user' ? (
-                                <>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={handleCopy}><CopyIcon size={14}/></Button></TooltipTrigger>
-                                        <TooltipContent>Скопировать</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={() => setMode('edit')}><PencilEditIcon size={14}/></Button></TooltipTrigger>
-                                        <TooltipContent>Редактировать</TooltipContent>
-                                    </Tooltip>
-                                </>
-                            ) : (
-                                <>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={handleCopy}><CopyIcon size={14}/></Button></TooltipTrigger>
-                                        <TooltipContent>Скопировать</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={handleRegenerate}><RedoIcon size={14}/></Button></TooltipTrigger>
-                                        <TooltipContent>Перегенерировать</TooltipContent>
-                                    </Tooltip>
-                                </>
-                            )}
+                          {message.role === 'user' ? (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
+                                                                onClick={handleCopy}><CopyIcon
+                                  size={14}/></Button></TooltipTrigger>
+                                <TooltipContent>Скопировать</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
+                                                                onClick={() => setMode('edit')}><PencilEditIcon
+                                  size={14}/></Button></TooltipTrigger>
+                                <TooltipContent>Редактировать</TooltipContent>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
+                                                                onClick={handleCopy}><CopyIcon
+                                  size={14}/></Button></TooltipTrigger>
+                                <TooltipContent>Скопировать</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7"
+                                                                onClick={handleRegenerate}><RedoIcon
+                                  size={14}/></Button></TooltipTrigger>
+                                <TooltipContent>Перегенерировать</TooltipContent>
+                              </Tooltip>
+                            </>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild><Button variant="ghost" size="icon"
                                                             className="size-7 text-destructive"
@@ -234,48 +245,33 @@ const PurePreviewMessage = ({
                 if (state === 'call') {
                   const { args } = toolInvocation
 
-                  return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'getWeather' ? (
-                        <Weather/>
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args}/>
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall
-                          type="update"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : null}
-                    </div>
-                  )
+                  switch (toolName) {
+                    case AI_TOOL_NAMES.GET_WEATHER:
+                      return <div key={toolCallId} className="skeleton"><Weather/></div>
+                    case AI_TOOL_NAMES.ARTIFACT_CREATE:
+                      return <DocumentToolCall key={toolCallId} type="create" args={args} isReadonly={isReadonly}/>
+                    case AI_TOOL_NAMES.ARTIFACT_UPDATE:
+                      return <DocumentToolCall key={toolCallId} type="update" args={args} isReadonly={isReadonly}/>
+                    default:
+                      return null
+                  }
                 }
 
                 if (state === 'result') {
-                  const { result } = toolInvocation
+                  const { result } = toolInvocation;
 
                   switch (toolName) {
-                    case 'getWeather':
-                      return <Weather key={toolCallId} weatherAtLocation={result}/>
-                    case 'createDocument':
-                    case 'updateDocument':
-                    case 'requestSuggestions':
-                    case 'generateOrModifyImage':
-                       return <DocumentPreview key={toolCallId} isReadonly={isReadonly} result={result}/>
-                    case 'getDocument':
+                    case AI_TOOL_NAMES.GET_WEATHER:
+                      return <Weather key={toolCallId} weatherAtLocation={result}/>;
+                    case AI_TOOL_NAMES.ARTIFACT_CREATE:
+                    case AI_TOOL_NAMES.ARTIFACT_UPDATE:
+                    case AI_TOOL_NAMES.ARTIFACT_ENHANCE:
+                    case AI_TOOL_NAMES.ARTIFACT_DELETE:
+                    case AI_TOOL_NAMES.ARTIFACT_RESTORE:
+                    case AI_TOOL_NAMES.ARTIFACT_CONTENT:
+                      return <ArtifactPreview key={toolCallId} result={result} isReadonly={isReadonly}/>;
                     default:
-                      return null
+                      return null;
                   }
                 }
               }

@@ -1,12 +1,14 @@
 /**
  * @file components/sidebar-history.tsx
  * @description Компонент для отображения истории чатов в сайдбаре.
- * @version 1.1.0
- * @date 2025-06-06
- * @updated Заменен импорт `sonner` на локальную обертку `toast` для консистентности.
+ * @version 1.1.2
+ * @date 2025-06-10
+ * @updated Corrected toast type from 'info' to 'loading' in handleRename (TS2322).
  */
 
 /** HISTORY:
+ * v1.1.2 (2025-06-10): Fixed TS2322 by changing invalid toast type 'info' to 'loading' for the rename placeholder.
+ * v1.1.1 (2025-06-10): Fixed TS2741 by providing a placeholder onRename handler to ChatItem instances. Full rename functionality is pending.
  * v1.1.0 (2025-06-06): Заменен импорт `sonner` на локальную обертку `toast`.
  * v1.0.0 (2025-06-06): Начальная версия, адаптированная под новый упрощенный компонент сайдбара.
  */
@@ -118,6 +120,11 @@ export function SidebarHistory ({ user }: { user: User | undefined }) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  const handleRename = (chatId: string, currentTitle: string) => {
+    console.log(`Rename chat requested: ${chatId}, current title: "${currentTitle}"`)
+    toast({ type: 'loading', description: 'Rename feature is pending implementation.' })
+  }
 
   const hasReachedEnd = paginatedChatHistories
     ? paginatedChatHistories.some((page) => page.hasMore === false)
@@ -233,6 +240,7 @@ export function SidebarHistory ({ user }: { user: User | undefined }) {
                             setDeleteId(chatId)
                             setShowDeleteDialog(true)
                           }}
+                          onRename={handleRename}
                           setOpenMobile={setOpenMobile}
                         />
                       ))}
@@ -253,6 +261,7 @@ export function SidebarHistory ({ user }: { user: User | undefined }) {
                             setDeleteId(chatId)
                             setShowDeleteDialog(true)
                           }}
+                          onRename={handleRename}
                           setOpenMobile={setOpenMobile}
                         />
                       ))}
@@ -273,6 +282,7 @@ export function SidebarHistory ({ user }: { user: User | undefined }) {
                             setDeleteId(chatId)
                             setShowDeleteDialog(true)
                           }}
+                          onRename={handleRename}
                           setOpenMobile={setOpenMobile}
                         />
                       ))}
@@ -293,6 +303,7 @@ export function SidebarHistory ({ user }: { user: User | undefined }) {
                             setDeleteId(chatId)
                             setShowDeleteDialog(true)
                           }}
+                          onRename={handleRename}
                           setOpenMobile={setOpenMobile}
                         />
                       ))}
@@ -313,6 +324,7 @@ export function SidebarHistory ({ user }: { user: User | undefined }) {
                             setDeleteId(chatId)
                             setShowDeleteDialog(true)
                           }}
+                          onRename={handleRename}
                           setOpenMobile={setOpenMobile}
                         />
                       ))}

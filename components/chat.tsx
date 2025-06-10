@@ -1,12 +1,13 @@
 /**
  * @file components/chat.tsx
  * @description Основной компонент чата.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Полный рефакторинг: удалена кастомная обработка `data`, компонент теперь полностью полагается на `messages` от `useChat`.
+ * @version 2.0.1
+ * @date 2025-06-10
+ * @updated Removed obsolete 'votes' prop from Messages component invocation (TS2322).
  */
 
 /** HISTORY:
+ * v2.0.1 (2025-06-10): Fixed TS2322 by removing the unsupported 'votes' prop from the Messages component.
  * v2.0.0 (2025-06-09): Рефакторинг. Удалена обработка `data` и `DataStreamHandler`.
  * v1.9.3 (2025-06-09): Добавлена обработка события `artifact-created`.
  */
@@ -113,7 +114,6 @@ export function Chat ({
         <Messages
           chatId={id}
           status={status}
-          votes={undefined}
           messages={messages}
           setMessages={setMessages}
           reload={reload}

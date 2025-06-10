@@ -1,12 +1,13 @@
 /**
  * @file components/main-layout-client.tsx
  * @description Клиентский компонент-обертка для основного макета приложения. Управляет сайдбаром и артефактом.
- * @version 1.8.2
- * @date 2025-06-06
- * @updated Добавлена синхронизация состояния панели (onCollapse/onExpand) с контекстом useSidebar.
+ * @version 1.8.3
+ * @date 2025-06-10
+ * @updated Removed unsupported 'votes' prop from Artifact component invocation (TS2322).
  */
 
 /** HISTORY:
+ * v1.8.3 (2025-06-10): Fixed TS2322 by removing the 'votes' prop from the Artifact component, as it is no longer a valid prop.
  * v1.8.2 (2025-06-06): Добавлена синхронизация состояния через onCollapse/onExpand.
  * v1.8.1 (2025-06-06): Улучшен UX ресайза сайдбара.
  * v1.8.0 (2025-06-06): Исправлена структура для корректного вызова хука и добавлено императивное управление панелью.
@@ -117,7 +118,6 @@ function MainLayoutContent ({
                   setAttachments={() => {}}
                   messages={[]}
                   setMessages={() => {}}
-                  votes={undefined}
                   append={() => Promise.resolve(null)}
                   handleSubmit={() => {}}
                   reload={() => Promise.resolve(null)}

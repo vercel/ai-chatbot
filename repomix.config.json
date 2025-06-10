@@ -32,6 +32,7 @@
       ".aider",
       "*.patch",
       "*.log",
+      "*-lock.*",
       "LICENSE"
     ]
   },

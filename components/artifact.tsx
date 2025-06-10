@@ -1,12 +1,13 @@
 /**
  * @file components/artifact.tsx
  * @description Основной компонент-контейнер для артефакта.
- * @version 2.1.1
+ * @version 2.2.0
  * @date 2025-06-10
- * @updated Corrected prop name passed to VersionFooter (documents instead of artifacts).
+ * @updated Добавлен экспорт `artifactKinds` для использования в Zod-схемах и исправлена ошибка типизации в VersionFooter.
  */
 
 /** HISTORY:
+ * v2.2.0 (2025-06-10): Добавлен экспорт `artifactKinds` и исправлена ошибка TS2322 в VersionFooter.
  * v2.1.1 (2025-06-10): Renamed 'artifacts' prop to 'documents' when passing to VersionFooter to match component's expected props (TS2322).
  * v2.1.0 (2025-06-09): Исправлены ошибки типизации.
  * v2.0.0 (2025-06-09): Адаптирован под новую архитектуру.
@@ -23,10 +24,10 @@ import { VersionFooter } from './version-footer'
 import { ArtifactActions } from './artifact-actions'
 import { ArtifactCloseButton } from './artifact-close-button'
 import { useArtifact } from '@/hooks/use-artifact'
-import { imageArtifact } from '@/artifacts/image/client'
-import { codeArtifact } from '@/artifacts/code/client' // Исправлено
-import { sheetArtifact } from '@/artifacts/sheet/client'
-import { textArtifact } from '@/artifacts/text/client'
+import { codeArtifact } from '@/artifacts/kinds/code/client'
+import { imageArtifact } from '@/artifacts/kinds/image/client'
+import { sheetArtifact } from '@/artifacts/kinds/sheet/client'
+import { textArtifact } from '@/artifacts/kinds/text/client'
 import equal from 'fast-deep-equal'
 import type { UseChatHelpers } from '@ai-sdk/react'
 import { Button } from './ui/button'
@@ -44,7 +45,9 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
 ]
-export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
+// Создаем массив строк для использования в Zod
+export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export type ArtifactKind = (typeof artifactKinds)[number];
 export type ArtifactDisplayMode = 'split' | 'full';
 
 export interface UIArtifact {
@@ -94,7 +97,6 @@ function PureArtifact ({
   const {
     data: artifacts,
     isLoading: isArtifactsFetching,
-    mutate: mutateArtifacts,
   } = useSWR<Array<DBArtifact>>(
     artifact.artifactId && artifact.status !== 'streaming'
       ? `/api/artifact?id=${artifact.artifactId}`

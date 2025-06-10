@@ -1,8 +1,19 @@
-import type { Suggestion } from '@/lib/db/schema';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
-import type { DataStreamDelta } from './data-stream-handler';
-import type { UIArtifact } from './artifact';
+/**
+ * @file components/create-artifact.tsx
+ * @description Defines the structure and configuration for different artifact types.
+ * @version 1.0.0
+ * @date 2025-06-10
+ * @updated Initial version. Fixed TS2307 by removing DataStreamDelta import and typing streamPart as any due to removal of DataStreamHandler.
+ */
+
+/** HISTORY:
+ * v1.0.0 (2025-06-10): Initial version. Addressed TS2307 concerning missing './data-stream-handler'. Typed 'streamPart' in onStreamPart as 'any' as DataStreamDelta is obsolete.
+ */
+
+import type { Suggestion } from '@/lib/db/schema'
+import type { UseChatHelpers } from '@ai-sdk/react'
+import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react'
+import type { UIArtifact } from './artifact'
 
 export type ArtifactActionContext<M = any> = {
   content: string;
@@ -63,30 +74,32 @@ type ArtifactConfig<T extends string, M = any> = {
   onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setArtifact: Dispatch<SetStateAction<UIArtifact>>;
-    streamPart: DataStreamDelta;
+    streamPart: any;
   }) => void;
 };
 
 export class Artifact<T extends string, M = any> {
-  readonly kind: T;
-  readonly description: string;
-  readonly content: ComponentType<ArtifactContent<M>>;
-  readonly actions: Array<ArtifactAction<M>>;
-  readonly toolbar: ArtifactToolbarItem[];
-  readonly initialize?: (parameters: InitializeParameters) => void;
+  readonly kind: T
+  readonly description: string
+  readonly content: ComponentType<ArtifactContent<M>>
+  readonly actions: Array<ArtifactAction<M>>
+  readonly toolbar: ArtifactToolbarItem[]
+  readonly initialize?: (parameters: InitializeParameters) => void
   readonly onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setArtifact: Dispatch<SetStateAction<UIArtifact>>;
-    streamPart: DataStreamDelta;
-  }) => void;
+    streamPart: any;
+  }) => void
 
-  constructor(config: ArtifactConfig<T, M>) {
-    this.kind = config.kind;
-    this.description = config.description;
-    this.content = config.content;
-    this.actions = config.actions || [];
-    this.toolbar = config.toolbar || [];
-    this.initialize = config.initialize || (async () => ({}));
-    this.onStreamPart = config.onStreamPart;
+  constructor (config: ArtifactConfig<T, M>) {
+    this.kind = config.kind
+    this.description = config.description
+    this.content = config.content
+    this.actions = config.actions || []
+    this.toolbar = config.toolbar || []
+    this.initialize = config.initialize || (async () => ({}))
+    this.onStreamPart = config.onStreamPart
   }
 }
+
+// END OF: components/create-artifact.tsx

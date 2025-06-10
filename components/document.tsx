@@ -1,12 +1,13 @@
 /**
  * @file components/document.tsx
  * @description Компоненты для отображения результатов вызова тулзов, связанных с документами.
- * @version 1.2.0
- * @date 2025-06-06
- * @updated Восстановлена функция getActionText и исправлен импорт toast.
+ * @version 1.2.1
+ * @date 2025-06-10
+ * @updated Used 'artifactId' instead of 'documentId' in setArtifact call (TS2353).
  */
 
 /** HISTORY:
+ * v1.2.1 (2025-06-10): Corrected object literal for setArtifact: changed 'documentId' to 'artifactId' to match UIArtifact type (TS2353).
  * v1.2.0 (2025-06-06): Восстановлена утерянная функция getActionText и исправлен импорт toast.
  * v1.1.0 (2025-06-06): Исправлена ошибка типа TS2739: добавлено свойство `saveStatus`.
  * v1.0.0 (2025-06-06): Добавлен недостающий проп 'displayMode' при вызове setArtifact.
@@ -72,7 +73,7 @@ function PureDocumentToolResult ({
         }
 
         setArtifact({
-          documentId: result.id,
+          artifactId: result.id,
           kind: result.kind,
           content: '',
           title: result.title,

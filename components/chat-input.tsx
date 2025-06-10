@@ -1,12 +1,15 @@
 /**
  * @file components/chat-input.tsx
  * @description Компонент для ввода сообщений, включая текст и файлы с авто-созданием артефактов.
- * @version 2.0.1
+ * @version 2.0.4
  * @date 2025-06-10
- * @updated Set correct message role to 'tool' when appending artifact creation results (TS2322).
+ * @updated Stringified content for 'data' role messages in append (TS2322).
  */
 
 /** HISTORY:
+ * v2.0.4 (2025-06-10): Fixed TS2322 by stringifying the content for 'data' role messages, as append expects content to be a string.
+ * v2.0.3 (2025-06-10): Changed message role to 'data' and content structure for appending artifact info to resolve TS2322 with useChat.append.
+ * v2.0.2 (2025-06-10): Fixed TS2322 by restructuring appended 'tool' message to use 'content' field for ToolResultPart array, not 'parts'.
  * v2.0.1 (2025-06-10): Fixed TS2322 by changing message role to 'tool' when appending artifact creation tool results.
  * v2.0.0 (2025-06-09): Переименован, добавлено авто-создание артефактов.
  * v1.7.0 (2025-06-07): Исправлена логика загрузки файлов на client-side.
@@ -119,14 +122,13 @@ export function ChatInput ({
 
           append({
             id: generateUUID(),
-            role: 'tool', // Changed from 'user'
-            content: '',
-            parts: [{
+            role: 'data',
+            content: JSON.stringify({ // Stringify the object for the content field
               type: 'tool-result',
               toolCallId: generateUUID(),
               toolName: 'artifactCreate',
               result: artifactMetadata
-            }]
+            })
           })
         }
         toast({ type: 'success', description: 'Artifact(s) created successfully!' })

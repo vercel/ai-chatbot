@@ -1,8 +1,15 @@
 /**
- * @file lib/ai/tools/artifactContent.ts
+ * @file artifacts/tools/artifactContent.ts
  * @description AI-инструмент для получения полного содержимого артефакта.
- * @version 1.0.0
- * @date 2025-06-09
+ * @version 2.0.0
+ * @date 2025-06-10
+ * @updated Moved file to artifacts/tools directory.
+ */
+
+/** HISTORY:
+ * v2.0.0 (2025-06-10): Moved file to new directory.
+ * v1.1.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
+ * v1.0.0 (2025-06-09): Initial version.
  */
 
 import { tool } from 'ai'
@@ -10,13 +17,14 @@ import { z } from 'zod'
 import { getArtifactById } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
 import { createLogger } from '@fab33/sys-logger'
+import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
 
-const logger = createLogger('lib:ai:tools:artifactContent')
+const logger = createLogger('artifacts:tools:artifactContent')
 
 export const artifactContent = tool({
   description: 'Gets the full content of an artifact by its ID and optional version. Use this to read a document to answer a question or perform a task.',
   parameters: z.object({
-    artifactId: z.string().uuid({ message: 'Invalid artifact ID. Please provide a valid UUID.' }).describe('The UUID of the artifact to retrieve.'),
+    artifactId: z.string({ message: 'Invalid artifact ID. Please provide a valid UUID.' }).describe('The UUID of the artifact to retrieve.'),
     version: z.number().optional().describe('The specific version number (1-indexed). If omitted, the latest version is returned.'),
   }),
   execute: async (args) => {
@@ -36,6 +44,7 @@ export const artifactContent = tool({
       const returnedVersionNumber = version ?? totalVersions
 
       const finalResult = {
+        toolName: AI_TOOL_NAMES.ARTIFACT_CONTENT,
         artifactId: doc.id,
         artifactTitle: doc.title,
         artifactKind: doc.kind,
@@ -59,4 +68,4 @@ export const artifactContent = tool({
   },
 })
 
-// END OF: lib/ai/tools/artifactContent.ts
+// END OF: artifacts/tools/artifactContent.ts

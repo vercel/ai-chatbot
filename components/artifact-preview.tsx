@@ -1,18 +1,18 @@
 /**
  * @file components/artifact-preview.tsx
  * @description Компонент для отображения превью артефактов в чате.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Переименован, адаптирован под новую архитектуру с ArtifactMetadata и фоновую загрузку данных.
+ * @version 2.1.0
+ * @date 2025-06-10
+ * @updated Добавлена проверка на наличие ошибки в `result` для предотвращения TS2339.
  */
 
 /** HISTORY:
+ * v2.1.0 (2025-06-10): Добавлена проверка на ошибку в `result`.
  * v2.0.0 (2025-06-09): Переименован, адаптирован под ArtifactMetadata и SWR.
- * v1.2.0 (2025-06-07): Реализован диспетчер превью.
  */
 import { memo, type MouseEvent, useCallback, useMemo, useRef, } from 'react'
 import type { ArtifactKind } from './artifact'
-import { BoxIcon, CodeIcon, FileIcon, FullscreenIcon, ImageIcon } from './icons'
+import { BoxIcon, CodeIcon, FileIcon, FullscreenIcon, ImageIcon, WarningIcon } from './icons'
 import { cn, fetcher } from '@/lib/utils'
 import type { Artifact as DBArtifact } from '@/lib/db/schema'
 import { InlineDocumentSkeleton } from './document-skeleton'
@@ -20,18 +20,33 @@ import useSWR from 'swr'
 import { useArtifact } from '@/hooks/use-artifact'
 import { ImageEditor } from './image-editor'
 import { toast } from './toast'
-import type { artifactCreate } from '@/lib/ai/tools/artifactCreate'
+import type { artifactCreate } from '@/artifacts/tools/artifactCreate'
 
-type ArtifactMetadata = Awaited<ReturnType<ReturnType<typeof artifactCreate>['execute']>>;
+type ArtifactToolResult = Awaited<ReturnType<ReturnType<typeof artifactCreate>['execute']>>;
 
 interface ArtifactPreviewProps {
   isReadonly: boolean;
-  result: ArtifactMetadata;
+  result: ArtifactToolResult;
 }
 
 export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
   const { setArtifact } = useArtifact()
-  const artifactId = result.artifactId
+
+  // Проверяем, вернул ли инструмент ошибку
+  if ('error' in result) {
+    return (
+      <div
+        className="h-auto overflow-y-scroll border rounded-2xl dark:bg-muted border-destructive/50 dark:border-destructive/50 p-4 flex flex-row items-start gap-3 text-destructive">
+        <WarningIcon className="size-5 shrink-0 mt-0.5"/>
+        <div>
+          <h4 className="font-bold">Ошибка создания артефакта</h4>
+          <p className="text-sm">{result.error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const { artifactId, artifactTitle, artifactKind, description, summary } = result
 
   const { data: artifacts, isLoading } = useSWR<Array<DBArtifact>>(
     artifactId ? `/api/artifact?id=${artifactId}` : null,
@@ -46,11 +61,11 @@ export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
 
   const handleOpenArtifact = useCallback((event: MouseEvent<HTMLElement>) => {
     const boundingBox = event.currentTarget.getBoundingClientRect()
-    toast({ type: 'loading', description: `Открываю артефакт "${result.artifactTitle}"...` })
+    toast({ type: 'loading', description: `Открываю артефакт "${artifactTitle}"...` })
     setArtifact({
       artifactId: artifactId,
-      kind: result.artifactKind,
-      title: result.artifactTitle,
+      kind: artifactKind,
+      title: artifactTitle,
       content: fullArtifact?.content ?? '',
       status: 'idle',
       saveStatus: 'saved',
@@ -63,25 +78,25 @@ export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
         height: boundingBox.height,
       },
     })
-  }, [setArtifact, result, artifactId, fullArtifact])
+  }, [setArtifact, artifactId, artifactKind, artifactTitle, fullArtifact])
 
   return (
     <div className="relative w-full cursor-pointer" ref={hitboxRef} onClick={handleOpenArtifact} role="button"
          tabIndex={0}>
       <ArtifactHeader
-        title={result.artifactTitle}
-        kind={result.artifactKind}
-        description={result.description}
+        title={artifactTitle}
+        kind={artifactKind}
+        description={description}
       />
       <div
-        className={cn('h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700', { 'p-6': result.artifactKind !== 'image' })}>
+        className={cn('h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700', { 'p-6': artifactKind !== 'image' })}>
         {isLoading && !fullArtifact ? <InlineDocumentSkeleton/> :
-          result.artifactKind === 'image' ? <ImageEditor title={result.artifactTitle}
-                                                         content={fullArtifact?.content ?? ''} status="idle"
-                                                         isInline={true}/> :
+          artifactKind === 'image' ? <ImageEditor title={artifactTitle}
+                                                  content={fullArtifact?.content ?? ''} status="idle"
+                                                  isInline={true}/> :
             <div className="prose dark:prose-invert prose-sm">
               <p
-                className="text-muted-foreground italic">{fullArtifact?.summary || result.summary || 'Summary is being generated...'}</p>
+                className="text-muted-foreground italic">{fullArtifact?.summary || summary || 'Summary is being generated...'}</p>
             </div>
         }
       </div>
