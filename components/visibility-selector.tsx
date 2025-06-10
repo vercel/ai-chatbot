@@ -17,6 +17,7 @@ import {
   LockIcon,
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { useShareDialog } from './share-dialog-context';
 
 export type VisibilityType = 'private' | 'organisation';
 
@@ -55,6 +56,8 @@ export function VisibilitySelector({
     initialVisibility: selectedVisibilityType,
   });
 
+  const { openShareDialog } = useShareDialog();
+
   const selectedVisibility = useMemo(
     () => visibilities.find((visibility) => visibility.id === visibilityType),
     [visibilityType],
@@ -85,6 +88,9 @@ export function VisibilitySelector({
             key={visibility.id}
             onSelect={() => {
               setVisibilityType(visibility.id);
+              if (visibility.id === 'organisation') {
+                openShareDialog(chatId, 'organisation');
+              }
               setOpen(false);
             }}
             className="gap-4 group/item flex flex-row justify-between items-center"
