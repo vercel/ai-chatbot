@@ -37,6 +37,9 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  session: {
+    strategy: 'jwt',
+  },
   providers: [
     Credentials({
       credentials: {},
