@@ -1,9 +1,14 @@
 /**
  * @file app/(site)/page.tsx
  * @description Лендинг-заглушка для основного домена.
- * @version 1.0.0
- * @date 2025-06-12
- * @updated Начальная версия.
+ * @version 1.0.1
+ * @date 2025-06-11
+ * @updated Replaced arbitrary value with Tailwind theme token.
+ */
+
+/** HISTORY:
+ * v1.0.1 (2025-06-11): Replaced `max-w-[600px]` with `max-w-screen-toast-mobile`.
+ * v1.0.0 (2025-06-12): Начальная версия.
  */
 
 export default function LandingPage () {
@@ -14,7 +19,7 @@ export default function LandingPage () {
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
           WelcomeCraft 🚀
         </h1>
-        <p className="max-w-[600px] text-muted-foreground md:text-xl">
+        <p className="max-w-screen-toast-mobile text-muted-foreground md:text-xl">
           Добро пожаловать в проект!
         </p>
         {/*<p className="text-sm text-muted-foreground">*/}
@@ -34,4 +39,4 @@ export default function LandingPage () {
   )
 }
 
-// END OF: app/(site)/page.tsx
+// END OF: app/site/page.tsx

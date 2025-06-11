@@ -1,15 +1,14 @@
 /**
  * @file artifacts/tools/artifactUpdate.ts
  * @description AI-инструмент для обновления существующего артефакта.
- * @version 2.0.0
- * @date 2025-06-10
- * @updated Refactored to use the ArtifactTool registry for dispatching update logic.
+ * @version 2.0.1
+ * @date 2025-06-11
+ * @updated Added a guard clause to safely handle session.user.id.
  */
 
 /** HISTORY:
- * v2.0.0 (2025-06-10): Refactored to use ArtifactTool registry.
- * v1.1.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
- * v1.0.0 (2025-06-09): Initial version.
+ * v2.0.1 (2025-06-11): Replaced non-null assertion with a guard clause for session.user.id.
+ * v2.0.0 (2025-06-10): Refactored to use the ArtifactTool registry for dispatching update logic.
  */
 
 import { tool } from 'ai'
@@ -35,7 +34,12 @@ export const artifactUpdate = ({ session }: UpdateArtifactProps) =>
       prompt: z.string().describe('A detailed text description of the changes to be made.'),
     }),
     execute: async ({ id, prompt }) => {
-      const childLogger = logger.child({ artifactId: id, userId: session.user?.id })
+      if (!session?.user?.id) {
+        logger.error('User session or user ID is missing. Cannot proceed with artifact update.')
+        return { error: 'User is not authenticated. This action cannot be performed.' }
+      }
+
+      const childLogger = logger.child({ artifactId: id, userId: session.user.id })
       childLogger.trace({ prompt }, 'Entering artifactUpdate tool')
 
       const artifactResult = await getArtifactById({ id })
@@ -66,14 +70,14 @@ export const artifactUpdate = ({ session }: UpdateArtifactProps) =>
         title: artifact.title,
         content: newContent,
         kind: artifact.kind,
-        userId: session.user!.id!,
+        userId: session.user.id,
         authorId: null, // Updated by AI
       })
 
       childLogger.info({ kind: artifact.kind, title: artifact.title }, 'Artifact updated. Starting summary generation.')
 
       // We don't await this, it runs in the background
-      generateAndSaveSummary(id, newContent, artifact.kind);
+      generateAndSaveSummary(id, newContent, artifact.kind)
 
       const newVersion = totalVersions + 1
 

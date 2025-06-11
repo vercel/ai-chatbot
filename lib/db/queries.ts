@@ -215,7 +215,7 @@ export async function saveArtifact ({ id, title, kind, content, userId, authorId
     authorId,
     createdAt: createdAt ?? new Date()
   }).returning()
-  if (savedArtifact && savedArtifact.content) {
+  if (savedArtifact?.content) {
     generateAndSaveSummary(id, savedArtifact.content, kind).catch(err => {
       childLogger.error({ err }, 'Async summary generation failed')
     })

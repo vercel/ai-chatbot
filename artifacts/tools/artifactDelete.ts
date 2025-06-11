@@ -1,15 +1,14 @@
 /**
  * @file artifacts/tools/artifactDelete.ts
  * @description AI-инструмент для "мягкого" удаления артефакта.
- * @version 2.0.0
- * @date 2025-06-10
- * @updated Moved file to artifacts/tools directory.
+ * @version 2.0.1
+ * @date 2025-06-11
+ * @updated Added a guard clause to safely handle session.user.id.
  */
 
 /** HISTORY:
- * v2.0.0 (2025-06-10): Moved file to new directory.
- * v1.1.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
- * v1.0.0 (2025-06-09): Initial version.
+ * v2.0.1 (2025-06-11): Replaced non-null assertion with a guard clause for session.user.id.
+ * v2.0.0 (2025-06-10): Moved file to artifacts/tools directory.
  */
 
 import { tool } from 'ai'
@@ -28,16 +27,21 @@ export const artifactDelete = ({ session }: { session: Session }) =>
       id: z.string().describe('The UUID of the artifact to delete.'),
     }),
     execute: async ({ id }) => {
-      const childLogger = logger.child({ artifactId: id, userId: session.user?.id })
+      if (!session?.user?.id) {
+        logger.error('User session or user ID is missing. Cannot proceed with artifact deletion.')
+        return { error: 'User is not authenticated. This action cannot be performed.' }
+      }
+
+      const childLogger = logger.child({ artifactId: id, userId: session.user.id })
       childLogger.trace('Entering artifactDelete tool')
 
       const artifactResult = await getArtifactById({ id })
-      if (!artifactResult || artifactResult.doc.userId !== session.user?.id) {
+      if (!artifactResult || artifactResult.doc.userId !== session.user.id) {
         childLogger.warn('Artifact not found or permission denied')
         return { error: `Artifact with ID '${id}' not found or you do not have permission to delete it.` }
       }
 
-      await deleteArtifactSoftById({ artifactId: id, userId: session.user!.id! })
+      await deleteArtifactSoftById({ artifactId: id, userId: session.user.id })
 
       const result = {
         toolName: AI_TOOL_NAMES.ARTIFACT_DELETE,

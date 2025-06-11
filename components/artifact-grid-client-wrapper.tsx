@@ -1,9 +1,14 @@
 /**
  * @file components/artifact-grid-client-wrapper.tsx
  * @description Клиентский компонент-обертка для сетки артефактов.
- * @version 2.1.0
- * @date 2025-06-10
- * @updated Импорт ArtifactKind теперь из общего файла lib/types.
+ * @version 2.1.1
+ * @date 2025-06-11
+ * @updated Wrapped handleCardClick in useCallback and added to useEffect dependencies.
+ */
+
+/** HISTORY:
+ * v2.1.1 (2025-06-11): Fixed exhaustive-deps linting rule by wrapping handleCardClick in useCallback.
+ * v2.1.0 (2025-06-10): Импорт ArtifactKind теперь из общего файла lib/types.
  */
 'use client'
 
@@ -19,7 +24,7 @@ import { toast } from '@/components/toast'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useArtifact } from '@/hooks/use-artifact'
 import { fetcher } from '@/lib/utils'
-import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
+import type { ArtifactKind } from '@/lib/types'
 
 const PAGE_SIZE = 12
 const skeletonKeys = Array.from({ length: PAGE_SIZE }, (_, i) => `sk-item-${i}`)
@@ -73,7 +78,7 @@ export function ArtifactGridClientWrapper ({ userId, openArtifactId }: { userId:
     },
   )
 
-  const handleCardClick = (doc: ArtifactDocument) => {
+  const handleCardClick = useCallback((doc: ArtifactDocument) => {
     if (doc.kind) {
       toast({ type: 'loading', description: `Открываю "${doc.title}"...` })
       setArtifact({
@@ -90,7 +95,7 @@ export function ArtifactGridClientWrapper ({ userId, openArtifactId }: { userId:
     } else {
       toast({ type: 'error', description: 'Не удалось определить тип артефакта.' })
     }
-  }
+  }, [setArtifact])
 
   useEffect(() => {
     if (openArtifactId && data?.data) {
@@ -101,7 +106,7 @@ export function ArtifactGridClientWrapper ({ userId, openArtifactId }: { userId:
         router.replace(`${pathname}?${newQuery}`, { scroll: false })
       }
     }
-  }, [openArtifactId, data, createQueryString, pathname, router])
+  }, [openArtifactId, data, createQueryString, pathname, router, handleCardClick])
 
   const totalPages = data ? Math.ceil(data.totalCount / PAGE_SIZE) : 0
 

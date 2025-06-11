@@ -1,17 +1,16 @@
-'use client' // <-- ДОБАВЛЕНО
-
 /**
  * @file components/image-editor.tsx
  * @description Компонент для отображения артефакта-изображения.
- * @version 1.3.0
+ * @version 1.3.1
  * @date 2025-06-11
- * @updated Added 'use client' directive to resolve useState hook error.
+ * @updated Disabled next/image lint rule for dynamic external images.
  */
 
 /** HISTORY:
- * v1.3.0 (2025-06-11): Added 'use client' directive.
- * v1.2.0 (2025-06-07): Сделаны пропсы, связанные с версионированием, опциональными.
+ * v1.3.1 (2025-06-11): Disabled next/image lint rule as sizes are unknown for external URLs.
+ * v1.3.0 (2025-06-11): Added 'use client' directive to resolve useState hook error.
  */
+'use client'
 
 import { useState } from 'react'
 import { LoaderIcon } from './icons'
@@ -71,12 +70,14 @@ export function ImageEditor ({
     return (
       <div className={containerClasses}>
         <div className="relative w-full max-w-[800px] aspect-auto overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={oldContentUrl}
             alt={`${title} (old version)`}
             className="absolute top-0 left-0 w-full h-auto"
             onError={handleError}
           />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={content}
             alt={`${title} (new version)`}
@@ -100,6 +101,7 @@ export function ImageEditor ({
   return (
     <div className={containerClasses}>
       <picture>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className={cn('w-full h-fit max-w-[800px]', {
             'p-0': isInline,

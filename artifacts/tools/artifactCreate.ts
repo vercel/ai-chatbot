@@ -1,15 +1,14 @@
 /**
  * @file artifacts/tools/artifactCreate.ts
  * @description AI-инструмент для создания нового артефакта.
- * @version 2.2.0
- * @date 2025-06-10
- * @updated Исправлены все ошибки типизации (TS2305, TS2322, TS2724) путем обновления импортов и явной типизации.
+ * @version 2.2.1
+ * @date 2025-06-11
+ * @updated Added a guard clause to safely handle session.user.id.
  */
 
 /** HISTORY:
- * v2.2.0 (2025-06-10): Исправлены ошибки типизации.
- * v2.1.0 (2025-06-10): Исправлены ошибки типизации (TS2693, TS2322) путем использования `artifactKinds` и явного приведения типов.
- * v2.0.0 (2025-06-10): Refactored to use ArtifactTool registry.
+ * v2.2.1 (2025-06-11): Replaced non-null assertion with a guard clause for session.user.id.
+ * v2.2.0 (2025-06-10): Исправлены все ошибки типизации (TS2305, TS2322, TS2724) путем обновления импортов и явной типизации.
  */
 
 import { generateUUID } from '@/lib/utils'
@@ -43,9 +42,14 @@ export const artifactCreate = ({ session }: CreateArtifactProps) =>
       'Creates a new artifact (like text, code, image, or sheet) based on a title and a detailed prompt. Use this when the user explicitly asks to "create", "write", "generate", or "make" something new.',
     parameters: CreateArtifactSchema,
     execute: async (args: CreateArtifactParams) => {
-      const { title, kind, prompt } = args // Явная деструктуризация
+      if (!session?.user?.id) {
+        logger.error('User session or user ID is missing. Cannot proceed with artifact creation.')
+        return { error: 'User is not authenticated. This action cannot be performed.' }
+      }
+
+      const { title, kind, prompt } = args
       const artifactId = generateUUID()
-      const childLogger = logger.child({ artifactId, kind, userId: session.user?.id })
+      const childLogger = logger.child({ artifactId, kind, userId: session.user.id })
       childLogger.trace({ title }, 'Entering artifactCreate tool')
 
       const handler = artifactTools.find((h) => h.kind === kind)
@@ -60,10 +64,10 @@ export const artifactCreate = ({ session }: CreateArtifactProps) =>
 
       await saveArtifact({
         id: artifactId,
-        title, // Теперь здесь string
+        title,
         content,
-        kind, // Теперь здесь ArtifactKind
-        userId: session.user!.id!,
+        kind,
+        userId: session.user.id,
         authorId: null, // Created by AI
       })
 

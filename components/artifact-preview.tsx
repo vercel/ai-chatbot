@@ -1,16 +1,14 @@
 /**
  * @file components/artifact-preview.tsx
  * @description Компонент для отображения превью артефактов в чате.
- * @version 2.3.0
- * @date 2025-06-10
- * @updated Исправлены ошибки типизации (TS2322) путем явного приведения типов.
+ * @version 2.3.1
+ * @date 2025-06-11
+ * @updated Refactored to call React Hooks unconditionally at the top level.
  */
 
 /** HISTORY:
- * v2.3.0 (2025-06-10): Исправлены ошибки типизации.
- * v2.2.0 (2025-06-10): Импорт ArtifactKind из lib/types.
- * v2.1.0 (2025-06-10): Добавлена проверка на наличие ошибки в `result`.
- * v2.0.0 (2025-06-09): Переименован, адаптирован под ArtifactMetadata и SWR.
+ * v2.3.1 (2025-06-11): Fixed React Hooks rules by moving all hooks to the top level.
+ * v2.3.0 (2025-06-10): Исправлены ошибки типизации (TS2322) путем явного приведения типов.
  */
 import { memo, type MouseEvent, useCallback, useMemo, useRef, } from 'react'
 import { BoxIcon, CodeIcon, FileIcon, FullscreenIcon, ImageIcon, WarningIcon } from './icons'
@@ -34,21 +32,14 @@ interface ArtifactPreviewProps {
 export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
   const { setArtifact } = useArtifact()
 
-  // Проверяем, вернул ли инструмент ошибку
-  if ('error' in result) {
-    return (
-      <div
-        className="h-auto overflow-y-scroll border rounded-2xl dark:bg-muted border-destructive/50 dark:border-destructive/50 p-4 flex flex-row items-start gap-3 text-destructive">
-        <WarningIcon className="size-5 shrink-0 mt-0.5"/>
-        <div>
-          <h4 className="font-bold">Ошибка создания артефакта</h4>
-          <p className="text-sm">{result.error}</p>
-        </div>
-      </div>
-    )
-  }
-
-  const { artifactId, artifactTitle, artifactKind, description, summary } = result
+  // Moved all hooks to the top level
+  const { artifactId, artifactTitle, artifactKind, description, summary } = 'error' in result ? {
+    artifactId: '',
+    artifactTitle: '',
+    artifactKind: 'text',
+    description: '',
+    summary: ''
+  } : result
 
   const { data: artifacts, isLoading } = useSWR<Array<DBArtifact>>(
     artifactId ? `/api/artifact?id=${artifactId}` : null,
@@ -66,8 +57,8 @@ export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
     toast({ type: 'loading', description: `Открываю артефакт "${artifactTitle}"...` })
     setArtifact({
       artifactId: artifactId,
-      kind: artifactKind as ArtifactKind, // Явное приведение типа
-      title: artifactTitle as string, // Явное приведение типа
+      kind: artifactKind as ArtifactKind,
+      title: artifactTitle as string,
       content: fullArtifact?.content ?? '',
       status: 'idle',
       saveStatus: 'saved',
@@ -82,18 +73,32 @@ export function ArtifactPreview ({ isReadonly, result }: ArtifactPreviewProps) {
     })
   }, [setArtifact, artifactId, artifactKind, artifactTitle, fullArtifact])
 
+  // Early return for error state is now after the hooks
+  if ('error' in result) {
+    return (
+      <div
+        className="h-auto overflow-y-scroll border rounded-2xl dark:bg-muted border-destructive/50 dark:border-destructive/50 p-4 flex flex-row items-start gap-3 text-destructive">
+        <WarningIcon className="size-5 shrink-0 mt-0.5"/>
+        <div>
+          <h4 className="font-bold">Ошибка создания артефакта</h4>
+          <p className="text-sm">{result.error}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="relative w-full cursor-pointer" ref={hitboxRef} onClick={handleOpenArtifact} role="button"
          tabIndex={0}>
       <ArtifactHeader
-        title={artifactTitle as string} // Явное приведение типа
-        kind={artifactKind as ArtifactKind} // Явное приведение типа
-        description={description as string} // Явное приведение типа
+        title={artifactTitle as string}
+        kind={artifactKind as ArtifactKind}
+        description={description as string}
       />
       <div
         className={cn('h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700', { 'p-6': artifactKind !== 'image' })}>
         {isLoading && !fullArtifact ? <InlineDocumentSkeleton/> :
-          artifactKind === 'image' ? <ImageEditor title={artifactTitle as string} // Явное приведение типа
+          artifactKind === 'image' ? <ImageEditor title={artifactTitle as string}
                                                   content={fullArtifact?.content ?? ''} status="idle"
                                                   isInline={true}/> :
             <div className="prose dark:prose-invert prose-sm">
@@ -125,5 +130,6 @@ const ArtifactHeader = memo(({ title, kind, description }: {
     </div>
   )
 })
+ArtifactHeader.displayName = 'ArtifactHeader'
 
 // END OF: components/artifact-preview.tsx

@@ -1,15 +1,15 @@
 /**
  * @file components/share-dialog.tsx
  * @description Диалоговое окно для управления публикацией и копирования ссылки на чат.
- * @version 2.1.0
- * @date 2025-06-07
- * @updated Добавлен информационный блок, объясняющий подсветку кнопки "Share".
+ * @version 2.1.2
+ * @date 2025-06-11
+ * @updated Replaced straight quotes with typographical quotes (« ») to resolve unescaped entities error.
  */
 
 /** HISTORY:
+ * v2.1.2 (2025-06-11): Used typographical quotes to fix react/no-unescaped-entities lint error.
+ * v2.1.1 (2025-06-11): Replaced unescaped quotes with " to fix linting errors.
  * v2.1.0 (2025-06-07): Добавлен информационный блок с иконкой.
- * v2.0.0 (2025-06-06): Редизайн UX в соответствии с новыми требованиями.
- * v1.0.0 (2025-06-05): Начальная версия компонента.
  */
 'use client'
 
@@ -99,7 +99,7 @@ export function ShareDialog({
         <div className="flex items-start space-x-2 text-muted-foreground mt-2 p-2 bg-muted/50 rounded-md">
             <InfoIcon className="size-4 shrink-0 mt-0.5"/>
             <p className="text-xs">
-              Кнопка "Share" в шапке приложения подсвечивается для чатов, у которых включён режим "Поделиться".
+              Кнопка «Share» в шапке приложения подсвечивается для чатов, у которых включён режим «Поделиться».
             </p>
         </div>
 

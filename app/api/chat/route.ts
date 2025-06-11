@@ -43,7 +43,7 @@ import { type PostRequestBody, postRequestBodySchema } from './schema'
 import { geolocation } from '@vercel/functions'
 import { ChatSDKError } from '@/lib/errors'
 import { createLogger } from '@fab33/sys-logger'
-import { z } from 'zod'
+import type { z } from 'zod'
 
 const parentLogger = createLogger('api:chat:route')
 

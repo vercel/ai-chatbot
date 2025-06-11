@@ -1,15 +1,14 @@
 /**
  * @file artifacts/tools/artifactEnhance.ts
  * @description Инструмент для "улучшения" артефакта по предопределенному рецепту.
- * @version 2.1.0
+ * @version 2.1.1
  * @date 2025-06-11
- * @updated Добавлена проверка типа артефакта. Улучшение теперь работает только для текста.
+ * @updated Added a guard clause to safely handle session.user.id.
  */
 
 /** HISTORY:
- * v2.1.0 (2025-06-11): Добавлена проверка типа артефакта.
- * v2.0.0 (2025-06-10): Refactored to use the ArtifactTool registry for dispatching logic.
- * v1.2.0 (2025-06-10): Used AI_TOOL_NAMES constant for tool definition.
+ * v2.1.1 (2025-06-11): Replaced non-null assertion with a guard clause for session.user.id.
+ * v2.1.0 (2025-06-11): Добавлена проверка типа артефакта. Улучшение теперь работает только для текста.
  */
 
 import { streamObject, tool } from 'ai'
@@ -41,7 +40,12 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
       recipe: z.enum(['polish', 'suggest']).describe('The enhancement recipe to apply.'),
     }),
     execute: async ({ id, recipe }) => {
-      const childLogger = logger.child({ artifactId: id, userId: session.user?.id, recipe })
+      if (!session?.user?.id) {
+        logger.error('User session or user ID is missing. Cannot proceed with artifact enhancement.')
+        return { error: 'User is not authenticated. This action cannot be performed.' }
+      }
+
+      const childLogger = logger.child({ artifactId: id, userId: session.user.id, recipe })
       childLogger.trace('Entering artifactEnhance tool')
 
       const artifactResult = await getArtifactById({ id })
@@ -52,14 +56,11 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
 
       const { doc: artifact, totalVersions } = artifactResult
 
-      // --- НОВОЕ ИЗМЕНЕНИЕ ---
-      // Проверяем, что артефакт текстовый. Если нет - возвращаем ошибку.
       if (artifact.kind !== 'text') {
         const errorMessage = `The "${recipe}" feature is currently only available for text artifacts.`
         childLogger.warn(`Enhance recipe '${recipe}' is not applicable for artifact kind '${artifact.kind}'.`)
         return { error: errorMessage }
       }
-      // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
       const newVersionDate = new Date()
       // 1. Create a new artifact version row
@@ -104,12 +105,12 @@ export const artifactEnhance = ({ session }: EnhanceArtifactProps) =>
       }
 
       // 3. Save suggestions pointing to the new version
-      if (session.user?.id && suggestions.length > 0) {
+      if (suggestions.length > 0) {
         childLogger.info(`Saving ${suggestions.length} suggestions to DB for new version`)
         await saveSuggestions({
           suggestions: suggestions.map((s) => ({
             ...s,
-            userId: session.user!.id!,
+            userId: session.user.id,
             createdAt: new Date(),
             documentCreatedAt: newVersionDate,
           })),

@@ -1,22 +1,26 @@
 /**
  * @file app/(site)/(hosting)/s/[siteId]/page.tsx
  * @description Страница-заглушка для отображения сгенерированного сайта по его ID.
- * @version 1.0.0
- * @date 2025-06-12
- * @updated Начальная версия.
+ * @version 1.0.1
+ * @date 2025-06-11
+ * @updated Converted to an async component and await props.params to fix TS2344.
+ */
+
+/** HISTORY:
+ * v1.0.1 (2025-06-11): Refactored to be an async component to correctly handle promise-based params.
+ * v1.0.0 (2025-06-12): Начальная версия.
  */
 
 import Link from 'next/link'
 
-
 interface SitePageProps {
-  params: {
+  params: Promise<{
     siteId: string;
-  };
+  }>;
 }
 
-export default function HostedSitePage ({ params }: SitePageProps) {
-  const { siteId } = params
+export default async function HostedSitePage (props: SitePageProps) {
+  const { siteId } = await props.params
 
   return (
     <div
