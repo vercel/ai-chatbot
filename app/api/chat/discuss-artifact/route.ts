@@ -12,7 +12,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { auth } from '@/app/(app)/(auth)/auth'
+import { auth } from '@/app/app/(auth)/auth'
 import { getArtifactById, saveChat, saveMessages } from '@/lib/db/queries'
 import { generateUUID } from '@/lib/utils'
 import { ChatSDKError } from '@/lib/errors'

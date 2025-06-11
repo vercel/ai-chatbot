@@ -12,7 +12,7 @@
 
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
-import { auth } from '@/app/(app)/(auth)/auth';
+import { auth } from '@/app/app/(auth)/auth';
 import { ChatSDKError } from '@/lib/errors';
  
 export async function POST(request: Request): Promise<NextResponse> {

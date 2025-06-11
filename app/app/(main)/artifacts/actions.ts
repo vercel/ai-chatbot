@@ -14,7 +14,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { auth } from '@/app/(app)/(auth)/auth'
+import { auth } from '@/app/app/(auth)/auth'
 import { deleteArtifactSoftById, getArtifactById } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
 

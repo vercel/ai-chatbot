@@ -15,7 +15,7 @@
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
-import { auth } from '@/app/(app)/(auth)/auth'
+import { auth } from '@/app/app/(auth)/auth'
 import { Chat } from '@/components/chat'
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries'
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models'

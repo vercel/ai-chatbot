@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CopyIcon, InfoIcon } from '@/components/icons';
 import { toast } from '@/components/toast';
-import { updateChatVisibility } from '@/app/(app)/(main)/chat/actions';
+import { updateChatVisibility } from '@/app/app/(main)/chat/actions';
 import type { VisibilityType } from '@/lib/types';
 
 interface ShareDialogProps {

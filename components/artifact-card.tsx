@@ -32,7 +32,7 @@ import {
   PencilEditIcon,
   TrashIcon
 } from '@/components/icons'
-import { deleteArtifact } from '@/app/(app)/(main)/artifacts/actions'
+import { deleteArtifact } from '@/app/app/(main)/artifacts/actions'
 import { toast } from '@/components/toast'
 import type { Artifact as DBArtifact } from '@/lib/db/schema'
 import { useRouter } from 'next/navigation'
