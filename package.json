@@ -1,11 +1,31 @@
 {
   "name": "welcome-craft-next",
   "appName": "WelcomeCraft",
-  "version": "3.0.23",
+  "version": "0.1.10",
   "private": true,
+  "description": "Welcome Craft  -  AI based onboarding page management app",
+  "type": "module",
+  "keywords": [
+    "welcome",
+    "craft",
+    "ai",
+    "onboarding",
+    "hr",
+    "hr tools",
+    "page builder",
+    "website builder"
+  ],
+  "author": "(c) fab33, by deksden",
+  "bugs": {
+    "url": "https://github.com/deksden/welcome-craft-next/issues"
+  },
+  "homepage": "https://github.com/deksden/welcome-craft-next#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx lib/db/migrate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
@@ -120,5 +140,5 @@
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   },
-  "packageManager": "pnpm@9.12.3"
+  "packageManager": "pnpm@10.12.1"
 }
