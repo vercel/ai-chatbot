@@ -13,7 +13,7 @@
  */
 
 import Script from 'next/script';
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/app/(app)/(auth)/auth';
 import { MainLayoutClient } from '@/components/main-layout-client';
 
 export const experimental_ppr = true;

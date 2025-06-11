@@ -7,7 +7,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/(auth)/auth'
+import { auth } from '@/app/(app)/(auth)/auth'
 import { getPagedArtifactsByUserId } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
 import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ

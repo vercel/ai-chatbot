@@ -25,11 +25,11 @@ import {
   TypeValidationError,
   type UIMessage
 } from 'ai'
-import { auth, type UserType } from '@/app/(auth)/auth'
+import { auth, type UserType } from '@/app/(app)/(auth)/auth'
 import { type ArtifactContext, type RequestHints, systemPrompt } from '@/lib/ai/prompts'
 import { deleteChatSoftById, getChatById, getMessageCountByUserId, saveChat, saveMessages, } from '@/lib/db/queries'
 import { generateUUID } from '@/lib/utils'
-import { generateTitleFromUserMessage } from '@/app/(main)/chat/actions'
+import { generateTitleFromUserMessage } from '@/app/(app)/(main)/chat/actions'
 import { artifactCreate } from '@/artifacts/tools/artifactCreate'
 import { artifactUpdate } from '@/artifacts/tools/artifactUpdate'
 import { artifactEnhance } from '@/artifacts/tools/artifactEnhance'

@@ -12,7 +12,7 @@
  * v1.0.0 (2025-06-09): Переименован из document, адаптирован под новую схему и логику.
  */
 
-import { auth } from '@/app/(auth)/auth'
+import { auth } from '@/app/(app)/(auth)/auth'
 import { deleteArtifactVersionsAfterTimestamp, getArtifactsById, saveArtifact, } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
 import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ

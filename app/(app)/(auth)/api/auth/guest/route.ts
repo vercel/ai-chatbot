@@ -1,4 +1,4 @@
-import { signIn } from '@/app/(auth)/auth';
+import { signIn } from '@/app/(app)/(auth)/auth';
 import { isDevelopmentEnvironment } from '@/lib/constants';
 import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';

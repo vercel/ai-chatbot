@@ -35,7 +35,7 @@ import { MessageReasoning } from './message-reasoning'
 import type { UseChatHelpers } from '@ai-sdk/react'
 import { useCopyToClipboard } from 'usehooks-ts'
 import { toast } from './toast'
-import { deleteMessage, regenerateAssistantResponse } from '@/app/(main)/chat/actions'
+import { deleteMessage, regenerateAssistantResponse } from '@/app/(app)/(main)/chat/actions'
 import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
 import { ArtifactPreview } from './artifact-preview'
 
