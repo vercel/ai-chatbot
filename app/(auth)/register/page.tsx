@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
@@ -92,10 +93,13 @@ export default function Page() {
         <div className="absolute inset-0 bg-white" />
         
         <div className="relative z-10 mb-8 w-full max-w-md">
-          <img 
+          <Image 
             src="/images/signup.svg" 
             alt="Sign up illustration"
+            width={400}
+            height={300}
             className="w-full h-auto"
+            priority
           />
         </div>
       </div>
