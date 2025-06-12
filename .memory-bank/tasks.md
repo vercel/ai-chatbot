@@ -24,47 +24,47 @@
 ### Шаг 2.1: Архитектурный Фундамент
 
 -   **Задача 2.1.1:** **Создать архитектуру `site-blocks`**.
-    -   [ ] Создать директорию `site-blocks/`.
-    -   [ ] Создать папки для MVP-блоков: `hero`, `key-contacts`, `useful-links`.
-    -   [ ] В каждой папке создать `definition.ts` с описанием слотов и `index.tsx` с базовым React-компонентом.
-    -   [ ] Создать `site-blocks/index.ts` для экспорта `blockDefinitions` и `blockComponents`.
+    -   [x] Создать директорию `site-blocks/`.
+    -   [x] Создать папки для MVP-блоков: `hero`, `key-contacts`, `useful-links`.
+    -   [x] В каждой папке создать `definition.ts` с описанием слотов и `index.tsx` с базовым React-компонентом.
+    -   [x] Создать `site-blocks/index.ts` для экспорта `blockDefinitions` и `blockComponents`.
 
 -   **Задача 2.1.2:** **Интегрировать "Сайт" как тип артефакта.**
-    -   [ ] Добавить `'site'` в `artifactKinds` в `lib/types.ts`.
-    -   [ ] Убедиться, что схема БД (`lib/db/schema.ts`) позволяет хранить JSON в поле `content`.
+    -   [x] Добавить `'site'` в `artifactKinds` в `lib/types.ts`.
+    -   [x] Убедиться, что схема БД (`lib/db/schema.ts`) позволяет хранить JSON в поле `content`.
 
 -   **Задача 2.1.3:** **Создать AI-инструмент `siteGenerate`**.
-    -   [ ] Создать файл `artifacts/tools/siteGenerate.ts`.
-    -   [ ] Реализовать логику `execute`, которая находит артефакты по тегам, формирует `SiteDefinition` JSON и вызывает `artifactCreate({ kind: 'site', ... })`.
-    -   [ ] Добавить новый инструмент в общий список инструментов, доступных для AI в `app/api/chat/route.ts`.
+    -   [x] Создать файл `artifacts/tools/siteGenerate.ts`.
+    -   [x] Реализовать логику `execute`, которая находит артефакты по тегам, формирует `SiteDefinition` JSON и вызывает `artifactCreate({ kind: 'site', ... })`.
+    -   [x] Добавить новый инструмент в общий список инструментов, доступных для AI в `app/api/chat/route.ts`.
 
 -   **Задача 2.1.4:** **Обновить API для поддержки версий.**
-    -   [ ] Модифицировать `getArtifactById` в `lib/db/queries.ts` для приема опционального `versionTimestamp`.
-    -   [ ] Обновить `/api/artifact` для передачи этого параметра.
+    -   [x] Модифицировать `getArtifactById` в `lib/db/queries.ts` для приема опционального `versionTimestamp`.
+    -   [x] Обновить `/api/artifact` для передачи этого параметра.
 
 ### Шаг 2.2: Рендеринг Сайта (Frontend)
 
 -   **Задача 2.2.1:** **Создать страницу отображения сайта.**
-    -   [ ] В `app/site/(hosting)/s/[siteId]/page.tsx` реализовать загрузку артефакта-сайта.
-    -   [ ] Реализовать парсинг `SiteDefinition` и динамический рендеринг компонентов блоков из `blockComponents`.
-    -   [ ] Реализовать отображение скелетонов во время загрузки контента.
+    -   [x] В `app/site/(hosting)/s/[siteId]/page.tsx` реализовать загрузку артефакта-сайта.
+    -   [x] Реализовать парсинг `SiteDefinition` и динамический рендеринг компонентов блоков из `blockComponents`.
+    -   [x] Реализовать отображение скелетонов во время загрузки контента.
 
 -   **Задача 2.2.2:** **Реализовать логику загрузки данных в компонентах блоков.**
-    -   [ ] В каждом компоненте блока в `site-blocks/` добавить `useSWR` для асинхронной загрузки контента артефакта по `artifactId` и `versionTimestamp`.
+    -   [x] В каждом компоненте блока в `site-blocks/` добавить `useSWR` для асинхронной загрузки контента артефакта по `artifactId` и `versionTimestamp`.
 
 ### Шаг 2.3: Редактор Сайта
 
 -   **Задача 2.3.1:** **Создать плагин артефакта для типа "Сайт".**
-    -   [ ] Создать `artifacts/kinds/site/client.tsx`.
-    -   [ ] Реализовать компонент-редактор, который парсит `SiteDefinition` и отображает UI для управления блоками.
-    -   [ ] Реализовать UI для выбора артефактов в слоты и переключатель `latest`/`pinned` для версий.
-    -   [ ] При изменениях вызывать `onSaveContent` с новой JSON-строкой.
-    -   [ ] Создать `artifacts/kinds/site/server.ts` с пустыми `create` и `update` методами (т.к. логика в `siteGenerate`).
+    -   [x] Создать `artifacts/kinds/site/client.tsx`.
+    -   [x] Реализовать компонент-редактор, который парсит `SiteDefinition` и отображает UI для управления блоками.
+    -   [x] Реализовать UI для выбора артефактов в слоты и переключатель `latest`/`pinned` для версий.
+    -   [x] При изменениях вызывать `onSaveContent` с новой JSON-строкой.
+    -   [x] Создать `artifacts/kinds/site/server.ts` с пустыми `create` и `update` методами (т.к. логика в `siteGenerate`).
 
 ### Шаг 2.4: Улучшения UX
 
 -   **Задача 2.4.1:** **Реализовать флоу "Добавить в чат" через Redis.**
-    -   [ ] Создать Server Actions: `copyArtifactToClipboard` и `getAndClearArtifactFromClipboard`.
-    -   [ ] Обновить логику кнопки "Добавить в чат" в `ArtifactActions`.
-    -   [ ] Добавить `useEffect` в `Chat.tsx` для проверки "Redis-буфера".
-    -   [ ] Реализовать UI для "черновика" вложения в `ChatInput.tsx`.
+    -   [x] Создать Server Actions: `copyArtifactToClipboard` и `getAndClearArtifactFromClipboard`.
+    -   [x] Обновить логику кнопки "Добавить в чат" в `ArtifactActions`.
+    -   [x] Добавить `useEffect` в `Chat.tsx` для проверки "Redis-буфера".
+    -   [x] Реализовать UI для "черновика" вложения в `ChatInput.tsx`.

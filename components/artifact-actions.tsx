@@ -21,9 +21,10 @@ import { type Dispatch, memo, type SetStateAction, useState } from 'react'
 import type { ArtifactActionContext } from './create-artifact'
 import { cn } from '@/lib/utils'
 import { toast } from '@/components/toast'
-import { CheckCircleFillIcon, LoaderIcon, MessageCircleReplyIcon, VercelIcon } from './icons'
+import { CheckCircleFillIcon, LoaderIcon, MessageCircleReplyIcon, MessageCircleIcon, VercelIcon } from './icons'
 import { useRouter } from 'next/navigation'
 import { useArtifact } from '@/hooks/use-artifact'
+import { copyArtifactToClipboard } from '@/app/app/(main)/artifacts/actions'
 
 interface ArtifactActionsProps {
   artifact: UIArtifact;
@@ -75,6 +76,23 @@ function PureArtifactActions ({
     router.push(`/api/chat/discuss-artifact?artifactId=${artifact.artifactId}`)
   }
 
+  const handleAddToChat = async () => {
+    if (!artifact.artifactId) return
+    setIsLoading(true)
+    try {
+      await copyArtifactToClipboard({
+        artifactId: artifact.artifactId,
+        title: artifact.title,
+        kind: artifact.kind,
+      })
+      toast({ type: 'success', description: 'Ссылка на артефакт скопирована' })
+    } catch (error) {
+      toast({ type: 'error', description: 'Не удалось добавить в чат' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const actionContext: ArtifactActionContext = {
     content: artifact.content,
     handleVersionChange,
@@ -99,6 +117,20 @@ function PureArtifactActions ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>Обсудить в чате</TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            className="h-fit p-2 dark:hover:bg-zinc-700"
+            onClick={handleAddToChat}
+            disabled={isLoading || artifact.status === 'streaming'}
+          >
+            <MessageCircleIcon size={18}/>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Добавить в чат</TooltipContent>
       </Tooltip>
 
       {artifactDefinition.actions.map((action) => (

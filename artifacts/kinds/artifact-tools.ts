@@ -1,12 +1,13 @@
 /**
  * @file artifacts/kinds/artifact-tools.ts
  * @description Центральный реестр (barrel file) для инструментов-обработчиков артефактов.
- * @version 1.1.0
- * @date 2025-06-10
- * @updated Импорт ArtifactKind теперь из общего файла lib/types.
+ * @version 1.2.0
+ * @date 2025-06-12
+ * @updated Added siteTool to registry.
  */
 
 /** HISTORY:
+ * v1.2.0 (2025-06-12): Added siteTool to registry.
  * v1.1.0 (2025-06-10): Импорт ArtifactKind теперь из lib/types.
  * v1.0.0 (2025-06-10): Initial version. Defines the ArtifactTool contract and exports all available tools.
  */
@@ -18,6 +19,7 @@ import { textTool } from './text/server'
 import { codeTool } from './code/server'
 import { imageTool } from './image/server'
 import { sheetTool } from './sheet/server'
+import { siteTool } from './site/server'
 
 /**
  * @interface ArtifactTool
@@ -50,6 +52,7 @@ export const artifactTools: ArtifactTool[] = [
   codeTool,
   imageTool,
   sheetTool,
+  siteTool,
 ]
 
 // END OF: artifacts/kinds/artifact-tools.ts

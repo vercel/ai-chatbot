@@ -51,6 +51,7 @@ const kindIcons = {
   code: CodeIcon,
   image: ImageIcon,
   sheet: BoxIcon,
+  site: FileIcon,
 }
 
 export function ArtifactCard ({ artifact, onRefresh, onCardClick }: ArtifactCardProps) {

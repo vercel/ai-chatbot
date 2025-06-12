@@ -23,7 +23,7 @@ import { type ChangeEvent, type Dispatch, type SetStateAction, useCallback, useR
 import Textarea from 'react-textarea-autosize'
 import { upload } from '@vercel/blob/client'
 
-import { ArrowUpIcon, PaperclipIcon } from './icons'
+import { ArrowUpIcon, PaperclipIcon, CrossIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
 import { Button } from './ui/button'
 import { SuggestedActions } from './suggested-actions'
@@ -57,6 +57,8 @@ export function ChatInput ({
   status,
   attachments,
   setAttachments,
+  clipboardArtifact,
+  setClipboardArtifact,
   messages,
   append,
   handleSubmit,
@@ -70,6 +72,8 @@ export function ChatInput ({
   status: UseChatHelpers['status'];
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
+  clipboardArtifact: { artifactId: string; title: string; kind: string } | null;
+  setClipboardArtifact: Dispatch<SetStateAction<{ artifactId: string; title: string; kind: string } | null>>;
   messages: Array<UIMessage>;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
@@ -97,9 +101,23 @@ export function ChatInput ({
       }
     }
 
+    if (clipboardArtifact) {
+      append({
+        id: generateUUID(),
+        role: 'data',
+        content: JSON.stringify({
+          type: 'artifact-reference',
+          artifactId: clipboardArtifact.artifactId,
+          title: clipboardArtifact.title,
+          kind: clipboardArtifact.kind,
+        }),
+      })
+      setClipboardArtifact(null)
+    }
+
     handleSubmit(undefined, options)
     setInput('')
-  }, [status, chatId, handleSubmit, setInput, initialChatModel, artifact])
+  }, [status, chatId, handleSubmit, setInput, initialChatModel, artifact, clipboardArtifact, append, setClipboardArtifact])
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -167,6 +185,14 @@ export function ChatInput ({
       />
 
       <div className="flex flex-col w-full p-2 bg-muted dark:bg-zinc-800 rounded-2xl border dark:border-zinc-700">
+        {clipboardArtifact && (
+          <div className="flex items-center justify-between p-2 mb-2 rounded-md bg-background border dark:border-zinc-700">
+            <span className="text-sm truncate">{clipboardArtifact.title}</span>
+            <Button variant="ghost" size="icon" onClick={() => setClipboardArtifact(null)}>
+              <CrossIcon size={14} />
+            </Button>
+          </div>
+        )}
         {uploadingFiles.length > 0 && (
           <div
             data-testid="attachments-preview"

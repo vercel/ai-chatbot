@@ -1,25 +1,28 @@
 /**
  * @file app/api/artifact/route.ts
  * @description API маршрут для работы с артефактами.
- * @version 1.2.0
- * @date 2025-06-10
- * @updated Импорт ArtifactKind теперь из общего файла lib/types.
+ * @version 1.3.0
+ * @date 2025-06-12
+ * @updated Added versionTimestamp support for single-version retrieval.
  */
 
 /** HISTORY:
+ * v1.3.0 (2025-06-12): GET endpoint accepts versionTimestamp.
  * v1.2.0 (2025-06-10): Импорт ArtifactKind из lib/types.
  * v1.1.0 (2025-06-09): Исправлены типы ошибок и логика для соответствия новой схеме.
  * v1.0.0 (2025-06-09): Переименован из document, адаптирован под новую схему и логику.
  */
 
 import { auth } from '@/app/app/(auth)/auth'
-import { deleteArtifactVersionsAfterTimestamp, getArtifactsById, saveArtifact, } from '@/lib/db/queries'
+import { deleteArtifactVersionsAfterTimestamp, getArtifactsById, getArtifactById, saveArtifact, } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
 import type { ArtifactKind } from '@/lib/types' // <-- ИЗМЕНЕН ИМПОРТ
 
 export async function GET (request: Request) {
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
+  const versionParam = searchParams.get('version')
+  const versionTimestampParam = searchParams.get('versionTimestamp')
 
   if (!id) {
     return new ChatSDKError('bad_request:api', 'Parameter id is missing').toResponse()
@@ -28,6 +31,19 @@ export async function GET (request: Request) {
   const session = await auth()
   if (!session?.user) {
     return new ChatSDKError('unauthorized:artifact').toResponse()
+  }
+
+  if (versionParam || versionTimestampParam) {
+    const version = versionParam ? Number.parseInt(versionParam, 10) : undefined
+    const versionTimestamp = versionTimestampParam ? new Date(versionTimestampParam) : undefined
+    const result = await getArtifactById({ id, version, versionTimestamp })
+    if (!result) {
+      return new ChatSDKError('not_found:artifact').toResponse()
+    }
+    if (result.doc.userId !== session.user.id) {
+      return new ChatSDKError('forbidden:artifact').toResponse()
+    }
+    return Response.json(result, { status: 200 })
   }
 
   const artifacts = await getArtifactsById({ id })

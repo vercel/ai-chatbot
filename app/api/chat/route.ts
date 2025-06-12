@@ -37,6 +37,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather'
 import { artifactContent } from '@/artifacts/tools/artifactContent'
 import { artifactDelete } from '@/artifacts/tools/artifactDelete'
 import { artifactRestore } from '@/artifacts/tools/artifactRestore'
+import { siteGenerate } from '@/artifacts/tools/siteGenerate'
 import { myProvider } from '@/lib/ai/providers'
 import { entitlementsByUserType } from '@/lib/ai/entitlements'
 import { type PostRequestBody, postRequestBodySchema } from './schema'
@@ -141,6 +142,7 @@ export async function POST (request: Request) {
         artifactEnhance: artifactEnhance({ session }),
         artifactDelete: artifactDelete({ session }),
         artifactRestore: artifactRestore({ session }),
+        siteGenerate: siteGenerate({ session }),
       },
       onFinish: async ({ response, finishReason, usage }) => {
         childLogger.info({ finishReason, usage }, 'Text stream finished, saving assistant response')

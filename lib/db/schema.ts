@@ -1,16 +1,17 @@
 /**
  * @file lib/db/schema.ts
  * @description Определения таблиц базы данных с использованием Drizzle ORM.
- * @version 2.0.0
- * @date 2025-06-09
- * @updated Переименована таблица Document в Artifact. Добавлена логика "мягкого" удаления и отклонения предложений.
+ * @version 2.1.0
+ * @date 2025-06-12
+ * @updated Поле content переведено на JSON, добавлен вид артефакта site.
  */
 
 /** HISTORY:
+ * v2.1.0 (2025-06-12): Поле content переведено на JSON и добавлен тип 'site'.
  * v2.0.0 (2025-06-09): Переименована таблица Document->Artifact, добавлены поля deletedAt и isDismissed.
  * v1.4.0 (2025-06-09): Удалена неиспользуемая таблица `stream`.
  * v1.3.0 (2025-06-07): Добавлено поле `summary` в таблицу `Document`.
- */
+*/
 
 import type { InferSelectModel } from 'drizzle-orm'
 import { boolean, foreignKey, json, pgTable, primaryKey, text, timestamp, uuid, varchar, } from 'drizzle-orm/pg-core'
@@ -70,9 +71,9 @@ export const artifact = pgTable(
     id: uuid('id').notNull().defaultRandom(),
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
-    content: text('content'),
+    content: json('content').$type<string>(),
     summary: text('summary').notNull().default(''),
-    kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
+    kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet', 'site'] })
       .notNull()
       .default('text'),
     userId: uuid('userId')

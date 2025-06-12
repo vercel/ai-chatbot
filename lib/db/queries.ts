@@ -1,12 +1,13 @@
 /**
  * @file lib/db/queries.ts
  * @description Функции для выполнения запросов к базе данных.
- * @version 2.2.0
- * @date 2025-06-10
- * @updated Импорт ArtifactKind теперь из общего файла lib/types.
+ * @version 2.3.0
+ * @date 2025-06-12
+ * @updated getArtifactById now accepts versionTimestamp for precise retrieval.
  */
 
 /** HISTORY:
+ * v2.3.0 (2025-06-12): Added versionTimestamp param to getArtifactById.
  * v2.2.0 (2025-06-10): Импорт ArtifactKind теперь из lib/types.
  * v2.1.1 (2025-06-10): Temporarily commented out generateHashedPassword usage to resolve TS2305.
  * v2.1.0 (2025-06-09): Восстановлены экспорты getMessageById, deleteMessageById и др.
@@ -228,14 +229,21 @@ export async function getArtifactsById ({ id }: { id: string }): Promise<Array<A
   return await db.select().from(artifact).where(and(eq(artifact.id, id), isNull(artifact.deletedAt))).orderBy(asc(artifact.createdAt))
 }
 
-export async function getArtifactById ({ id, version }: { id: string; version?: number | null }): Promise<{
+export async function getArtifactById ({ id, version, versionTimestamp }: { id: string; version?: number | null; versionTimestamp?: Date | null }): Promise<{
   doc: Artifact,
   totalVersions: number
 } | undefined> {
   const allVersions = await getArtifactsById({ id })
   if (allVersions.length === 0) return undefined
   const totalVersions = allVersions.length
-  const doc = (version != null && version > 0 && version <= totalVersions) ? allVersions[version - 1] : allVersions[totalVersions - 1]
+  let doc: Artifact | undefined
+  if (versionTimestamp) {
+    doc = allVersions.find(v => v.createdAt.getTime() === versionTimestamp.getTime())
+  }
+  if (!doc && version != null && version > 0 && version <= totalVersions) {
+    doc = allVersions[version - 1]
+  }
+  doc = doc ?? allVersions[totalVersions - 1]
   return { doc, totalVersions }
 }
 

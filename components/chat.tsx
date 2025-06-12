@@ -30,6 +30,7 @@ import { useSearchParams } from 'next/navigation'
 import { useAutoResume } from '@/hooks/use-auto-resume'
 import { ChatSDKError } from '@/lib/errors'
 import type { VisibilityType } from '@/lib/types'
+import { getAndClearArtifactFromClipboard } from '@/app/app/(main)/artifacts/actions'
 
 export function Chat ({
   id,
@@ -98,7 +99,18 @@ export function Chat ({
   }, [query, append, hasAppendedQuery, id])
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
+  const [clipboardArtifact, setClipboardArtifact] = useState<{
+    artifactId: string
+    title: string
+    kind: string
+  } | null>(null)
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible)
+
+  useEffect(() => {
+    getAndClearArtifactFromClipboard().then((data) => {
+      if (data) setClipboardArtifact(data)
+    }).catch(() => {})
+  }, [])
 
   useAutoResume({
     autoResume,
@@ -129,12 +141,14 @@ export function Chat ({
             input={input}
             setInput={setInput}
             handleSubmit={handleSubmit}
-            status={status}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            append={append}
-            session={session}
+          status={status}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          clipboardArtifact={clipboardArtifact}
+          setClipboardArtifact={setClipboardArtifact}
+          messages={messages}
+          append={append}
+          session={session}
             initialChatModel={initialChatModel}
             artifact={artifact}
           />
