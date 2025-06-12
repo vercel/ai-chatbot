@@ -1,5 +1,6 @@
 import type { Attachment } from 'ai';
 import { LoaderIcon } from './icons';
+import { AudioAttachments } from './audioAttachment';
 
 export const PreviewAttachment = ({
   attachment,
@@ -26,6 +27,8 @@ export const PreviewAttachment = ({
               alt={name ?? 'An image attachment'}
               className="rounded-md size-full object-cover"
             />
+          ) : contentType.startsWith('audio/') ? (
+            <AudioAttachments url={url} />
           ) : (
             <div className="" />
           )
@@ -43,6 +46,7 @@ export const PreviewAttachment = ({
             </div>
             {onCancel && (
               <button
+                type="button"
                 onClick={onCancel}
                 className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded-full bg-white text-black text-lg text-[10px] leading-none hover:opacity-80 shadow"
                 aria-label="Remove attachment"
@@ -55,6 +59,7 @@ export const PreviewAttachment = ({
 
         {!isUploading && onCancel && (
           <button
+            type="button"
             onClick={onCancel}
             className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded-full bg-white text-black text-lg text-[10px] leading-none hover:opacity-80 shadow"
             aria-label="Remove attachment"
