@@ -3,7 +3,7 @@ _*.xml
 .idea
 *.tsbuildinfo
 *.log
-
+pnpm-*.yaml
 
 # dependencies
 node_modules

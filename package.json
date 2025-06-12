@@ -73,6 +73,7 @@
     "@vercel/blob": "^0.27.3",
     "@vercel/functions": "^2.0.3",
     "@vercel/otel": "^1.12.0",
+    "@vercel/speed-insights": "^1.2.0",
     "ai": "4.3.16",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",

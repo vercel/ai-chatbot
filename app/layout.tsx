@@ -2,6 +2,7 @@ import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
@@ -71,6 +72,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <SpeedInsights/>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
