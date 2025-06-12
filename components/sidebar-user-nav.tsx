@@ -51,7 +51,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <Avatar className="h-8 w-8 rounded-full">
+              <Avatar className="size-8 rounded-full">
                 <AvatarImage 
                   src={user.image || undefined} 
                   alt={user.name || 'User'} 
@@ -59,7 +59,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                 <AvatarFallback className="rounded-full">
                   {user.name
                     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                    : <UserIcon className="h-4 w-4" />
+                    : <UserIcon className="size-4" />
                   }
                 </AvatarFallback>
               </Avatar>
@@ -82,7 +82,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-full">
+                <Avatar className="size-8 rounded-full">
                   <AvatarImage 
                     src={user.image || undefined} 
                     alt={user.name || 'User'} 
@@ -90,7 +90,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                   <AvatarFallback className="rounded-full">
                     {user.name
                       ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                      : <UserIcon className="h-4 w-4" />
+                      : <UserIcon className="size-4" />
                     }
                   </AvatarFallback>
                 </Avatar>
@@ -106,7 +106,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2">
-              <Settings className="h-4 w-4" />
+              <Settings className="size-4" />
               Settings
             </DropdownMenuItem>
             
@@ -116,7 +116,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
               onClick={handleSignOut}
               disabled={isSigningOut}
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="size-4" />
               {isSigningOut ? 'Signing out...' : 'Sign out'}
             </DropdownMenuItem>
           </DropdownMenuContent>
