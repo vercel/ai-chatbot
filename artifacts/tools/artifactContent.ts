@@ -16,7 +16,7 @@ import { tool } from 'ai'
 import { z } from 'zod'
 import { getArtifactById } from '@/lib/db/queries'
 import { ChatSDKError } from '@/lib/errors'
-import { createLogger } from '@fab33/sys-logger'
+import { createLogger } from '@fab33/fab-logger'
 import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
 
 const logger = createLogger('artifacts:tools:artifactContent')

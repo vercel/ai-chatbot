@@ -15,7 +15,7 @@ import { tool } from 'ai'
 import type { Session } from 'next-auth'
 import { z } from 'zod'
 import { deleteArtifactSoftById, getArtifactById } from '@/lib/db/queries'
-import { createLogger } from '@fab33/sys-logger'
+import { createLogger } from '@fab33/fab-logger'
 import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
 
 const logger = createLogger('artifacts:tools:artifactDelete')

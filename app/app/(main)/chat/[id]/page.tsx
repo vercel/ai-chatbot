@@ -21,7 +21,7 @@ import { getChatById, getMessagesByChatId } from '@/lib/db/queries'
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models'
 import type { DBMessage } from '@/lib/db/schema'
 import type { Attachment, UIMessage } from 'ai'
-import { createLogger } from '@fab33/sys-logger'
+import { createLogger } from '@fab33/fab-logger'
 
 const logger = createLogger('page:chat:[id]')
 

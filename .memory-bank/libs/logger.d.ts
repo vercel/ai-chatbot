@@ -1,6 +1,6 @@
 /**
  * @file src/logger/logger.d.ts
- * @description TypeScript декларации для основного модуля логирования (@fab33/sys-logger).
+ * @description TypeScript декларации для основного модуля логирования (@fab33/fab-logger).
  * @version 0.8.4
  */
 

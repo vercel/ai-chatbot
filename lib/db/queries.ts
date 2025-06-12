@@ -18,7 +18,7 @@ import 'server-only'
 import { and, asc, count, desc, eq, gt, gte, ilike, inArray, isNull, sql, type SQL, } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { createLogger } from '@fab33/sys-logger'
+import { createLogger } from '@fab33/fab-logger'
 
 import {
   artifact,
@@ -37,6 +37,7 @@ import { generateUUID } from '../utils'
 // import { generateHashedPassword } from './utils'; // TODO: Restore when generateHashedPassword is available
 import { generateAndSaveSummary } from '../ai/summarizer'
 
+console.log(`process.env.TRANSPORT1=${process.env.TRANSPORT1}`)
 const logger = createLogger('lib:db:queries')
 
 // biome-ignore lint: Forbidden non-null assertion.

@@ -16,7 +16,7 @@ import type { Session } from 'next-auth'
 import { z } from 'zod'
 import { getArtifactById, saveArtifact } from '@/lib/db/queries'
 import { artifactTools } from '@/artifacts/kinds/artifact-tools'
-import { createLogger } from '@fab33/sys-logger'
+import { createLogger } from '@fab33/fab-logger'
 import { AI_TOOL_NAMES } from '@/lib/ai/tools/constants'
 import { generateAndSaveSummary } from '@/lib/ai/summarizer'
 

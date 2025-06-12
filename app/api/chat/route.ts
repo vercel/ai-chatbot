@@ -42,7 +42,7 @@ import { entitlementsByUserType } from '@/lib/ai/entitlements'
 import { type PostRequestBody, postRequestBodySchema } from './schema'
 import { geolocation } from '@vercel/functions'
 import { ChatSDKError } from '@/lib/errors'
-import { createLogger } from '@fab33/sys-logger'
+import { createLogger } from '@fab33/fab-logger'
 import type { z } from 'zod'
 
 const parentLogger = createLogger('api:chat:route')

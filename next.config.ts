@@ -33,6 +33,7 @@ const nextConfig: NextConfig = {
     // Возвращаем измененную конфигурацию.
     return config
   },
+  serverComponentsExternalPackages: ['pino'],
 }
 
 export default nextConfig
