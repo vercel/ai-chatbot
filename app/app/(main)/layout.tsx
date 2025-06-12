@@ -12,18 +12,19 @@
  * v1.0.0 (2025-05-25): Начальная версия макета.
  */
 
-import Script from 'next/script';
-import { auth } from '@/app/app/(auth)/auth';
-import { MainLayoutClient } from '@/components/main-layout-client';
+import Script from 'next/script'
+import { auth } from '@/app/app/(auth)/auth'
+import { MainLayoutClient } from '@/components/main-layout-client'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
-export const experimental_ppr = true;
+export const experimental_ppr = true
 
-export default async function Layout({
+export default async function Layout ({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const session = await auth()
 
   return (
     <>
@@ -34,8 +35,9 @@ export default async function Layout({
       <MainLayoutClient session={session}>
         {children}
       </MainLayoutClient>
+      <SpeedInsights/>
     </>
-  );
+  )
 }
 
 // END OF: app/(main)/layout.tsx
