@@ -1,5 +1,5 @@
-import { PlayIcon, PauseIcon, LoaderIcon, X } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
+import { PlayIcon, PauseIcon, LoaderIcon, X, MicIcon } from 'lucide-react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 
 export const AudioAttachments = ({
   url,
@@ -14,17 +14,6 @@ export const AudioAttachments = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
-  };
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -54,17 +43,29 @@ export const AudioAttachments = ({
     isPlaying ? audio.play() : audio.pause();
   }, [isPlaying]);
 
-  const progressPercent = duration ? (currentTime / duration) * 100 : 0;
-
   const formatTime = (time: number) =>
     `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`;
+  const waveformBars = useMemo(() => {
+    return Array.from({ length: 50 }).map((_, i) => {
+      const height = 6 + (Math.sin(i * 0.5) + 1) * 6;
+      const time = i / 50;
+      return {
+        id: `bar-${time.toFixed(3)}-${height.toFixed(1)}`, // ✅ Unique, stable key
+        height,
+        time,
+      };
+    });
+  }, []);
 
   return (
-    <div className="flex items-center w-full gap-3 px-3 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-sm text-sm">
+    <div className="flex items-center bg-black gap-3 px-3 py-2  shadow w-[420px]">
+      <audio ref={audioRef} src={url} hidden preload="metadata" />
+
+      {/* Play/Pause button */}
       <button
         type="button"
         onClick={() => setIsPlaying((prev) => !prev)}
-        className="shrink-0 p-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white transition"
+        className="p-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-800 transition"
       >
         {isPlaying ? (
           <PauseIcon className="w-4 h-4" />
@@ -73,24 +74,54 @@ export const AudioAttachments = ({
         )}
       </button>
 
-      <div className="flex-1 min-w-0">
-        <div className="h-1 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-blue-500 transition-all"
-            style={{ width: `${progressPercent}%` }}
-          />
+      {/* WhatsApp-style waveform */}
+      <div className="flex-1 flex flex-col justify-center">
+        <div className="relative h-6 overflow-hidden">
+          <div className="absolute inset-0 flex gap-[2px] items-end">
+            {waveformBars.map(({ id, height, time }) => {
+              const barTime = time * duration;
+              const active = currentTime >= barTime;
+
+              return (
+                <div
+                  key={id}
+                  className={`w-[2px] rounded-sm transition-all duration-200 ${
+                    active ? 'bg-zinc-300' : 'bg-zinc-300'
+                  }`}
+                  style={{ height: `${height}px` }}
+                />
+              );
+            })}
+          </div>
         </div>
-        <div className="mt-1 flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+
+        <div className="mt-1 flex justify-end text-[11px] text-white">
           <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+          {/* <span>{formatTime(duration)}</span> */}
         </div>
       </div>
 
-      {isUploading && (
-        <LoaderIcon className="w-4 h-4 animate-spin text-zinc-400 dark:text-zinc-500" />
-      )}
+      {/* Mic Avatar */}
+      <div className="relative w-10 h-10 shrink-0">
+        <div className="absolute bottom-0 bg-black right-0 rounded-full p-[2px]">
+          <MicIcon size={14} color="white" />
+        </div>
+        <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+          <div className="w-6 h-6 bg-gray-400 rounded-full" />
+        </div>
+      </div>
 
-      <audio ref={audioRef} src={url} hidden preload="metadata" />
+      {/* Cancel or loader */}
+      {/* {isUploading ? (
+        <LoaderIcon className="w-4 h-4 animate-spin text-zinc-400" />
+      ) : onCancel ? (
+        <button
+          onClick={onCancel}
+          className="p-1 text-zinc-400 hover:text-red-500 transition"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      ) : null} */}
     </div>
   );
 };
