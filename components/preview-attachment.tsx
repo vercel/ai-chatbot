@@ -1,6 +1,7 @@
 import type { Attachment } from 'ai';
 import { LoaderIcon } from './icons';
 import { AudioAttachments } from './audioAttachment';
+import { useEffect, useState } from 'react';
 
 export const PreviewAttachment = ({
   attachment,
@@ -38,7 +39,11 @@ export const PreviewAttachment = ({
               className="rounded-md size-full object-cover"
             />
           ) : contentType.startsWith('audio/') ? (
-            <AudioAttachments url={url} />
+            <AudioAttachments
+              url={url}
+              isUploading={isUploading}
+              onCancel={onCancel}
+            />
           ) : (
             <div className="" />
           )

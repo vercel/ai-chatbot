@@ -42,9 +42,26 @@ export default function Page() {
 
     initializeChat();
   }, [router]);
-
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center px-4 pt-40">
+        <div className="w-full max-w-2xl mt-16 animate-pulse space-y-10 ">
+          {/* Welcome Title Placeholder */}
+          <div className="h-8 bg-gray-200  rounded mx-auto w-3/4" />
+          <div className="h-8 bg-gray-100 rounded mx-auto w-3/4" />
+
+          {/* Prompt Button Skeletons */}
+          <div className="grid grid-cols-2 mt-28 gap-4 justify-center items-center">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded w-full" />
+            ))}
+          </div>
+
+          {/* Chat input skeleton */}
+          <div className="h-28 bg-gray-200 rounded-lg w-full mt-8" />
+        </div>
+      </div>
+    );
   }
 
   return (

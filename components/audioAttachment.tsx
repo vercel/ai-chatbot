@@ -112,16 +112,17 @@ export const AudioAttachments = ({
       </div>
 
       {/* Cancel or loader */}
-      {/* {isUploading ? (
+      {isUploading ? (
         <LoaderIcon className="w-4 h-4 animate-spin text-zinc-400" />
       ) : onCancel ? (
         <button
+          type="button"
           onClick={onCancel}
           className="p-1 text-zinc-400 hover:text-red-500 transition"
         >
           <X className="w-4 h-4" />
         </button>
-      ) : null} */}
+      ) : null}
     </div>
   );
 };
