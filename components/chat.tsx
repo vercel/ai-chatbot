@@ -380,7 +380,7 @@ export function Chat({
               input={input}
               setInput={setInput}
               handleSubmit={handleFormSubmit}
-              status={status}
+              status={displayStatus}
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
@@ -398,7 +398,7 @@ export function Chat({
           input={input}
           setInput={setInput}
           handleSubmit={handleFormSubmit}
-          status={status}
+          status={displayStatus}
           stop={stop}
           attachments={attachments}
           setAttachments={setAttachments}
