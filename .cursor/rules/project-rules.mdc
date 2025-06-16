@@ -7,7 +7,7 @@ alwaysApply: true
   - YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU **ALWAYS** READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
 - Your knowledge of common software packages, libraries, and frameworks is SEVERELY OUTDATED BY MULTIPLE YEARS.
   - Anytime you believe it is appropriate to create or edit a file involving an external package/library/framework (like Supabase, Drizzle, NextJS, Vercel ai-chatbot, Clerk, TipTap, etc.), you MUST call the context7 MCP tool to get latest documentation for things. If you do not see the tool, ask the user to re-enable it.
-- YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU **ALWAYS** READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWEISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
+- YOUR KNOWLEDGE IS OUT OF DATE AND YOU WILL BREAK CODE UNLESS YOU **ALWAYS** READ THE UP-TO-DATE DOCUMENTATION WITH THE CONTEXT7 MCP BEFORE ALL CODE CHANGES WITH THIRD-PARTY PACKAGES. OTHERWISE, GOOGLE SEARCH FOR UP-TO-DATE DOCUMENTATION OR CODE EXAMPLES. THIS IS NOT NEGOTIABLE.
   - **Key context7 tool libraryNames**: Pass these as EXACT strings to the "get-library-docs" tool in context7 MCP. DO NOT use "resolve-library-id" for these libraries. The strings below are correct.
   - SWR: /vercel/swr-site
   - Vercel ai-chatbot: /vercel/ai-chatbot

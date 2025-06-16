@@ -28,6 +28,7 @@ import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
 import useSWRInfinite from 'swr/infinite';
 import { LoaderIcon } from './icons';
+import { useRealtimeChatUpdates } from '@/hooks/use-realtime-chat-updates'; // <-- Import the hook
 // Removed Skeleton import
 
 // Infer user type from useUser hook return value
@@ -125,6 +126,8 @@ export function SidebarHistory({ user }: { user: UserPropType }) {
   // const { id } = useParams(); // Use params directly like original if needed, or keep activeChatId
   const params = useParams();
   const activeChatId = typeof params?.id === 'string' ? params.id : null; // Keep activeChatId extraction
+
+  useRealtimeChatUpdates(); // <-- Call the hook
 
   const {
     data: paginatedChatHistories,
