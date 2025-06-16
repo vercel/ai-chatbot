@@ -1,30 +1,27 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
-import { MicIcon } from './icons';
+// import { MicIcon, CheckIcon } from './icons'; // Make sure CheckIcon is here or from lucide-react
 import { toast } from 'sonner';
 import cx from 'classnames';
 import LoadingPill from './loadingPills';
 import { CheckIcon } from 'lucide-react';
-
-// interface VoiceRecorderProps {
-//   onTranscriptionComplete: (text: string) => void;
-//   status: 'idle' | 'recording' | 'transcribing';
-//   disabled?: boolean;
-// }
+import { MicIcon } from './icons';
 
 interface VoiceRecorderProps {
-  onVoiceMessage: (audio: Blob) => void;
+  onVoiceMessage: (audio: Blob) => Promise<void> | void;
   status: 'idle' | 'recording' | 'transcribing';
   disabled?: boolean;
 }
+
 export function VoiceRecorder({
-  // onTranscriptionComplete,
   status,
   onVoiceMessage,
   disabled,
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext>();
@@ -69,30 +66,6 @@ export function VoiceRecorder({
         }
       };
 
-      // mediaRecorder.onstop = async () => {
-      //   const audioBlob = new Blob(audioChunksRef.current, {
-      //     type: 'audio/wav',
-      //   });
-
-      //   const recognition = new (
-      //     window.SpeechRecognition || window.webkitSpeechRecognition
-      //   )();
-      //   recognition.continuous = false;
-      //   recognition.interimResults = false;
-
-      //   recognition.onresult = (event: SpeechRecognitionEvent) => {
-      //     const transcript = event.results[0][0].transcript;
-      //     onTranscriptionComplete(transcript);
-      //   };
-
-      //   recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      //     toast.error('Error transcribing audio. Please try again.');
-      //     console.error('Speech recognition error:', event.error);
-      //   };
-
-      //   recognition.start();
-      // };
-
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
@@ -120,17 +93,6 @@ export function VoiceRecorder({
     }
   };
 
-  // const stopRecording = (event: React.MouseEvent) => {
-  //   event.preventDefault();
-
-  //   if (mediaRecorderRef.current && isRecording) {
-  //     mediaRecorderRef.current.stop();
-  //     mediaRecorderRef.current.stream
-  //       .getTracks()
-  //       .forEach((track) => track.stop());
-  //     setIsRecording(false);
-  //   }
-  // };
   const cancelRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
@@ -139,24 +101,40 @@ export function VoiceRecorder({
         .forEach((track) => track.stop());
     }
     setIsRecording(false);
-    audioChunksRef.current = []; // discard audio
+    audioChunksRef.current = [];
   };
 
   const sendRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      setIsUploading(true);
+
       mediaRecorderRef.current.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: 'audio/webm',
         });
-        onVoiceMessage(audioBlob);
-        audioChunksRef.current = [];
+
+        const result = onVoiceMessage(audioBlob);
+
+        const finalize = () => {
+          setIsUploading(false);
+          setIsRecording(false); // ✅ Move this here!
+          audioChunksRef.current = [];
+        };
+
+        if (result instanceof Promise) {
+          result.finally(finalize);
+        } else {
+          finalize();
+        }
       };
 
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream
         .getTracks()
         .forEach((track) => track.stop());
-      setIsRecording(false);
+
+      // ❌ Don’t set isRecording to false here
+      // setIsRecording(false);
     }
   };
 
@@ -164,19 +142,29 @@ export function VoiceRecorder({
     <div className="relative flex items-center gap-2">
       {isRecording ? (
         <>
-          <button onClick={cancelRecording} disabled={disabled}>
-            <LoadingPill seconds={recordingTime} />
-          </button>
-          <Button
-            onClick={sendRecording} // You can replace this with a custom "send" handler if needed
-            disabled={disabled}
-            variant="ghost"
-            className="text-black-600"
-            title="Send"
-            size="icon"
+          <button
+            type="button"
+            onClick={cancelRecording}
+            disabled={disabled || isUploading}
           >
-            <CheckIcon size={16} />{' '}
-          </Button>
+            <LoadingPill
+              seconds={recordingTime}
+              text={isUploading ? 'Uploading...' : undefined}
+            />
+          </button>
+
+          {!isUploading && (
+            <Button
+              onClick={sendRecording}
+              disabled={disabled}
+              variant="ghost"
+              className="text-black-600"
+              title="Send"
+              size="icon"
+            >
+              <CheckIcon size={16} />
+            </Button>
+          )}
         </>
       ) : (
         <Button

@@ -67,20 +67,25 @@ const PurePreviewMessage = ({
           )}
 
           <div className="flex flex-col gap-4 w-full">
-            {message.experimental_attachments &&
-              message.experimental_attachments.length > 0 && (
-                <div
-                  data-testid={`message-attachments`}
-                  className="flex flex-row justify-end gap-2"
-                >
-                  {message.experimental_attachments.map((attachment) => (
-                    <PreviewAttachment
-                      key={attachment.url}
-                      attachment={attachment}
-                    />
-                  ))}
-                </div>
-              )}
+            {[
+              ...(message.experimental_attachments || []),
+              ...(message.attachments || []),
+            ].length > 0 && (
+              <div
+                data-testid={`message-attachments`}
+                className="flex flex-row justify-end gap-2"
+              >
+                {[
+                  ...(message.experimental_attachments || []),
+                  ...(message.attachments || []),
+                ].map((attachment) => (
+                  <PreviewAttachment
+                    key={attachment.url}
+                    attachment={attachment}
+                  />
+                ))}
+              </div>
+            )}
 
             {message.parts?.map((part, index) => {
               const { type } = part;
@@ -95,6 +100,16 @@ const PurePreviewMessage = ({
                   />
                 );
               }
+              // if (type === 'voice'&& 'url' in part) {
+              //   return (
+              //     <div key={key} className="flex items-start gap-2">
+              //       {/* Optional: Avatar ya icon */}
+              //       <div className="bg-muted rounded-lg px-4 py-2">
+              //         <audio controls src={part.url} className="w-full" />
+              //       </div>
+              //     </div>
+              //   );
+              // }
 
               if (type === 'text') {
                 if (mode === 'view') {
@@ -281,7 +296,7 @@ export const ThinkingMessage = () => {
 
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm... I'm thinking...  
+            Hmm... I'm thinking...
           </div>
         </div>
       </div>
