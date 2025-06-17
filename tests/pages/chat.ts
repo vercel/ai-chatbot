@@ -51,7 +51,7 @@ export class ChatPage {
   async hasChatIdInUrl() {
     await expect(this.page).toHaveURL(
       /^http:\/\/localhost:3000\/chat\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+    ); //3000
   }
 
   async sendUserMessageFromSuggestion() {

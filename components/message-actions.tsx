@@ -44,7 +44,7 @@ export function PureMessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="py-1 px-2 h-fit text-muted-foreground"
+              className="py-0.5 px-1 h-fit text-muted-foreground border-[0.25px] !pointer-events-auto"
               variant="outline"
               onClick={async () => {
                 const textFromParts = message.parts
@@ -72,12 +72,12 @@ export function PureMessageActions({
           <TooltipTrigger asChild>
             <Button
               data-testid="message-upvote"
-              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              className="py-0.5 px-1 h-fit text-muted-foreground !pointer-events-auto border-[0.25px]"
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
                 const upvote = apiClient.toggleVote(chatId, message.id);
-                
+
                 toast.promise(upvote, {
                   loading: 'Upvoting Response...',
                   success: () => {
@@ -104,8 +104,10 @@ export function PureMessageActions({
                     );
 
                     // Fetch fresh data
-                    fetchVotes().then(freshVotes => {
-                      mutate(`/api/votes/chat/${chatId}`, freshVotes, { revalidate: false });
+                    fetchVotes().then((freshVotes) => {
+                      mutate(`/api/votes/chat/${chatId}`, freshVotes, {
+                        revalidate: false,
+                      });
                     });
 
                     return 'Upvoted Response!';
@@ -124,12 +126,12 @@ export function PureMessageActions({
           <TooltipTrigger asChild>
             <Button
               data-testid="message-downvote"
-              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              className="py-0.5 px-1 h-fit text-muted-foreground !pointer-events-auto border-[0.25px]"
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
                 const downvote = apiClient.toggleVote(chatId, message.id);
-                
+
                 toast.promise(downvote, {
                   loading: 'Downvoting Response...',
                   success: () => {
@@ -156,8 +158,10 @@ export function PureMessageActions({
                     );
 
                     // Fetch fresh data
-                    fetchVotes().then(freshVotes => {
-                      mutate(`/api/votes/chat/${chatId}`, freshVotes, { revalidate: false });
+                    fetchVotes().then((freshVotes) => {
+                      mutate(`/api/votes/chat/${chatId}`, freshVotes, {
+                        revalidate: false,
+                      });
                     });
 
                     return 'Downvoted Response!';

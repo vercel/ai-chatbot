@@ -9,7 +9,7 @@ import {
   DocumentRequest,
   SuggestionRequest,
   ApiError,
-  ApiResponse
+  ApiResponse,
 } from './api-client.types';
 
 export class ApiClient {
@@ -18,7 +18,8 @@ export class ApiClient {
 
   private constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://192.168.29.28:8080/',
+      // Use a default timeout or from environment variable
       timeout: Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 30000,
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +40,7 @@ export class ApiClient {
       },
       (error) => {
         return Promise.reject(error);
-      }
+      },
     );
 
     // Response interceptor
@@ -56,7 +57,7 @@ export class ApiClient {
           message: error.response?.data?.message || 'An error occurred',
           status: error.response?.status || 500,
         });
-      }
+      },
     );
   }
 
@@ -129,7 +130,10 @@ export class ApiClient {
     return response.data;
   }
 
-  async uploadFile(file: File, chatId: string): Promise<{
+  async uploadFile(
+    file: File,
+    chatId: string,
+  ): Promise<{
     url: string;
     downloadUrl: string;
     pathname: string;
@@ -139,7 +143,6 @@ export class ApiClient {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('chatId', chatId);
-    
 
     const response = await this.client.post('/api/chats/uploads', formData, {
       headers: {
@@ -154,7 +157,11 @@ export class ApiClient {
     return response.data;
   }
 
-  async getPaginatedChats(params: { page: number; limit: number; ending_before?: string }) {
+  async getPaginatedChats(params: {
+    page: number;
+    limit: number;
+    ending_before?: string;
+  }) {
     const response = await this.client.get('/api/chats/paginated', { params });
     return response.data;
   }
@@ -169,8 +176,14 @@ export class ApiClient {
     return response.data;
   }
 
-  async createMessageInChat(chatId: string, data: Omit<MessageRequest, 'chatId'>) {
-    const response = await this.client.post(`/api/chats/${chatId}/messages`, data);
+  async createMessageInChat(
+    chatId: string,
+    data: Omit<MessageRequest, 'chatId'>,
+  ) {
+    const response = await this.client.post(
+      `/api/chats/${chatId}/messages`,
+      data,
+    );
     return response.data;
   }
 
@@ -180,21 +193,27 @@ export class ApiClient {
   }
 
   async updateChatVisibility(chatId: string, data: { isVisible: boolean }) {
-    const response = await this.client.put(`/api/chats/${chatId}/visibility`, data);
+    const response = await this.client.put(
+      `/api/chats/${chatId}/visibility`,
+      data,
+    );
     return response.data;
   }
 
   // Message APIs
   async getMessagesByChat(chatId: string, organizationId: string) {
-    const response = await this.client.get(`/api/messages/chats/${chatId}/messages`, {
-      params: { organizationId }
-    });
+    const response = await this.client.get(
+      `/api/messages/chats/${chatId}/messages`,
+      {
+        params: { organizationId },
+      },
+    );
     return response.data;
   }
 
   async getMessage(id: string, organizationId: string) {
     const response = await this.client.get(`/api/messages/messages/${id}`, {
-      params: { organizationId }
+      params: { organizationId },
     });
     return response.data;
   }
@@ -204,31 +223,49 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateMessage(id: string, data: { content: string }, organizationId: string) {
-    const response = await this.client.put(`/api/messages/messages/${id}`, data, {
-      params: { organizationId }
-    });
+  async updateMessage(
+    id: string,
+    data: { content: string },
+    organizationId: string,
+  ) {
+    const response = await this.client.put(
+      `/api/messages/messages/${id}`,
+      data,
+      {
+        params: { organizationId },
+      },
+    );
     return response.data;
   }
 
   async deleteMessage(id: string, organizationId: string) {
     const response = await this.client.delete(`/api/messages/messages/${id}`, {
-      params: { organizationId }
+      params: { organizationId },
     });
     return response.data;
   }
 
-  async deleteMessagesAfterTimestamp(chatId: string, timestamp: number, organizationId: string) {
-    const response = await this.client.delete(`/api/messages/chats/${chatId}/messages/after`, {
-      params: { timestamp, organizationId }
-    });
+  async deleteMessagesAfterTimestamp(
+    chatId: string,
+    timestamp: number,
+    organizationId: string,
+  ) {
+    const response = await this.client.delete(
+      `/api/messages/chats/${chatId}/messages/after`,
+      {
+        params: { timestamp, organizationId },
+      },
+    );
     return response.data;
   }
 
   async getMessageCountByUser(userId: string, organizationId: string) {
-    const response = await this.client.get(`/api/messages/users/${userId}/messages/count`, {
-      params: { organizationId }
-    });
+    const response = await this.client.get(
+      `/api/messages/users/${userId}/messages/count`,
+      {
+        params: { organizationId },
+      },
+    );
     return response.data;
   }
 
@@ -275,7 +312,7 @@ export class ApiClient {
 
   async deleteDocumentsAfterTimestamp(id: string, timestamp: number) {
     const response = await this.client.delete(`/api/documents/${id}/after`, {
-      params: { timestamp }
+      params: { timestamp },
     });
     return response.data;
   }
@@ -297,7 +334,9 @@ export class ApiClient {
   }
 
   async getSuggestionsByDocument(documentId: string) {
-    const response = await this.client.get(`/api/suggestions/document/${documentId}`);
+    const response = await this.client.get(
+      `/api/suggestions/document/${documentId}`,
+    );
     return response.data;
   }
 
@@ -312,7 +351,10 @@ export class ApiClient {
   }
 
   async updateSuggestionStatus(id: string, data: { status: string }) {
-    const response = await this.client.patch(`/api/suggestions/${id}/status`, data);
+    const response = await this.client.patch(
+      `/api/suggestions/${id}/status`,
+      data,
+    );
     return response.data;
   }
 
@@ -323,7 +365,9 @@ export class ApiClient {
 
   // Vote APIs
   async getVotesByMessage(chatId: string, messageId: string) {
-    const response = await this.client.get(`/api/votes/message/${chatId}/${messageId}`);
+    const response = await this.client.get(
+      `/api/votes/message/${chatId}/${messageId}`,
+    );
     return response.data;
   }
 
@@ -332,18 +376,29 @@ export class ApiClient {
     return response.data;
   }
 
-  async addReaction(chatId: string, messageId: string, data: { reaction: string }) {
-    const response = await this.client.post(`/api/votes/reaction/${chatId}/${messageId}`, data);
+  async addReaction(
+    chatId: string,
+    messageId: string,
+    data: { reaction: string },
+  ) {
+    const response = await this.client.post(
+      `/api/votes/reaction/${chatId}/${messageId}`,
+      data,
+    );
     return response.data;
   }
 
   async removeReaction(chatId: string, messageId: string) {
-    const response = await this.client.delete(`/api/votes/reaction/${chatId}/${messageId}`);
+    const response = await this.client.delete(
+      `/api/votes/reaction/${chatId}/${messageId}`,
+    );
     return response.data;
   }
 
   async toggleVote(chatId: string, messageId: string) {
-    const response = await this.client.post(`/api/votes/toggle/${chatId}/${messageId}`);
+    const response = await this.client.post(
+      `/api/votes/toggle/${chatId}/${messageId}`,
+    );
     return response.data;
   }
 }

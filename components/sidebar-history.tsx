@@ -86,17 +86,17 @@ export function getChatHistoryPaginationKey(
     return null;
   }
   if (searchQuery) {
-    return `http://localhost:3001/api/chats/paginated?search=${encodeURIComponent(searchQuery)}`;
+    return `http://192.168.29.28:8080/api/chats/paginated?search=${encodeURIComponent(searchQuery)}`;
   }
 
   if (pageIndex === 0)
-    return `http://localhost:3001/api/chats/paginated?limit=${PAGE_SIZE}`;
+    return `http://192.168.29.28:8080/api/chats/paginated?limit=${PAGE_SIZE}`;
 
   const firstChatFromPage = previousPageData.chats.at(-1);
 
   if (!firstChatFromPage) return null;
 
-  return `http://localhost:3001/api/chats/paginated?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
+  return `http://192.168.29.28:8080/api/chats/paginated?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
 
 export function SidebarHistory({

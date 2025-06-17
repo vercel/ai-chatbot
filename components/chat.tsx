@@ -46,10 +46,10 @@ export function Chat({
     stop,
     reload,
   } = useChat({
-    api: `http://localhost:3001/api/chats`,
+    api: `http://192.168.29.28:8080/api/chats`,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: {
       id,
@@ -94,7 +94,7 @@ export function Chat({
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/votes/chat/${id}` : null,
-    () => apiClient.getVotesByChat(id)
+    () => apiClient.getVotesByChat(id),
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
