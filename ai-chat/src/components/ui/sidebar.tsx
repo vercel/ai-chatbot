@@ -2,21 +2,21 @@
 
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { VariantProps, cva } from "class-variance-authority";
+import { cva, VariantProps } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
 import { useIsMobile } from "@ai-chat/hooks/use-mobile";
 import { cn } from "@ai-chat/lib/utils";
-import { Button } from "@ai-chat/components/ui/button";
-import { Input } from "@ai-chat/components/ui/input";
-import { Skeleton } from "@ai-chat/components/ui/skeleton";
-import { Sheet, SheetContent } from "@ai-chat/components/ui/sheet";
-import { Separator } from "@ai-chat/components/ui/separator";
+import { Button } from "./button";
+import { Input } from "./input";
+import { Skeleton } from "./skeleton";
+import { Sheet, SheetContent } from "./sheet";
+import { Separator } from "./separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@ai-chat/components/ui/tooltip";
+} from "./tooltip";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;

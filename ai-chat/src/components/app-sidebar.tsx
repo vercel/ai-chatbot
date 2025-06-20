@@ -2,10 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-import { PlusIcon } from "@ai-chat/components/icons";
-import { SidebarHistory } from "@ai-chat/components/sidebar-history";
-import { Button } from "@ai-chat/components/ui/button";
+import { PlusIcon } from "./icons";
+import { SidebarHistory } from "./sidebar-history";
+import { Button } from "./ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -13,12 +12,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   useSidebar,
-} from "@ai-chat/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@ai-chat/components/ui/tooltip";
+} from "./ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { SidebarUserNav } from "./sidebar-user-nav";
 
 export function AppSidebar({ user }: { user: any | undefined }) {
