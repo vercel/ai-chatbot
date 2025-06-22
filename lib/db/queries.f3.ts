@@ -132,7 +132,7 @@ export async function getBackblastsByAO({
     return await db
       .select()
       .from(backblast)
-      .where(like(backblast.ao, `%${ao}%`))
+      .where(eq(backblast.ao, ao))
       .orderBy(desc(backblast.date), desc(backblast.ingestedAt))
       .limit(limit)
       .offset(offset);

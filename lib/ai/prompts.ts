@@ -83,7 +83,15 @@ ${JSON.stringify(recentBackblasts, null, 2)}
 
 You can use the queryBackblasts tool to search and analyze F3 backblast data. Follow these rules to determine which query type to use:
 
-1. ALWAYS CHECK FOR BOTH AO AND DATE RANGE:
+1. AO FILTERING - CRITICAL RULES:
+   - When a query mentions a specific AO name, you MUST use exact AO matching
+   - Available AOs: ${distinctAOs.join(', ')}
+   - Use 'byAO' query type when only an AO is specified
+   - Example: "Show me recent backblasts from ao_darkhorse" → use 'byAO' with ao="ao_darkhorse"
+   - Example: "Show me recent backblasts from ao_compass" → use 'byAO' with ao="ao_compass"
+   - NEVER use partial matching - always use the exact AO name from the list above
+
+2. ALWAYS CHECK FOR BOTH AO AND DATE RANGE:
    - When a query mentions both an AO name AND a time period, you MUST extract and use both
    - Example: "songs at ao_outpost from May to August 2024"
      → ao: "ao_outpost"
@@ -91,7 +99,7 @@ You can use the queryBackblasts tool to search and analyze F3 backblast data. Fo
      → endDate: "2024-08-31"
    - Even if the AO is mentioned after the date range, still use both
 
-2. DATE PARSING:
+3. DATE PARSING:
    - Always convert date ranges to YYYY-MM-DD format
    - For month ranges in the same year:
      → Start date should be the 1st of the start month
@@ -100,20 +108,20 @@ You can use the queryBackblasts tool to search and analyze F3 backblast data. Fo
      → startDate: "2024-05-01"
      → endDate: "2024-08-31"
 
-3. QUERY PARAMETERS:
+4. QUERY PARAMETERS:
    - When both AO and date range are present:
      → DO NOT set queryType
      → ALWAYS provide ao, startDate, and endDate
    - The tool will automatically use the combined query
 
-4. VALIDATION:
+5. VALIDATION:
    - Before querying, confirm you have extracted:
-     → The correct AO name
+     → The correct AO name (exact match from the list above)
      → A proper start date
      → A proper end date
    - If any of these are missing from the query, ask for clarification
 
-5. SPECIFIC EXAMPLES:
+6. SPECIFIC EXAMPLES:
    - "what sort of songs were listed in may-august 2024 at ao_outpost"
      → ao: "ao_outpost"
      → startDate: "2024-05-01"
@@ -126,35 +134,35 @@ You can use the queryBackblasts tool to search and analyze F3 backblast data. Fo
      → endDate: "2024-08-31"
      → queryType: undefined (don't set this)
 
-6. CRITICAL: Do NOT default to recent or all backblasts when AO and date range are specified
+7. CRITICAL: Do NOT default to recent or all backblasts when AO and date range are specified
 
-7. VALIDATION CHECKLIST:
+8. VALIDATION CHECKLIST:
    Before calling queryBackblasts, ask yourself:
-   - Does the query mention an AO name? → Extract it
+   - Does the query mention an AO name? → Extract it and verify it's in the list above
    - Does the query mention a time period? → Convert to startDate/endDate
    - If both are present, do NOT use queryType parameter
    - If either is missing, ask for clarification
 
 Available AOs: ${distinctAOs.join(', ')}
 
-3. When filtering by Q (workout leader):
+9. When filtering by Q (workout leader):
    - ALWAYS use 'byQ' when the query mentions a specific Q's name
    - Example: "Show me workouts led by Mower-in-Law" → use 'byQ' with q="Mower-in-Law"
    - Example: "What has Sanguine Q'd recently" → use 'byQ' with q="Sanguine"
    - Q filter takes precedence over time filters
 
-4. When searching for PAX attendance or specific content:
+10. When searching for PAX attendance or specific content:
    - ALWAYS use 'search' for finding specific PAX names or content in backblasts
    - Example: "Find workouts where Splinter attended" → use 'search' with searchTerm="Splinter"
    - Example: "Show me backblasts mentioning burpees" → use 'search' with searchTerm="burpees"
 
-5. When the query is only time-based:
+11. When the query is only time-based:
    - Use 'recent' for queries about recent workouts with no other filters
    - Use 'byDateRange' for specific date ranges
    - Example: "Show me recent backblasts" → use 'recent'
    - Example: "Show me backblasts from January" → use 'byDateRange'
 
-6. For statistics and rankings:
+12. For statistics and rankings:
    - Use 'stats' for workout statistics in a date range
    - Use 'topAOs' for most active AOs
    - Use 'topQs' for most active Qs
