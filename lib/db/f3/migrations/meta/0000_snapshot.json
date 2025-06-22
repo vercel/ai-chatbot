@@ -1,0 +1,657 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "5",
+  "dialect": "mysql",
+  "tables": {
+    "achievements_awarded": {
+      "name": "achievements_awarded",
+      "columns": {
+        "id": {
+          "autoincrement": true,
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "achievement_id": {
+          "autoincrement": false,
+          "name": "achievement_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pax_id": {
+          "autoincrement": false,
+          "name": "pax_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date_awarded": {
+          "autoincrement": false,
+          "name": "date_awarded",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "created",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "updated",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "achievements_awarded_id": {
+          "name": "achievements_awarded_id",
+          "columns": ["id"]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "fk_achievement_id": {
+          "name": "fk_achievement_id",
+          "tableFrom": "achievements_awarded",
+          "tableTo": "achievements_list",
+          "columnsFrom": ["achievement_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "achievements_list": {
+      "name": "achievements_list",
+      "columns": {
+        "id": {
+          "autoincrement": true,
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "autoincrement": false,
+          "name": "description",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verb": {
+          "autoincrement": false,
+          "name": "verb",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "autoincrement": false,
+          "name": "code",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "achievements_list_id": {
+          "name": "achievements_list_id",
+          "columns": ["id"]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "achievements_view": {
+      "name": "achievements_view",
+      "columns": {
+        "pax": {
+          "autoincrement": false,
+          "name": "pax",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pax_id": {
+          "autoincrement": false,
+          "name": "pax_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "autoincrement": false,
+          "name": "description",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date_awarded": {
+          "autoincrement": false,
+          "name": "date_awarded",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "aos": {
+      "name": "aos",
+      "columns": {
+        "channel_id": {
+          "autoincrement": false,
+          "name": "channel_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ao": {
+          "autoincrement": false,
+          "name": "ao",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel_created": {
+          "autoincrement": false,
+          "name": "channel_created",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "archived": {
+          "autoincrement": false,
+          "name": "archived",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "backblast": {
+          "autoincrement": false,
+          "name": "backblast",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "site_q_user_id": {
+          "autoincrement": false,
+          "name": "site_q_user_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "aos_channel_id": {
+          "name": "aos_channel_id",
+          "columns": ["channel_id"]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "attendance_view": {
+      "name": "attendance_view",
+      "columns": {
+        "Date": {
+          "autoincrement": false,
+          "name": "Date",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "AO": {
+          "autoincrement": false,
+          "name": "AO",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "PAX": {
+          "autoincrement": false,
+          "name": "PAX",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Q": {
+          "autoincrement": false,
+          "name": "Q",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "backblast": {
+      "name": "backblast",
+      "columns": {
+        "Date": {
+          "autoincrement": false,
+          "name": "Date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "AO": {
+          "autoincrement": false,
+          "name": "AO",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Q": {
+          "autoincrement": false,
+          "name": "Q",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "CoQ": {
+          "autoincrement": false,
+          "name": "CoQ",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pax_count": {
+          "autoincrement": false,
+          "name": "pax_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fngs": {
+          "autoincrement": false,
+          "name": "fngs",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fng_count": {
+          "autoincrement": false,
+          "name": "fng_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "backblast": {
+          "autoincrement": false,
+          "name": "backblast",
+          "type": "longtext",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "bd_attendance": {
+      "name": "bd_attendance",
+      "columns": {
+        "timestamp": {
+          "autoincrement": false,
+          "name": "timestamp",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ts_edited": {
+          "autoincrement": false,
+          "name": "ts_edited",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ao_id": {
+          "autoincrement": false,
+          "name": "ao_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "autoincrement": false,
+          "name": "date",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "q_user_id": {
+          "autoincrement": false,
+          "name": "q_user_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "json": {
+          "autoincrement": false,
+          "name": "json",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "bd_attendance_q_user_id_user_id_ao_id_date": {
+          "name": "bd_attendance_q_user_id_user_id_ao_id_date",
+          "columns": ["q_user_id", "user_id", "ao_id", "date"]
+        }
+      },
+      "indexes": {
+        "fk_bd_attendance_aos1_idx": {
+          "name": "fk_bd_attendance_aos1_idx",
+          "columns": ["ao_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "beatdown_info": {
+      "name": "beatdown_info",
+      "columns": {
+        "Date": {
+          "autoincrement": false,
+          "name": "Date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "AO": {
+          "autoincrement": false,
+          "name": "AO",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Q": {
+          "autoincrement": false,
+          "name": "Q",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Q_Is_App": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "Q_Is_App",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "CoQ": {
+          "autoincrement": false,
+          "name": "CoQ",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pax_count": {
+          "autoincrement": false,
+          "name": "pax_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fngs": {
+          "autoincrement": false,
+          "name": "fngs",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fng_count": {
+          "autoincrement": false,
+          "name": "fng_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "beatdowns": {
+      "name": "beatdowns",
+      "columns": {
+        "timestamp": {
+          "autoincrement": false,
+          "name": "timestamp",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ts_edited": {
+          "autoincrement": false,
+          "name": "ts_edited",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ao_id": {
+          "autoincrement": false,
+          "name": "ao_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bd_date": {
+          "autoincrement": false,
+          "name": "bd_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "q_user_id": {
+          "autoincrement": false,
+          "name": "q_user_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "coq_user_id": {
+          "autoincrement": false,
+          "name": "coq_user_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pax_count": {
+          "autoincrement": false,
+          "name": "pax_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "backblast": {
+          "autoincrement": false,
+          "name": "backblast",
+          "type": "longtext",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "backblast_parsed": {
+          "autoincrement": false,
+          "name": "backblast_parsed",
+          "type": "longtext",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fngs": {
+          "autoincrement": false,
+          "name": "fngs",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fng_count": {
+          "autoincrement": false,
+          "name": "fng_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "json": {
+          "autoincrement": false,
+          "name": "json",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "beatdowns_ao_id_bd_date_q_user_id": {
+          "name": "beatdowns_ao_id_bd_date_q_user_id",
+          "columns": ["ao_id", "bd_date", "q_user_id"]
+        }
+      },
+      "indexes": {
+        "fk_beatdowns_users1_idx": {
+          "name": "fk_beatdowns_users1_idx",
+          "columns": ["q_user_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_name": {
+          "autoincrement": false,
+          "name": "user_name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "real_name": {
+          "autoincrement": false,
+          "name": "real_name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "autoincrement": false,
+          "name": "phone",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_date": {
+          "autoincrement": false,
+          "name": "start_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "app": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "app",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "json": {
+          "autoincrement": false,
+          "name": "json",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "users_user_id": {
+          "name": "users_user_id",
+          "columns": ["user_id"]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "achievements_awarded": {
+        "columns": {
+          "created": {
+            "isDefaultAnExpression": true
+          },
+          "updated": {
+            "isDefaultAnExpression": true
+          }
+        }
+      }
+    },
+    "indexes": {}
+  }
+}

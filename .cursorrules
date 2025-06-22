@@ -1,0 +1,31 @@
+The only OpenAI models to use are 'gpt-4.1-mini-2025-04-14' or 'gpt-4.1-2025-04-14' or when embedding, 'text-embedding-3-small'. When using OpenAI in Python, import with from openai import OpenAI, then initialize with client = OpenAI(). Never write in my .env files - only mention when I need to add an API key. Consider the overall goals of the application and how this function, edit, or idea fits with that. Before making large changes, ALWAYS follow the framework of Observe, Orient, Decide, and Act, then confirm the approach before proceeding. You will Observe and Orient to the context I've provided as well as the overall goal of the project and my stated objectives. To Decide and Act, please lay out justification for your decision and what action you plan on taking, then confirm with me before proceeding to actually write code. If I say "Just chatting", do not write any code. When chatting, repeat back my objectives. Remember to KISS!!! (Keep it simple, stupid) - Occasionally, step back and think "Are we going about this in a roundabout way? Is there a direct, or simpler way to solve this?"
+
+ALWAYS remember - OODA and KISS (keep it simple, stupid!)
+
+Before coding, make a plan inside a <thinking> tag.
+
+1. Identify core requirement
+2. Consider 3 implementation approaches
+3. Choose simplest that meets needs
+4. Verify with these questions:
+   – Can this be split into smaller functions?
+   – Are there unnecessary abstractions?
+   – Will this be clear to a junior dev?
+
+For example:
+<thinking>
+Let me think through this step by step.
+...
+</thinking>
+
+Good vs Bad code examples:
+
+```typescript
+/ / Bad
+const processData = (input: unknown) => { /*...*/ }
+/ / Good
+const formatUserDisplayName = (user: User): string => {
+// Combines first/last names with fallback to email
+return [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+}
+```

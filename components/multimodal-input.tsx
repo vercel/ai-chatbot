@@ -303,6 +303,7 @@ function PureMultimodalInput({
             input={input}
             submitForm={submitForm}
             uploadQueue={uploadQueue}
+            status={status}
           />
         )}
       </div>
@@ -376,10 +377,12 @@ function PureSendButton({
   submitForm,
   input,
   uploadQueue,
+  status,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
+  status: UseChatHelpers['status'];
 }) {
   return (
     <Button
@@ -389,7 +392,9 @@ function PureSendButton({
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.length === 0 || uploadQueue.length > 0}
+      disabled={
+        input.length === 0 || uploadQueue.length > 0 || status !== 'ready'
+      }
     >
       <ArrowUpIcon size={14} />
     </Button>
@@ -400,5 +405,6 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false;
   if (prevProps.input !== nextProps.input) return false;
+  if (prevProps.status !== nextProps.status) return false;
   return true;
 });

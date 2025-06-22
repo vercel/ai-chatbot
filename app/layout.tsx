@@ -6,10 +6,14 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
+import { getEnv } from '@/lib/env';
+
+const { NEXT_PUBLIC_REGION_NAME: REGION_NAME } = getEnv();
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  metadataBase: new URL('https://chat.freemensworkout.org'),
+  title: `F3 ${REGION_NAME} GPT`,
+  description: 'F3 chatbot using the Vercel AI SDK.',
 };
 
 export const viewport = {

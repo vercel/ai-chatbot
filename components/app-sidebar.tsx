@@ -18,6 +18,8 @@ import {
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
+const REGION_NAME = process.env.NEXT_PUBLIC_REGION_NAME;
+
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
@@ -35,7 +37,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               className="flex flex-row gap-3 items-center"
             >
               <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
+                F3 {REGION_NAME} GPT
               </span>
             </Link>
             <Tooltip>

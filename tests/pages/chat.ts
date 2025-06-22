@@ -63,9 +63,7 @@ export class ChatPage {
   }
 
   async sendUserMessageFromSuggestion() {
-    await this.page
-      .getByRole('button', { name: 'What are the advantages of' })
-      .click();
+    await this.page.getByRole('button', { name: 'Show me recent' }).click();
   }
 
   async isElementVisible(elementId: string) {

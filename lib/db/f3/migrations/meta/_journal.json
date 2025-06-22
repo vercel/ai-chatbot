@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1750345372538,
+      "tag": "0000_wet_elektra",
+      "breakpoints": true
+    }
+  ]
+}

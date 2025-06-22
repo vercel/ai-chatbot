@@ -23,6 +23,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { queryBackblasts } from '@/lib/ai/tools/query-backblasts';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -145,10 +146,10 @@ export async function POST(request: Request) {
     await createStreamId({ streamId, chatId: id });
 
     const stream = createDataStream({
-      execute: (dataStream) => {
+      execute: async (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: await systemPrompt({ selectedChatModel, requestHints }),
           messages,
           maxSteps: 5,
           experimental_activeTools:
@@ -159,6 +160,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'queryBackblasts',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -170,6 +172,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            queryBackblasts,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {

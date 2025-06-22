@@ -11,6 +11,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
+import { BackblastResults } from './backblast-results';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -183,6 +184,12 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'queryBackblasts' ? (
+                        <BackblastResults
+                          results={[]}
+                          queryType={args.queryType || 'all'}
+                          isLoading={true}
+                        />
                       ) : null}
                     </div>
                   );
@@ -190,6 +197,24 @@ const PurePreviewMessage = ({
 
                 if (state === 'result') {
                   const { result } = toolInvocation;
+
+                  if (toolName === 'queryBackblasts') {
+                    const isResultReady =
+                      result &&
+                      ((Array.isArray(result) && result.length > 0) ||
+                        (typeof result === 'object' &&
+                          Object.keys(result).length > 0));
+
+                    return (
+                      <div key={toolCallId}>
+                        <BackblastResults
+                          results={result}
+                          queryType={toolInvocation.args?.queryType || 'all'}
+                          isLoading={!isResultReady}
+                        />
+                      </div>
+                    );
+                  }
 
                   return (
                     <div key={toolCallId}>

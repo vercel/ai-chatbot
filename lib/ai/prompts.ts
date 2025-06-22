@@ -1,5 +1,6 @@
 import type { ArtifactKind } from '@/components/artifact';
 import type { Geo } from '@vercel/functions';
+import { getRecentBackblasts, getDistinctAOs } from '@/lib/db/queries.f3';
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -50,7 +51,7 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
-export const systemPrompt = ({
+export const systemPrompt = async ({
   selectedChatModel,
   requestHints,
 }: {
@@ -59,10 +60,117 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
+  // Get recent F3 backblasts and AO list for context
+  let f3Context = '';
+  try {
+    const [recentBackblasts, distinctAOs] = await Promise.all([
+      getRecentBackblasts({ days: 30, limit: 5 }),
+      getDistinctAOs(),
+    ]);
+
+    if (recentBackblasts.length > 0) {
+      // Get two random AOs for examples
+      const randomAOs =
+        distinctAOs.length > 1
+          ? [
+              distinctAOs[Math.floor(Math.random() * distinctAOs.length)],
+              distinctAOs[Math.floor(Math.random() * distinctAOs.length)],
+            ]
+          : distinctAOs;
+
+      f3Context = `\n\nF3 Backblast Context (last 5 backblasts):
+${JSON.stringify(recentBackblasts, null, 2)}
+
+You can use the queryBackblasts tool to search and analyze F3 backblast data. Follow these rules to determine which query type to use:
+
+1. ALWAYS CHECK FOR BOTH AO AND DATE RANGE:
+   - When a query mentions both an AO name AND a time period, you MUST extract and use both
+   - Example: "songs at ao_outpost from May to August 2024"
+     → ao: "ao_outpost"
+     → startDate: "2024-05-01"
+     → endDate: "2024-08-31"
+   - Even if the AO is mentioned after the date range, still use both
+
+2. DATE PARSING:
+   - Always convert date ranges to YYYY-MM-DD format
+   - For month ranges in the same year:
+     → Start date should be the 1st of the start month
+     → End date should be the last day of the end month
+   - Example: "May to August 2024"
+     → startDate: "2024-05-01"
+     → endDate: "2024-08-31"
+
+3. QUERY PARAMETERS:
+   - When both AO and date range are present:
+     → DO NOT set queryType
+     → ALWAYS provide ao, startDate, and endDate
+   - The tool will automatically use the combined query
+
+4. VALIDATION:
+   - Before querying, confirm you have extracted:
+     → The correct AO name
+     → A proper start date
+     → A proper end date
+   - If any of these are missing from the query, ask for clarification
+
+5. SPECIFIC EXAMPLES:
+   - "what sort of songs were listed in may-august 2024 at ao_outpost"
+     → ao: "ao_outpost"
+     → startDate: "2024-05-01"
+     → endDate: "2024-08-31"
+     → queryType: undefined (don't set this)
+   
+   - "songs at ao_outpost from May to August 2024"
+     → ao: "ao_outpost"
+     → startDate: "2024-05-01"
+     → endDate: "2024-08-31"
+     → queryType: undefined (don't set this)
+
+6. CRITICAL: Do NOT default to recent or all backblasts when AO and date range are specified
+
+7. VALIDATION CHECKLIST:
+   Before calling queryBackblasts, ask yourself:
+   - Does the query mention an AO name? → Extract it
+   - Does the query mention a time period? → Convert to startDate/endDate
+   - If both are present, do NOT use queryType parameter
+   - If either is missing, ask for clarification
+
+Available AOs: ${distinctAOs.join(', ')}
+
+3. When filtering by Q (workout leader):
+   - ALWAYS use 'byQ' when the query mentions a specific Q's name
+   - Example: "Show me workouts led by Mower-in-Law" → use 'byQ' with q="Mower-in-Law"
+   - Example: "What has Sanguine Q'd recently" → use 'byQ' with q="Sanguine"
+   - Q filter takes precedence over time filters
+
+4. When searching for PAX attendance or specific content:
+   - ALWAYS use 'search' for finding specific PAX names or content in backblasts
+   - Example: "Find workouts where Splinter attended" → use 'search' with searchTerm="Splinter"
+   - Example: "Show me backblasts mentioning burpees" → use 'search' with searchTerm="burpees"
+
+5. When the query is only time-based:
+   - Use 'recent' for queries about recent workouts with no other filters
+   - Use 'byDateRange' for specific date ranges
+   - Example: "Show me recent backblasts" → use 'recent'
+   - Example: "Show me backblasts from January" → use 'byDateRange'
+
+6. For statistics and rankings:
+   - Use 'stats' for workout statistics in a date range
+   - Use 'topAOs' for most active AOs
+   - Use 'topQs' for most active Qs
+   - Example: "Who are the most active Qs?" → use 'topQs'
+   - Example: "Which AOs have the most posts?" → use 'topAOs'
+
+Each backblast contains: date, ao (Area of Operation), q (Q), pax_count (participant count), fngs (FNGs), fng_count, and backblast (content).`;
+    }
+  } catch (error) {
+    console.error('Failed to fetch F3 backblast context:', error);
+  }
+
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${f3Context}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${f3Context}\n\n${artifactsPrompt}`;
   }
 };
 

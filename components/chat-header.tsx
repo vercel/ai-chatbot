@@ -1,13 +1,11 @@
 'use client';
-
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, VercelIcon } from './icons';
+import { PlusIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -71,7 +69,8 @@ function PureChatHeader({
         />
       )}
 
-      <Button
+      {/* @todo replace with something custom for F3 */}
+      {/* <Button
         className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-4 md:ml-auto"
         asChild
       >
@@ -82,7 +81,7 @@ function PureChatHeader({
           <VercelIcon size={16} />
           Deploy with Vercel
         </Link>
-      </Button>
+      </Button> */}
     </header>
   );
 }

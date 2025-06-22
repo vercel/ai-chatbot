@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
 
@@ -17,26 +17,36 @@ function PureSuggestedActions({
   append,
   selectedVisibilityType,
 }: SuggestedActionsProps) {
+  // Calculate current month one year ago for YoY comparison
+  const yearAgoMonth = useMemo(() => {
+    const now = new Date();
+    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+    return yearAgo.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+    });
+  }, []);
+
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Show me recent',
+      label: 'backblasts from ao_darkhorse',
+      action: 'Show me recent backblasts from ao_darkhorse',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Who are the most',
+      label: 'active Qs this month?',
+      action: 'Who are the most active Qs this month?',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Search for backblasts',
+      label: 'containing "burpees"',
+      action: 'Search for backblasts containing "burpees"',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'What are the stats',
+      label: `for ${yearAgoMonth}?`,
+      action: `What are the statistics for ${yearAgoMonth}?`,
     },
   ];
 

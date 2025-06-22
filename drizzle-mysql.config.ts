@@ -6,11 +6,14 @@ config({
 });
 
 export default defineConfig({
-  schema: ['./lib/db/schema.ts', './lib/db/schema.f3.ts'],
-  out: './lib/db/migrations',
-  dialect: 'postgresql',
+  schema: './lib/db/f3/schema.ts',
+  out: './lib/db/f3/migrations',
+  dialect: 'mysql',
   dbCredentials: {
     // biome-ignore lint: Forbidden non-null assertion.
-    url: process.env.POSTGRES_URL!,
+    url: process.env.MYSQL_URL!,
+  },
+  introspect: {
+    casing: 'camel',
   },
 });
