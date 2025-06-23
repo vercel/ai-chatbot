@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from "react";
-import { Button } from "@ai-chat/components/ui/button";
+import { startTransition, useMemo, useOptimistic, useState } from 'react';
+import { Button } from '@ai-chat/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@ai-chat/components/ui/dropdown-menu";
+} from '@ai-chat/components/ui/dropdown-menu';
 import {
   CheckCircleFillIcon,
   ChevronDownIcon,
-} from "@ai-chat/components/icons";
-import { entitlementsByUserType } from "@ai-chat/lib/ai/entitlements";
-import { cn } from "@ai-chat/lib/utils";
-import { chatModels } from "@ai-chat/lib/ai/models";
+} from '@ai-chat/components/icons';
+import { entitlementsByUserType } from '@ai-chat/lib/ai/entitlements';
+import { cn } from '@ai-chat/lib/utils';
+import { chatModels } from '@ai-chat/lib/ai/models';
 
 export function ModelSelector({
   session,
@@ -28,19 +28,19 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
-  const userType = session?.user?.type || "regular";
+  const userType = session?.user?.type || 'regular';
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
   const availableChatModels = chatModels.filter((chatModel: any) =>
-    availableChatModelIds.includes(chatModel.id)
+    availableChatModelIds.includes(chatModel.id),
   );
 
   const selectedChatModel = useMemo(
     () =>
       availableChatModels.find(
-        (chatModel: any) => chatModel.id === optimisticModelId
+        (chatModel: any) => chatModel.id === optimisticModelId,
       ),
-    [optimisticModelId, availableChatModels]
+    [optimisticModelId, availableChatModels],
   );
 
   return (
@@ -48,8 +48,8 @@ export function ModelSelector({
       <DropdownMenuTrigger
         asChild
         className={cn(
-          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-          className
+          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+          className,
         )}
       >
         <Button

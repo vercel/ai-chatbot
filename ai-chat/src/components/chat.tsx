@@ -1,23 +1,24 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import type { Attachment, UIMessage } from "ai";
-import { useChat } from "@ai-sdk/react";
-import useSWR, { useSWRConfig } from "swr";
-import { unstable_serialize } from "swr/infinite";
-import { useSearchParams } from "next/navigation";
-import { ChatHeader } from "@ai-chat/components/chat-header";
-import { useChatVisibility } from "@ai-chat/hooks/use-chat-visibility";
-import type { VisibilityType } from "./visibility-selector";
-import { getChatHistoryPaginationKey } from "./sidebar-history";
-import { toast } from "./toast";
-import { Artifact } from "./artifact";
-import { fetchWithErrorHandlers, generateUUID } from "@ai-chat/lib/utils";
-import { useArtifactSelector } from "@ai-chat/hooks/use-artifact";
-import { useAutoResume } from "@ai-chat/hooks/use-auto-resume";
-import { Messages } from "./messages";
-import { MultimodalInput } from "./multimodal-input";
-import { ChatSDKError } from "@ai-chat/lib/errors";
+import { useEffect, useState } from 'react';
+import type { Attachment, UIMessage } from 'ai';
+import { useChat } from '@ai-sdk/react';
+import useSWR, { useSWRConfig } from 'swr';
+import { unstable_serialize } from 'swr/infinite';
+import { useSearchParams } from 'next/navigation';
+import { ChatHeader } from '@ai-chat/components/chat-header';
+import { useChatVisibility } from '@ai-chat/hooks/use-chat-visibility';
+import type { VisibilityType } from './visibility-selector';
+import { getChatHistoryPaginationKey } from './sidebar-history';
+import { toast } from './toast';
+import { Artifact } from './artifact';
+import { fetchWithErrorHandlers, generateUUID } from '@ai-chat/lib/utils';
+import { useArtifactSelector } from '@ai-chat/hooks/use-artifact';
+import { useAutoResume } from '@ai-chat/hooks/use-auto-resume';
+import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
+import { ChatSDKError } from '@ai-chat/lib/errors';
+import type { Session, Vote } from '@ai-chat/lib/types';
 
 export function Chat({
   id,
@@ -33,8 +34,7 @@ export function Chat({
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: any;
-  // session: Session;
+  session: Session;
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
@@ -75,7 +75,7 @@ export function Chat({
     onError: (error) => {
       if (error instanceof ChatSDKError) {
         toast({
-          type: "error",
+          type: 'error',
           description: error.message,
         });
       }
@@ -83,24 +83,24 @@ export function Chat({
   });
 
   const searchParams = useSearchParams();
-  const query = searchParams.get("query");
+  const query = searchParams.get('query');
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
       append({
-        role: "user",
+        role: 'user',
         content: query,
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, "", `/chat/${id}`);
+      window.history.replaceState({}, '', `/chat/${id}`);
     }
   }, [query, append, hasAppendedQuery, id]);
 
-  const { data: votes } = useSWR<Array<unknown>>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null
+  const { data: votes } = useSWR<Array<Vote>>(
+    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);

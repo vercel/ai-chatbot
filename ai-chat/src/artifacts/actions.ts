@@ -1,28 +1,28 @@
-"use server";
+'use server';
 
-import { Suggestion } from "@ai-chat/lib/editor/suggestions";
+import type { Suggestion } from '@ai-chat/lib/types';
 
-const suggestions = [
+const suggestions: Suggestion[] = [
   {
-    documentId: "asdasd",
-    id: "asdasd",
+    documentId: 'asdasd',
+    id: 'asdasd',
     createdAt: new Date(),
-    userId: "asdasd",
+    userId: 'asdasd',
     documentCreatedAt: new Date(),
-    originalText: "asdasd",
-    suggestedText: "asdasd",
-    description: "asdasd",
+    originalText: 'asdasd',
+    suggestedText: 'asdasd',
+    description: 'asdasd',
     isResolved: false,
   },
   {
-    documentId: "asdasd",
-    id: "asdasd",
+    documentId: 'asdasd',
+    id: 'asdasd',
     createdAt: new Date(),
-    userId: "asdasd",
+    userId: 'asdasd',
     documentCreatedAt: new Date(),
-    originalText: "asdasd",
-    suggestedText: "asdasd",
-    description: "asdasd",
+    originalText: 'asdasd',
+    suggestedText: 'asdasd',
+    description: 'asdasd',
     isResolved: false,
   },
 ];

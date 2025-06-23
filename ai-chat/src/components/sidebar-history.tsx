@@ -1,11 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { motion } from "framer-motion";
-import useSWRInfinite from "swr/infinite";
-import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import useSWRInfinite from 'swr/infinite';
+import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
+import type { Chat, User } from '@ai-chat/lib/types';
+import { LoaderIcon } from './icons';
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  useSidebar,
+} from './ui/sidebar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,16 +23,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@ai-chat/components/ui/alert-dialog";
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  useSidebar,
-} from "@ai-chat/components/ui/sidebar";
-import { LoaderIcon } from "@ai-chat/components/icons";
-import { ChatItem } from "@ai-chat/components/sidebar-history-item";
-import { Chat, User } from "@ai-chat/lib/types";
+} from './ui/alert-dialog';
+import { ChatItem } from './sidebar-history-item';
 
 type GroupedChats = {
   today: Chat[];
@@ -70,13 +70,13 @@ const groupChatsByDate = (chats: any[]): GroupedChats => {
       lastWeek: [],
       lastMonth: [],
       older: [],
-    } as GroupedChats
+    } as GroupedChats,
   );
 };
 
 export function getChatHistoryPaginationKey(
   pageIndex: number,
-  previousPageData: ChatHistory
+  previousPageData: ChatHistory,
 ) {
   if (previousPageData && previousPageData.hasMore === false) {
     return null;
@@ -115,11 +115,11 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   const handleDelete = async () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
 
     toast.promise(deletePromise, {
-      loading: "Deleting chat...",
+      loading: 'Deleting chat...',
       success: () => {
         mutate((chatHistories) => {
           if (chatHistories) {
@@ -130,15 +130,15 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           }
         });
 
-        return "Chat deleted successfully";
+        return 'Chat deleted successfully';
       },
-      error: "Failed to delete chat",
+      error: 'Failed to delete chat',
     });
 
     setShowDeleteDialog(false);
 
     if (deleteId === id) {
-      router.push("/");
+      router.push('/');
     }
   };
 
@@ -171,7 +171,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                   className="h-4 rounded-md flex-1 max-w-[--skeleton-width] bg-sidebar-accent-foreground/10"
                   style={
                     {
-                      "--skeleton-width": `${item}%`,
+                      '--skeleton-width': `${item}%`,
                     } as React.CSSProperties
                   }
                 />
@@ -203,7 +203,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
             {paginatedChatHistories &&
               (() => {
                 const chatsFromHistory = paginatedChatHistories.flatMap(
-                  (paginatedChatHistory) => paginatedChatHistory?.chats
+                  (paginatedChatHistory) => paginatedChatHistory?.chats,
                 );
 
                 const groupedChats = groupChatsByDate(chatsFromHistory);

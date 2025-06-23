@@ -5,6 +5,7 @@ import { exampleSetup } from 'prosemirror-example-setup';
 import { inputRules } from 'prosemirror-inputrules';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
+import type { Suggestion } from '@ai-chat/lib/types';
 import {
   documentSchema,
   headingRule,
@@ -20,7 +21,6 @@ import {
   projectWithPositions,
   suggestionsPluginKey,
 } from '@ai-chat/lib/editor/suggestions';
-import type { Suggestion } from '@ai-chat/lib/types';
 
 type EditorProps = {
   content: string;

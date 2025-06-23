@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import type { UIMessage } from "ai";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import { DataPart } from "@ai-chat/lib/types";
+import { useEffect } from 'react';
+import type { UIMessage } from 'ai';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { DataPart } from '@ai-chat/lib/types';
 
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
-  experimental_resume: UseChatHelpers["experimental_resume"];
-  data: UseChatHelpers["data"];
-  setMessages: UseChatHelpers["setMessages"];
+  experimental_resume: UseChatHelpers['experimental_resume'];
+  data: UseChatHelpers['data'];
+  setMessages: UseChatHelpers['setMessages'];
 }
 
 export function useAutoResume({
@@ -25,7 +25,7 @@ export function useAutoResume({
 
     const mostRecentMessage = initialMessages.at(-1);
 
-    if (mostRecentMessage?.role === "user") {
+    if (mostRecentMessage?.role === 'user') {
       experimental_resume();
     }
 
@@ -39,7 +39,7 @@ export function useAutoResume({
 
     const dataPart = data[0] as DataPart;
 
-    if (dataPart.type === "append-message") {
+    if (dataPart.type === 'append-message') {
       const message = JSON.parse(dataPart.message) as UIMessage;
       setMessages([...initialMessages, message]);
     }

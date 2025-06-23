@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useWindowSize } from "usehooks-ts";
-import { UISuggestion } from "@ai-chat/lib/editor/suggestions";
-import { cn } from "@ai-chat/lib/utils";
-import { CrossIcon, MessageIcon } from "./icons";
-import { Button } from "./ui/button";
-import { ArtifactKind } from "./artifact";
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useWindowSize } from 'usehooks-ts';
+import type { UISuggestion } from '@ai-chat/lib/editor/suggestions';
+import { cn } from '@ai-chat/lib/utils';
+import { CrossIcon, MessageIcon } from './icons';
+import { Button } from './ui/button';
+import type { ArtifactKind } from './artifact';
 
 export const Suggestion = ({
   suggestion,
@@ -25,9 +25,9 @@ export const Suggestion = ({
     <AnimatePresence>
       {!isExpanded ? (
         <motion.div
-          className={cn("cursor-pointer text-muted-foreground p-1", {
-            "absolute -right-8": artifactKind === "text",
-            "sticky top-0 right-4": artifactKind === "code",
+          className={cn('cursor-pointer text-muted-foreground p-1', {
+            'absolute -right-8': artifactKind === 'text',
+            'sticky top-0 right-4': artifactKind === 'code',
           })}
           onClick={() => {
             setIsExpanded(true);
@@ -40,7 +40,7 @@ export const Suggestion = ({
         <motion.div
           key={suggestion.id}
           className="absolute bg-background p-3 flex flex-col gap-3 rounded-2xl border text-sm w-56 shadow-xl z-50 -right-12 md:-right-16 font-sans"
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: -20 }}
           exit={{ opacity: 0, y: -10 }}

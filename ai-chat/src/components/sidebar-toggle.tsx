@@ -1,15 +1,15 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps } from 'react';
 import {
   type SidebarTrigger,
   useSidebar,
-} from "@ai-chat/components/ui/sidebar";
-import { SidebarLeftIcon } from "@ai-chat/components/icons";
+} from '@ai-chat/components/ui/sidebar';
+import { SidebarLeftIcon } from '@ai-chat/components/icons';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@ai-chat/components/ui/tooltip";
-import { Button } from "@ai-chat/components/ui/button";
+} from '@ai-chat/components/ui/tooltip';
+import { Button } from '@ai-chat/components/ui/button';
 
 export function SidebarToggle({
   className,

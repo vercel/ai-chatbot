@@ -1,10 +1,8 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { PlusIcon } from "./icons";
-import { SidebarHistory } from "./sidebar-history";
-import { Button } from "./ui/button";
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from './ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -12,9 +10,11 @@ import {
   SidebarHeader,
   SidebarMenu,
   useSidebar,
-} from "./ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { SidebarUserNav } from "./sidebar-user-nav";
+} from './ui/sidebar';
+import { PlusIcon } from './icons';
+import { SidebarHistory } from './sidebar-history';
+import { SidebarUserNav } from './sidebar-user-nav';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export function AppSidebar({ user }: { user: any | undefined }) {
   const router = useRouter();
@@ -44,7 +44,7 @@ export function AppSidebar({ user }: { user: any | undefined }) {
                   className="p-2 h-fit"
                   onClick={() => {
                     setOpenMobile(false);
-                    router.push("/");
+                    router.push('/');
                     router.refresh();
                   }}
                 >

@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import { useCallback, useMemo } from 'react';
-import { UIArtifact } from '@ai-chat/components/artifact';
+import type { UIArtifact } from '@ai-chat/components/artifact';
 
 export const initialArtifactData: UIArtifact = {
   documentId: 'init',

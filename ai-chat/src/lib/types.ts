@@ -1,4 +1,13 @@
-export type DataPart = { type: "append-message"; message: string };
+export type DataPart = { type: 'append-message'; message: string };
+
+export type Document = {
+  id: string;
+  createdAt: Date;
+  title: string;
+  userId: string;
+  content: string | null;
+  kind: 'text' | 'code' | 'image' | 'sheet';
+};
 
 export type Suggestion = {
   documentId: string;
@@ -18,18 +27,32 @@ export type Vote = {
   isUpvoted: boolean;
 };
 
-export type UserType = "guest" | "regular";
+export type UserType = 'guest' | 'regular';
 
 export type Chat = {
   id: string;
   createdAt: Date;
   title: string;
   userId: string;
-  visibility: "public" | "private";
+  visibility: 'public' | 'private';
 };
 
 export interface User {
   id?: string;
   email?: string | null;
   type: UserType;
+}
+
+type ISODateString = string;
+
+interface DefaultSession {
+  user?: User;
+  expires: ISODateString;
+}
+
+export interface Session extends DefaultSession {
+  user: {
+    id: string;
+    type: UserType;
+  } & DefaultSession['user'];
 }

@@ -1,13 +1,17 @@
 import { cookies } from 'next/headers';
-import { Chat } from '@ai-chat/components/chat';
-import { DataStreamHandler } from '@ai-chat/components/data-stream-handler';
-import { DEFAULT_CHAT_MODEL } from '@ai-chat/lib/ai/models';
 import { generateUUID } from '@ai-chat/lib/utils';
+import { Chat } from '@ai-chat/components/chat';
+import { DEFAULT_CHAT_MODEL } from '@ai-chat/lib/ai/models';
+import { DataStreamHandler } from '@ai-chat/components/data-stream-handler';
+import type { Session } from '@ai-chat/lib/types';
 
 export default async function Home() {
   const id = generateUUID();
-
-  const cookieStore = await cookies();
+  const tempSession: Session = {
+    expires: '2100-10-05T14:48:00.000Z',
+    user: { email: 'fsilva@icrc.org', id: generateUUID(), type: 'regular' },
+  };
+  const [session, cookieStore] = await Promise.all([tempSession, cookies()]);
   const modelIdFromCookie = cookieStore.get('chat-model');
 
   if (!modelIdFromCookie) {
@@ -20,7 +24,7 @@ export default async function Home() {
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType="private"
           isReadonly={false}
-          session={null}
+          session={session}
           autoResume={false}
         />
         <DataStreamHandler id={id} />
@@ -37,7 +41,7 @@ export default async function Home() {
         initialChatModel={modelIdFromCookie.value}
         initialVisibilityType="private"
         isReadonly={false}
-        session={null}
+        session={session}
         autoResume={false}
       />
       <DataStreamHandler id={id} />

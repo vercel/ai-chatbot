@@ -1,6 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { ChatSDKError, ErrorCode } from "./errors";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { ChatSDKError, type ErrorCode } from './errors';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export async function fetchWithErrorHandlers(
   input: RequestInfo | URL,
-  init?: RequestInit
+  init?: RequestInit,
 ) {
   try {
     const response = await fetch(input, init);
@@ -20,8 +20,8 @@ export async function fetchWithErrorHandlers(
 
     return response;
   } catch (error: unknown) {
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      throw new ChatSDKError("offline:chat");
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new ChatSDKError('offline:chat');
     }
 
     throw error;
@@ -29,20 +29,20 @@ export async function fetchWithErrorHandlers(
 }
 
 export function getLocalStorage(key: string) {
-  if (typeof window !== "undefined") {
-    return JSON.parse(localStorage.getItem(key) || "[]");
+  if (typeof window !== 'undefined') {
+    return JSON.parse(localStorage.getItem(key) || '[]');
   }
   return [];
 }
 
 export function generateUUID(): string {
-  const result = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+  const result = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
     /[xy]/g,
     (c) => {
-      const r = (Math.random() * 16) | 0,
-        v = c === "x" ? r : (r & 0x3) | 0x8;
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
-    }
+    },
   );
-  // return length !== null ? result.slice(0, length) : result;
+  return result.length !== null ? result.slice(0, result.length) : result;
 }

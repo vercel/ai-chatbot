@@ -1,17 +1,17 @@
-import { memo } from "react";
-import type { Message } from "ai";
-import { useSWRConfig } from "swr";
-import { useCopyToClipboard } from "usehooks-ts";
-import { toast } from "sonner";
-import equal from "fast-deep-equal";
-import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
-import { Button } from "./ui/button";
+import { memo } from 'react';
+import type { Message } from 'ai';
+import { useSWRConfig } from 'swr';
+import { useCopyToClipboard } from 'usehooks-ts';
+import { toast } from 'sonner';
+import equal from 'fast-deep-equal';
+import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
+import { Button } from './ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from './ui/tooltip';
 
 export function PureMessageActions({
   chatId,
@@ -28,7 +28,7 @@ export function PureMessageActions({
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
-  if (message.role === "user") return null;
+  if (message.role === 'user') return null;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -40,9 +40,9 @@ export function PureMessageActions({
               variant="outline"
               onClick={async () => {
                 const textFromParts = message.parts
-                  ?.filter((part) => part.type === "text")
+                  ?.filter((part) => part.type === 'text')
                   .map((part) => part.text)
-                  .join("\n")
+                  .join('\n')
                   .trim();
 
                 if (!textFromParts) {
@@ -51,7 +51,7 @@ export function PureMessageActions({
                 }
 
                 await copyToClipboard(textFromParts);
-                toast.success("Copied to clipboard!");
+                toast.success('Copied to clipboard!');
               }}
             >
               <CopyIcon />
@@ -68,17 +68,17 @@ export function PureMessageActions({
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
-                const upvote = fetch("/api/vote", {
-                  method: "PATCH",
+                const upvote = fetch('/api/vote', {
+                  method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
                     messageId: message.id,
-                    type: "up",
+                    type: 'up',
                   }),
                 });
 
                 toast.promise(upvote, {
-                  loading: "Upvoting Response...",
+                  loading: 'Upvoting Response...',
                   success: () => {
                     mutate<Array<any>>(
                       `/api/vote?chatId=${chatId}`,
@@ -86,7 +86,7 @@ export function PureMessageActions({
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id
+                          (vote) => vote.messageId !== message.id,
                         );
 
                         return [
@@ -98,12 +98,12 @@ export function PureMessageActions({
                           },
                         ];
                       },
-                      { revalidate: false }
+                      { revalidate: false },
                     );
 
-                    return "Upvoted Response!";
+                    return 'Upvoted Response!';
                   },
-                  error: "Failed to upvote response.",
+                  error: 'Failed to upvote response.',
                 });
               }}
             >
@@ -121,17 +121,17 @@ export function PureMessageActions({
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
-                const downvote = fetch("/api/vote", {
-                  method: "PATCH",
+                const downvote = fetch('/api/vote', {
+                  method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
                     messageId: message.id,
-                    type: "down",
+                    type: 'down',
                   }),
                 });
 
                 toast.promise(downvote, {
-                  loading: "Downvoting Response...",
+                  loading: 'Downvoting Response...',
                   success: () => {
                     mutate<Array<any>>(
                       `/api/vote?chatId=${chatId}`,
@@ -139,7 +139,7 @@ export function PureMessageActions({
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id
+                          (vote) => vote.messageId !== message.id,
                         );
 
                         return [
@@ -151,12 +151,12 @@ export function PureMessageActions({
                           },
                         ];
                       },
-                      { revalidate: false }
+                      { revalidate: false },
                     );
 
-                    return "Downvoted Response!";
+                    return 'Downvoted Response!';
                   },
-                  error: "Failed to downvote response.",
+                  error: 'Failed to downvote response.',
                 });
               }}
             >
@@ -177,5 +177,5 @@ export const MessageActions = memo(
     if (prevProps.isLoading !== nextProps.isLoading) return false;
 
     return true;
-  }
+  },
 );

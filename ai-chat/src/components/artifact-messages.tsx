@@ -1,22 +1,22 @@
-import { memo } from "react";
-import type { UIMessage } from "ai";
-import equal from "fast-deep-equal";
-import { motion } from "framer-motion";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import { useMessages } from "@ai-chat/hooks/use-messages";
-import { Vote } from "@ai-chat/lib/types";
-import type { UIArtifact } from "./artifact";
-import { PreviewMessage, ThinkingMessage } from "./message";
+import { memo } from 'react';
+import type { UIMessage } from 'ai';
+import equal from 'fast-deep-equal';
+import { motion } from 'framer-motion';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import { useMessages } from '@ai-chat/hooks/use-messages';
+import type { Vote } from '@ai-chat/lib/types';
+import type { UIArtifact } from './artifact';
+import { PreviewMessage, ThinkingMessage } from './message';
 
 interface ArtifactMessagesProps {
   chatId: string;
-  status: UseChatHelpers["status"];
+  status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: UseChatHelpers['setMessages'];
+  reload: UseChatHelpers['reload'];
   isReadonly: boolean;
-  artifactStatus: UIArtifact["status"];
+  artifactStatus: UIArtifact['status'];
 }
 
 function PureArtifactMessages({
@@ -49,7 +49,7 @@ function PureArtifactMessages({
           chatId={chatId}
           key={message.id}
           message={message}
-          isLoading={status === "streaming" && index === messages.length - 1}
+          isLoading={status === 'streaming' && index === messages.length - 1}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -64,9 +64,9 @@ function PureArtifactMessages({
         />
       ))}
 
-      {status === "submitted" &&
+      {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === "user" && <ThinkingMessage />}
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
       <motion.div
         ref={messagesEndRef}
@@ -80,11 +80,11 @@ function PureArtifactMessages({
 
 function areEqual(
   prevProps: ArtifactMessagesProps,
-  nextProps: ArtifactMessagesProps
+  nextProps: ArtifactMessagesProps,
 ) {
   if (
-    prevProps.artifactStatus === "streaming" &&
-    nextProps.artifactStatus === "streaming"
+    prevProps.artifactStatus === 'streaming' &&
+    nextProps.artifactStatus === 'streaming'
   )
     return true;
 

@@ -1,6 +1,12 @@
 import { toast } from 'sonner';
-import { Artifact } from '@ai-chat/components/create-artifact';
 import { CodeEditor } from '@ai-chat/components/code-editor';
+import { Artifact } from '@ai-chat/components/create-artifact';
+import { generateUUID } from '@ai-chat/lib/utils';
+import {
+  Console,
+  type ConsoleOutput,
+  type ConsoleOutputContent,
+} from '@ai-chat/components/console';
 import {
   CopyIcon,
   LogsIcon,
@@ -9,12 +15,6 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@ai-chat/components/icons';
-import { generateUUID } from '@ai-chat/lib/utils';
-import {
-  Console,
-  type ConsoleOutput,
-  type ConsoleOutputContent,
-} from '@ai-chat/components/console';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `
