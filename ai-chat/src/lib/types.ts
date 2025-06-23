@@ -17,3 +17,19 @@ export type Vote = {
   messageId: string;
   isUpvoted: boolean;
 };
+
+export type UserType = "guest" | "regular";
+
+export type Chat = {
+  id: string;
+  createdAt: Date;
+  title: string;
+  userId: string;
+  visibility: "public" | "private";
+};
+
+export interface User {
+  id?: string;
+  email?: string | null;
+  type: UserType;
+}

@@ -24,17 +24,18 @@ import {
 } from "@ai-chat/components/ui/sidebar";
 import { LoaderIcon } from "@ai-chat/components/icons";
 import { ChatItem } from "@ai-chat/components/sidebar-history-item";
+import { Chat, User } from "@ai-chat/lib/types";
 
 type GroupedChats = {
-  today: any[]; // Chat type
-  yesterday: any[]; // Chat type
-  lastWeek: any[]; // Chat type
-  lastMonth: any[]; // Chat type
-  older: any[]; // Chat type
+  today: Chat[];
+  yesterday: Chat[];
+  lastWeek: Chat[];
+  lastMonth: Chat[];
+  older: Chat[];
 };
 
 export interface ChatHistory {
-  chats: Array<any>; // Chat type
+  chats: Array<Chat>;
   hasMore: boolean;
 }
 
@@ -90,7 +91,7 @@ export function getChatHistoryPaginationKey(
   return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({ user }: { user: any | undefined }) {
+export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
   const paginatedChatHistories: ChatHistory[] = [];

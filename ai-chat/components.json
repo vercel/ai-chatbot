@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "baseColor": "zinc",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@ai-chat/components",
+    "utils": "@ai-chat/lib/utils",
+    "ui": "@ai-chat/components/ui",
+    "lib": "@ai-chat/lib",
+    "hooks": "@ai-chat/hooks"
+  }
+}

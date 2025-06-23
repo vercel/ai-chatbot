@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { EditorView } from "@codemirror/view";
-import { EditorState, Transaction } from "@codemirror/state";
-import { python } from "@codemirror/lang-python";
-import { oneDark } from "@codemirror/theme-one-dark";
-import { basicSetup } from "codemirror";
-import React, { memo, useEffect, useRef } from "react";
-import { Suggestion } from "@ai-chat/lib/types";
+import React, { memo, useEffect, useRef } from 'react';
+import { EditorView } from '@codemirror/view';
+import { EditorState, Transaction } from '@codemirror/state';
+import { python } from '@codemirror/lang-python';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { basicSetup } from 'codemirror';
+import type { Suggestion } from '@ai-chat/lib/types';
 
 type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
-  status: "streaming" | "idle";
+  status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
@@ -49,7 +49,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
       const updateListener = EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const transaction = update.transactions.find(
-            (tr) => !tr.annotation(Transaction.remote)
+            (tr) => !tr.annotation(Transaction.remote),
           );
 
           if (transaction) {
@@ -75,7 +75,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
     if (editorRef.current && content) {
       const currentContent = editorRef.current.state.doc.toString();
 
-      if (status === "streaming" || currentContent !== content) {
+      if (status === 'streaming' || currentContent !== content) {
         const transaction = editorRef.current.state.update({
           changes: {
             from: 0,
@@ -103,7 +103,7 @@ function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
     return false;
   if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
-  if (prevProps.status === "streaming" && nextProps.status === "streaming")
+  if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
     return false;
   if (prevProps.content !== nextProps.content) return false;
 
