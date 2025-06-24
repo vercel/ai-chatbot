@@ -5,37 +5,26 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { getUser, createUser, updateUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
+// import GoogleProvider from "next-auth/providers/google";
 
 interface ExtendedSession extends Session {
   user: User;
 }
 
-console.log('Auth.js is being loaded');
-console.log('Environment variables check:');
-console.log('GOOGLE_CLIENT_ID exists:', !!process.env.GOOGLE_CLIENT_ID);
-console.log('GOOGLE_CLIENT_SECRET exists:', !!process.env.GOOGLE_CLIENT_SECRET);
-console.log('AUTH_SECRET exists:', !!process.env.AUTH_SECRET);
-
 export const {
   handlers: { GET, POST },
   auth,
   signIn,
-  signOut: nextAuthSignOut,
+  signOut,
 } = NextAuth({
   ...authConfig,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
   secret: process.env.AUTH_SECRET,
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: 'openid email profile',
-          prompt: 'select_account', // Always show account selection
-        },
-      },
-    }),
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID!,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    // }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -193,7 +182,6 @@ export const {
       if (account?.access_token) {
         token.accessToken = account.access_token;
       }
-      
       return token;
     },
     
@@ -234,7 +222,6 @@ export const {
           // This prevents the session callback from breaking the entire auth flow
         }
       }
-      
       return session;
     },
   },
@@ -278,14 +265,4 @@ export const {
   },
 });
 
-// Custom sign out function that ensures cleanup
-export const signOut = async () => {
-  try {
-    console.log('Custom signOut called');
-    await nextAuthSignOut({ redirect: false });
-    console.log('SignOut successful');
-  } catch (error) {
-    console.error('Error during signOut:', error);
-    throw error;
-  }
-};
+

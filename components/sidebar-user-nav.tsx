@@ -58,7 +58,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                 <AvatarFallback className="rounded-full">
                   {user.name
                     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                    : <UserIcon className="h-4 w-4" />
+                    : <UserIcon className="size-4" />
                   }
                 </AvatarFallback>
               </Avatar>
@@ -89,7 +89,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                   <AvatarFallback className="rounded-full">
                     {user.name
                       ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                      : <UserIcon className="h-4 w-4" />
+                      : <UserIcon className="size-4" />
                     }
                   </AvatarFallback>
                 </Avatar>
@@ -115,7 +115,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
               onClick={handleSignOut}
               disabled={isSigningOut}
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="size-4" />
               {isSigningOut ? 'Signing out...' : 'Sign out'}
             </DropdownMenuItem>
           </DropdownMenuContent>
