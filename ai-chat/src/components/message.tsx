@@ -103,7 +103,7 @@ const PurePreviewMessage = ({
               if (type === 'text') {
                 if (mode === 'view') {
                   function sanitizeText(text: string) {
-                    throw new Error('Function not implemented.');
+                    return text;
                   }
 
                   return (

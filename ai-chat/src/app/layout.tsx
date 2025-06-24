@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
+import AuthLayout from './auth-layout';
 import './globals.css';
-import { ThemeProvider } from '@ai-chat/components/theme-provider';
-import { Toaster } from 'sonner';
-import Layout from './chat/layout';
+import type { Session } from '@ai-chat/lib/types';
+import { generateUUID } from '@ai-chat/lib/utils';
 
 export const metadata: Metadata = {
   title: 'AI Chat',
@@ -51,6 +52,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tempSession: Session = {
+    expires: '2100-10-05T14:48:00.000Z',
+    user: { email: 'fsilva@icrc.org', id: generateUUID(), type: 'regular' },
+  };
+  const [session, cookieStore] = await Promise.all([tempSession, cookies()]);
+  const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
+
   return (
     <html
       lang="en"
@@ -69,15 +77,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster position="top-center" />
-          <Layout>{children}</Layout>
-        </ThemeProvider>
+        <AuthLayout isCollapsed>{children}</AuthLayout>
       </body>
     </html>
   );
