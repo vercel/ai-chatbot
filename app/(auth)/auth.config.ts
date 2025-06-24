@@ -15,6 +15,7 @@ export const authConfig = {
       const isOnLogin = nextUrl.pathname.startsWith('/login');
       const isOnForgotPassword = nextUrl.pathname.startsWith('/forgot-password');
       const isOnResetPassword = nextUrl.pathname.startsWith('/reset-password');
+      const isOnVerifyEmail = nextUrl.pathname.startsWith('/verify-email');
       const isOnAuth = nextUrl.pathname.startsWith('/api/auth');
       
       // Allow auth routes to pass through
@@ -23,12 +24,12 @@ export const authConfig = {
       }
       
       // Redirect logged-in users away from auth pages
-      if (isLoggedIn && (isOnLogin || isOnRegister || isOnForgotPassword || isOnResetPassword)) {
+      if (isLoggedIn && (isOnLogin || isOnRegister || isOnForgotPassword || isOnResetPassword || isOnVerifyEmail)) {
         return Response.redirect(new URL('/', nextUrl));
       }
       
       // Allow access to public auth pages for non-authenticated users
-      if (isOnRegister || isOnLogin || isOnForgotPassword || isOnResetPassword) {
+      if (isOnRegister || isOnLogin || isOnForgotPassword || isOnResetPassword || isOnVerifyEmail) {
         return true;
       }
       

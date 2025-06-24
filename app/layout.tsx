@@ -36,12 +36,12 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${geistMono.variable}`}
+      className={`${geist.variable} ${geistMono.variable} h-full`}
     >
       <head>
         <meta name="theme-color" content={LIGHT_THEME_COLOR} />
       </head>
-      <body className="antialiased">
+      <body className="antialiased min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-green-50">
         <Toaster position="top-center" />
         {children}
       </body>

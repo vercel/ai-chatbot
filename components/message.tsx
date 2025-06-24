@@ -58,7 +58,7 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border border-black bg-white">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
               </div>
@@ -119,7 +119,7 @@ const PurePreviewMessage = ({
                       <div
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                          'bg-green-500 text-primary-foreground px-3 py-2 rounded-xl':
                             message.role === 'user',
                         })}
                       >

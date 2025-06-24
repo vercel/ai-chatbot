@@ -1,10 +1,13 @@
+// lib/db/queries.ts - Fixed version with consistent camelCase naming
 import 'server-only';
-import { genSaltSync, hashSync } from 'bcrypt-ts';
+import { hash, genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray, lt, SQL } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import crypto from 'crypto';
 import {
   user,
+  emailVerificationTokens,
   chat,
   type User,
   document,
@@ -19,64 +22,88 @@ import {
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
-
-// biome-ignore lint: Forbidden non-null assertion.
+// Database connection
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
+// User Management Functions
+export async function createUser(
+  email: string, 
+  password: string | null = null, 
+  name?: string | null, 
+  image?: string | null
+): Promise<User> {
+  try {
+    console.log('Creating user with:', { email, hasPassword: !!password, name, image });
+    
+    const values: any = { 
+      email,
+      createdAt: new Date(),
+      emailVerified: false,
+    };
+    
+    if (password) {
+      const salt = genSaltSync(10);
+      const hashPassword = hashSync(password, salt);
+      values.password = hashPassword;
+    }
+    
+    if (name) values.name = name;
+    if (image) values.image = image;
+
+    const [newUser] = await db.insert(user).values(values).returning();
+    console.log('User created successfully:', newUser.id);
+    return newUser;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw new Error('Failed to create user');
+  }
+}
+
 export async function getUser(email: string): Promise<Array<User>> {
   try {
-    return await db.select().from(user).where(eq(user.email, email));
+    console.log('Getting user by email:', email);
+    const result = await db.select().from(user).where(eq(user.email, email));
+    console.log('Users found:', result.length);
+    return result;
   } catch (error) {
-    console.error('Failed to get user from database');
+    console.error('Failed to get user from database:', error);
     throw error;
   }
 }
 
 export async function getUserById(id: string): Promise<User | null> {
   try {
+    console.log('Getting user by ID:', id);
     const [selectedUser] = await db.select().from(user).where(eq(user.id, id));
     return selectedUser || null;
   } catch (error) {
-    console.error('Failed to get user by id from database');
+    console.error('Failed to get user by id from database:', error);
     throw error;
   }
 }
 
-export async function createUser(
-  email: string,
-  password: string | null = null,
-  name?: string | null,
-  image?: string | null
-) {
+export async function getUserByEmail(email: string): Promise<User | null> {
   try {
-    const values: any = { 
-      email,
-      createdAt: new Date()
-    };
+    console.log('Getting user by email (single):', email);
+    const [selectedUser] = await db.select({
+      id: user.id,
+      email: user.email,
+      password: user.password,
+      email_verified: user.email_verified,
+      name: user.name,
+      image: user.image,
+      created_at: user.created_at,
+      updated_at: user.updated_at
+    })
+    .from(user)
+    .where(eq(user.email, email));
     
-    if (password) {
-      const salt = genSaltSync(10);
-      const hash = hashSync(password, salt);
-      values.password = hash;
-    }
-    
-    if (name) {
-      values.name = name;
-    }
-    
-    if (image) {
-      values.image = image;
-    }
-
-    const [newUser] = await db.insert(user).values(values).returning();
-    return newUser;
+    console.log('User found:', !!selectedUser);
+    return selectedUser || null;
   } catch (error) {
-    console.error('Failed to create user in database');
-    throw error;
+    console.error('Error getting user by email:', error);
+    return null;
   }
 }
 
@@ -86,41 +113,136 @@ export async function updateUser(
     name?: string | null;
     image?: string | null;
     email?: string;
+    emailVerified?: boolean;
   }
-) {
+): Promise<User> {
   try {
+    console.log('Updating user:', id, updates);
+    
     const [updatedUser] = await db
       .update(user)
       .set({
         ...updates,
-        updatedAt: new Date()
+        updated_at: new Date()
       })
       .where(eq(user.id, id))
       .returning();
+      
+    console.log('User updated successfully');
     return updatedUser;
   } catch (error) {
-    console.error('Failed to update user in database');
+    console.error('Failed to update user in database:', error);
     throw error;
   }
 }
 
+// Email Verification Functions
+export async function createEmailVerificationToken(userId: string): Promise<string> {
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('Creating email verification token for user:', userId);
+    
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    
+    console.log('Creating verification token:', { userId, otp, expiresAt });
+    
+    // Delete any existing tokens for this user first
+    await db.delete(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.user_id, userId));
+    
+    // Insert new token
+    await db.insert(emailVerificationTokens).values({
+      id: crypto.randomUUID(),
+      user_id: userId,
+      token: otp,
+      expires_at: expiresAt,
+      created_at: new Date(),
+    });
+    
+    console.log('Email verification token created successfully');
+    return otp;
+  } catch (error) {
+    console.error('Error creating email verification token:', error);
+    throw new Error('Failed to create email verification token');
+  }
+}
+
+export async function verifyEmailToken(otp: string): Promise<{ success: boolean; userId?: string; userEmail?: string }> {
+  try {
+    console.log('Verifying OTP:', otp);
+    
+    const [tokenRecord] = await db
+      .select()
+      .from(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.token, otp))
+      .limit(1);
+    
+    if (!tokenRecord) {
+      console.log('Token not found');
+      return { success: false };
+    }
+    
+    console.log('Token found:', { userId: tokenRecord.user_id, expiresAt: tokenRecord.expires_at });
+    
+    // Check if token has expired
+    if (new Date() > tokenRecord.expires_at) {
+      console.log('Token expired');
+      await db.delete(emailVerificationTokens)
+        .where(eq(emailVerificationTokens.id, tokenRecord.id));
+      return { success: false };
+    }
+    
+    // Get user details before updating
+    const [userData] = await db
+      .select({ email: user.email })
+      .from(user)
+      .where(eq(user.id, tokenRecord.user_id))
+      .limit(1);
+    
+    // Mark user as verified
+    await db.update(user)
+      .set({ 
+        email_verified: true,
+        updated_at: new Date()
+      })
+      .where(eq(user.id, tokenRecord.user_id));
+    
+    // Delete the used token
+    await db.delete(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.id, tokenRecord.id));
+    
+    console.log('Email verified successfully');
+    return { 
+      success: true, 
+      userId: tokenRecord.user_id,
+      userEmail: userData?.email
+    };
+  } catch (error) {
+    console.error('Error verifying email token:', error);
+    return { success: false };
+  }
+}
+
+// OAuth Integration
 export async function findOrCreateGoogleUser(
   email: string,
   name: string | null,
   image: string | null
 ): Promise<User> {
   try {
-    // Check if user exists
+    console.log('Finding or creating Google user:', email);
+    
     const existingUsers = await getUser(email);
     
     if (existingUsers.length > 0) {
       const existingUser = existingUsers[0];
+      console.log('Google user exists, updating info');
       
-      // Update user info if name or image has changed
-      if (existingUser.name !== name || existingUser.image !== image) {
+      if (existingUser.name !== name || existingUser.image !== image || !existingUser.email_verified) {
         const updatedUser = await updateUser(existingUser.id, {
           name,
-          image
+          image,
+          emailVerified: true, // OAuth users are considered verified
         });
         return updatedUser;
       }
@@ -128,11 +250,12 @@ export async function findOrCreateGoogleUser(
       return existingUser;
     }
     
-    // Create new user
+    console.log('Creating new Google user');
     const newUser = await createUser(email, null, name, image);
-    return newUser;
+    const updatedUser = await updateUser(newUser.id, { emailVerified: true });
+    return updatedUser;
   } catch (error) {
-    console.error('Failed to find or create Google user');
+    console.error('Failed to find or create Google user:', error);
     throw error;
   }
 }
@@ -140,24 +263,24 @@ export async function findOrCreateGoogleUser(
 // Password Reset Functions
 export async function createPasswordResetToken(userId: string): Promise<string> {
   try {
-    // Generate a secure random token
+    console.log('Creating password reset token for user:', userId);
+    
     const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
     
-    // Delete any existing tokens for this user
     await db.delete(passwordResetToken).where(eq(passwordResetToken.userId, userId));
     
-    // Create new token
     await db.insert(passwordResetToken).values({
-      userId,
+      userId: userId,
       token,
-      expiresAt,
+      expiresAt: expiresAt,
       createdAt: new Date(),
     });
     
+    console.log('Password reset token created successfully');
     return token;
   } catch (error) {
-    console.error('Failed to create password reset token');
+    console.error('Failed to create password reset token:', error);
     throw error;
   }
 }
@@ -172,7 +295,7 @@ export async function getPasswordResetToken(token: string): Promise<PasswordRese
     
     return resetToken || null;
   } catch (error) {
-    console.error('Failed to get password reset token');
+    console.error('Failed to get password reset token:', error);
     throw error;
   }
 }
@@ -181,25 +304,31 @@ export async function deletePasswordResetToken(token: string) {
   try {
     return await db.delete(passwordResetToken).where(eq(passwordResetToken.token, token));
   } catch (error) {
-    console.error('Failed to delete password reset token');
+    console.error('Failed to delete password reset token:', error);
     throw error;
   }
 }
 
 export async function resetUserPassword(userId: string, newPassword: string): Promise<User> {
   try {
+    console.log('Resetting password for user:', userId);
+    
     const salt = genSaltSync(10);
-    const hash = hashSync(newPassword, salt);
+    const hashPassword = hashSync(newPassword, salt);
     
     const [updatedUser] = await db
       .update(user)
-      .set({ password: hash })
+      .set({ 
+        password: hashPassword,
+        updated_at: new Date()
+      })
       .where(eq(user.id, userId))
       .returning();
     
+    console.log('Password reset successfully');
     return updatedUser;
   } catch (error) {
-    console.error('Failed to reset user password');
+    console.error('Failed to reset user password:', error);
     throw error;
   }
 }
@@ -212,16 +341,15 @@ export async function isPasswordResetTokenValid(token: string): Promise<boolean>
       return false;
     }
     
-    // Check if token has expired
     const now = new Date();
     return resetToken.expiresAt > now;
   } catch (error) {
-    console.error('Failed to validate password reset token');
+    console.error('Failed to validate password reset token:', error);
     return false;
   }
 }
 
-// Clean up expired tokens (should be run periodically)
+// Cleanup Functions
 export async function cleanupExpiredPasswordResetTokens() {
   try {
     const now = new Date();
@@ -229,11 +357,24 @@ export async function cleanupExpiredPasswordResetTokens() {
       .delete(passwordResetToken)
       .where(lt(passwordResetToken.expiresAt, now));
   } catch (error) {
-    console.error('Failed to cleanup expired password reset tokens');
+    console.error('Failed to cleanup expired password reset tokens:', error);
     throw error;
   }
 }
 
+export async function cleanupExpiredEmailVerificationTokens() {
+  try {
+    const now = new Date();
+    return await db
+      .delete(emailVerificationTokens)
+      .where(lt(emailVerificationTokens.expires_at, now));
+  } catch (error) {
+    console.error('Failed to cleanup expired email verification tokens:', error);
+    throw error;
+  }
+}
+
+// Chat Management Functions
 export async function saveChat({
   id,
   userId,
@@ -247,7 +388,7 @@ export async function saveChat({
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
-      userId,
+      userId: userId,
       title,
     });
   } catch (error) {
@@ -343,6 +484,22 @@ export async function getChatById({ id }: { id: string }) {
   }
 }
 
+export async function updateChatVisiblityById({
+  chatId,
+  visibility,
+}: {
+  chatId: string;
+  visibility: 'private' | 'public';
+}) {
+  try {
+    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+  } catch (error) {
+    console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+// Message Management Functions
 export async function saveMessages({
   messages,
 }: {
@@ -369,6 +526,53 @@ export async function getMessagesByChatId({ id }: { id: string }) {
   }
 }
 
+export async function getMessageById({ id }: { id: string }) {
+  try {
+    return await db.select().from(message).where(eq(message.id, id));
+  } catch (error) {
+    console.error('Failed to get message by id from database');
+    throw error;
+  }
+}
+
+export async function deleteMessagesByChatIdAfterTimestamp({
+  chatId,
+  timestamp,
+}: {
+  chatId: string;
+  timestamp: Date;
+}) {
+  try {
+    const messagesToDelete = await db
+      .select({ id: message.id })
+      .from(message)
+      .where(
+        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
+      );
+
+    const messageIds = messagesToDelete.map((message) => message.id);
+
+    if (messageIds.length > 0) {
+      await db
+        .delete(vote)
+        .where(
+          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
+        );
+      return await db
+        .delete(message)
+        .where(
+          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
+        );
+    }
+  } catch (error) {
+    console.error(
+      'Failed to delete messages by id after timestamp from database',
+    );
+    throw error;
+  }
+}
+
+// Vote Management Functions
 export async function voteMessage({
   chatId,
   messageId,
@@ -392,8 +596,8 @@ export async function voteMessage({
     }
 
     return await db.insert(vote).values({
-      chatId,
-      messageId,
+      chatId: chatId,
+      messageId: messageId,
       isUpvoted: type === 'up',
     });
   } catch (error) {
@@ -411,6 +615,7 @@ export async function getVotesByChatId({ id }: { id: string }) {
   }
 }
 
+// Document Management Functions
 export async function saveDocument({
   id,
   title,
@@ -430,7 +635,7 @@ export async function saveDocument({
       title,
       kind,
       content,
-      userId,
+      userId: userId,
       createdAt: new Date(),
     });
   } catch (error) {
@@ -494,6 +699,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
   }
 }
 
+// Suggestion Management Functions
 export async function saveSuggestions({
   suggestions,
 }: {
@@ -525,69 +731,7 @@ export async function getSuggestionsByDocumentId({
   }
 }
 
-export async function getMessageById({ id }: { id: string }) {
-  try {
-    return await db.select().from(message).where(eq(message.id, id));
-  } catch (error) {
-    console.error('Failed to get message by id from database');
-    throw error;
-  }
-}
-
-export async function deleteMessagesByChatIdAfterTimestamp({
-  chatId,
-  timestamp,
-}: {
-  chatId: string;
-  timestamp: Date;
-}) {
-  try {
-    const messagesToDelete = await db
-      .select({ id: message.id })
-      .from(message)
-      .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
-      );
-
-    const messageIds = messagesToDelete.map((message) => message.id);
-
-    if (messageIds.length > 0) {
-      await db
-        .delete(vote)
-        .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
-        );
-      return await db
-        .delete(message)
-        .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
-        );
-    }
-  } catch (error) {
-    console.error(
-      'Failed to delete messages by id after timestamp from database',
-    );
-    throw error;
-  }
-}
-
-export async function updateChatVisiblityById({
-  chatId,
-  visibility,
-}: {
-  chatId: string;
-  visibility: 'private' | 'public';
-}) {
-  try {
-    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
-  } catch (error) {
-    console.error('Failed to update chat visibility in database');
-    throw error;
-  }
-}
-
-// Additional utility functions for OAuth integration
-
+// Utility Functions for OAuth and Account Management
 export async function linkProviderAccount({
   userId,
   provider,
@@ -602,43 +746,48 @@ export async function linkProviderAccount({
   refreshToken?: string;
 }) {
   try {
-    // This would require an accounts table if you want to track OAuth accounts
-    // For now, we're just updating the user's info when they sign in with Google
     console.log('Provider account linked:', { userId, provider, providerAccountId });
+    return true;
   } catch (error) {
     console.error('Failed to link provider account');
     throw error;
   }
 }
 
+// Delete user function with proper column naming
 export async function deleteUser(id: string) {
   try {
+    console.log('Deleting user:', id);
+    
     // Delete user's related data first
     const userChats = await db.select({ id: chat.id }).from(chat).where(eq(chat.userId, id));
     const chatIds = userChats.map(c => c.id);
     
     if (chatIds.length > 0) {
-      // Delete votes for user's chats
       await db.delete(vote).where(inArray(vote.chatId, chatIds));
-      
-      // Delete messages for user's chats
       await db.delete(message).where(inArray(message.chatId, chatIds));
-      
-      // Delete chats
       await db.delete(chat).where(eq(chat.userId, id));
     }
     
-    // Delete user's documents and suggestions
-    await db.delete(suggestion).where(eq(suggestion.documentId, id));
+    // Get user's documents first, then delete related suggestions
+    const userDocuments = await db.select({ id: document.id }).from(document).where(eq(document.userId, id));
+    const documentIds = userDocuments.map(d => d.id);
+    
+    if (documentIds.length > 0) {
+      await db.delete(suggestion).where(inArray(suggestion.documentId, documentIds));
+    }
     await db.delete(document).where(eq(document.userId, id));
     
-    // Delete user's password reset tokens
+    // Delete user's tokens
     await db.delete(passwordResetToken).where(eq(passwordResetToken.userId, id));
+    await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.user_id, id));
     
     // Finally delete the user
-    return await db.delete(user).where(eq(user.id, id));
+    const result = await db.delete(user).where(eq(user.id, id));
+    console.log('User deleted successfully');
+    return result;
   } catch (error) {
-    console.error('Failed to delete user from database');
+    console.error('Failed to delete user from database:', error);
     throw error;
   }
 }

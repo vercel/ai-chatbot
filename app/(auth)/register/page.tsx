@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
@@ -41,12 +42,13 @@ export default function Page() {
         type: 'error',
         description: 'Failed validating your submission!',
       });
-    } else if (state.status === 'success') {
-      toast({ type: 'success', description: 'Account created successfully!' });
+    } else if (state.status === 'verification_sent') {
+      toast({ type: 'success', description: 'Verification email sent! Check your inbox.' });
       setIsSuccessful(true);
-      router.refresh();
+      // Redirect to verification page with email parameter
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     }
-  }, [state]);
+  }, [state, email, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);
@@ -92,10 +94,13 @@ export default function Page() {
         <div className="absolute inset-0 bg-white" />
         
         <div className="relative z-10 mb-8 w-full max-w-md">
-          <img 
+          <Image 
             src="/images/signup.svg" 
             alt="Sign up illustration"
+            width={400}
+            height={300}
             className="w-full h-auto"
+            priority
           />
         </div>
       </div>

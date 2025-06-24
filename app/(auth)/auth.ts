@@ -3,7 +3,7 @@ import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
 
-import { getUser, createUser } from '@/lib/db/queries';
+import { getUser, createUser, updateUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
 
 interface ExtendedSession extends Session {
@@ -37,10 +37,19 @@ export const {
       },
     }),
     Credentials({
-      credentials: {},
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
       async authorize({ email, password }: any) {
         try {
           console.log('Credential sign in attempt for:', email);
+          
+          if (!email || !password) {
+            console.log('Missing email or password');
+            return null;
+          }
+
           const users = await getUser(email);
           if (users.length === 0) {
             console.log('No user found with email:', email);
@@ -48,6 +57,23 @@ export const {
           }
           
           const user = users[0];
+          
+          // Handle special email verification auto-login
+          if (password === '__EMAIL_VERIFIED__') {
+            console.log('Email verification auto-login');
+            if (!user.email_verified) {
+              console.log('User email not verified for auto-login');
+              return null;
+            }
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+            };
+          }
+          
+          // Regular password authentication
           if (!user.password) {
             console.log('User has no password (OAuth user)');
             return null;
@@ -86,25 +112,53 @@ export const {
         try {
           console.log('Processing Google sign in for:', user.email);
           
+          if (!user.email) {
+            console.log('No email provided by Google');
+            return false;
+          }
+          
           // Check if user exists
-          const existingUsers = await getUser(user.email!);
+          const existingUsers = await getUser(user.email);
           
           if (existingUsers.length === 0) {
             console.log('Creating new user from Google sign in');
-            const newUser = await createUser(
-              user.email!,
-              null, // No password for Google users
-              user.name || null,
-              user.image || null
-            );
-            console.log('Successfully created new user:', newUser.id);
+            try {
+              const newUser = await createUser(
+                user.email,
+                null, // No password for Google users
+                user.name || null,
+                user.image || null
+              );
+              
+              // Mark email as verified for OAuth users
+              await updateUser(newUser.id, { emailVerified: true });
+              console.log('Successfully created new user:', newUser.id);
+            } catch (createError) {
+              console.error('Failed to create user:', createError);
+              return false;
+            }
           } else {
             console.log('User already exists:', existingUsers[0].id);
-            // Optionally update user info if needed
             const existingUser = existingUsers[0];
-            if (existingUser.name !== user.name || existingUser.image !== user.image) {
+            
+            // Update user info if needed and ensure email is verified for OAuth users
+            const needsUpdate = 
+              existingUser.name !== user.name || 
+              existingUser.image !== user.image || 
+              !existingUser.email_verified;
+              
+            if (needsUpdate) {
               console.log('Updating user info from Google');
-              // You might want to add an updateUser function call here
+              try {
+                await updateUser(existingUser.id, {
+                  name: user.name || existingUser.name,
+                  image: user.image || existingUser.image,
+                  emailVerified: true,
+                });
+              } catch (updateError) {
+                console.error('Failed to update user:', updateError);
+                // Don't fail the sign in for update errors
+              }
             }
           }
           
@@ -115,18 +169,28 @@ export const {
         }
       }
       
-      // Allow credential sign ins
+      // Allow credential sign ins (they've already been validated in authorize)
       return true;
     },
     
     async jwt({ token, user, account }) {
-      console.log('JWT callback:', { token: !!token, user: !!user, account: !!account });
+      console.log('JWT callback:', { 
+        hasToken: !!token, 
+        hasUser: !!user, 
+        hasAccount: !!account,
+        provider: account?.provider 
+      });
       
+      // First time sign in - user object will be available
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.image = user.image;
       }
       
-      if (account) {
+      // Store access token if available
+      if (account?.access_token) {
         token.accessToken = account.access_token;
       }
       
@@ -134,68 +198,94 @@ export const {
     },
     
     async session({ session, token }: { session: ExtendedSession; token: any }) {
-      console.log('Session callback:', { session: !!session, token: !!token });
+      console.log('Session callback:', { 
+        hasSession: !!session, 
+        hasToken: !!token,
+        sessionEmail: session.user?.email,
+        tokenId: token?.id 
+      });
       
       if (session.user && token) {
-        // Fetch fresh user data to ensure we have the correct ID
         try {
-          const users = await getUser(session.user.email!);
-          if (users.length > 0) {
-            session.user.id = users[0].id;
-            session.user.name = users[0].name;
-            session.user.image = users[0].image;
+          // Use token data first (most reliable)
+          if (token.id) {
+            session.user.id = token.id;
+            session.user.email = token.email || session.user.email;
+            session.user.name = token.name || session.user.name;
+            session.user.image = token.image || session.user.image;
+          } else if (session.user.email) {
+            // Fallback: fetch user data if token doesn't have ID
+            console.log('Token missing ID, fetching user data for:', session.user.email);
+            const users = await getUser(session.user.email);
+            
+            if (users.length > 0) {
+              const userData = users[0];
+              session.user.id = userData.id;
+              session.user.name = userData.name || session.user.name;
+              session.user.image = userData.image || session.user.image;
+              console.log('Session user data updated from database');
+            } else {
+              console.log('No user found in session callback');
+            }
           }
         } catch (error) {
-          console.error('Error fetching user in session callback:', error);
+          console.error('Error in session callback:', error);
+          // Don't throw error - just log it and continue with whatever session data we have
+          // This prevents the session callback from breaking the entire auth flow
         }
       }
       
       return session;
     },
   },
-  
-  // Add session configuration
+  pages: {
+    signIn: '/login',
+    error: '/auth/error',
+  },
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  
-  // Add events for debugging
   events: {
-    async signIn({ user, account, profile, isNewUser }) {
+    async signIn({ user, account, profile }) {
       console.log('SignIn event:', { 
-        user: user.email, 
         provider: account?.provider, 
-        isNewUser 
+        email: user.email 
       });
     },
     async signOut({ session, token }) {
-      console.log('SignOut event:', { user: session?.user?.email });
+      console.log('SignOut event:', { 
+        email: session?.user?.email || token?.email 
+      });
+    },
+    async createUser({ user }) {
+      console.log('CreateUser event:', { email: user.email, id: user.id });
     },
   },
-
-  // Configure sign-out redirect
-  pages: {
-    ...authConfig.pages,
-    signOut: '/login', // This will redirect to login after sign out
+  // Add error handling
+  logger: {
+    error(code, ...message) {
+      console.error(`NextAuth Error [${code}]:`, ...message);
+    },
+    warn(code, ...message) {
+      console.warn(`NextAuth Warning [${code}]:`, ...message);
+    },
+    debug(code, ...message) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`NextAuth Debug [${code}]:`, ...message);
+      }
+    },
   },
 });
 
-// Custom sign out function with automatic redirect to login
-export const signOut = async (options?: { redirect?: boolean }) => {
-  const { redirect = true } = options || {};
-  
-  if (typeof window !== 'undefined') {
-    // Client-side sign out
-    const { signOut: clientSignOut } = await import('next-auth/react');
-    return clientSignOut({
-      callbackUrl: '/login',
-      redirect,
-    });
-  } else {
-    // Server-side sign out
-    return nextAuthSignOut();
+// Custom sign out function that ensures cleanup
+export const signOut = async () => {
+  try {
+    console.log('Custom signOut called');
+    await nextAuthSignOut({ redirect: false });
+    console.log('SignOut successful');
+  } catch (error) {
+    console.error('Error during signOut:', error);
+    throw error;
   }
 };
-
-console.log('NextAuth configuration complete');

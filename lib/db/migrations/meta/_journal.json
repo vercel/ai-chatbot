@@ -50,6 +50,20 @@
       "when": 1749548242088,
       "tag": "0006_living_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1750365496650,
+      "tag": "0007_romantic_cloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1750367255836,
+      "tag": "0008_clammy_eternals",
+      "breakpoints": true
     }
   ]
 }

@@ -1,15 +1,19 @@
 'use server';
 
 import { z } from 'zod';
-import { createUser, getUser } from '@/lib/db/queries';
-import { signIn } from './auth';
 import { 
+  createUser, 
+  getUser, 
+  createEmailVerificationToken, 
+  verifyEmailToken, 
+  getUserByEmail,
   createPasswordResetToken, 
   getPasswordResetToken, 
   deletePasswordResetToken,
-  resetUserPassword
+  resetUserPassword,
 } from '@/lib/db/queries';
-import { sendPasswordResetEmail } from '@/lib/db/email';
+import { signIn } from './auth';
+import { sendVerificationEmail, sendPasswordResetEmail } from '@/lib/db/email';
 
 const authFormSchema = z.object({
   email: z.string().email(),
@@ -17,7 +21,7 @@ const authFormSchema = z.object({
 });
 
 export interface LoginActionState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';
+  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data' | 'email_not_verified';
 }
 
 export const login = async (
@@ -25,22 +29,47 @@ export const login = async (
   formData: FormData,
 ): Promise<LoginActionState> => {
   try {
+    console.log('=== LOGIN ACTION DEBUG ===');
+    
     const validatedData = authFormSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
     });
+    
+    console.log('Login attempt for:', validatedData.email);
 
-    await signIn('credentials', {
+    const user = await getUserByEmail(validatedData.email);
+    console.log('User found:', !!user);
+    
+    if (user && !user.email_verified) {
+      console.log('Email not verified');
+      return { status: 'email_not_verified' };
+    }
+
+    console.log('Attempting sign in...');
+    const signInResult = await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
 
+    console.log('Sign in result:', signInResult);
+
+    if (signInResult?.error) {
+      console.log('Sign in failed with error:', signInResult.error);
+      return { status: 'failed' };
+    }
+
+    console.log('Login successful');
     return { status: 'success' };
   } catch (error) {
+    console.error('Login action error:', error);
+    
     if (error instanceof z.ZodError) {
+      console.log('Validation error:', error.errors);
       return { status: 'invalid_data' };
     }
+    
     return { status: 'failed' };
   }
 };
@@ -52,7 +81,8 @@ export interface RegisterActionState {
     | 'success'
     | 'failed'
     | 'user_exists'
-    | 'invalid_data';
+    | 'invalid_data'
+    | 'verification_sent';
 }
 
 export const register = async (
@@ -60,34 +90,100 @@ export const register = async (
   formData: FormData,
 ): Promise<RegisterActionState> => {
   try {
+    console.log('=== REGISTER ACTION DEBUG ===');
+    
     const validatedData = authFormSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
     });
+    
+    console.log('Validated data:', { email: validatedData.email });
 
-    const [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
+    // Check if user already exists
+    const existingUsers = await getUser(validatedData.email);
+    console.log('Existing users found:', existingUsers.length);
+    
+    if (existingUsers.length > 0) {
+      console.log('User already exists');
+      return { status: 'user_exists' };
     }
     
-    await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
+    console.log('Creating new user...');
+    const newUser = await createUser(validatedData.email, validatedData.password);
+    console.log('User created with ID:', newUser.id);
+    
+    console.log('Creating email verification token...');
+    const otp = await createEmailVerificationToken(newUser.id);
+    console.log('OTP generated:', otp);
+    
+    console.log('Sending verification email...');
+    await sendVerificationEmail(validatedData.email, otp);
+    console.log('Verification email sent successfully');
 
-    return { status: 'success' };
+    return { status: 'verification_sent' };
   } catch (error) {
+    console.error('Register action error:', error);
+    
     if (error instanceof z.ZodError) {
+      console.log('Validation error:', error.errors);
       return { status: 'invalid_data' };
     }
+    
     return { status: 'failed' };
   }
 };
 
-// Server action for Google sign-in (optional - you can handle this client-side)
+export interface VerifyEmailActionState {
+  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_token';
+}
+
+export const verifyEmail = async (
+  _: VerifyEmailActionState,
+  formData: FormData,
+): Promise<VerifyEmailActionState> => {
+  try {
+    console.log('=== VERIFY EMAIL ACTION DEBUG ===');
+    
+    const otp = formData.get('otp') as string;
+    console.log('OTP received:', otp);
+    
+    if (!otp || otp.length !== 6) {
+      console.log('Invalid OTP format');
+      return { status: 'invalid_token' };
+    }
+
+    console.log('Verifying OTP...');
+    const result = await verifyEmailToken(otp);
+    console.log('Verification result:', result);
+    
+    if (!result.success) {
+      return { status: 'invalid_token' };
+    }
+
+    // Auto-login after successful verification
+    if (result.userEmail) {
+      console.log('Auto-signing in verified user...');
+      try {
+        await signIn('credentials', {
+          email: result.userEmail,
+          password: '__EMAIL_VERIFIED__', // Special password for verified users
+          redirect: false,
+        });
+        console.log('Auto sign-in successful');
+      } catch (signInError) {
+        console.error('Auto sign-in failed:', signInError);
+        // Continue with success status anyway
+      }
+    }
+
+    console.log('Email verified successfully');
+    return { status: 'success' };
+  } catch (error) {
+    console.error('Verify email action error:', error);
+    return { status: 'failed' };
+  }
+};
+
 export const signInWithGoogle = async () => {
   try {
     await signIn('google', { 
@@ -124,7 +220,6 @@ export const forgotPassword = async (
     
     if (users.length === 0) {
       console.log('No users found, but returning success for security');
-      // Don't reveal if user exists or not for security
       return { status: 'success' };
     }
 
@@ -133,7 +228,6 @@ export const forgotPassword = async (
     
     if (!user.password) {
       console.log('User has no password (OAuth user), returning success');
-      // User signed up with Google, no password to reset
       return { status: 'success' };
     }
 
@@ -142,9 +236,8 @@ export const forgotPassword = async (
     console.log('Token created:', token);
     
     console.log('Attempting to send email...');
-    // Send password reset email
     await sendPasswordResetEmail(email, token);
-    console.log('Email function completed successfully');
+    console.log('Email sent successfully');
     
     return { status: 'success' };
   } catch (error) {
@@ -166,22 +259,42 @@ export const resetPassword = async (
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
+    console.log('=== RESET PASSWORD DEBUG ===');
+    console.log('Token received:', token);
+    console.log('Password length:', password ? password.length : 0);
+    console.log('Passwords match:', password === confirmPassword);
+
     if (!token || !password || password !== confirmPassword || password.length < 6) {
+      console.log('Validation failed');
       return { status: 'failed' };
     }
 
+    console.log('Looking up reset token...');
     const resetToken = await getPasswordResetToken(token);
     if (!resetToken) {
+      console.log('Reset token not found');
       return { status: 'invalid_token' };
     }
 
+    console.log('Reset token found:', { 
+      userId: resetToken.userId, 
+      expiresAt: resetToken.expiresAt,
+      currentTime: new Date().toISOString()
+    });
+
     if (new Date(resetToken.expiresAt) < new Date()) {
+      console.log('Token expired, deleting...');
       await deletePasswordResetToken(token);
       return { status: 'expired_token' };
     }
 
+    console.log('Resetting password...');
     await resetUserPassword(resetToken.userId, password);
+    console.log('Password reset successfully');
+    
+    console.log('Deleting used token...');
     await deletePasswordResetToken(token);
+    console.log('Token deleted');
     
     return { status: 'success' };
   } catch (error) {

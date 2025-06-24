@@ -48,10 +48,9 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+             
             >
-              <Avatar className="h-8 w-8 rounded-full">
+              <Avatar className="h-6 w-6 rounded-full flex-shrink-0">
                 <AvatarImage 
                   src={user.image || undefined} 
                   alt={user.name || 'User'} 
@@ -63,7 +62,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                   }
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
                 <span className="truncate font-semibold">
                   {user.name || 'User'}
                 </span>
@@ -71,7 +70,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                   {user.email}
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4 flex-shrink-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -82,7 +81,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8 rounded-full flex-shrink-0">
                   <AvatarImage 
                     src={user.image || undefined} 
                     alt={user.name || 'User'} 
@@ -94,7 +93,7 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
                     }
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
                   <span className="truncate font-semibold">
                     {user.name || 'User'}
                   </span>
@@ -105,11 +104,11 @@ export function SidebarUserNav({ user }: SidebarUserNavProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2">
+            {/* <DropdownMenuItem className="gap-2">
               <Settings className="h-4 w-4" />
               Settings
             </DropdownMenuItem>
-            
+             */}
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="gap-2 text-red-600 focus:text-red-600"
