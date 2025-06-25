@@ -259,14 +259,28 @@ function PureArtifact({
       {artifact.isVisible && (
         <motion.div
           data-testid="artifact"
-          className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            height: '100dvh',
+            width: '100dvw',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            zIndex: 50,
+            backgroundColor: 'transparent'
+          }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { delay: 0.4 } }}
         >
           {!isMobile && (
             <motion.div
-              className="fixed bg-background h-dvh"
+              style={{
+                position: 'fixed',
+                backgroundColor: 'hsl(var(--background))',
+                height: '100dvh'
+              }}
               initial={{
                 width: isSidebarOpen ? windowWidth - 256 : windowWidth,
                 right: 0,
@@ -281,7 +295,13 @@ function PureArtifact({
 
           {!isMobile && (
             <motion.div
-              className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
+              style={{
+                position: 'relative',
+                width: '400px',
+                backgroundColor: 'hsl(var(--muted))',
+                height: '100dvh',
+                flexShrink: 0
+              }}
               initial={{ opacity: 0, x: 10, scale: 1 }}
               animate={{
                 opacity: 1,
@@ -304,7 +324,15 @@ function PureArtifact({
               <AnimatePresence>
                 {!isCurrentVersion && (
                   <motion.div
-                    className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
+                    style={{
+                      left: 0,
+                      position: 'absolute',
+                      height: '100dvh',
+                      width: '400px',
+                      top: 0,
+                      backgroundColor: 'rgba(24, 24, 27, 0.5)',
+                      zIndex: 50
+                    }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -346,7 +374,15 @@ function PureArtifact({
           )}
 
           <motion.div
-            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
+            style={{
+              position: 'fixed',
+              backgroundColor: 'hsl(var(--background))',
+              height: '100dvh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: 'scroll',
+              borderLeft: '1px solid hsl(var(--border))'
+            }}
             initial={
               isMobile
                 ? {

@@ -3,7 +3,6 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { xai } from '@ai-sdk/xai';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -11,6 +10,19 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
+import { openai } from '@ai-sdk/openai';
+import { createPortkey } from '@portkey-ai/vercel-provider';
+
+
+const portkey = createPortkey({
+  apiKey: process.env.PORTKEY_API_KEY,
+  config: process.env.PORTKEY_API_CONFIG
+});
+
+// const openaiModel = openai('gpt-4-1-mini');
+const chatModel= portkey.chatModel('us.anthropic.claude-sonnet-4-20250514-v1:0')
+
+
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -23,15 +35,15 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        'chat-model': chatModel,
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
+          model: chatModel,
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'title-model': chatModel,
+        'artifact-model': chatModel,
       },
       imageModels: {
-        'small-model': xai.image('grok-2-image'),
+        'small-model': openai.image('gpt-4o-mini'),
       },
     });
