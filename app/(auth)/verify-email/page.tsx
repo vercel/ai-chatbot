@@ -73,7 +73,7 @@ export default function VerifyEmailPage() {
 
           <SubmitButton
             isSuccessful={state.status === 'success'}
-            disabled={otp.length !== 6}
+            // disabled={otp.length !== 6}
           >
             Verify Email
           </SubmitButton>
