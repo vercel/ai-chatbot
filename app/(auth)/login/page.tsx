@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
-  
+
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
     {
@@ -29,7 +29,7 @@ export default function LoginPage() {
     const timer = setTimeout(() => {
       setShowPlaceholder(false);
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -59,15 +59,15 @@ export default function LoginPage() {
     try {
       setIsGoogleLoading(true);
       console.log('Starting Google sign in...');
-      
+
       // Direct redirect to Google OAuth - this should work now
       const result = await signIn('google', {
         callbackUrl: '/',
         redirect: true, // Explicitly enable redirect
       });
-      
+
       console.log('Sign in result:', result);
-      
+
       // This code won't execute if redirect is successful
       if (result?.error) {
         console.error('Sign in error:', result.error);
@@ -92,11 +92,11 @@ export default function LoginPage() {
       {/* Left side - Illustration */}
       <div className="w-1/2 bg-white relative overflow-hidden flex flex-col justify-center items-center p-12">
         <div className="absolute inset-0 bg-white" />
-        
+
         {/* Storyset Illustration */}
         <div className="relative z-10 mb-8 w-full max-w-md">
-          <Image 
-            src="/images/signin.svg" 
+          <Image
+            src="/images/signin.svg"
             alt="Login illustration"
             width={400}
             height={300}
@@ -104,47 +104,49 @@ export default function LoginPage() {
             priority
           />
         </div>
-        
+
         {/* Decorative elements */}
-      
       </div>
-      
+
       {/* Right side - Login Form */}
       <div className="w-1/2 flex items-center justify-center p-12 bg-white">
         <div className="w-full max-w-sm">
           <div className="bg-white rounded-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06),4px_0_6px_-1px_rgba(0,0,0,0.1)] p-4">
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">CoCo Login</h2>
-              <p className="text-gray-600 text-lg">Enter your provided credentials</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                CoCo Login
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Enter your provided credentials
+              </p>
             </div>
-          
+
             {/* Show placeholder while loading */}
             {showPlaceholder && (
               <div className="space-y-4 animate-pulse">
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24" />
+                  <div className="h-10 bg-gray-200 rounded" />
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20" />
+                  <div className="h-10 bg-gray-200 rounded" />
                 </div>
-                <div className="h-10 bg-[#00B24B] rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-[#00B24B] rounded" />
+                <div className="h-10 bg-gray-200 rounded" />
               </div>
             )}
-            
+
             {/* Custom Auth Form */}
-            <div className={showPlaceholder ? 'opacity-0 absolute' : 'opacity-100'}>
+            <div
+              className={showPlaceholder ? 'opacity-0 absolute' : 'opacity-100'}
+            >
               <div className="space-y-4">
                 <AuthForm action={handleSubmit} defaultEmail={email}>
-                  <SubmitButton 
-                    isSuccessful={isSuccessful}
-                    className="w-full h-11"
-                  >
+                  <SubmitButton isSuccessful={isSuccessful}>
                     Sign in
                   </SubmitButton>
-                  
+
                   {/* Forgot Password Link */}
                   <p className="text-center text-sm text-gray-600 mt-2">
                     <Link
@@ -154,7 +156,7 @@ export default function LoginPage() {
                       Forgot your password?
                     </Link>
                   </p>
-                  
+
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t border-gray-300" />
@@ -165,7 +167,7 @@ export default function LoginPage() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
@@ -177,7 +179,7 @@ export default function LoginPage() {
                     </span>
                     {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
                   </button>
-                  
+
                   <p className="text-center text-sm text-gray-600 mt-4">
                     {"Don't have an account? "}
                     <Link
