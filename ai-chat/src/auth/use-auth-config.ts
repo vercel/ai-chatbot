@@ -4,12 +4,15 @@ import { useMemo } from 'react';
 import type { AuthProviderProps } from 'react-oidc-context';
 import { WebStorageStateStore, User } from 'oidc-client-ts';
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
+import {} from '@ai-chat/lib/constants';
+
+const ENV_META = process.env;
 
 // Azure AD authentication parameters for OAuth2
 const staticAuthParams = {
-  stsAuthority: `https://login.microsoftonline.com/${process.env.NEXT_PUBLIC_AZURE_AD_TENANT_ID}/v2.0`,
-  clientId: process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID || '',
-  clientScope: `${process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID}/.default`,
+  stsAuthority: `https://login.microsoftonline.com/${ENV_META.NEXT_PUBLIC_AZURE_AD_TENANT_ID}/v2.0`,
+  clientId: ENV_META.NEXT_PUBLIC_AZURE_AD_CLIENT_ID || '',
+  clientScope: `${ENV_META.NEXT_PUBLIC_AZURE_AD_CLIENT_ID}/.default`,
 };
 
 export function useAuthConfig(): AuthProviderProps | null {

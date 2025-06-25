@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth, hasAuthParams } from 'react-oidc-context';
+import { useTranslation } from 'react-i18next';
 
 interface AuthWrapperProps {
   children: ReactNode;
@@ -9,6 +10,7 @@ interface AuthWrapperProps {
 
 export default function AuthWrapper({ children }: AuthWrapperProps) {
   const auth = useAuth();
+  const { t } = useTranslation();
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
 
   // automatically sign-in
@@ -32,12 +34,18 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
 
   if (auth.error) {
     return (
-      <div className="bg-background text-9xl text-white">
-        Unable to sign-in: {auth.error.message}
+      // FIXME - work on design
+      <div className="bg-red-500 text-3xl text-white">
+        {t('general.unableToSignIn', {
+          error: auth.error.message,
+        })}
       </div>
     );
   }
 
   // render spinner
-  return <div className="bg-background text-9xl text-white">loading</div>;
+  return (
+    // FIXME - work on design
+    <div className="bg-red-500 text-3xl text-white">{t('general.loading')}</div>
+  );
 }

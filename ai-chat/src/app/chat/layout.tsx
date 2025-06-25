@@ -1,7 +1,7 @@
 import Script from 'next/script';
 import { SidebarInset, SidebarProvider } from '@ai-chat/components/ui/sidebar';
 import { AppSidebar } from '@ai-chat/components/app-sidebar';
-import { getOAuthUserName } from '@ai-chat/auth/useAuthConfig';
+import { getOAuthUserName } from '@ai-chat/auth/use-auth-config';
 
 export default function ChatLayout({
   children,
@@ -19,7 +19,6 @@ export default function ChatLayout({
         strategy="beforeInteractive"
       />
       <SidebarProvider defaultOpen={isCollapsed}>
-        {/* <AppSidebar user={session.user} /> */}
         <AppSidebar user={userName} />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>

@@ -1,0 +1,33 @@
+{
+    "general": {
+        "loading": "Chargement...",
+        "unableToSignIn": "Impossible de se connecter : {{error}}",
+        "greeting": "Bonjour !",
+        "greetingHelp": "Comment puis-je vous aider aujourd'hui ?"
+    },
+    "chatLog": {},
+    "topbar": {},
+    "sidebar": {
+        "noConversations": "Vos conversations apparaîtront ici dès que vous commencerez à discuter !",
+        "revisitPreviousChats": "Connectez-vous pour sauvegarder et revoir vos conversations précédentes !",
+        "conversations": {
+            "today": "Aujourd'hui",
+            "yesterday": "Hier",
+            "lastSevenDays": "7 derniers jours",
+            "lastThirtyDays": "30 derniers jours",
+            "olderThanLastMonth": "Plus ancien que le mois dernier",
+            "reachedTheEndOfChatHistory": "Vous avez atteint la fin de votre historique de conversation.",
+            "loadingChats": "Chargement des conversations..."
+        },
+        "sideMenu": {
+            "loadingAuthStatus": "Chargement du statut d'authentification",
+            "settings": "Paramètres",
+            "documentation": "Documentation"
+        }
+    },
+    "fullPageStatus": {
+        "userSettings": {}
+    },
+    "markdownRenderer": {},
+    "promptInput": {}
+}

@@ -1,0 +1,33 @@
+{
+    "general": {
+        "loading": "Loading...",
+        "unableToSignIn": "Unable to sign-in: {{error}}",
+        "greeting": "Hello there!",
+        "greetingHelp": "How can I help you today?"
+    },
+    "chatLog": {},
+    "topbar": {},
+    "sidebar": {
+        "noConversations": "Your conversations will appear here once you start chatting!",
+        "revisitPreviousChats": "Login to save and revisit previous chats!",
+        "conversations": {
+            "today": "Today",
+            "yesterday": "Yesterday",
+            "lastSevenDays": "Last 7 days",
+            "lastThirtyDays": "Last 30 days",
+            "olderThanLastMonth": "Older than last month",
+            "reachedTheEndOfChatHistory": "You have reached the end of your chat history.",
+            "loadingChats": "Loading Chats..."
+        },
+        "sideMenu": {
+            "loadingAuthStatus": "Loading auth status",
+            "settings": "Settings",
+            "documentation": "Documentation"
+        }
+    },
+    "fullPageStatus": {
+        "userSettings": {}
+    },
+    "markdownRenderer": {},
+    "promptInput": {}
+}
