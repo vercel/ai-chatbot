@@ -16,7 +16,7 @@ export default function Page() {
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
-  
+
   const [state, formAction] = useActionState<RegisterActionState, FormData>(
     register,
     {
@@ -28,7 +28,7 @@ export default function Page() {
     const timer = setTimeout(() => {
       setShowPlaceholder(false);
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -43,7 +43,10 @@ export default function Page() {
         description: 'Failed validating your submission!',
       });
     } else if (state.status === 'verification_sent') {
-      toast({ type: 'success', description: 'Verification email sent! Check your inbox.' });
+      toast({
+        type: 'success',
+        description: 'Verification email sent! Check your inbox.',
+      });
       setIsSuccessful(true);
       // Redirect to verification page with email parameter
       router.push(`/verify-email?email=${encodeURIComponent(email)}`);
@@ -59,15 +62,15 @@ export default function Page() {
     try {
       setIsGoogleLoading(true);
       console.log('Starting Google sign in...');
-      
+
       // Direct redirect to Google OAuth - this should work now
       const result = await signIn('google', {
         callbackUrl: '/',
         redirect: true, // Explicitly enable redirect
       });
-      
+
       console.log('Sign in result:', result);
-      
+
       // This code won't execute if redirect is successful
       if (result?.error) {
         console.error('Sign in error:', result.error);
@@ -92,10 +95,10 @@ export default function Page() {
       {/* Left side - Illustration */}
       <div className="w-1/2 bg-white relative overflow-hidden flex flex-col justify-center items-center p-12">
         <div className="absolute inset-0 bg-white" />
-        
+
         <div className="relative z-10 mb-8 w-full max-w-md">
-          <Image 
-            src="/images/signup.svg" 
+          <Image
+            src="/images/signup.svg"
             alt="Sign up illustration"
             width={400}
             height={300}
@@ -104,41 +107,42 @@ export default function Page() {
           />
         </div>
       </div>
-      
+
       {/* Right side - Signup Form */}
       <div className="w-1/2 flex items-center justify-center p-12 bg-white">
         <div className="w-full max-w-sm">
           <div className="bg-white rounded-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06),4px_0_6px_-1px_rgba(0,0,0,0.1)] p-4">
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">CoCo Sign Up</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                CoCo Sign Up
+              </h2>
               <p className="text-gray-600 text-lg">Create your account</p>
             </div>
-          
+
             {showPlaceholder && (
               <div className="space-y-4 animate-pulse">
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24" />
+                  <div className="h-10 bg-gray-200 rounded" />
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20" />
+                  <div className="h-10 bg-gray-200 rounded" />
                 </div>
-                <div className="h-10 bg-[#00B24B] rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-[#00B24B] rounded" />
+                <div className="h-10 bg-gray-200 rounded" />
               </div>
             )}
-            
-            <div className={showPlaceholder ? 'opacity-0 absolute' : 'opacity-100'}>
+
+            <div
+              className={showPlaceholder ? 'opacity-0 absolute' : 'opacity-100'}
+            >
               <div className="space-y-4">
                 <AuthForm action={handleSubmit} defaultEmail={email}>
-                  <SubmitButton 
-                    isSuccessful={isSuccessful}
-                    className="w-full h-11"
-                  >
+                  <SubmitButton isSuccessful={isSuccessful}>
                     Sign Up
                   </SubmitButton>
-                  
+
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t border-gray-300" />
@@ -149,7 +153,7 @@ export default function Page() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
@@ -161,7 +165,7 @@ export default function Page() {
                     </span>
                     {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
                   </button>
-                  
+
                   <p className="text-center text-sm text-gray-600 mt-4">
                     {'Already have an account? '}
                     <Link
