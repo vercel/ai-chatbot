@@ -1,12 +1,26 @@
 // app/verify-email/page.tsx
 'use client';
-import { useActionState, useEffect, useState } from 'react';
+import { Suspense, useActionState, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { verifyEmail, type VerifyEmailActionState } from '../actions';
 import { toast } from '@/components/toast';
 import { SubmitButton } from '@/components/submit-button';
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          Loading...
+        </div>
+      }
+    >
+      <VerifyEmailForm />
+    </Suspense>
+  );
+}
+
+function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
