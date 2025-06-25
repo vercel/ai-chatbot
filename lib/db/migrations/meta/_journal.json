@@ -50,6 +50,20 @@
       "when": 1746118166211,
       "tag": "0006_marvelous_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1750808487623,
+      "tag": "0007_foamy_valkyrie",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1750810083370,
+      "tag": "0008_natural_betty_brant",
+      "breakpoints": true
     }
   ]
 }

@@ -9,12 +9,15 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  walletBalance: integer('walletBalance').notNull().default(0),
+  isAdmin: boolean('isAdmin').notNull().default(false),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -56,6 +59,7 @@ export const message = pgTable('Message_v2', {
   parts: json('parts').notNull(),
   attachments: json('attachments').notNull(),
   createdAt: timestamp('createdAt').notNull(),
+  tokenCount: integer('tokenCount'), // Optional: number of tokens for this message
 });
 
 export type DBMessage = InferSelectModel<typeof message>;
