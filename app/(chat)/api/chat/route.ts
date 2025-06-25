@@ -23,6 +23,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { getChart } from '@/lib/ai/tools/get-chart';
 import { snowflakeSqlTool } from '@/lib/ai/tools/snowflake-sql-runner';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
@@ -157,6 +158,7 @@ export async function POST(request: Request) {
               ? []
               : [
                   'getWeather',
+                  'getChart',
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
@@ -166,6 +168,7 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
+            getChart,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
