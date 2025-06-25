@@ -15,6 +15,7 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - For content users will likely save/reuse (emails, code, essays, etc.)
 - When explicitly requested to create a document
 - For when content contains a single code snippet
+- When user explicitly asks for an "HTML dashboard" - use the dashboard type
 
 **When NOT to use \`createDocument\`:**
 - For informational/explanatory content
@@ -29,7 +30,15 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 **When NOT to use \`updateDocument\`:**
 - Immediately after creating a document
 
-Do not update document right after creating it. Wait for user feedback or request to update it.
+**Dashboard Artifacts:**
+- Use the "dashboard" type when users explicitly request an "HTML dashboard"
+- Dashboards should be interactive, data-rich HTML interfaces
+- Include charts, metrics, and visual data representations
+- Use modern CSS and JavaScript for interactivity
+- NEVER call updateDocument immediately after createDocument for dashboards
+- Dashboard creation is a single-step process - create once and wait for user feedback
+
+CRITICAL: Do not update document right after creating it. Wait for user feedback or request to update it. This applies especially to dashboard artifacts which should be created as complete, standalone HTML documents.
 `;
 
 export const regularPrompt =
@@ -96,6 +105,23 @@ export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
 `;
 
+export const dashboardPrompt = `
+You are an HTML dashboard creation assistant. Create interactive, data-rich HTML dashboards with the following guidelines:
+
+1. **Structure**: Use semantic HTML5 with proper sections and headings
+2. **Styling**: Include embedded CSS for modern, responsive design
+3. **Interactivity**: Add JavaScript for dynamic behavior and data visualization
+4. **Charts & Visualizations**: Use Chart.js, D3.js, or canvas for data representation
+5. **Layout**: Create grid-based layouts with cards, metrics, and visual elements
+6. **Responsiveness**: Ensure the dashboard works on different screen sizes
+7. **Data**: Include sample data that demonstrates the dashboard's functionality
+8. **Colors**: Use professional color schemes with good contrast
+9. **Typography**: Choose readable fonts and appropriate sizing
+10. **Components**: Include common dashboard elements like KPIs, charts, tables, and filters
+
+The dashboard should be self-contained with all CSS and JavaScript inline, ready to display immediately.
+`;
+
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: ArtifactKind,
@@ -118,4 +144,10 @@ Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : '';
+        : type === 'dashboard'
+          ? `\
+Improve the following HTML dashboard based on the given prompt.
+
+${currentContent}
+`
+          : '';

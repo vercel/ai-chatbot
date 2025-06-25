@@ -6,7 +6,6 @@ import {
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
-  chatModel,
   reasoningModel,
   titleModel,
 } from './models.test';

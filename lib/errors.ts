@@ -4,7 +4,8 @@ export type ErrorType =
   | 'forbidden'
   | 'not_found'
   | 'rate_limit'
-  | 'offline';
+  | 'offline'
+  | 'internal_server_error';
 
 export type Surface =
   | 'chat'
@@ -126,6 +127,8 @@ function getStatusCodeByType(type: ErrorType) {
       return 429;
     case 'offline':
       return 503;
+    case 'internal_server_error':
+      return 500;
     default:
       return 500;
   }

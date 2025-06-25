@@ -10,7 +10,7 @@ export const snowflakeSqlTool = tool({
       try {
         console.log(`Snowflake SQL tool called with query: ${query}`);
         
-        const response = await fetch( process.env.SNOWFLAKE_API_URL + '/sql', {
+        const response = await fetch( `${process.env.SNOWFLAKE_API_URL}/sql`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

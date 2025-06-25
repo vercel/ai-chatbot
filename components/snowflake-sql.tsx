@@ -1,6 +1,4 @@
 import { DatabaseIcon, CheckIcon, XIcon } from './icons';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
 import { cn } from '@/lib/utils';
 import { memo } from 'react';
 
