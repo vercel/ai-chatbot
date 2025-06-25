@@ -36,6 +36,8 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { creditWallet } from '@/lib/wallet'; // Added for wallet crediting
+import { TOKENS_PER_CREDIT_UNIT } from '@/lib/constants'; // Added for credit calculation
 
 export const maxDuration = 60;
 
@@ -199,11 +201,26 @@ export async function POST(request: Request) {
                       attachments:
                         assistantMessage.experimental_attachments ?? [],
                       createdAt: new Date(),
+                      tokenCount: usage.totalTokens > 0 ? usage.totalTokens : undefined,
                     },
                   ],
                 });
-              } catch (_) {
-                console.error('Failed to save chat');
+
+                // Credit wallet if tokens were used
+                if (usage.totalTokens > 0 && TOKENS_PER_CREDIT_UNIT > 0) {
+                  const creditsToAward = Math.floor(usage.totalTokens / TOKENS_PER_CREDIT_UNIT);
+                  if (creditsToAward > 0) {
+                    try {
+                      await creditWallet(session.user.id, creditsToAward);
+                      console.log(`Awarded ${creditsToAward} credits to user ${session.user.id} for ${usage.totalTokens} tokens.`);
+                    } catch (creditError) {
+                      console.error(`Failed to credit wallet for user ${session.user.id}:`, creditError);
+                      // Potentially add to a retry queue or log for manual intervention
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error('Failed to save chat or process tokens:', error);
               }
             }
           },
