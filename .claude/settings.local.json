@@ -7,7 +7,8 @@
       "Bash(grep:*)",
       "Bash(rg:*)",
       "Bash(rm:*)",
-      "Bash(pnpm build)"
+      "Bash(pnpm build)",
+      "Bash(pnpm format:*)"
     ],
     "deny": []
   }

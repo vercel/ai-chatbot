@@ -37,22 +37,18 @@ function renderToolCall(toolName: string, args: any, isReadonly: boolean) {
   switch (toolName) {
     case 'getWeather':
       return <Weather />;
-    
+
     case 'getChart':
       return <Chart args={args} />;
-    
+
     case 'createDocument':
       return <DocumentPreview isReadonly={isReadonly} args={args} />;
-    
+
     case 'updateDocument':
       return (
-        <DocumentToolCall
-          type="update"
-          args={args}
-          isReadonly={isReadonly}
-        />
+        <DocumentToolCall type="update" args={args} isReadonly={isReadonly} />
       );
-    
+
     case 'requestSuggestions':
       return (
         <DocumentToolCall
@@ -61,22 +57,13 @@ function renderToolCall(toolName: string, args: any, isReadonly: boolean) {
           isReadonly={isReadonly}
         />
       );
-    
+
     case 'snowflakeSqlTool':
-      return (
-        <SnowflakeSqlCall
-          args={args}
-          isReadonly={isReadonly}
-        />
-      );
-    
+      return <SnowflakeSqlCall args={args} isReadonly={isReadonly} />;
+
     default:
       return (
-        <McpToolCall
-          toolName={toolName}
-          args={args}
-          isReadonly={isReadonly}
-        />
+        <McpToolCall toolName={toolName} args={args} isReadonly={isReadonly} />
       );
   }
 }

@@ -7,39 +7,43 @@ import type { DBMessage } from '@/lib/db/schema';
 // Helper function to extract content from message parts
 const extractContentFromParts = (parts: any[]): string => {
   if (!parts || !Array.isArray(parts)) return '';
-  
+
   return parts
-    .filter(part => part.type === 'text')
-    .map(part => part.text)
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
     .join(' ')
     .trim();
 };
 
 // Helper function to extract tool invocations from message parts
-const extractToolInvocationsFromParts = (parts: any[]): Array<{
+const extractToolInvocationsFromParts = (
+  parts: any[],
+): Array<{
   toolName: string;
   args: any;
   result?: any;
 }> => {
   if (!parts || !Array.isArray(parts)) return [];
-  
+
   return parts
-    .filter(part => part.type === 'tool-call')
-    .map(part => ({
+    .filter((part) => part.type === 'tool-call')
+    .map((part) => ({
       toolName: part.toolName,
       args: part.args,
-      result: part.result
+      result: part.result,
     }));
 };
 
 // Helper function to convert database messages to dashboard format
-const convertDbMessagesToDashboardFormat = (dbMessages: DBMessage[]): DashboardContext['messages'] => {
-  return dbMessages.map(msg => ({
+const convertDbMessagesToDashboardFormat = (
+  dbMessages: DBMessage[],
+): DashboardContext['messages'] => {
+  return dbMessages.map((msg) => ({
     id: msg.id,
     role: msg.role as 'user' | 'assistant',
     content: extractContentFromParts(msg.parts as any[]),
     createdAt: msg.createdAt,
-    toolInvocations: extractToolInvocationsFromParts(msg.parts as any[])
+    toolInvocations: extractToolInvocationsFromParts(msg.parts as any[]),
   }));
 };
 
@@ -125,33 +129,41 @@ const createFallbackDashboard = (title: string, context: DashboardContext) => `
                 <div>Total Messages</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${context.messages.filter(m => m.role === 'user').length}</div>
+                <div class="stat-number">${context.messages.filter((m) => m.role === 'user').length}</div>
                 <div>User Messages</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${context.messages.filter(m => m.role === 'assistant').length}</div>
+                <div class="stat-number">${context.messages.filter((m) => m.role === 'assistant').length}</div>
                 <div>AI Responses</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${context.messages.filter(m => m.toolInvocations?.length).length}</div>
+                <div class="stat-number">${context.messages.filter((m) => m.toolInvocations?.length).length}</div>
                 <div>Tool Uses</div>
             </div>
         </div>
 
         <div class="message-list">
             <h2>Conversation Timeline</h2>
-            ${context.messages.map((msg, index) => `
+            ${context.messages
+              .map(
+                (msg, index) => `
                 <div class="message ${msg.role}">
                     <strong>${msg.role === 'user' ? 'User' : 'Assistant'}:</strong>
                     <p>${msg.content}</p>
-                    ${msg.toolInvocations ? `
+                    ${
+                      msg.toolInvocations
+                        ? `
                         <div style="background: #e9ecef; padding: 10px; margin-top: 10px; border-radius: 4px;">
-                            <strong>Tools Used:</strong> ${msg.toolInvocations.map(t => t.toolName).join(', ')}
+                            <strong>Tools Used:</strong> ${msg.toolInvocations.map((t) => t.toolName).join(', ')}
                         </div>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     <div class="timestamp">${msg.createdAt?.toLocaleString() || 'Now'}</div>
                 </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
         </div>
     </div>
 </body>
@@ -181,15 +193,23 @@ Chat Context:
 - Total Messages: ${context.messages.length}
 
 Messages Data:
-${context.messages.map((msg, index) => `
+${context.messages
+  .map(
+    (msg, index) => `
 Message ${index + 1} (${msg.role}):
 ${msg.content}
-${msg.toolInvocations ? `
+${
+  msg.toolInvocations
+    ? `
 Tool Invocations:
-${msg.toolInvocations.map(tool => `- ${tool.toolName}: ${JSON.stringify(tool.args)}`).join('\n')}
-` : ''}
+${msg.toolInvocations.map((tool) => `- ${tool.toolName}: ${JSON.stringify(tool.args)}`).join('\n')}
+`
+    : ''
+}
 ---
-`).join('\n')}
+`,
+  )
+  .join('\n')}
 
 IMPORTANT: Generate a COMPLETE, SELF-CONTAINED HTML document that includes:
 
@@ -264,24 +284,24 @@ export const dashboardDocumentHandler = createDocumentHandler<'dashboard'>({
 
     // Fetch actual messages from the database using the chatId
     let context: DashboardContext;
-    
+
     try {
       const dbMessages = await getMessagesByChatId({ id: chatId });
-      
+
       // Convert database messages to dashboard format
       const messages = convertDbMessagesToDashboardFormat(dbMessages);
-      
+
       context = {
         chatId,
-        messages
+        messages,
       };
     } catch (error) {
       console.error('Failed to fetch messages for dashboard:', error);
-      
+
       // Fallback to empty context if database fetch fails
       context = {
         chatId,
-        messages: []
+        messages: [],
       };
     }
 
@@ -328,10 +348,13 @@ CRITICAL REQUIREMENTS:
     }
 
     // Fallback: If AI didn't generate proper HTML, use our fallback
-    if (!draftContent.includes('<!DOCTYPE html>') && !draftContent.includes('<html')) {
+    if (
+      !draftContent.includes('<!DOCTYPE html>') &&
+      !draftContent.includes('<html')
+    ) {
       console.log('AI did not generate valid HTML, using fallback dashboard');
       draftContent = createFallbackDashboard(title, context);
-      
+
       // Stream the fallback content
       dataStream.writeData({
         type: 'text-delta',
@@ -346,7 +369,7 @@ CRITICAL REQUIREMENTS:
 
     // Parse existing HTML to understand current dashboard context
     const existingHtml = document.content;
-    
+
     const updatePrompt = `
 You are updating an existing HTML dashboard. Here is the current dashboard HTML:
 

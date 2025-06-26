@@ -11,7 +11,11 @@ interface MessageContainerProps {
   children: React.ReactNode;
 }
 
-export function MessageContainer({ message, mode, children }: MessageContainerProps) {
+export function MessageContainer({
+  message,
+  mode,
+  children,
+}: MessageContainerProps) {
   return (
     <AnimatePresence>
       <motion.div

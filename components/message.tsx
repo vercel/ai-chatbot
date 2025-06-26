@@ -16,11 +16,7 @@ const PurePreviewMessage = (props: BaseMessageProps) => {
   return (
     <MessageContainer message={props.message} mode={mode}>
       <MessageAvatar role={props.message.role} />
-      <MessageContent
-        {...props}
-        mode={mode}
-        setMode={setMode}
-      />
+      <MessageContent {...props} mode={mode} setMode={setMode} />
     </MessageContainer>
   );
 };

@@ -8,7 +8,10 @@ interface MessageAttachmentsProps {
 }
 
 export function MessageAttachments({ message }: MessageAttachmentsProps) {
-  if (!message.experimental_attachments || message.experimental_attachments.length === 0) {
+  if (
+    !message.experimental_attachments ||
+    message.experimental_attachments.length === 0
+  ) {
     return null;
   }
 
@@ -18,10 +21,7 @@ export function MessageAttachments({ message }: MessageAttachmentsProps) {
       className="flex flex-row justify-end gap-2"
     >
       {message.experimental_attachments.map((attachment) => (
-        <PreviewAttachment
-          key={attachment.url}
-          attachment={attachment}
-        />
+        <PreviewAttachment key={attachment.url} attachment={attachment} />
       ))}
     </div>
   );

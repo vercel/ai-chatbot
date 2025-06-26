@@ -38,9 +38,13 @@ export function Chart({ args, result }: ChartProps) {
       <div className="border border-red-200 rounded-lg p-4 bg-red-50">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-4 h-4 bg-red-500 rounded" />
-          <div className="text-sm font-medium text-red-800">Chart Generation Failed</div>
+          <div className="text-sm font-medium text-red-800">
+            Chart Generation Failed
+          </div>
         </div>
-        <p className="text-sm text-red-600">{result.error || 'Unknown error occurred'}</p>
+        <p className="text-sm text-red-600">
+          {result.error || 'Unknown error occurred'}
+        </p>
       </div>
     );
   }
@@ -52,25 +56,27 @@ export function Chart({ args, result }: ChartProps) {
         <div className="w-4 h-4 bg-green-500 rounded" />
         <div className="text-sm font-medium">Chart Generated</div>
       </div>
-      
+
       <div className="relative">
         {imageLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted rounded">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         )}
-        
+
         {imageError ? (
           <div className="w-full h-64 bg-muted rounded flex items-center justify-center">
-            <p className="text-sm text-muted-foreground">Failed to load chart image</p>
+            <p className="text-sm text-muted-foreground">
+              Failed to load chart image
+            </p>
           </div>
         ) : (
           <img
             src={result.imageUrl}
             alt="Generated Chart"
             className={cn(
-              "w-full max-w-2xl mx-auto rounded transition-opacity duration-200",
-              imageLoading ? "opacity-0" : "opacity-100"
+              'w-full max-w-2xl mx-auto rounded transition-opacity duration-200',
+              imageLoading ? 'opacity-0' : 'opacity-100',
             )}
             onLoad={() => setImageLoading(false)}
             onError={() => {
@@ -80,7 +86,7 @@ export function Chart({ args, result }: ChartProps) {
           />
         )}
       </div>
-      
+
       {result.chartConfig && (
         <details className="mt-4">
           <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">

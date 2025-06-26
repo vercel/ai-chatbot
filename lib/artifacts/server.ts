@@ -100,4 +100,10 @@ export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   dashboardDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet', 'dashboard'] as const;
+export const artifactKinds = [
+  'text',
+  'code',
+  'image',
+  'sheet',
+  'dashboard',
+] as const;

@@ -8,7 +8,11 @@ interface ReasoningPartProps {
   isLoading: boolean;
 }
 
-export function ReasoningPart({ partKey, reasoning, isLoading }: ReasoningPartProps) {
+export function ReasoningPart({
+  partKey,
+  reasoning,
+  isLoading,
+}: ReasoningPartProps) {
   return (
     <MessageReasoning
       key={partKey}

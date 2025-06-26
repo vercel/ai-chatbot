@@ -18,9 +18,13 @@ interface DashboardArtifactMetadata {
   messagesCount?: number;
 }
 
-export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMetadata>({
+export const dashboardArtifact = new Artifact<
+  'dashboard',
+  DashboardArtifactMetadata
+>({
   kind: 'dashboard',
-  description: 'Create interactive HTML dashboards from chat conversations and data.',
+  description:
+    'Create interactive HTML dashboards from chat conversations and data.',
   initialize: async ({ documentId, setMetadata }) => {
     setMetadata({
       chatId: undefined,
@@ -29,7 +33,9 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
     if (streamPart.type === 'dashboard-metadata') {
-      const parsedContent = JSON.parse(streamPart.content as string) as DashboardArtifactMetadata;
+      const parsedContent = JSON.parse(
+        streamPart.content as string,
+      ) as DashboardArtifactMetadata;
       setMetadata((metadata) => ({
         ...metadata,
         ...parsedContent,
@@ -63,9 +69,11 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
   }) => {
     // Show HTML tab during generation, switch to preview when complete
     const isGenerating = status === 'streaming';
-    const [userViewMode, setUserViewMode] = useState<'preview' | 'code' | null>(null);
+    const [userViewMode, setUserViewMode] = useState<'preview' | 'code' | null>(
+      null,
+    );
     const [justFinishedGenerating, setJustFinishedGenerating] = useState(false);
-    
+
     // Track when generation completes to show a brief notification
     useEffect(() => {
       if (!isGenerating && status !== 'idle' && userViewMode === null) {
@@ -74,7 +82,7 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
         return () => clearTimeout(timer);
       }
     }, [isGenerating, status, userViewMode]);
-    
+
     // Determine actual view mode based on generation status and user preference
     const viewMode = (() => {
       if (isGenerating) return 'code'; // Always show HTML during generation
@@ -99,15 +107,15 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
       contentStart: content?.substring(0, 100),
       status,
       isGenerating,
-      viewMode
+      viewMode,
     });
 
     // Ensure we have valid HTML content
-    const hasValidHtml = content && (
-      content.includes('<!DOCTYPE html>') || 
-      content.includes('<html') || 
-      content.includes('<body')
-    );
+    const hasValidHtml =
+      content &&
+      (content.includes('<!DOCTYPE html>') ||
+        content.includes('<html') ||
+        content.includes('<body'));
 
     return (
       <div className="flex flex-col h-full w-full">
@@ -117,7 +125,8 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
               {metadata ? (
                 <>
                   Dashboard: {metadata.messagesCount} messages
-                  {metadata.chatId && ` | Chat: ${metadata.chatId.slice(0, 8)}...`}
+                  {metadata.chatId &&
+                    ` | Chat: ${metadata.chatId.slice(0, 8)}...`}
                 </>
               ) : (
                 'Interactive Dashboard'
@@ -140,10 +149,10 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
               onClick={() => setUserViewMode('preview')}
               disabled={isGenerating}
               className={`px-3 py-1 text-xs rounded-md flex items-center gap-1 font-medium transition-colors ${
-                viewMode === 'preview' 
-                  ? 'bg-blue-500 text-white' 
-                  : isGenerating 
-                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
+                viewMode === 'preview'
+                  ? 'bg-blue-500 text-white'
+                  : isGenerating
+                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -154,17 +163,20 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
               type="button"
               onClick={() => setUserViewMode('code')}
               className={`px-3 py-1 text-xs rounded-md flex items-center gap-1 font-medium transition-colors ${
-                viewMode === 'code' 
-                  ? 'bg-blue-500 text-white' 
+                viewMode === 'code'
+                  ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <CodeIcon size={14} />
-              HTML {isGenerating && <span className="text-xs opacity-75">(generating...)</span>}
+              HTML{' '}
+              {isGenerating && (
+                <span className="text-xs opacity-75">(generating...)</span>
+              )}
             </button>
           </div>
         </div>
-        
+
         <div className="flex-1 relative">
           {viewMode === 'preview' ? (
             <div className="w-full h-full bg-white rounded-lg border shadow-sm overflow-hidden">
@@ -174,10 +186,10 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
                   className="w-full h-full border-0"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
                   title="Dashboard Preview"
-                  style={{ 
+                  style={{
                     minHeight: '600px',
                     width: '100%',
-                    height: '100%'
+                    height: '100%',
                   }}
                   loading="lazy"
                 />
@@ -185,7 +197,9 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
                 <div className="flex items-center justify-center h-full bg-gray-50">
                   <div className="text-center text-gray-500">
                     <div className="text-lg mb-2">⚠️ Invalid HTML Content</div>
-                    <div className="text-sm">Switch to HTML view to see the raw content</div>
+                    <div className="text-sm">
+                      Switch to HTML view to see the raw content
+                    </div>
                   </div>
                 </div>
               )}
@@ -194,10 +208,15 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
             <div className="w-full h-full border rounded-lg overflow-hidden bg-gray-50">
               <div className="h-full overflow-auto">
                 <div className="text-xs p-2 bg-blue-50 border-b text-blue-700">
-                  Debug: Content length: {content?.length || 0} | View mode: {viewMode} | Is generating: {isGenerating.toString()}
+                  Debug: Content length: {content?.length || 0} | View mode:{' '}
+                  {viewMode} | Is generating: {isGenerating.toString()}
                 </div>
                 <pre className="text-sm p-4 text-gray-800 whitespace-pre-wrap break-words font-mono leading-relaxed">
-                  {content || getDocumentContentById(currentVersionIndex) || (isGenerating ? 'Generating HTML...' : 'No content available')}
+                  {content ||
+                    getDocumentContentById(currentVersionIndex) ||
+                    (isGenerating
+                      ? 'Generating HTML...'
+                      : 'No content available')}
                 </pre>
               </div>
             </div>

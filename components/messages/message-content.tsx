@@ -38,7 +38,7 @@ export function MessageContent({
       })}
     >
       <MessageAttachments message={message} />
-      
+
       <MessageParts
         message={message}
         mode={mode}

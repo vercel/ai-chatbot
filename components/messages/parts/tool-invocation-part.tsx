@@ -13,7 +13,10 @@ interface ToolInvocationPartProps {
   isReadonly: boolean;
 }
 
-export function ToolInvocationPart({ toolInvocation, isReadonly }: ToolInvocationPartProps) {
+export function ToolInvocationPart({
+  toolInvocation,
+  isReadonly,
+}: ToolInvocationPartProps) {
   const { toolName, toolCallId, state } = toolInvocation;
 
   if (state === 'call') {

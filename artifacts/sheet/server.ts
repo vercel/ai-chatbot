@@ -9,19 +9,23 @@ import { z } from 'zod';
 // Helper function to extract content from message parts
 const extractContentFromParts = (parts: any[]): string => {
   if (!parts || !Array.isArray(parts)) return '';
-  
+
   return parts
-    .filter(part => part.type === 'text')
-    .map(part => part.text)
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
     .join(' ')
     .trim();
 };
 
 // Helper function to convert database messages to context
 const convertDbMessagesToContext = (dbMessages: DBMessage[]): string => {
-  return dbMessages.map(msg => `
+  return dbMessages
+    .map(
+      (msg) => `
 ${msg.role === 'user' ? 'User' : 'Assistant'}: ${extractContentFromParts(msg.parts as any[])}
-  `).join('\n');
+  `,
+    )
+    .join('\n');
 };
 
 export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
@@ -31,10 +35,10 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
     // Fetch actual messages from the database using the chatId
     let contextPrompt = title;
-    
+
     try {
       const dbMessages = await getMessagesByChatId({ id: chatId });
-      
+
       if (dbMessages.length > 0) {
         const conversationContext = convertDbMessagesToContext(dbMessages);
         contextPrompt = `${title}

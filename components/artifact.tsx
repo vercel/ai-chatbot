@@ -270,7 +270,7 @@ function PureArtifact({
             top: 0,
             left: 0,
             zIndex: 50,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
           }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
@@ -281,7 +281,7 @@ function PureArtifact({
               style={{
                 position: 'fixed',
                 backgroundColor: 'hsl(var(--background))',
-                height: '100dvh'
+                height: '100dvh',
               }}
               initial={{
                 width: isSidebarOpen ? windowWidth - 256 : windowWidth,
@@ -302,7 +302,7 @@ function PureArtifact({
                 width: '400px',
                 backgroundColor: 'hsl(var(--muted))',
                 height: '100dvh',
-                flexShrink: 0
+                flexShrink: 0,
               }}
               initial={{ opacity: 0, x: 10, scale: 1 }}
               animate={{
@@ -333,7 +333,7 @@ function PureArtifact({
                       width: '400px',
                       top: 0,
                       backgroundColor: 'rgba(24, 24, 27, 0.5)',
-                      zIndex: 50
+                      zIndex: 50,
                     }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -383,7 +383,7 @@ function PureArtifact({
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'scroll',
-              borderLeft: '1px solid hsl(var(--border))'
+              borderLeft: '1px solid hsl(var(--border))',
             }}
             initial={
               isMobile

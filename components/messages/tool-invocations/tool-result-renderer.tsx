@@ -19,9 +19,7 @@ export function ToolResultRenderer({
   isReadonly,
 }: ToolResultRendererProps) {
   return (
-    <div key={toolCallId}>
-      {renderToolResult(toolName, result, isReadonly)}
-    </div>
+    <div key={toolCallId}>{renderToolResult(toolName, result, isReadonly)}</div>
   );
 }
 
@@ -29,18 +27,13 @@ function renderToolResult(toolName: string, result: any, isReadonly: boolean) {
   switch (toolName) {
     case 'getWeather':
       return <Weather weatherAtLocation={result} />;
-    
+
     case 'getChart':
       return <Chart result={result} />;
-    
+
     case 'createDocument':
-      return (
-        <DocumentPreview
-          isReadonly={isReadonly}
-          result={result}
-        />
-      );
-    
+      return <DocumentPreview isReadonly={isReadonly} result={result} />;
+
     case 'updateDocument':
       return (
         <DocumentToolResult
@@ -49,7 +42,7 @@ function renderToolResult(toolName: string, result: any, isReadonly: boolean) {
           isReadonly={isReadonly}
         />
       );
-    
+
     case 'requestSuggestions':
       return (
         <DocumentToolResult
@@ -58,15 +51,10 @@ function renderToolResult(toolName: string, result: any, isReadonly: boolean) {
           isReadonly={isReadonly}
         />
       );
-    
+
     case 'snowflakeSqlTool':
-      return (
-        <SnowflakeSqlResult
-          result={result}
-          isReadonly={isReadonly}
-        />
-      );
-    
+      return <SnowflakeSqlResult result={result} isReadonly={isReadonly} />;
+
     default:
       return (
         <McpToolResult
