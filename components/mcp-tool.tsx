@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { JSONValue } from 'ai';
+import type { JSONValue } from 'ai';
 import { LoaderIcon, CheckIcon, XIcon, ChevronDownIcon } from './icons';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';

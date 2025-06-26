@@ -168,7 +168,7 @@ export async function POST(request: Request) {
           tools: {
             getWeather,
             getChart,
-            createDocument: createDocument({ session, dataStream }),
+            createDocument: createDocument({ session, dataStream, chatId: id }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
               session,

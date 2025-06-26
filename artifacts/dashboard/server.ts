@@ -1,6 +1,47 @@
 import { smoothStream, streamText } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
+import { getMessagesByChatId } from '@/lib/db/queries';
+import type { DBMessage } from '@/lib/db/schema';
+
+// Helper function to extract content from message parts
+const extractContentFromParts = (parts: any[]): string => {
+  if (!parts || !Array.isArray(parts)) return '';
+  
+  return parts
+    .filter(part => part.type === 'text')
+    .map(part => part.text)
+    .join(' ')
+    .trim();
+};
+
+// Helper function to extract tool invocations from message parts
+const extractToolInvocationsFromParts = (parts: any[]): Array<{
+  toolName: string;
+  args: any;
+  result?: any;
+}> => {
+  if (!parts || !Array.isArray(parts)) return [];
+  
+  return parts
+    .filter(part => part.type === 'tool-call')
+    .map(part => ({
+      toolName: part.toolName,
+      args: part.args,
+      result: part.result
+    }));
+};
+
+// Helper function to convert database messages to dashboard format
+const convertDbMessagesToDashboardFormat = (dbMessages: DBMessage[]): DashboardContext['messages'] => {
+  return dbMessages.map(msg => ({
+    id: msg.id,
+    role: msg.role as 'user' | 'assistant',
+    content: extractContentFromParts(msg.parts as any[]),
+    createdAt: msg.createdAt,
+    toolInvocations: extractToolInvocationsFromParts(msg.parts as any[])
+  }));
+};
 
 const createFallbackDashboard = (title: string, context: DashboardContext) => `
 <!DOCTYPE html>
@@ -218,68 +259,31 @@ Example structure:
 
 export const dashboardDocumentHandler = createDocumentHandler<'dashboard'>({
   kind: 'dashboard',
-  onCreateDocument: async ({ title, dataStream, session }) => {
+  onCreateDocument: async ({ title, dataStream, session, chatId }) => {
     let draftContent = '';
 
-    // Extract chat context from title which may contain chatId
-    // Parse title to see if it contains a chat ID pattern
-    const chatIdMatch = title.match(/chat[:\s]+([a-fA-F0-9-]{36})/i);
-    const extractedChatId = chatIdMatch ? chatIdMatch[1] : undefined;
-
-    // Create context with sample data (in real implementation, would fetch from database)
-    const context: DashboardContext = {
-      chatId: extractedChatId || 'current-dashboard',
-      messages: [
-        {
-          id: '1',
-          role: 'user',
-          content: 'I need help analyzing our sales data from the last quarter. Can you create some SQL queries to extract key metrics?',
-          createdAt: new Date(Date.now() - 3600000),
-        },
-        {
-          id: '2', 
-          role: 'assistant',
-          content: 'I\'ll help you analyze the sales data. Let me create some SQL queries to extract key metrics.',
-          createdAt: new Date(Date.now() - 3000000),
-          toolInvocations: [
-            {
-              toolName: 'snowflakeSqlTool',
-              args: { query: 'SELECT COUNT(*) as total_sales, SUM(amount) as total_revenue FROM sales WHERE created_at >= \'2024-01-01\'' },
-              result: { rows: [{ total_sales: 1250, total_revenue: 485000 }] }
-            }
-          ]
-        },
-        {
-          id: '3',
-          role: 'user', 
-          content: 'Great! Can you also break down the sales by region?',
-          createdAt: new Date(Date.now() - 2400000),
-        },
-        {
-          id: '4',
-          role: 'assistant',
-          content: 'I\'ll break down the sales data by region for you.',
-          createdAt: new Date(Date.now() - 1800000),
-          toolInvocations: [
-            {
-              toolName: 'snowflakeSqlTool', 
-              args: { query: 'SELECT region, COUNT(*) as sales_count, SUM(amount) as revenue FROM sales WHERE created_at >= \'2024-01-01\' GROUP BY region ORDER BY revenue DESC' },
-              result: { rows: [
-                { region: 'North America', sales_count: 650, revenue: 285000 },
-                { region: 'Europe', sales_count: 400, revenue: 125000 },
-                { region: 'Asia', sales_count: 200, revenue: 75000 }
-              ]}
-            }
-          ]
-        },
-        {
-          id: '5',
-          role: 'user',
-          content: 'Perfect! Now I have a good overview of our performance.',
-          createdAt: new Date(Date.now() - 600000),
-        }
-      ]
-    };
+    // Fetch actual messages from the database using the chatId
+    let context: DashboardContext;
+    
+    try {
+      const dbMessages = await getMessagesByChatId({ id: chatId });
+      
+      // Convert database messages to dashboard format
+      const messages = convertDbMessagesToDashboardFormat(dbMessages);
+      
+      context = {
+        chatId,
+        messages
+      };
+    } catch (error) {
+      console.error('Failed to fetch messages for dashboard:', error);
+      
+      // Fallback to empty context if database fetch fails
+      context = {
+        chatId,
+        messages: []
+      };
+    }
 
     // Send metadata to client
     dataStream.writeData({

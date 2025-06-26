@@ -1,7 +1,6 @@
 import { Artifact } from '@/components/create-artifact';
 import { DiffView } from '@/components/diffview';
 import { DocumentSkeleton } from '@/components/document-skeleton';
-import { CodeBlock } from '@/components/code-block';
 import {
   ClockRewind,
   CopyIcon,
@@ -94,6 +93,15 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
       return <DiffView oldContent={oldContent} newContent={newContent} />;
     }
 
+    // Debug: Log the content value
+    console.log('Dashboard content debug:', {
+      contentLength: content?.length,
+      contentStart: content?.substring(0, 100),
+      status,
+      isGenerating,
+      viewMode
+    });
+
     // Ensure we have valid HTML content
     const hasValidHtml = content && (
       content.includes('<!DOCTYPE html>') || 
@@ -128,6 +136,7 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
           </div>
           <div className="flex gap-1">
             <button
+              type="button"
               onClick={() => setUserViewMode('preview')}
               disabled={isGenerating}
               className={`px-3 py-1 text-xs rounded-md flex items-center gap-1 font-medium transition-colors ${
@@ -142,6 +151,7 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
               Preview
             </button>
             <button
+              type="button"
               onClick={() => setUserViewMode('code')}
               className={`px-3 py-1 text-xs rounded-md flex items-center gap-1 font-medium transition-colors ${
                 viewMode === 'code' 
@@ -182,7 +192,14 @@ export const dashboardArtifact = new Artifact<'dashboard', DashboardArtifactMeta
             </div>
           ) : (
             <div className="w-full h-full border rounded-lg overflow-hidden bg-gray-50">
-              <CodeBlock code={content} language="html" />
+              <div className="h-full overflow-auto">
+                <div className="text-xs p-2 bg-blue-50 border-b text-blue-700">
+                  Debug: Content length: {content?.length || 0} | View mode: {viewMode} | Is generating: {isGenerating.toString()}
+                </div>
+                <pre className="text-sm p-4 text-gray-800 whitespace-pre-wrap break-words font-mono leading-relaxed">
+                  {content || getDocumentContentById(currentVersionIndex) || (isGenerating ? 'Generating HTML...' : 'No content available')}
+                </pre>
+              </div>
             </div>
           )}
         </div>
