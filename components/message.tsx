@@ -1,17 +1,14 @@
 'use client';
-
-import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall, DocumentToolResult } from './document';
+import { DocumentToolCall } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
-import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -19,6 +16,8 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { ChatMessage } from '@/lib/types';
+import equal from 'fast-deep-equal';
 
 const PurePreviewMessage = ({
   chatId,
@@ -26,20 +25,22 @@ const PurePreviewMessage = ({
   vote,
   isLoading,
   setMessages,
-  reload,
+  regenerate,
   isReadonly,
   requiresScrollPadding,
 }: {
   chatId: string;
-  message: UIMessage;
+  message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
+  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+
+  const fileParts = message.parts.filter((part) => part.type === 'file');
 
   return (
     <AnimatePresence>
@@ -72,20 +73,23 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {message.experimental_attachments &&
-              message.experimental_attachments.length > 0 && (
-                <div
-                  data-testid={`message-attachments`}
-                  className="flex flex-row justify-end gap-2"
-                >
-                  {message.experimental_attachments.map((attachment) => (
-                    <PreviewAttachment
-                      key={attachment.url}
-                      attachment={attachment}
-                    />
-                  ))}
-                </div>
-              )}
+            {fileParts.length > 0 && (
+              <div
+                data-testid="message-files"
+                className="flex flex-row justify-end gap-2"
+              >
+                {fileParts.map((filePart) => (
+                  <PreviewAttachment
+                    key={filePart.url}
+                    attachment={{
+                      url: filePart.url,
+                      name: filePart.filename ?? '',
+                      contentType: filePart.mediaType,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
 
             {message.parts?.map((part, index) => {
               const { type } = part;
@@ -96,7 +100,7 @@ const PurePreviewMessage = ({
                   <MessageReasoning
                     key={key}
                     isLoading={isLoading}
-                    reasoning={part.reasoning}
+                    reasoning={part.text}
                   />
                 );
               }
@@ -146,76 +150,103 @@ const PurePreviewMessage = ({
                         message={message}
                         setMode={setMode}
                         setMessages={setMessages}
-                        reload={reload}
+                        regenerate={regenerate}
                       />
                     </div>
                   );
                 }
               }
 
-              if (type === 'tool-invocation') {
-                const { toolInvocation } = part;
-                const { toolName, toolCallId, state } = toolInvocation;
+              if (type === 'tool-getWeather') {
+                const { toolCallId, state } = part;
 
-                if (state === 'call') {
-                  const { args } = toolInvocation;
+                if (state !== 'output-available') {
+                  return <Weather key={toolCallId} />;
+                }
+              }
+
+              if (type === 'tool-createDocument') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
 
                   return (
-                    <div
+                    <DocumentPreview
                       key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'getWeather' ? (
-                        <Weather />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args} />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall
-                          type="update"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          args={args}
-                          isReadonly={isReadonly}
-                        />
-                      ) : null}
-                    </div>
+                      isReadonly={isReadonly}
+                      args={input}
+                    />
                   );
                 }
 
-                if (state === 'result') {
-                  const { result } = toolInvocation;
+                if (state === 'output-available') {
+                  const { output } = part;
 
                   return (
-                    <div key={toolCallId}>
-                      {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result} />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview
-                          isReadonly={isReadonly}
-                          result={result}
-                        />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolResult
-                          type="update"
-                          result={result}
-                          isReadonly={isReadonly}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolResult
-                          type="request-suggestions"
-                          result={result}
-                          isReadonly={isReadonly}
-                        />
-                      ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
-                      )}
-                    </div>
+                    <DocumentPreview
+                      key={toolCallId}
+                      isReadonly={isReadonly}
+                      result={output}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-updateDocument') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+
+                  return (
+                    <DocumentToolCall
+                      key={toolCallId}
+                      type="update"
+                      // @ts-ignore todo: fix type mismatch
+                      args={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output } = part;
+
+                  return (
+                    <DocumentPreview
+                      key={toolCallId}
+                      isReadonly={isReadonly}
+                      result={output}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-requestSuggestions') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+
+                  return (
+                    <DocumentPreview
+                      key={toolCallId}
+                      isReadonly={isReadonly}
+                      args={input}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output } = part;
+
+                  return (
+                    <DocumentPreview
+                      key={toolCallId}
+                      isReadonly={isReadonly}
+                      result={output}
+                    />
                   );
                 }
               }
@@ -247,7 +278,7 @@ export const PreviewMessage = memo(
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
 
-    return true;
+    return false;
   },
 );
 

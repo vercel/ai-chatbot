@@ -1,9 +1,11 @@
 import {
-  appendClientMessage,
-  appendResponseMessages,
-  createDataStream,
+  convertToModelMessages,
+  createUIMessageStream,
+  JsonToSseTransformStream,
   smoothStream,
+  stepCountIs,
   streamText,
+  type UIMessage,
 } from 'ai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
@@ -13,53 +15,26 @@ import {
   getChatById,
   getMessageCountByUserId,
   getMessagesByChatId,
-  getStreamIdsByChatId,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import { generateUUID, getTrailingMessageId } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
-import {
-  createResumableStreamContext,
-  type ResumableStreamContext,
-} from 'resumable-stream';
-import { after } from 'next/server';
-import type { Chat } from '@/lib/db/schema';
-import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { createDocument } from '@/lib/ai/tools/create-document';
+import { updateDocument } from '@/lib/ai/tools/update-document';
+import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
+import { generateTitleFromUserMessage } from '../../actions';
+import { generateUUID } from '@/lib/utils';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import type { ChatMessage } from '@/lib/types';
+import { createResumableStreamContext } from 'resumable-stream';
+import { after } from 'next/server';
 
 export const maxDuration = 60;
-
-let globalStreamContext: ResumableStreamContext | null = null;
-
-function getStreamContext() {
-  if (!globalStreamContext) {
-    try {
-      globalStreamContext = createResumableStreamContext({
-        waitUntil: after,
-      });
-    } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
-        console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
-        );
-      } else {
-        console.error(error);
-      }
-    }
-  }
-
-  return globalStreamContext;
-}
 
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
@@ -72,6 +47,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const streamContext = createResumableStreamContext({
+      waitUntil: after,
+    });
+
     const { id, message, selectedChatModel, selectedVisibilityType } =
       requestBody;
 
@@ -89,7 +68,7 @@ export async function POST(request: Request) {
     });
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse();
+      return new ChatSDKError('forbidden:api').toResponse();
     }
 
     const chat = await getChatById({ id });
@@ -113,12 +92,6 @@ export async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
-      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
-      messages: previousMessages,
-      message,
-    });
-
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
@@ -135,7 +108,7 @@ export async function POST(request: Request) {
           id: message.id,
           role: 'user',
           parts: message.parts,
-          attachments: message.experimental_attachments ?? [],
+          attachments: [],
           createdAt: new Date(),
         },
       ],
@@ -144,195 +117,72 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    const stream = createDataStream({
-      execute: (dataStream) => {
+    // @ts-expect-error type mismatch converting from DBMessage to UIMessage
+    const messages: UIMessage[] = [...previousMessages, message];
+
+    const stream = createUIMessageStream({
+      execute: ({ writer: streamWriter }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
+          messages: convertToModelMessages(messages),
+          stopWhen: stepCountIs(5),
+          experimental_transform: [smoothStream()],
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
+            createDocument: createDocument({ session, streamWriter }),
+            updateDocument: updateDocument({ session, streamWriter }),
             requestSuggestions: requestSuggestions({
               session,
-              dataStream,
+              streamWriter,
             }),
-          },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
-
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [message],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
-              }
-            }
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
+          _internal: {
+            generateId: generateUUID,
+          },
         });
 
         result.consumeStream();
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+        streamWriter.merge(
+          result.toUIMessageStream<ChatMessage>({
+            sendReasoning: true,
+            onFinish: async ({ responseMessage }) => {
+              await saveMessages({
+                messages: [
+                  {
+                    id: responseMessage.id,
+                    role: 'assistant',
+                    parts: responseMessage.parts,
+                    createdAt: new Date(),
+                    attachments: [],
+                    chatId: id,
+                  },
+                ],
+              });
+            },
+          }),
+        );
       },
       onError: () => {
-        return 'Oops, an error occurred!';
+        return 'Oops! Something went wrong, please try again later.';
       },
     });
 
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream),
-      );
-    } else {
-      return new Response(stream);
-    }
+    return new Response(
+      await streamContext.resumableStream(streamId, () =>
+        stream.pipeThrough(new JsonToSseTransformStream()),
+      ),
+    );
   } catch (error) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
   }
-}
-
-export async function GET(request: Request) {
-  const streamContext = getStreamContext();
-  const resumeRequestedAt = new Date();
-
-  if (!streamContext) {
-    return new Response(null, { status: 204 });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const chatId = searchParams.get('chatId');
-
-  if (!chatId) {
-    return new ChatSDKError('bad_request:api').toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError('unauthorized:chat').toResponse();
-  }
-
-  let chat: Chat;
-
-  try {
-    chat = await getChatById({ id: chatId });
-  } catch {
-    return new ChatSDKError('not_found:chat').toResponse();
-  }
-
-  if (!chat) {
-    return new ChatSDKError('not_found:chat').toResponse();
-  }
-
-  if (chat.visibility === 'private' && chat.userId !== session.user.id) {
-    return new ChatSDKError('forbidden:chat').toResponse();
-  }
-
-  const streamIds = await getStreamIdsByChatId({ chatId });
-
-  if (!streamIds.length) {
-    return new ChatSDKError('not_found:stream').toResponse();
-  }
-
-  const recentStreamId = streamIds.at(-1);
-
-  if (!recentStreamId) {
-    return new ChatSDKError('not_found:stream').toResponse();
-  }
-
-  const emptyDataStream = createDataStream({
-    execute: () => {},
-  });
-
-  const stream = await streamContext.resumableStream(
-    recentStreamId,
-    () => emptyDataStream,
-  );
-
-  /*
-   * For when the generation is streaming during SSR
-   * but the resumable stream has concluded at this point.
-   */
-  if (!stream) {
-    const messages = await getMessagesByChatId({ id: chatId });
-    const mostRecentMessage = messages.at(-1);
-
-    if (!mostRecentMessage) {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    if (mostRecentMessage.role !== 'assistant') {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    const messageCreatedAt = new Date(mostRecentMessage.createdAt);
-
-    if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    const restoredStream = createDataStream({
-      execute: (buffer) => {
-        buffer.writeData({
-          type: 'append-message',
-          message: JSON.stringify(mostRecentMessage),
-        });
-      },
-    });
-
-    return new Response(restoredStream, { status: 200 });
-  }
-
-  return new Response(stream, { status: 200 });
 }
 
 export async function DELETE(request: Request) {

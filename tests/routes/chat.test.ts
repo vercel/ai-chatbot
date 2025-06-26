@@ -2,6 +2,7 @@ import { generateUUID } from '@/lib/utils';
 import { expect, test } from '../fixtures';
 import { TEST_PROMPTS } from '../prompts/routes';
 import { getMessageByErrorCode } from '@/lib/errors';
+import { parseUIPartsStream } from '../prompts/utils';
 
 const chatIdsCreatedByAda: Array<string> = [];
 
@@ -33,11 +34,10 @@ test.describe
       });
       expect(response.status()).toBe(200);
 
-      const text = await response.text();
-      const lines = text.split('\n');
-
-      const [_, ...rest] = lines;
-      expect(rest.filter(Boolean)).toEqual(TEST_PROMPTS.SKY.OUTPUT_STREAM);
+      const streamContent = await response.text();
+      expect(parseUIPartsStream(streamContent)).toEqual(
+        TEST_PROMPTS.SKY.OUTPUT_STREAM,
+      );
 
       chatIdsCreatedByAda.push(chatId);
     });

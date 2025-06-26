@@ -1,8 +1,9 @@
-import { Suggestion } from '@/lib/db/schema';
-import { UseChatHelpers } from '@ai-sdk/react';
-import { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
-import { DataStreamDelta } from './data-stream-handler';
-import { UIArtifact } from './artifact';
+import type { Suggestion } from '@/lib/db/schema';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
+import type { DataStreamDelta } from './data-stream-handler';
+import type { UIArtifact } from './artifact';
+import type { ChatMessage } from '@/lib/types';
 
 export type ArtifactActionContext<M = any> = {
   content: string;
@@ -23,7 +24,7 @@ type ArtifactAction<M = any> = {
 };
 
 export type ArtifactToolbarContext = {
-  appendMessage: UseChatHelpers['append'];
+  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
 };
 
 export type ArtifactToolbarItem = {

@@ -1,9 +1,9 @@
-import { CoreMessage, LanguageModelV1StreamPart } from 'ai';
 import { TEST_PROMPTS } from './basic';
+import type { ModelMessage, TextStreamPart } from 'ai';
 
 export function compareMessages(
-  firstMessage: CoreMessage,
-  secondMessage: CoreMessage,
+  firstMessage: ModelMessage,
+  secondMessage: ModelMessage,
 ): boolean {
   if (firstMessage.role !== secondMessage.role) return false;
 
@@ -24,7 +24,7 @@ export function compareMessages(
 
     if (item1.type !== item2.type) return false;
 
-    if (item1.type === 'image' && item2.type === 'image') {
+    if (item1.type === 'file' && item2.type === 'file') {
       // if (item1.image.toString() !== item2.image.toString()) return false;
       // if (item1.mimeType !== item2.mimeType) return false;
     } else if (item1.type === 'text' && item2.type === 'text') {
@@ -39,26 +39,29 @@ export function compareMessages(
   return true;
 }
 
-const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+// @ts-expect-error todo: need to fix type
+const textToDeltas = (text: string): TextStreamPart[] => {
   const deltas = text
     .split(' ')
-    .map((char) => ({ type: 'text-delta' as const, textDelta: `${char} ` }));
+    .map((char) => ({ type: 'text' as const, text: `${char} ` }));
 
   return deltas;
 };
 
-const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+// @ts-expect-error todo: need to handle data part
+const reasoningToDeltas = (text: string): TextStreamPart[] => {
   const deltas = text
     .split(' ')
-    .map((char) => ({ type: 'reasoning' as const, textDelta: `${char} ` }));
+    .map((char) => ({ type: 'reasoning' as const, text: `${char} ` }));
 
   return deltas;
 };
 
 export const getResponseChunksByPrompt = (
-  prompt: CoreMessage[],
-  isReasoningEnabled: boolean = false,
-): Array<LanguageModelV1StreamPart> => {
+  prompt: ModelMessage[],
+  isReasoningEnabled = false,
+  // @ts-expect-error todo: need to handle data part
+): TextStreamPart[] => {
   const recentMessage = prompt.at(-1);
 
   if (!recentMessage) {
@@ -199,10 +202,7 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
     compareMessages(recentMessage, TEST_PROMPTS.CREATE_DOCUMENT_TEXT_RESULT)
   ) {
     return [
-      {
-        type: 'text-delta',
-        textDelta: 'A document was created and is now visible to the user.',
-      },
+      ...textToDeltas('A document was created and is now visible to the user.'),
       {
         type: 'finish',
         finishReason: 'tool-calls',
@@ -240,3 +240,17 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
 
   return [{ type: 'text-delta', textDelta: 'Unknown test prompt!' }];
 };
+
+export function parseUIPartsStream(stream: string): string[] {
+  const lines = stream.trim().split('\n\n');
+
+  const parsedLines = lines.map((line) => {
+    // If line contains "messageId", replace all UUIDs with "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    return line.replace(
+      /"messageId"\s*:\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"/g,
+      `"messageId":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"`,
+    );
+  });
+
+  return parsedLines;
+}
