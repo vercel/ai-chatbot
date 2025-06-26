@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(pnpm lint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(mkdir:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(rm:*)",
+      "Bash(pnpm build)"
     ],
     "deny": []
   }
