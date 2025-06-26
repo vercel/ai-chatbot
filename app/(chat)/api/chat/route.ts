@@ -38,6 +38,7 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { mcpTools } from '@/lib/ai/mcp-tools';
 
 export const maxDuration = 60;
 
@@ -153,17 +154,15 @@ export async function POST(request: Request) {
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages,
           maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'getChart',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                  'snowflakeSqlTool',
-                ],
+          // experimental_activeTools: [
+          //         'getWeather',
+          //         'getChart',
+          //         'createDocument',
+          //         'updateDocument',
+          //         'requestSuggestions',
+          //         'snowflakeSqlTool',
+          //         'mcpTools',
+          //       ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
           tools: {
@@ -176,6 +175,7 @@ export async function POST(request: Request) {
               dataStream,
             }),
             snowflakeSqlTool,
+            ...mcpTools,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    
+
     console.error('Unexpected error in chat route:', error);
     return new ChatSDKError('internal_server_error:chat').toResponse();
   }
@@ -299,7 +299,7 @@ export async function GET(request: Request) {
   }
 
   const emptyDataStream = createDataStream({
-    execute: () => {},
+    execute: () => { },
   });
 
   const stream = await streamContext.resumableStream(

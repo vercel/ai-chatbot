@@ -20,6 +20,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { SnowflakeSqlCall, SnowflakeSqlResult } from './snowflake-sql';
+import { McpToolCall, McpToolResult } from './mcp-tool';
 import type { UseChatHelpers } from '@ai-sdk/react';
 
 const PurePreviewMessage = ({
@@ -192,7 +193,13 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
-                      ) : null}
+                      ) : (
+                        <McpToolCall
+                          toolName={toolName}
+                          args={args}
+                          isReadonly={isReadonly}
+                        />
+                      )}
                     </div>
                   );
                 }
@@ -229,7 +236,11 @@ const PurePreviewMessage = ({
                           isReadonly={isReadonly}
                         />
                       ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                        <McpToolResult
+                          toolName={toolName}
+                          result={result}
+                          isReadonly={isReadonly}
+                        />
                       )}
                     </div>
                   );
