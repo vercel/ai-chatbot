@@ -5,18 +5,15 @@ import { Button } from './ui/button';
 import { memo } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
+import type { ChatMessage } from '@/lib/types';
 
 interface SuggestedActionsProps {
   chatId: string;
-  append: UseChatHelpers['append'];
+  sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   selectedVisibilityType: VisibilityType;
 }
 
-function PureSuggestedActions({
-  chatId,
-  append,
-  selectedVisibilityType,
-}: SuggestedActionsProps) {
+function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const suggestedActions = [
     {
       title: 'What are the advantages',
@@ -59,7 +56,7 @@ function PureSuggestedActions({
             onClick={async () => {
               window.history.replaceState({}, '', `/chat/${chatId}`);
 
-              append({
+              sendMessage({
                 role: 'user',
                 parts: [{ type: 'text', text: suggestedAction.action }],
               });
@@ -83,7 +80,7 @@ export const SuggestedActions = memo(
     if (prevProps.chatId !== nextProps.chatId) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
-    if (prevProps.append !== nextProps.append) return false;
+    if (prevProps.sendMessage !== nextProps.sendMessage) return false;
 
     return true;
   },

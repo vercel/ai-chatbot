@@ -150,8 +150,8 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     {
       icon: <PenIcon />,
       description: 'Add final polish',
-      onClick: ({ appendMessage }) => {
-        appendMessage({
+      onClick: ({ sendMessage }) => {
+        sendMessage({
           role: 'user',
           parts: [
             {
@@ -165,8 +165,8 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     {
       icon: <MessageIcon />,
       description: 'Request suggestions',
-      onClick: ({ appendMessage }) => {
-        appendMessage({
+      onClick: ({ sendMessage }) => {
+        sendMessage({
           role: 'user',
           parts: [
             {

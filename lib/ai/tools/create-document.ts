@@ -19,7 +19,7 @@ export const createDocument = ({
   tool({
     description:
       'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
-    parameters: z.object({
+    inputSchema: z.object({
       title: z.string(),
       kind: z.enum(artifactKinds),
     }),

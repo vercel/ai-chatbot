@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { artifactDefinitions } from './artifact';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
 import type { DataUIPart } from 'ai';
-import { useChatStore } from './chat-store';
+import type { ChatMessage } from '@/lib/types';
 
 export interface DataStreamDelta extends DataUIPart<any> {
   type:
@@ -23,9 +23,10 @@ export interface DataStreamDelta extends DataUIPart<any> {
 }
 
 export function DataStreamHandler({ id }: { id: string }) {
-  const chatStore = useChatStore();
-  const { messages } = useChat({ chatId: id, chatStore });
+  const { messages } = useChat<ChatMessage>({ id });
+
   const { artifact, setArtifact, setMetadata } = useArtifact();
+
   const lastProcessedIndex = useRef(-1);
 
   const dataStream = useMemo(() => {

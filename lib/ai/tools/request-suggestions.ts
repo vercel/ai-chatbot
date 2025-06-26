@@ -17,7 +17,7 @@ export const requestSuggestions = ({
 }: RequestSuggestionsProps) =>
   tool({
     description: 'Request suggestions for a document',
-    parameters: z.object({
+    inputSchema: z.object({
       documentId: z
         .string()
         .describe('The ID of the document to request edits'),

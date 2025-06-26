@@ -5,7 +5,6 @@ import { generateUUID } from '@/lib/utils';
 import { auth } from '../(auth)/auth';
 import { redirect } from 'next/navigation';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { ChatStoreProvider } from '@/components/chat-store';
 
 export default async function Page() {
   const session = await auth();
@@ -21,15 +20,11 @@ export default async function Page() {
 
   if (!modelIdFromCookie) {
     return (
-      <ChatStoreProvider
-        id={id}
-        initialChatModel={DEFAULT_CHAT_MODEL}
-        initialMessages={[]}
-        visibilityType="private"
-      >
+      <>
         <Chat
           key={id}
           id={id}
+          initialMessages={[]}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType="private"
           isReadonly={false}
@@ -37,20 +32,16 @@ export default async function Page() {
           autoResume={false}
         />
         <DataStreamHandler id={id} />
-      </ChatStoreProvider>
+      </>
     );
   }
 
   return (
-    <ChatStoreProvider
-      id={id}
-      initialChatModel={modelIdFromCookie.value}
-      initialMessages={[]}
-      visibilityType="private"
-    >
+    <>
       <Chat
         key={id}
         id={id}
+        initialMessages={[]}
         initialChatModel={modelIdFromCookie.value}
         initialVisibilityType="private"
         isReadonly={false}
@@ -58,6 +49,6 @@ export default async function Page() {
         autoResume={false}
       />
       <DataStreamHandler id={id} />
-    </ChatStoreProvider>
+    </>
   );
 }

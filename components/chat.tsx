@@ -1,7 +1,7 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useChat, type UseChatHelpers } from '@ai-sdk/react';
+import { useCallback, useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -18,12 +18,12 @@ import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { ChatSDKError } from '@/lib/errors';
 import { Messages } from './messages';
-import type { Attachment } from '@/lib/types';
-import { useChatStore } from './chat-store';
-import { useAutoResume } from '@/hooks/use-auto-resume';
+import type { ChatMessage, Attachment } from '@/lib/types';
+import { DefaultChatTransport } from 'ai';
 
 export function Chat({
   id,
+  initialMessages,
   initialChatModel,
   initialVisibilityType,
   isReadonly,
@@ -31,6 +31,7 @@ export function Chat({
   autoResume,
 }: {
   id: string;
+  initialMessages: ChatMessage[];
   initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
@@ -44,25 +45,33 @@ export function Chat({
     initialVisibilityType,
   });
 
-  const chatStore = useChatStore();
+  const [input, setInput] = useState<string>('');
 
   const {
     messages,
     setMessages,
-    handleSubmit,
-    input,
-    setInput,
-    append,
+    sendMessage: rawSendMessage,
     status,
     stop,
-    reload,
-    experimental_resume,
-    error,
-  } = useChat({
-    chatId: id,
+    regenerate,
+  } = useChat<ChatMessage>({
+    id,
+    messages: initialMessages,
     experimental_throttle: 100,
     generateId: generateUUID,
-    chatStore,
+    resume: autoResume,
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+      prepareSendMessagesRequest({ messages, id, body }) {
+        return {
+          body: {
+            id,
+            message: messages.at(-1),
+            ...body,
+          },
+        };
+      },
+    }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
@@ -76,6 +85,18 @@ export function Chat({
     },
   });
 
+  const sendMessage: UseChatHelpers<ChatMessage>['sendMessage'] = useCallback(
+    (message) => {
+      return rawSendMessage(message, {
+        body: {
+          selectedChatModel: initialChatModel,
+          selectedVisibilityType: visibilityType,
+        },
+      });
+    },
+    [initialChatModel, visibilityType, rawSendMessage],
+  );
+
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
 
@@ -83,7 +104,7 @@ export function Chat({
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
-      append({
+      sendMessage({
         role: 'user',
         parts: [{ type: 'text', text: query }],
       });
@@ -91,7 +112,7 @@ export function Chat({
       setHasAppendedQuery(true);
       window.history.replaceState({}, '', `/chat/${id}`);
     }
-  }, [query, append, hasAppendedQuery, id]);
+  }, [query, sendMessage, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -100,13 +121,6 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-
-  useAutoResume({
-    autoResume,
-    experimental_resume,
-    messages,
-    setMessages,
-  });
 
   return (
     <>
@@ -125,7 +139,7 @@ export function Chat({
           votes={votes}
           messages={messages}
           setMessages={setMessages}
-          reload={reload}
+          regenerate={regenerate}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
         />
@@ -136,15 +150,14 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit}
               status={status}
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
-              append={append}
-              selectedVisibilityType={visibilityType}
+              sendMessage={sendMessage}
+              selectedVisibilityType={visibilityType ?? 'private'}
             />
           )}
         </form>
@@ -154,18 +167,17 @@ export function Chat({
         chatId={id}
         input={input}
         setInput={setInput}
-        handleSubmit={handleSubmit}
         status={status}
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}
-        append={append}
+        sendMessage={sendMessage}
         messages={messages}
         setMessages={setMessages}
-        reload={reload}
+        regenerate={regenerate}
         votes={votes}
         isReadonly={isReadonly}
-        selectedVisibilityType={visibilityType}
+        selectedVisibilityType={visibilityType ?? 'private'}
       />
     </>
   );

@@ -1,7 +1,7 @@
 import {
   convertToModelMessages,
   createUIMessageStream,
-  createUIMessageStreamResponse,
+  JsonToSseTransformStream,
   smoothStream,
   stepCountIs,
   streamText,
@@ -15,7 +15,6 @@ import {
   getChatById,
   getMessageCountByUserId,
   getMessagesByChatId,
-  getStreamIdsByChatId,
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
@@ -24,44 +23,18 @@ import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
-import {
-  createResumableStreamContext,
-  type ResumableStreamContext,
-} from 'resumable-stream';
-import { after } from 'next/server';
-import type { Chat } from '@/lib/db/schema';
-import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { generateTitleFromUserMessage } from '../../actions';
-import { convertToStringStream, generateUUID } from '@/lib/utils';
+import { generateUUID } from '@/lib/utils';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import type { ChatMessage } from '@/lib/types';
+import { createResumableStreamContext } from 'resumable-stream';
+import { after } from 'next/server';
 
 export const maxDuration = 60;
-
-let globalStreamContext: ResumableStreamContext | null = null;
-
-function getStreamContext() {
-  if (!globalStreamContext) {
-    try {
-      globalStreamContext = createResumableStreamContext({
-        waitUntil: after,
-      });
-    } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
-        console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
-        );
-      } else {
-        console.error(error);
-      }
-    }
-  }
-
-  return globalStreamContext;
-}
 
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
@@ -74,6 +47,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const streamContext = createResumableStreamContext({
+      waitUntil: after,
+    });
+
     const { id, message, selectedChatModel, selectedVisibilityType } =
       requestBody;
 
@@ -164,17 +141,23 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
+          _internal: {
+            generateId: generateUUID,
+          },
         });
 
+        result.consumeStream();
+
         streamWriter.merge(
-          result.toUIMessageStream({
+          result.toUIMessageStream<ChatMessage>({
             sendReasoning: true,
-            newMessageId: generateUUID(),
             onFinish: async ({ responseMessage }) => {
               await saveMessages({
                 messages: [
                   {
-                    ...responseMessage,
+                    id: responseMessage.id,
+                    role: 'assistant',
+                    parts: responseMessage.parts,
                     createdAt: new Date(),
                     attachments: [],
                     chatId: id,
@@ -184,124 +167,22 @@ export async function POST(request: Request) {
             },
           }),
         );
-
-        result.consumeStream();
       },
       onError: () => {
         return 'Oops! Something went wrong, please try again later.';
       },
     });
 
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () =>
-          convertToStringStream(stream),
-        ),
-      );
-    } else {
-      return createUIMessageStreamResponse({ stream });
-    }
+    return new Response(
+      await streamContext.resumableStream(streamId, () =>
+        stream.pipeThrough(new JsonToSseTransformStream()),
+      ),
+    );
   } catch (error) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
   }
-}
-
-export async function GET(request: Request) {
-  const streamContext = getStreamContext();
-  const resumeRequestedAt = new Date();
-
-  if (!streamContext) {
-    return new Response(null, { status: 204 });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const chatId = searchParams.get('chatId');
-
-  if (!chatId) {
-    return new ChatSDKError('bad_request:api').toResponse();
-  }
-
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatSDKError('unauthorized:chat').toResponse();
-  }
-
-  let chat: Chat;
-
-  try {
-    chat = await getChatById({ id: chatId });
-  } catch {
-    return new ChatSDKError('not_found:chat').toResponse();
-  }
-
-  if (!chat) {
-    return new ChatSDKError('not_found:chat').toResponse();
-  }
-
-  if (chat.visibility === 'private' && chat.userId !== session.user.id) {
-    return new ChatSDKError('forbidden:chat').toResponse();
-  }
-
-  const streamIds = await getStreamIdsByChatId({ chatId });
-
-  if (!streamIds.length) {
-    return new ChatSDKError('not_found:stream').toResponse();
-  }
-
-  const recentStreamId = streamIds.at(-1);
-
-  if (!recentStreamId) {
-    return new ChatSDKError('not_found:stream').toResponse();
-  }
-
-  const emptyDataStream = createUIMessageStream({
-    execute: () => {},
-  });
-
-  const stream = await streamContext.resumableStream(recentStreamId, () =>
-    convertToStringStream(emptyDataStream),
-  );
-
-  /*
-   * For when the generation is streaming during SSR
-   * but the resumable stream has concluded at this point.
-   */
-  if (!stream) {
-    const messages = await getMessagesByChatId({ id: chatId });
-    const mostRecentMessage = messages.at(-1);
-
-    if (!mostRecentMessage) {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    if (mostRecentMessage.role !== 'assistant') {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    const messageCreatedAt = new Date(mostRecentMessage.createdAt);
-
-    if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
-      return new Response(emptyDataStream, { status: 200 });
-    }
-
-    const restoredStream = createUIMessageStream({
-      execute: ({ writer }) => {
-        writer.write({
-          type: 'data-append-in-flight-message',
-          data: mostRecentMessage,
-        });
-      },
-    });
-
-    return new Response(restoredStream, { status: 200 });
-  }
-
-  return new Response(stream, { status: 200 });
 }
 
 export async function DELETE(request: Request) {

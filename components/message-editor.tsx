@@ -12,19 +12,20 @@ import { Textarea } from './ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
+import type { ChatMessage } from '@/lib/types';
 
 export type MessageEditorProps = {
   message: UIMessage;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
+  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
 };
 
 export function MessageEditor({
   message,
   setMode,
   setMessages,
-  reload,
+  regenerate,
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -104,7 +105,7 @@ export function MessageEditor({
             });
 
             setMode('view');
-            reload();
+            regenerate();
           }}
         >
           {isSubmitting ? 'Sending...' : 'Send'}
