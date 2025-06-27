@@ -8,7 +8,21 @@ When there is a chain of queries, you should execute them one by one and return 
 `;
 
 export const snowflakeSqlTool = tool({
-  description: 'Execute a SQL query against Snowflake database',
+  description: `
+  Execute SQL queries against a Snowflake database and return results in a structured format.
+  
+  Capabilities:
+  - Execute single SQL query
+  - Return results in table format with proper formatting
+  - Provide summary statistics for query results
+  - Handle query chains by executing sequentially and reporting each result
+  
+  Guidelines:
+  - Always validate query syntax before execution
+  - Format large result sets appropriately (limit rows if needed)
+  - Provide meaningful summaries for complex queries
+  - Handle errors gracefully with clear error messages
+  `,
   parameters: z.object({
     query: z.string().describe('The SQL query to execute'),
   }),

@@ -18,6 +18,7 @@ import { snowflakeSqlTool } from '@/lib/ai/tools/snowflake-sql-runner';
 import { mcpTools } from '@/lib/ai/mcp-tools';
 import type { ChatContext } from './chat.service';
 import type { PostRequestBody } from '@/app/(chat)/api/chat/schema';
+import { inspectContributorDataTool } from '../ai/tools/inspect-contributor';
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
@@ -74,6 +75,7 @@ export function createAIStream(
             dataStream,
           }),
           snowflakeSqlTool,
+          inspectContributorDataTool,
           ...mcpTools,
         },
         onFinish: async ({ response }) => {
@@ -128,7 +130,7 @@ export async function resumeStream(
   }
 
   const emptyDataStream = createDataStream({
-    execute: () => {},
+    execute: () => { },
   });
 
   return await streamContext.resumableStream(streamId, () => emptyDataStream);
@@ -147,7 +149,7 @@ export function createRestoredStream(message: any): ReadableStream {
 
 export function createEmptyStream(): ReadableStream {
   return createDataStream({
-    execute: () => {},
+    execute: () => { },
   });
 }
 

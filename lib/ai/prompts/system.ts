@@ -3,6 +3,7 @@ import type { Geo } from '@vercel/functions';
 import { artifactsPrompt } from './artifacts';
 import { chartPrompt } from './chart';
 import { snowflakeToolPrompt } from '../tools/snowflake-sql-runner';
+import { inspectContributorDataToolDescription } from '../tools/inspect-contributor';
 
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses very concise and helpful.';
@@ -36,6 +37,7 @@ export const systemPrompt = ({
     requestPrompt,
     regularPrompt,
     toolPrompts,
+    inspectContributorDataToolDescription,
     artifactsPrompt,
     chartPrompt,
   ].join('\n\n');
