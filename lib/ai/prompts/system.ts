@@ -4,7 +4,7 @@ import { artifactsPrompt } from './artifacts';
 import { chartPrompt } from './chart';
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly assistant! Keep your responses very concise and helpful.';
 
 export interface RequestHints {
   latitude: Geo['latitude'];
