@@ -22,10 +22,16 @@ export const inspectContributorDataTool = tool({
     }),
     execute: async ({ name, email, member_id, lf_id, github_username }) => {
         return `
+        -----
         You are a helpful assistant that can inspect data from a contributor.
         Based on the data available, you are able To suggest how to debug this data and which tables and columns you should inspect
+        -----
 
-        Context: 
+        ## Context: 
+        a Member is also a CDP User.
+        a Affiliation is a relationship between a cdp user and project and organization and account
+
+        ## Tables:
         you can also describe tables for getting full list of columns and data types
         only use minimum columns and that defined in this description. if you need more columns, describe the table
         
@@ -38,21 +44,27 @@ export const inspectContributorDataTool = tool({
         - analytics.bronze_fivetran_salesforce_b2b.accounts cc 
             -- columns: is_member, account_id, account_name
 
-        Your Tasks:
-         1. Find contributor activities
-         2. find contributor identities
-         3. find repositories, projects, organizations and accounts related to the contributor
-         4. Provide a summary of the data found
+        ## Your Tasks:
 
-        Notes:
+        1. User lower case for any string value you use in the queries 
+        2. Find contributor activities
+        3. find contributor identities
+        4. find repositories, projects, organizations and accounts related to the contributor
+        5. Provide a summary of the data found
+        6. Report Total of activities without Organization
+        7. Report Total of activities without Account
+        8. Build a Diagnosis for the data found: Complete or Incomplete
+          - Data is complete is all activities have organization and account
+
+        ## Notes:
         If not found any data after those table inspection . 
         you can request to the user if you want to inspect 
         internal table analytics.silver_fact._crowd_dev_activities_union
 
 
-
-        Examples:
-        if you have github userna, lfid or email you can use mm.value = ''
+        ## Examples:
+        **condition**
+        if you have github username, lfid or email you can use mm.value = 'github_username'
 
         select
         listagg (distinct 'https://cm.lfx.dev/people/' || aa.member_id || '?projectGroup=' || ss.grandparents_id || '#overview',', ') AS list_of_cm_member_links,
@@ -66,12 +78,12 @@ export const inspectContributorDataTool = tool({
         inner join analytics_dev.lf_luis_bronze_fivetran_crowd_dev.segments ss on ss.segment_id=aa.segment_id
         inner join ANALYTICS.BRONZE_FIVETRAN_CROWD_DEV.member_identities mm on mm.member_id=aa.member_id
         inner join analytics.silver_dim._crowd_dev_members_union
-        where mm.value='{FROM_AI}'
+        where lower(mm.value) = lower('{FROM_AI}')
         group by all
         order by activities desc, aa.member_id
         limit 100
 
-       
+        **condition**
         if you have contributor name , you can look if a CM user contains this name
         if you find many member_id , request to the user following actions:
         - ask for more details about the contributor like member_id, github_username, email, lf_id
@@ -89,14 +101,10 @@ export const inspectContributorDataTool = tool({
         inner join ANALYTICS.BRONZE_FIVETRAN_CROWD_DEV.member_identities mm on mm.member_id=aa.member_id
         inner join analytics.silver_dim._crowd_dev_members_union uu on uu.member_id=aa.member_id
         where 1=1
-        and uu.display_name_unmasked ilike '%${name}%'
+        and lower(uu.display_name_unmasked) = lower('{FROM_AI}')
         group by all
         order by activities desc, aa.member_id
         limit 100
-
-
-        
-
 
         `;
     },
