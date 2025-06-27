@@ -36,7 +36,7 @@ export const inspectContributorDataTool = tool({
         only use minimum columns and that defined in this description. if you need more columns, describe the table
         
         - analytics.silver_fact.crowd_dev_activities aa , 
-            -- columns : activity_ts, github_username member_id , member_display_name, project_id, project_name, organization_id, organization_name, account_id, account_name, activity_id, repository_url, segment_id
+            -- columns : activity_ts, github_username member_id , member_display_name, project_id, project_name, organization_id, organization_name, account_id, account_name, activity_id, repository_url, segment_id, is_code_contribution_activity
         - analytics_dev.lf_luis_bronze_fivetran_crowd_dev.segments ss 
             -- columns: segment_id, grandparents_id,
         - ANALYTICS.BRONZE_FIVETRAN_CROWD_DEV.member_identities mi
@@ -53,8 +53,10 @@ export const inspectContributorDataTool = tool({
         5. Provide a summary of the data found
         6. Report Total of activities without Organization
         7. Report Total of activities without Account
-        8. Build a Diagnosis for the data found: Complete or Incomplete
+        8. Report total of qualified LF Code contributions using column aa.is_code_contribution_activity
+        8. Build a Data Diagnosis for the data found: Complete or Incomplete
           - Data is complete is all activities have organization and account
+        9. Provide CDP User Profile page with this listagg (distinct 'https://cm.lfx.dev/people/' || aa.member_id || '?projectGroup=' || ss.grandparents_id || '#overview',', ') AS list_of_cm_member_links,
 
         ## Notes:
         If not found any data after those table inspection . 
