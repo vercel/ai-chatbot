@@ -2,6 +2,7 @@ import type { ArtifactKind } from '@/components/artifact';
 import type { Geo } from '@vercel/functions';
 import { artifactsPrompt } from './artifacts';
 import { chartPrompt } from './chart';
+import { snowflakeToolPrompt } from '../tools/snowflake-sql-runner';
 
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses very concise and helpful.';
@@ -29,12 +30,15 @@ export const systemPrompt = ({
   requestHints: RequestHints;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const toolPrompts = [snowflakeToolPrompt].join('\n\n');
 
-  // if (selectedChatModel === 'chat-model-reasoning') {
-  //   return `${regularPrompt}\n\n${requestPrompt}`;
-  // } else {
-  // }
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${chartPrompt}`;
+  return [
+    requestPrompt,
+    regularPrompt,
+    toolPrompts,
+    artifactsPrompt,
+    chartPrompt,
+  ].join('\n\n');
 };
 
 export const updateDocumentPrompt = (

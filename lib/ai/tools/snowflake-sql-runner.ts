@@ -1,6 +1,12 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
+export const snowflakeToolPrompt = `
+you are a helpful assistant that can execute SQL queries against a Snowflake database.
+after executing the query, you should return the result in a table format or provide a summary of the result.
+When there is a chain of queries, you should execute them one by one and return the result of each query and summary of the result.
+`;
+
 export const snowflakeSqlTool = tool({
   description: 'Execute a SQL query against Snowflake database',
   parameters: z.object({
