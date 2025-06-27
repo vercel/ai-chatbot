@@ -24,7 +24,7 @@ export function Chart({ args, result }: ChartProps) {
     return (
       <div className="border rounded-lg p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-4 h-4 bg-blue-500 rounded animate-pulse" />
+          <div className="size-4 bg-blue-500 rounded animate-pulse" />
           <div className="text-sm font-medium">Generating chart...</div>
         </div>
         <div className="w-full h-64 bg-muted rounded animate-pulse" />
@@ -37,7 +37,7 @@ export function Chart({ args, result }: ChartProps) {
     return (
       <div className="border border-red-200 rounded-lg p-4 bg-red-50">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-4 h-4 bg-red-500 rounded" />
+          <div className="size-4 bg-red-500 rounded" />
           <div className="text-sm font-medium text-red-800">
             Chart Generation Failed
           </div>
@@ -53,14 +53,14 @@ export function Chart({ args, result }: ChartProps) {
   return (
     <div className="border rounded-lg p-4 bg-background">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-4 h-4 bg-green-500 rounded" />
+        <div className="size-4 bg-green-500 rounded" />
         <div className="text-sm font-medium">Chart Generated</div>
       </div>
 
       <div className="relative">
         {imageLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted rounded">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
           </div>
         )}
 

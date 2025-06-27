@@ -75,15 +75,16 @@ export const McpToolCall = memo<McpToolCallProps>(({ toolName, args }) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="h-6 w-6 p-0 hover:bg-amber-100"
+                className="size-6 p-0 hover:bg-amber-100"
               >
-                <ChevronDownIcon
-                  size={14}
+                <div
                   className={cn(
                     'transition-transform duration-200',
                     isExpanded ? 'rotate-180' : '',
                   )}
-                />
+                >
+                  <ChevronDownIcon size={14} />
+                </div>
               </Button>
             )}
           </div>
@@ -158,7 +159,7 @@ export const McpToolResult = memo<McpToolResultProps>(
                 Content ({result.content.length} items)
               </div>
               {result.content.map((item: any, index: number) => (
-                <div key={index} className="bg-muted/50 rounded-lg p-3 border">
+                <div key={`${item.type}-${index}`} className="bg-muted/50 rounded-lg p-3 border">
                   <div className="flex items-center justify-between mb-2">
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
                       {item.type || 'unknown'}
@@ -223,9 +224,13 @@ export const McpToolResult = memo<McpToolResultProps>(
             )}
           >
             {isError ? (
-              <XIcon size={16} className="text-red-600" />
+              <div className="text-red-600">
+                <XIcon size={16} />
+              </div>
             ) : (
-              <CheckIcon size={16} className="text-green-600" />
+              <div className="text-green-600">
+                <CheckIcon size={16} />
+              </div>
             )}
           </div>
 
@@ -260,13 +265,14 @@ export const McpToolResult = memo<McpToolResultProps>(
                   isError ? 'hover:bg-red-100' : 'hover:bg-green-100',
                 )}
               >
-                <ChevronDownIcon
-                  size={14}
+                <div
                   className={cn(
                     'transition-transform duration-200',
                     isExpanded ? 'rotate-180' : '',
                   )}
-                />
+                >
+                  <ChevronDownIcon size={14} />
+                </div>
               </Button>
             </div>
 

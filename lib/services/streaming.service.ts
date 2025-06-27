@@ -61,16 +61,16 @@ export function createAIStream(
           getWeather,
           getChart,
           createDocument: createDocument({
-            session: { user: { id: user.id, type: user.type } },
+            session: { user: { id: user.id, type: user.type }, expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
             dataStream,
             chatId,
           }),
           updateDocument: updateDocument({
-            session: { user: { id: user.id, type: user.type } },
+            session: { user: { id: user.id, type: user.type }, expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
             dataStream,
           }),
           requestSuggestions: requestSuggestions({
-            session: { user: { id: user.id, type: user.type } },
+            session: { user: { id: user.id, type: user.type }, expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
             dataStream,
           }),
           snowflakeSqlTool,

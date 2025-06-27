@@ -71,9 +71,13 @@ export const SnowflakeSqlResult = memo(
           )}
         >
           {isSuccess ? (
-            <CheckIcon size={16} className="text-green-600" />
+            <div className="text-green-600">
+              <CheckIcon size={16} />
+            </div>
           ) : (
-            <XIcon size={16} className="text-red-600" />
+            <div className="text-red-600">
+              <XIcon size={16} />
+            </div>
           )}
         </div>
 
@@ -165,7 +169,7 @@ const SnowflakeDataTable = memo(({ data }: SnowflakeDataTableProps) => {
             </thead>
             <tbody className="divide-y divide-border">
               {displayData.map((row, index) => (
-                <tr key={index} className="hover:bg-muted/30">
+                <tr key={JSON.stringify(row)} className="hover:bg-muted/30">
                   {columns.map((column) => (
                     <td key={column} className="p-3 whitespace-nowrap max-w-xs">
                       <div className="truncate" title={String(row[column])}>

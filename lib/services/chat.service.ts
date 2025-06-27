@@ -53,7 +53,7 @@ export async function prepareChatContext(
 
   const previousMessages = await getMessagesByChatId({ id });
   const messages = appendClientMessage({
-    messages: previousMessages,
+    messages: previousMessages as any,
     message,
   });
 

@@ -88,16 +88,16 @@ const Tool = ({
     <Tooltip open={isHovered && !isAnimating}>
       <TooltipTrigger asChild>
         <motion.div
-          className={cx('p-3 rounded-full', {
+          {...({ className: cx('p-3 rounded-full', {
             'bg-primary !text-primary-foreground': selectedTool === description,
-          })}
+          }) } as any)}
           onHoverStart={() => {
             setIsHovered(true);
           }}
           onHoverEnd={() => {
             if (selectedTool !== description) setIsHovered(false);
           }}
-          onKeyDown={(event) => {
+          onKeyDown={(event: any) => {
             if (event.key === 'Enter') {
               handleSelect();
             }
@@ -171,7 +171,7 @@ const ReadingLevelSelector = ({
       {randomArr.map((id) => (
         <motion.div
           key={id}
-          className="size-[40px] flex flex-row items-center justify-center"
+          {...({ className: "size-[40px] flex flex-row items-center justify-center" } as any)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -185,13 +185,13 @@ const ReadingLevelSelector = ({
         <Tooltip open={!isAnimating}>
           <TooltipTrigger asChild>
             <motion.div
-              className={cx(
+              {...({ className: cx(
                 'absolute bg-background p-3 border rounded-full flex flex-row items-center',
                 {
                   'bg-primary text-primary-foreground': currentLevel !== 2,
                   'bg-background text-foreground': currentLevel === 2,
                 },
-              )}
+              ) } as any)}
               style={{ y }}
               drag="y"
               dragElastic={0}
@@ -258,7 +258,7 @@ export const Tools = ({
 
   return (
     <motion.div
-      className="flex flex-col gap-1.5"
+      {...({ className: "flex flex-col gap-1.5" } as any)}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -312,12 +312,12 @@ const PureToolbar = ({
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useOnClickOutside(toolbarRef, () => {
+  useOnClickOutside(toolbarRef as any, () => {
     setIsToolbarVisible(false);
     setSelectedTool(null);
   });
@@ -370,7 +370,7 @@ const PureToolbar = ({
   return (
     <TooltipProvider delayDuration={0}>
       <motion.div
-        className="cursor-pointer absolute right-6 bottom-6 p-1.5 border rounded-full shadow-lg bg-background flex flex-col justify-end"
+        {...({ className: "cursor-pointer absolute right-6 bottom-6 p-1.5 border rounded-full shadow-lg bg-background flex flex-col justify-end" } as any)}
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible
@@ -418,7 +418,7 @@ const PureToolbar = ({
             initial={{ scale: 1 }}
             animate={{ scale: 1.4 }}
             exit={{ scale: 1 }}
-            className="p-3"
+            {...({ className: "p-3" } as any)}
             onClick={() => {
               stop();
               setMessages((messages) => messages);

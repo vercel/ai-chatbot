@@ -67,7 +67,7 @@ export function MessageReasoning({
             variants={variants}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
-            className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
+            {...({ className: "pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4" } as any)}
           >
             <Markdown>{reasoning}</Markdown>
           </motion.div>

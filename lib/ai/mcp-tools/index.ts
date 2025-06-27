@@ -4,7 +4,7 @@ import { experimental_createMCPClient } from 'ai';
 const clientTwo = await experimental_createMCPClient({
   transport: {
     type: 'sse',
-    url: process.env.MCP_SERVER_URL!,
+    url: process.env.MCP_SERVER_URL || '',
     headers: {
       Authorization: `Bearer ${process.env.MCP_SERVER_TOKEN}`,
     },

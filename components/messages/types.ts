@@ -1,6 +1,7 @@
 import type { UIMessage } from 'ai';
 import type { Vote } from '@/lib/db/schema';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { Dispatch, SetStateAction } from 'react';
 
 export interface BaseMessageProps {
   chatId: string;
@@ -15,7 +16,7 @@ export interface BaseMessageProps {
 
 export interface MessageMode {
   mode: 'view' | 'edit';
-  setMode: (mode: 'view' | 'edit') => void;
+  setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
 }
 
 export interface ToolInvocationProps {

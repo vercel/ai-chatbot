@@ -57,6 +57,11 @@ export function MessageParts({
         }
 
         if (type === 'tool-invocation') {
+          // Filter out partial-call states as they're not handled by the component
+          if (part.toolInvocation.state === 'partial-call') {
+            return null;
+          }
+          
           return (
             <ToolInvocationPart
               key={part.toolInvocation.toolCallId}

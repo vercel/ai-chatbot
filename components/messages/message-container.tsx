@@ -20,7 +20,7 @@ export function MessageContainer({
     <AnimatePresence>
       <motion.div
         data-testid={`message-${message.role}`}
-        className="w-full mx-auto max-w-3xl px-4 group/message"
+        {...({ className: "w-full mx-auto max-w-3xl px-4 group/message" } as any)}
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}

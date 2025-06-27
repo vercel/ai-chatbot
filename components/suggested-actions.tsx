@@ -52,7 +52,7 @@ function PureSuggestedActions({
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.05 * index }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
+          {...({ className: index > 1 ? 'hidden sm:block' : 'block' } as any)}
         >
           <Button
             variant="ghost"
