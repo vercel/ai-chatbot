@@ -16,7 +16,8 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
+    "test": "export PLAYWRIGHT=True && pnpm exec playwright test",
+    "indexer": "tsx indexer/index.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",
@@ -49,6 +50,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "codemirror": "^6.0.1",
+    "commander": "^14.0.0",
     "date-fns": "^4.1.0",
     "diff-match-patch": "^1.0.5",
     "dotenv": "^16.4.5",
