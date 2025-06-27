@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+- This repo uses Drizzle to manage database access and migrations. DB files are in `lib/db` folder
