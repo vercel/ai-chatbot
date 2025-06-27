@@ -3,7 +3,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { xai } from '@ai-sdk/xai';
+import { openai } from '@ai-sdk/openai';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -12,6 +12,7 @@ import {
   titleModel,
 } from './models.test';
 
+// Swap to OpenAI models in production, keep test mocks for test env
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
@@ -23,15 +24,19 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        // Main chat model: GPT-4o
+        'chat-model': openai('gpt-4o'),
+        // Reasoning model: GPT-4 Turbo with reasoning middleware
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
+          model: openai('gpt-4-turbo'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        // Title and artifact models: GPT-3.5 Turbo
+        'title-model': openai('gpt-3.5-turbo'),
+        'artifact-model': openai('gpt-3.5-turbo'),
       },
       imageModels: {
-        'small-model': xai.image('grok-2-image'),
+        // DALL·E 3 for image generation
+        'small-model': openai.image('dall-e-3'),
       },
     });
