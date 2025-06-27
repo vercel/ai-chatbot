@@ -4,4 +4,5 @@ globs:
 alwaysApply: true
 ---
 
+- Always use `pnpm` instead of `npm` to update packages.json file
 - This repo uses Drizzle to manage database access and migrations. DB files are in `lib/db` folder
