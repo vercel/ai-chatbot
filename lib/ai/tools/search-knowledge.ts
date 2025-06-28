@@ -1,9 +1,7 @@
 import { embed, tool } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { searchSimilarChunks } from '@/lib/db/queries';
-
-const embeddingModel = openai.textEmbeddingModel('text-embedding-ada-002');
+import { myProvider } from '../providers';
 
 export const searchKnowledge = tool({
   description: 'Search for relevant information in the knowledge base using a natural language query',
@@ -14,7 +12,7 @@ export const searchKnowledge = tool({
     try {
       // Generate embedding for the search query
       const { embedding } = await embed({
-        model: embeddingModel,
+        model: myProvider.textEmbeddingModel('embedding-model'),
         value: query,
       });
 
@@ -23,6 +21,7 @@ export const searchKnowledge = tool({
 
       if (results.length === 0) {
         return {
+          resultType: 'knowledgeBaseResults',
           message: 'No relevant information found in the knowledge base.',
           results: [],
         };
@@ -43,10 +42,11 @@ export const searchKnowledge = tool({
     } catch (error) {
       console.error('Knowledge search error:', error);
       return {
+        resultType: 'knowledgeBaseResults',
         message: 'An error occurred while searching the knowledge base.',
         error: error instanceof Error ? error.message : 'Unknown error',
         results: [],
       };
     }
   },
-}); 
+});

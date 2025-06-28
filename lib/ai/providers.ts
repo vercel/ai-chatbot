@@ -39,4 +39,7 @@ export const myProvider = isTestEnvironment
         // DALL·E 3 for image generation
         'small-model': openai.image('dall-e-3'),
       },
+      textEmbeddingModels: {
+        'embedding-model': openai.textEmbeddingModel('text-embedding-ada-002'),
+      }
     });

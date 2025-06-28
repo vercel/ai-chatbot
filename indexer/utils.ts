@@ -1,9 +1,7 @@
 import { embed, embedMany } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import { MarkdownTextSplitter, RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import type { DocumentChunk, Embedding, IndexableDocument } from './types.js';
-
-const embeddingModel = openai.textEmbeddingModel('text-embedding-ada-002');
+import { myProvider } from '@/lib/ai/providers.js';
 
 export const DEFAULT_CHUNK_CONFIG = {
   chunkSize: 1000,
@@ -49,7 +47,7 @@ export async function splitDocumentIntoChunks(
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
     const { embedding } = await embed({
-      model: embeddingModel,
+      model: myProvider.textEmbeddingModel('embedding-model'),
       value: text,
     });
     
