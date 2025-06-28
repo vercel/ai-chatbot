@@ -1,35 +1,41 @@
 import { embed, embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { MarkdownTextSplitter } from 'langchain/text_splitter';
+import { MarkdownTextSplitter, RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import type { DocumentChunk, Embedding, IndexableDocument } from './types.js';
 
 const embeddingModel = openai.textEmbeddingModel('text-embedding-ada-002');
 
-/**
- * Configuration for text chunking
- */
-export const CHUNK_CONFIG = {
+export const DEFAULT_CHUNK_CONFIG = {
   chunkSize: 1000,
   chunkOverlap: 200,
   separators: ['\n\n', '\n', ' ', ''],
 };
 
 /**
- * Split document content into chunks using recursive character text splitter
+ * Split document content into chunks using markdown text splitter
  */
-export async function splitDocumentIntoChunks(document: IndexableDocument): Promise<DocumentChunk[]> {
-  const textSplitter = new MarkdownTextSplitter({
-    chunkSize: CHUNK_CONFIG.chunkSize,
-    chunkOverlap: CHUNK_CONFIG.chunkOverlap,
-  });
+export async function splitDocumentIntoChunks(
+  document: IndexableDocument,
+  options?: { chunkSize?: number; chunkOverlap?: number; separators?: string[] }
+): Promise<DocumentChunk[]> {
+
+  const chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_CONFIG.chunkSize;
+  const chunkOverlap = options?.chunkOverlap ?? DEFAULT_CHUNK_CONFIG.chunkOverlap;
+  const separators = options?.separators ?? DEFAULT_CHUNK_CONFIG.separators;
+ 
+  const isMarkdownDoc = document.sourceUri.endsWith('.md') || document.sourceUri.endsWith('.mdx');
+
+  const textSplitter = isMarkdownDoc
+    ? new MarkdownTextSplitter({ chunkSize, chunkOverlap })
+    : new RecursiveCharacterTextSplitter({ chunkSize, chunkOverlap, separators });
 
   try {
     const chunks = await textSplitter.createDocuments([document.content]);
     
     return chunks.map((chunk, index) => ({
       content: chunk.pageContent,
-      startIndex: index * (CHUNK_CONFIG.chunkSize - CHUNK_CONFIG.chunkOverlap),
-      endIndex: index * (CHUNK_CONFIG.chunkSize - CHUNK_CONFIG.chunkOverlap) + chunk.pageContent.length,
+      startIndex: index * (chunkSize - chunkOverlap),
+      endIndex: index * (chunkSize - chunkOverlap) + chunk.pageContent.length,
     }));
   } catch (error) {
     console.error(`Failed to split document ${document.sourceUri}:`, error);
