@@ -64,7 +64,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 export async function generateEmbeddingsBatch(chunks: DocumentChunk[]): Promise<Array<[DocumentChunk, Embedding]>> {
   try {
     const { embeddings } = await embedMany({
-      model: embeddingModel,
+      model: myProvider.textEmbeddingModel('embedding-model'),
       values: chunks.map(chunk => chunk.content),
     });
     
