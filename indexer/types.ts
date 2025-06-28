@@ -40,11 +40,11 @@ export abstract class DataSource {
   }
 
   /**
-   * Discover all indexable documents from this data source
+   * Discover indexable documents from this data source using a generator
    * @param options Configuration options for discovery
-   * @returns Array of indexable documents
+   * @returns AsyncGenerator that yields indexable documents one by one
    */
-  abstract discoverDocuments(options: DataSourceOptions): Promise<IndexableDocument[]>;
+  abstract discoverDocuments(options: DataSourceOptions): AsyncGenerator<IndexableDocument, void, unknown>;
 
   /**
    * Get the source type for this data source

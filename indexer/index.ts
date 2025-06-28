@@ -90,28 +90,54 @@ async function indexDataSource(dataSource: DataSource): Promise<void> {
     }
     console.log('✅ Data source validation successful');
 
-    // Discover documents
+    // Discover and process documents using generator
     console.log('📖 Discovering documents...');
-    const documents = await dataSource.discoverDocuments({});
+    let documentCount = 0;
+    const sampleDocuments: { sourceUri: string; sourceType: string; contentLength: number }[] = [];
     
-    if (documents.length === 0) {
+    for await (const document of dataSource.discoverDocuments({})) {
+      documentCount++;
+      
+      // Collect sample documents for logging (first 5)
+      if (sampleDocuments.length < 5) {
+        sampleDocuments.push({
+          sourceUri: document.sourceUri,
+          sourceType: document.sourceType,
+          contentLength: document.content.length
+        });
+      }
+      
+      // Log progress every 10 documents
+      if (documentCount % 10 === 0) {
+        console.log(`📄 Processed ${documentCount} documents...`);
+      }
+      
+      // Placeholder for actual document processing (will be implemented in task 5.0)
+      // This is where we would:
+      // 1. Check if document already exists and if content has changed
+      // 2. Split document into chunks
+      // 3. Generate embeddings for chunks
+      // 4. Store in database
+    }
+    
+    if (documentCount === 0) {
       console.log('ℹ️  No documents found to index');
       return;
     }
 
-    console.log(`📄 Found ${documents.length} documents to process`);
+    console.log(`📄 Discovered and processed ${documentCount} documents`);
     
     // Log sample of discovered documents
-    documents.slice(0, 5).forEach((doc, index) => {
-      console.log(`  ${index + 1}. ${doc.sourceUri} (${doc.sourceType}) - ${doc.content.length} chars`);
+    sampleDocuments.forEach((doc, index) => {
+      console.log(`  ${index + 1}. ${doc.sourceUri} (${doc.sourceType}) - ${doc.contentLength} chars`);
     });
     
-    if (documents.length > 5) {
-      console.log(`  ... and ${documents.length - 5} more documents`);
+    if (documentCount > 5) {
+      console.log(`  ... and ${documentCount - 5} more documents`);
     }
 
-    // Placeholder for actual indexing logic (will be implemented in task 4.0)
-    console.log('🔄 Document processing and embedding generation will be implemented in task 4.0');
+    // Placeholder for actual indexing logic (will be implemented in task 5.0)
+    console.log('🔄 Document processing and embedding generation will be implemented in task 5.0');
     
   } catch (error) {
     console.error(`Failed to index data source:`, error);

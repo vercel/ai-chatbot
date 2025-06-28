@@ -30,16 +30,14 @@ export class FileSystemDataSource extends DataSource {
     }
   }
 
-  async discoverDocuments(options: DataSourceOptions = {}): Promise<IndexableDocument[]> {
-    const documents: IndexableDocument[] = [];
-    
+  async *discoverDocuments(options: DataSourceOptions = {}): AsyncGenerator<IndexableDocument, void, unknown> {
     try {
       const files = await this.findMarkdownFiles(this.directoryPath);
       
       for (const filePath of files) {
         try {
           const document = await this.processFile(filePath);
-          documents.push(document);
+          yield document;
         } catch (error) {
           console.warn(`Failed to process file ${filePath}:`, error);
           // Continue processing other files
@@ -49,8 +47,6 @@ export class FileSystemDataSource extends DataSource {
       console.error(`Failed to discover documents in ${this.directoryPath}:`, error);
       throw error;
     }
-
-    return documents;
   }
 
   private async findMarkdownFiles(directory: string): Promise<string[]> {

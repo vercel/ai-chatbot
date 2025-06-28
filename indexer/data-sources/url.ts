@@ -30,7 +30,7 @@ export class URLDataSource extends DataSource {
     }
   }
 
-  async discoverDocuments(options: DataSourceOptions = {}): Promise<IndexableDocument[]> {
+  async *discoverDocuments(options: DataSourceOptions = {}): AsyncGenerator<IndexableDocument, void, unknown> {
     throw new Error(
       'URL data source is not yet implemented. This feature will be available in a future release.'
     );

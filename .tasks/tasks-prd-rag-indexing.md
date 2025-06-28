@@ -10,13 +10,18 @@
   - [x] 2.2 Define Resources table schema in Drizzle
   - [x] 2.3 Define ResourceChunks table schema with pgvector support
   - [x] 2.4 Generate and run Drizzle migration
-- [ ] 3.0 Implement Command-Line Interface and Data Source Abstraction
+- [x] 3.0 Implement Command-Line Interface and Data Source Abstraction
   - [x] 3.1 Create abstract DataSource interface and base classes
   - [x] 3.2 Implement FileSystemDataSource for local markdown files
   - [x] 3.3 Create placeholder URLDataSource and GitHubDataSource classes
   - [x] 3.4 Update CLI to use data source abstraction
-- [ ] 4.0 Implement File System Indexing Logic
-- [ ] 5.0 Implement Database Operations and Deletion Handling
+- [x] 4.0 Refactor Data Source to Use Generators
+  - [x] 4.1 Update `DataSource` interface in `indexer/types.ts` to use an async generator for `discoverDocuments`.
+  - [x] 4.2 Update `FileSystemDataSource` to implement the generator pattern for discovering documents.
+  - [x] 4.3 Update `URLDataSource` and `GitHubDataSource` placeholders to align with the new generator interface.
+  - [x] 4.4 Modify `indexDataSource` in `indexer/index.ts` to consume the document stream from the generator.
+- [ ] 5.0 Implement File System Indexing Logic
+- [ ] 6.0 Implement Database Operations and Deletion Handling
 
 ## Relevant Files
 
