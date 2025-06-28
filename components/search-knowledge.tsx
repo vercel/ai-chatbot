@@ -54,6 +54,11 @@ function PureSearchKnowledge({ result }: SearchKnowledgeProps) {
     );
   }
 
+  // Get unique sources
+  const uniqueSources = Array.from(
+    new Map(results.map(result => [result.source, result])).values()
+  );
+
   const getSourceIcon = (sourceType: string) => {
     switch (sourceType?.toLowerCase()) {
       case 'file':
@@ -67,69 +72,26 @@ function PureSearchKnowledge({ result }: SearchKnowledgeProps) {
     }
   };
 
-  const getSourceTypeLabel = (sourceType: string) => {
-    switch (sourceType?.toLowerCase()) {
-      case 'file':
-        return 'File';
-      case 'document':
-        return 'Document';
-      case 'url':
-      case 'web':
-        return 'URL';
-      default:
-        return 'Knowledge Base';
-    }
-  };
-
-  const truncateContent = (content: string, maxLength: number = 200) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength).trim() + '...';
-  };
-
-  const formatSimilarity = (similarity: number) => {
-    return `${Math.round(similarity * 100)}%`;
+  const getDocumentName = (source: string) => {
+    // Extract just the filename from the path
+    const parts = source.split('/');
+    return parts[parts.length - 1] || source;
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <InfoIcon size={16} />
-        Found {results.length} relevant {results.length === 1 ? 'result' : 'results'} in knowledge base
+    <div className="space-y-3 mb-4">
+      <div className="text-sm font-medium text-foreground">
+        Sources
       </div>
       
-      <div className="space-y-3">
-        {results.map((result) => (
-          <Card key={result.rank} className="p-4 bg-muted/30">
-            <div className="space-y-3">
-              {/* Header with source info and similarity */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {getSourceIcon(result.sourceType)}
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {getSourceTypeLabel(result.sourceType)}
-                  </span>
-                  <span className="px-2 py-1 bg-secondary text-secondary-foreground rounded-full text-xs">
-                    Rank #{result.rank}
-                  </span>
-                </div>
-                <span className="px-2 py-1 bg-background border border-border rounded-full text-xs">
-                  {formatSimilarity(result.similarity)} match
-                </span>
-              </div>
-
-              {/* Content preview */}
-              <div className="space-y-2">
-                <p className="text-sm leading-relaxed">
-                  {truncateContent(result.content)}
-                </p>
-                
-                {/* Source information */}
-                <div className="pt-2 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground truncate" title={result.source}>
-                    <span className="font-medium">Source:</span> {result.source}
-                  </p>
-                </div>
-              </div>
+      <div className="space-y-2">
+        {uniqueSources.map((result, index) => (
+          <Card key={index} className="p-3 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
+            <div className="flex items-center gap-2">
+              {getSourceIcon(result.sourceType)}
+              <span className="text-sm font-medium">
+                {getDocumentName(result.source)}
+              </span>
             </div>
           </Card>
         ))}
