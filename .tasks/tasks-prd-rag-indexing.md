@@ -20,16 +20,26 @@
   - [x] 4.2 Update `FileSystemDataSource` to implement the generator pattern for discovering documents.
   - [x] 4.3 Update `URLDataSource` and `GitHubDataSource` placeholders to align with the new generator interface.
   - [x] 4.4 Modify `indexDataSource` in `indexer/index.ts` to consume the document stream from the generator.
-- [ ] 5.0 Implement File System Indexing Logic
-- [ ] 6.0 Implement Database Operations and Deletion Handling
+- [x] 5.0 Implement File System Indexing Logic
+  - [x] 5.1 Add langchain dependency for text splitting
+  - [x] 5.2 Create database query functions for Resources and ResourceChunks tables
+  - [x] 5.3 Implement indexing utilities (text chunking, embedding generation)
+  - [x] 5.4 Implement complete document processing pipeline
+  - [x] 5.5 Add change detection and incremental indexing
+  - [x] 5.6 Implement deletion handling for removed files
+- [x] 6.0 Implement Database Operations and Deletion Handling
+  - [x] 6.1 Database operations (covered in 5.2 - implemented in lib/db/queries.ts)
+  - [x] 6.2 Deletion handling (covered in 5.6 - implemented in indexer/index.ts)
 
 ## Relevant Files
 
 - `indexer/` - Main indexer directory (created)
-- `package.json` - Added commander dependency and indexer script
-- `indexer/index.ts` - Updated CLI with data source abstraction and validation
+- `package.json` - Added commander, langchain dependencies and indexer script
+- `indexer/index.ts` - Complete CLI with document processing pipeline and indexing logic
+- `indexer/utils.ts` - Text chunking, embedding generation, and indexing utilities
 - `tsconfig.json` - Existing TypeScript configuration works for indexer module
 - `lib/db/schema.ts` - Added Resources and ResourceChunks tables with pgvector support
+- `lib/db/queries.ts` - Added database query functions for Resources and ResourceChunks
 - `lib/db/migrations/0007_volatile_epoch.sql` - Custom migration to enable pgvector extension
 - `lib/db/migrations/0008_spicy_aqueduct.sql` - Migration for Resources and ResourceChunks tables
 - `indexer/types.ts` - Data source interfaces and abstract classes

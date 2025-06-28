@@ -11,7 +11,22 @@ import {
   type URLOptions,
   type GitHubOptions
 } from './data-sources/index.js';
-import type { DataSource } from './types.js';
+import type { DataSource, IndexableDocument } from './types.js';
+import {
+  splitDocumentIntoChunks,
+  generateEmbeddingsBatch,
+  shouldReindexDocument,
+  logProgress,
+} from './utils.js';
+import {
+  getResourceBySourceUri,
+  createResource,
+  updateResourceContentHash,
+  deleteResource,
+  createResourceChunks,
+  deleteResourceChunksByResourceId,
+  getResourcesBySourceType,
+} from './db.js';
 
 // Load environment variables
 config();
@@ -22,7 +37,7 @@ interface IndexerOptions {
   repoUrl?: string;
 }
 
-async function main() {
+async function main() {  
   const program = new Command();
 
   program
@@ -71,6 +86,7 @@ async function main() {
         }
 
         await indexDataSource(dataSource);
+        process.exit(0);
       } catch (error) {
         console.error('❌ Indexing failed:', error);
         process.exit(1);
@@ -90,39 +106,150 @@ async function indexDataSource(dataSource: DataSource): Promise<void> {
     }
     console.log('✅ Data source validation successful');
 
-    // Discover and process documents using generator
-    console.log('📖 Discovering documents...');
-    let documentCount = 0;
+    // Process documents one-by-one using the generator
+    console.log('📖 Discovering and processing documents...');
     
+    let processedCount = 0;
+    let skippedCount = 0;
+    let errorCount = 0;
+    const discoveredUris = new Set<string>(); // Track discovered document URIs for deletion handling
+
     for await (const document of dataSource.discoverDocuments({})) {
-      documentCount++;
+      discoveredUris.add(document.sourceUri);
       
-      // Log progress every 10 documents
-      if (documentCount % 10 === 0) {
-        console.log(`📄 Processed ${documentCount} documents...`);
+      try {
+        const wasProcessed = await processDocument(document);
+        if (wasProcessed) {
+          processedCount++;
+        } else {
+          skippedCount++;
+        }
+
+        // Log progress every 10 documents
+        const totalProcessed = processedCount + skippedCount + errorCount;
+        if (totalProcessed % 10 === 0 && totalProcessed > 0) {
+          console.log(`📄 Processed ${totalProcessed} documents (${processedCount} updated, ${skippedCount} skipped)...`);
+        }
+      } catch (error) {
+        errorCount++;
+        console.error(`❌ Failed to process document ${document.sourceUri}:`, error);
+        // Continue processing other documents
       }
-      
-      // Placeholder for actual document processing (will be implemented in task 5.0)
-      // This is where we would:
-      // 1. Check if document already exists and if content has changed
-      // 2. Split document into chunks
-      // 3. Generate embeddings for chunks
-      // 4. Store in database
     }
     
-    if (documentCount === 0) {
+    const totalDocuments = processedCount + skippedCount + errorCount;
+    
+    if (totalDocuments === 0) {
       console.log('ℹ️  No documents found to index');
       return;
     }
 
-    console.log(`📄 Discovered and processed ${documentCount} documents`);
+    // Handle deletion of documents that no longer exist (for file system sources)
+    if (dataSource.getSourceType() === 'file') {
+      await handleDocumentDeletion(dataSource.getSourceType(), discoveredUris);
+    }
 
-    // Placeholder for actual indexing logic (will be implemented in task 5.0)
-    console.log('🔄 Document processing and embedding generation will be implemented in task 5.0');
+    console.log(`✅ Indexing completed!`);
+    console.log(`   📄 Total found: ${totalDocuments} documents`);
+    console.log(`   🔄 Processed: ${processedCount} documents`);
+    console.log(`   ⏭️  Skipped: ${skippedCount} documents (no changes)`);
+    if (errorCount > 0) {
+      console.log(`   ❌ Errors: ${errorCount} documents`);
+    }
     
   } catch (error) {
     console.error(`Failed to index data source:`, error);
     throw error;
+  }
+}
+
+/**
+ * Process a single document: check if it needs reindexing, chunk it, generate embeddings, and store in database
+ */
+async function processDocument(document: IndexableDocument): Promise<boolean> {
+  // Check if document already exists in database
+  const existingResource = await getResourceBySourceUri(document.sourceUri);
+  
+  // Check if document needs to be reindexed
+  if (existingResource && !shouldReindexDocument(existingResource.contentHash, document.contentHash)) {
+    // Document hasn't changed, skip processing
+    return false;
+  }
+
+  console.log(`🔄 Processing document: ${document.sourceUri}`);
+
+  // Split document into chunks
+  const chunks = await splitDocumentIntoChunks(document);
+  console.log(`   📝 Split into ${chunks.length} chunks`);
+
+  // Generate embeddings for all chunks
+  console.log(`   🧠 Generating embeddings...`);
+  const embeddedChunks = await generateEmbeddingsBatch(chunks);
+
+  // Store or update in database
+  if (existingResource) {
+    // Update existing resource
+    console.log(`   💾 Updating existing resource in database...`);
+    
+    // Delete existing chunks
+    await deleteResourceChunksByResourceId(existingResource.id);
+    
+    // Update resource content hash
+    await updateResourceContentHash({
+      id: existingResource.id,
+      contentHash: document.contentHash,
+    });
+    
+    // Create new chunks
+    await createResourceChunks({
+      resourceId: existingResource.id,
+      chunks: embeddedChunks,
+    });
+  } else {
+    // Create new resource
+    console.log(`   💾 Creating new resource in database...`);
+    
+    const newResource = await createResource({
+      sourceType: document.sourceType,
+      sourceUri: document.sourceUri,
+      contentHash: document.contentHash,
+    });
+    
+    // Create chunks
+    await createResourceChunks({
+      resourceId: newResource.id,
+      chunks: embeddedChunks,
+    });
+  }
+
+  return true;
+}
+
+/**
+ * Handle deletion of documents that no longer exist in the data source
+ */
+async function handleDocumentDeletion(sourceType: 'file' | 'url' | 'github', discoveredUris: Set<string>): Promise<void> {
+  console.log('🗑️  Checking for deleted documents...');
+  
+  // Get all existing resources of this source type
+  const existingResources = await getResourcesBySourceType(sourceType);
+  
+  // Find resources that no longer exist in the discovered documents
+  const resourcesToDelete = existingResources.filter(resource => !discoveredUris.has(resource.sourceUri));
+  
+  if (resourcesToDelete.length > 0) {
+    console.log(`🗑️  Deleting ${resourcesToDelete.length} documents that no longer exist...`);
+    
+    for (const resource of resourcesToDelete) {
+      try {
+        await deleteResource(resource.id);
+        console.log(`   🗑️  Deleted: ${resource.sourceUri}`);
+      } catch (error) {
+        console.error(`❌ Failed to delete resource ${resource.sourceUri}:`, error);
+      }
+    }
+  } else {
+    console.log('✅ No deleted documents found');
   }
 }
 
