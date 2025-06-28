@@ -93,19 +93,9 @@ async function indexDataSource(dataSource: DataSource): Promise<void> {
     // Discover and process documents using generator
     console.log('📖 Discovering documents...');
     let documentCount = 0;
-    const sampleDocuments: { sourceUri: string; sourceType: string; contentLength: number }[] = [];
     
     for await (const document of dataSource.discoverDocuments({})) {
       documentCount++;
-      
-      // Collect sample documents for logging (first 5)
-      if (sampleDocuments.length < 5) {
-        sampleDocuments.push({
-          sourceUri: document.sourceUri,
-          sourceType: document.sourceType,
-          contentLength: document.content.length
-        });
-      }
       
       // Log progress every 10 documents
       if (documentCount % 10 === 0) {
@@ -126,15 +116,6 @@ async function indexDataSource(dataSource: DataSource): Promise<void> {
     }
 
     console.log(`📄 Discovered and processed ${documentCount} documents`);
-    
-    // Log sample of discovered documents
-    sampleDocuments.forEach((doc, index) => {
-      console.log(`  ${index + 1}. ${doc.sourceUri} (${doc.sourceType}) - ${doc.contentLength} chars`);
-    });
-    
-    if (documentCount > 5) {
-      console.log(`  ... and ${documentCount - 5} more documents`);
-    }
 
     // Placeholder for actual indexing logic (will be implemented in task 5.0)
     console.log('🔄 Document processing and embedding generation will be implemented in task 5.0');
