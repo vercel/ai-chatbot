@@ -27,6 +27,8 @@ export interface DocumentChunk {
   endIndex: number;
 }
 
+export type Embedding = number[];
+
 export interface DataSourceOptions {
   /** Additional configuration specific to each data source */
   [key: string]: any;

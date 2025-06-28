@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { eq } from 'drizzle-orm';
 import { resource, resourceChunk } from '../lib/db/schema.js';
+import type { DocumentChunk, Embedding } from './types.js';
 
 // Create database connection
 // biome-ignore lint: Forbidden non-null assertion.
@@ -76,16 +77,16 @@ export async function deleteResource(id: string) {
 
 export async function createResourceChunks({
   resourceId,
-  chunks,
+  chunksWithEmbeddings,
 }: {
   resourceId: string;
-  chunks: Array<{ content: string; embedding: number[] }>;
+  chunksWithEmbeddings: [DocumentChunk, Embedding][];
 }) {
   try {
-    const chunkValues = chunks.map(chunk => ({
+    const chunkValues = chunksWithEmbeddings.map(([chunk, embedding]) => ({
       resourceId,
       content: chunk.content,
-      embedding: chunk.embedding,
+      embedding,
     }));
     
     return await db.insert(resourceChunk).values(chunkValues).returning();

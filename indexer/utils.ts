@@ -1,7 +1,7 @@
 import { embed, embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import type { DocumentChunk, IndexableDocument } from './types.js';
+import type { DocumentChunk, Embedding, IndexableDocument } from './types.js';
 
 const embeddingModel = openai.textEmbeddingModel('text-embedding-ada-002');
 
@@ -58,17 +58,17 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 /**
  * Generate embeddings for multiple text chunks in batch
  */
-export async function generateEmbeddingsBatch(chunks: DocumentChunk[]): Promise<Array<{ content: string; embedding: number[] }>> {
+export async function generateEmbeddingsBatch(chunks: DocumentChunk[]): Promise<Array<[DocumentChunk, Embedding]>> {
   try {
     const { embeddings } = await embedMany({
       model: embeddingModel,
       values: chunks.map(chunk => chunk.content),
     });
     
-    return chunks.map((chunk, index) => ({
-      content: chunk.content,
-      embedding: embeddings[index],
-    }));
+    return chunks.map((chunk, index): [DocumentChunk, Embedding] => [
+      chunk,
+      embeddings[index],
+    ]);
   } catch (error) {
     console.error('Failed to generate embeddings batch:', error);
     throw error;

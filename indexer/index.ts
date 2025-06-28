@@ -183,7 +183,7 @@ async function processDocument(document: IndexableDocument): Promise<boolean> {
 
   // Generate embeddings for all chunks
   console.log(`   🧠 Generating embeddings...`);
-  const embeddedChunks = await generateEmbeddingsBatch(chunks);
+  const chunksWithEmbeddings = await generateEmbeddingsBatch(chunks);
 
   // Store or update in database
   if (existingResource) {
@@ -202,7 +202,7 @@ async function processDocument(document: IndexableDocument): Promise<boolean> {
     // Create new chunks
     await createResourceChunks({
       resourceId: existingResource.id,
-      chunks: embeddedChunks,
+      chunksWithEmbeddings,
     });
   } else {
     // Create new resource
@@ -217,7 +217,7 @@ async function processDocument(document: IndexableDocument): Promise<boolean> {
     // Create chunks
     await createResourceChunks({
       resourceId: newResource.id,
-      chunks: embeddedChunks,
+      chunksWithEmbeddings,
     });
   }
 
