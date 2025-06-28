@@ -3,6 +3,7 @@ import 'server-only';
 import {
   and,
   asc,
+  cosineDistance,
   count,
   desc,
   eq,
@@ -11,6 +12,7 @@ import {
   inArray,
   lt,
   type SQL,
+  sql,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -27,6 +29,8 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  resource,
+  resourceChunk,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -533,6 +537,46 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+// Vector search functions for RAG
+export async function searchSimilarChunks({
+  embedding,
+  limit = 5,
+  threshold = 0.75,
+}: {
+  embedding: number[];
+  limit?: number;
+  threshold?: number;
+}) {
+  try {
+    const similarity = sql<number>`1 - (${cosineDistance(resourceChunk.embedding, embedding)})`;
+    
+    const results = await db
+      .select({
+        chunkId: resourceChunk.id,
+        chunkContent: resourceChunk.content,
+        resourceId: resource.id,
+        resourceType: resource.sourceType,
+        resourceUri: resource.sourceUri,
+        resourceCreatedAt: resource.createdAt,
+        resourceUpdatedAt: resource.updatedAt,
+        similarity,
+      })
+      .from(resourceChunk)
+      .innerJoin(resource, eq(resourceChunk.resourceId, resource.id))
+      .where(gt(similarity, threshold))
+      .orderBy((t) => desc(t.similarity))
+      .limit(limit);
+
+    return results;
+  } catch (error) {
+    console.error('Vector search error:', error);
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to search similar chunks',
     );
   }
 }
