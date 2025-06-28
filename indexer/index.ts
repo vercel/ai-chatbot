@@ -3,6 +3,15 @@
 import { Command } from 'commander';
 import { config } from 'dotenv';
 import process from 'node:process';
+import { 
+  FileSystemDataSource, 
+  URLDataSource, 
+  GitHubDataSource,
+  type FileSystemOptions,
+  type URLOptions,
+  type GitHubOptions
+} from './data-sources/index.js';
+import type { DataSource } from './types.js';
 
 // Load environment variables
 config();
@@ -46,16 +55,22 @@ async function main() {
       }
 
       try {
+        let dataSource: DataSource;
+
         if (options.path) {
           console.log(`🚀 Starting indexing for directory: ${options.path}`);
-          await indexDirectory(options.path);
+          dataSource = new FileSystemDataSource({ directoryPath: options.path } as FileSystemOptions);
         } else if (options.url) {
-          console.log(`🌐 URL indexing not yet implemented: ${options.url}`);
-          console.log('This feature will be available in a future release.');
+          console.log(`🌐 Starting indexing for URL: ${options.url}`);
+          dataSource = new URLDataSource({ url: options.url } as URLOptions);
         } else if (options.repoUrl) {
-          console.log(`📁 GitHub repository indexing not yet implemented: ${options.repoUrl}`);
-          console.log('This feature will be available in a future release.');
+          console.log(`📁 Starting indexing for GitHub repository: ${options.repoUrl}`);
+          dataSource = new GitHubDataSource({ repoUrl: options.repoUrl } as GitHubOptions);
+        } else {
+          throw new Error('No valid data source provided');
         }
+
+        await indexDataSource(dataSource);
       } catch (error) {
         console.error('❌ Indexing failed:', error);
         process.exit(1);
@@ -65,11 +80,43 @@ async function main() {
   await program.parseAsync();
 }
 
-async function indexDirectory(directoryPath: string): Promise<void> {
-  // Placeholder for directory indexing logic
-  // This will be implemented in later tasks
-  console.log(`📂 Processing directory: ${directoryPath}`);
-  console.log('🔄 Directory indexing logic will be implemented in task 4.0');
+async function indexDataSource(dataSource: DataSource): Promise<void> {
+  try {
+    // Validate the data source
+    console.log('🔍 Validating data source...');
+    const isValid = await dataSource.validate();
+    if (!isValid) {
+      throw new Error('Data source validation failed');
+    }
+    console.log('✅ Data source validation successful');
+
+    // Discover documents
+    console.log('📖 Discovering documents...');
+    const documents = await dataSource.discoverDocuments({});
+    
+    if (documents.length === 0) {
+      console.log('ℹ️  No documents found to index');
+      return;
+    }
+
+    console.log(`📄 Found ${documents.length} documents to process`);
+    
+    // Log sample of discovered documents
+    documents.slice(0, 5).forEach((doc, index) => {
+      console.log(`  ${index + 1}. ${doc.sourceUri} (${doc.sourceType}) - ${doc.content.length} chars`);
+    });
+    
+    if (documents.length > 5) {
+      console.log(`  ... and ${documents.length - 5} more documents`);
+    }
+
+    // Placeholder for actual indexing logic (will be implemented in task 4.0)
+    console.log('🔄 Document processing and embedding generation will be implemented in task 4.0');
+    
+  } catch (error) {
+    console.error(`Failed to index data source:`, error);
+    throw error;
+  }
 }
 
 // Handle uncaught exceptions
