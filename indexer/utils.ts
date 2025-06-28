@@ -1,6 +1,6 @@
 import { embed, embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import type { DocumentChunk, Embedding, IndexableDocument } from './types.js';
 
 const embeddingModel = openai.textEmbeddingModel('text-embedding-ada-002');
@@ -18,10 +18,9 @@ export const CHUNK_CONFIG = {
  * Split document content into chunks using recursive character text splitter
  */
 export async function splitDocumentIntoChunks(document: IndexableDocument): Promise<DocumentChunk[]> {
-  const textSplitter = new RecursiveCharacterTextSplitter({
+  const textSplitter = new MarkdownTextSplitter({
     chunkSize: CHUNK_CONFIG.chunkSize,
     chunkOverlap: CHUNK_CONFIG.chunkOverlap,
-    separators: CHUNK_CONFIG.separators,
   });
 
   try {
