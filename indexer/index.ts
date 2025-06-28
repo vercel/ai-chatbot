@@ -16,7 +16,6 @@ import {
   splitDocumentIntoChunks,
   generateEmbeddingsBatch,
   shouldReindexDocument,
-  logProgress,
 } from './utils.js';
 import {
   getResourceBySourceUri,

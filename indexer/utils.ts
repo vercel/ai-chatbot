@@ -86,11 +86,3 @@ export function shouldReindexDocument(
 ): boolean {
   return existingContentHash !== newContentHash;
 }
-
-/**
- * Log indexing progress
- */
-export function logProgress(current: number, total: number, operation: string) {
-  const percentage = Math.round((current / total) * 100);
-  console.log(`${operation}: ${current}/${total} (${percentage}%)`);
-} 
