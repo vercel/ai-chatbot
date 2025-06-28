@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
+import { SearchKnowledge } from './search-knowledge';
 import type { UseChatHelpers } from '@ai-sdk/react';
 
 const PurePreviewMessage = ({
@@ -183,6 +184,8 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'searchKnowledge' ? (
+                        <div>🔍 Searching knowledge base...</div>
                       ) : null}
                     </div>
                   );
@@ -212,9 +215,9 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
-                      ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
-                      )}
+                      ) : toolName === 'searchKnowledge' ? (
+                        <SearchKnowledge result={result} />
+                      ) : null}
                     </div>
                   );
                 }
