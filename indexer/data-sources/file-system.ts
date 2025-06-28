@@ -32,9 +32,7 @@ export class FileSystemDataSource extends DataSource {
 
   async *discoverDocuments(options: DataSourceOptions = {}): AsyncGenerator<IndexableDocument, void, unknown> {
     try {
-      const files = await this.findMarkdownFiles(this.directoryPath);
-      
-      for (const filePath of files) {
+      for await (const filePath of this.findMarkdownFiles(this.directoryPath)) {
         try {
           const document = await this.processFile(filePath);
           yield document;
@@ -49,9 +47,7 @@ export class FileSystemDataSource extends DataSource {
     }
   }
 
-  private async findMarkdownFiles(directory: string): Promise<string[]> {
-    const files: string[] = [];
-    
+  private async *findMarkdownFiles(directory: string): AsyncGenerator<string, void, unknown> {
     try {
       const entries = await fs.readdir(directory, { withFileTypes: true });
       
@@ -60,12 +56,11 @@ export class FileSystemDataSource extends DataSource {
         
         if (entry.isDirectory()) {
           // Recursively search subdirectories
-          const subFiles = await this.findMarkdownFiles(fullPath);
-          files.push(...subFiles);
+          yield* this.findMarkdownFiles(fullPath);
         } else if (entry.isFile()) {
           const ext = path.extname(entry.name).toLowerCase();
           if (this.extensions.includes(ext)) {
-            files.push(fullPath);
+            yield fullPath;
           }
         }
       }
@@ -73,8 +68,6 @@ export class FileSystemDataSource extends DataSource {
       console.error(`Failed to read directory ${directory}:`, error);
       throw error;
     }
-    
-    return files;
   }
 
   private async processFile(filePath: string): Promise<IndexableDocument> {
