@@ -8,6 +8,8 @@ export const isTestEnvironment = Boolean(
     process.env.CI_PLAYWRIGHT,
 );
 
+export const useTelemetry = process.env.USE_TELEMETRY === 'true';
+
 export const guestRegex = /^guest-\d+$/;
 
 export const DUMMY_PASSWORD = generateDummyPassword();
