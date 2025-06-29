@@ -89,9 +89,20 @@ function PureSearchKnowledge({ result }: SearchKnowledgeProps) {
           <Card key={index} className="p-3 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               {getSourceIcon(result.sourceType)}
-              <span className="text-sm font-medium">
-                {getDocumentName(result.source)}
-              </span>
+              {result.sourceType?.toLowerCase() === 'url' && result.source.endsWith('.md') ? (
+                <a 
+                  href={result.source.replace(/\.md$/, '')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {getDocumentName(result.source)}
+                </a>
+              ) : (
+                <span className="text-sm font-medium">
+                  {getDocumentName(result.source)}
+                </span>
+              )}
             </div>
           </Card>
         ))}
