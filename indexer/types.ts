@@ -9,6 +9,8 @@ export interface IndexableDocument {
   content: string;
   /** SHA256 hash of the content for change detection */
   contentHash: string;
+  /** Optional section name from parsed llms.txt file */
+  sectionName?: string;
   /** Optional metadata about the document */
   metadata?: {
     title?: string;

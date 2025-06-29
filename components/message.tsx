@@ -42,6 +42,15 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
+  // Extract search knowledge results from message parts
+  const searchKnowledgeResults = message.parts
+    ?.filter(part => 
+      part.type === 'tool-invocation' && 
+      part.toolInvocation.toolName === 'searchKnowledge' && 
+      part.toolInvocation.state === 'result'
+    )
+    .map(part => (part as any).toolInvocation.result) || [];
+
   return (
     <AnimatePresence>
       <motion.div
@@ -215,8 +224,6 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === 'searchKnowledge' ? (
-                        <SearchKnowledge result={result} />
                       ) : null}
                     </div>
                   );
@@ -232,6 +239,14 @@ const PurePreviewMessage = ({
                 vote={vote}
                 isLoading={isLoading}
               />
+            )}
+
+            {searchKnowledgeResults.length > 0 && (
+              <div className="space-y-2 mt-4">
+                {searchKnowledgeResults.map((result, index) => (
+                  <SearchKnowledge key={`search-knowledge-${index}`} result={result} />
+                ))}
+              </div>
             )}
           </div>
         </div>

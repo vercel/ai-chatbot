@@ -34,6 +34,10 @@ interface IndexerOptions {
   path?: string;
   url?: string;
   repoUrl?: string;
+  // URL data source specific options
+  maxFiles?: number;
+  concurrency?: number;
+  delay?: number;
 }
 
 async function main() {  
@@ -46,8 +50,11 @@ async function main() {
 
   program
     .option('--path <directory>', 'Index local directory containing .md and .mdx files')
-    .option('--url <url>', 'Index web page (placeholder for future implementation)')
+    .option('--url <url>', 'Index URL pointing to llms.txt file')
     .option('--repo-url <github_url>', 'Index GitHub repository (placeholder for future implementation)')
+    .option('--max-files <number>', 'Maximum number of files to process from URL source (default: process all)', (value) => parseInt(value, 10))
+    .option('--concurrency <number>', 'Number of concurrent downloads for URL source (default: 5)', (value) => parseInt(value, 10))
+    .option('--delay <number>', 'Delay between requests in milliseconds for URL source (default: 250)', (value) => parseInt(value, 10))
     .action(async (options: IndexerOptions) => {
       // Validate mutually exclusive options
       const optionCount = [options.path, options.url, options.repoUrl].filter(Boolean).length;
@@ -59,6 +66,13 @@ async function main() {
       
       if (optionCount > 1) {
         console.error('Error: Options --path, --url, and --repo-url are mutually exclusive');
+        process.exit(1);
+      }
+
+      // Validate URL-specific options are only used with --url
+      const urlSpecificOptions = [options.maxFiles, options.concurrency, options.delay].filter(opt => opt !== undefined);
+      if (urlSpecificOptions.length > 0 && !options.url) {
+        console.error('Error: Options --max-files, --concurrency, and --delay can only be used with --url');
         process.exit(1);
       }
 
@@ -76,7 +90,26 @@ async function main() {
           dataSource = new FileSystemDataSource({ directoryPath: options.path } as FileSystemOptions);
         } else if (options.url) {
           console.log(`🌐 Starting indexing for URL: ${options.url}`);
-          dataSource = new URLDataSource({ url: options.url } as URLOptions);
+          
+          // Build URL options with all configured parameters
+          const urlOptions: URLOptions = {
+            url: options.url,
+            ...(options.maxFiles && { maxFiles: options.maxFiles }),
+            ...(options.concurrency && { concurrency: options.concurrency }),
+            ...(options.delay && { delay: options.delay })
+          };
+          
+          // Log configured options
+          const configuredOptions = [];
+          if (options.maxFiles) configuredOptions.push(`maxFiles: ${options.maxFiles}`);
+          if (options.concurrency) configuredOptions.push(`concurrency: ${options.concurrency}`);
+          if (options.delay) configuredOptions.push(`delay: ${options.delay}ms`);
+          
+          if (configuredOptions.length > 0) {
+            console.log(`   ⚙️  Configuration: ${configuredOptions.join(', ')}`);
+          }
+          
+          dataSource = new URLDataSource(urlOptions);
         } else if (options.repoUrl) {
           console.log(`📁 Starting indexing for GitHub repository: ${options.repoUrl}`);
           dataSource = new GitHubDataSource({ repoUrl: options.repoUrl } as GitHubOptions);
