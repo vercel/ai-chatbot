@@ -9,6 +9,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  vector,
+  index,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -168,3 +170,33 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// RAG Indexing Tables for Vector Search
+export const resource = pgTable('Resource', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  sourceType: varchar('source_type', { length: 50 }).notNull(), // 'file', 'url', 'github'
+  sourceUri: text('source_uri').notNull().unique(), // file path, URL, or repo identifier
+  contentHash: text('content_hash').notNull(), // SHA256 hash of content
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Resource = InferSelectModel<typeof resource>;
+
+export const resourceChunk = pgTable(
+  'ResourceChunk',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    resourceId: uuid('resource_id')
+      .notNull()
+      .references(() => resource.id, { onDelete: 'cascade' }),
+    content: text('content').notNull(),
+    embedding: vector('embedding', { dimensions: 1536 }), // OpenAI text-embedding-ada-002 dimensions
+  },
+  (table) => ({
+    // Create HNSW index for efficient vector similarity search using cosine distance
+    embeddingIndex: index('embedding_index').using('hnsw', table.embedding.op('vector_cosine_ops')),
+  }),
+);
+
+export type ResourceChunk = InferSelectModel<typeof resourceChunk>;
