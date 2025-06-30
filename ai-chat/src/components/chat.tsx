@@ -11,7 +11,7 @@ import { fetchWithErrorHandlers, generateUUID } from '@ai-chat/lib/utils';
 import { useArtifactSelector } from '@ai-chat/hooks/use-artifact';
 import { useAutoResume } from '@ai-chat/hooks/use-auto-resume';
 import { ChatSDKError } from '@ai-chat/lib/errors';
-import type { Session, Vote } from '@ai-chat/lib/types';
+import type { Vote } from '@ai-chat/lib/types';
 import type { ChatModeKeyOptions } from '@ai-chat/app/api/models';
 import { toast } from './toast';
 import { Artifact } from './artifact';
@@ -24,14 +24,12 @@ export function Chat({
   initialMessages,
   initialChatModel,
   isReadonly,
-  session,
   autoResume,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   initialChatModel: ChatModeKeyOptions;
   isReadonly: boolean;
-  session: Session;
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();

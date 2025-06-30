@@ -1,21 +1,13 @@
 'use client';
 
-import {
-  type ReactNode,
-  useContext,
-  useMemo,
-  useOptimistic,
-  useState,
-} from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@ai-chat/lib/utils';
-import { useChatVisibility } from '@ai-chat/hooks/use-chat-visibility';
 import { Button } from './ui/button';
 import {
   BotIcon,
   CheckCircleFillIcon,
   ChevronDownIcon,
   EyeIcon,
-  GlobeIcon,
 } from './icons';
 import {
   DropdownMenu,

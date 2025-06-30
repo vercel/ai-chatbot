@@ -39,9 +39,6 @@ export function SidebarUserNav({ user }: { user: any }) {
   const { setTheme, resolvedTheme } = useTheme();
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] =
-    useState<boolean>(false);
   /* when this settings menu mounts, capture the current settings into two states:
    * initialSettings to compare later, tempSettings is used
    * to store temporary preference changes to save to the backend.
@@ -53,6 +50,9 @@ export function SidebarUserNav({ user }: { user: any }) {
     knowledgeBase: '',
     languageModel: '',
   });
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
   const [tempSettings, setTempSettings] = useState(initialSettings);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);

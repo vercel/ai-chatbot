@@ -92,7 +92,7 @@ export function getChatHistoryPaginationKey(
   return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({ user }: { user: User | undefined }) {
+export function SidebarHistory({ user }: { user: string | undefined }) {
   const { setOpenMobile } = useSidebar();
   const { t } = useTranslation();
   const { id } = useParams();

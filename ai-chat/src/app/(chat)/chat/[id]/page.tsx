@@ -1,17 +1,13 @@
 import { cookies } from 'next/headers';
-import { generateUUID } from '@ai-chat/lib/utils';
 import { Chat } from '@ai-chat/components/chat';
+import { ChatModeKeyOptions } from '@ai-chat/app/api/models';
 import { DataStreamHandler } from '@ai-chat/components/data-stream-handler';
-import type { Session } from '@ai-chat/lib/types';
-import { ChatModeKeyOptions } from '../api/models';
 
-export default async function Home() {
-  const id = generateUUID();
-  const tempSession: Session = {
-    expires: '2100-10-05T14:48:00.000Z',
-    user: { email: 'fsilva@icrc.org', id: generateUUID(), type: 'regular' },
-  };
-  const [session, cookieStore] = await Promise.all([tempSession, cookies()]);
+export default async function Page(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { id } = params;
+
+  const [cookieStore] = await Promise.all([cookies()]);
   const modelIdFromCookie = cookieStore.get('chat-mode')
     ?.value as ChatModeKeyOptions;
   const DEFAULT_CHAT_MODEL: ChatModeKeyOptions = ChatModeKeyOptions.Generic;
@@ -25,8 +21,7 @@ export default async function Home() {
           initialMessages={[]}
           initialChatModel={DEFAULT_CHAT_MODEL}
           isReadonly={false}
-          session={session}
-          autoResume={false}
+          autoResume={true}
         />
         <DataStreamHandler id={id} />
       </>
@@ -41,8 +36,7 @@ export default async function Home() {
         initialMessages={[]}
         initialChatModel={modelIdFromCookie}
         isReadonly={false}
-        session={session}
-        autoResume={false}
+        autoResume={true}
       />
       <DataStreamHandler id={id} />
     </>

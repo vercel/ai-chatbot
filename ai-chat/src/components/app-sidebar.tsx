@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getOAuthUserName } from '@ai-chat/auth/use-auth-config';
 import { Button } from './ui/button';
 import {
   Sidebar,
@@ -16,8 +17,9 @@ import { SidebarHistory } from './sidebar-history';
 import { SidebarUserNav } from './sidebar-user-nav';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
-export function AppSidebar({ user }: { user: any | undefined }) {
+export function AppSidebar() {
   const router = useRouter();
+  const user = getOAuthUserName();
   const { setOpenMobile } = useSidebar();
 
   return (

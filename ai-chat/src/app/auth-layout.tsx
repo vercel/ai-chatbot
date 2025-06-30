@@ -1,14 +1,16 @@
 'use client';
 
 import { Toaster } from 'sonner';
+import Script from 'next/script';
 import dynamic from 'next/dynamic';
 import { I18nextProvider } from 'react-i18next';
 import { AuthProvider } from 'react-oidc-context';
 import { Geist, Geist_Mono } from 'next/font/google';
 import i18next from '@ai-chat/i18n/config';
+import { AppSidebar } from '@ai-chat/components/app-sidebar';
 import { useAuthConfig } from '@ai-chat/auth/use-auth-config';
 import { ThemeProvider } from '@ai-chat/components/theme-provider';
-import ChatLayout from './chat/layout';
+import { SidebarInset, SidebarProvider } from '@ai-chat/components/ui/sidebar';
 import { CoreProvider } from './core-context';
 
 const geistSans = Geist({
@@ -50,7 +52,14 @@ export default function AuthLayout({
             >
               <Toaster position="top-center" />
               <div className={`${geistSans.variable} ${geistMono.variable}`}>
-                <ChatLayout isCollapsed={isCollapsed}>{children}</ChatLayout>
+                <Script
+                  src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
+                  strategy="beforeInteractive"
+                />
+                <SidebarProvider defaultOpen={isCollapsed}>
+                  <AppSidebar />
+                  <SidebarInset>{children}</SidebarInset>
+                </SidebarProvider>
               </div>
             </ThemeProvider>
           </CoreProvider>
