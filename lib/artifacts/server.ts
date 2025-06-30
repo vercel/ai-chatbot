@@ -7,6 +7,7 @@ import type { UIMessageStreamWriter } from 'ai';
 import type { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
 import type { Session } from 'next-auth';
+import type { ChatMessage } from '../types';
 
 export interface SaveDocumentProps {
   id: string;
@@ -19,14 +20,14 @@ export interface SaveDocumentProps {
 export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
-  streamWriter: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter<ChatMessage>;
   session: Session;
 }
 
 export interface UpdateDocumentCallbackProps {
   document: Document;
   description: string;
-  streamWriter: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter<ChatMessage>;
   session: Session;
 }
 

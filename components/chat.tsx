@@ -9,7 +9,6 @@ import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -20,6 +19,7 @@ import { ChatSDKError } from '@/lib/errors';
 import { Messages } from './messages';
 import type { ChatMessage, Attachment } from '@/lib/types';
 import { DefaultChatTransport } from 'ai';
+import { useDocumentLayout } from '@/hooks/use-document-layout';
 
 export function Chat({
   id,
@@ -40,6 +40,8 @@ export function Chat({
 }) {
   const { mutate } = useSWRConfig();
 
+  const { documentLayout } = useDocumentLayout();
+
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
@@ -57,9 +59,6 @@ export function Chat({
   } = useChat<ChatMessage>({
     id,
     messages: initialMessages,
-    experimental_throttle: 100,
-    generateId: generateUUID,
-    resume: autoResume,
     transport: new DefaultChatTransport({
       api: '/api/chat',
       prepareSendMessagesRequest({ messages, id, body }) {
@@ -72,6 +71,9 @@ export function Chat({
         };
       },
     }),
+    resume: autoResume,
+    generateId: generateUUID,
+    experimental_throttle: 100,
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
@@ -120,7 +122,6 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <>
@@ -141,7 +142,7 @@ export function Chat({
           setMessages={setMessages}
           regenerate={regenerate}
           isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
+          isArtifactVisible={documentLayout?.isVisible ?? false}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

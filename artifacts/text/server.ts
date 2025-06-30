@@ -23,8 +23,11 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
         draftContent += delta.text;
 
         streamWriter.write({
-          type: 'data-artifacts-text-delta',
-          data: delta.text,
+          type: 'data-document',
+          id: '1',
+          data: {
+            content: draftContent,
+          },
         });
       }
     }
@@ -55,8 +58,11 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       if (type === 'text') {
         draftContent += delta.text;
         streamWriter.write({
-          type: 'data-artifacts-text-delta',
-          data: delta.text,
+          type: 'data-document',
+          id: '1',
+          data: {
+            content: draftContent,
+          },
         });
       }
     }

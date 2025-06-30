@@ -6,6 +6,7 @@ import {
   type SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -27,7 +28,8 @@ import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
-import type { Attachment, ChatMessage } from '@/lib/types';
+import type { Attachment, ChatMessage, DocumentKind } from '@/lib/types';
+import { useDocumentLayout } from '@/hooks/use-document-layout';
 
 export const artifactDefinitions = [
   textArtifact,
@@ -35,12 +37,11 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
 ];
-export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
 export interface UIArtifact {
   title: string;
   documentId: string;
-  kind: ArtifactKind;
+  kind: DocumentKind;
   content: string;
   isVisible: boolean;
   status: 'streaming' | 'idle';
@@ -83,15 +84,19 @@ function PureArtifact({
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
 }) {
+  const { documentLayout } = useDocumentLayout();
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
+
+  console.log(artifact);
 
   const {
     data: documents,
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    artifact.documentId !== 'init' && artifact.status !== 'streaming'
-      ? `/api/document?id=${artifact.documentId}`
+    // documentLayout.selectedDocumentId && artifact.status !== 'streaming'
+    documentLayout.selectedDocumentId
+      ? `/api/document?id=${documentLayout.selectedDocumentId}`
       : null,
     fetcher,
   );
@@ -102,34 +107,38 @@ function PureArtifact({
 
   const { open: isSidebarOpen } = useSidebar();
 
-  useEffect(() => {
-    if (documents && documents.length > 0) {
-      const mostRecentDocument = documents.at(-1);
+  const mostRecentDocument = useMemo(() => {
+    return documents?.at(-1);
+  }, [documents]);
 
-      if (mostRecentDocument) {
-        setDocument(mostRecentDocument);
-        setCurrentVersionIndex(documents.length - 1);
-        setArtifact((currentArtifact) => ({
-          ...currentArtifact,
-          content: mostRecentDocument.content ?? '',
-        }));
-      }
-    }
-  }, [documents, setArtifact]);
+  // useEffect(() => {
+  //   if (documents && documents.length > 0) {
+  //     const mostRecentDocument = documents.at(-1);
 
-  useEffect(() => {
-    mutateDocuments();
-  }, [artifact.status, mutateDocuments]);
+  //     if (mostRecentDocument) {
+  //       setDocument(mostRecentDocument);
+  //       setCurrentVersionIndex(documents.length - 1);
+  //       setArtifact((currentArtifact) => ({
+  //         ...currentArtifact,
+  //         content: mostRecentDocument.content ?? '',
+  //       }));
+  //     }
+  //   }
+  // }, [documents, setArtifact]);
+
+  // useEffect(() => {
+  //   mutateDocuments();
+  // }, [artifact.status, mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
 
   const handleContentChange = useCallback(
     (updatedContent: string) => {
-      if (!artifact) return;
+      if (!documentLayout.selectedDocumentId) return;
 
       mutate<Array<Document>>(
-        `/api/document?id=${artifact.documentId}`,
+        `/api/document?id=${documentLayout.selectedDocumentId}`,
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
@@ -141,14 +150,17 @@ function PureArtifact({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${artifact.documentId}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                title: artifact.title,
-                content: updatedContent,
-                kind: artifact.kind,
-              }),
-            });
+            await fetch(
+              `/api/document?id=${documentLayout.selectedDocumentId}`,
+              {
+                method: 'POST',
+                body: JSON.stringify({
+                  title: artifact.title,
+                  content: updatedContent,
+                  kind: artifact.kind,
+                }),
+              },
+            );
 
             setIsContentDirty(false);
 
@@ -165,7 +177,7 @@ function PureArtifact({
         { revalidate: false },
       );
     },
-    [artifact, mutate],
+    [mutate, documentLayout],
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
@@ -230,6 +242,8 @@ function PureArtifact({
       ? currentVersionIndex === documents.length - 1
       : true;
 
+  console.log({ isCurrentVersion, currentVersionIndex });
+
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
@@ -254,7 +268,7 @@ function PureArtifact({
 
   return (
     <AnimatePresence>
-      {artifact.isVisible && (
+      {documentLayout.isVisible ? (
         <motion.div
           data-testid="artifact"
           className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
@@ -344,25 +358,14 @@ function PureArtifact({
 
           <motion.div
             className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
-            initial={
-              isMobile
-                ? {
-                    opacity: 1,
-                    x: artifact.boundingBox.left,
-                    y: artifact.boundingBox.top,
-                    height: artifact.boundingBox.height,
-                    width: artifact.boundingBox.width,
-                    borderRadius: 50,
-                  }
-                : {
-                    opacity: 1,
-                    x: artifact.boundingBox.left,
-                    y: artifact.boundingBox.top,
-                    height: artifact.boundingBox.height,
-                    width: artifact.boundingBox.width,
-                    borderRadius: 50,
-                  }
-            }
+            initial={{
+              opacity: 1,
+              x: documentLayout.boundingBox.left,
+              y: documentLayout.boundingBox.top,
+              height: documentLayout.boundingBox.height,
+              width: documentLayout.boundingBox.width,
+              borderRadius: 50,
+            }}
             animate={
               isMobile
                 ? {
@@ -494,7 +497,7 @@ function PureArtifact({
             </AnimatePresence>
           </motion.div>
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }

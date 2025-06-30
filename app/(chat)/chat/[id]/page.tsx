@@ -7,7 +7,6 @@ import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
 import type { UIMessage } from 'ai';
 import type { Attachment, ChatMessage } from '@/lib/types';
-import { DataStreamHandler } from '@/components/data-stream-handler';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -59,33 +58,27 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   if (!chatModelFromCookie) {
     return (
-      <>
-        <Chat
-          id={chat.id}
-          initialMessages={initialMessages}
-          initialChatModel={DEFAULT_CHAT_MODEL}
-          initialVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
-          session={session}
-          autoResume={true}
-        />
-        <DataStreamHandler id={id} />
-      </>
-    );
-  }
-
-  return (
-    <>
       <Chat
         id={chat.id}
         initialMessages={initialMessages}
-        initialChatModel={chatModelFromCookie.value}
+        initialChatModel={DEFAULT_CHAT_MODEL}
         initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}
         session={session}
         autoResume={true}
       />
-      <DataStreamHandler id={id} />
-    </>
+    );
+  }
+
+  return (
+    <Chat
+      id={chat.id}
+      initialMessages={initialMessages}
+      initialChatModel={chatModelFromCookie.value}
+      initialVisibilityType={chat.visibility}
+      isReadonly={session?.user?.id !== chat.userId}
+      session={session}
+      autoResume={true}
+    />
   );
 }

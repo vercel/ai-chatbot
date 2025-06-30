@@ -1,4 +1,4 @@
-import { PreviewMessage, ThinkingMessage } from './message';
+import { PreviewMessage } from './message';
 import type { Vote } from '@/lib/db/schema';
 import { memo } from 'react';
 import equal from 'fast-deep-equal';
@@ -7,6 +7,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
+import { ThinkingMessage } from './message-thinking';
 
 interface ArtifactMessagesProps {
   chatId: string;

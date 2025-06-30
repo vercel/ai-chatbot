@@ -76,7 +76,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
     });
   },
   onStreamPart: ({ streamPart, setArtifact }) => {
-    if (streamPart.type === 'data-artifacts-code-delta') {
+    if (streamPart.type === 'data-document') {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
         content: streamPart.data as string,

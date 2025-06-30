@@ -6,10 +6,11 @@ import {
   artifactKinds,
   documentHandlersByArtifactKind,
 } from '@/lib/artifacts/server';
+import type { ChatMessage } from '@/lib/types';
 
 interface CreateDocumentProps {
   session: Session;
-  streamWriter: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter<ChatMessage>;
 }
 
 export const createDocument = ({
@@ -24,26 +25,39 @@ export const createDocument = ({
       kind: z.enum(artifactKinds),
     }),
     execute: async ({ title, kind }) => {
-      const id = generateUUID();
+      const documentId = generateUUID();
 
       streamWriter.write({
-        type: 'data-artifacts-kind',
-        data: kind,
+        type: 'data-document',
+        id: '1',
+        data: {
+          kind,
+          status: 'in_progress',
+        },
       });
 
       streamWriter.write({
-        type: 'data-artifacts-id',
-        data: id,
+        type: 'data-document',
+        id: '1',
+        data: {
+          id: documentId,
+        },
       });
 
       streamWriter.write({
-        type: 'data-artifacts-title',
-        data: title,
+        type: 'data-document',
+        id: '1',
+        data: {
+          title,
+        },
       });
 
       streamWriter.write({
-        type: 'data-artifacts-clear',
-        data: '',
+        type: 'data-document',
+        id: '1',
+        data: {
+          content: '',
+        },
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -56,19 +70,12 @@ export const createDocument = ({
       }
 
       await documentHandler.onCreateDocument({
-        id,
+        id: documentId,
         title,
         streamWriter,
         session,
       });
 
-      streamWriter.write({ type: 'data-artifacts-finish', data: '' });
-
-      return {
-        id,
-        title,
-        kind,
-        content: 'A document was created and is now visible to the user.',
-      };
+      return `A ${kind} document of id ${documentId} and title "${title}" was created and is now visible to the user.`;
     },
   });

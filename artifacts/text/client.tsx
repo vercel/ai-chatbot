@@ -29,19 +29,21 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     });
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === 'data-artifacts-suggestion') {
-      setMetadata((metadata) => {
-        return {
-          suggestions: [...metadata.suggestions, streamPart.data as Suggestion],
-        };
-      });
-    }
+    const { type, data } = streamPart;
 
-    if (streamPart.type === 'data-artifacts-text-delta') {
+    // if (type === 'data-artifacts-suggestion') {
+    //   setMetadata((metadata) => {
+    //     return {
+    //       suggestions: [...metadata.suggestions, data as Suggestion],
+    //     };
+    //   });
+    // }
+
+    if (type === 'data-document') {
       setArtifact((draftArtifact) => {
         return {
           ...draftArtifact,
-          content: draftArtifact.content + (streamPart.data as string),
+          content: draftArtifact.content + data.content,
           isVisible:
             draftArtifact.status === 'streaming' &&
             draftArtifact.content.length > 400 &&

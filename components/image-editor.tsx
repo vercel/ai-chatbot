@@ -1,3 +1,4 @@
+import type { Document } from '@/lib/types';
 import { LoaderIcon } from './icons';
 import cn from 'classnames';
 
@@ -6,7 +7,7 @@ interface ImageEditorProps {
   content: string;
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  status: string;
+  status: Document['status'];
   isInline: boolean;
 }
 
@@ -23,7 +24,7 @@ export function ImageEditor({
         'h-[200px]': isInline,
       })}
     >
-      {status === 'streaming' ? (
+      {status === 'in_progress' ? (
         <div className="flex flex-row gap-4 items-center">
           {!isInline && (
             <div className="animate-spin">

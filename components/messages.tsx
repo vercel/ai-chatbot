@@ -1,4 +1,4 @@
-import { PreviewMessage, ThinkingMessage } from './message';
+import { PreviewMessage } from './message';
 import { Greeting } from './greeting';
 import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
 import equal from 'fast-deep-equal';
 import type { ChatMessage } from '@/lib/types';
+import { ThinkingMessage } from './message-thinking';
 
 interface MessagesProps {
   chatId: string;
