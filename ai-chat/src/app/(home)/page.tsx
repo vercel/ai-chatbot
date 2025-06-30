@@ -24,7 +24,6 @@ export default async function Home() {
           id={id}
           initialMessages={[]}
           initialChatModel={DEFAULT_CHAT_MODEL}
-          initialVisibilityType="public"
           isReadonly={false}
           session={session}
           autoResume={false}
@@ -41,7 +40,6 @@ export default async function Home() {
         id={id}
         initialMessages={[]}
         initialChatModel={modelIdFromCookie}
-        initialVisibilityType="public"
         isReadonly={false}
         session={session}
         autoResume={false}

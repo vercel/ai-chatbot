@@ -14,15 +14,11 @@ import { PlusIcon } from './icons';
 import { useTranslation } from 'react-i18next';
 
 function PureChatHeader({
-  chatId,
   selectedModeId,
   isReadonly,
-  session,
 }: {
-  chatId: string;
   selectedModeId: ChatModeKeyOptions;
   isReadonly: boolean;
-  session: unknown;
 }) {
   const router = useRouter();
   const { open } = useSidebar();

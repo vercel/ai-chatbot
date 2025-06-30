@@ -7,7 +7,6 @@ import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
 import { useSearchParams } from 'next/navigation';
 import { ChatHeader } from '@ai-chat/components/chat-header';
-import { useChatVisibility } from '@ai-chat/hooks/use-chat-visibility';
 import { fetchWithErrorHandlers, generateUUID } from '@ai-chat/lib/utils';
 import { useArtifactSelector } from '@ai-chat/hooks/use-artifact';
 import { useAutoResume } from '@ai-chat/hooks/use-auto-resume';
@@ -24,7 +23,6 @@ export function Chat({
   id,
   initialMessages,
   initialChatModel,
-  initialVisibilityType,
   isReadonly,
   session,
   autoResume,
@@ -32,17 +30,11 @@ export function Chat({
   id: string;
   initialMessages: Array<UIMessage>;
   initialChatModel: ChatModeKeyOptions;
-  initialVisibilityType: any;
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
-
-  const { visibilityType } = useChatVisibility({
-    chatId: id,
-    initialVisibilityType,
-  });
 
   const {
     messages,
@@ -67,7 +59,6 @@ export function Chat({
       id,
       message: body.messages.at(-1),
       selectedChatModel: initialChatModel,
-      selectedVisibilityType: visibilityType,
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -117,12 +108,7 @@ export function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader
-          chatId={id}
-          selectedModeId={initialChatModel}
-          isReadonly={isReadonly}
-          session={session}
-        />
+        <ChatHeader selectedModeId={initialChatModel} isReadonly={isReadonly} />
 
         <Messages
           chatId={id}
