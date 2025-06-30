@@ -7,7 +7,12 @@ import { ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getOAuthUserName } from '@ai-chat/auth/use-auth-config';
 import { toast } from './toast';
-import { CheckCircleFillIcon, LoaderIcon } from './icons';
+import {
+  CheckCircleFillIcon,
+  CrossIcon,
+  LoaderIcon,
+  WarningIcon,
+} from './icons';
 import { Avatar } from './ui/avatar';
 import {
   DropdownMenu,
@@ -28,12 +33,34 @@ import {
 } from './ui/generic-dialog';
 import { ModeSelector } from './mode-selector';
 import { ChatModeKeyOptions } from '@ai-chat/app/api/models';
+import { Button } from './ui/button';
 
 export function SidebarUserNav({ user }: { user: any }) {
-  const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(true);
   const { setTheme, resolvedTheme } = useTheme();
+  const { t } = useTranslation();
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
+  /* when this settings menu mounts, capture the current settings into two states:
+   * initialSettings to compare later, tempSettings is used
+   * to store temporary preference changes to save to the backend.
+   */
+  const [initialSettings, setInitialSettings] = useState({
+    languageType: '',
+    theme: '',
+    chatMode: '',
+    knowledgeBase: '',
+    languageModel: '',
+  });
+  const [tempSettings, setTempSettings] = useState(initialSettings);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+
+  // compute whether any of the temporary selections differ from the initial ones.
+  const settingsChanged =
+    JSON.stringify(tempSettings) !== JSON.stringify(initialSettings);
 
   const userName = getOAuthUserName();
 
@@ -41,22 +68,38 @@ export function SidebarUserNav({ user }: { user: any }) {
     if (userName) setIsLoading(false);
   }, [userName]);
 
+  const closeModal = () => {
+    setSaveError(false);
+    setSaveSuccess(false);
+    setIsSaving(false);
+    setTempSettings(initialSettings);
+    setIsSettingsModalOpen(false);
+  };
+
   return (
     <SidebarMenu>
       <GenericDialog
         open={isSettingsModalOpen}
         onOpenChange={() => {
-          console.info('onOpenChange', { user });
+          console.info('onOpenChange');
         }}
       >
         <GenericDialogContent>
-          <GenericDialogHeader>
-            <GenericDialogTitle>
-              {t('sideBar.sideMenu.settings')}
-            </GenericDialogTitle>
-            <GenericDialogDescription>
-              Change user settings
-            </GenericDialogDescription>
+          <GenericDialogHeader className="flex flex-row justify-between">
+            <div className="flex flex-col">
+              <GenericDialogTitle>
+                {t('sideBar.sideMenu.settings')}
+              </GenericDialogTitle>
+              <GenericDialogDescription>
+                Change user settings
+              </GenericDialogDescription>
+            </div>
+            <Button
+              className="cursor-pointer bg-transparent text-white hover:bg-accent"
+              onClick={closeModal}
+            >
+              <CrossIcon />
+            </Button>
           </GenericDialogHeader>
           <>
             <div className="flex flex-row justify-between">
@@ -122,19 +165,43 @@ export function SidebarUserNav({ user }: { user: any }) {
               />
             </div>
           </>
-          <GenericDialogFooter>
+          <GenericDialogFooter className="justify-between items-center">
             <div className="flex items-center text-sm gap-1">
-              <CheckCircleFillIcon />
-              {t('userSettingsDialog.savingChanges')}
+              {(saveSuccess || saveError) && (
+                <>
+                  {saveSuccess && (
+                    <>
+                      <CheckCircleFillIcon />
+                      {t('userSettingsDialog.saveSuccess')}
+                    </>
+                  )}
+                  {saveError && (
+                    <>
+                      <WarningIcon />
+                      {t('userSettingsDialog.saveError')}
+                    </>
+                  )}
+                </>
+              )}
             </div>
 
             <GenericDialogAction
+              className="flex items-center text-sm gap-1"
+              disabled={!settingsChanged || isSaving}
               onClick={() => {
-                console.info('onClick', { user });
-                setIsSettingsModalOpen(false);
+                // FIXME: implement actual BE behaviour
+                console.info('onClick');
+                setIsSaving(true);
+                setTimeout(() => {
+                  setIsSaving(false);
+                  setSaveSuccess(false);
+                  setSaveError(true);
+                }, 1500);
               }}
             >
-              {t('userSettingsDialog.saveChanges')}
+              {isSaving
+                ? t('userSettingsDialog.savingChanges')
+                : t('userSettingsDialog.saveChanges')}
             </GenericDialogAction>
           </GenericDialogFooter>
         </GenericDialogContent>
