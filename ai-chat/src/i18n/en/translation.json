@@ -6,8 +6,9 @@
         "greetingHelp": "How can I help you today?"
     },
     "chatLog": {},
-    "topbar": {},
-    "sidebar": {
+    "topBar": {},
+    "sideBar": {
+        "newChat": "New Chat",
         "noConversations": "Your conversations will appear here once you start chatting!",
         "revisitPreviousChats": "Login to save and revisit previous chats!",
         "conversations": {
@@ -22,11 +23,46 @@
         "sideMenu": {
             "loadingAuthStatus": "Loading auth status",
             "settings": "Settings",
-            "documentation": "Documentation"
+            "documentation": "Documentation",
+            "toggleDarkMode": "Toggle dark mode",
+            "toggleLightMode": "Toggle light mode"
         }
     },
+    "alertDialog": {
+        "termsOfUseTitle": "Terms of Use",
+        "acceptButton": "Accept"
+    },
+    "userSettingsDialog": {
+        "language": "Language",
+        "selectLanguage": "Select your default language for the application interface.",
+        "theme": "Theme",
+        "selectTheme": "Select your preferred interface theme.",
+        "defaultChatMode": "Default Chat Mode",
+        "defaultChatModeDescription": "Set the default chat mode at startup.",
+        "knowledgeBase": "Default Knowledge Base",
+        "selectKnowledgeBase": "Select your preferred knowledge base for Chat with Documents.",
+        "defaultGPTModel": "Default GPT Model",
+        "differentGPTModels": "Different models may vary in capabilities, response style, and speed.",
+        "restoreHiddenChats": "Restore Hidden Chats",
+        "restoreDescription": "Restore previous chats that were hidden from your recent topics.",
+        "restore": "Restore",
+        "Dark": "Dark",
+        "Light": "Light",
+        "saveSuccess": "Settings saved with success.",
+        "saveError": "Error saving changes. Please try again.",
+        "savingChanges": "Saving changes...",
+        "saveChanges": "Save changes"
+    },
     "fullPageStatus": {
-        "userSettings": {}
+        "noAvailableChatModes": "No Available Chat Modes",
+        "noAccessChatModes": "It appears you do not have access to any chat modes.",
+        "requestAccess1": "The platform is currently being piloted by IM and field ICT communities. We are working hard to open the service as soon as possible during 2025. If you wish to express your interest for an early access, please register",
+        "SMTCatalogItemLink": "here.",
+        "requestAccess2": "We will be in touch when we are ready to open access.",
+        "existingAccess": "If you are a user with existing access, try reloading the page or clearing your cache and cookies to resolve the issue.",
+        "serviceTemporarilyUnavailable": "Service Temporarily Unavailable",
+        "technicalIssues": "We're experiencing some technical issues loading essential data. Please try again in a few moments.",
+        "assistance": "If the problem persists, please open a support ticket via the ICRC Services Portal for assistance."
     },
     "markdownRenderer": {},
     "promptInput": {}

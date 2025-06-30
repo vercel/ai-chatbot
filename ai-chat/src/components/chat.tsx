@@ -8,17 +8,17 @@ import { unstable_serialize } from 'swr/infinite';
 import { useSearchParams } from 'next/navigation';
 import { ChatHeader } from '@ai-chat/components/chat-header';
 import { useChatVisibility } from '@ai-chat/hooks/use-chat-visibility';
-import type { VisibilityType } from './visibility-selector';
-import { getChatHistoryPaginationKey } from './sidebar-history';
-import { toast } from './toast';
-import { Artifact } from './artifact';
 import { fetchWithErrorHandlers, generateUUID } from '@ai-chat/lib/utils';
 import { useArtifactSelector } from '@ai-chat/hooks/use-artifact';
 import { useAutoResume } from '@ai-chat/hooks/use-auto-resume';
-import { Messages } from './messages';
-import { MultimodalInput } from './multimodal-input';
 import { ChatSDKError } from '@ai-chat/lib/errors';
 import type { Session, Vote } from '@ai-chat/lib/types';
+import type { ChatModeKeyOptions } from '@ai-chat/app/api/models';
+import { toast } from './toast';
+import { Artifact } from './artifact';
+import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
+import { getChatHistoryPaginationKey } from './sidebar-history';
 
 export function Chat({
   id,
@@ -31,8 +31,8 @@ export function Chat({
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
-  initialChatModel: string;
-  initialVisibilityType: VisibilityType;
+  initialChatModel: ChatModeKeyOptions;
+  initialVisibilityType: any;
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
@@ -119,8 +119,7 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
-          selectedVisibilityType={initialVisibilityType}
+          selectedModeId={initialChatModel}
           isReadonly={isReadonly}
           session={session}
         />
@@ -150,7 +149,6 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
-              selectedVisibilityType={visibilityType}
             />
           )}
         </form>
@@ -171,7 +169,6 @@ export function Chat({
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}
-        selectedVisibilityType={visibilityType}
       />
     </>
   );

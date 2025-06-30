@@ -20,7 +20,6 @@ import { sheetArtifact } from '@ai-chat/artifacts/sheet/client';
 import { textArtifact } from '@ai-chat/artifacts/text/client';
 import type { Document, Vote } from '@ai-chat/lib/types';
 import { ArtifactActions } from './artifact-actions';
-import type { VisibilityType } from './visibility-selector';
 import { MultimodalInput } from './multimodal-input';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
@@ -66,7 +65,6 @@ function PureArtifact({
   reload,
   votes,
   isReadonly,
-  selectedVisibilityType,
 }: {
   chatId: string;
   input: string;
@@ -82,7 +80,6 @@ function PureArtifact({
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
-  selectedVisibilityType: VisibilityType;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -336,7 +333,6 @@ function PureArtifact({
                     append={append}
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
-                    selectedVisibilityType={selectedVisibilityType}
                   />
                 </form>
               </div>
@@ -505,8 +501,6 @@ export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
   if (!equal(prevProps.votes, nextProps.votes)) return false;
   if (prevProps.input !== nextProps.input) return false;
   if (!equal(prevProps.messages, nextProps.messages.length)) return false;
-  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-    return false;
 
   return true;
 });

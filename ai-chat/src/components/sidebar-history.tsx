@@ -149,7 +149,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       <SidebarGroup>
         <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
-            {t('sidebar.revisitPreviousChats')}
+            {t('sideBar.revisitPreviousChats')}
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -160,7 +160,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     return (
       <SidebarGroup>
         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          {t('sidebar.conversations.today')}
+          {t('sideBar.conversations.today')}
         </div>
         <SidebarGroupContent>
           <div className="flex flex-col">
@@ -190,7 +190,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       <SidebarGroup>
         <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
-            {t('sidebar.noConversations')}
+            {t('sideBar.noConversations')}
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -215,7 +215,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.today.length > 0 && (
                       <div>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          {t('sidebar.conversations.today')}
+                          {t('sideBar.conversations.today')}
                         </div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
@@ -235,7 +235,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.yesterday.length > 0 && (
                       <div>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          {t('sidebar.conversations.yesterday')}
+                          {t('sideBar.conversations.yesterday')}
                         </div>
                         {groupedChats.yesterday.map((chat) => (
                           <ChatItem
@@ -255,7 +255,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.lastWeek.length > 0 && (
                       <div>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          {t('sidebar.conversations.lastSevenDays')}
+                          {t('sideBar.conversations.lastSevenDays')}
                         </div>
                         {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
@@ -275,7 +275,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.lastMonth.length > 0 && (
                       <div>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          {t('sidebar.conversations.lastThirtyDays')}
+                          {t('sideBar.conversations.lastThirtyDays')}
                         </div>
                         {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
@@ -295,7 +295,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.older.length > 0 && (
                       <div>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          {t('sidebar.conversations.olderThanLastMonth')}
+                          {t('sideBar.conversations.olderThanLastMonth')}
                         </div>
                         {groupedChats.older.map((chat) => (
                           <ChatItem
@@ -326,14 +326,14 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
           {hasReachedEnd ? (
             <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2 mt-8">
-              {t('sidebar.conversations.reachedTheEndOfChatHistory')}
+              {t('sideBar.conversations.reachedTheEndOfChatHistory')}
             </div>
           ) : (
             <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center mt-8">
               <div className="animate-spin">
                 <LoaderIcon />
               </div>
-              <div>{t('sidebar.conversations.reachedTheEndOfChatHistory')}</div>
+              <div>{t('sideBar.conversations.reachedTheEndOfChatHistory')}</div>
             </div>
           )}
         </SidebarGroupContent>

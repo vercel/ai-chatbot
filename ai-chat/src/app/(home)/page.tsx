@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers';
 import { generateUUID } from '@ai-chat/lib/utils';
 import { Chat } from '@ai-chat/components/chat';
-import { DEFAULT_CHAT_MODEL } from '@ai-chat/lib/ai/models';
 import { DataStreamHandler } from '@ai-chat/components/data-stream-handler';
 import type { Session } from '@ai-chat/lib/types';
+import { ChatModeKeyOptions } from '../api/models';
 
 export default async function Home() {
   const id = generateUUID();
@@ -12,7 +12,9 @@ export default async function Home() {
     user: { email: 'fsilva@icrc.org', id: generateUUID(), type: 'regular' },
   };
   const [session, cookieStore] = await Promise.all([tempSession, cookies()]);
-  const modelIdFromCookie = cookieStore.get('chat-model');
+  const modelIdFromCookie = cookieStore.get('chat-mode')
+    ?.value as ChatModeKeyOptions;
+  const DEFAULT_CHAT_MODEL: ChatModeKeyOptions = ChatModeKeyOptions.Generic;
 
   if (!modelIdFromCookie) {
     return (
@@ -22,7 +24,7 @@ export default async function Home() {
           id={id}
           initialMessages={[]}
           initialChatModel={DEFAULT_CHAT_MODEL}
-          initialVisibilityType="private"
+          initialVisibilityType="public"
           isReadonly={false}
           session={session}
           autoResume={false}
@@ -38,8 +40,8 @@ export default async function Home() {
         key={id}
         id={id}
         initialMessages={[]}
-        initialChatModel={modelIdFromCookie.value}
-        initialVisibilityType="private"
+        initialChatModel={modelIdFromCookie}
+        initialVisibilityType="public"
         isReadonly={false}
         session={session}
         autoResume={false}

@@ -6,8 +6,9 @@
         "greetingHelp": "¿En qué puedo ayudarte hoy?"
     },
     "chatLog": {},
-    "topbar": {},
-    "sidebar": {
+    "topBar": {},
+    "sideBar": {
+        "newChat": "Nueva conversación",
         "noConversations": "Tus conversaciones aparecerán aquí una vez que comiences a chatear.",
         "revisitPreviousChats": "Inicia sesión para guardar y revisar conversaciones anteriores.",
         "conversations": {
@@ -22,11 +23,25 @@
         "sideMenu": {
             "loadingAuthStatus": "Cargando estado de autenticación",
             "settings": "Configuración",
-            "documentation": "Documentación"
+            "documentation": "Documentación",
+            "toggleDarkMode": "Alternar modo oscuro",
+            "toggleLightMode": "Alternar modo claro"
         }
     },
+    "dialog": {
+        "termsOfUseTitle": "Términos de uso",
+        "acceptButton": "Aceptar"
+    },
     "fullPageStatus": {
-        "userSettings": {}
+        "noAvailableChatModes": "No hay modos de conversación disponibles",
+        "noAccessChatModes": "Parece que no tienes acceso a ningún modo de conversación.",
+        "requestAccess1": "La plataforma se encuentra actualmente en fase piloto con las comunidades IM y ICT. Estamos trabajando duro para abrir el servicio lo antes posible en 2025. Si deseas expresar tu interés en un acceso anticipado, regístrate",
+        "SMTCatalogItemLink": "aquí.",
+        "requestAccess2": "Nos pondremos en contacto contigo cuando estemos listos para abrir el acceso.",
+        "existingAccess": "Si eres un usuario con acceso existente, intenta recargar la página o borrar tu caché y cookies para resolver el problema.",
+        "serviceTemporarilyUnavailable": "Servicio temporalmente no disponible",
+        "technicalIssues": "Estamos experimentando algunos problemas técnicos para cargar los datos esenciales. Por favor, intenta de nuevo en unos momentos.",
+        "assistance": "Si el problema persiste, abre un ticket de soporte a través del portal de servicios de la CICR para obtener asistencia."
     },
     "markdownRenderer": {},
     "promptInput": {}

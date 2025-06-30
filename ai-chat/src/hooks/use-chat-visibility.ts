@@ -7,7 +7,7 @@ import {
   type ChatHistory,
   getChatHistoryPaginationKey,
 } from '@ai-chat/components/sidebar-history';
-import type { VisibilityType } from '@ai-chat/components/visibility-selector';
+import type { VisibilityType } from '@ai-chat/components/language-model-selector';
 
 export function useChatVisibility({
   chatId,

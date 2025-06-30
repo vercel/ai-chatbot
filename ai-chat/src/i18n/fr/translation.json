@@ -6,8 +6,9 @@
         "greetingHelp": "Comment puis-je vous aider aujourd'hui ?"
     },
     "chatLog": {},
-    "topbar": {},
-    "sidebar": {
+    "topBar": {},
+    "sideBar": {
+        "newChat": "Nouvelle conversation",
         "noConversations": "Vos conversations apparaîtront ici dès que vous commencerez à discuter !",
         "revisitPreviousChats": "Connectez-vous pour sauvegarder et revoir vos conversations précédentes !",
         "conversations": {
@@ -22,11 +23,25 @@
         "sideMenu": {
             "loadingAuthStatus": "Chargement du statut d'authentification",
             "settings": "Paramètres",
-            "documentation": "Documentation"
+            "documentation": "Documentation",
+            "toggleDarkMode": "Basculer en mode sombre",
+            "toggleLightMode": "Basculer en mode clair"
         }
     },
+    "dialog": {
+        "termsOfUseTitle": "Conditions d'utilisation",
+        "acceptButton": "Accepter"
+    },
     "fullPageStatus": {
-        "userSettings": {}
+        "noAvailableChatModes": "Aucun mode de conversation disponible",
+        "noAccessChatModes": "Il semble que vous n'ayez pas accès à aucun mode de conversation.",
+        "requestAccess1": "La plateforme est actuellement en phase pilote avec les communautés IM et ICT. Nous travaillons dur pour ouvrir le service dès que possible en 2025. Si vous souhaitez exprimer votre intérêt pour un accès anticipé, veuillez vous inscrire",
+        "SMTCatalogItemLink": "ici.",
+        "requestAccess2": "Nous vous contacterons lorsque nous serons prêts à ouvrir l'accès.",
+        "existingAccess": "Si vous êtes un utilisateur avec un accès existant, essayez de recharger la page ou de vider votre cache et vos cookies pour résoudre le problème.",
+        "serviceTemporarilyUnavailable": "Service temporairement indisponible",
+        "technicalIssues": "Nous rencontrons des problèmes techniques pour charger les données essentielles. Veuillez essayer à nouveau dans quelques instants.",
+        "assistance": "Si le problème persiste, veuillez ouvrir un ticket de support via le portail de services de la CICR pour obtenir de l'aide."
     },
     "markdownRenderer": {},
     "promptInput": {}

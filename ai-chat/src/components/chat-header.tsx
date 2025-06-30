@@ -3,36 +3,30 @@
 import { memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
-import { ModelSelector } from '@ai-chat/components/model-selector';
-import { SidebarToggle } from '@ai-chat/components/sidebar-toggle';
-import { Button } from '@ai-chat/components/ui/button';
-import { PlusIcon } from '@ai-chat/components/icons';
-import { useSidebar } from '@ai-chat/components/ui/sidebar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@ai-chat/components/ui/tooltip';
-import {
-  VisibilitySelector,
-  type VisibilityType,
-} from '@ai-chat/components/visibility-selector';
+import type { ChatModeKeyOptions } from '@ai-chat/app/api/models';
+import { useSidebar } from './ui/sidebar';
+import { SidebarToggle } from './sidebar-toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { ModeSelector } from './mode-selector';
+import { LanguageModelSelector } from './language-model-selector';
+import { Button } from './ui/button';
+import { PlusIcon } from './icons';
+import { useTranslation } from 'react-i18next';
 
 function PureChatHeader({
   chatId,
-  selectedModelId,
-  selectedVisibilityType,
+  selectedModeId,
   isReadonly,
   session,
 }: {
   chatId: string;
-  selectedModelId: string;
-  selectedVisibilityType: VisibilityType;
+  selectedModeId: ChatModeKeyOptions;
   isReadonly: boolean;
   session: unknown;
 }) {
   const router = useRouter();
   const { open } = useSidebar();
+  const { t } = useTranslation();
 
   const { width: windowWidth } = useWindowSize();
 
@@ -52,26 +46,24 @@ function PureChatHeader({
               }}
             >
               <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
+              <span className="md:sr-only">{t('sideBar.newChat')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
+          <TooltipContent>{t('sideBar.newChat')}</TooltipContent>
         </Tooltip>
       )}
 
       {!isReadonly && (
-        <ModelSelector
-          session={session}
-          selectedModelId={selectedModelId}
+        <ModeSelector
+          selectedModeId={selectedModeId}
           className="order-1 md:order-2"
         />
       )}
 
       {!isReadonly && (
-        <VisibilitySelector
-          chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
-          className="order-1 md:order-3"
+        <LanguageModelSelector
+          selectedModeId={selectedModeId}
+          className="order-1 md:order-2"
         />
       )}
     </header>
@@ -79,5 +71,5 @@ function PureChatHeader({
 }
 
 export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
-  return prevProps.selectedModelId === nextProps.selectedModelId;
+  return prevProps.selectedModeId === nextProps.selectedModeId;
 });

@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronUp } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import i18next from 'i18next';
+import { useTheme } from 'next-themes';
+import { ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getOAuthUserName } from '@ai-chat/auth/use-auth-config';
 import { toast } from './toast';
-import { LoaderIcon } from './icons';
+import { CheckCircleFillIcon, LoaderIcon } from './icons';
 import { Avatar } from './ui/avatar';
 import {
   DropdownMenu,
@@ -17,10 +17,22 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
+import {
+  GenericDialog,
+  GenericDialogAction,
+  GenericDialogContent,
+  GenericDialogDescription,
+  GenericDialogFooter,
+  GenericDialogHeader,
+  GenericDialogTitle,
+} from './ui/generic-dialog';
+import { ModeSelector } from './mode-selector';
+import { ChatModeKeyOptions } from '@ai-chat/app/api/models';
 
 export function SidebarUserNav({ user }: { user: any }) {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(true);
   const { setTheme, resolvedTheme } = useTheme();
 
   const userName = getOAuthUserName();
@@ -31,6 +43,103 @@ export function SidebarUserNav({ user }: { user: any }) {
 
   return (
     <SidebarMenu>
+      <GenericDialog
+        open={isSettingsModalOpen}
+        onOpenChange={() => {
+          console.info('onOpenChange', { user });
+        }}
+      >
+        <GenericDialogContent>
+          <GenericDialogHeader>
+            <GenericDialogTitle>
+              {t('sideBar.sideMenu.settings')}
+            </GenericDialogTitle>
+            <GenericDialogDescription>
+              Change user settings
+            </GenericDialogDescription>
+          </GenericDialogHeader>
+          <>
+            <div className="flex flex-row justify-between">
+              <div className="flex flex-col">
+                <h1 className="font-bold">
+                  {t('userSettingsDialog.language')}
+                </h1>
+                <p>{t('userSettingsDialog.selectLanguage')}</p>
+              </div>
+              <ModeSelector
+                selectedModeId={ChatModeKeyOptions.Generic}
+                className="order-1 md:order-2"
+              />
+            </div>
+
+            <div className="flex flex-row justify-between">
+              <div className="flex flex-col">
+                <h1 className="font-bold">{t('userSettingsDialog.theme')}</h1>
+                <p>{t('userSettingsDialog.selectTheme')}</p>
+              </div>
+              <ModeSelector
+                selectedModeId={ChatModeKeyOptions.Documents}
+                className="order-1 md:order-2"
+              />
+            </div>
+
+            <div className="flex flex-row justify-between">
+              <div className="flex flex-col">
+                <h1 className="font-bold">
+                  {t('userSettingsDialog.defaultChatMode')}
+                </h1>
+                <p>{t('userSettingsDialog.defaultChatModeDescription')}</p>
+              </div>
+              <ModeSelector
+                selectedModeId={ChatModeKeyOptions.Generic}
+                className="order-1 md:order-2"
+              />
+            </div>
+
+            <div className="flex flex-row justify-between">
+              <div className="flex flex-col">
+                <h1 className="font-bold">
+                  {t('userSettingsDialog.knowledgeBase')}
+                </h1>
+                <p>{t('userSettingsDialog.selectKnowledgeBase')}</p>
+              </div>
+              <ModeSelector
+                selectedModeId={ChatModeKeyOptions.Documents}
+                className="order-1 md:order-2"
+              />
+            </div>
+
+            <div className="flex flex-row justify-between">
+              <div className="flex flex-col">
+                <h1 className="font-bold">
+                  {t('userSettingsDialog.defaultGPTModel')}
+                </h1>
+                <p>{t('userSettingsDialog.differentGPTModels')}</p>
+              </div>
+              <ModeSelector
+                selectedModeId={ChatModeKeyOptions.Generic}
+                className="order-1 md:order-2"
+              />
+            </div>
+          </>
+          <GenericDialogFooter>
+            <div className="flex items-center text-sm gap-1">
+              <CheckCircleFillIcon />
+              {t('userSettingsDialog.savingChanges')}
+            </div>
+
+            <GenericDialogAction
+              onClick={() => {
+                console.info('onClick', { user });
+                setIsSettingsModalOpen(false);
+              }}
+            >
+              {t('userSettingsDialog.saveChanges')}
+            </GenericDialogAction>
+          </GenericDialogFooter>
+        </GenericDialogContent>
+      </GenericDialog>
+
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -39,7 +148,7 @@ export function SidebarUserNav({ user }: { user: any }) {
                 <div className="flex flex-row gap-2">
                   <div className="size-6 bg-zinc-500/30 rounded-full animate-pulse" />
                   <span className="bg-zinc-500/30 text-transparent rounded-md animate-pulse">
-                    {t('sidebar.sideMenu.loadingAuthStatus')}
+                    {t('sideBar.sideMenu.loadingAuthStatus')}
                   </span>
                 </div>
                 <div className="animate-spin text-zinc-500">
@@ -72,7 +181,9 @@ export function SidebarUserNav({ user }: { user: any }) {
                 setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
               }
             >
-              {`Toggle ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
+              {resolvedTheme === 'light'
+                ? t('sideBar.sideMenu.toggleLightMode')
+                : t('sideBar.sideMenu.toggleDarkMode')}
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
@@ -92,9 +203,11 @@ export function SidebarUserNav({ user }: { user: any }) {
 
                     return;
                   }
+
+                  setIsSettingsModalOpen(true);
                 }}
               >
-                {t('sidebar.sideMenu.settings')}
+                {t('sideBar.sideMenu.settings')}
               </button>
             </DropdownMenuItem>
 
@@ -108,7 +221,7 @@ export function SidebarUserNav({ user }: { user: any }) {
                 className="user-actions-menu-paper__item"
                 rel="noopener noreferrer"
               >
-                {t('sidebar.sideMenu.documentation')}
+                {t('sideBar.sideMenu.documentation')}
               </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

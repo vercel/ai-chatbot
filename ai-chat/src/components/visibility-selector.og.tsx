@@ -1,58 +1,72 @@
 'use client';
 
-import { type ReactNode, useMemo, useState } from 'react';
-import { Button } from '@ai-chat/components/ui/button';
+import {
+  type ReactNode,
+  useContext,
+  useMemo,
+  useOptimistic,
+  useState,
+} from 'react';
+import { cn } from '@ai-chat/lib/utils';
+import { useChatVisibility } from '@ai-chat/hooks/use-chat-visibility';
+import { Button } from './ui/button';
+import {
+  BotIcon,
+  CheckCircleFillIcon,
+  ChevronDownIcon,
+  EyeIcon,
+  GlobeIcon,
+} from './icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@ai-chat/components/ui/dropdown-menu';
+} from './ui/dropdown-menu';
+import { useCoreContext } from '@ai-chat/app/core-context';
 import {
-  CheckCircleFillIcon,
-  ChevronDownIcon,
-  GlobeIcon,
-  LockIcon,
-} from '@ai-chat/components/icons';
-import { cn } from '@ai-chat/lib/utils';
-import { useChatVisibility } from '@ai-chat/hooks/use-chat-visibility';
+  ChatModeKeyOptions,
+  type KnowledgeBaseKeyOptions,
+  type LanguageModelKeyOptions,
+} from '@ai-chat/app/api/models';
 
 export type VisibilityType = 'private' | 'public';
-
-const visibilities: Array<{
-  id: VisibilityType;
-  label: string;
-  description: string;
-  icon: ReactNode;
-}> = [
-  {
-    id: 'private',
-    label: 'Private',
-    description: 'Only you can access this chat',
-    icon: <LockIcon />,
-  },
-  {
-    id: 'public',
-    label: 'Public',
-    description: 'Anyone with the link can access this chat',
-    icon: <GlobeIcon />,
-  },
-];
 
 export function VisibilitySelector({
   chatId,
   className,
   selectedVisibilityType,
+  selectedModeId,
 }: {
   chatId: string;
   selectedVisibilityType: VisibilityType;
+  selectedModeId: ChatModeKeyOptions;
 } & React.ComponentProps<typeof Button>) {
+  const { knowledgeBases, languageModels } = useCoreContext();
   const [open, setOpen] = useState(false);
 
-  const { visibilityType, setVisibilityType } = useChatVisibility({
-    chatId,
-    initialVisibilityType: selectedVisibilityType,
-  });
+  const visibilities =
+    (selectedModeId === ChatModeKeyOptions.Documents
+      ? knowledgeBases?.map((kb) => {
+          return {
+            id: kb.key,
+            label: kb.display_name,
+            description: kb.short_description,
+            icon: <EyeIcon />,
+          };
+        })
+      : languageModels?.map((lm) => {
+          return {
+            id: lm.key,
+            label: lm.display_name,
+            description: lm.short_description,
+            icon: <BotIcon />,
+          };
+        })) ?? [];
+
+  const [visibilityType, setVisibilityType] = useState<
+    LanguageModelKeyOptions | KnowledgeBaseKeyOptions
+  >(visibilities[0].id);
 
   const selectedVisibility = useMemo(
     () => visibilities.find((visibility) => visibility.id === visibilityType),
