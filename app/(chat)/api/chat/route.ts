@@ -153,8 +153,6 @@ export async function POST(request: Request) {
         );
       },
       onFinish: async ({ messages }) => {
-        console.log(JSON.stringify(messages, null, 2));
-
         await saveMessages({
           messages: messages.map((message) => ({
             id: message.id,
@@ -166,8 +164,7 @@ export async function POST(request: Request) {
           })),
         });
       },
-      onError: (error) => {
-        console.log(error);
+      onError: () => {
         return 'Oops! Something went wrong, please try again later.';
       },
     });

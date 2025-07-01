@@ -1,7 +1,7 @@
 'use client';
 
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -49,58 +49,41 @@ export function Chat({
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
-
   const [input, setInput] = useState<string>('');
 
-  const {
-    messages,
-    setMessages,
-    sendMessage: rawSendMessage,
-    status,
-    stop,
-    regenerate,
-  } = useChat<ChatMessage>({
-    id,
-    messages: initialMessages,
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-      prepareSendMessagesRequest({ messages, id, body }) {
-        return {
-          body: {
-            id,
-            message: messages.at(-1),
-            ...body,
-          },
-        };
-      },
-    }),
-    resume: initialMessages.length === 0 ? false : autoResume,
-    generateId: generateUUID,
-    experimental_throttle: 100,
-    onFinish: () => {
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
-    },
-    onError: (error) => {
-      if (error instanceof ChatSDKError) {
-        toast({
-          type: 'error',
-          description: error.message,
-        });
-      }
-    },
-  });
-
-  const sendMessage: UseChatHelpers<ChatMessage>['sendMessage'] = useCallback(
-    (message) => {
-      return rawSendMessage(message, {
-        body: {
-          selectedChatModel: initialChatModel,
-          selectedVisibilityType: visibilityType,
+  const { messages, setMessages, sendMessage, status, stop, regenerate } =
+    useChat<ChatMessage>({
+      id,
+      messages: initialMessages,
+      transport: new DefaultChatTransport({
+        api: '/api/chat',
+        prepareSendMessagesRequest({ messages, id, body }) {
+          return {
+            body: {
+              id,
+              message: messages.at(-1),
+              selectedChatModel: initialChatModel,
+              selectedVisibilityType: visibilityType,
+              ...body,
+            },
+          };
         },
-      });
-    },
-    [initialChatModel, visibilityType, rawSendMessage],
-  );
+      }),
+      resume: initialMessages.length === 0 ? false : autoResume,
+      generateId: generateUUID,
+      experimental_throttle: 100,
+      onFinish: () => {
+        mutate(unstable_serialize(getChatHistoryPaginationKey));
+      },
+      onError: (error) => {
+        if (error instanceof ChatSDKError) {
+          toast({
+            type: 'error',
+            description: error.message,
+          });
+        }
+      },
+    });
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 

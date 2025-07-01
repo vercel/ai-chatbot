@@ -87,14 +87,13 @@ export function MessageEditor({
               id: message.id,
             });
 
-            // @ts-expect-error todo: support UIMessage in setMessages
             setMessages((messages) => {
               const index = messages.findIndex((m) => m.id === message.id);
 
               if (index !== -1) {
-                const updatedMessage = {
-                  ...message,
-                  content: draftContent,
+                const updatedMessage: ChatMessage = {
+                  id: message.id,
+                  role: message.role,
                   parts: [{ type: 'text', text: draftContent }],
                 };
 
