@@ -30,30 +30,6 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
     const { type, data } = streamPart;
-
-    // if (type === 'data-artifacts-suggestion') {
-    //   setMetadata((metadata) => {
-    //     return {
-    //       suggestions: [...metadata.suggestions, data as Suggestion],
-    //     };
-    //   });
-    // }
-
-    if (type === 'data-document') {
-      setArtifact((draftArtifact) => {
-        return {
-          ...draftArtifact,
-          content: draftArtifact.content + data.content,
-          isVisible:
-            draftArtifact.status === 'streaming' &&
-            draftArtifact.content.length > 400 &&
-            draftArtifact.content.length < 450
-              ? true
-              : draftArtifact.isVisible,
-          status: 'streaming',
-        };
-      });
-    }
   },
   content: ({
     mode,

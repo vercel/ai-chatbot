@@ -24,10 +24,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
-import { artifactDefinitions, type ArtifactKind } from './artifact';
+import { artifactDefinitions } from './artifact';
 import type { ArtifactToolbarItem } from './create-artifact';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage } from '@/lib/types';
+import type { ChatMessage, DocumentKind } from '@/lib/types';
 
 type ToolProps = {
   description: string;
@@ -314,7 +314,7 @@ const PureToolbar = ({
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   stop: UseChatHelpers<ChatMessage>['stop'];
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  artifactKind: ArtifactKind;
+  artifactKind: DocumentKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();

@@ -16,16 +16,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
   kind: 'sheet',
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},
-  onStreamPart: ({ setArtifact, streamPart }) => {
-    if (streamPart.type === 'data-artifacts-sheet-delta') {
-      setArtifact((draftArtifact) => ({
-        ...draftArtifact,
-        content: streamPart.data as string,
-        isVisible: true,
-        status: 'streaming',
-      }));
-    }
-  },
+  onStreamPart: ({ setArtifact, streamPart }) => {},
   content: ({
     content,
     currentVersionIndex,

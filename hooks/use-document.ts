@@ -1,6 +1,7 @@
 import type { ChatMessage, Document } from '@/lib/types';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { useEffect, useMemo } from 'react';
+import useSWR from 'swr';
 
 export const useRecentDocumentPart = ({
   chatId,
@@ -32,5 +33,21 @@ export const useRecentDocumentPart = ({
     return recentDocumentPart.data;
   }, [messages]);
 
-  return { recentDocumentPart };
+  const { data: localDocumentMetadata, mutate: setLocalDocumentMetadata } =
+    useSWR<any>(
+      () =>
+        recentDocumentPart?.id
+          ? `document-metadata-${recentDocumentPart.id}`
+          : null,
+      null,
+      {
+        fallbackData: null,
+      },
+    );
+
+  return {
+    recentDocumentPart,
+    metadata: localDocumentMetadata,
+    setMetadata: setLocalDocumentMetadata,
+  };
 };

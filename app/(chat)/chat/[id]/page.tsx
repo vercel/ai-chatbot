@@ -4,9 +4,9 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import type { DBMessage } from '@/lib/db/schema';
 import type { UIMessage } from 'ai';
 import type { Attachment, ChatMessage } from '@/lib/types';
+import type { Tables } from '@/lib/db/schema';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -37,7 +37,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     id,
   });
 
-  function convertToUIMessages(messages: Array<DBMessage>): Array<ChatMessage> {
+  function convertToUIMessages(
+    messages: Array<Tables<'Message'>>,
+  ): Array<ChatMessage> {
     // @ts-expect-error todo: fix conversion of types
     return messages.map((message) => ({
       id: message.id,

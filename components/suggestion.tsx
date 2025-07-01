@@ -9,7 +9,7 @@ import type { UISuggestion } from '@/lib/editor/suggestions';
 import { CrossIcon, MessageIcon } from './icons';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { ArtifactKind } from './artifact';
+import type { DocumentKind } from '@/lib/types';
 
 export const Suggestion = ({
   suggestion,
@@ -18,7 +18,7 @@ export const Suggestion = ({
 }: {
   suggestion: UISuggestion;
   onApply: () => void;
-  artifactKind: ArtifactKind;
+  artifactKind: DocumentKind;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { width: windowWidth } = useWindowSize();

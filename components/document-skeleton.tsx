@@ -1,11 +1,11 @@
 'use client';
 
-import { ArtifactKind } from './artifact';
+import type { DocumentKind } from '@/lib/types';
 
 export const DocumentSkeleton = ({
   artifactKind,
 }: {
-  artifactKind: ArtifactKind;
+  artifactKind: DocumentKind;
 }) => {
   return artifactKind === 'image' ? (
     <div className="flex flex-col gap-4 w-full justify-center items-center h-[calc(100dvh-60px)]">

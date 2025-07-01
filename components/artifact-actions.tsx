@@ -1,13 +1,14 @@
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { artifactDefinitions, UIArtifact } from './artifact';
-import { Dispatch, memo, SetStateAction, useState } from 'react';
-import { ArtifactActionContext } from './create-artifact';
+import { artifactDefinitions } from './artifact';
+import { type Dispatch, memo, type SetStateAction, useState } from 'react';
+import type { ArtifactActionContext } from './create-artifact';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import type { Document } from '@/lib/types';
 
 interface ArtifactActionsProps {
-  artifact: UIArtifact;
+  artifact: Document;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
@@ -68,7 +69,7 @@ function PureArtifactActions({
                 }
               }}
               disabled={
-                isLoading || artifact.status === 'streaming'
+                isLoading || artifact.status === 'in_progress'
                   ? true
                   : action.isDisabled
                     ? action.isDisabled(actionContext)

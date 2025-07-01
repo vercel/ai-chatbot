@@ -1,9 +1,9 @@
 import { memo } from 'react';
 
-import type { ArtifactKind } from './artifact';
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from './icons';
 import { toast } from 'sonner';
 import { useArtifact } from '@/hooks/use-artifact';
+import type { DocumentKind } from '@/lib/types';
 
 const getActionText = (
   type: 'create' | 'update' | 'request-suggestions',
@@ -25,7 +25,7 @@ const getActionText = (
 
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
-  result: { id: string; title: string; kind: ArtifactKind };
+  result: { id: string; title: string; kind: DocumentKind };
   isReadonly: boolean;
 }
 
@@ -119,12 +119,6 @@ function PureDocumentToolCall({
           width: rect.width,
           height: rect.height,
         };
-
-        setArtifact((currentArtifact) => ({
-          ...currentArtifact,
-          isVisible: true,
-          boundingBox,
-        }));
       }}
     >
       <div className="flex flex-row gap-3 items-start">
