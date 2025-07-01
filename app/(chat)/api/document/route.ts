@@ -1,11 +1,11 @@
 import { auth } from '@/app/(auth)/auth';
-import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import type { DocumentKind } from '@/lib/types';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-  }: { content: string; title: string; kind: ArtifactKind } =
+  }: { content: string; title: string; kind: DocumentKind } =
     await request.json();
 
   const documents = await getDocumentsById({ id });
