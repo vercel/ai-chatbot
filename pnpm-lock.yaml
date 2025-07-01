@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/provider':
+        specifier: 2.0.0-beta.1
+        version: 2.0.0-beta.1
       '@ai-sdk/provider-utils':
         specifier: 3.0.0-beta.1
         version: 3.0.0-beta.1(zod@3.25.49)

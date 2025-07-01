@@ -24,12 +24,12 @@ export const createDocument = ({
       title: z.string(),
       kind: z.enum(artifactKinds),
     }),
-    execute: async ({ title, kind }) => {
+    execute: async ({ title, kind }, { toolCallId }) => {
       const documentId = generateUUID();
 
       streamWriter.write({
+        id: toolCallId,
         type: 'data-document',
-        id: '1',
         data: {
           kind,
           status: 'in_progress',
@@ -37,26 +37,18 @@ export const createDocument = ({
       });
 
       streamWriter.write({
+        id: toolCallId,
         type: 'data-document',
-        id: '1',
         data: {
           id: documentId,
         },
       });
 
       streamWriter.write({
+        id: toolCallId,
         type: 'data-document',
-        id: '1',
         data: {
           title,
-        },
-      });
-
-      streamWriter.write({
-        type: 'data-document',
-        id: '1',
-        data: {
-          content: '',
         },
       });
 
@@ -74,6 +66,7 @@ export const createDocument = ({
         title,
         streamWriter,
         session,
+        toolCallId,
       });
 
       return `A ${kind} document of id ${documentId} and title "${title}" was created and is now visible to the user.`;

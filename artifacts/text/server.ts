@@ -5,7 +5,7 @@ import { updateDocumentPrompt } from '@/lib/ai/prompts';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
   kind: 'text',
-  onCreateDocument: async ({ title, streamWriter }) => {
+  onCreateDocument: async ({ title, streamWriter, toolCallId }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({
@@ -23,8 +23,8 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
         draftContent += delta.text;
 
         streamWriter.write({
+          id: toolCallId,
           type: 'data-document',
-          id: '1',
           data: {
             content: draftContent,
           },
@@ -32,9 +32,22 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       }
     }
 
+    streamWriter.write({
+      id: toolCallId,
+      type: 'data-document',
+      data: {
+        status: 'completed',
+      },
+    });
+
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, streamWriter }) => {
+  onUpdateDocument: async ({
+    document,
+    description,
+    streamWriter,
+    toolCallId,
+  }) => {
     let draftContent = '';
 
     const { fullStream } = streamText({
@@ -57,14 +70,27 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
 
       if (type === 'text') {
         draftContent += delta.text;
+
         streamWriter.write({
+          id: toolCallId,
           type: 'data-document',
-          id: '1',
           data: {
             content: draftContent,
           },
         });
       }
+
+      streamWriter.write({
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          id: document.id,
+          kind: document.kind,
+          content: draftContent,
+          title: document.title,
+          status: 'completed',
+        },
+      });
     }
 
     return draftContent;

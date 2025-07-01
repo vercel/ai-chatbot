@@ -3,10 +3,11 @@ import type { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
+import type { ChatMessage } from '@/lib/types';
 
 interface UpdateDocumentProps {
   session: Session;
-  streamWriter: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter<ChatMessage>;
 }
 
 export const updateDocument = ({
@@ -21,7 +22,7 @@ export const updateDocument = ({
         .string()
         .describe('The description of changes that need to be made'),
     }),
-    execute: async ({ id, description }) => {
+    execute: async ({ id, description }, { toolCallId }) => {
       const document = await getDocumentById({ id });
 
       if (!document) {
@@ -31,8 +32,11 @@ export const updateDocument = ({
       }
 
       streamWriter.write({
-        type: 'data-artifacts-clear',
-        data: document.title,
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          status: 'in_progress',
+        },
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -49,9 +53,8 @@ export const updateDocument = ({
         description,
         streamWriter,
         session,
+        toolCallId,
       });
-
-      streamWriter.write({ type: 'data-artifacts-finish', data: '' });
 
       return {
         id,

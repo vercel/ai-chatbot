@@ -2,6 +2,7 @@ import type { DocumentLayout } from '@/lib/types';
 import useSWR from 'swr';
 
 const initialDocumentLayout: DocumentLayout = {
+  selectedDocumentId: null,
   isVisible: false,
   boundingBox: {
     top: 0,
@@ -23,25 +24,22 @@ export const useDocumentLayout = () => {
       | ((prev: DocumentLayout) => Partial<DocumentLayout>),
   ) => {
     setDocumentLayout((prev) => {
+      const fallbackLayout: DocumentLayout = {
+        selectedDocumentId: null,
+        isVisible: false,
+        boundingBox: {
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0,
+        },
+      };
+
       if (!prev) {
         return {
-          isVisible: false,
-          boundingBox: {
-            top: 0,
-            left: 0,
-            width: 0,
-            height: 0,
-          },
+          ...fallbackLayout,
           ...(typeof updater === 'function'
-            ? updater({
-                isVisible: false,
-                boundingBox: {
-                  top: 0,
-                  left: 0,
-                  width: 0,
-                  height: 0,
-                },
-              })
+            ? updater(fallbackLayout)
             : updater),
         };
       }

@@ -47,6 +47,9 @@ export function Chat({
     initialVisibilityType,
   });
 
+  const searchParams = useSearchParams();
+  const query = searchParams.get('query');
+
   const [input, setInput] = useState<string>('');
 
   const {
@@ -71,7 +74,7 @@ export function Chat({
         };
       },
     }),
-    resume: autoResume,
+    resume: initialMessages.length === 0 ? false : autoResume,
     generateId: generateUUID,
     experimental_throttle: 100,
     onFinish: () => {
@@ -98,9 +101,6 @@ export function Chat({
     },
     [initialChatModel, visibilityType, rawSendMessage],
   );
-
-  const searchParams = useSearchParams();
-  const query = searchParams.get('query');
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 

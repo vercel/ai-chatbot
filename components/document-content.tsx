@@ -8,8 +8,6 @@ import type { Document } from '@/lib/types';
 export const DocumentContent = ({
   document,
 }: { document: Partial<Document> }) => {
-  // const { artifact } = useArtifact();
-
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {

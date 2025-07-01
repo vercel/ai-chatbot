@@ -6,7 +6,6 @@ import {
   type SetStateAction,
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -28,8 +27,9 @@ import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
-import type { Attachment, ChatMessage, DocumentKind } from '@/lib/types';
+import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDocumentLayout } from '@/hooks/use-document-layout';
+import { useRecentDocumentPart } from '@/hooks/use-document';
 
 export const artifactDefinitions = [
   textArtifact,
@@ -37,21 +37,6 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
 ];
-
-export interface UIArtifact {
-  title: string;
-  documentId: string;
-  kind: DocumentKind;
-  content: string;
-  isVisible: boolean;
-  status: 'streaming' | 'idle';
-  boundingBox: {
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-  };
-}
 
 function PureArtifact({
   chatId,
@@ -78,24 +63,28 @@ function PureArtifact({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<ChatMessage>;
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  votes: Array<Vote> | undefined;
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
+  votes: Array<Vote> | undefined;
   selectedVisibilityType: VisibilityType;
 }) {
   const { documentLayout } = useDocumentLayout();
-  const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
+  const { artifact, metadata, setMetadata } = useArtifact();
 
-  console.log(artifact);
+  const { recentDocumentPart } = useRecentDocumentPart({
+    chatId,
+    status,
+  });
+
+  const { open: isSidebarOpen } = useSidebar();
 
   const {
     data: documents,
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    // documentLayout.selectedDocumentId && artifact.status !== 'streaming'
-    documentLayout.selectedDocumentId
+    recentDocumentPart?.status !== 'in_progress' && documentLayout.isVisible
       ? `/api/document?id=${documentLayout.selectedDocumentId}`
       : null,
     fetcher,
@@ -105,30 +94,20 @@ function PureArtifact({
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
-  const { open: isSidebarOpen } = useSidebar();
+  useEffect(() => {
+    if (documents && documents.length > 0) {
+      const mostRecentDocument = documents.at(-1);
 
-  const mostRecentDocument = useMemo(() => {
-    return documents?.at(-1);
+      if (mostRecentDocument) {
+        setDocument(mostRecentDocument);
+        setCurrentVersionIndex(documents.length - 1);
+      }
+    }
   }, [documents]);
 
-  // useEffect(() => {
-  //   if (documents && documents.length > 0) {
-  //     const mostRecentDocument = documents.at(-1);
-
-  //     if (mostRecentDocument) {
-  //       setDocument(mostRecentDocument);
-  //       setCurrentVersionIndex(documents.length - 1);
-  //       setArtifact((currentArtifact) => ({
-  //         ...currentArtifact,
-  //         content: mostRecentDocument.content ?? '',
-  //       }));
-  //     }
-  //   }
-  // }, [documents, setArtifact]);
-
-  // useEffect(() => {
-  //   mutateDocuments();
-  // }, [artifact.status, mutateDocuments]);
+  useEffect(() => {
+    mutateDocuments();
+  }, [recentDocumentPart?.status, mutateDocuments]);
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
@@ -155,9 +134,9 @@ function PureArtifact({
               {
                 method: 'POST',
                 body: JSON.stringify({
-                  title: artifact.title,
+                  title: currentDocument.title,
                   content: updatedContent,
-                  kind: artifact.kind,
+                  kind: currentDocument.kind,
                 }),
               },
             );
@@ -241,8 +220,6 @@ function PureArtifact({
     documents && documents.length > 0
       ? currentVersionIndex === documents.length - 1
       : true;
-
-  console.log({ isCurrentVersion, currentVersionIndex });
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
@@ -417,7 +394,7 @@ function PureArtifact({
                 <ArtifactCloseButton />
 
                 <div className="flex flex-col">
-                  <div className="font-medium">{artifact.title}</div>
+                  <div className="font-medium">{document?.title}</div>
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
@@ -454,12 +431,12 @@ function PureArtifact({
               <artifactDefinition.content
                 title={artifact.title}
                 content={
-                  isCurrentVersion
-                    ? artifact.content
+                  status === 'streaming' && recentDocumentPart?.content
+                    ? recentDocumentPart.content
                     : getDocumentContentById(currentVersionIndex)
                 }
                 mode={mode}
-                status={artifact.status}
+                status={recentDocumentPart?.status ?? 'in_progress'}
                 currentVersionIndex={currentVersionIndex}
                 suggestions={[]}
                 onSaveContent={saveContent}

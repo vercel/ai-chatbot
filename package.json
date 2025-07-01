@@ -19,6 +19,7 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
+    "@ai-sdk/provider": "2.0.0-beta.1",
     "@ai-sdk/provider-utils": "3.0.0-beta.1",
     "@ai-sdk/react": "2.0.0-beta.1",
     "@ai-sdk/xai": "2.0.0-beta.1",

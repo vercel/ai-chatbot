@@ -158,7 +158,7 @@ const PurePreviewMessage = ({
               if (type === 'tool-getWeather') {
                 const { toolCallId, state } = part;
 
-                if (state !== 'output-available') {
+                if (state === 'output-available') {
                   return <Weather key={toolCallId} />;
                 }
               }
@@ -216,11 +216,11 @@ const PurePreviewMessage = ({
               }
 
               if (type === 'data-document') {
-                const { data: document } = part;
+                const { data: document, id } = part;
 
                 return (
                   <DocumentPreview
-                    key={`${message.id}-${document.id}`}
+                    key={`data-document-${id}`}
                     isReadonly={isReadonly}
                     document={document}
                   />

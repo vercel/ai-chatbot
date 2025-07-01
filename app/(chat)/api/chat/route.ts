@@ -166,7 +166,8 @@ export async function POST(request: Request) {
           })),
         });
       },
-      onError: () => {
+      onError: (error) => {
+        console.log(error);
         return 'Oops! Something went wrong, please try again later.';
       },
     });
