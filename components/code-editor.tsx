@@ -6,12 +6,13 @@ import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { basicSetup } from 'codemirror';
 import React, { memo, useEffect, useRef } from 'react';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
+import type { Document } from '@/lib/types';
 
 type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
-  status: 'streaming' | 'idle';
+  status: Document['status'];
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
@@ -75,7 +76,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
     if (editorRef.current && content) {
       const currentContent = editorRef.current.state.doc.toString();
 
-      if (status === 'streaming' || currentContent !== content) {
+      if (status === 'in_progress' || currentContent !== content) {
         const transaction = editorRef.current.state.update({
           changes: {
             from: 0,
@@ -103,7 +104,7 @@ function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
     return false;
   if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
-  if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
+  if (prevProps.status === 'in_progress' && nextProps.status === 'in_progress')
     return false;
   if (prevProps.content !== nextProps.content) return false;
 

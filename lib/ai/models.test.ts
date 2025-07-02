@@ -47,15 +47,13 @@ export const titleModel = new MockLanguageModelV2({
       chunkDelayInMs: 500,
       initialDelayInMs: 1000,
       chunks: [
-        { type: 'text', text: 'This is a test title' },
+        { id: '1', type: 'text-start' },
+        { id: '1', type: 'text-delta', delta: 'This is a test title' },
+        { id: '1', type: 'text-end' },
         {
           type: 'finish',
           finishReason: 'stop',
-          usage: {
-            inputTokens: 10,
-            outputTokens: 20,
-            totalTokens: 30,
-          },
+          usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
         },
       ],
     }),

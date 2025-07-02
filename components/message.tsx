@@ -1,9 +1,7 @@
 'use client';
-import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
@@ -39,7 +37,6 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
-
   const fileParts = message.parts.filter((part) => part.type === 'file');
 
   return (
@@ -160,7 +157,7 @@ const PurePreviewMessage = ({
               if (type === 'tool-getWeather') {
                 const { toolCallId, state } = part;
 
-                if (state !== 'output-available') {
+                if (state === 'output-available') {
                   return <Weather key={toolCallId} />;
                 }
               }
@@ -171,24 +168,14 @@ const PurePreviewMessage = ({
                 if (state === 'input-available') {
                   const { input } = part;
 
-                  return (
-                    <DocumentPreview
-                      key={toolCallId}
-                      isReadonly={isReadonly}
-                      args={input}
-                    />
-                  );
+                  return <div key={toolCallId}>Create Document Tool Input</div>;
                 }
 
                 if (state === 'output-available') {
                   const { output } = part;
 
                   return (
-                    <DocumentPreview
-                      key={toolCallId}
-                      isReadonly={isReadonly}
-                      result={output}
-                    />
+                    <div key={toolCallId}>Create Document Tool Output</div>
                   );
                 }
               }
@@ -199,26 +186,14 @@ const PurePreviewMessage = ({
                 if (state === 'input-available') {
                   const { input } = part;
 
-                  return (
-                    <DocumentToolCall
-                      key={toolCallId}
-                      type="update"
-                      // @ts-ignore todo: fix type mismatch
-                      args={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
+                  return <div key={toolCallId}>Update Document Tool Input</div>;
                 }
 
                 if (state === 'output-available') {
                   const { output } = part;
 
                   return (
-                    <DocumentPreview
-                      key={toolCallId}
-                      isReadonly={isReadonly}
-                      result={output}
-                    />
+                    <div key={toolCallId}>Create Document Tool Output</div>
                   );
                 }
               }
@@ -229,26 +204,26 @@ const PurePreviewMessage = ({
                 if (state === 'input-available') {
                   const { input } = part;
 
-                  return (
-                    <DocumentPreview
-                      key={toolCallId}
-                      isReadonly={isReadonly}
-                      args={input}
-                    />
-                  );
+                  return <div key={toolCallId}>Request Suggestions Input</div>;
                 }
 
                 if (state === 'output-available') {
                   const { output } = part;
 
-                  return (
-                    <DocumentPreview
-                      key={toolCallId}
-                      isReadonly={isReadonly}
-                      result={output}
-                    />
-                  );
+                  return <div key={toolCallId}>Request Suggestions Output</div>;
                 }
+              }
+
+              if (type === 'data-document') {
+                const { data: document, id } = part;
+
+                return (
+                  <DocumentPreview
+                    key={`data-document-${id}`}
+                    isReadonly={isReadonly}
+                    document={document}
+                  />
+                );
               }
             })}
 
@@ -281,36 +256,3 @@ export const PreviewMessage = memo(
     return false;
   },
 );
-
-export const ThinkingMessage = () => {
-  const role = 'assistant';
-
-  return (
-    <motion.div
-      data-testid="message-assistant-loading"
-      className="w-full mx-auto max-w-3xl px-4 group/message min-h-96"
-      initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
-      data-role={role}
-    >
-      <div
-        className={cx(
-          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
-          {
-            'group-data-[role=user]/message:bg-muted': true,
-          },
-        )}
-      >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
-        </div>
-
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};

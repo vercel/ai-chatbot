@@ -58,7 +58,7 @@ export const message = pgTable('Message_v2', {
   createdAt: timestamp('createdAt').notNull(),
 });
 
-export type DBMessage = InferSelectModel<typeof message>;
+export type Message = InferSelectModel<typeof message>;
 
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
@@ -168,3 +168,28 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export type TableNames =
+  | 'Message'
+  | 'User'
+  | 'Chat'
+  | 'Vote'
+  | 'Document'
+  | 'Suggestion'
+  | 'Stream';
+
+export type Tables<T extends TableNames> = T extends 'Message'
+  ? Message
+  : T extends 'User'
+    ? User
+    : T extends 'Chat'
+      ? Chat
+      : T extends 'Vote'
+        ? Vote
+        : T extends 'Document'
+          ? Document
+          : T extends 'Suggestion'
+            ? Suggestion
+            : T extends 'Stream'
+              ? Stream
+              : never;

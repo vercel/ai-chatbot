@@ -2,14 +2,12 @@ import { generateUUID } from '@/lib/utils';
 import { tool, type UIMessageStreamWriter } from 'ai';
 import { z } from 'zod';
 import type { Session } from 'next-auth';
-import {
-  artifactKinds,
-  documentHandlersByArtifactKind,
-} from '@/lib/artifacts/server';
+import { artifactKinds, documentHandlersByKind } from '@/lib/artifacts/server';
+import type { ChatMessage } from '@/lib/types';
 
 interface CreateDocumentProps {
   session: Session;
-  streamWriter: UIMessageStreamWriter;
+  streamWriter: UIMessageStreamWriter<ChatMessage>;
 }
 
 export const createDocument = ({
@@ -23,32 +21,36 @@ export const createDocument = ({
       title: z.string(),
       kind: z.enum(artifactKinds),
     }),
-    execute: async ({ title, kind }) => {
-      const id = generateUUID();
+    execute: async ({ title, kind }, { toolCallId }) => {
+      const documentId = generateUUID();
 
       streamWriter.write({
-        type: 'data-artifacts-kind',
-        data: kind,
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          kind,
+          status: 'in_progress',
+        },
       });
 
       streamWriter.write({
-        type: 'data-artifacts-id',
-        data: id,
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          id: documentId,
+        },
       });
 
       streamWriter.write({
-        type: 'data-artifacts-title',
-        data: title,
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          title,
+        },
       });
 
-      streamWriter.write({
-        type: 'data-artifacts-clear',
-        data: '',
-      });
-
-      const documentHandler = documentHandlersByArtifactKind.find(
-        (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === kind,
+      const documentHandler = documentHandlersByKind.find(
+        (documentHandlerByKind) => documentHandlerByKind.kind === kind,
       );
 
       if (!documentHandler) {
@@ -56,19 +58,13 @@ export const createDocument = ({
       }
 
       await documentHandler.onCreateDocument({
-        id,
+        id: documentId,
         title,
         streamWriter,
         session,
+        toolCallId,
       });
 
-      streamWriter.write({ type: 'data-artifacts-finish', data: '' });
-
-      return {
-        id,
-        title,
-        kind,
-        content: 'A document was created and is now visible to the user.',
-      };
+      return `A ${kind} document of id ${documentId} and title "${title}" was created and is now visible to the user.`;
     },
   });

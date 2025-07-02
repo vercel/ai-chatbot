@@ -75,21 +75,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       outputs: [],
     });
   },
-  onStreamPart: ({ streamPart, setArtifact }) => {
-    if (streamPart.type === 'data-artifacts-code-delta') {
-      setArtifact((draftArtifact) => ({
-        ...draftArtifact,
-        content: streamPart.data as string,
-        isVisible:
-          draftArtifact.status === 'streaming' &&
-          draftArtifact.content.length > 300 &&
-          draftArtifact.content.length < 310
-            ? true
-            : draftArtifact.isVisible,
-        status: 'streaming',
-      }));
-    }
-  },
+  onStreamPart: () => {},
   content: ({ metadata, setMetadata, ...props }) => {
     return (
       <>

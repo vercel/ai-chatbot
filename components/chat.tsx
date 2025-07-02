@@ -1,7 +1,7 @@
 'use client';
 
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -9,7 +9,6 @@ import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -20,6 +19,7 @@ import { ChatSDKError } from '@/lib/errors';
 import { Messages } from './messages';
 import type { ChatMessage, Attachment } from '@/lib/types';
 import { DefaultChatTransport } from 'ai';
+import { useDocumentLayout } from '@/hooks/use-document-layout';
 
 export function Chat({
   id,
@@ -40,65 +40,50 @@ export function Chat({
 }) {
   const { mutate } = useSWRConfig();
 
+  const { documentLayout } = useDocumentLayout();
+
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
   });
 
-  const [input, setInput] = useState<string>('');
-
-  const {
-    messages,
-    setMessages,
-    sendMessage: rawSendMessage,
-    status,
-    stop,
-    regenerate,
-  } = useChat<ChatMessage>({
-    id,
-    messages: initialMessages,
-    experimental_throttle: 100,
-    generateId: generateUUID,
-    resume: autoResume,
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-      prepareSendMessagesRequest({ messages, id, body }) {
-        return {
-          body: {
-            id,
-            message: messages.at(-1),
-            ...body,
-          },
-        };
-      },
-    }),
-    onFinish: () => {
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
-    },
-    onError: (error) => {
-      if (error instanceof ChatSDKError) {
-        toast({
-          type: 'error',
-          description: error.message,
-        });
-      }
-    },
-  });
-
-  const sendMessage: UseChatHelpers<ChatMessage>['sendMessage'] = useCallback(
-    (message) => {
-      return rawSendMessage(message, {
-        body: {
-          selectedChatModel: initialChatModel,
-          selectedVisibilityType: visibilityType,
-        },
-      });
-    },
-    [initialChatModel, visibilityType, rawSendMessage],
-  );
-
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
+  const [input, setInput] = useState<string>('');
+
+  const { messages, setMessages, sendMessage, status, stop, regenerate } =
+    useChat<ChatMessage>({
+      id,
+      messages: initialMessages,
+      transport: new DefaultChatTransport({
+        api: '/api/chat',
+        prepareSendMessagesRequest({ messages, id, body }) {
+          return {
+            body: {
+              id,
+              message: messages.at(-1),
+              selectedChatModel: initialChatModel,
+              selectedVisibilityType: visibilityType,
+              ...body,
+            },
+          };
+        },
+      }),
+      resume: initialMessages.length === 0 ? false : autoResume,
+      generateId: generateUUID,
+      experimental_throttle: 100,
+      onFinish: () => {
+        mutate(unstable_serialize(getChatHistoryPaginationKey));
+      },
+      onError: (error) => {
+        if (error instanceof ChatSDKError) {
+          toast({
+            type: 'error',
+            description: error.message,
+          });
+        }
+      },
+    });
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
@@ -120,7 +105,6 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <>
@@ -141,7 +125,7 @@ export function Chat({
           setMessages={setMessages}
           regenerate={regenerate}
           isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
+          isArtifactVisible={documentLayout?.isVisible ?? false}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">

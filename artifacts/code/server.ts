@@ -27,8 +27,10 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
         if (code) {
           streamWriter.write({
-            type: 'data-artifacts-code-delta',
-            data: code ?? '',
+            type: 'data-document',
+            data: {
+              content: code,
+            },
           });
 
           draftContent = code;
@@ -59,8 +61,10 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
         if (code) {
           streamWriter.write({
-            type: 'data-artifacts-code-delta',
-            data: code ?? '',
+            type: 'data-document',
+            data: {
+              content: code,
+            },
           });
 
           draftContent = code;

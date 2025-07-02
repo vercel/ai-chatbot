@@ -16,8 +16,10 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     draftContent = image.base64;
 
     streamWriter.write({
-      type: 'data-artifacts-image-delta',
-      data: image.base64,
+      type: 'data-document',
+      data: {
+        content: image.base64,
+      },
     });
 
     return draftContent;
@@ -34,8 +36,10 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     draftContent = image.base64;
 
     streamWriter.write({
-      type: 'data-artifacts-image-delta',
-      data: image.base64,
+      type: 'data-document',
+      data: {
+        content: image.base64,
+      },
     });
 
     return draftContent;

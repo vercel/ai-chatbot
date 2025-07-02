@@ -120,7 +120,8 @@ export async function POST(request: Request) {
     // @ts-expect-error type mismatch converting from DBMessage to UIMessage
     const messages: UIMessage[] = [...previousMessages, message];
 
-    const stream = createUIMessageStream({
+    const stream = createUIMessageStream<ChatMessage>({
+      generateId: generateUUID,
       execute: ({ writer: streamWriter }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
@@ -141,9 +142,6 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          _internal: {
-            generateId: generateUUID,
-          },
         });
 
         result.consumeStream();
@@ -151,22 +149,20 @@ export async function POST(request: Request) {
         streamWriter.merge(
           result.toUIMessageStream<ChatMessage>({
             sendReasoning: true,
-            onFinish: async ({ responseMessage }) => {
-              await saveMessages({
-                messages: [
-                  {
-                    id: responseMessage.id,
-                    role: 'assistant',
-                    parts: responseMessage.parts,
-                    createdAt: new Date(),
-                    attachments: [],
-                    chatId: id,
-                  },
-                ],
-              });
-            },
           }),
         );
+      },
+      onFinish: async ({ messages }) => {
+        await saveMessages({
+          messages: messages.map((message) => ({
+            id: message.id,
+            role: message.role,
+            parts: message.parts,
+            createdAt: new Date(),
+            attachments: [],
+            chatId: id,
+          })),
+        });
       },
       onError: () => {
         return 'Oops! Something went wrong, please try again later.';

@@ -28,31 +28,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       suggestions,
     });
   },
-  onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === 'data-artifacts-suggestion') {
-      setMetadata((metadata) => {
-        return {
-          suggestions: [...metadata.suggestions, streamPart.data as Suggestion],
-        };
-      });
-    }
-
-    if (streamPart.type === 'data-artifacts-text-delta') {
-      setArtifact((draftArtifact) => {
-        return {
-          ...draftArtifact,
-          content: draftArtifact.content + (streamPart.data as string),
-          isVisible:
-            draftArtifact.status === 'streaming' &&
-            draftArtifact.content.length > 400 &&
-            draftArtifact.content.length < 450
-              ? true
-              : draftArtifact.isVisible,
-          status: 'streaming',
-        };
-      });
-    }
-  },
+  onStreamPart: () => {},
   content: ({
     mode,
     status,

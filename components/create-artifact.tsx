@@ -1,9 +1,8 @@
 import type { Suggestion } from '@/lib/db/schema';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
-import type { DataStreamDelta } from './data-stream-handler';
-import type { UIArtifact } from './artifact';
-import type { ChatMessage } from '@/lib/types';
+import type { ChatMessage, CustomUIDataTypes } from '@/lib/types';
+import type { DataUIPart } from 'ai';
 
 export type ArtifactActionContext<M = any> = {
   content: string;
@@ -39,7 +38,7 @@ interface ArtifactContent<M = any> {
   mode: 'edit' | 'diff';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  status: 'streaming' | 'idle';
+  status: 'in_progress' | 'completed' | 'failed';
   suggestions: Array<Suggestion>;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
   isInline: boolean;
@@ -63,8 +62,7 @@ type ArtifactConfig<T extends string, M = any> = {
   initialize?: (parameters: InitializeParameters<M>) => void;
   onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
-    setArtifact: Dispatch<SetStateAction<UIArtifact>>;
-    streamPart: DataStreamDelta;
+    streamPart: DataUIPart<CustomUIDataTypes>;
   }) => void;
 };
 
@@ -77,8 +75,7 @@ export class Artifact<T extends string, M = any> {
   readonly initialize?: (parameters: InitializeParameters) => void;
   readonly onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
-    setArtifact: Dispatch<SetStateAction<UIArtifact>>;
-    streamPart: DataStreamDelta;
+    streamPart: DataUIPart<CustomUIDataTypes>;
   }) => void;
 
   constructor(config: ArtifactConfig<T, M>) {
