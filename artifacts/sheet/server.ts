@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
   kind: 'sheet',
-  onCreateDocument: async ({ title, streamWriter }) => {
+  onCreateDocument: async ({ title, streamWriter, toolCallId }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
@@ -27,6 +27,7 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
         if (csv) {
           streamWriter.write({
+            id: toolCallId,
             type: 'data-document',
             data: {
               content: csv,
@@ -38,16 +39,14 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
       }
     }
 
-    streamWriter.write({
-      type: 'data-document',
-      data: {
-        content: draftContent,
-      },
-    });
-
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, streamWriter }) => {
+  onUpdateDocument: async ({
+    document,
+    description,
+    streamWriter,
+    toolCallId,
+  }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
@@ -68,6 +67,7 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
         if (csv) {
           streamWriter.write({
+            id: toolCallId,
             type: 'data-document',
             data: {
               content: csv,

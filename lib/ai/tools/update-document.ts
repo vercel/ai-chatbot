@@ -55,6 +55,14 @@ export const updateDocument = ({
         toolCallId,
       });
 
+      streamWriter.write({
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          status: 'completed',
+        },
+      });
+
       return {
         id,
         title: document.title,

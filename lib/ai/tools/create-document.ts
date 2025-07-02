@@ -65,6 +65,15 @@ export const createDocument = ({
         toolCallId,
       });
 
+      streamWriter.write({
+        id: toolCallId,
+        type: 'data-document',
+        data: {
+          kind,
+          status: 'completed',
+        },
+      });
+
       return `A ${kind} document of id ${documentId} and title "${title}" was created and is now visible to the user.`;
     },
   });

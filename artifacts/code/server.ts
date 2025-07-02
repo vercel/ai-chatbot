@@ -6,7 +6,7 @@ import { createDocumentHandler } from '@/lib/artifacts/server';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
   kind: 'code',
-  onCreateDocument: async ({ title, streamWriter }) => {
+  onCreateDocument: async ({ title, streamWriter, toolCallId }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
@@ -27,6 +27,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
         if (code) {
           streamWriter.write({
+            id: toolCallId,
             type: 'data-document',
             data: {
               content: code,
@@ -40,7 +41,12 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, streamWriter }) => {
+  onUpdateDocument: async ({
+    document,
+    description,
+    streamWriter,
+    toolCallId,
+  }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
@@ -61,6 +67,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
 
         if (code) {
           streamWriter.write({
+            id: toolCallId,
             type: 'data-document',
             data: {
               content: code,

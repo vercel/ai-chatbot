@@ -32,14 +32,6 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       }
     }
 
-    streamWriter.write({
-      id: toolCallId,
-      type: 'data-document',
-      data: {
-        status: 'completed',
-      },
-    });
-
     return draftContent;
   },
   onUpdateDocument: async ({
@@ -88,7 +80,6 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
           kind: document.kind,
           content: draftContent,
           title: document.title,
-          status: 'completed',
         },
       });
     }
