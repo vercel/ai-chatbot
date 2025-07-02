@@ -1,9 +1,9 @@
-import { memo } from 'react';
-import type { UIMessage } from 'ai';
+import { type Dispatch, memo, type SetStateAction } from 'react';
 import equal from 'fast-deep-equal';
 import { motion } from 'framer-motion';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { useMessages } from '@ai-chat/hooks/use-messages';
+import type { Message } from '@ai-chat/app/api/models';
 import type { Vote } from '@ai-chat/lib/types';
 import type { UIArtifact } from './artifact';
 import { PreviewMessage, ThinkingMessage } from './message';
@@ -12,8 +12,8 @@ interface ArtifactMessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
+  messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];

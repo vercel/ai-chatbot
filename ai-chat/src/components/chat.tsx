@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import useSWR, { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
@@ -12,7 +11,13 @@ import { useArtifactSelector } from '@ai-chat/hooks/use-artifact';
 import { useAutoResume } from '@ai-chat/hooks/use-auto-resume';
 import { ChatSDKError } from '@ai-chat/lib/errors';
 import type { Vote } from '@ai-chat/lib/types';
-import type { ChatModeKeyOptions } from '@ai-chat/app/api/models';
+import {
+  MessageRoles,
+  type Source,
+  type ChatModeKeyOptions,
+  type Message,
+} from '@ai-chat/app/api/models';
+import { Api } from '@ai-chat/app/api/api';
 import { toast } from './toast';
 import { Artifact } from './artifact';
 import { Messages } from './messages';
@@ -20,23 +25,24 @@ import { MultimodalInput } from './multimodal-input';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 
 export function Chat({
-  id,
+  id: chatId,
   initialMessages,
   initialChatModel,
   isReadonly,
   autoResume,
 }: {
   id: string;
-  initialMessages: Array<UIMessage>;
+  initialMessages: Array<Message>;
   initialChatModel: ChatModeKeyOptions;
   isReadonly: boolean;
   autoResume: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const [apiMessages, setApiMessages] = useState<Message[]>([]);
 
   const {
-    messages,
-    setMessages,
+    // messages,
+    // setMessages,
     handleSubmit,
     input,
     setInput,
@@ -47,14 +53,14 @@ export function Chat({
     experimental_resume,
     data,
   } = useChat({
-    id,
+    id: chatId,
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
     fetch: fetchWithErrorHandlers,
     experimental_prepareRequestBody: (body) => ({
-      id,
+      id: chatId,
       message: body.messages.at(-1),
       selectedChatModel: initialChatModel,
     }),
@@ -79,29 +85,40 @@ export function Chat({
   useEffect(() => {
     if (query && !hasAppendedQuery) {
       append({
-        role: 'user',
+        role: MessageRoles.User,
         content: query,
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, '', `/chat/${id}`);
+      window.history.replaceState({}, '', `/chat/${chatId}`);
     }
-  }, [query, append, hasAppendedQuery, id]);
+  }, [query, append, hasAppendedQuery, chatId]);
 
   const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
+    apiMessages.length >= 2 ? `/api/vote?chatId=${chatId}` : null,
   );
 
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const [attachments, setAttachments] = useState<Array<[string, Source]>>([]);
+
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
-  useAutoResume({
-    autoResume,
-    initialMessages,
-    experimental_resume,
-    data,
-    setMessages,
-  });
+  useEffect(() => {
+    if (!apiMessages.length) {
+      Api.getChatMetadataAndMessages(chatId).then((chatData) => {
+        setApiMessages(chatData.messages);
+
+        let sourcesEntries: [string, Source][] = [];
+        chatData.messages.forEach((message) => {
+          const entries = Object.entries(
+            message?.sources as Record<number, Source>,
+          );
+          sourcesEntries = [...entries];
+        });
+        setAttachments(sourcesEntries);
+        console.info({ chatData, sourcesEntries });
+      });
+    }
+  }, [chatId, apiMessages, attachments]);
 
   return (
     <>
@@ -109,11 +126,11 @@ export function Chat({
         <ChatHeader selectedModeId={initialChatModel} isReadonly={isReadonly} />
 
         <Messages
-          chatId={id}
+          chatId={chatId}
           status={status}
           votes={votes}
-          messages={messages}
-          setMessages={setMessages}
+          messages={apiMessages}
+          setMessages={setApiMessages}
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
@@ -122,7 +139,7 @@ export function Chat({
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           {!isReadonly && (
             <MultimodalInput
-              chatId={id}
+              chatId={chatId}
               input={input}
               setInput={setInput}
               handleSubmit={handleSubmit}
@@ -130,8 +147,8 @@ export function Chat({
               stop={stop}
               attachments={attachments}
               setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
+              messages={apiMessages}
+              setMessages={setApiMessages}
               append={append}
             />
           )}
@@ -139,7 +156,7 @@ export function Chat({
       </div>
 
       <Artifact
-        chatId={id}
+        chatId={chatId}
         input={input}
         setInput={setInput}
         handleSubmit={handleSubmit}
@@ -148,8 +165,8 @@ export function Chat({
         attachments={attachments}
         setAttachments={setAttachments}
         append={append}
-        messages={messages}
-        setMessages={setMessages}
+        messages={apiMessages}
+        setMessages={setApiMessages}
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}

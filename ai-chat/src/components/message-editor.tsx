@@ -7,15 +7,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Message } from 'ai';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { Message } from '@ai-chat/app/api/models';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 
 export type MessageEditorProps = {
   message: Message;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   reload: UseChatHelpers['reload'];
 };
 
@@ -78,7 +78,6 @@ export function MessageEditor({
           onClick={async () => {
             setIsSubmitting(true);
 
-            // @ts-expect-error todo: support UIMessage in setMessages
             setMessages((messages) => {
               const index = messages.findIndex((m) => m.id === message.id);
 

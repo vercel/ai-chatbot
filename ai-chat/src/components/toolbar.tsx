@@ -4,6 +4,7 @@ import {
   type Dispatch,
   memo,
   type ReactNode,
+  type RefObject,
   type SetStateAction,
   useEffect,
   useRef,
@@ -19,6 +20,7 @@ import cx from 'classnames';
 import { useOnClickOutside } from 'usehooks-ts';
 import { nanoid } from 'nanoid';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { Message } from '@ai-chat/app/api/models';
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
 import { artifactDefinitions, type ArtifactKind } from './artifact';
 import type { ArtifactToolbarItem } from './create-artifact';
@@ -308,7 +310,7 @@ const PureToolbar = ({
   status: UseChatHelpers['status'];
   append: UseChatHelpers['append'];
   stop: UseChatHelpers['stop'];
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -317,7 +319,7 @@ const PureToolbar = ({
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useOnClickOutside(toolbarRef, () => {
+  useOnClickOutside(toolbarRef as RefObject<HTMLDivElement>, () => {
     setIsToolbarVisible(false);
     setSelectedTool(null);
   });

@@ -6,7 +6,6 @@ import {
   useEffect,
   useState,
 } from 'react';
-import type { Attachment, UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import useSWR, { useSWRConfig } from 'swr';
@@ -18,6 +17,7 @@ import { codeArtifact } from '@ai-chat/artifacts/code/client';
 import { imageArtifact } from '@ai-chat/artifacts/image/client';
 import { sheetArtifact } from '@ai-chat/artifacts/sheet/client';
 import { textArtifact } from '@ai-chat/artifacts/text/client';
+import type { Message, Source } from '@ai-chat/app/api/models';
 import type { Document, Vote } from '@ai-chat/lib/types';
 import { ArtifactActions } from './artifact-actions';
 import { MultimodalInput } from './multimodal-input';
@@ -71,10 +71,10 @@ function PureArtifact({
   setInput: UseChatHelpers['setInput'];
   status: UseChatHelpers['status'];
   stop: UseChatHelpers['stop'];
-  attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
+  attachments: Array<[string, Source]>;
+  setAttachments: Dispatch<SetStateAction<Array<[string, Source]>>>;
+  messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   votes: Array<Vote> | undefined;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];

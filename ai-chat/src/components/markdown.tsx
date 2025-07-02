@@ -2,8 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Link from 'next/link';
 import React, { memo } from 'react';
-import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
@@ -96,10 +98,15 @@ const components: Partial<Components> = {
 };
 
 const remarkPlugins = [remarkGfm];
+const rehypePlugins = [rehypeRaw, rehypeSanitize];
 
 const NonMemoizedMarkdown = ({ children }: { children: any }) => {
   return (
-    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
+    <ReactMarkdown
+      rehypePlugins={rehypePlugins}
+      remarkPlugins={remarkPlugins}
+      components={components}
+    >
       {children}
     </ReactMarkdown>
   );

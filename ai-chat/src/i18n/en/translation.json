@@ -5,7 +5,9 @@
         "greeting": "Hello there!",
         "greetingHelp": "How can I help you today?"
     },
-    "chatLog": {},
+    "chatLog": {
+        "thinkingPrompt": "Hmm..."
+    },
     "topBar": {},
     "sideBar": {
         "newChat": "New Chat",
@@ -64,6 +66,8 @@
         "technicalIssues": "We're experiencing some technical issues loading essential data. Please try again in a few moments.",
         "assistance": "If the problem persists, please open a support ticket via the ICRC Services Portal for assistance."
     },
-    "markdownRenderer": {},
+    "markdownRenderer": {
+        "copyCode": "Copy code"
+    },
     "promptInput": {}
 }
