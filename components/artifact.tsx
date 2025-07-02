@@ -92,8 +92,6 @@ function PureArtifact({
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
-  console.log(documents);
-
   useEffect(() => {
     if (documents && documents.length > 0) {
       const mostRecentDocument = documents.at(-1);
