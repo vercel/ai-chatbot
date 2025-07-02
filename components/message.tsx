@@ -37,7 +37,6 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
-
   const fileParts = message.parts.filter((part) => part.type === 'file');
 
   return (

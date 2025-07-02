@@ -75,7 +75,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       outputs: [],
     });
   },
-  onStreamPart: ({ streamPart, setArtifact }) => {},
+  onStreamPart: () => {},
   content: ({ metadata, setMetadata, ...props }) => {
     return (
       <>

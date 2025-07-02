@@ -28,9 +28,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       suggestions,
     });
   },
-  onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    const { type, data } = streamPart;
-  },
+  onStreamPart: () => {},
   content: ({
     mode,
     status,

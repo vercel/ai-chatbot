@@ -24,15 +24,15 @@ import {
   suggestion,
   message,
   vote,
-  type DBMessage,
   type Chat,
   stream,
+  type Tables,
 } from './schema';
-import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import type { DocumentKind } from '../types';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -211,7 +211,7 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({
   messages,
 }: {
-  messages: Array<DBMessage>;
+  messages: Array<Tables<'Message'>>;
 }) {
   try {
     return await db.insert(message).values(messages);
@@ -286,7 +286,7 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: ArtifactKind;
+  kind: DocumentKind;
   content: string;
   userId: string;
 }) {

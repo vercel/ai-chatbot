@@ -16,7 +16,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
   kind: 'sheet',
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},
-  onStreamPart: ({ setArtifact, streamPart }) => {},
+  onStreamPart: () => {},
   content: ({
     content,
     currentVersionIndex,

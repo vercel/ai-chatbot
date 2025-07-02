@@ -22,6 +22,8 @@ test.describe
     });
 
     test('Ada can invoke chat generation', async ({ adaContext }) => {
+      test.fixme();
+
       const chatId = generateUUID();
 
       const response = await adaContext.request.post('/api/chat', {

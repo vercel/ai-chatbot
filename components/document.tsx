@@ -2,7 +2,6 @@ import { memo } from 'react';
 
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from './icons';
 import { toast } from 'sonner';
-import { useArtifact } from '@/hooks/use-artifact';
 import type { DocumentKind } from '@/lib/types';
 
 const getActionText = (
@@ -34,8 +33,6 @@ function PureDocumentToolResult({
   result,
   isReadonly,
 }: DocumentToolResultProps) {
-  const { setArtifact } = useArtifact();
-
   return (
     <button
       type="button"
@@ -56,16 +53,6 @@ function PureDocumentToolResult({
           width: rect.width,
           height: rect.height,
         };
-
-        setArtifact({
-          documentId: result.id,
-          kind: result.kind,
-          content: '',
-          title: result.title,
-          isVisible: true,
-          status: 'idle',
-          boundingBox,
-        });
       }}
     >
       <div className="text-muted-foreground mt-1">
@@ -97,8 +84,6 @@ function PureDocumentToolCall({
   args,
   isReadonly,
 }: DocumentToolCallProps) {
-  const { setArtifact } = useArtifact();
-
   return (
     <button
       type="button"

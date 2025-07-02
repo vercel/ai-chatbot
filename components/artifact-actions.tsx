@@ -5,31 +5,35 @@ import { type Dispatch, memo, type SetStateAction, useState } from 'react';
 import type { ArtifactActionContext } from './create-artifact';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Document } from '@/lib/types';
+import type { Tables } from '@/lib/db/schema';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { ChatMessage } from '@/lib/types';
 
 interface ArtifactActionsProps {
-  artifact: Document;
+  document: Tables<'Document'> | undefined;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
   mode: 'edit' | 'diff';
   metadata: any;
   setMetadata: Dispatch<SetStateAction<any>>;
+  chatStatus: UseChatHelpers<ChatMessage>['status'];
 }
 
 function PureArtifactActions({
-  artifact,
+  document,
   handleVersionChange,
   currentVersionIndex,
   isCurrentVersion,
   mode,
   metadata,
   setMetadata,
+  chatStatus,
 }: ArtifactActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const artifactDefinition = artifactDefinitions.find(
-    (definition) => definition.kind === artifact.kind,
+    (definition) => definition.kind === (document?.kind ?? 'text'),
   );
 
   if (!artifactDefinition) {
@@ -37,7 +41,7 @@ function PureArtifactActions({
   }
 
   const actionContext: ArtifactActionContext = {
-    content: artifact.content,
+    content: document?.content ?? '',
     handleVersionChange,
     currentVersionIndex,
     isCurrentVersion,
@@ -69,7 +73,7 @@ function PureArtifactActions({
                 }
               }}
               disabled={
-                isLoading || artifact.status === 'in_progress'
+                isLoading || chatStatus === 'streaming'
                   ? true
                   : action.isDisabled
                     ? action.isDisabled(actionContext)
@@ -90,11 +94,12 @@ function PureArtifactActions({
 export const ArtifactActions = memo(
   PureArtifactActions,
   (prevProps, nextProps) => {
-    if (prevProps.artifact.status !== nextProps.artifact.status) return false;
+    if (prevProps.chatStatus !== nextProps.chatStatus) return false;
     if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
       return false;
     if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
-    if (prevProps.artifact.content !== nextProps.artifact.content) return false;
+    if (prevProps.document?.content !== nextProps.document?.content)
+      return false;
 
     return true;
   },

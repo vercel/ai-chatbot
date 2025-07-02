@@ -5,7 +5,7 @@ import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
-import type { ChatMessage, Document } from '@/lib/types';
+import type { ChatMessage } from '@/lib/types';
 import { ThinkingMessage } from './message-thinking';
 
 interface ArtifactMessagesProps {
@@ -16,7 +16,7 @@ interface ArtifactMessagesProps {
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
-  artifactStatus: Document['status'];
+  chatStatus: UseChatHelpers<ChatMessage>['status'];
 }
 
 function PureArtifactMessages({
@@ -83,8 +83,8 @@ function areEqual(
   nextProps: ArtifactMessagesProps,
 ) {
   if (
-    prevProps.artifactStatus === 'in_progress' &&
-    nextProps.artifactStatus === 'in_progress'
+    prevProps.chatStatus === 'streaming' &&
+    nextProps.chatStatus === 'streaming'
   )
     return true;
 

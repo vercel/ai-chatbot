@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import { useArtifact } from '@/hooks/use-artifact';
 import { DocumentHeader } from './document-header';
 import { DocumentContent } from './document-content';
 import { DocumentHitbox } from './document-hitbox';
@@ -19,7 +18,6 @@ export function DocumentPreview({
   document,
   isReadonly,
 }: DocumentPreviewProps) {
-  const { setArtifact } = useArtifact();
   const { documentLayout, setDocumentLayout } = useDocumentLayout();
 
   const hitboxRef = useRef<HTMLDivElement>(null);

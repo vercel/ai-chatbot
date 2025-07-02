@@ -1,12 +1,17 @@
+'use client';
+
 import type { ChatMessage, Document } from '@/lib/types';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { useEffect, useMemo } from 'react';
 import useSWR from 'swr';
+import { useDocumentLayout } from './use-document-layout';
 
 export const useRecentDocumentPart = ({
   chatId,
   status,
 }: { chatId: string; status: UseChatHelpers<ChatMessage>['status'] }) => {
+  const { documentLayout } = useDocumentLayout();
+
   const { messages, resumeStream } = useChat<ChatMessage>({
     id: chatId,
   });
@@ -36,8 +41,8 @@ export const useRecentDocumentPart = ({
   const { data: localDocumentMetadata, mutate: setLocalDocumentMetadata } =
     useSWR<any>(
       () =>
-        recentDocumentPart?.id
-          ? `document-metadata-${recentDocumentPart.id}`
+        documentLayout?.selectedDocumentId
+          ? `artifact-metadata-${documentLayout.selectedDocumentId}`
           : null,
       null,
       {

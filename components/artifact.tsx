@@ -19,17 +19,16 @@ import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
 import { useSidebar } from './ui/sidebar';
-import { useArtifact } from '@/hooks/use-artifact';
 import { imageArtifact } from '@/artifacts/image/client';
 import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
-import equal from 'fast-deep-equal';
+import { useDocumentLayout } from '@/hooks/use-document-layout';
+import { useRecentDocumentPart } from '@/hooks/use-document';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
-import { useDocumentLayout } from '@/hooks/use-document-layout';
-import { useRecentDocumentPart } from '@/hooks/use-document';
+import equal from 'fast-deep-equal';
 
 export const artifactDefinitions = [
   textArtifact,
@@ -70,9 +69,8 @@ function PureArtifact({
   selectedVisibilityType: VisibilityType;
 }) {
   const { documentLayout } = useDocumentLayout();
-  const { artifact, metadata, setMetadata } = useArtifact();
 
-  const { recentDocumentPart } = useRecentDocumentPart({
+  const { recentDocumentPart, metadata, setMetadata } = useRecentDocumentPart({
     chatId,
     status,
   });
@@ -224,24 +222,22 @@ function PureArtifact({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
+  const documentInView = documents?.at(currentVersionIndex);
+
   const artifactDefinition = artifactDefinitions.find(
-    (definition) => definition.kind === artifact.kind,
+    (definition) => definition.kind === (documentInView?.kind ?? 'text'),
   );
 
-  if (!artifactDefinition) {
-    throw new Error('Artifact definition not found!');
-  }
-
-  useEffect(() => {
-    if (artifact.documentId !== 'init') {
-      if (artifactDefinition.initialize) {
-        artifactDefinition.initialize({
-          documentId: artifact.documentId,
-          setMetadata,
-        });
-      }
-    }
-  }, [artifact.documentId, artifactDefinition, setMetadata]);
+  // useEffect(() => {
+  //   if (artifact.documentId !== 'init') {
+  //     if (artifactDefinition.initialize) {
+  //       artifactDefinition.initialize({
+  //         documentId: artifact.documentId,
+  //         setMetadata,
+  //       });
+  //     }
+  //   }
+  // }, [artifact.documentId, artifactDefinition, setMetadata]);
 
   return (
     <AnimatePresence>
@@ -310,7 +306,7 @@ function PureArtifact({
                   setMessages={setMessages}
                   regenerate={regenerate}
                   isReadonly={isReadonly}
-                  artifactStatus={artifact.status}
+                  chatStatus={status}
                 />
 
                 <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
@@ -417,36 +413,39 @@ function PureArtifact({
               </div>
 
               <ArtifactActions
-                artifact={artifact}
+                document={documentInView}
                 currentVersionIndex={currentVersionIndex}
                 handleVersionChange={handleVersionChange}
                 isCurrentVersion={isCurrentVersion}
                 mode={mode}
                 metadata={metadata}
                 setMetadata={setMetadata}
+                chatStatus={status}
               />
             </div>
 
             <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
-              <artifactDefinition.content
-                title={artifact.title}
-                content={
-                  status === 'streaming' && recentDocumentPart?.content
-                    ? recentDocumentPart.content
-                    : getDocumentContentById(currentVersionIndex)
-                }
-                mode={mode}
-                status={recentDocumentPart?.status ?? 'in_progress'}
-                currentVersionIndex={currentVersionIndex}
-                suggestions={[]}
-                onSaveContent={saveContent}
-                isInline={false}
-                isCurrentVersion={isCurrentVersion}
-                getDocumentContentById={getDocumentContentById}
-                isLoading={isDocumentsFetching && !artifact.content}
-                metadata={metadata}
-                setMetadata={setMetadata}
-              />
+              {artifactDefinition ? (
+                <artifactDefinition.content
+                  title={documentInView?.title ?? 'Untitled'}
+                  content={
+                    status === 'streaming' && recentDocumentPart?.content
+                      ? recentDocumentPart.content
+                      : getDocumentContentById(currentVersionIndex)
+                  }
+                  mode={mode}
+                  status={recentDocumentPart?.status ?? 'in_progress'}
+                  currentVersionIndex={currentVersionIndex}
+                  suggestions={[]}
+                  onSaveContent={saveContent}
+                  isInline={false}
+                  isCurrentVersion={isCurrentVersion}
+                  getDocumentContentById={getDocumentContentById}
+                  isLoading={isDocumentsFetching && !documentInView?.content}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
+                />
+              ) : null}
 
               <AnimatePresence>
                 {isCurrentVersion && (
@@ -457,7 +456,7 @@ function PureArtifact({
                     status={status}
                     stop={stop}
                     setMessages={setMessages}
-                    artifactKind={artifact.kind}
+                    artifactKind={documentInView?.kind ?? 'text'}
                   />
                 )}
               </AnimatePresence>

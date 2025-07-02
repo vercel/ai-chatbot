@@ -2,7 +2,7 @@ import { tool, type UIMessageStreamWriter } from 'ai';
 import type { Session } from 'next-auth';
 import { z } from 'zod';
 import { getDocumentById } from '@/lib/db/queries';
-import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
+import { documentHandlersByKind } from '@/lib/artifacts/server';
 import type { ChatMessage } from '@/lib/types';
 
 interface UpdateDocumentProps {
@@ -39,9 +39,8 @@ export const updateDocument = ({
         },
       });
 
-      const documentHandler = documentHandlersByArtifactKind.find(
-        (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === document.kind,
+      const documentHandler = documentHandlersByKind.find(
+        (documentHandlerByKind) => documentHandlerByKind.kind === document.kind,
       );
 
       if (!documentHandler) {

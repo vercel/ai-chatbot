@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export const imageArtifact = new Artifact({
   kind: 'image',
   description: 'Useful for image generation',
-  onStreamPart: ({ streamPart, setArtifact }) => {},
+  onStreamPart: () => {},
   content: ImageEditor,
   actions: [
     {

@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 import { cn } from '@/lib/utils';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useDocumentLayout } from '@/hooks/use-document-layout';
 
 export interface ConsoleOutputContent {
   type: 'text' | 'image';
@@ -31,8 +31,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState(false);
   const consoleEndRef = useRef<HTMLDivElement>(null);
-
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const { documentLayout } = useDocumentLayout();
 
   const minHeight = 100;
   const maxHeight = 800;
@@ -71,10 +70,10 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   }, [consoleOutputs]);
 
   useEffect(() => {
-    if (!isArtifactVisible) {
+    if (!documentLayout.isVisible) {
       setConsoleOutputs([]);
     }
-  }, [isArtifactVisible, setConsoleOutputs]);
+  }, [documentLayout, setConsoleOutputs]);
 
   return consoleOutputs.length > 0 ? (
     <>
