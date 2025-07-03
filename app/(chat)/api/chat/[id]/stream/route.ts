@@ -8,8 +8,8 @@ import type { Chat } from '@/lib/db/schema';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
-import { differenceInSeconds } from 'date-fns';
 import { getStreamContext } from '../../route';
+import { differenceInSeconds } from 'date-fns';
 
 export async function GET(
   _: Request,
@@ -102,7 +102,10 @@ export async function GET(
       },
     });
 
-    return new Response(restoredStream, { status: 200 });
+    return new Response(
+      restoredStream.pipeThrough(new JsonToSseTransformStream()),
+      { status: 200 },
+    );
   }
 
   return new Response(stream, { status: 200 });

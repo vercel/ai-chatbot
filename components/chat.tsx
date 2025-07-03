@@ -46,7 +46,7 @@ export function Chat({
   });
 
   const { mutate } = useSWRConfig();
-  const { dataStream, setDataStream } = useDataStream();
+  const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
 
@@ -123,7 +123,6 @@ export function Chat({
     autoResume,
     initialMessages,
     resumeStream,
-    dataStream,
     setMessages,
   });
 

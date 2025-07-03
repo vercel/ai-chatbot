@@ -2,14 +2,13 @@
 
 import { useEffect } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage, CustomUIDataTypes } from '@/lib/types';
-import type { DataUIPart } from 'ai';
+import type { ChatMessage } from '@/lib/types';
+import { useDataStream } from '@/components/data-stream-provider';
 
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: ChatMessage[];
   resumeStream: UseChatHelpers<ChatMessage>['resumeStream'];
-  dataStream: DataUIPart<CustomUIDataTypes>[] | undefined;
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
 }
 
@@ -17,9 +16,10 @@ export function useAutoResume({
   autoResume,
   initialMessages,
   resumeStream,
-  dataStream,
   setMessages,
 }: UseAutoResumeParams) {
+  const { dataStream } = useDataStream();
+
   useEffect(() => {
     if (!autoResume) return;
 

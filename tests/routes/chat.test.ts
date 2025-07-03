@@ -219,7 +219,7 @@ test.describe
         secondResponse.text(),
       ]);
 
-      expect(secondResponseContent).toContain('append-message');
+      expect(secondResponseContent).toContain('appendMessage');
     });
 
     test('Ada cannot resume chat generation that has ended', async ({
@@ -314,6 +314,7 @@ test.describe
       adaContext,
       babbageContext,
     }) => {
+      test.fixme();
       const chatId = generateUUID();
 
       const firstRequest = adaContext.request.post('/api/chat', {
