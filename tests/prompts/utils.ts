@@ -74,8 +74,6 @@ export const getResponseChunksByPrompt = (
 ): LanguageModelV2StreamPart[] => {
   const recentMessage = prompt.at(-1);
 
-  console.log(JSON.stringify({ recentMessage }, null, 2));
-
   if (!recentMessage) {
     throw new Error('No recent message found!');
   }

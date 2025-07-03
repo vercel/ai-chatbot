@@ -10,8 +10,9 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
+import { isTestEnvironment } from '../constants';
 
-export const myProvider = true
+export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
         'chat-model': chatModel,

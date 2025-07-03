@@ -10,7 +10,7 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
-import { cn, sanitizeText } from '@/lib/utils';
+import { cn, getTextFromMessage, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
@@ -262,7 +262,11 @@ export const PreviewMessage = memo(
     if (prevProps.message.id !== nextProps.message.id) return false;
     if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
       return false;
-    if (prevProps.message.parts.length !== nextProps.message.parts.length)
+    if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
+    if (
+      getTextFromMessage(prevProps.message) !==
+      getTextFromMessage(nextProps.message)
+    )
       return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
 
