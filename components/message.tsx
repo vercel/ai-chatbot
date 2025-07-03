@@ -1,6 +1,4 @@
 'use client';
-
-import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
@@ -19,6 +17,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { ChatMessage } from '@/lib/types';
 
 const PurePreviewMessage = ({
   chatId,
@@ -26,20 +25,24 @@ const PurePreviewMessage = ({
   vote,
   isLoading,
   setMessages,
-  reload,
+  regenerate,
   isReadonly,
   requiresScrollPadding,
 }: {
   chatId: string;
-  message: UIMessage;
+  message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
+  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+
+  const attachmentsFromMessage = message.parts.filter(
+    (part) => part.type === 'file',
+  );
 
   return (
     <AnimatePresence>
@@ -72,20 +75,23 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {message.experimental_attachments &&
-              message.experimental_attachments.length > 0 && (
-                <div
-                  data-testid={`message-attachments`}
-                  className="flex flex-row justify-end gap-2"
-                >
-                  {message.experimental_attachments.map((attachment) => (
-                    <PreviewAttachment
-                      key={attachment.url}
-                      attachment={attachment}
-                    />
-                  ))}
-                </div>
-              )}
+            {attachmentsFromMessage.length > 0 && (
+              <div
+                data-testid={`message-attachments`}
+                className="flex flex-row justify-end gap-2"
+              >
+                {attachmentsFromMessage.map((attachment) => (
+                  <PreviewAttachment
+                    key={attachment.url}
+                    attachment={{
+                      name: attachment.filename ?? 'file',
+                      contentType: attachment.mediaType,
+                      url: attachment.url,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
 
             {message.parts?.map((part, index) => {
               const { type } = part;
@@ -96,7 +102,7 @@ const PurePreviewMessage = ({
                   <MessageReasoning
                     key={key}
                     isLoading={isLoading}
-                    reasoning={part.reasoning}
+                    reasoning={part.text}
                   />
                 );
               }
@@ -146,41 +152,47 @@ const PurePreviewMessage = ({
                         message={message}
                         setMode={setMode}
                         setMessages={setMessages}
-                        reload={reload}
+                        regenerate={regenerate}
                       />
                     </div>
                   );
                 }
               }
 
-              if (type === 'tool-invocation') {
-                const { toolInvocation } = part;
-                const { toolName, toolCallId, state } = toolInvocation;
+              if (
+                type === 'tool-createDocument' ||
+                type === 'tool-getWeather' ||
+                type === 'tool-requestSuggestions' ||
+                type === 'tool-updateDocument'
+              ) {
+                const { toolCallId, state } = part;
 
-                if (state === 'call') {
-                  const { args } = toolInvocation;
+                if (state === 'input-available') {
+                  const { input } = part;
 
                   return (
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
+                        skeleton: ['getWeather'].includes(type),
                       })}
                     >
-                      {toolName === 'getWeather' ? (
+                      {type === 'tool-getWeather' ? (
                         <Weather />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={args} />
-                      ) : toolName === 'updateDocument' ? (
+                      ) : type === 'tool-createDocument' ? (
+                        <DocumentPreview isReadonly={isReadonly} args={input} />
+                      ) : type === 'tool-updateDocument' ? (
                         <DocumentToolCall
                           type="update"
-                          args={args}
+                          // @ts-ignore todo: fix type
+                          args={input}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === 'requestSuggestions' ? (
+                      ) : type === 'tool-requestSuggestions' ? (
                         <DocumentToolCall
                           type="request-suggestions"
-                          args={args}
+                          // @ts-ignore todo: fix type
+                          args={input}
                           isReadonly={isReadonly}
                         />
                       ) : null}
@@ -188,32 +200,35 @@ const PurePreviewMessage = ({
                   );
                 }
 
-                if (state === 'result') {
-                  const { result } = toolInvocation;
+                if (state === 'output-available') {
+                  const { output } = part;
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result} />
-                      ) : toolName === 'createDocument' ? (
+                      {type === 'tool-getWeather' ? (
+                        // @ts-ignore todo: fix type
+                        <Weather weatherAtLocation={output} />
+                      ) : type === 'tool-createDocument' ? (
                         <DocumentPreview
                           isReadonly={isReadonly}
-                          result={result}
+                          result={output}
                         />
-                      ) : toolName === 'updateDocument' ? (
+                      ) : type === 'tool-updateDocument' ? (
                         <DocumentToolResult
                           type="update"
-                          result={result}
+                          // @ts-ignore todo: fix type
+                          result={output}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === 'requestSuggestions' ? (
+                      ) : type === 'tool-requestSuggestions' ? (
                         <DocumentToolResult
                           type="request-suggestions"
-                          result={result}
+                          // @ts-ignore todo: fix type
+                          result={output}
                           isReadonly={isReadonly}
                         />
                       ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                        <pre>{JSON.stringify(output, null, 2)}</pre>
                       )}
                     </div>
                   );
