@@ -4,13 +4,13 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { xai } from '@ai-sdk/xai';
-import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
   chatModel,
   reasoningModel,
   titleModel,
 } from './models.test';
+import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -32,6 +32,6 @@ export const myProvider = isTestEnvironment
         'artifact-model': xai('grok-2-1212'),
       },
       imageModels: {
-        'small-model': xai.image('grok-2-image'),
+        'small-model': xai.imageModel('grok-2-image'),
       },
     });

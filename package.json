@@ -1,6 +1,6 @@
 {
   "name": "ai-chatbot",
-  "version": "3.0.23",
+  "version": "3.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -19,8 +19,9 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
-    "@ai-sdk/react": "^1.2.11",
-    "@ai-sdk/xai": "^1.2.15",
+    "@ai-sdk/provider": "2.0.0-beta.1",
+    "@ai-sdk/react": "2.0.0-beta.6",
+    "@ai-sdk/xai": "2.0.0-beta.2",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
@@ -43,7 +44,7 @@
     "@vercel/functions": "^2.0.0",
     "@vercel/otel": "^1.12.0",
     "@vercel/postgres": "^0.10.0",
-    "ai": "4.3.13",
+    "ai": "5.0.0-beta.6",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
@@ -86,7 +87,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.25.68"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

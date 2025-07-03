@@ -32,7 +32,7 @@ export default async function Page() {
           session={session}
           autoResume={false}
         />
-        <DataStreamHandler id={id} />
+        <DataStreamHandler />
       </>
     );
   }
@@ -49,7 +49,7 @@ export default async function Page() {
         session={session}
         autoResume={false}
       />
-      <DataStreamHandler id={id} />
+      <DataStreamHandler />
     </>
   );
 }

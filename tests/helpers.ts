@@ -38,7 +38,7 @@ export async function createAuthenticatedContext({
   const page = await context.newPage();
 
   const email = `test-${name}@playwright.com`;
-  const password = generateId(16);
+  const password = generateId();
 
   await page.goto('http://localhost:3000/register');
   await page.getByPlaceholder('user@acme.com').click();
@@ -72,7 +72,7 @@ export async function createAuthenticatedContext({
 
 export function generateRandomTestUser() {
   const email = `test-${getUnixTime(new Date())}@playwright.com`;
-  const password = generateId(16);
+  const password = generateId();
 
   return {
     email,
