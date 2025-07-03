@@ -20,6 +20,9 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 
+// Type narrowing is handled by TypeScript's control flow analysis
+// The AI SDK provides proper discriminated unions for tool calls
+
 const PurePreviewMessage = ({
   chatId,
   message,
@@ -162,43 +165,35 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (
-                type === 'tool-createDocument' ||
-                type === 'tool-getWeather' ||
-                type === 'tool-requestSuggestions' ||
-                type === 'tool-updateDocument'
-              ) {
+              if (type === 'tool-getWeather') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  return (
+                    <div key={toolCallId} className="skeleton">
+                      <Weather />
+                    </div>
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output } = part;
+                  return (
+                    <div key={toolCallId}>
+                      <Weather weatherAtLocation={output} />
+                    </div>
+                  );
+                }
+              }
+
+              if (type === 'tool-createDocument') {
                 const { toolCallId, state } = part;
 
                 if (state === 'input-available') {
                   const { input } = part;
-
                   return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['getWeather'].includes(type),
-                      })}
-                    >
-                      {type === 'tool-getWeather' ? (
-                        <Weather />
-                      ) : type === 'tool-createDocument' ? (
-                        <DocumentPreview isReadonly={isReadonly} args={input} />
-                      ) : type === 'tool-updateDocument' ? (
-                        <DocumentToolCall
-                          type="update"
-                          // @ts-ignore todo: fix type
-                          args={input}
-                          isReadonly={isReadonly}
-                        />
-                      ) : type === 'tool-requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          // @ts-ignore todo: fix type
-                          args={input}
-                          isReadonly={isReadonly}
-                        />
-                      ) : null}
+                    <div key={toolCallId}>
+                      <DocumentPreview isReadonly={isReadonly} args={input} />
                     </div>
                   );
                 }
@@ -206,33 +201,108 @@ const PurePreviewMessage = ({
                 if (state === 'output-available') {
                   const { output } = part;
 
+                  if ('error' in output) {
+                    return (
+                      <div
+                        key={toolCallId}
+                        className="text-red-500 p-2 border rounded"
+                      >
+                        Error: {String(output.error)}
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={toolCallId}>
-                      {type === 'tool-getWeather' ? (
-                        // @ts-ignore todo: fix type
-                        <Weather weatherAtLocation={output} />
-                      ) : type === 'tool-createDocument' ? (
-                        <DocumentPreview
-                          isReadonly={isReadonly}
-                          result={output}
-                        />
-                      ) : type === 'tool-updateDocument' ? (
-                        <DocumentToolResult
-                          type="update"
-                          // @ts-ignore todo: fix type
-                          result={output}
-                          isReadonly={isReadonly}
-                        />
-                      ) : type === 'tool-requestSuggestions' ? (
-                        <DocumentToolResult
-                          type="request-suggestions"
-                          // @ts-ignore todo: fix type
-                          result={output}
-                          isReadonly={isReadonly}
-                        />
-                      ) : (
-                        <pre>{JSON.stringify(output, null, 2)}</pre>
-                      )}
+                      <DocumentPreview
+                        isReadonly={isReadonly}
+                        result={output}
+                      />
+                    </div>
+                  );
+                }
+              }
+
+              if (type === 'tool-updateDocument') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+
+                  return (
+                    <div key={toolCallId}>
+                      <DocumentToolCall
+                        type="update"
+                        args={input}
+                        isReadonly={isReadonly}
+                      />
+                    </div>
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output } = part;
+
+                  if ('error' in output) {
+                    return (
+                      <div
+                        key={toolCallId}
+                        className="text-red-500 p-2 border rounded"
+                      >
+                        Error: {String(output.error)}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={toolCallId}>
+                      <DocumentToolResult
+                        type="update"
+                        result={output}
+                        isReadonly={isReadonly}
+                      />
+                    </div>
+                  );
+                }
+              }
+
+              if (type === 'tool-requestSuggestions') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <div key={toolCallId}>
+                      <DocumentToolCall
+                        type="request-suggestions"
+                        args={input}
+                        isReadonly={isReadonly}
+                      />
+                    </div>
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output } = part;
+
+                  if ('error' in output) {
+                    return (
+                      <div
+                        key={toolCallId}
+                        className="text-red-500 p-2 border rounded"
+                      >
+                        Error: {String(output.error)}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={toolCallId}>
+                      <DocumentToolResult
+                        type="request-suggestions"
+                        result={output}
+                        isReadonly={isReadonly}
+                      />
                     </div>
                   );
                 }
