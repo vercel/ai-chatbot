@@ -25,7 +25,7 @@ export function compareMessages(
 
     if (item1.type !== item2.type) return false;
 
-    if (item1.type === 'image' && item2.type === 'image') {
+    if (item1.type === 'file' && item2.type === 'file') {
       // if (item1.image.toString() !== item2.image.toString()) return false;
       // if (item1.mimeType !== item2.mimeType) return false;
     } else if (item1.type === 'text' && item2.type === 'text') {
@@ -73,6 +73,8 @@ export const getResponseChunksByPrompt = (
   isReasoningEnabled = false,
 ): LanguageModelV2StreamPart[] => {
   const recentMessage = prompt.at(-1);
+
+  console.log(JSON.stringify({ recentMessage }, null, 2));
 
   if (!recentMessage) {
     throw new Error('No recent message found!');

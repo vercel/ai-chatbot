@@ -4,7 +4,6 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { xai } from '@ai-sdk/xai';
-import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
   chatModel,
@@ -12,7 +11,7 @@ import {
   titleModel,
 } from './models.test';
 
-export const myProvider = isTestEnvironment
+export const myProvider = true
   ? customProvider({
       languageModels: {
         'chat-model': chatModel,
