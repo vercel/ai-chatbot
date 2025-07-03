@@ -27,21 +27,25 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       dataStream.write({
         type: 'data-kind',
         data: kind,
+        transient: true,
       });
 
       dataStream.write({
         type: 'data-id',
         data: id,
+        transient: true,
       });
 
       dataStream.write({
         type: 'data-title',
         data: title,
+        transient: true,
       });
 
       dataStream.write({
         type: 'data-clear',
         data: null,
+        transient: true,
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -60,7 +64,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         session,
       });
 
-      dataStream.write({ type: 'data-finish', data: null });
+      dataStream.write({ type: 'data-finish', data: null, transient: true });
 
       return {
         id,

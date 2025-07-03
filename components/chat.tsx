@@ -1,6 +1,6 @@
 'use client';
 
-import { type DataUIPart, DefaultChatTransport } from 'ai';
+import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -20,7 +20,8 @@ import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
-import type { Attachment, ChatMessage, CustomUIDataTypes } from '@/lib/types';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import { useDataStream } from './data-stream-provider';
 
 export function Chat({
   id,
@@ -39,20 +40,15 @@ export function Chat({
   session: Session;
   autoResume: boolean;
 }) {
-  const { mutate } = useSWRConfig();
-
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
   });
 
-  const [input, setInput] = useState<string>('');
+  const { mutate } = useSWRConfig();
+  const { dataStream, setDataStream } = useDataStream();
 
-  const { data: dataStream, mutate: setDataStream } = useSWR<
-    DataUIPart<CustomUIDataTypes>[]
-  >('data-stream', null, {
-    fallbackData: [],
-  });
+  const [input, setInput] = useState<string>('');
 
   const {
     messages,

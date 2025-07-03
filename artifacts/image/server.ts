@@ -18,6 +18,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     dataStream.write({
       type: 'data-imageDelta',
       data: image.base64,
+      transient: true,
     });
 
     return draftContent;
@@ -36,6 +37,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     dataStream.write({
       type: 'data-imageDelta',
       data: image.base64,
+      transient: true,
     });
 
     return draftContent;

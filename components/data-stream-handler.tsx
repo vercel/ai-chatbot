@@ -1,35 +1,12 @@
 'use client';
+
 import { useEffect, useRef } from 'react';
 import { artifactDefinitions } from './artifact';
-import type { Suggestion } from '@/lib/db/schema';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
-import type { CustomUIDataTypes } from '@/lib/types';
-import type { DataUIPart } from 'ai';
-import useSWR from 'swr';
+import { useDataStream } from './data-stream-provider';
 
-export type DataStreamDelta = {
-  type:
-    | 'text-delta'
-    | 'code-delta'
-    | 'sheet-delta'
-    | 'image-delta'
-    | 'title'
-    | 'id'
-    | 'suggestion'
-    | 'clear'
-    | 'finish'
-    | 'kind';
-  content: string | Suggestion;
-};
-
-export function DataStreamHandler({ id }: { id: string }) {
-  const { data: dataStream } = useSWR<DataUIPart<CustomUIDataTypes>[]>(
-    'data-stream',
-    null,
-    {
-      fallbackData: [],
-    },
-  );
+export function DataStreamHandler() {
+  const { dataStream } = useDataStream();
 
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);

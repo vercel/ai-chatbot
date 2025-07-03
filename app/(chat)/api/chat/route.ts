@@ -313,6 +313,7 @@ export async function GET(request: Request) {
         writer.write({
           type: 'data-appendMessage',
           data: JSON.stringify(mostRecentMessage),
+          transient: true,
         });
       },
     });

@@ -18,6 +18,7 @@ import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
+import { useDataStream } from './data-stream-provider';
 
 const PurePreviewMessage = ({
   chatId,
@@ -43,6 +44,8 @@ const PurePreviewMessage = ({
   const attachmentsFromMessage = message.parts.filter(
     (part) => part.type === 'file',
   );
+
+  useDataStream();
 
   return (
     <AnimatePresence>
@@ -259,7 +262,8 @@ export const PreviewMessage = memo(
     if (prevProps.message.id !== nextProps.message.id) return false;
     if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
       return false;
-    if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
+    if (prevProps.message.parts.length !== nextProps.message.parts.length)
+      return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
 
     return true;

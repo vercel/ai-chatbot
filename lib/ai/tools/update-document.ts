@@ -31,6 +31,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       dataStream.write({
         type: 'data-clear',
         data: null,
+        transient: true,
       });
 
       const documentHandler = documentHandlersByArtifactKind.find(
@@ -49,7 +50,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         session,
       });
 
-      dataStream.write({ type: 'data-finish', data: null });
+      dataStream.write({ type: 'data-finish', data: null, transient: true });
 
       return {
         id,
