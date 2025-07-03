@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     }
 
     const messagesFromDb = await getMessagesByChatId({ id });
-    const uiMessages = [message, ...convertToUIMessages(messagesFromDb)];
+    const uiMessages = [...convertToUIMessages(messagesFromDb), message];
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -148,6 +148,8 @@ export async function POST(request: Request) {
 
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
+
+    console.log(JSON.stringify(uiMessages, null, 2));
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
