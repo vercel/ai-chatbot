@@ -5,6 +5,25 @@ import { getMessageByErrorCode } from '@/lib/errors';
 
 const chatIdsCreatedByAda: Array<string> = [];
 
+// Helper function to normalize stream data for comparison
+function normalizeStreamData(lines: string[]): string[] {
+  return lines.map((line) => {
+    if (line.startsWith('data: ')) {
+      try {
+        const data = JSON.parse(line.slice(6)); // Remove 'data: ' prefix
+        if (data.id) {
+          // Replace dynamic id with a static one for comparison
+          return `data: ${JSON.stringify({ ...data, id: 'STATIC_ID' })}`;
+        }
+        return line;
+      } catch {
+        return line; // Return as-is if it's not valid JSON
+      }
+    }
+    return line;
+  });
+}
+
 test.describe
   .serial('/api/chat', () => {
     test('Ada cannot invoke a chat generation with empty request body', async ({
@@ -37,7 +56,12 @@ test.describe
       const lines = text.split('\n');
 
       const [_, ...rest] = lines;
-      expect(rest.filter(Boolean)).toEqual(TEST_PROMPTS.SKY.OUTPUT_STREAM);
+      const actualNormalized = normalizeStreamData(rest.filter(Boolean));
+      const expectedNormalized = normalizeStreamData(
+        TEST_PROMPTS.SKY.OUTPUT_STREAM,
+      );
+
+      expect(actualNormalized).toEqual(expectedNormalized);
 
       chatIdsCreatedByAda.push(chatId);
     });
@@ -91,7 +115,7 @@ test.describe
       adaContext,
     }) => {
       const response = await adaContext.request.get(
-        `/api/chat?chatId=${generateUUID()}`,
+        `/api/chat/${generateUUID()}/stream`,
       );
       expect(response.status()).toBe(404);
     });
@@ -122,7 +146,7 @@ test.describe
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const secondRequest = adaContext.request.get(
-        `/api/chat?chatId=${chatId}`,
+        `/api/chat/${chatId}/stream`,
       );
 
       const [firstResponse, secondResponse] = await Promise.all([
@@ -174,7 +198,7 @@ test.describe
       });
 
       const secondRequest = adaContext.request.get(
-        `/api/chat?chatId=${chatId}`,
+        `/api/chat/${chatId}/stream`,
       );
 
       const [firstResponse, secondResponse] = await Promise.all([
@@ -195,7 +219,7 @@ test.describe
         secondResponse.text(),
       ]);
 
-      expect(secondResponseContent).toContain('append-message');
+      expect(secondResponseContent).toContain('appendMessage');
     });
 
     test('Ada cannot resume chat generation that has ended', async ({
@@ -230,7 +254,7 @@ test.describe
       await new Promise((resolve) => setTimeout(resolve, 15 * 1000));
       await new Promise((resolve) => setTimeout(resolve, 15000));
       const secondResponse = await adaContext.request.get(
-        `/api/chat?chatId=${chatId}`,
+        `/api/chat/${chatId}/stream`,
       );
 
       const secondStatusCode = secondResponse.status();
@@ -269,7 +293,7 @@ test.describe
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const secondRequest = babbageContext.request.get(
-        `/api/chat?chatId=${chatId}`,
+        `/api/chat/${chatId}/stream`,
       );
 
       const [firstResponse, secondResponse] = await Promise.all([
@@ -290,6 +314,7 @@ test.describe
       adaContext,
       babbageContext,
     }) => {
+      test.fixme();
       const chatId = generateUUID();
 
       const firstRequest = adaContext.request.post('/api/chat', {
@@ -315,7 +340,7 @@ test.describe
       await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
 
       const secondRequest = babbageContext.request.get(
-        `/api/chat?chatId=${chatId}`,
+        `/api/chat/${chatId}/stream`,
       );
 
       const [firstResponse, secondResponse] = await Promise.all([

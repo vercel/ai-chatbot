@@ -1,4 +1,3 @@
-import type { Message } from 'ai';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
@@ -15,6 +14,7 @@ import {
 import { memo } from 'react';
 import equal from 'fast-deep-equal';
 import { toast } from 'sonner';
+import type { ChatMessage } from '@/lib/types';
 
 export function PureMessageActions({
   chatId,
@@ -23,7 +23,7 @@ export function PureMessageActions({
   isLoading,
 }: {
   chatId: string;
-  message: Message;
+  message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
 }) {
