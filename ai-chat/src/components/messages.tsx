@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { type Dispatch, memo, type SetStateAction } from 'react';
 import type { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { motion } from 'framer-motion';
@@ -7,13 +7,14 @@ import type { Vote } from '@ai-chat/lib/types';
 import { useMessages } from '@ai-chat/hooks/use-messages';
 import { Greeting } from './greeting';
 import { PreviewMessage, ThinkingMessage } from './message';
+import { MessageRoles, type Chat, type Message } from '@ai-chat/app/api/models';
 
 interface MessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
+  messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
@@ -68,7 +69,9 @@ function PureMessages({
 
       {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages[messages.length - 1].role === MessageRoles.User && (
+          <ThinkingMessage />
+        )}
 
       <motion.div
         ref={messagesEndRef}

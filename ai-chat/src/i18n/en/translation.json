@@ -5,7 +5,9 @@
         "greeting": "Hello there!",
         "greetingHelp": "How can I help you today?"
     },
-    "chatLog": {},
+    "chatLog": {
+        "thinkingPrompt": "Hmm..."
+    },
     "topBar": {},
     "sideBar": {
         "newChat": "New Chat",
@@ -71,6 +73,8 @@
         "retry": "Retry",
         "openTicket": "Open Ticket"
     },
-    "markdownRenderer": {},
+    "markdownRenderer": {
+        "copyCode": "Copy code"
+    },
     "promptInput": {}
 }

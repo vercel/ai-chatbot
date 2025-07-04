@@ -11,7 +11,6 @@ import {
   type ChangeEvent,
   memo,
 } from 'react';
-import type { Attachment, UIMessage } from 'ai';
 import cx from 'classnames';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
@@ -25,6 +24,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { SuggestedActions } from './suggested-actions';
 import { useScrollToBottom } from '@ai-chat/hooks/use-scroll-to-bottom';
+import type { Message, Source } from '@ai-chat/app/api/models';
 
 function PureMultimodalInput({
   chatId,
@@ -32,7 +32,7 @@ function PureMultimodalInput({
   setInput,
   status,
   stop,
-  attachments,
+  attachments: sources,
   setAttachments,
   messages,
   setMessages,
@@ -45,15 +45,18 @@ function PureMultimodalInput({
   setInput: UseChatHelpers['setInput'];
   status: UseChatHelpers['status'];
   stop: () => void;
-  attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
+  attachments: Array<[string, Source]>;
+  setAttachments: Dispatch<SetStateAction<Array<[string, Source]>>>;
+  messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [shouldLoadSuggestions, setShouldLoadSuggestions] =
+    useState<boolean>(true);
+
   const { width } = useWindowSize();
 
   useEffect(() => {
@@ -107,12 +110,18 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
+  useEffect(() => {
+    setShouldLoadSuggestions(
+      messages.length === 0 && sources.length === 0 && uploadQueue.length === 0,
+    );
+  }, [messages, sources, uploadQueue]);
+
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    handleSubmit(undefined, {
-      experimental_attachments: attachments,
-    });
+    // handleSubmit(undefined, {
+    //   experimental_attachments: attachments,
+    // });
 
     setAttachments([]);
     setLocalStorageInput('');
@@ -122,7 +131,7 @@ function PureMultimodalInput({
       textareaRef.current?.focus();
     }
   }, [
-    attachments,
+    sources,
     handleSubmit,
     setAttachments,
     setLocalStorageInput,
@@ -171,10 +180,10 @@ function PureMultimodalInput({
           (attachment) => attachment !== undefined,
         );
 
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
+        // setAttachments((currentAttachments) => [
+        //   ...currentAttachments,
+        //   ...successfullyUploadedAttachments,
+        // ]);
       } catch (error) {
         console.error('Error uploading files!', error);
       } finally {
@@ -193,7 +202,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
+    <div className="relative w-full flex flex-col gap-4 mt-3">
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -219,11 +228,12 @@ function PureMultimodalInput({
         )}
       </AnimatePresence>
 
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <SuggestedActions append={append} chatId={chatId} />
-        )}
+      {shouldLoadSuggestions && (
+        <SuggestedActions
+          append={append}
+          chatId={'0197a12c-9ed2-738c-94b5-f38ec50a2f99'}
+        />
+      )}
 
       <input
         type="file"
@@ -234,22 +244,32 @@ function PureMultimodalInput({
         tabIndex={-1}
       />
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
+      {(sources.length > 0 || uploadQueue.length > 0) && (
         <div
           data-testid="attachments-preview"
-          className="flex flex-row gap-2 overflow-x-scroll items-end"
+          // className="flex flex-row gap-2 overflow-x-scroll items-end"
+          className="flex flex-row gap-2 items-end"
         >
-          {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+          {sources.map(([key, src]) => (
+            <PreviewAttachment key={key} attachment={src} />
           ))}
 
+          {/* FIXME */}
           {uploadQueue.map((filename) => (
             <PreviewAttachment
               key={filename}
               attachment={{
-                url: '',
-                name: filename,
-                contentType: '',
+                chunk_id: '',
+                creation_date: '',
+                file_name: filename,
+                file_type: '',
+                file_uri: '',
+                last_ingestion_date: '',
+                last_modified_date: '',
+                page_label: '',
+                platform_display_name: '',
+                relevance: 0,
+                text: '',
               }}
               isUploading={true}
             />
@@ -346,7 +366,7 @@ function PureStopButton({
   setMessages,
 }: {
   stop: () => void;
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: Dispatch<SetStateAction<Message[]>>;
 }) {
   return (
     <Button

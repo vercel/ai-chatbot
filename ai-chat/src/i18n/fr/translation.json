@@ -5,7 +5,9 @@
         "greeting": "Bonjour !",
         "greetingHelp": "Comment puis-je vous aider aujourd'hui ?"
     },
-    "chatLog": {},
+    "chatLog": {
+        "thinkingPrompt": "Hmm..."
+    },
     "topBar": {},
     "sideBar": {
         "newChat": "Nouvelle conversation",
@@ -28,9 +30,30 @@
             "toggleLightMode": "Basculer en mode clair"
         }
     },
-    "dialog": {
+    "alertDialog": {
         "termsOfUseTitle": "Conditions d'utilisation",
         "acceptButton": "Accepter"
+    },
+    "userSettingsDialog": {
+        "language": "Langue",
+        "selectLanguage": "Sélectionnez votre langue par défaut pour l'interface de l'application.",
+        "theme": "Thème",
+        "selectTheme": "Sélectionnez votre thème d'interface préféré.",
+        "defaultChatMode": "Mode de conversation par défaut",
+        "defaultChatModeDescription": "Définissez le mode de conversation par défaut au démarrage.",
+        "knowledgeBase": "Base de connaissances par défaut",
+        "selectKnowledgeBase": "Sélectionnez votre base de connaissances préférée pour Chat avec des documents.",
+        "defaultGPTModel": "Modèle GPT par défaut",
+        "differentGPTModels": "Les différents modèles peuvent varier en termes de capacités, de style de réponse et de vitesse.",
+        "restoreHiddenChats": "Rétablir les conversations cachées",
+        "restoreDescription": "Rétablir les conversations précédentes qui ont été cachées de vos sujets récents.",
+        "restore": "Rétablir",
+        "Dark": "Sombre",
+        "Light": "Clair",
+        "saveSuccess": "Paramètres enregistrés avec succès.",
+        "saveError": "Erreur lors de l'enregistrement des modifications. Veuillez essayer à nouveau.",
+        "savingChanges": "Enregistrement des modifications...",
+        "saveChanges": "Enregistrer les modifications"
     },
     "fullPageStatus": {
         "noAvailableChatModes": "Aucun mode de conversation disponible",
@@ -47,9 +70,11 @@
         "accept": "Accepter",
         "errorProcessingRequest": "Erreur lors du traitement de la demande. Veuillez réessayer.",
         "settings": "Paramètres",
-         "retry": "Réessayer",
+        "retry": "Réessayer",
         "openTicket": "Ouvrir un ticket"
     },
-    "markdownRenderer": {},
+    "markdownRenderer": {
+        "copyCode": "Copier le code"
+    },
     "promptInput": {}
 }

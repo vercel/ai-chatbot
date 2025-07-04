@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import i18next from "i18next";
-import { useTheme } from "next-themes";
-import { ChevronUp } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { getOAuthUserName } from "@ai-chat/auth/use-auth-config";
-import { toast } from "./toast";
+import { useEffect, useState } from 'react';
+import i18next from 'i18next';
+import { useTheme } from 'next-themes';
+import { ChevronUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { getOAuthUserName } from '@ai-chat/auth/use-auth-config';
+import { toast } from './toast';
 import {
   CheckCircleFillIcon,
   CrossIcon,
   LoaderIcon,
   WarningIcon,
-} from "./icons";
-import { Avatar } from "./ui/avatar";
+} from './icons';
+import { Avatar } from './ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
+} from './ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
 import {
   GenericDialog,
   GenericDialogAction,
@@ -30,33 +30,33 @@ import {
   GenericDialogFooter,
   GenericDialogHeader,
   GenericDialogTitle,
-} from "./ui/generic-dialog";
-import { ModeSelector } from "./mode-selector";
+} from './ui/generic-dialog';
+import { ModeSelector } from './mode-selector';
 import {
-  ChatModeKeyOptions,
+  type ChatModeKeyOptions,
   LanguageKeyOptions,
-  LanguageOption,
-} from "@ai-chat/app/api/models";
-import { Button } from "./ui/button";
-import { Dropdown } from "./ui/dropdown";
+  type LanguageOption,
+} from '@ai-chat/app/api/models';
+import { Button } from './ui/button';
+import { Dropdown } from './ui/dropdown';
 import {
-  ThemeTypeOptions,
+  type ThemeTypeOptions,
   themeTypes,
   useCoreContext,
-} from "@ai-chat/app/core-context";
+} from '@ai-chat/app/core-context';
 
 export const languageTypes: LanguageOption[] = [
   {
     key: LanguageKeyOptions.English,
-    display_name: "English",
+    display_name: 'English',
   },
   {
     key: LanguageKeyOptions.Espanol,
-    display_name: "Español",
+    display_name: 'Español',
   },
   {
     key: LanguageKeyOptions.Francais,
-    display_name: "Français",
+    display_name: 'Français',
   },
 ];
 
@@ -73,8 +73,8 @@ export function SidebarUserNav({ user }: { user: any }) {
     languageType: languageTypes[0],
     theme: themeTypes[0],
     chatMode: chatModes[0],
-    knowledgeBase: knowledgeBases && knowledgeBases[0],
-    languageModel: languageModels && languageModels[0],
+    knowledgeBase: knowledgeBases?.[0],
+    languageModel: languageModels?.[0],
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
@@ -105,7 +105,7 @@ export function SidebarUserNav({ user }: { user: any }) {
   const handleLanguageTypeChange = (event: string) => {
     const selectedKey = event;
     const selectedLanguage = languageTypes?.find(
-      (language) => language.key === selectedKey
+      (language) => language.key === selectedKey,
     );
     if (selectedLanguage) {
       setTempSettings((prev) => ({ ...prev, languageType: selectedLanguage }));
@@ -116,7 +116,7 @@ export function SidebarUserNav({ user }: { user: any }) {
   const handleThemeChange = (event: string) => {
     const selectedKey = event;
     const selectedTheme = themeTypes?.find(
-      (theme: ThemeTypeOptions) => theme.key === selectedKey
+      (theme: ThemeTypeOptions) => theme.key === selectedKey,
     );
     if (selectedTheme) {
       setTempSettings((prev) => ({ ...prev, theme: selectedTheme }));
@@ -127,7 +127,7 @@ export function SidebarUserNav({ user }: { user: any }) {
   const handleChatModeChange = (event: string) => {
     const selectedKey = event as ChatModeKeyOptions;
     const selectedChatMode = chatModes.find(
-      (chatMode) => chatMode.key === selectedKey
+      (chatMode) => chatMode.key === selectedKey,
     );
     if (selectedChatMode) {
       setTempSettings((prev) => ({ ...prev, chatMode: selectedChatMode }));
@@ -137,7 +137,7 @@ export function SidebarUserNav({ user }: { user: any }) {
   const handleKnowledgeBaseChange = (event: string) => {
     const selectedKey = event;
     const selectedKnowledgeBase = knowledgeBases?.find(
-      (knowledgeBase) => knowledgeBase.key === selectedKey
+      (knowledgeBase) => knowledgeBase.key === selectedKey,
     );
     if (selectedKnowledgeBase) {
       setTempSettings((prev) => ({
@@ -150,7 +150,7 @@ export function SidebarUserNav({ user }: { user: any }) {
   const handleModelChange = (event: string) => {
     const selectedKey = event;
     const selectedLanguageModel = languageModels?.find(
-      (languageModel) => languageModel.key === selectedKey
+      (languageModel) => languageModel.key === selectedKey,
     );
     if (selectedLanguageModel) {
       setTempSettings((prev) => ({
@@ -165,14 +165,14 @@ export function SidebarUserNav({ user }: { user: any }) {
       <GenericDialog
         open={isSettingsModalOpen}
         onOpenChange={() => {
-          console.info("onOpenChange");
+          console.info('onOpenChange');
         }}
       >
         <GenericDialogContent>
           <GenericDialogHeader className="flex flex-row justify-between">
             <div className="flex flex-col">
               <GenericDialogTitle>
-                {t("sideBar.sideMenu.settings")}
+                {t('sideBar.sideMenu.settings')}
               </GenericDialogTitle>
               <GenericDialogDescription>
                 Change user settings
@@ -189,13 +189,13 @@ export function SidebarUserNav({ user }: { user: any }) {
             <div className="flex flex-row justify-between">
               <div className="flex flex-col">
                 <h1 className="font-bold">
-                  {t("userSettingsDialog.language")}
+                  {t('userSettingsDialog.language')}
                 </h1>
-                <p>{t("userSettingsDialog.selectLanguage")}</p>
+                <p>{t('userSettingsDialog.selectLanguage')}</p>
               </div>
               <Dropdown
                 id="language-setting-dropdown"
-                value={tempSettings.languageType?.key || ""}
+                value={tempSettings.languageType?.key || ''}
                 onChange={handleLanguageTypeChange}
                 options={languageTypes}
               />
@@ -203,12 +203,12 @@ export function SidebarUserNav({ user }: { user: any }) {
 
             <div className="flex flex-row justify-between">
               <div className="flex flex-col">
-                <h1 className="font-bold">{t("userSettingsDialog.theme")}</h1>
-                <p>{t("userSettingsDialog.selectTheme")}</p>
+                <h1 className="font-bold">{t('userSettingsDialog.theme')}</h1>
+                <p>{t('userSettingsDialog.selectTheme')}</p>
               </div>
               <Dropdown
                 id="theme-setting-dropdown"
-                value={tempSettings.theme?.key || ""}
+                value={tempSettings.theme?.key || ''}
                 onChange={handleThemeChange}
                 options={themeTypes}
               />
@@ -217,13 +217,13 @@ export function SidebarUserNav({ user }: { user: any }) {
             <div className="flex flex-row justify-between">
               <div className="flex flex-col">
                 <h1 className="font-bold">
-                  {t("userSettingsDialog.defaultChatMode")}
+                  {t('userSettingsDialog.defaultChatMode')}
                 </h1>
-                <p>{t("userSettingsDialog.defaultChatModeDescription")}</p>
+                <p>{t('userSettingsDialog.defaultChatModeDescription')}</p>
               </div>
               <Dropdown
                 id="default-chat-mode-settings-dropdown"
-                value={tempSettings.chatMode?.key || ""}
+                value={tempSettings.chatMode?.key || ''}
                 onChange={handleChatModeChange}
                 options={chatModes}
               />
@@ -232,13 +232,13 @@ export function SidebarUserNav({ user }: { user: any }) {
             <div className="flex flex-row justify-between">
               <div className="flex flex-col">
                 <h1 className="font-bold">
-                  {t("userSettingsDialog.knowledgeBase")}
+                  {t('userSettingsDialog.knowledgeBase')}
                 </h1>
-                <p>{t("userSettingsDialog.selectKnowledgeBase")}</p>
+                <p>{t('userSettingsDialog.selectKnowledgeBase')}</p>
               </div>
               <Dropdown
                 id="knowledge-base-setting-dropdown"
-                value={tempSettings.knowledgeBase?.key || ""}
+                value={tempSettings.knowledgeBase?.key || ''}
                 onChange={handleKnowledgeBaseChange}
                 options={knowledgeBases}
               />
@@ -247,13 +247,13 @@ export function SidebarUserNav({ user }: { user: any }) {
             <div className="flex flex-row justify-between">
               <div className="flex flex-col">
                 <h1 className="font-bold">
-                  {t("userSettingsDialog.defaultGPTModel")}
+                  {t('userSettingsDialog.defaultGPTModel')}
                 </h1>
-                <p>{t("userSettingsDialog.differentGPTModels")}</p>
+                <p>{t('userSettingsDialog.differentGPTModels')}</p>
               </div>
               <Dropdown
                 id="language-model-setting-dropdown"
-                value={tempSettings.languageModel?.key || ""}
+                value={tempSettings.languageModel?.key || ''}
                 onChange={handleModelChange}
                 options={languageModels}
               />
@@ -266,13 +266,13 @@ export function SidebarUserNav({ user }: { user: any }) {
                   {saveSuccess && (
                     <>
                       <CheckCircleFillIcon />
-                      {t("userSettingsDialog.saveSuccess")}
+                      {t('userSettingsDialog.saveSuccess')}
                     </>
                   )}
                   {saveError && (
                     <>
                       <WarningIcon />
-                      {t("userSettingsDialog.saveError")}
+                      {t('userSettingsDialog.saveError')}
                     </>
                   )}
                 </>
@@ -284,7 +284,7 @@ export function SidebarUserNav({ user }: { user: any }) {
               disabled={!settingsChanged || isSaving}
               onClick={() => {
                 // FIXME: implement actual BE behaviour
-                console.info("onClick");
+                console.info('onClick');
                 setIsSaving(true);
                 setTimeout(() => {
                   setIsSaving(false);
@@ -294,8 +294,8 @@ export function SidebarUserNav({ user }: { user: any }) {
               }}
             >
               {isSaving
-                ? t("userSettingsDialog.savingChanges")
-                : t("userSettingsDialog.saveChanges")}
+                ? t('userSettingsDialog.savingChanges')
+                : t('userSettingsDialog.saveChanges')}
             </GenericDialogAction>
           </GenericDialogFooter>
         </GenericDialogContent>
@@ -309,7 +309,7 @@ export function SidebarUserNav({ user }: { user: any }) {
                 <div className="flex flex-row gap-2">
                   <div className="size-6 bg-zinc-500/30 rounded-full animate-pulse" />
                   <span className="bg-zinc-500/30 text-transparent rounded-md animate-pulse">
-                    {t("sideBar.sideMenu.loadingAuthStatus")}
+                    {t('sideBar.sideMenu.loadingAuthStatus')}
                   </span>
                 </div>
                 <div className="animate-spin text-zinc-500">
@@ -342,9 +342,9 @@ export function SidebarUserNav({ user }: { user: any }) {
                 onClick={() => {
                   if (isLoading) {
                     toast({
-                      type: "error",
+                      type: 'error',
                       description:
-                        "Checking authentication status, please try again!",
+                        'Checking authentication status, please try again!',
                     });
 
                     return;
@@ -353,7 +353,7 @@ export function SidebarUserNav({ user }: { user: any }) {
                   setIsSettingsModalOpen(true);
                 }}
               >
-                {t("sideBar.sideMenu.settings")}
+                {t('sideBar.sideMenu.settings')}
               </button>
             </DropdownMenuItem>
 
@@ -367,7 +367,7 @@ export function SidebarUserNav({ user }: { user: any }) {
                 className="user-actions-menu-paper__item"
                 rel="noopener noreferrer"
               >
-                {t("sideBar.sideMenu.documentation")}
+                {t('sideBar.sideMenu.documentation')}
               </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

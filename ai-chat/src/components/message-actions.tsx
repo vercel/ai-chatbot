@@ -1,9 +1,9 @@
 import { memo } from 'react';
-import type { Message } from 'ai';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { toast } from 'sonner';
 import equal from 'fast-deep-equal';
+import type { Message } from '@ai-chat/app/api/models';
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
 import { Button } from './ui/button';
 import {
@@ -39,11 +39,7 @@ export function PureMessageActions({
               className="py-1 px-2 h-fit text-muted-foreground"
               variant="outline"
               onClick={async () => {
-                const textFromParts = message.parts
-                  ?.filter((part) => part.type === 'text')
-                  .map((part) => part.text)
-                  .join('\n')
-                  .trim();
+                const textFromParts = message.content.trim();
 
                 if (!textFromParts) {
                   toast.error("There's no text to copy!");

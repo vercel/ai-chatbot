@@ -5,7 +5,9 @@
         "greeting": "¡Hola!",
         "greetingHelp": "¿En qué puedo ayudarte hoy?"
     },
-    "chatLog": {},
+    "chatLog": {
+        "thinkingPrompt": "Hmm..."
+    },
     "topBar": {},
     "sideBar": {
         "newChat": "Nueva conversación",
@@ -28,9 +30,30 @@
             "toggleLightMode": "Alternar modo claro"
         }
     },
-    "dialog": {
+    "alertDialog": {
         "termsOfUseTitle": "Términos de uso",
         "acceptButton": "Aceptar"
+    },
+    "userSettingsDialog": {
+        "language": "Idioma",
+        "selectLanguage": "Seleccione su idioma predeterminado para la interfaz de la aplicación.",
+        "theme": "Tema",
+        "selectTheme": "Seleccione su tema de interfaz preferido.",
+        "defaultChatMode": "Modo de conversación predeterminado",
+        "defaultChatModeDescription": "Establezca el modo de conversación predeterminado al inicio.",
+        "knowledgeBase": "Base de conocimientos predeterminada",
+        "selectKnowledgeBase": "Seleccione su base de conocimientos preferida para Chat con documentos.",
+        "defaultGPTModel": "Modelo GPT predeterminado",
+        "differentGPTModels": "Los diferentes modelos pueden variar en términos de capacidades, estilo de respuesta y velocidad.",
+        "restoreHiddenChats": "Restaurar conversaciones ocultas",
+        "restoreDescription": "Restaurar conversaciones anteriores que fueron ocultadas de tus temas recientes.",
+        "restore": "Restaurar",
+        "Dark": "Oscuro",
+        "Light": "Claro",
+        "saveSuccess": "Configuración guardada con éxito.",
+        "saveError": "Error al guardar los cambios. Por favor, inténtelo de nuevo.",
+        "savingChanges": "Guardando cambios...",
+        "saveChanges": "Guardar cambios"
     },
     "fullPageStatus": {
         "noAvailableChatModes": "No hay modos de conversación disponibles",
@@ -50,6 +73,8 @@
         "retry": "Rever",
         "openTicket": "Abrir un ticket"
     },
-    "markdownRenderer": {},
+    "markdownRenderer": {
+        "copyCode": "Copiar código"
+    },
     "promptInput": {}
 }
