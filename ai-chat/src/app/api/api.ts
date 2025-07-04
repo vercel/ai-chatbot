@@ -23,7 +23,7 @@ declare global {
 // biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class Api {
   private static env = process.env;
-  private static baseUrl = 'http://find-backend-dev.apps.ikstest.gva.icrc.priv';
+  private static baseUrl = process.env.NEXT_PUBLIC_API_URL;
   private static _correlationId: string;
 
   /* Helper methods */
@@ -32,7 +32,7 @@ export class Api {
     return {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getAuthToken()}`,
-      apikey: Api.env.apiKey as string,
+      apikey: process.env.NEXT_PUBLIC_API_KEY as string,
     };
   }
 

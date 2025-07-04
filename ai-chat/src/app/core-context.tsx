@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, {
   createContext,
@@ -6,10 +6,10 @@ import React, {
   useState,
   useEffect,
   type ReactNode,
-} from 'react';
-import i18next from 'i18next';
-import { getOAuthUserUniqueName } from '@ai-chat/auth/use-auth-config';
-import { Api } from './api/api';
+} from "react";
+import i18next from "i18next";
+import { getOAuthUserUniqueName } from "@ai-chat/auth/use-auth-config";
+import { Api } from "./api/api";
 import {
   type ChatMode,
   type KnowledgeBase,
@@ -19,7 +19,7 @@ import {
   ThemeOptions,
   type User,
   type UserLanguageOption,
-} from './api/models';
+} from "./api/models";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,8 +29,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@ai-chat/components/ui/alert-dialog';
-import { useTranslation } from 'react-i18next';
+} from "@ai-chat/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
+import { CheckIcon, InfoIcon } from "lucide-react";
+import FullPageStatus from "@ai-chat/components/full-page-status/full-page-status";
 
 export interface ThemeTypeOptions {
   key: ThemeOptions;
@@ -41,28 +43,28 @@ export interface ThemeTypeOptions {
 export const themeTypes = [
   {
     key: ThemeOptions.Dark,
-    display_name: 'Dark',
-    short_description: 'Dark',
+    display_name: "Dark",
+    short_description: "Dark",
   },
   {
     key: ThemeOptions.Light,
-    display_name: 'Light',
-    short_description: 'Light',
+    display_name: "Light",
+    short_description: "Light",
   },
 ];
 
 export const languageTypes: LanguageOption[] = [
   {
     key: LanguageKeyOptions.English,
-    display_name: 'English',
+    display_name: "English",
   },
   {
     key: LanguageKeyOptions.Espanol,
-    display_name: 'Español',
+    display_name: "Español",
   },
   {
     key: LanguageKeyOptions.Francais,
-    display_name: 'Français',
+    display_name: "Français",
   },
 ];
 
@@ -136,7 +138,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     KnowledgeBase | undefined
   >(undefined);
   const [chatModesError, setChatModesError] = useState<Error | undefined>(
-    undefined,
+    undefined
   );
   const [touValid, setTouValid] = useState<boolean | undefined>(undefined);
   const [isOpenUserSettings, setIsOpenUserSettings] = useState<
@@ -149,7 +151,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     ThemeTypeOptions | undefined
   >();
   const [selectedLanguage, setSelectedLanguage] = useState(
-    i18next.resolvedLanguage,
+    i18next.resolvedLanguage
   );
   const [userSettings, setUserSettings] = useState<
     ContextUserSettings | undefined
@@ -165,9 +167,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           const uniquename = getOAuthUserUniqueName();
           if (!uniquename) {
             setUserError(
-              new Error(
-                'No user uniquename provided to create/get a new user.',
-              ),
+              new Error("No user uniquename provided to create/get a new user.")
             );
             return;
           }
@@ -176,7 +176,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           if (!ignore) {
             // check if core user data/settings are valid
             if (!res?.id) {
-              setUserError(new Error('No valid user identifier retrieved.'));
+              setUserError(new Error("No valid user identifier retrieved."));
               return;
             }
 
@@ -195,8 +195,8 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           if (!ignore) {
             setUserError(
               new Error(
-                `Error while creating/getting a user: ${(err as Error).message}`,
-              ),
+                `Error while creating/getting a user: ${(err as Error).message}`
+              )
             );
           }
         }
@@ -209,23 +209,23 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
         const defaultChatMode =
           chatModes.find(
-            (chatMode) => chatMode.key === settings.default_chat_mode,
+            (chatMode) => chatMode.key === settings.default_chat_mode
           ) || (chatModes[0] as ChatMode);
 
         const defaultKnowledgeBase =
           knowledgeBases?.find(
             (knowledgeBase) =>
-              knowledgeBase.key === settings.default_knowledge_base,
+              knowledgeBase.key === settings.default_knowledge_base
           ) || (knowledgeBases?.[0] as KnowledgeBase);
 
         const defaultLanguageModel =
           languageModels?.find(
-            (languageModel) => languageModel.key === settings.default_model,
+            (languageModel) => languageModel.key === settings.default_model
           ) || (languageModels?.[0] as LanguageModel);
 
         const defaultLanguage =
           languageTypes?.find(
-            (languageType) => languageType.key === settings.language,
+            (languageType) => languageType.key === settings.language
           ) || (languageTypes[0] as UserLanguageOption);
 
         const defaultTheme =
@@ -241,7 +241,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
       } catch (err) {
         console.error(
-          `Error while fetching settings: ${(err as Error).message}`,
+          `Error while fetching settings: ${(err as Error).message}`
         );
         setUserSettings({
           defaultChatMode: chatModes[0],
@@ -263,45 +263,15 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   }, [chatModes, knowledgeBases, languageModels, user, userError]);
 
   if (!user && !userError && !chatModesError) {
-    // FIXME
-    return <h1>{t('general.loading')}</h1>;
+    return <FullPageStatus isLoading />;
   }
 
   if (userError) {
-    // FIXME
-    return (
-      <>
-        <h1>{t('fullPageStatus.serviceTemporarilyUnavailable')}</h1>
-        <p>{t('fullPageStatus.technicalIssues')}</p>
-        <p>{t('fullPageStatus.assistance')}</p>
-      </>
-    );
+    return <FullPageStatus variant="noCoreData" />;
   }
 
   if (chatModesError) {
-    // FIXME
-    const SMTCatalogItemLink =
-      'https://smt.ext.icrc.org/esc?id=sc_cat_item&sys_id=e4a1f648cd8c6a90078ad7cac21c584d';
-
-    return (
-      <>
-        <h1>{t('fullPageStatus.noAvailableChatModes')}</h1>
-        <p>{t('fullPageStatus.noAccessChatModes')}</p>
-        <p>
-          {t('fullPageStatus.requestAccess1')}{' '}
-          <a
-            href={`${SMTCatalogItemLink}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            {t('fullPageStatus.SMTCatalogItemLink')}
-          </a>{' '}
-          {t('fullPageStatus.requestAccess2')}
-        </p>
-        <p>{t('fullPageStatus.existingAccess')}</p>
-      </>
-    );
+    return <FullPageStatus variant="noModes" />;
   }
 
   return (
@@ -329,54 +299,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setUserSettings,
       }}
     >
-      {!user?.tou?.valid && (
-        <AlertDialog
-          open={alertOpen}
-          onOpenChange={() => {
-            console.info('onOpenChange', { user });
-          }}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {t('alertDialog.termsOfUseTitle')}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Welcome to FIND, ICRC's AI-powered chatbot! This tool is for
-                professional purposes for your job at the ICRC. You acknowledge
-                that you have read and understood the AI policy (1-pager), the
-                Information Handling Topology (2-pager) and the Acceptable Use
-                of Information Systems (1-pager). AI chatbots come at a
-                financial cost and have an environmental footprint, please
-                refrain from using for personal use and use it responsibly. Your
-                interactions are recorded and processed on ICRC data center for
-                the purposes of auditability, financial control, application
-                improvements. Your or your department/unit accesses may be
-                limited or throttled in case of excessive or non-compliant use.
-                Data is sent and processed in ICRC public cloud tenant. It is
-                therefore prohibited to input strictly confidential information
-                in this tool (e.g., sensitive personal data). Chatbots are known
-                to hallucinate, always verify the text accuracy. You will remain
-                the human responsible of what you do with the chatbot outputs.
-                Should you have further questions or comments, please feel free
-                to reach out by joining the AI community. By using this service,
-                you acknowledge to the above, including how we collect and use
-                your data. Enjoy chatting!
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogAction
-                onClick={() => {
-                  console.info('onClick', { user });
-                  setAlertOpen(false);
-                }}
-              >
-                {t('alertDialog.acceptButton')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+      {!user?.tou?.valid && <FullPageStatus variant="termsOfUse" />}
       {children}
     </CoreContext.Provider>
   );
@@ -385,7 +308,7 @@ const CoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 const useCoreContext = () => {
   const context = useContext(CoreContext);
   if (!context) {
-    throw new Error('useCoreContext must be used within a CoreProvider');
+    throw new Error("useCoreContext must be used within a CoreProvider");
   }
   return context;
 };

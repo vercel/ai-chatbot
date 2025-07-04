@@ -41,7 +41,14 @@
         "existingAccess": "Si vous êtes un utilisateur avec un accès existant, essayez de recharger la page ou de vider votre cache et vos cookies pour résoudre le problème.",
         "serviceTemporarilyUnavailable": "Service temporairement indisponible",
         "technicalIssues": "Nous rencontrons des problèmes techniques pour charger les données essentielles. Veuillez essayer à nouveau dans quelques instants.",
-        "assistance": "Si le problème persiste, veuillez ouvrir un ticket de support via le portail de services de la CICR pour obtenir de l'aide."
+        "assistance": "Si le problème persiste, veuillez ouvrir un ticket de support via le portail de services de la CICR pour obtenir de l'aide.",
+        "termsOfUse": "Conditions d'utilisation",
+        "processing": "Traitement...",
+        "accept": "Accepter",
+        "errorProcessingRequest": "Erreur lors du traitement de la demande. Veuillez réessayer.",
+        "settings": "Paramètres",
+         "retry": "Réessayer",
+        "openTicket": "Ouvrir un ticket"
     },
     "markdownRenderer": {},
     "promptInput": {}

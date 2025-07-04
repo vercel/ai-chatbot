@@ -62,7 +62,14 @@
         "existingAccess": "If you are a user with existing access, try reloading the page or clearing your cache and cookies to resolve the issue.",
         "serviceTemporarilyUnavailable": "Service Temporarily Unavailable",
         "technicalIssues": "We're experiencing some technical issues loading essential data. Please try again in a few moments.",
-        "assistance": "If the problem persists, please open a support ticket via the ICRC Services Portal for assistance."
+        "assistance": "If the problem persists, please open a support ticket via the ICRC Services Portal for assistance.",
+        "termsOfUse": "Terms of Use",
+        "processing": "Processing...",
+        "accept": "Accept",
+        "errorProcessingRequest": "Error processing request. Please try again.",
+        "settings": "Settings",
+        "retry": "Retry",
+        "openTicket": "Open Ticket"
     },
     "markdownRenderer": {},
     "promptInput": {}

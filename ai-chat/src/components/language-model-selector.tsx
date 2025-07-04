@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { cn } from '@ai-chat/lib/utils';
-import { useCoreContext } from '@ai-chat/app/core-context';
+import { JSX, useMemo, useState } from "react";
+import { cn } from "@ai-chat/lib/utils";
+import { useCoreContext } from "@ai-chat/app/core-context";
 import {
   ChatModeKeyOptions,
   type KnowledgeBase,
   type LanguageModel,
   type KnowledgeBaseKeyOptions,
   type LanguageModelKeyOptions,
-} from '@ai-chat/app/api/models';
-import { Button } from './ui/button';
+} from "@ai-chat/app/api/models";
+import { Button } from "./ui/button";
 import {
   BotIcon,
   CheckCircleFillIcon,
   ChevronDownIcon,
   MetaIcon,
-} from './icons';
+} from "./icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+} from "./ui/dropdown-menu";
 
 interface LanguageModelInterface extends LanguageModel {
   icon: JSX.Element;
@@ -64,7 +64,7 @@ export function LanguageModelSelector({
 
   const selectedLanguageModel = useMemo(
     () => models.find((lm) => lm.key === currentLanguageModel),
-    [currentLanguageModel],
+    [currentLanguageModel]
   );
 
   return (
@@ -72,8 +72,8 @@ export function LanguageModelSelector({
       <DropdownMenuTrigger
         asChild
         className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
+          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
+          className
         )}
       >
         <Button
