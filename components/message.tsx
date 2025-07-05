@@ -103,7 +103,7 @@ const PurePreviewMessage = ({
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
 
-              if (type === 'reasoning' && part.text) {
+              if (type === 'reasoning' && part.text?.trim().length > 0) {
                 return (
                   <MessageReasoning
                     key={key}
