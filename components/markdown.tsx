@@ -37,12 +37,12 @@ const components: Partial<Components> = {
     );
   },
   a: ({ node, children, ...props }) => {
+    const isBookmarkLink = (node?.properties['href'] as string | undefined)?.startsWith('#');
     return (
       // @ts-expect-error
       <Link
         className="text-blue-500 hover:underline"
-        target="_blank"
-        rel="noreferrer"
+        {...(isBookmarkLink !== true && { target: '_blank', rel: 'noreferrer' })}
         {...props}
       >
         {children}
