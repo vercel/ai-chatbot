@@ -19,3 +19,8 @@ export async function GET(request: Request) {
 
   return signIn('guest', { redirect: true, redirectTo: redirectUrl });
 }
+
+
+export async function POST(request: Request) {
+  return GET(request);
+}
