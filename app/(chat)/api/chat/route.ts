@@ -149,8 +149,6 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    console.log(JSON.stringify(uiMessages, null, 2));
-
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -204,8 +202,7 @@ export async function POST(request: Request) {
           })),
         });
       },
-      onError: (error) => {
-        console.log(error);
+      onError: () => {
         return 'Oops, an error occurred!';
       },
     });
