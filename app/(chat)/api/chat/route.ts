@@ -216,7 +216,7 @@ export async function POST(request: Request) {
         ),
       );
     } else {
-      return new Response(stream);
+      return new Response(stream.pipeThrough(new JsonToSseTransformStream()));
     }
   } catch (error) {
     if (error instanceof ChatSDKError) {
