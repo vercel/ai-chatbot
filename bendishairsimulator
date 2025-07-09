@@ -1,0 +1,98 @@
+// BendisHairSimulator.jsx
+import React, { useState, useRef } from "react";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import jsPDF from "jspdf";
+
+export default function BendisHairSimulator() {
+  const [image, setImage] = useState(null);
+  const [density, setDensity] = useState(50);
+  const [zone, setZone] = useState(null);
+  const [grafts, setGrafts] = useState(null);
+  const reportRef = useRef(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDrawZone = () => {
+    setZone("frontal");
+    alert("Zona frontal selectată pentru simulare (funcționalitate în dezvoltare)");
+    calculateEstimate();
+  };
+
+  const calculateEstimate = () => {
+    const surfaceCm2 = 40;
+    const graftsPerCm2 = density / 2;
+    const totalGrafts = Math.round(surfaceCm2 * graftsPerCm2);
+    setGrafts(totalGrafts);
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Raport Simulare Transplant de Păr", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Zona selectată: ${zone}`, 20, 40);
+    doc.text(`Densitate dorită: ${density}%`, 20, 50);
+    doc.text(`Număr estimativ de grefe: ${grafts} grefe`, 20, 60);
+    doc.text(`Durată estimată: ${Math.ceil(grafts / 800)} ore`, 20, 70);
+    doc.text(`Cost estimativ: ~${(grafts * 2.5).toFixed(2)} EUR`, 20, 80);
+
+    doc.save("raport_transplant_par.pdf");
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Bendis Hair Simulator</h1>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="mb-4"
+      />
+
+      {image && (
+        <div className="mb-4">
+          <img src={image} alt="Scalp" className="w-full max-h-96 object-contain border rounded-lg" />
+        </div>
+      )}
+
+      {image && (
+        <>
+          <div className="mb-6">
+            <p className="mb-2">Densitate dorită:</p>
+            <Slider
+              min={10}
+              max={100}
+              step={5}
+              defaultValue={[density]}
+              onValueChange={(val) => setDensity(val[0])}
+            />
+            <p className="mt-2">Densitate: {density}%</p>
+          </div>
+
+          <Button onClick={handleDrawZone}>Desenează zona de implant</Button>
+
+          {grafts !== null && (
+            <div className="mt-6 p-4 border rounded-xl bg-gray-50" ref={reportRef}>
+              <h2 className="text-lg font-semibold mb-2">Estimare intervenție:</h2>
+              <p><strong>Zona selectată:</strong> {zone}</p>
+              <p><strong>Număr estimativ de grefe:</strong> {grafts} grefe</p>
+              <p><strong>Durată estimată:</strong> {Math.ceil(grafts / 800)} ore</p>
+              <p><strong>Cost estimativ:</strong> ~{(grafts * 2.5).toFixed(2)} EUR (la 2.5€/grefă)</p>
+              <Button className="mt-4" onClick={exportPDF}>Exportă Raport PDF</Button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
