@@ -28,6 +28,7 @@ import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
+import { Langfuse } from 'langfuse';
 import {
   createResumableStreamContext,
   type ResumableStreamContext,
@@ -40,7 +41,15 @@ import type { VisibilityType } from '@/components/visibility-selector';
 
 export const maxDuration = 60;
 
+const langfuse = new Langfuse({
+  secretKey: process.env.LANGFUSE_SECRET_KEY,
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+  baseUrl: process.env.LANGFUSE_HOST || 'https://us.cloud.langfuse.com'
+});
+
 let globalStreamContext: ResumableStreamContext | null = null;
+
+const fetchedPrompt = await langfuse.getPrompt('laura_system_prompt');
 
 export function getStreamContext() {
   if (!globalStreamContext) {
@@ -153,7 +162,7 @@ export async function POST(request: Request) {
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: fetchedPrompt.toJSON(),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
@@ -176,8 +185,10 @@ export async function POST(request: Request) {
             }),
           },
           experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
+            isEnabled: true,
+            metadata: {
+              langfusePrompt: fetchedPrompt.toJSON(),
+            },
           },
         });
 
