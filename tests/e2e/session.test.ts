@@ -184,26 +184,3 @@ test.describe
       await expect(page).toHaveURL('/');
     });
   });
-
-test.describe('Entitlements', () => {
-  let chatPage: ChatPage;
-
-  test.beforeEach(async ({ page }) => {
-    chatPage = new ChatPage(page);
-  });
-
-  test('Guest user cannot send more than 20 messages/day', async () => {
-    test.fixme();
-    await chatPage.createNewChat();
-
-    for (let i = 0; i <= 20; i++) {
-      await chatPage.sendUserMessage('Why is the sky blue?');
-      await chatPage.isGenerationComplete();
-    }
-
-    await chatPage.sendUserMessage('Why is the sky blue?');
-    await chatPage.expectToastToContain(
-      getMessageByErrorCode('rate_limit:chat'),
-    );
-  });
-});

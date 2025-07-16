@@ -33,7 +33,7 @@ We are migrating from a legacy authentication system (NextAuth/guest) to WorkOS 
      - `components/sidebar-history.tsx` - Updated to accept generic user object instead of NextAuth User type
      - `components/chat.tsx` - Updated to work directly with AuthKit user objects
      - `components/chat-header.tsx` - Updated to work with AuthKit user objects
-     - `components/model-selector.tsx` - Simplified to work with AuthKit users, removed entitlements system
+     - `components/model-selector.tsx` - **✅ COMPLETED**: Simplified to work with AuthKit users, removed entitlements system and unused user prop
 
 4. **Migrate API Routes** ✅ COMPLETE
    - **COMPLETED**: All API routes migrated from NextAuth to AuthKit with proper database user mapping
@@ -54,13 +54,18 @@ We are migrating from a legacy authentication system (NextAuth/guest) to WorkOS 
    - **SOLUTION**: Users are automatically created in our database when they first authenticate via WorkOS
    - **MAPPING STRATEGY**: Using email as the key to link WorkOS users to database users
 
-6. **Remove Legacy Auth Code** 🔄 IN PROGRESS
-   - Delete or comment out:
-     - Old API routes (e.g., `/api/auth/guest`, `/api/auth/[...nextauth]`)
-     - Old auth config files (`auth.ts`, `auth.config.ts`)
-     - Old middleware logic for NextAuth/guest
-     - Old login/register pages and forms
-     - Remove unused entitlements system
+6. **Remove Legacy Auth Code** ✅ COMPLETE
+   - **COMPLETED**: Deleted all legacy auth files:
+     - Old API routes (`/api/auth/guest`, `/api/auth/[...nextauth]`)
+     - Old auth config files (`auth.ts`, `auth.config.ts`, `actions.ts`)
+     - Old login/register pages (`login-old/page.tsx`, `register/page.tsx`)
+     - Old auth forms (`auth-form.tsx`, `sign-out-form.tsx`)
+     - Unused entitlements system (`lib/ai/entitlements.ts`)
+   - **COMPLETED**: Updated imports and types:
+     - Replaced NextAuth Session type with custom Session interface in `lib/types.ts`
+     - Updated all AI tools to use new Session type
+     - Removed NextAuth SessionProvider from root layout
+     - Updated database queries comments
 
 7. **Test the Full Auth Flow** ⏳ PENDING
    - Test:
@@ -70,9 +75,9 @@ We are migrating from a legacy authentication system (NextAuth/guest) to WorkOS 
      - User data access and chat history
      - Logout (if implemented)
 
-8. **Clean Up and Polish** ⏳ PENDING
-   - Remove unused dependencies (e.g., `next-auth`, `bcrypt-ts`)
-   - Update documentation and onboarding instructions
+8. **Clean Up and Polish** ✅ COMPLETE
+   - **COMPLETED**: Removed unused dependencies (`next-auth`, `bcrypt-ts`) from `package.json`
+   - **COMPLETED**: Updated code documentation and removed outdated NextAuth references
 
 ---
 
@@ -143,8 +148,35 @@ We are migrating from a legacy authentication system (NextAuth/guest) to WorkOS 
 - Type safety improved with direct AuthKit user objects
 - **Database integration working**: Users can now access their chat history and create new chats
 
+#### **✅ CLEANUP COMPLETED:**
+
+**Files Removed (9 total):**
+- `app/(auth)/actions.ts` - NextAuth actions
+- `app/(auth)/api/auth/[...nextauth]/route.ts` - NextAuth API handler
+- `app/(auth)/api/auth/guest/route.ts` - Guest authentication API
+- `app/(auth)/auth.config.ts` - NextAuth configuration
+- `app/(auth)/auth.ts` - NextAuth setup and types
+- `app/(auth)/login-old/page.tsx` - Old login page
+- `app/(auth)/register/page.tsx` - Register page
+- `components/auth-form.tsx` - NextAuth form component
+- `components/sign-out-form.tsx` - NextAuth sign-out form
+- `lib/ai/entitlements.ts` - Unused entitlements system
+
+**Files Updated (11 total):**
+- `app/layout.tsx` - Removed NextAuth SessionProvider
+- `lib/types.ts` - Added custom Session interface
+- `lib/ai/tools/create-document.ts` - Updated Session import
+- `lib/ai/tools/request-suggestions.ts` - Updated Session import
+- `lib/ai/tools/update-document.ts` - Updated Session import
+- `lib/artifacts/server.ts` - Updated Session import
+- `lib/db/queries.ts` - Updated comments
+- `package.json` - Removed next-auth and bcrypt-ts dependencies
+- `tests/e2e/session.test.ts` - Removed entitlements test
+
+**Dependencies Removed:**
+- `next-auth@5.0.0-beta.25`
+- `bcrypt-ts@^5.0.2`
+
 #### **🔄 NEXT PRIORITIES:**
-1. **Update Remaining API Routes** - Apply the same database user mapping pattern to other API routes
-2. **Legacy Code Cleanup** - Remove old NextAuth files and unused imports
-3. **Testing** - Verify complete authentication and database flow works
-4. **Dependencies** - Remove NextAuth and related unused packages 
+1. **Testing** - Verify complete authentication and database flow works
+2. **Package Update** - Run `pnpm install` to clean up lock file 
