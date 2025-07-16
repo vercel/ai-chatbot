@@ -1,5 +1,8 @@
-import { auth } from '@/app/(auth)/auth';
-import { getSuggestionsByDocumentId } from '@/lib/db/queries';
+import { withAuth } from '@workos-inc/authkit-nextjs';
+import {
+  getDatabaseUserFromWorkOS,
+  getSuggestionsByDocumentId,
+} from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(request: Request) {
@@ -13,10 +16,25 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:suggestions').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError(
+      'unauthorized:suggestions',
+      'User not found',
+    ).toResponse();
   }
 
   const suggestions = await getSuggestionsByDocumentId({
@@ -29,7 +47,7 @@ export async function GET(request: Request) {
     return Response.json([], { status: 200 });
   }
 
-  if (suggestion.userId !== session.user.id) {
+  if (suggestion.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:api').toResponse();
   }
 

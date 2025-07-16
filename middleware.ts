@@ -1,62 +1,46 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
 import { authkit } from '@workos-inc/authkit-nextjs';
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Use AuthKit for /authkit-test only
-  if (pathname.startsWith('/authkit-test')) {
-    const { session, headers, authorizationUrl } = await authkit(request, {
-      debug: true,
-    });
-    if (!session.user) {
-      // Fallback to '/' if authorizationUrl is undefined
-      return NextResponse.redirect(authorizationUrl ?? '/');
-    }
-    return NextResponse.next({ headers });
-  }
-
-  // Existing NextAuth/guest logic for all other routes
-  if (pathname.startsWith('/ping')) {
-    return new Response('pong', { status: 200 });
-  }
-
-  if (pathname.startsWith('/api/auth')) {
-    return NextResponse.next();
-  }
-
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
+  // Run the authkit helper on all requests.
+  const { session, headers, authorizationUrl } = await authkit(request, {
+    debug: true,
   });
 
-  if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-    );
-  }
-
-  const isGuest = guestRegex.test(token?.email ?? '');
-
-  if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
+  // If the user is logged in, redirect them from login/register pages
+  // to the home page.
+  if (session?.user && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next();
+  // Define public paths.
+  const publicPaths = [
+    '/login',
+    '/register',
+    '/callback',
+    '/ping',
+    '/authkit-test',
+  ];
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+
+  // If the user is not logged in and the path is not public,
+  // redirect them to the login page.
+  if (!session?.user && !isPublicPath) {
+    return NextResponse.redirect(
+      authorizationUrl ?? new URL('/login', request.url),
+    );
+  }
+
+  // If the user is logged in or the path is public, continue.
+  // We pass the headers from authkit so the session is available in
+  // server components and API routes.
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {
   matcher: [
-    '/authkit-test',
-    '/',
-    '/chat/:id',
-    '/api/:path*',
-    '/login',
-    '/register',
     /*
      * Match all request paths except for the ones starting with:
      * - _next/static (static files)

@@ -1,5 +1,10 @@
-import { auth } from '@/app/(auth)/auth';
-import { getChatById, getVotesByChatId, voteMessage } from '@/lib/db/queries';
+import { withAuth } from '@workos-inc/authkit-nextjs';
+import {
+  getChatById,
+  getDatabaseUserFromWorkOS,
+  getVotesByChatId,
+  voteMessage,
+} from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(request: Request) {
@@ -13,10 +18,22 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:vote').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError('unauthorized:vote', 'User not found').toResponse();
   }
 
   const chat = await getChatById({ id: chatId });
@@ -25,7 +42,7 @@ export async function GET(request: Request) {
     return new ChatSDKError('not_found:chat').toResponse();
   }
 
-  if (chat.userId !== session.user.id) {
+  if (chat.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:vote').toResponse();
   }
 
@@ -49,10 +66,22 @@ export async function PATCH(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:vote').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError('unauthorized:vote', 'User not found').toResponse();
   }
 
   const chat = await getChatById({ id: chatId });
@@ -61,7 +90,7 @@ export async function PATCH(request: Request) {
     return new ChatSDKError('not_found:vote').toResponse();
   }
 
-  if (chat.userId !== session.user.id) {
+  if (chat.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:vote').toResponse();
   }
 

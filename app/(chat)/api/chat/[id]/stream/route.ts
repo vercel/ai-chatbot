@@ -1,6 +1,7 @@
-import { auth } from '@/app/(auth)/auth';
+import { withAuth } from '@workos-inc/authkit-nextjs';
 import {
   getChatById,
+  getDatabaseUserFromWorkOS,
   getMessagesByChatId,
   getStreamIdsByChatId,
 } from '@/lib/db/queries';
@@ -28,10 +29,22 @@ export async function GET(
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:chat').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError('unauthorized:chat', 'User not found').toResponse();
   }
 
   let chat: Chat;
@@ -46,7 +59,7 @@ export async function GET(
     return new ChatSDKError('not_found:chat').toResponse();
   }
 
-  if (chat.visibility === 'private' && chat.userId !== session.user.id) {
+  if (chat.visibility === 'private' && chat.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:chat').toResponse();
   }
 

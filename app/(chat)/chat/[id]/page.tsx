@@ -1,9 +1,13 @@
 import { cookies } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
-import { auth } from '@/app/(auth)/auth';
+import { withAuth } from '@workos-inc/authkit-nextjs';
 import { Chat } from '@/components/chat';
-import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
+import {
+  getChatById,
+  getDatabaseUserFromWorkOS,
+  getMessagesByChatId,
+} from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
@@ -17,18 +21,24 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const session = await auth();
+  const { user } = await withAuth({ ensureSignedIn: true });
 
-  if (!session) {
-    redirect('/api/auth/guest');
-  }
+  // Get the database user from the WorkOS user for proper ID comparisons
+  const databaseUser = user
+    ? await getDatabaseUserFromWorkOS({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
+      })
+    : null;
 
   if (chat.visibility === 'private') {
-    if (!session.user) {
+    if (!user || !databaseUser) {
       return notFound();
     }
 
-    if (session.user.id !== chat.userId) {
+    if (databaseUser.id !== chat.userId) {
       return notFound();
     }
   }
@@ -50,8 +60,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialMessages={uiMessages}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
-          session={session}
+          isReadonly={!databaseUser || databaseUser.id !== chat.userId}
+          user={user}
           autoResume={true}
         />
         <DataStreamHandler />
@@ -66,8 +76,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={uiMessages}
         initialChatModel={chatModelFromCookie.value}
         initialVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
-        session={session}
+        isReadonly={!databaseUser || databaseUser.id !== chat.userId}
+        user={user}
         autoResume={true}
       />
       <DataStreamHandler />

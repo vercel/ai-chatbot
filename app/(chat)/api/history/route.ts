@@ -1,6 +1,6 @@
-import { auth } from '@/app/(auth)/auth';
+import { withAuth } from '@workos-inc/authkit-nextjs';
 import type { NextRequest } from 'next/server';
-import { getChatsByUserId } from '@/lib/db/queries';
+import { getChatsByUserId, getDatabaseUserFromWorkOS } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(request: NextRequest) {
@@ -17,18 +17,41 @@ export async function GET(request: NextRequest) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
-  const chats = await getChatsByUserId({
-    id: session.user.id,
-    limit,
-    startingAfter,
-    endingBefore,
-  });
+  try {
+    // Get the database user from the WorkOS user
+    const databaseUser = await getDatabaseUserFromWorkOS({
+      id: session.user.id,
+      email: session.user.email,
+      firstName: session.user.firstName ?? undefined,
+      lastName: session.user.lastName ?? undefined,
+    });
 
-  return Response.json(chats);
+    if (!databaseUser) {
+      return new ChatSDKError(
+        'not_found:history',
+        'User not found',
+      ).toResponse();
+    }
+
+    const chats = await getChatsByUserId({
+      id: databaseUser.id,
+      limit,
+      startingAfter,
+      endingBefore,
+    });
+
+    return Response.json(chats);
+  } catch (error) {
+    console.error('Error in history API:', error);
+    return new ChatSDKError(
+      'bad_request:database',
+      'Database error',
+    ).toResponse();
+  }
 }

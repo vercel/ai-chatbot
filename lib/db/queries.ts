@@ -80,6 +80,79 @@ export async function createGuestUser() {
   }
 }
 
+// New function to sync WorkOS users with our database
+export async function findOrCreateUserFromWorkOS(workosUser: {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}): Promise<User> {
+  try {
+    // First, try to find user by email
+    const existingUsers = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, workosUser.email));
+
+    if (existingUsers.length > 0) {
+      // User exists, return the first one
+      return existingUsers[0];
+    }
+
+    // User doesn't exist, create a new one
+    // We'll store the WorkOS user ID in the email field temporarily
+    // until we can add a proper workos_user_id field to the schema
+    const newUser = await db
+      .insert(user)
+      .values({
+        email: workosUser.email,
+        // Store a hashed placeholder password since this field is required
+        // but won't be used for WorkOS authentication
+        password: generateHashedPassword(`workos-${workosUser.id}`),
+      })
+      .returning();
+
+    if (newUser.length === 0) {
+      throw new Error('Failed to create user');
+    }
+
+    return newUser[0];
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to find or create user from WorkOS data',
+    );
+  }
+}
+
+// New function to get database user from WorkOS user
+export async function getDatabaseUserFromWorkOS(workosUser: {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}): Promise<User | null> {
+  try {
+    // Find user by email (our current mapping strategy)
+    const users = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, workosUser.email));
+
+    if (users.length === 0) {
+      // User doesn't exist in database yet, create them
+      return await findOrCreateUserFromWorkOS(workosUser);
+    }
+
+    return users[0];
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get database user from WorkOS user',
+    );
+  }
+}
+
 export async function saveChat({
   id,
   userId,

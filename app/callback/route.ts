@@ -1,5 +1,23 @@
 import { handleAuth } from '@workos-inc/authkit-nextjs';
+import { findOrCreateUserFromWorkOS } from '@/lib/db/queries';
 
-// Redirect the user to `/` after successful sign in
-// The redirect can be customized: `handleAuth({ returnPathname: '/foo' })`
-export const GET = handleAuth();
+// Handle WorkOS AuthKit callback with user synchronization
+export const GET = handleAuth({
+  onSuccess: async ({ user, accessToken, refreshToken, impersonator }) => {
+    try {
+      // Sync the WorkOS user with our database
+      await findOrCreateUserFromWorkOS({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
+      });
+
+      console.log(`Successfully synced user: ${user.email}`);
+    } catch (error) {
+      console.error('Failed to sync user with database:', error);
+      // Don't throw here as it would break the auth flow
+      // The user will still be authenticated via WorkOS
+    }
+  },
+});
