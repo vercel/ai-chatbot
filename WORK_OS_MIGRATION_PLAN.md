@@ -99,6 +99,7 @@ We are migrating from a legacy authentication system (NextAuth/guest) to WorkOS 
 3. **AI Tools Session Compatibility** (`app/(chat)/api/chat/route.ts`):
    - Created session adapter to transform WorkOS UserInfo to NextAuth-compatible Session
    - Added `expires` field and proper user object structure for AI tools
+   - **✅ FIXED CRITICAL**: Updated AI tools session to use database user ID instead of WorkOS user ID for artifact operations
 
 **Implementation Details:**
 1. **AuthKit Callback Integration** (`app/callback/route.ts`):

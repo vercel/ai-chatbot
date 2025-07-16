@@ -46,8 +46,13 @@ function findPositionsInDoc(doc: Node, searchText: string): Position | null {
 
 export function projectWithPositions(
   doc: Node,
-  suggestions: Array<Suggestion>,
+  suggestions?: Array<Suggestion>,
 ): Array<UISuggestion> {
+  // Guard against undefined or null suggestions
+  if (!suggestions || !Array.isArray(suggestions)) {
+    return [];
+  }
+
   return suggestions.map((suggestion) => {
     const positions = findPositionsInDoc(doc, suggestion.originalText);
 

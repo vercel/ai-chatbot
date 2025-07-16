@@ -13,7 +13,6 @@ import {
   deleteChatById,
   getChatById,
   getDatabaseUserFromWorkOS,
-  getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
   saveMessages,
@@ -153,6 +152,17 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Create session adapter for AI tools with database user ID
+    const aiToolsSession = {
+      user: {
+        id: databaseUser.id, // Use database user ID instead of WorkOS user ID
+        email: session.user.email,
+        firstName: session.user.firstName,
+        lastName: session.user.lastName,
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    } as any;
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -173,30 +183,15 @@ export async function POST(request: Request) {
           tools: {
             getWeather,
             createDocument: createDocument({
-              session: {
-                user: session.user,
-                expires: new Date(
-                  Date.now() + 24 * 60 * 60 * 1000,
-                ).toISOString(),
-              } as any,
+              session: aiToolsSession,
               dataStream,
             }),
             updateDocument: updateDocument({
-              session: {
-                user: session.user,
-                expires: new Date(
-                  Date.now() + 24 * 60 * 60 * 1000,
-                ).toISOString(),
-              } as any,
+              session: aiToolsSession,
               dataStream,
             }),
             requestSuggestions: requestSuggestions({
-              session: {
-                user: session.user,
-                expires: new Date(
-                  Date.now() + 24 * 60 * 60 * 1000,
-                ).toISOString(),
-              } as any,
+              session: aiToolsSession,
               dataStream,
             }),
           },
