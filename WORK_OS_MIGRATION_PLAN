@@ -1,0 +1,52 @@
+# WorkOS AuthKit Migration Plan
+
+## Context & Rationale
+
+We are migrating from a legacy authentication system (NextAuth/guest) to WorkOS AuthKit for a more robust, modern, and unified authentication experience. This migration will:
+- Simplify authentication logic
+- Provide a hosted, secure login UI
+- Unify session and user management
+- Remove technical debt from legacy auth code
+
+## Migration Steps (Systematic Approach)
+
+1. **Inventory and Audit Existing Auth Usage**
+   - Identify all places where the old auth system (NextAuth/guest) is used:
+     - API routes (e.g., `/api/auth/*`)
+     - Middleware logic
+     - Components/hooks (e.g., `useSession`, `signIn`, `signOut`)
+     - Pages that require authentication or user info
+
+2. **Incrementally Migrate Protected Routes**
+   - For each protected route/page:
+     - Replace legacy session checks with AuthKit’s `withAuth({ ensureSignedIn: true })` or `useAuth` (client).
+     - Remove any guest/NextAuth-specific logic.
+
+3. **Update Components and Hooks**
+   - Refactor components that use the old session/user context to use AuthKit’s session/user.
+   - Update sign-in and sign-out buttons/flows to use AuthKit endpoints and helpers.
+
+4. **Remove Legacy Auth Code**
+   - Delete or comment out:
+     - Old API routes (e.g., `/api/auth/guest`, `/api/auth/[...nextauth]`)
+     - Old auth config files (`auth.ts`, `auth.config.ts`)
+     - Old middleware logic for NextAuth/guest
+     - Old login/register pages and forms
+
+5. **Test the Full Auth Flow**
+   - Test:
+     - Login (via `/login`)
+     - Callback and session creation
+     - Protected routes (redirects and access)
+     - Logout (if implemented)
+     - User info in components
+
+6. **Clean Up and Polish**
+   - Remove unused dependencies (e.g., `next-auth`, `bcrypt-ts`)
+   - Update documentation and onboarding instructions
+
+## Concise To-Do List
+
+1. Migrate all authentication logic and protected routes from legacy NextAuth/guest system to WorkOS AuthKit. Remove or refactor all legacy auth code, routes, and usage in components.
+2. Update all components and hooks that depend on the old auth system to use AuthKit (e.g., user context, sign in/out, protected routes).
+3. Test the full authentication flow: login, callback, protected routes, and logout using AuthKit only. 

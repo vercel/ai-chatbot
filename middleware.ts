@@ -1,14 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+import { authkit } from '@workos-inc/authkit-nextjs';
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  /*
-   * Playwright starts the dev server and requires a 200 status to
-   * begin the tests, so this ensures that the tests can start
-   */
+  // Use AuthKit for /authkit-test only
+  if (pathname.startsWith('/authkit-test')) {
+    const { session, headers, authorizationUrl } = await authkit(request, {
+      debug: true,
+    });
+    if (!session.user) {
+      // Fallback to '/' if authorizationUrl is undefined
+      return NextResponse.redirect(authorizationUrl ?? '/');
+    }
+    return NextResponse.next({ headers });
+  }
+
+  // Existing NextAuth/guest logic for all other routes
   if (pathname.startsWith('/ping')) {
     return new Response('pong', { status: 200 });
   }
@@ -25,7 +35,6 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);
-
     return NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
     );
@@ -42,12 +51,12 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/authkit-test',
     '/',
     '/chat/:id',
     '/api/:path*',
     '/login',
     '/register',
-
     /*
      * Match all request paths except for the ones starting with:
      * - _next/static (static files)
