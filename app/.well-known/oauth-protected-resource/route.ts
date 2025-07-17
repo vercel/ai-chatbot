@@ -7,5 +7,6 @@ export async function GET() {
       process.env.WORKOS_ISSUER ||
         'https://intentional-oil-65-staging.authkit.app',
     ],
+    bearer_methods_supported: ['header'],
   });
 }
