@@ -36,6 +36,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import { openai } from '@ai-sdk/openai';
 
 export const maxDuration = 60;
 
@@ -178,6 +179,10 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  // Include web search for o3
+                  ...(selectedChatModel === 'o3'
+                    ? ['web_search_preview' as const]
+                    : []),
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
@@ -194,11 +199,33 @@ export async function POST(request: Request) {
               session: aiToolsSession,
               dataStream,
             }),
+            // Add web search for o3 model
+            ...(selectedChatModel === 'o3' && {
+              web_search_preview: openai.tools.webSearchPreview({
+                searchContextSize: 'high',
+                userLocation:
+                  requestHints.city && requestHints.country
+                    ? {
+                        type: 'approximate',
+                        city: requestHints.city,
+                        region: requestHints.country,
+                      }
+                    : undefined,
+              }),
+            }),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
+          // Add providerOptions for o3 reasoning summaries
+          ...(selectedChatModel === 'o3' && {
+            providerOptions: {
+              openai: {
+                reasoningSummary: 'auto', // Use 'auto' for condensed or 'detailed' for comprehensive
+              },
+            },
+          }),
         });
 
         result.consumeStream();
