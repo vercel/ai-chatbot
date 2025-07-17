@@ -90,9 +90,7 @@ export const getTranscriptDetails = ({
             results.push({
               id: reqId,
               cleaned_content: null,
-              message: `No 'cleaned' content found. Transcript content: ${JSON.stringify(
-                transcriptContent,
-              )}`,
+              message: 'No cleaned content available for this transcript.',
             });
           }
         } else {

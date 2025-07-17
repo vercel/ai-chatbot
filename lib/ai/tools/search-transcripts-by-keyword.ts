@@ -39,6 +39,14 @@ export const searchTranscriptsByKeyword = ({
       meeting_type,
       limit,
     }) => {
+
+      // Input sanitization for keyword search
+      if (keyword.length > 100) {
+        return {
+          error: 'Search keyword too long. Maximum 100 characters allowed.',
+        };
+      }
+
       const supabaseUrl = process.env.SUPABASE_URL;
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -67,16 +75,32 @@ export const searchTranscriptsByKeyword = ({
       if (end_date) query = query.lte('recording_start', end_date);
       if (meeting_type) query = query.eq('meeting_type', meeting_type);
 
-      const searchPattern = isFuzzy ? `*${kw.toLowerCase()}*` : `*${kw}*`;
-
+      // Use Supabase's safe parameter binding instead of string interpolation
       if (searchScope === 'summary') {
-        query = query.ilike('summary', searchPattern);
+        if (isFuzzy) {
+          query = query.ilike('summary', `%${kw.toLowerCase()}%`);
+        } else {
+          query = query.ilike('summary', `%${kw}%`);
+        }
       } else if (searchScope === 'content') {
-        query = query.ilike('transcript_content->>cleaned', searchPattern);
+        if (isFuzzy) {
+          query = query.ilike(
+            'transcript_content->>cleaned',
+            `%${kw.toLowerCase()}%`,
+          );
+        } else {
+          query = query.ilike('transcript_content->>cleaned', `%${kw}%`);
+        }
       } else if (searchScope === 'both') {
-        query = query.or(
-          `summary.ilike.${searchPattern},transcript_content->>cleaned.ilike.${searchPattern}`,
-        );
+        if (isFuzzy) {
+          query = query.or(
+            `summary.ilike.%${kw.toLowerCase()}%,transcript_content->>cleaned.ilike.%${kw.toLowerCase()}%`,
+          );
+        } else {
+          query = query.or(
+            `summary.ilike.%${kw}%,transcript_content->>cleaned.ilike.%${kw}%`,
+          );
+        }
       }
 
       // RBAC: If user role is 'member', only return transcripts where they are a verified participant
