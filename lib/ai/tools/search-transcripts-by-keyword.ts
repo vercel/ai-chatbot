@@ -1,0 +1,110 @@
+import { z } from 'zod';
+import type { Session, ChatMessage } from '@/lib/types';
+import { tool, type UIMessageStreamWriter } from 'ai';
+import { createClient } from '@supabase/supabase-js';
+
+interface SearchTranscriptsByKeywordProps {
+  session: Session;
+  dataStream: UIMessageStreamWriter<ChatMessage>;
+}
+
+export const searchTranscriptsByKeyword = ({
+  session,
+  dataStream,
+}: SearchTranscriptsByKeywordProps) =>
+  tool({
+    description:
+      'Searches meeting transcripts by a keyword, with optional filters for date range, meeting type, and relevance. Allows fuzzy search.',
+    inputSchema: z.object({
+      keyword: z.string().min(1, 'keyword is required'),
+      fuzzy: z.boolean().optional().default(false),
+      scope: z
+        .enum(['summary', 'content', 'both'])
+        .optional()
+        .default('summary')
+        .describe(
+          "Search scope: 'summary' searches only summaries, 'content' searches only transcript content, 'both' searches both fields",
+        ),
+      start_date: z.string().optional(), // YYYY-MM-DD
+      end_date: z.string().optional(),
+      meeting_type: z.enum(['internal', 'external', 'unknown']).optional(),
+      limit: z.number().int().min(1).max(50).default(10),
+    }),
+    execute: async ({
+      keyword,
+      fuzzy,
+      scope,
+      start_date,
+      end_date,
+      meeting_type,
+      limit,
+    }) => {
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+      if (!supabaseUrl || !supabaseKey) {
+        return {
+          error:
+            'Supabase credentials not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars.',
+        };
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const kw = String(keyword);
+      const lim = Number(limit);
+      const isFuzzy = Boolean(fuzzy);
+      const searchScope = scope || 'summary';
+
+      let query = supabase
+        .from('transcripts')
+        .select(
+          'id, recording_start, summary, projects, clients, meeting_type, extracted_participants',
+        )
+        .order('recording_start', { ascending: false })
+        .limit(lim);
+
+      if (start_date) query = query.gte('recording_start', start_date);
+      if (end_date) query = query.lte('recording_start', end_date);
+      if (meeting_type) query = query.eq('meeting_type', meeting_type);
+
+      const searchPattern = isFuzzy ? `*${kw.toLowerCase()}*` : `*${kw}*`;
+
+      if (searchScope === 'summary') {
+        query = query.ilike('summary', searchPattern);
+      } else if (searchScope === 'content') {
+        query = query.ilike('transcript_content->>cleaned', searchPattern);
+      } else if (searchScope === 'both') {
+        query = query.or(
+          `summary.ilike.${searchPattern},transcript_content->>cleaned.ilike.${searchPattern}`,
+        );
+      }
+
+      // RBAC: If user role is 'member', only return transcripts where they are a verified participant
+      if (session.role === 'member' && session.user.email) {
+        query = query.contains('verified_participant_emails', [
+          session.user.email,
+        ]);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        return {
+          error: `Database error: ${error.message}`,
+        };
+      }
+
+      // Provide helpful message if member has no results due to permissions
+      if (session.role === 'member' && (!data || data.length === 0)) {
+        return {
+          result: JSON.stringify([]),
+          message:
+            'No transcripts found matching your search. Note: As a member, you can only search transcripts where you are a verified participant.',
+        };
+      }
+
+      return {
+        result: JSON.stringify(data ?? []),
+      };
+    },
+  });

@@ -1,9 +1,8 @@
 import { tool, type UIMessageStreamWriter } from 'ai';
-import type { Session } from '@/lib/types';
+import type { Session, ChatMessage } from '@/lib/types';
 import { z } from 'zod';
 import { getDocumentById } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
-import type { ChatMessage } from '@/lib/types';
 
 interface UpdateDocumentProps {
   session: Session;

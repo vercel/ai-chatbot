@@ -36,19 +36,24 @@ export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
 export interface RequestHints {
-  latitude: Geo['latitude'];
   longitude: Geo['longitude'];
+  latitude: Geo['latitude'];
   city: Geo['city'];
   country: Geo['country'];
+  email?: string;
+  name?: string;
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
-About the origin of user's request:
+You have been provided with the following context about the user's request:
 - lat: ${requestHints.latitude}
 - lon: ${requestHints.longitude}
 - city: ${requestHints.city}
 - country: ${requestHints.country}
-`;
+- email: ${requestHints.email}
+- name: ${requestHints.name}
+
+Please use these details to provide a more personalized and relevant response.`;
 
 export const systemPrompt = ({
   selectedChatModel,

@@ -23,7 +23,9 @@ export interface Session {
     email?: string | null;
     name?: string | null;
     image?: string | null;
+    permissions?: string[];
   };
+  role: string;
   expires: string;
 }
 

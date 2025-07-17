@@ -23,6 +23,9 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { searchTranscriptsByKeyword } from '@/lib/ai/tools/search-transcripts-by-keyword';
+import { searchTranscriptsByUser } from '@/lib/ai/tools/search-transcripts-by-user';
+import { getTranscriptDetails } from '@/lib/ai/tools/get-transcript-details';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -86,6 +89,7 @@ export async function POST(request: Request) {
     } = requestBody;
 
     const session = await withAuth();
+    console.log('SESSION INFORMATION HERE', session.role);
 
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
@@ -135,6 +139,11 @@ export async function POST(request: Request) {
       latitude,
       city,
       country,
+      email: session.user.email,
+      name:
+        session.user.firstName && session.user.lastName
+          ? `${session.user.firstName} ${session.user.lastName}`
+          : (session.user.firstName ?? undefined),
     };
 
     await saveMessages({
@@ -160,6 +169,7 @@ export async function POST(request: Request) {
         email: session.user.email,
         firstName: session.user.firstName,
         lastName: session.user.lastName,
+        role: session.role,
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     } as any;
@@ -176,6 +186,18 @@ export async function POST(request: Request) {
             dataStream,
           }),
           requestSuggestions: requestSuggestions({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          searchTranscriptsByKeyword: searchTranscriptsByKeyword({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          searchTranscriptsByUser: searchTranscriptsByUser({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          getTranscriptDetails: getTranscriptDetails({
             session: aiToolsSession,
             dataStream,
           }),

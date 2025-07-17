@@ -5,9 +5,8 @@ import { textDocumentHandler } from '@/artifacts/text/server';
 import type { ArtifactKind } from '@/components/artifact';
 import type { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
-import type { Session } from '@/lib/types';
+import type { Session, ChatMessage } from '@/lib/types';
 import type { UIMessageStreamWriter } from 'ai';
-import type { ChatMessage } from '../types';
 
 export interface SaveDocumentProps {
   id: string;
