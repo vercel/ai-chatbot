@@ -8,7 +8,6 @@ export default authkitMiddleware({
       '/register', 
       '/callback',
       '/ping',
-      '/authkit-test',
     ],
   },
   debug: true,
