@@ -10,7 +10,7 @@ export default authkitMiddleware({
       '/ping',
       '/.well-known/oauth-protected-resource',
       '/.well-known/oauth-authorization-server',
-      '/api/mcp/http',
+      '/api/mcp',
     ],
   },
   debug: true,

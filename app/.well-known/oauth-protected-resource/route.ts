@@ -1,12 +1,10 @@
-import { NextResponse } from 'next/server';
+import {
+  protectedResourceHandler,
+  metadataCorsOptionsRequestHandler,
+} from 'mcp-handler';
 
-export async function GET() {
-  return NextResponse.json({
-    resource: process.env.WORKOS_API_URL || 'https://servant-ai.vercel.app',
-    authorization_servers: [
-      process.env.WORKOS_ISSUER ||
-        'https://intentional-oil-65-staging.authkit.app',
-    ],
-    bearer_methods_supported: ['header'],
-  });
-}
+const handler = protectedResourceHandler({
+  authServerUrls: ['https://intentional-oil-65-staging.authkit.app'],
+});
+
+export { handler as GET, metadataCorsOptionsRequestHandler as OPTIONS };
