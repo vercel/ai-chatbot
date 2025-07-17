@@ -4,7 +4,7 @@ import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@workos-inc/authkit-nextjs/components';
-import { signOut } from '@workos-inc/authkit-nextjs';
+import { handleSignOut } from '@/lib/auth-actions';
 
 import {
   DropdownMenu,
@@ -57,18 +57,12 @@ export function SidebarUserNav() {
               {`Toggle ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={async () => {
-                if (!user) {
-                  router.push('/login');
-                } else {
-                  // Use AuthKit's signOut function
-                  await signOut();
-                }
-              }}
-            >
-              Sign out
+            <DropdownMenuItem asChild>
+              <form action={handleSignOut}>
+                <button type="submit" className="w-full text-left cursor-pointer">
+                  Sign out
+                </button>
+              </form>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
