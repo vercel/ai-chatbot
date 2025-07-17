@@ -5,10 +5,11 @@ export default authkitMiddleware({
     enabled: true,
     unauthenticatedPaths: [
       '/login',
-      '/register', 
+      '/register',
       '/callback',
       '/ping',
       '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-authorization-server',
     ],
   },
   debug: true,

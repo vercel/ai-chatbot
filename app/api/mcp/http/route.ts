@@ -1,6 +1,6 @@
 import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 const JWKS = createRemoteJWKSet(new URL('https://intentional-oil-65-staging.authkit.app/oauth2/jwks'));
