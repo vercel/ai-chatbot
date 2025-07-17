@@ -1,8 +1,6 @@
 import { expect, test } from '../fixtures';
 import { AuthPage } from '../pages/auth';
 import { generateRandomTestUser } from '../helpers';
-import { ChatPage } from '../pages/chat';
-import { getMessageByErrorCode } from '@/lib/errors';
 
 test.describe
   .serial('Guest Session', () => {

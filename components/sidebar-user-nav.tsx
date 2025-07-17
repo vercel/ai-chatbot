@@ -19,8 +19,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useRouter } from 'next/navigation';
-import { toast } from './toast';
-import { LoaderIcon } from './icons';
 
 export function SidebarUserNav() {
   const router = useRouter();
