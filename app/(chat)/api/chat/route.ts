@@ -6,13 +6,13 @@ import {
   stepCountIs,
   streamText,
 } from 'ai';
-import { auth, type UserType } from '@/app/(auth)/auth';
+import { withAuth } from '@workos-inc/authkit-nextjs';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
   createStreamId,
   deleteChatById,
   getChatById,
-  getMessageCountByUserId,
+  getDatabaseUserFromWorkOS,
   getMessagesByChatId,
   saveChat,
   saveMessages,
@@ -25,7 +25,6 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
 import {
@@ -85,21 +84,25 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
     } = requestBody;
 
-    const session = await auth();
+    const session = await withAuth();
 
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
-    const userType: UserType = session.user.type;
-
-    const messageCount = await getMessageCountByUserId({
+    // Get the database user from the WorkOS user
+    const databaseUser = await getDatabaseUserFromWorkOS({
       id: session.user.id,
-      differenceInHours: 24,
+      email: session.user.email,
+      firstName: session.user.firstName ?? undefined,
+      lastName: session.user.lastName ?? undefined,
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse();
+    if (!databaseUser) {
+      return new ChatSDKError(
+        'unauthorized:chat',
+        'User not found',
+      ).toResponse();
     }
 
     const chat = await getChatById({ id });
@@ -111,12 +114,12 @@ export async function POST(request: Request) {
 
       await saveChat({
         id,
-        userId: session.user.id,
+        userId: databaseUser.id,
         title,
         visibility: selectedVisibilityType,
       });
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== databaseUser.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
       }
     }
@@ -149,6 +152,17 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Create session adapter for AI tools with database user ID
+    const aiToolsSession = {
+      user: {
+        id: databaseUser.id, // Use database user ID instead of WorkOS user ID
+        email: session.user.email,
+        firstName: session.user.firstName,
+        lastName: session.user.lastName,
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    } as any;
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -168,10 +182,16 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
+            createDocument: createDocument({
+              session: aiToolsSession,
+              dataStream,
+            }),
+            updateDocument: updateDocument({
+              session: aiToolsSession,
+              dataStream,
+            }),
             requestSuggestions: requestSuggestions({
-              session,
+              session: aiToolsSession,
               dataStream,
             }),
           },
@@ -233,15 +253,27 @@ export async function DELETE(request: Request) {
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError('unauthorized:chat', 'User not found').toResponse();
+  }
+
   const chat = await getChatById({ id });
 
-  if (chat.userId !== session.user.id) {
+  if (chat.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:chat').toResponse();
   }
 

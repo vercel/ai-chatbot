@@ -1,7 +1,8 @@
-import { auth } from '@/app/(auth)/auth';
+import { withAuth } from '@workos-inc/authkit-nextjs';
 import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
+  getDatabaseUserFromWorkOS,
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
@@ -18,10 +19,25 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:document').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError(
+      'unauthorized:document',
+      'User not found',
+    ).toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -32,7 +48,7 @@ export async function GET(request: Request) {
     return new ChatSDKError('not_found:document').toResponse();
   }
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:document').toResponse();
   }
 
@@ -50,10 +66,25 @@ export async function POST(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
-    return new ChatSDKError('not_found:document').toResponse();
+    return new ChatSDKError('unauthorized:document').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError(
+      'unauthorized:document',
+      'User not found',
+    ).toResponse();
   }
 
   const {
@@ -68,7 +99,7 @@ export async function POST(request: Request) {
   if (documents.length > 0) {
     const [document] = documents;
 
-    if (document.userId !== session.user.id) {
+    if (document.userId !== databaseUser.id) {
       return new ChatSDKError('forbidden:document').toResponse();
     }
   }
@@ -78,7 +109,7 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-    userId: session.user.id,
+    userId: databaseUser.id,
   });
 
   return Response.json(document, { status: 200 });
@@ -103,17 +134,32 @@ export async function DELETE(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const session = await withAuth();
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:document').toResponse();
+  }
+
+  // Get the database user from the WorkOS user
+  const databaseUser = await getDatabaseUserFromWorkOS({
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName ?? undefined,
+    lastName: session.user.lastName ?? undefined,
+  });
+
+  if (!databaseUser) {
+    return new ChatSDKError(
+      'unauthorized:document',
+      'User not found',
+    ).toResponse();
   }
 
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== databaseUser.id) {
     return new ChatSDKError('forbidden:document').toResponse();
   }
 

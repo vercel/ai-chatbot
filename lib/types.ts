@@ -16,6 +16,17 @@ export const messageMetadataSchema = z.object({
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
+// Session interface for AI tools (replaces NextAuth Session)
+export interface Session {
+  user: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+  expires: string;
+}
+
 type weatherTool = InferUITool<typeof getWeather>;
 type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
 type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
