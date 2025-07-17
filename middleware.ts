@@ -8,6 +8,7 @@ export default authkitMiddleware({
       '/register', 
       '/callback',
       '/ping',
+      '/.well-known/oauth-protected-resource',
     ],
   },
   debug: true,
