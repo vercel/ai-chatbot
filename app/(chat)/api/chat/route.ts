@@ -166,6 +166,39 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        const tools: Record<string, any> = {
+          createDocument: createDocument({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          updateDocument: updateDocument({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          requestSuggestions: requestSuggestions({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          // Add web search for o3 model
+          ...(selectedChatModel === 'o3' && {
+            web_search_preview: openai.tools.webSearchPreview({
+              searchContextSize: 'high',
+              userLocation:
+                requestHints.city && requestHints.country
+                  ? {
+                      type: 'approximate',
+                      city: requestHints.city,
+                      region: requestHints.country,
+                    }
+                  : undefined,
+            }),
+          }),
+        };
+
+        if (session.permissions?.includes('access:weather:any')) {
+          tools.getWeather = getWeather;
+        }
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
@@ -174,46 +207,9 @@ export async function POST(request: Request) {
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                  // Include web search for o3
-                  ...(selectedChatModel === 'o3'
-                    ? ['web_search_preview' as const]
-                    : []),
-                ],
+              : Object.keys(tools),
           experimental_transform: smoothStream({ chunking: 'word' }),
-          tools: {
-            getWeather,
-            createDocument: createDocument({
-              session: aiToolsSession,
-              dataStream,
-            }),
-            updateDocument: updateDocument({
-              session: aiToolsSession,
-              dataStream,
-            }),
-            requestSuggestions: requestSuggestions({
-              session: aiToolsSession,
-              dataStream,
-            }),
-            // Add web search for o3 model
-            ...(selectedChatModel === 'o3' && {
-              web_search_preview: openai.tools.webSearchPreview({
-                searchContextSize: 'high',
-                userLocation:
-                  requestHints.city && requestHints.country
-                    ? {
-                        type: 'approximate',
-                        city: requestHints.city,
-                        region: requestHints.country,
-                      }
-                    : undefined,
-              }),
-            }),
-          },
+          tools: tools,
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
