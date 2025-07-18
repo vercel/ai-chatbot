@@ -217,10 +217,6 @@ export async function POST(request: Request) {
                   : undefined,
             }),
           }),
-          // Add Google search for chat-model (gemini-2.5-flash)
-          ...(selectedChatModel === 'chat-model' && {
-            google_search: google.tools.googleSearch({}),
-          }),
         };
 
         if (session.permissions?.includes('access:weather:any')) {
