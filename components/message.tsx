@@ -10,6 +10,7 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import { TranscriptTool } from './transcript-tool';
+import { SlackTool } from './slack-tool';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -384,6 +385,131 @@ const PurePreviewMessage = ({
                   const { output, input } = part;
                   return (
                     <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+              }
+
+              // Slack tool calls
+              if (type === 'tool-listAccessibleSlackChannels') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-fetchSlackChannelHistory') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-getBulkSlackHistory') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-getSlackThreadReplies') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <SlackTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <SlackTool
                       key={toolCallId}
                       toolCallId={toolCallId}
                       state={state}

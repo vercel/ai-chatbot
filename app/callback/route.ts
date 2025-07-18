@@ -5,6 +5,9 @@ import { findOrCreateUserFromWorkOS } from '@/lib/db/queries';
 export const GET = handleAuth({
   onSuccess: async ({ user, accessToken, refreshToken, impersonator }) => {
     try {
+      console.log('user', user);
+
+
       // Sync the WorkOS user with our database
       await findOrCreateUserFromWorkOS({
         id: user.id,

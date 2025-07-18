@@ -26,6 +26,10 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { searchTranscriptsByKeyword } from '@/lib/ai/tools/search-transcripts-by-keyword';
 import { searchTranscriptsByUser } from '@/lib/ai/tools/search-transcripts-by-user';
 import { getTranscriptDetails } from '@/lib/ai/tools/get-transcript-details';
+import { listAccessibleSlackChannels } from '@/lib/ai/tools/list-accessible-slack-channels';
+import { fetchSlackChannelHistory } from '@/lib/ai/tools/fetch-slack-channel-history';
+import { getSlackThreadReplies } from '@/lib/ai/tools/get-slack-thread-replies';
+import { getBulkSlackHistory } from '@/lib/ai/tools/get-bulk-slack-history';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -40,7 +44,6 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { openai } from '@ai-sdk/openai';
-import { google } from '@ai-sdk/google';
 
 export const maxDuration = 60;
 
@@ -90,7 +93,6 @@ export async function POST(request: Request) {
     } = requestBody;
 
     const session = await withAuth();
-
 
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
@@ -199,6 +201,22 @@ export async function POST(request: Request) {
             dataStream,
           }),
           getTranscriptDetails: getTranscriptDetails({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          listAccessibleSlackChannels: listAccessibleSlackChannels({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          fetchSlackChannelHistory: fetchSlackChannelHistory({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          getSlackThreadReplies: getSlackThreadReplies({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          getBulkSlackHistory: getBulkSlackHistory({
             session: aiToolsSession,
             dataStream,
           }),

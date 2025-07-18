@@ -6,6 +6,10 @@ import type { requestSuggestions } from './ai/tools/request-suggestions';
 import type { searchTranscriptsByKeyword } from './ai/tools/search-transcripts-by-keyword';
 import type { searchTranscriptsByUser } from './ai/tools/search-transcripts-by-user';
 import type { getTranscriptDetails } from './ai/tools/get-transcript-details';
+import type { listAccessibleSlackChannels } from './ai/tools/list-accessible-slack-channels';
+import type { fetchSlackChannelHistory } from './ai/tools/fetch-slack-channel-history';
+import type { getBulkSlackHistory } from './ai/tools/get-bulk-slack-history';
+import type { getSlackThreadReplies } from './ai/tools/get-slack-thread-replies';
 import type { InferUITool, UIMessage } from 'ai';
 
 import type { ArtifactKind } from '@/components/artifact';
@@ -47,6 +51,18 @@ type searchTranscriptsByUserTool = InferUITool<
 type getTranscriptDetailsTool = InferUITool<
   ReturnType<typeof getTranscriptDetails>
 >;
+type listAccessibleSlackChannelsTool = InferUITool<
+  ReturnType<typeof listAccessibleSlackChannels>
+>;
+type fetchSlackChannelHistoryTool = InferUITool<
+  ReturnType<typeof fetchSlackChannelHistory>
+>;
+type getBulkSlackHistoryTool = InferUITool<
+  ReturnType<typeof getBulkSlackHistory>
+>;
+type getSlackThreadRepliesTool = InferUITool<
+  ReturnType<typeof getSlackThreadReplies>
+>;
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -56,6 +72,10 @@ export type ChatTools = {
   searchTranscriptsByKeyword: searchTranscriptsByKeywordTool;
   searchTranscriptsByUser: searchTranscriptsByUserTool;
   getTranscriptDetails: getTranscriptDetailsTool;
+  listAccessibleSlackChannels: listAccessibleSlackChannelsTool;
+  fetchSlackChannelHistory: fetchSlackChannelHistoryTool;
+  getBulkSlackHistory: getBulkSlackHistoryTool;
+  getSlackThreadReplies: getSlackThreadRepliesTool;
 };
 
 export type CustomUIDataTypes = {

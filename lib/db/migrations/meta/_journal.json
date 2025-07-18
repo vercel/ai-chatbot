@@ -50,6 +50,13 @@
       "when": 1746118166211,
       "tag": "0006_marvelous_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1752857354511,
+      "tag": "0007_regular_maximus",
+      "breakpoints": true
     }
   ]
 }
