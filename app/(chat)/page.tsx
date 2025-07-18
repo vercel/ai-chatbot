@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { Chat } from '@/components/chat';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { DEFAULT_CHAT_MODEL, chatModels } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { withAuth } from '@workos-inc/authkit-nextjs';
@@ -14,23 +14,13 @@ export default async function Page() {
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
 
-  if (!modelIdFromCookie) {
-    return (
-      <>
-        <Chat
-          key={id}
-          id={id}
-          initialMessages={[]}
-          initialChatModel={DEFAULT_CHAT_MODEL}
-          initialVisibilityType="private"
-          isReadonly={false}
-          user={user}
-          autoResume={false}
-        />
-        <DataStreamHandler />
-      </>
-    );
-  }
+  // Validate that the cookie value is a valid model ID
+  const isValidModel =
+    modelIdFromCookie &&
+    chatModels.some((model) => model.id === modelIdFromCookie.value);
+  const initialChatModel = isValidModel
+    ? modelIdFromCookie.value
+    : DEFAULT_CHAT_MODEL;
 
   return (
     <>
@@ -38,7 +28,7 @@ export default async function Page() {
         key={id}
         id={id}
         initialMessages={[]}
-        initialChatModel={modelIdFromCookie.value}
+        initialChatModel={initialChatModel}
         initialVisibilityType="private"
         isReadonly={false}
         user={user}

@@ -40,6 +40,7 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 
 export const maxDuration = 60;
 
@@ -89,8 +90,7 @@ export async function POST(request: Request) {
     } = requestBody;
 
     const session = await withAuth();
-    console.log('SESSION INFORMATION HERE', session.role);
-    console.log('SESSION INFORMATION HERE', session);
+
 
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
@@ -202,8 +202,9 @@ export async function POST(request: Request) {
             session: aiToolsSession,
             dataStream,
           }),
-          // Add web search for o3 model
-          ...(selectedChatModel === 'o3' && {
+          // Add web search for o3 and gpt-4.1 models
+          ...((selectedChatModel === 'o3' ||
+            selectedChatModel === 'gpt-4.1') && {
             web_search_preview: openai.tools.webSearchPreview({
               searchContextSize: 'high',
               userLocation:
@@ -215,6 +216,10 @@ export async function POST(request: Request) {
                     }
                   : undefined,
             }),
+          }),
+          // Add Google search for chat-model (gemini-2.5-flash)
+          ...(selectedChatModel === 'chat-model' && {
+            google_search: google.tools.googleSearch({}),
           }),
         };
 
@@ -237,8 +242,9 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          // Add providerOptions for o3 reasoning summaries
-          ...(selectedChatModel === 'o3' && {
+          // Add providerOptions for o3 and gpt-4.1 models
+          ...((selectedChatModel === 'o3' ||
+            selectedChatModel === 'gpt-4.1') && {
             providerOptions: {
               openai: {
                 reasoningSummary: 'auto', // Use 'auto' for condensed or 'detailed' for comprehensive

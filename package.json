@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "2.0.0-beta.1",
+    "@ai-sdk/google": "2.0.0-beta.12",
     "@ai-sdk/openai": "2.0.0-beta.3",
     "@ai-sdk/provider": "2.0.0-beta.1",
     "@ai-sdk/react": "2.0.0-beta.6",

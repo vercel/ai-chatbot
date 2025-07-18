@@ -1,6 +1,12 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
+import {
+  startTransition,
+  useMemo,
+  useOptimistic,
+  useState,
+  useEffect,
+} from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -10,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
+import { chatModels, DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
@@ -24,8 +30,16 @@ export function ModelSelector({
   selectedModelId: string;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+
+  // Ensure we have a valid model ID, fallback to default if invalid
+  const validModelId = useMemo(() => {
+    const isValidModel = chatModels.some(
+      (model) => model.id === selectedModelId,
+    );
+    return isValidModel ? selectedModelId : DEFAULT_CHAT_MODEL;
+  }, [selectedModelId]);
+
+  const [optimisticModelId, setOptimisticModelId] = useOptimistic(validModelId);
 
   // All authenticated users get access to all chat models
   const availableChatModels = chatModels;
@@ -37,6 +51,13 @@ export function ModelSelector({
       ),
     [optimisticModelId, availableChatModels],
   );
+
+  // If the selectedModelId was invalid, save the default model as cookie
+  useEffect(() => {
+    if (selectedModelId !== validModelId) {
+      saveChatModelAsCookie(validModelId);
+    }
+  }, [selectedModelId, validModelId]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

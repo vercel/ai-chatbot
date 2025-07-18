@@ -33,7 +33,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly assistant! Keep your responses concise and helpful. ';
 
 export interface RequestHints {
   longitude: Geo['longitude'];
@@ -53,7 +53,7 @@ You have been provided with the following context about the user's request:
 - email: ${requestHints.email}
 - name: ${requestHints.name}
 
-Please use these details to provide a more personalized and relevant response.`;
+Please use these details to provide a more personalized and relevant response when required. Do not mention their location unless it is directly relevant to the request or conversation.`;
 
 export const systemPrompt = ({
   selectedChatModel,
