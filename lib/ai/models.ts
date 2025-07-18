@@ -17,11 +17,7 @@ export const chatModels: Array<ChatModel> = [
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
   },
-  {
-    id: 'sonnet-4',
-    name: 'Claude Sonnet 4',
-    description: "Anthropic's latest model",
-  },
+
   {
     id: 'o3',
     name: 'o3',

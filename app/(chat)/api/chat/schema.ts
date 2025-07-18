@@ -24,7 +24,6 @@ export const postRequestBodySchema = z.object({
   selectedChatModel: z.enum([
     'chat-model',
     'chat-model-reasoning',
-    'sonnet-4',
     'o3',
     'gpt-4.1',
   ]),

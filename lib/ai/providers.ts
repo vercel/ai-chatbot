@@ -4,7 +4,6 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { xai } from '@ai-sdk/xai';
-import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 import {
   artifactModel,
@@ -32,7 +31,7 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': xai('grok-2-1212'),
         'artifact-model': xai('grok-2-1212'),
-        'sonnet-4': anthropic('claude-4-sonnet-20250514'),
+
         o3: openai('o3'),
         'gpt-4.1': openai('gpt-4.1'),
       },

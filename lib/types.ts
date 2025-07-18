@@ -25,7 +25,7 @@ export interface Session {
     image?: string | null;
     permissions?: string[];
   };
-  role: string;
+  role?: string | null;
   expires: string;
 }
 

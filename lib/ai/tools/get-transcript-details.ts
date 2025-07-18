@@ -37,6 +37,11 @@ export const getTranscriptDetails = ({
 
       const supabase = createClient(supabaseUrl, supabaseKey);
 
+      console.log('session', session);
+      console.log('session.role', session.role);
+      console.log('session.user.email', session.user.email);
+
+
       let query = supabase
         .from('transcripts')
         .select('id, transcript_content')
@@ -50,6 +55,7 @@ export const getTranscriptDetails = ({
       }
 
       const { data: foundTranscripts, error } = await query;
+
 
       if (error) {
         return {
@@ -65,6 +71,7 @@ export const getTranscriptDetails = ({
       const foundMap = new Map(
         (foundTranscripts || []).map((t) => [t.id, t.transcript_content]),
       );
+
 
       // Track which transcripts user doesn't have access to (for members only)
       let accessDeniedIds: number[] = [];

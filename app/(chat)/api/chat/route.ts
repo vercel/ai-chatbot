@@ -90,6 +90,7 @@ export async function POST(request: Request) {
 
     const session = await withAuth();
     console.log('SESSION INFORMATION HERE', session.role);
+    console.log('SESSION INFORMATION HERE', session);
 
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
@@ -169,8 +170,8 @@ export async function POST(request: Request) {
         email: session.user.email,
         firstName: session.user.firstName,
         lastName: session.user.lastName,
-        role: session.role,
       },
+      role: session.role, // Move role to session level to match Session interface
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     } as any;
 
