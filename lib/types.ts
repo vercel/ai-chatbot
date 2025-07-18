@@ -3,6 +3,9 @@ import type { getWeather } from './ai/tools/get-weather';
 import type { createDocument } from './ai/tools/create-document';
 import type { updateDocument } from './ai/tools/update-document';
 import type { requestSuggestions } from './ai/tools/request-suggestions';
+import type { searchTranscriptsByKeyword } from './ai/tools/search-transcripts-by-keyword';
+import type { searchTranscriptsByUser } from './ai/tools/search-transcripts-by-user';
+import type { getTranscriptDetails } from './ai/tools/get-transcript-details';
 import type { InferUITool, UIMessage } from 'ai';
 
 import type { ArtifactKind } from '@/components/artifact';
@@ -35,12 +38,24 @@ type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
 type requestSuggestionsTool = InferUITool<
   ReturnType<typeof requestSuggestions>
 >;
+type searchTranscriptsByKeywordTool = InferUITool<
+  ReturnType<typeof searchTranscriptsByKeyword>
+>;
+type searchTranscriptsByUserTool = InferUITool<
+  ReturnType<typeof searchTranscriptsByUser>
+>;
+type getTranscriptDetailsTool = InferUITool<
+  ReturnType<typeof getTranscriptDetails>
+>;
 
 export type ChatTools = {
   getWeather: weatherTool;
   createDocument: createDocumentTool;
   updateDocument: updateDocumentTool;
   requestSuggestions: requestSuggestionsTool;
+  searchTranscriptsByKeyword: searchTranscriptsByKeywordTool;
+  searchTranscriptsByUser: searchTranscriptsByUserTool;
+  getTranscriptDetails: getTranscriptDetailsTool;
 };
 
 export type CustomUIDataTypes = {

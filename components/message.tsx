@@ -9,6 +9,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
+import { TranscriptTool } from './transcript-tool';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -304,6 +305,100 @@ const PurePreviewMessage = ({
                         isReadonly={isReadonly}
                       />
                     </div>
+                  );
+                }
+              }
+
+              // Transcript tool calls
+              if (type === 'tool-searchTranscriptsByKeyword') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-searchTranscriptsByUser') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+              }
+
+              if (type === 'tool-getTranscriptDetails') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output, input } = part;
+                  return (
+                    <TranscriptTool
+                      key={toolCallId}
+                      toolCallId={toolCallId}
+                      state={state}
+                      output={output}
+                      input={input}
+                      isReadonly={isReadonly}
+                    />
                   );
                 }
               }
