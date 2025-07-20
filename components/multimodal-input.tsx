@@ -29,6 +29,87 @@ import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
 
+// Google Docs picker interface
+interface GoogleDoc {
+  id: string;
+  name: string;
+  mimeType: string;
+  modifiedTime: string;
+}
+
+function GoogleDocsPicker({
+  isVisible,
+  onSelect,
+  onClose,
+  inputValue,
+}: {
+  isVisible: boolean;
+  onSelect: (doc: GoogleDoc) => void;
+  onClose: () => void;
+  inputValue: string;
+}) {
+  const [docs, setDocs] = useState<GoogleDoc[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) {
+      setLoading(true);
+      fetch('/api/google/docs/search')
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('GoogleDocsPicker received data:', data);
+          if (data.files) {
+            setDocs(data.files);
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching Google Docs:', error);
+          toast.error('Failed to fetch Google Docs');
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [isVisible]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="absolute bottom-full left-0 w-full max-w-md bg-background border border-border rounded-lg shadow-lg p-2 z-50 max-h-64 overflow-y-auto">
+      <div className="text-sm text-muted-foreground mb-2">
+        Select a Google Doc:
+      </div>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Loading...</div>
+      ) : docs.length === 0 ? (
+        <div className="text-sm text-muted-foreground">
+          No Google Docs found
+        </div>
+      ) : (
+        docs.map((doc) => (
+          <div
+            key={doc.id}
+            className="p-2 hover:bg-muted rounded cursor-pointer text-sm"
+            onClick={() => onSelect(doc)}
+          >
+            <div className="font-medium">{doc.name}</div>
+            <div className="text-xs text-muted-foreground">
+              Modified: {new Date(doc.modifiedTime).toLocaleDateString()}
+            </div>
+          </div>
+        ))
+      )}
+      <div className="mt-2 pt-2 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-xs text-muted-foreground hover:text-foreground"
+        >
+          Press Escape to close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PureMultimodalInput({
   chatId,
   input,
@@ -100,9 +181,55 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
+  // Google Docs picker state
+  const [showGoogleDocsPicker, setShowGoogleDocsPicker] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<{
+    content: string;
+    name: string;
+  } | null>(null);
+
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
+    const value = event.target.value;
+    setInput(value);
     adjustHeight();
+
+    // Check for @docs command
+    const words = value.split(/\s+/);
+    const lastWord = words[words.length - 1];
+
+    if (lastWord === '@') {
+      setShowGoogleDocsPicker(true);
+    } else {
+      setShowGoogleDocsPicker(false);
+    }
+  };
+
+  const handleGoogleDocSelect = async (doc: GoogleDoc) => {
+    try {
+      // Fetch the document content
+      const response = await fetch(`/api/google/docs/${doc.id}/content`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document content');
+      }
+
+      const data = await response.json();
+      const { content } = data;
+
+      // Store the selected document content instead of inserting it into input
+      setSelectedDocument({ content, name: doc.name });
+
+      // Remove @docs from the input without adding any visual indicator
+      const newInput = input.replace('@docs', '').trim();
+      setInput(newInput);
+      setShowGoogleDocsPicker(false);
+
+      toast.success(
+        `Selected "${doc.name}" - will be attached to your message`,
+      );
+    } catch (error) {
+      console.error('Error fetching document:', error);
+      toast.error('Failed to fetch document content');
+    }
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,6 +237,29 @@ function PureMultimodalInput({
 
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
+
+    // Prepare the text content - if there's a selected document, prepend it
+    let textContent = input;
+    if (selectedDocument) {
+      // Truncate document content if it's too large (leaving room for user input)
+      const maxDocumentLength = 95000; // Leave 5k for user input out of 100k total
+      let documentContent = selectedDocument.content;
+
+      if (documentContent.length > maxDocumentLength) {
+        documentContent = `${documentContent.substring(0, maxDocumentLength)}\n\n[Document truncated due to length...]`;
+        toast.info(
+          `Document "${selectedDocument.name}" was truncated to fit message limits`,
+        );
+      }
+
+      textContent = `<attached_documents>
+**${selectedDocument.name}**
+
+${documentContent}
+</attached_documents>
+
+${input}`;
+    }
 
     sendMessage({
       role: 'user',
@@ -122,12 +272,13 @@ function PureMultimodalInput({
         })),
         {
           type: 'text',
-          text: input,
+          text: textContent,
         },
       ],
     });
 
     setAttachments([]);
+    setSelectedDocument(null); // Clear the selected document
     setLocalStorageInput('');
     resetHeight();
     setInput('');
@@ -144,6 +295,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    selectedDocument, // Add selectedDocument to dependencies
   ]);
 
   const uploadFile = async (file: File) => {
@@ -276,6 +428,24 @@ function PureMultimodalInput({
         </div>
       )}
 
+      {selectedDocument && (
+        <div className="flex flex-row gap-2 items-center p-2 bg-muted rounded-lg border">
+          <div className="text-sm">
+            📄 <span className="font-medium">{selectedDocument.name}</span> will
+            be attached
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDocument(null);
+            }}
+            className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <Textarea
         data-testid="multimodal-input"
         ref={textareaRef}
@@ -289,6 +459,12 @@ function PureMultimodalInput({
         rows={2}
         autoFocus
         onKeyDown={(event) => {
+          if (event.key === 'Escape' && showGoogleDocsPicker) {
+            event.preventDefault();
+            setShowGoogleDocsPicker(false);
+            return;
+          }
+
           if (
             event.key === 'Enter' &&
             !event.shiftKey &&
@@ -320,6 +496,13 @@ function PureMultimodalInput({
           />
         )}
       </div>
+
+      <GoogleDocsPicker
+        isVisible={showGoogleDocsPicker}
+        onSelect={handleGoogleDocSelect}
+        onClose={() => setShowGoogleDocsPicker(false)}
+        inputValue={input}
+      />
     </div>
   );
 }

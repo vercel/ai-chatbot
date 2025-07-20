@@ -9,8 +9,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
-import { TranscriptTool } from './transcript-tool';
-import { SlackTool } from './slack-tool';
+import { ToolRenderer } from './tool-renderer';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -302,224 +301,56 @@ const PurePreviewMessage = ({
                 }
               }
 
-              // Transcript tool calls
-              if (type === 'tool-searchTranscriptsByKeyword') {
-                const { toolCallId, state } = part;
+              // Unified tool renderer for all supported tools
+              const supportedTools = [
+                'tool-searchTranscriptsByKeyword',
+                'tool-searchTranscriptsByUser', 
+                'tool-getTranscriptDetails',
+                'tool-listAccessibleSlackChannels',
+                'tool-fetchSlackChannelHistory',
+                'tool-getBulkSlackHistory',
+                'tool-getSlackThreadReplies',
+                'tool-listGoogleCalendarEvents',
+                'tool-listGmailMessages',
+                'tool-getGmailMessageDetails'
+              ];
 
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <TranscriptTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
+              if (supportedTools.includes(type)) {
+                // Type guard to ensure we have a tool call part with the required properties
+                if ('toolCallId' in part && 'state' in part) {
+                  const { toolCallId, state } = part;
+                  
+                  if (state === 'input-available') {
+                    const { input } = part;
+                    return (
+                      <ToolRenderer
+                        key={toolCallId}
+                        toolCallId={toolCallId}
+                        state={state}
+                        input={input}
+                        isReadonly={isReadonly}
+                        type={type}
+                      />
+                    );
+                  }
 
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <TranscriptTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-              }
-
-              if (type === 'tool-searchTranscriptsByUser') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <TranscriptTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <TranscriptTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
+                  if (state === 'output-available') {
+                    const { output, input } = part;
+                    return (
+                      <ToolRenderer
+                        key={toolCallId}
+                        toolCallId={toolCallId}
+                        state={state}
+                        output={output}
+                        input={input}
+                        isReadonly={isReadonly}
+                        type={type}
+                      />
+                    );
+                  }
                 }
               }
 
-              if (type === 'tool-getTranscriptDetails') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <TranscriptTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <TranscriptTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-              }
-
-              // Slack tool calls
-              if (type === 'tool-listAccessibleSlackChannels') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-              }
-
-              if (type === 'tool-fetchSlackChannelHistory') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-              }
-
-              if (type === 'tool-getBulkSlackHistory') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-              }
-
-              if (type === 'tool-getSlackThreadReplies') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output, input } = part;
-                  return (
-                    <SlackTool
-                      key={toolCallId}
-                      toolCallId={toolCallId}
-                      state={state}
-                      output={output}
-                      input={input}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
-              }
             })}
 
             {!isReadonly && (

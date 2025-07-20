@@ -20,6 +20,21 @@ export const user = pgTable('User', {
 
 export type User = InferSelectModel<typeof user>;
 
+export const googleCredentials = pgTable('GoogleCredentials', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  refreshToken: text('refreshToken').notNull(), // Encrypted refresh token
+  accessToken: text('accessToken'), // Current access token (optional, can be refreshed)
+  expiresAt: timestamp('expiresAt'), // When access token expires
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type GoogleCredentials = InferSelectModel<typeof googleCredentials>;
+
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   createdAt: timestamp('createdAt').notNull(),

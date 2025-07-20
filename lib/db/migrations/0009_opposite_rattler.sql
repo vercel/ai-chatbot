@@ -1,0 +1,1 @@
+ALTER TABLE "GoogleCredentials" ADD CONSTRAINT "GoogleCredentials_userId_unique" UNIQUE("userId");

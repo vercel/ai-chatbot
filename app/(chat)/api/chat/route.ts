@@ -30,6 +30,9 @@ import { listAccessibleSlackChannels } from '@/lib/ai/tools/list-accessible-slac
 import { fetchSlackChannelHistory } from '@/lib/ai/tools/fetch-slack-channel-history';
 import { getSlackThreadReplies } from '@/lib/ai/tools/get-slack-thread-replies';
 import { getBulkSlackHistory } from '@/lib/ai/tools/get-bulk-slack-history';
+import { listGoogleCalendarEvents } from '@/lib/ai/tools/list-google-calendar-events';
+import { listGmailMessages } from '@/lib/ai/tools/list-gmail-messages';
+import { getGmailMessageDetails } from '@/lib/ai/tools/get-gmail-message-details';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -147,6 +150,7 @@ export async function POST(request: Request) {
         session.user.firstName && session.user.lastName
           ? `${session.user.firstName} ${session.user.lastName}`
           : (session.user.firstName ?? undefined),
+      date: new Date().toISOString(),
     };
 
     await saveMessages({
@@ -217,6 +221,18 @@ export async function POST(request: Request) {
             dataStream,
           }),
           getBulkSlackHistory: getBulkSlackHistory({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          listGoogleCalendarEvents: listGoogleCalendarEvents({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          listGmailMessages: listGmailMessages({
+            session: aiToolsSession,
+            dataStream,
+          }),
+          getGmailMessageDetails: getGmailMessageDetails({
             session: aiToolsSession,
             dataStream,
           }),

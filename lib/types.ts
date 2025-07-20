@@ -9,6 +9,9 @@ import type { getTranscriptDetails } from './ai/tools/get-transcript-details';
 import type { listAccessibleSlackChannels } from './ai/tools/list-accessible-slack-channels';
 import type { fetchSlackChannelHistory } from './ai/tools/fetch-slack-channel-history';
 import type { getBulkSlackHistory } from './ai/tools/get-bulk-slack-history';
+import type { listGoogleCalendarEvents } from './ai/tools/list-google-calendar-events';
+import type { listGmailMessages } from './ai/tools/list-gmail-messages';
+import type { getGmailMessageDetails } from './ai/tools/get-gmail-message-details';
 import type { getSlackThreadReplies } from './ai/tools/get-slack-thread-replies';
 import type { InferUITool, UIMessage } from 'ai';
 
@@ -63,6 +66,15 @@ type getBulkSlackHistoryTool = InferUITool<
 type getSlackThreadRepliesTool = InferUITool<
   ReturnType<typeof getSlackThreadReplies>
 >;
+type listGoogleCalendarEventsTool = InferUITool<
+  ReturnType<typeof listGoogleCalendarEvents>
+>;
+type listGmailMessagesTool = InferUITool<
+  ReturnType<typeof listGmailMessages>
+>;
+type getGmailMessageDetailsTool = InferUITool<
+  ReturnType<typeof getGmailMessageDetails>
+>;
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -76,6 +88,9 @@ export type ChatTools = {
   fetchSlackChannelHistory: fetchSlackChannelHistoryTool;
   getBulkSlackHistory: getBulkSlackHistoryTool;
   getSlackThreadReplies: getSlackThreadRepliesTool;
+  listGoogleCalendarEvents: listGoogleCalendarEventsTool;
+  listGmailMessages: listGmailMessagesTool;
+  getGmailMessageDetails: getGmailMessageDetailsTool;
 };
 
 export type CustomUIDataTypes = {
