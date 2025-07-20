@@ -34,7 +34,7 @@ export const getBulkSlackHistory = ({
         .min(1)
         .max(1000)
         .optional()
-        .default(100)
+        .default(25)
         .describe('Maximum number of messages to fetch per channel'),
     }),
     execute: async ({ channels, limit = 100 }) => {
