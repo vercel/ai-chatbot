@@ -71,13 +71,6 @@
       "when": 1752960135567,
       "tag": "0009_opposite_rattler",
       "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1752961000000,
-      "tag": "0010_insert_google_creds",
-      "breakpoints": true
     }
   ]
 }
