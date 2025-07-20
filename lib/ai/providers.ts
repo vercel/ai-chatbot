@@ -2,7 +2,10 @@ import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
+
+  generateText
 } from 'ai';
+import { gateway } from '@ai-sdk/gateway';
 import { xai } from '@ai-sdk/xai';
 import {
   artifactModel,
@@ -23,13 +26,14 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        'chat-model': gateway('xai/grok-4'),
+     
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
+          'model': gateway('moonshotai/kimi-k2'),
+          'middleware': extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'title-model': xai('grok-4'),
+        'artifact-model': xai('grok-4'),
       },
       imageModels: {
         'small-model': xai.imageModel('grok-2-image'),
