@@ -67,6 +67,7 @@
     "jose": "^6.0.12",
     "lucide-react": "^0.446.0",
     "mcp-handler": "^1.0.0",
+    "mem0ai": "^2.1.36",
     "nanoid": "^5.0.8",
     "next": "15.3.0-canary.31",
     "next-themes": "^0.3.0",

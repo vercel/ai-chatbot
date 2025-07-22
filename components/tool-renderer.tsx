@@ -5,7 +5,8 @@ import {
   gmailToolConfig, 
   slackToolConfig, 
   transcriptToolConfig, 
-  calendarToolConfig 
+  calendarToolConfig,
+  mem0ToolConfig
 } from './tool-configs';
 
 interface ToolRendererProps {
@@ -36,6 +37,12 @@ const TOOL_CONFIG_MAP = {
   
   // Calendar tools
   'tool-listGoogleCalendarEvents': calendarToolConfig,
+  
+  // Mem0 tools
+  'tool-getMem0Projects': mem0ToolConfig,
+  'tool-getMem0Memories': mem0ToolConfig,
+  'tool-createMem0Project': mem0ToolConfig,
+  'tool-createMem0Memory': mem0ToolConfig,
 } as const;
 
 export function ToolRenderer({

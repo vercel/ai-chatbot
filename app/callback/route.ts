@@ -33,20 +33,6 @@ export const GET = handleAuth({
         lastName: user.lastName ?? undefined,
       });
 
-      // Store Google OAuth tokens if available
-      console.log('=== OAUTH TOKENS DEBUG ===');
-      console.log('oauthTokens exists:', !!oauthTokens);
-      console.log('oauthTokens type:', typeof oauthTokens);
-      console.log(
-        'oauthTokens full object:',
-        JSON.stringify(oauthTokens, null, 2),
-      );
-      console.log(
-        'oauthTokens keys:',
-        oauthTokens ? Object.keys(oauthTokens) : 'N/A',
-      );
-      console.log('databaseUser exists:', !!databaseUser);
-      console.log('=== END OAUTH TOKENS DEBUG ===');
 
       if (oauthTokens && databaseUser) {
         // Try different property names as WorkOS might use different naming
@@ -58,12 +44,6 @@ export const GET = handleAuth({
         const expiresAt =
           (oauthTokens as any).expiresAt || (oauthTokens as any).expires_at;
 
-        console.log('=== EXTRACTED TOKENS ===');
-        console.log('accessToken:', !!accessToken);
-        console.log('refreshToken:', !!refreshToken);
-        console.log('expiresAt:', expiresAt);
-        console.log('Scopes:', (oauthTokens as any).scopes);
-        console.log('=== END EXTRACTED TOKENS ===');
 
         // Check if we have Google Drive/Docs scopes
         const scopes = (oauthTokens as any).scopes || [];

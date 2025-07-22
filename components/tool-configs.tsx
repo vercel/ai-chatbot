@@ -1,4 +1,4 @@
-import { GmailIcon, SlackIcon, ZoomIcon, CalendarIcon } from './icons';
+import { GmailIcon, SlackIcon, ZoomIcon, CalendarIcon, MemoryIcon } from './icons';
 import type { ToolConfig } from './unified-tool';
 
 
@@ -186,5 +186,100 @@ export const calendarToolConfig: ToolConfig = {
   getAction: (toolType: string, state: 'input' | 'output') => {
     const isInput = state === 'input';
     return isInput ? 'Listing calendar events' : 'Listed calendar events';
+  }
+};
+
+export const mem0ToolConfig: ToolConfig = {
+  icon: MemoryIcon, // Using calendar icon for now, could add a specific Mem0 icon later
+  
+  getToolType: (toolCallId: string) => {
+    if (toolCallId.includes('getMem0Projects')) return 'tool-getMem0Projects';
+    if (toolCallId.includes('getMem0Memories')) return 'tool-getMem0Memories';
+    if (toolCallId.includes('createMem0Project')) return 'tool-createMem0Project';
+    if (toolCallId.includes('createMem0Memory')) return 'tool-createMem0Memory';
+    return 'unknown';
+  },
+  
+  formatParameters: (input: any, toolType: string) => {
+    if (!input) return '';
+    const params = [];
+    
+    switch (toolType) {
+      case 'tool-getMem0Projects':
+        return '(listing all projects)';
+      case 'tool-getMem0Memories':
+        if (input.projectId) params.push(`project: ${input.projectId}`);
+        if (input.query) params.push(`query: "${input.query}"`);
+        if (input.userId) params.push(`user: ${input.userId}`);
+        break;
+      case 'tool-createMem0Project':
+        if (input.name) params.push(`name: "${input.name}"`);
+        if (input.description) params.push(`description: "${input.description}"`);
+        break;
+      case 'tool-createMem0Memory':
+        if (input.projectId) params.push(`project: ${input.projectId}`);
+        if (input.messages) params.push(`messages: ${input.messages.length}`);
+        if (input.metadata) params.push(`metadata: ${Object.keys(input.metadata).length} fields`);
+        break;
+    }
+    
+    return params.length > 0 ? `(${params.join(', ')})` : '';
+  },
+  
+  getAction: (toolType: string, state: 'input' | 'output') => {
+    const isInput = state === 'input';
+    switch (toolType) {
+      case 'tool-getMem0Projects':
+        return isInput ? 'Fetching projects' : 'Fetched projects';
+      case 'tool-getMem0Memories':
+        return isInput ? 'Fetching memories' : 'Fetched memories';
+      case 'tool-createMem0Project':
+        return isInput ? 'Creating project' : 'Created project';
+      case 'tool-createMem0Memory':
+        return isInput ? 'Creating memory' : 'Created memory';
+      default:
+        return isInput ? 'Processing' : 'Completed';
+    }
+  },
+  
+  getResultSummary: (output: any, input: any, toolType: string) => {
+    if (!output || 'error' in output) return '';
+    
+    try {
+      if (typeof output.result === 'string') {
+        // Parse the wrapped result to get the actual data
+        const boundaryMatch = output.result.match(/<[^>]+>\s*({.*?})\s*<\/[^>]+>/s);
+        if (boundaryMatch) {
+          const data = JSON.parse(boundaryMatch[1]);
+          
+          switch (toolType) {
+            case 'tool-getMem0Projects':
+              if (data.projects && Array.isArray(data.projects)) {
+                return `(${data.projects.length} projects)`;
+              }
+              break;
+            case 'tool-getMem0Memories':
+              if (data.memories && Array.isArray(data.memories)) {
+                return `(${data.memories.length} memories)`;
+              }
+              break;
+            case 'tool-createMem0Project':
+              if (data.project) {
+                return `(project created)`;
+              }
+              break;
+            case 'tool-createMem0Memory':
+              if (data.memory) {
+                return `(memory created)`;
+              }
+              break;
+          }
+        }
+      }
+    } catch {
+      // If parsing fails, no summary
+    }
+    
+    return '';
   }
 };

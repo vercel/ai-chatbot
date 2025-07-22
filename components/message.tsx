@@ -312,7 +312,11 @@ const PurePreviewMessage = ({
                 'tool-getSlackThreadReplies',
                 'tool-listGoogleCalendarEvents',
                 'tool-listGmailMessages',
-                'tool-getGmailMessageDetails'
+                'tool-getGmailMessageDetails',
+                'tool-getMem0Projects',
+                'tool-getMem0Memories',
+                'tool-createMem0Project',
+                'tool-createMem0Memory'
               ];
 
               if (supportedTools.includes(type)) {
