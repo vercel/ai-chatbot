@@ -31,11 +31,15 @@ export const searchTranscriptsByUser = ({
       start_date: z
         .string()
         .optional()
-        .describe('The start date of the meeting in YYYY-MM-DD'),
+        .describe(
+          'The start date of the meeting in YYYY-MM-DD format. When searching for a specific day, use the same date for both start_date and end_date.',
+        ),
       end_date: z
         .string()
         .optional()
-        .describe('The end date of the meeting in YYYY-MM-DD'),
+        .describe(
+          'The end date of the meeting in YYYY-MM-DD format. When searching for a specific day, use the same date for both start_date and end_date.',
+        ),
       meeting_type: z
         .enum(['internal', 'external', 'unknown'])
         .optional()
@@ -79,7 +83,13 @@ export const searchTranscriptsByUser = ({
         .limit(lim);
 
       if (start_date) query = query.gte('recording_start', start_date);
-      if (end_date) query = query.lte('recording_start', end_date);
+      if (end_date) {
+        // Convert end_date to the start of the next day to include the full day
+        const endDate = new Date(end_date);
+        endDate.setDate(endDate.getDate() + 1);
+        const nextDay = endDate.toISOString().split('T')[0];
+        query = query.lt('recording_start', nextDay);
+      }
       if (meeting_type) query = query.eq('meeting_type', meeting_type);
       if (participant_name)
         query = query.contains('extracted_participants', [participant_name]);
