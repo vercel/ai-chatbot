@@ -23,9 +23,4 @@ export const chatModels: Array<ChatModel> = [
     name: 'o3',
     description: "OpenAI's most advanced reasoning model",
   },
-  {
-    id: 'gpt-4.1',
-    name: 'GPT-4.1',
-    description: "OpenAI's latest flagship model",
-  },
 ];

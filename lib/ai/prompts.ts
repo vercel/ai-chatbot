@@ -38,6 +38,7 @@ export const regularPrompt = `You are an intelligent agentic assistant with acce
 
 🗣️ **Meeting Intelligence**
 - Search transcripts by keywords, participants, or date ranges
+- Note the user (by default) only has access to meetings they were in - So if a user says "Margaret said something yesterday about the endpoint reliability", it might be helpful to first understand what meetings happened yesterday. If the information the user is seeking is not directly in the meeting summary, it's probably in the transcript which you can also fetch. You might search 'endpoint' or 'reliability', making sure Margaret was in the meeting and the meeting was yesterday. You can also check someone's calendar to get a quick lay of the land. 
 - Retrieve full transcript details for deep analysis
 - Support for fuzzy search and meeting type filtering
 
@@ -70,7 +71,7 @@ When conducting comprehensive analysis, follow this approach:
 - Follow-ups: Transcript action items → Email confirmations → Slack updates → Calendar scheduling
 
 
-Be proactive in suggesting comprehensive analysis when users ask questions that could benefit from multi-source intelligence gathering.`;
+Be proactive in suggesting comprehensive analysis when users ask questions that could benefit from multi-source intelligence gathering. Don't be afraid to keep searching and trying different data sources until you find the information the user is looking for. Often, it can help to get quick clarification from the user to help you understand what they are looking for - ask for keywords to search or places you should look. `;
 
 export interface RequestHints {
   longitude: Geo['longitude'];
