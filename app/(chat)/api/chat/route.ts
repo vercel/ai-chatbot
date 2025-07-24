@@ -281,8 +281,8 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(10),
-          experimental_activeTools:
+          stopWhen: stepCountIs(20),
+          activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : Object.keys(tools),
