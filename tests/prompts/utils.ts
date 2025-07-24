@@ -1,9 +1,10 @@
-import { CoreMessage, LanguageModelV1StreamPart } from 'ai';
+import { generateId, type ModelMessage } from 'ai';
 import { TEST_PROMPTS } from './basic';
+import type { LanguageModelV2StreamPart } from '@ai-sdk/provider';
 
 export function compareMessages(
-  firstMessage: CoreMessage,
-  secondMessage: CoreMessage,
+  firstMessage: ModelMessage,
+  secondMessage: ModelMessage,
 ): boolean {
   if (firstMessage.role !== secondMessage.role) return false;
 
@@ -24,7 +25,7 @@ export function compareMessages(
 
     if (item1.type !== item2.type) return false;
 
-    if (item1.type === 'image' && item2.type === 'image') {
+    if (item1.type === 'file' && item2.type === 'file') {
       // if (item1.image.toString() !== item2.image.toString()) return false;
       // if (item1.mimeType !== item2.mimeType) return false;
     } else if (item1.type === 'text' && item2.type === 'text') {
@@ -39,26 +40,38 @@ export function compareMessages(
   return true;
 }
 
-const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
-  const deltas = text
-    .split(' ')
-    .map((char) => ({ type: 'text-delta' as const, textDelta: `${char} ` }));
+const textToDeltas = (text: string): LanguageModelV2StreamPart[] => {
+  const id = generateId();
 
-  return deltas;
+  const deltas = text.split(' ').map((char) => ({
+    id,
+    type: 'text-delta' as const,
+    delta: `${char} `,
+  }));
+
+  return [{ id, type: 'text-start' }, ...deltas, { id, type: 'text-end' }];
 };
 
-const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
-  const deltas = text
-    .split(' ')
-    .map((char) => ({ type: 'reasoning' as const, textDelta: `${char} ` }));
+const reasoningToDeltas = (text: string): LanguageModelV2StreamPart[] => {
+  const id = generateId();
 
-  return deltas;
+  const deltas = text.split(' ').map((char) => ({
+    id,
+    type: 'reasoning-delta' as const,
+    delta: `${char} `,
+  }));
+
+  return [
+    { id, type: 'reasoning-start' },
+    ...deltas,
+    { id, type: 'reasoning-end' },
+  ];
 };
 
 export const getResponseChunksByPrompt = (
-  prompt: CoreMessage[],
-  isReasoningEnabled: boolean = false,
-): Array<LanguageModelV1StreamPart> => {
+  prompt: ModelMessage[],
+  isReasoningEnabled = false,
+): LanguageModelV2StreamPart[] => {
   const recentMessage = prompt.at(-1);
 
   if (!recentMessage) {
@@ -73,8 +86,7 @@ export const getResponseChunksByPrompt = (
         {
           type: 'finish',
           finishReason: 'stop',
-          logprobs: undefined,
-          usage: { completionTokens: 10, promptTokens: 3 },
+          usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
         },
       ];
     } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_GRASS)) {
@@ -86,8 +98,7 @@ export const getResponseChunksByPrompt = (
         {
           type: 'finish',
           finishReason: 'stop',
-          logprobs: undefined,
-          usage: { completionTokens: 10, promptTokens: 3 },
+          usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
         },
       ];
     }
@@ -99,8 +110,7 @@ export const getResponseChunksByPrompt = (
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_GRASS)) {
@@ -109,8 +119,7 @@ export const getResponseChunksByPrompt = (
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_SKY)) {
@@ -119,8 +128,7 @@ export const getResponseChunksByPrompt = (
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_NEXTJS)) {
@@ -130,8 +138,7 @@ export const getResponseChunksByPrompt = (
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (
@@ -142,27 +149,44 @@ export const getResponseChunksByPrompt = (
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_TEXT_ARTIFACT)) {
+    const toolCallId = generateId();
+
     return [
       {
-        type: 'tool-call',
-        toolCallId: 'call_123',
+        id: toolCallId,
+        type: 'tool-input-start',
         toolName: 'createDocument',
-        toolCallType: 'function',
-        args: JSON.stringify({
+      },
+      {
+        id: toolCallId,
+        type: 'tool-input-delta',
+        delta: JSON.stringify({
           title: 'Essay about Silicon Valley',
           kind: 'text',
         }),
       },
       {
+        id: toolCallId,
+        type: 'tool-input-end',
+      },
+      {
+        toolCallId: toolCallId,
+        type: 'tool-result',
+        toolName: 'createDocument',
+        result: {
+          id: 'doc_123',
+          title: 'Essay about Silicon Valley',
+          kind: 'text',
+        },
+      },
+      {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (
@@ -191,23 +215,18 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (
     compareMessages(recentMessage, TEST_PROMPTS.CREATE_DOCUMENT_TEXT_RESULT)
   ) {
     return [
-      {
-        type: 'text-delta',
-        textDelta: 'A document was created and is now visible to the user.',
-      },
+      ...textToDeltas('A document was created and is now visible to the user.'),
       {
         type: 'finish',
-        finishReason: 'tool-calls',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        finishReason: 'stop',
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (compareMessages(recentMessage, TEST_PROMPTS.GET_WEATHER_CALL)) {
@@ -216,14 +235,12 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
         type: 'tool-call',
         toolCallId: 'call_456',
         toolName: 'getWeather',
-        toolCallType: 'function',
-        args: JSON.stringify({ latitude: 37.7749, longitude: -122.4194 }),
+        input: JSON.stringify({ latitude: 37.7749, longitude: -122.4194 }),
       },
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   } else if (compareMessages(recentMessage, TEST_PROMPTS.GET_WEATHER_RESULT)) {
@@ -232,11 +249,10 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       {
         type: 'finish',
         finishReason: 'stop',
-        logprobs: undefined,
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
       },
     ];
   }
 
-  return [{ type: 'text-delta', textDelta: 'Unknown test prompt!' }];
+  return [{ id: '6', type: 'text-delta', delta: 'Unknown test prompt!' }];
 };

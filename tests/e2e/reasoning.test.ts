@@ -1,15 +1,15 @@
-import { ChatPage } from './pages/chat';
-import { test, expect } from '@playwright/test';
+import { ChatPage } from '../pages/chat';
+import { test, expect } from '../fixtures';
 
 test.describe('chat activity with reasoning', () => {
   let chatPage: ChatPage;
 
-  test.beforeEach(async ({ page }) => {
-    chatPage = new ChatPage(page);
+  test.beforeEach(async ({ curieContext }) => {
+    chatPage = new ChatPage(curieContext.page);
     await chatPage.createNewChat();
   });
 
-  test('send user message and generate response with reasoning', async () => {
+  test('Curie can send message and generate response with reasoning', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -21,7 +21,7 @@ test.describe('chat activity with reasoning', () => {
     );
   });
 
-  test('toggle reasoning visibility', async () => {
+  test('Curie can toggle reasoning visibility', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -37,7 +37,7 @@ test.describe('chat activity with reasoning', () => {
     await expect(reasoningElement).toBeVisible();
   });
 
-  test('edit message and resubmit', async () => {
+  test('Curie can edit message and resubmit', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 

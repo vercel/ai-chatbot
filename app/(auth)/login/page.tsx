@@ -9,6 +9,7 @@ import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 
 import { login, type LoginActionState } from '../actions';
+import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function Page() {
     },
   );
 
+  const { update: updateSession } = useSession();
+
   useEffect(() => {
     if (state.status === 'failed') {
       toast({
@@ -36,9 +39,10 @@ export default function Page() {
       });
     } else if (state.status === 'success') {
       setIsSuccessful(true);
+      updateSession();
       router.refresh();
     }
-  }, [state.status, router]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);

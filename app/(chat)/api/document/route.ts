@@ -1,23 +1,27 @@
 import { auth } from '@/app/(auth)/auth';
-import { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
+import { ChatSDKError } from '@/lib/errors';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter id is missing',
+    ).toResponse();
   }
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('unauthorized:document').toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -25,11 +29,11 @@ export async function GET(request: Request) {
   const [document] = documents;
 
   if (!document) {
-    return new Response('Not Found', { status: 404 });
+    return new ChatSDKError('not_found:document').toResponse();
   }
 
   if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new ChatSDKError('forbidden:document').toResponse();
   }
 
   return Response.json(documents, { status: 200 });
@@ -40,13 +44,16 @@ export async function POST(request: Request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter id is required.',
+    ).toResponse();
   }
 
   const session = await auth();
 
-  if (!session) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('not_found:document').toResponse();
   }
 
   const {
@@ -56,35 +63,50 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: ArtifactKind } =
     await request.json();
 
-  if (session.user?.id) {
-    const document = await saveDocument({
-      id,
-      content,
-      title,
-      kind,
-      userId: session.user.id,
-    });
+  const documents = await getDocumentsById({ id });
 
-    return Response.json(document, { status: 200 });
+  if (documents.length > 0) {
+    const [document] = documents;
+
+    if (document.userId !== session.user.id) {
+      return new ChatSDKError('forbidden:document').toResponse();
+    }
   }
 
-  return new Response('Unauthorized', { status: 401 });
+  const document = await saveDocument({
+    id,
+    content,
+    title,
+    kind,
+    userId: session.user.id,
+  });
+
+  return Response.json(document, { status: 200 });
 }
 
-export async function PATCH(request: Request) {
+export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-
-  const { timestamp }: { timestamp: string } = await request.json();
+  const timestamp = searchParams.get('timestamp');
 
   if (!id) {
-    return new Response('Missing id', { status: 400 });
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter id is required.',
+    ).toResponse();
+  }
+
+  if (!timestamp) {
+    return new ChatSDKError(
+      'bad_request:api',
+      'Parameter timestamp is required.',
+    ).toResponse();
   }
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) {
+    return new ChatSDKError('unauthorized:document').toResponse();
   }
 
   const documents = await getDocumentsById({ id });
@@ -92,13 +114,13 @@ export async function PATCH(request: Request) {
   const [document] = documents;
 
   if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new ChatSDKError('forbidden:document').toResponse();
   }
 
-  await deleteDocumentsByIdAfterTimestamp({
+  const documentsDeleted = await deleteDocumentsByIdAfterTimestamp({
     id,
     timestamp: new Date(timestamp),
   });
 
-  return new Response('Deleted', { status: 200 });
+  return Response.json(documentsDeleted, { status: 200 });
 }
