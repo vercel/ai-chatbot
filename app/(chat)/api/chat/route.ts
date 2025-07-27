@@ -222,6 +222,9 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    // ✅ Agregar manejo para otros errores
+    console.error('Unexpected error:', error);
+    return new ChatSDKError('internal_server_error').toResponse();
   }
 }
 
