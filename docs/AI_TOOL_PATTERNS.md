@@ -246,7 +246,7 @@ if (session.permissions?.includes('access:weather:any')) {
 ### Pattern 2: Model-Specific Features
 **Example**: From `route.ts`
 ```typescript
-...((selectedChatModel === 'o3' || selectedChatModel === 'gpt-4.1') && {
+...((selectedChatModel === 'o4-mini' || selectedChatModel === 'gpt-4.1') && {
   web_search_preview: openai.tools.webSearchPreview({
     searchContextSize: 'high',
     userLocation: requestHints.city && requestHints.country ? {

@@ -256,8 +256,8 @@ export async function POST(request: Request) {
             session: aiToolsSession,
             dataStream,
           }),
-          // Add web search for o3 and gpt-4.1 models
-          ...((selectedChatModel === 'o3' ||
+          // Add web search for openai models
+          ...((selectedChatModel === 'o4-mini' ||
             selectedChatModel === 'gpt-4.1') && {
             web_search_preview: openai.tools.webSearchPreview({
               searchContextSize: 'high',
@@ -292,8 +292,8 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          // Add providerOptions for o3 and gpt-4.1 models
-          ...((selectedChatModel === 'o3' ||
+          // Add providerOptions for o4-mini and gpt-4.1 models
+          ...((selectedChatModel === 'o4-mini' ||
             selectedChatModel === 'gpt-4.1') && {
             providerOptions: {
               openai: {

@@ -33,7 +33,7 @@ export const myProvider = isTestEnvironment
         'title-model': openai('gpt-4.1-nano'),
         'artifact-model': openai('gpt-4.1'),
 
-        o3: openai('o3'),
+        'o4-mini': openai('o4-mini'),
       },
       imageModels: {
         'small-model': openai.imageModel('gpt-image-1'),
