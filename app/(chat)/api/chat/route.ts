@@ -101,7 +101,6 @@ export async function POST(request: Request) {
 
     const session = await withAuth();
 
-
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
     }
@@ -176,7 +175,9 @@ export async function POST(request: Request) {
 
     // Check role for tool availability
     const isMemberRole = session.role === 'member';
-    console.log(`🔐 User ${session.user.email} role: ${session.role} (${isMemberRole ? 'MEMBER - limited access' : 'ELEVATED - full access'})`);
+    console.log(
+      `🔐 User ${session.user.email} role: ${session.role} (${isMemberRole ? 'MEMBER - limited access' : 'ELEVATED - full access'})`,
+    );
 
     // Create session adapter for AI tools with database user ID
     const aiToolsSession = {
@@ -259,7 +260,7 @@ export async function POST(request: Request) {
           }),
           // Add web search for openai models
           ...((selectedChatModel === 'o4-mini' ||
-            selectedChatModel === 'gpt-4.1') && {
+            selectedChatModel === 'chat-model') && {
             web_search_preview: openai.tools.webSearchPreview({
               searchContextSize: 'high',
               userLocation:
@@ -280,13 +281,17 @@ export async function POST(request: Request) {
 
         // Add transcript details tool only for elevated roles (not members)
         if (!isMemberRole) {
-          console.log(`✅ Adding getTranscriptDetails tool for elevated role: ${session.role} (${session.user.email})`);
+          console.log(
+            `✅ Adding getTranscriptDetails tool for elevated role: ${session.role} (${session.user.email})`,
+          );
           tools.getTranscriptDetails = getTranscriptDetails({
             session: aiToolsSession,
             dataStream,
           });
         } else {
-          console.log(`🚫 Excluding getTranscriptDetails tool for member role: ${session.user.email}`);
+          console.log(
+            `🚫 Excluding getTranscriptDetails tool for member role: ${session.user.email}`,
+          );
         }
 
         const result = streamText({
@@ -304,9 +309,8 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          // Add providerOptions for o4-mini and gpt-4.1 models
-          ...((selectedChatModel === 'o4-mini' ||
-            selectedChatModel === 'gpt-4.1') && {
+          // Add providerOptions for o4-mini model only
+          ...(selectedChatModel === 'o4-mini' && {
             providerOptions: {
               openai: {
                 reasoningSummary: 'auto', // Use 'auto' for condensed or 'detailed' for comprehensive
