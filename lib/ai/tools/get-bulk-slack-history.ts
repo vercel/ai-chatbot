@@ -56,8 +56,8 @@ export const getBulkSlackHistory = ({
         // Process each channel
         for (const channel of channels) {
           try {
-            // RBAC check - members must be in the channel
-            if (session.role === 'member') {
+            // RBAC check - members and org-fte must be in the channel
+            if (session.role && ['member', 'org-fte'].includes(session.role)) {
               const isChannelMember = await isMember(channel, slackUserId);
               if (!isChannelMember) {
                 // Silently skip channels the user can't access

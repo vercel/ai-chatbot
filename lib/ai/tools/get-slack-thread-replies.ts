@@ -41,8 +41,8 @@ export const getSlackThreadReplies = ({
         // Get Slack user ID (will cache in database if not present)
         const slackUserId = await fetchSlackUserIdByEmail(session.user.email);
 
-        // RBAC check - members must be in the channel
-        if (session.role === 'member') {
+        // RBAC check - members and org-fte must be in the channel
+        if (session.role && ['member', 'org-fte'].includes(session.role)) {
           const isChannelMember = await isMember(channel, slackUserId);
           if (!isChannelMember) {
             throw new ChatSDKError(
