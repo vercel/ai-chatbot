@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SendIcon } from 'lucide-react';
@@ -8,9 +8,11 @@ import { generateUUID } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import type { Transcript } from './use-transcripts';
 import BlurEffect from 'react-progressive-blur';
+import { useAuth } from '@workos-inc/authkit-nextjs/components';
 
 interface TranscriptChatInputProps {
   selectedTranscripts: Transcript[];
+  isMember: boolean;
 }
 
 const extractTopic = (summary: string) => {
@@ -37,6 +39,7 @@ const extractTopic = (summary: string) => {
 
 export function TranscriptChatInput({
   selectedTranscripts,
+  isMember,
 }: TranscriptChatInputProps) {
   const router = useRouter();
   const [chatQuery, setChatQuery] = useState('');
@@ -50,45 +53,71 @@ export function TranscriptChatInput({
     try {
       const chatId = generateUUID();
 
-      // Fetch full cleaned transcript content for each selected transcript
-      const transcriptContents = await Promise.all(
-        selectedTranscripts.map(async (transcript) => {
-          try {
-            const res = await fetch(`/api/transcripts/${transcript.id}`);
-            if (!res.ok) {
-              throw new Error('Failed to fetch transcript content');
+      let transcriptContext: string;
+
+      if (isMember) {
+        // For members: Only use summaries, no full transcript content
+        console.log('🚫 Member using chat - providing summaries only');
+        transcriptContext = selectedTranscripts
+          .map((transcript) => {
+            const topic = extractTopic(transcript.summary);
+            const date = new Date(
+              transcript.recording_start,
+            ).toLocaleDateString();
+            const time = new Date(transcript.recording_start).toLocaleTimeString(
+              'en-US',
+              {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+              },
+            );
+
+            return `**Meeting: ${topic}**\nDate: ${date} at ${time}\nType: ${transcript.meeting_type}\nSummary:\n${transcript.summary || 'No summary available'}`;
+          })
+          .join('\n\n---\n\n');
+      } else {
+        // For elevated roles: Fetch full transcript content
+        console.log('✅ Elevated role using chat - providing full transcripts');
+        const transcriptContents = await Promise.all(
+          selectedTranscripts.map(async (transcript) => {
+            try {
+              const res = await fetch(`/api/transcripts/${transcript.id}`);
+              if (!res.ok) {
+                throw new Error('Failed to fetch transcript content');
+              }
+              const data: { id: number; content: string | null } =
+                await res.json();
+              return data.content ?? '';
+            } catch (err) {
+              console.error(`Error fetching transcript ${transcript.id}:`, err);
+              return '';
             }
-            const data: { id: number; content: string | null } =
-              await res.json();
-            return data.content ?? '';
-          } catch (err) {
-            console.error(`Error fetching transcript ${transcript.id}:`, err);
-            return '';
-          }
-        }),
-      );
+          }),
+        );
 
-      // Build a single context string combining metadata and full content
-      const transcriptContext = selectedTranscripts
-        .map((transcript, idx) => {
-          const topic = extractTopic(transcript.summary);
-          const date = new Date(
-            transcript.recording_start,
-          ).toLocaleDateString();
-          const time = new Date(transcript.recording_start).toLocaleTimeString(
-            'en-US',
-            {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            },
-          );
+        // Build context with full content for elevated roles
+        transcriptContext = selectedTranscripts
+          .map((transcript, idx) => {
+            const topic = extractTopic(transcript.summary);
+            const date = new Date(
+              transcript.recording_start,
+            ).toLocaleDateString();
+            const time = new Date(transcript.recording_start).toLocaleTimeString(
+              'en-US',
+              {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+              },
+            );
 
-          const fullContent = transcriptContents[idx];
+            const fullContent = transcriptContents[idx];
 
-          return `**Meeting: ${topic}**\nDate: ${date} at ${time}\n\nType: ${transcript.meeting_type}\nFull Transcript:\n${fullContent}`;
-        })
-        .join('\n\n---\n\n');
+            return `**Meeting: ${topic}**\nDate: ${date} at ${time}\n\nType: ${transcript.meeting_type}\nFull Transcript:\n${fullContent}`;
+          })
+          .join('\n\n---\n\n');
+      }
 
       const messageParts = [
         {

@@ -101,6 +101,7 @@ export async function POST(request: Request) {
 
     const session = await withAuth();
 
+
     if (!session?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
     }
@@ -173,6 +174,10 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Check role for tool availability
+    const isMemberRole = session.role === 'member';
+    console.log(`🔐 User ${session.user.email} role: ${session.role} (${isMemberRole ? 'MEMBER - limited access' : 'ELEVATED - full access'})`);
+
     // Create session adapter for AI tools with database user ID
     const aiToolsSession = {
       user: {
@@ -205,10 +210,6 @@ export async function POST(request: Request) {
             dataStream,
           }),
           searchTranscriptsByUser: searchTranscriptsByUser({
-            session: aiToolsSession,
-            dataStream,
-          }),
-          getTranscriptDetails: getTranscriptDetails({
             session: aiToolsSession,
             dataStream,
           }),
@@ -275,6 +276,17 @@ export async function POST(request: Request) {
 
         if (session.permissions?.includes('access:weather:any')) {
           tools.getWeather = getWeather;
+        }
+
+        // Add transcript details tool only for elevated roles (not members)
+        if (!isMemberRole) {
+          console.log(`✅ Adding getTranscriptDetails tool for elevated role: ${session.role} (${session.user.email})`);
+          tools.getTranscriptDetails = getTranscriptDetails({
+            session: aiToolsSession,
+            dataStream,
+          });
+        } else {
+          console.log(`🚫 Excluding getTranscriptDetails tool for member role: ${session.user.email}`);
         }
 
         const result = streamText({

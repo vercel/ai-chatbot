@@ -18,7 +18,11 @@ import { TranscriptHeader } from './list/transcript-header';
 import { TranscriptCard } from './list/transcript-card';
 import { TranscriptChatInput } from './list/transcript-chat-input';
 
-export function TranscriptsList() {
+interface TranscriptsListProps {
+  isMember: boolean;
+}
+
+export function TranscriptsList({ isMember }: TranscriptsListProps) {
   const {
     searchTerm,
     setSearchTerm,
@@ -134,7 +138,10 @@ export function TranscriptsList() {
       )}
 
       {isSelectionMode && selectedTranscripts.size > 0 && (
-        <TranscriptChatInput selectedTranscripts={selectedTranscriptData} />
+        <TranscriptChatInput 
+          selectedTranscripts={selectedTranscriptData} 
+          isMember={isMember}
+        />
       )}
 
       {pagination.totalPages > 1 && (
@@ -239,6 +246,7 @@ export function TranscriptsList() {
         transcript={selectedTranscript}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        isMember={isMember}
       />
     </div>
   );

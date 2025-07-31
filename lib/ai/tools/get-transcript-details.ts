@@ -25,6 +25,24 @@ export const getTranscriptDetails = ({
         ),
     }),
     execute: async ({ transcript_ids }) => {
+      // Role-based access check
+      if (!session?.user?.email) {
+        console.warn('🚫 No user email in session for transcript details access');
+        return {
+          error: 'Access denied: User session invalid',
+        };
+      }
+
+      // Members (default role) cannot access full transcript details via AI tools
+      if (session.role === 'member') {
+        console.log(`🚫 Member ${session.user.email} attempted to access transcript details via AI tool`);
+        return {
+          error: 'Access denied: Members cannot access transcript details through AI tools. This feature is restricted to elevated roles only.',
+        };
+      }
+
+      console.log(`✅ User with role '${session.role}' (${session.user.email}) accessing transcript details`);
+
       const supabaseUrl = process.env.SUPABASE_URL;
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

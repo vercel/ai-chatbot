@@ -30,19 +30,21 @@ interface TranscriptSheetProps {
   transcript: Transcript | null;
   isOpen: boolean;
   onClose: () => void;
+  isMember?: boolean;
 }
 
 export function TranscriptSheet({
   transcript,
   isOpen,
   onClose,
+  isMember = false,
 }: TranscriptSheetProps) {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [transcriptExpanded, setTranscriptExpanded] = useState(false);
   const [_, copyToClipboard] = useCopyToClipboard();
 
-  // Use SWR to fetch transcript content when sheet is open and transcript exists
-  const shouldFetch = isOpen && transcript?.id;
+  // Use SWR to fetch transcript content when sheet is open and transcript exists (but not for members)
+  const shouldFetch = isOpen && transcript?.id && !isMember;
   const { data, error, isLoading } = useSWR(
     shouldFetch ? `/api/transcripts/${transcript.id}` : null,
     fetcher
@@ -154,85 +156,87 @@ export function TranscriptSheet({
             </CardContent>
           </Card>
 
-          {/* Transcript Content */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Full Transcript</CardTitle>
-              {transcriptContent && (
-                <Button
-                  className="py-1 px-2 h-fit text-muted-foreground"
-                  variant="outline"
-                  onClick={async () => {
-                    if (!transcriptContent) {
-                      toast.error("There's no transcript to copy!");
-                      return;
-                    }
-
-                    await copyToClipboard(transcriptContent);
-                    toast.success('Copied transcript to clipboard!');
-                  }}
-                >
-                  <Copy className="size-4" />
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full size-6 border-b-2 border-primary" />
-                  <span className="ml-2">Loading transcript...</span>
-                </div>
-              ) : error ? (
-                <div className="text-center py-8">
-                  <p className="text-destructive">Error: {error}</p>
+          {/* Transcript Content - Only show for elevated roles */}
+          {!isMember && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Full Transcript</CardTitle>
+                {transcriptContent && (
                   <Button
-                    onClick={() => window.location.reload()}
-                    className="mt-4"
-                    size="sm"
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              ) : transcriptContent ? (
-                <div className="prose max-w-none">
-                  <div
-                    className={
-                      transcriptExpanded
-                        ? ''
-                        : 'max-h-96 overflow-hidden relative'
-                    }
-                  >
-                    <div className="whitespace-pre-wrap text-sm bg-gray-100 p-4 rounded-lg overflow-y-auto">
-                      {transcriptContent}
-                    </div>
-                    {!transcriptExpanded && (
-                      <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-                    )}
-                  </div>
-                  <Button
+                    className="py-1 px-2 h-fit text-muted-foreground"
                     variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => setTranscriptExpanded(!transcriptExpanded)}
+                    onClick={async () => {
+                      if (!transcriptContent) {
+                        toast.error("There's no transcript to copy!");
+                        return;
+                      }
+
+                      await copyToClipboard(transcriptContent);
+                      toast.success('Copied transcript to clipboard!');
+                    }}
                   >
-                    {transcriptExpanded ? (
-                      <>
-                        Show less <ChevronUp className="ml-1 size-4" />
-                      </>
-                    ) : (
-                      <>
-                        See more <ChevronDown className="ml-1 size-4" />
-                      </>
-                    )}
+                    <Copy className="size-4" />
                   </Button>
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-8">
-                  No transcript content available
-                </p>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full size-6 border-b-2 border-primary" />
+                    <span className="ml-2">Loading transcript...</span>
+                  </div>
+                ) : error ? (
+                  <div className="text-center py-8">
+                    <p className="text-destructive">Error: {error.message || String(error)}</p>
+                    <Button
+                      onClick={() => window.location.reload()}
+                      className="mt-4"
+                      size="sm"
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                ) : transcriptContent ? (
+                  <div className="prose max-w-none">
+                    <div
+                      className={
+                        transcriptExpanded
+                          ? ''
+                          : 'max-h-96 overflow-hidden relative'
+                      }
+                    >
+                      <div className="whitespace-pre-wrap text-sm bg-gray-100 p-4 rounded-lg overflow-y-auto">
+                        {transcriptContent}
+                      </div>
+                      {!transcriptExpanded && (
+                        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => setTranscriptExpanded(!transcriptExpanded)}
+                    >
+                      {transcriptExpanded ? (
+                        <>
+                          Show less <ChevronUp className="ml-1 size-4" />
+                        </>
+                      ) : (
+                        <>
+                          See more <ChevronDown className="ml-1 size-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">
+                    No transcript content available
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Participants */}
           <Card>
