@@ -14,12 +14,14 @@ export const searchTranscriptsByUser = ({
 }: SearchTranscriptsByUserProps) =>
   tool({
     description:
-      'Searches meeting transcripts by participant name, host email, or verified participant email, with optional filters for date range and meeting type. Do not guess an email - make sure you clarify with the user what the email is unless obvious. ',
+      'Searches meeting transcripts by participant name, host email, or verified participant email, with optional filters for date range and meeting type. Uses flexible participant name matching by default (e.g. "John" will find "John Doe"). Do not guess an email - make sure you clarify with the user what the email is unless obvious.',
     inputSchema: z.object({
       participant_name: z
         .string()
         .optional()
-        .describe('The name of a participant to search for.'),
+        .describe(
+          'The name of a participant to search for. Uses flexible matching - partial names work (e.g. "John" will match "John Doe").',
+        ),
       host_email: z
         .string()
         .optional()
@@ -91,8 +93,16 @@ export const searchTranscriptsByUser = ({
         query = query.lt('recording_start', nextDay);
       }
       if (meeting_type) query = query.eq('meeting_type', meeting_type);
-      if (participant_name)
-        query = query.contains('extracted_participants', [participant_name]);
+
+      // Handle participant name search with flexible matching (always enabled)
+      if (participant_name) {
+        // Use ILIKE for case-insensitive partial matching within the JSON array
+        query = query.ilike(
+          'extracted_participants::text',
+          `%${participant_name}%`,
+        );
+      }
+
       if (host_email) query = query.eq('host_email', host_email);
       if (verified_participant_email)
         query = query.contains('verified_participant_emails', [
@@ -100,7 +110,11 @@ export const searchTranscriptsByUser = ({
         ]);
 
       // RBAC: If user role is 'member' or 'org-fte', only return transcripts where they are a verified participant
-      if (session.role && ['member', 'org-fte'].includes(session.role) && session.user.email) {
+      if (
+        session.role &&
+        ['member', 'org-fte'].includes(session.role) &&
+        session.user.email
+      ) {
         query = query.contains('verified_participant_emails', [
           session.user.email,
         ]);
@@ -115,7 +129,11 @@ export const searchTranscriptsByUser = ({
       }
 
       // Provide helpful message if member or org-fte has no results due to permissions
-      if (session.role && ['member', 'org-fte'].includes(session.role) && (!data || data.length === 0)) {
+      if (
+        session.role &&
+        ['member', 'org-fte'].includes(session.role) &&
+        (!data || data.length === 0)
+      ) {
         return {
           result: JSON.stringify([]),
           message:
