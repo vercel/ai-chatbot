@@ -64,8 +64,8 @@ export const getTranscriptDetails = ({
         .select('id, transcript_content')
         .in('id', transcript_ids);
 
-      // RBAC: If user role is 'member', only return transcripts where they are a verified participant
-      if (session.role === 'member' && session.user.email) {
+      // RBAC: If user role is 'org-fte', only return transcripts where they are a verified participant
+      if (session.role === 'org-fte' && session.user.email) {
         query = query.contains('verified_participant_emails', [
           session.user.email,
         ]);
@@ -88,10 +88,10 @@ export const getTranscriptDetails = ({
         (foundTranscripts || []).map((t) => [t.id, t.transcript_content]),
       );
 
-      // Track which transcripts user doesn't have access to (for members only)
+      // Track which transcripts user doesn't have access to (for org-fte only, members are blocked earlier)
       let accessDeniedIds: number[] = [];
       if (
-        session.role === 'member' &&
+        session.role === 'org-fte' &&
         foundTranscripts.length < transcript_ids.length
       ) {
         const foundIds = new Set(foundTranscripts.map((t) => t.id));
@@ -130,7 +130,7 @@ export const getTranscriptDetails = ({
           id: deniedId,
           cleaned_content: null,
           message:
-            "Access denied: You don't have permission to view this transcript. Members can only access transcripts where they are verified participants.",
+            "Access denied: You don't have permission to view this transcript. You can only access transcripts where you are a verified participant.",
         });
       }
 
@@ -140,7 +140,7 @@ export const getTranscriptDetails = ({
 
       // Add warning message if some transcripts were denied
       if (accessDeniedIds.length > 0) {
-        response.warning = `Access denied for transcript(s) ${accessDeniedIds.join(', ')}: Members can only access transcripts where they are verified participants.`;
+        response.warning = `Access denied for transcript(s) ${accessDeniedIds.join(', ')}: You can only access transcripts where you are verified participants.`;
       }
 
       // Wrap the result in a security disclaimer

@@ -99,8 +99,8 @@ export const searchTranscriptsByUser = ({
           verified_participant_email,
         ]);
 
-      // RBAC: If user role is 'member', only return transcripts where they are a verified participant
-      if (session.role === 'member' && session.user.email) {
+      // RBAC: If user role is 'member' or 'org-fte', only return transcripts where they are a verified participant
+      if (session.role && ['member', 'org-fte'].includes(session.role) && session.user.email) {
         query = query.contains('verified_participant_emails', [
           session.user.email,
         ]);
@@ -114,12 +114,12 @@ export const searchTranscriptsByUser = ({
         };
       }
 
-      // Provide helpful message if member has no results due to permissions
-      if (session.role === 'member' && (!data || data.length === 0)) {
+      // Provide helpful message if member or org-fte has no results due to permissions
+      if (session.role && ['member', 'org-fte'].includes(session.role) && (!data || data.length === 0)) {
         return {
           result: JSON.stringify([]),
           message:
-            'No transcripts found matching your search. Note: As a member, you can only search transcripts where you are a verified participant.',
+            'No transcripts found matching your search. Note: You can only search transcripts where you are a verified participant.',
         };
       }
 
