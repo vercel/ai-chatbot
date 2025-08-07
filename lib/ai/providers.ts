@@ -37,6 +37,7 @@ export const myProvider = customProvider({
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
     'title-model': google('gemini-1.5-flash-8b'),
+    'openai/gpt-oss-120b': groq('openai/gpt-oss-120b'),
   },
   imageModels: {},
 });

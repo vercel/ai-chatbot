@@ -55,4 +55,9 @@ export const chatModels: Array<ChatModel> = [
     name: 'Qwen QwQ 2b',
     description: 'Uses advanced reasoning and thinking for complex tasks',
   },
+  {
+    id: 'openai/gpt-oss-120b',
+    name: 'GPT-OSS 120b',
+    description: 'Open source model by OpenAI, hosted on Groq',
+  },
 ];

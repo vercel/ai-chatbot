@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx lib/db/migrate && next build",
+    "build": "POSTGRES_URL='postgres://user:password@localhost:5432/db' next build",
     "start": "next start",
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
@@ -84,7 +84,6 @@
     "eslint-config-next": "14.2.5",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.10.1",
-    "eslint-plugin-tailwindcss": "^3.18.0",
     "postcss": "^8.5.5",
     "tailwindcss": "^4.1.10",
     "tsx": "^4.20.3",
