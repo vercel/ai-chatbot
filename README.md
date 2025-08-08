@@ -60,3 +60,45 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+# Sindri
+
+This fork includes Docker deployment and OpenAI integration modifications for easy local development and deployment.
+
+## Running locally
+
+### Setup
+Configure your environment variable file that will be used with Docker Compose:
+```bash
+cp .env.example.sindri .env
+```
+Then, edit your `.env` file with your configuration.
+
+### Running
+Build and run the application:
+```bash
+docker compose --env-file .env up --build
+```
+
+The application will be available at [localhost:3000](http://localhost:3000).
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUTH_SECRET` | JWT encryption secret | Auto-generated |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob Storage key | ***Required*** |
+| `MAX_COMPLETION_TOKENS` | Maximum tokens for responses | `1000` |
+| `OPENAI_API_KEY` | Your OpenAI API key | ***Required*** |
+| `OPENAI_BASE_URL` | Custom OpenAI-compatible endpoint | `https://api.openai.com/v1` |
+| `OPENAI_MODEL` | Model to use for chat completions | `gpt-4o-mini` |
+| `PORT` | Port the server is exposed | `3000` |
+| `USE_TOOLS` | Enable AI tools (weather, documents, etc.) | `false` |
+
+## Key Modifications
+
+- **Docker Deployment**: Complete containerized setup with PostgreSQL and Redis
+- **OpenAI Integration**: Switched from xAI to OpenAI with configurable base URL
+- **PDF Support**: Added PDF and JSON file upload support (up to 100MB)
+- **Authentication**: Fixed auth flow and added guest mode
+- **Environment Variables**: All configuration via Docker environment variables
