@@ -50,7 +50,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { openai } from '@ai-sdk/openai';
+import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 
 export const maxDuration = 60;
 
@@ -258,9 +258,8 @@ export async function POST(request: Request) {
             session: aiToolsSession,
             dataStream,
           }),
-          // Add web search for openai models
-          ...((selectedChatModel === 'o4-mini' ||
-            selectedChatModel === 'chat-model') && {
+          // Add web search for the unified openai chat model
+          ...(selectedChatModel === 'chat-model' && {
             web_search_preview: openai.tools.webSearchPreview({
               searchContextSize: 'high',
               userLocation:
@@ -299,24 +298,19 @@ export async function POST(request: Request) {
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(20),
-          activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : Object.keys(tools),
+          activeTools: Object.keys(tools),
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: tools,
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          // Add providerOptions for o4-mini model only
-          ...(selectedChatModel === 'o4-mini' && {
-            providerOptions: {
-              openai: {
-                reasoningSummary: 'auto', // Use 'auto' for condensed or 'detailed' for comprehensive
-              },
-            },
-          }),
+          providerOptions: {
+            openai: {
+              reasoningEffort: 'medium',
+              reasoningSummary: 'auto',
+            } satisfies OpenAIResponsesProviderOptions,
+          },
         });
 
         result.consumeStream();
@@ -328,7 +322,8 @@ export async function POST(request: Request) {
         );
       },
       generateId: generateUUID,
-      onFinish: async ({ messages }) => {
+      onFinish: async ({ messages, responseMessage }) => {
+        console.log('full response', responseMessage);
         await saveMessages({
           messages: messages.map((message) => ({
             id: message.id,

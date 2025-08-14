@@ -57,7 +57,9 @@ export function UnifiedTool({
 
   if (error) {
     return (
-      <div className="text-red-500 p-2 border rounded">Error: {error}</div>
+      <div className="text-red-500 p-1.5 border rounded text-xs">
+        Error: {error}
+      </div>
     );
   }
 
@@ -78,37 +80,43 @@ export function UnifiedTool({
   };
 
   return (
-    <div className="border-b border-muted">
+    <div className="border-b border-muted/50 last:border-b-0">
       <button
         type="button"
-        className={`flex items-center justify-between w-full text-left px-2 py-5 rounded transition-colors ${input || output ? 'cursor-pointer hover:bg-muted/50' : 'cursor-default'}`}
+        className={`flex items-center justify-between w-full text-left px-1.5 py-2 rounded transition-colors ${input || output ? 'cursor-pointer hover:bg-muted/30' : 'cursor-default'}`}
         onClick={handleToggle}
         aria-label={showDetails ? 'Hide details' : 'Show details'}
       >
-        <div className="text-sm flex items-center gap-2">
-          <Icon size={16} />
-          {actionText} {params} {resultSummary}
+        <div className="text-sm flex items-center gap-1.5 text-muted-foreground">
+          <Icon size={14} />
+          <span className="font-medium">{actionText}</span>
+          {params && <span className="text-muted-foreground/70">{params}</span>}
+          {resultSummary && (
+            <span className="text-green-600 dark:text-green-400">
+              {resultSummary}
+            </span>
+          )}
         </div>
 
         {(input || output) && (
-          <div className="text-muted-foreground">
+          <div className="text-muted-foreground/50">
             {showDetails ? (
-              <ChevronDownIcon size={16} />
+              <ChevronDownIcon size={14} />
             ) : (
-              <ChevronRightIcon size={16} />
+              <ChevronRightIcon size={14} />
             )}
           </div>
         )}
       </button>
 
       {showDetails && (
-        <div className="mt-3 space-y-3 text-xs">
+        <div className="mt-2 space-y-2 text-xs">
           {input && (
             <div>
-              <div className="font-medium text-muted-foreground mb-1">
-                Query Parameters:
+              <div className="font-medium text-muted-foreground/70 mb-1 text-xs">
+                Parameters:
               </div>
-              <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+              <pre className="bg-muted/50 p-1.5 rounded text-xs overflow-x-auto">
                 {JSON.stringify(input, null, 2)}
               </pre>
             </div>
@@ -116,10 +124,10 @@ export function UnifiedTool({
 
           {output && state === 'output-available' && (
             <div>
-              <div className="font-medium text-muted-foreground mb-1">
-                Raw Output:
+              <div className="font-medium text-muted-foreground/70 mb-1 text-xs">
+                Output:
               </div>
-              <pre className="bg-muted p-2 rounded text-xs overflow-auto max-h-40">
+              <pre className="bg-muted/50 p-1.5 rounded text-xs overflow-auto max-h-32">
                 {typeof output === 'string'
                   ? output
                   : JSON.stringify(output, null, 2)}

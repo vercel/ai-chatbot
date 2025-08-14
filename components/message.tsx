@@ -92,219 +92,13 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.parts?.map((part, index) => {
-              const { type } = part;
-              const key = `message-${message.id}-part-${index}`;
+            {(() => {
+              // Build ONE collapsible block for ALL reasoning and tool calls, preserving order
+              const parts = message.parts ?? [];
 
-              if (type === 'reasoning' && part.text?.trim().length > 0) {
-                return (
-                  <MessageReasoning
-                    key={key}
-                    isLoading={isLoading}
-                    reasoning={part.text}
-                  />
-                );
-              }
-
-              if (type === 'text') {
-                if (mode === 'view') {
-                  return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
-                      {message.role === 'user' && !isReadonly && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              data-testid="message-edit-button"
-                              variant="ghost"
-                              className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                              onClick={() => {
-                                setMode('edit');
-                              }}
-                            >
-                              <PencilEditIcon />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
-                        </Tooltip>
-                      )}
-
-                      <div
-                        data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-muted text-primary px-3 py-2 rounded-xl':
-                            message.role === 'user',
-                        })}
-                      >
-                        <Markdown>{sanitizeText(part.text)}</Markdown>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (mode === 'edit') {
-                  return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
-                      <div className="size-8" />
-
-                      <MessageEditor
-                        key={message.id}
-                        message={message}
-                        setMode={setMode}
-                        setMessages={setMessages}
-                        regenerate={regenerate}
-                      />
-                    </div>
-                  );
-                }
-              }
-
-              if (type === 'tool-getWeather') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  return (
-                    <div key={toolCallId} className="skeleton">
-                      <Weather />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-                  return (
-                    <div key={toolCallId}>
-                      <Weather weatherAtLocation={output} />
-                    </div>
-                  );
-                }
-              }
-
-              if (type === 'tool-createDocument') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentPreview isReadonly={isReadonly} args={input} />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-
-                  if ('error' in output) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-red-500 p-2 border rounded"
-                      >
-                        Error: {String(output.error)}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentPreview
-                        isReadonly={isReadonly}
-                        result={output}
-                      />
-                    </div>
-                  );
-                }
-              }
-
-              if (type === 'tool-updateDocument') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolCall
-                        type="update"
-                        args={input}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-
-                  if ('error' in output) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-red-500 p-2 border rounded"
-                      >
-                        Error: {String(output.error)}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolResult
-                        type="update"
-                        result={output}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
-              }
-
-              if (type === 'tool-requestSuggestions') {
-                const { toolCallId, state } = part;
-
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolCall
-                        type="request-suggestions"
-                        args={input}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-
-                  if ('error' in output) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-red-500 p-2 border rounded"
-                      >
-                        Error: {String(output.error)}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolResult
-                        type="request-suggestions"
-                        result={output}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
-              }
-
-              // Unified tool renderer for all supported tools
               const supportedTools = [
                 'tool-searchTranscriptsByKeyword',
-                'tool-searchTranscriptsByUser', 
+                'tool-searchTranscriptsByUser',
                 'tool-getTranscriptDetails',
                 'tool-listAccessibleSlackChannels',
                 'tool-fetchSlackChannelHistory',
@@ -316,46 +110,483 @@ const PurePreviewMessage = ({
                 'tool-getMem0Projects',
                 'tool-getMem0Memories',
                 'tool-createMem0Project',
-                'tool-createMem0Memory'
+                'tool-createMem0Memory',
               ];
 
-              if (supportedTools.includes(type)) {
-                // Type guard to ensure we have a tool call part with the required properties
-                if ('toolCallId' in part && 'state' in part) {
-                  const { toolCallId, state } = part;
-                  
-                  if (state === 'input-available') {
-                    const { input } = part;
+              const isToolType = (t?: string) =>
+                !!t &&
+                (t === 'tool-getWeather' ||
+                  t === 'tool-createDocument' ||
+                  t === 'tool-updateDocument' ||
+                  t === 'tool-requestSuggestions' ||
+                  supportedTools.includes(t));
+
+              // Collect reasoning and tool parts in order
+              const reasoningAndToolParts: any[] = [];
+              const otherParts: any[] = [];
+              let firstReasoningOrToolIndex: number | null = null;
+
+              parts.forEach((p, index) => {
+                const isReasoningPart =
+                  p?.type === 'reasoning' &&
+                  typeof p?.text === 'string' &&
+                  p.text.trim().length > 0;
+                const isToolPart = isToolType(p?.type);
+
+                if (isReasoningPart || isToolPart) {
+                  if (firstReasoningOrToolIndex === null) {
+                    firstReasoningOrToolIndex = index;
+                  }
+                  reasoningAndToolParts.push(p);
+                } else {
+                  otherParts.push({ part: p, originalIndex: index });
+                }
+              });
+
+              // Build the merged parts array preserving order
+              const mergedParts: any[] = [];
+
+              // Add parts before the first reasoning/tool
+              otherParts
+                .filter(
+                  ({ originalIndex }) =>
+                    firstReasoningOrToolIndex === null ||
+                    originalIndex < firstReasoningOrToolIndex,
+                )
+                .forEach(({ part }) => mergedParts.push(part));
+
+              // If we have any reasoning or tools, create ONE unified block
+              if (reasoningAndToolParts.length > 0) {
+                // Keep parts in their original order, but mark them for the unified renderer
+                mergedParts.push({
+                  type: 'reasoning',
+                  text: '', // We'll render text inline with tools
+                  _toolChildren: reasoningAndToolParts, // All parts in original order
+                });
+              }
+
+              // Add parts after all reasoning/tools
+              otherParts
+                .filter(
+                  ({ originalIndex }) =>
+                    firstReasoningOrToolIndex !== null &&
+                    originalIndex > firstReasoningOrToolIndex,
+                )
+                .forEach(({ part }) => mergedParts.push(part));
+
+              return mergedParts.map((part, index) => {
+                const { type } = part;
+                const key = `message-${message.id}-part-${index}`;
+
+                if (
+                  type === 'reasoning' &&
+                  (part.text?.trim().length > 0 ||
+                    (part as any)._toolChildren?.length > 0)
+                ) {
+                  const renderToolChild = (toolPart: any, childIndex: number) => {
+                    const toolType = toolPart?.type as string | undefined;
+
+                    // Handle reasoning parts that appear inline
+                    if (
+                      toolType === 'reasoning' &&
+                      toolPart.text?.trim().length > 0
+                    ) {
+                      return (
+                        <div
+                          key={`reasoning-${childIndex}`}
+                          className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed py-2"
+                        >
+                          <Markdown>{toolPart.text}</Markdown>
+                        </div>
+                      );
+                    }
+
+                    if (toolType === 'tool-getWeather') {
+                      const { toolCallId, state } = toolPart;
+                      if (state === 'input-available') {
+                        return (
+                          <div key={toolCallId} className="skeleton">
+                            <Weather />
+                          </div>
+                        );
+                      }
+                      if (state === 'output-available') {
+                        const { output } = toolPart;
+                        return (
+                          <div key={toolCallId}>
+                            <Weather weatherAtLocation={output} />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (toolType === 'tool-createDocument') {
+                      const { toolCallId, state } = toolPart;
+                      if (state === 'input-available') {
+                        const { input } = toolPart;
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentPreview
+                              isReadonly={isReadonly}
+                              args={input}
+                            />
+                          </div>
+                        );
+                      }
+                      if (state === 'output-available') {
+                        const { output } = toolPart;
+                        if ('error' in output) {
+                          return (
+                            <div
+                              key={toolCallId}
+                              className="text-red-500 p-2 border rounded"
+                            >
+                              Error: {String(output.error)}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentPreview
+                              isReadonly={isReadonly}
+                              result={output}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (toolType === 'tool-updateDocument') {
+                      const { toolCallId, state } = toolPart;
+                      if (state === 'input-available') {
+                        const { input } = toolPart;
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolCall
+                              type="update"
+                              args={input}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+                      if (state === 'output-available') {
+                        const { output } = toolPart;
+                        if ('error' in output) {
+                          return (
+                            <div
+                              key={toolCallId}
+                              className="text-red-500 p-2 border rounded"
+                            >
+                              Error: {String(output.error)}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolResult
+                              type="update"
+                              result={output}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (toolType === 'tool-requestSuggestions') {
+                      const { toolCallId, state } = toolPart;
+                      if (state === 'input-available') {
+                        const { input } = toolPart;
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolCall
+                              type="request-suggestions"
+                              args={input}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+                      if (state === 'output-available') {
+                        const { output } = toolPart;
+                        if ('error' in output) {
+                          return (
+                            <div
+                              key={toolCallId}
+                              className="text-red-500 p-2 border rounded"
+                            >
+                              Error: {String(output.error)}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={toolCallId}>
+                            <DocumentToolResult
+                              type="request-suggestions"
+                              result={output}
+                              isReadonly={isReadonly}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    if (supportedTools.includes(toolType as string)) {
+                      if ('toolCallId' in toolPart && 'state' in toolPart) {
+                        const { toolCallId, state } = toolPart;
+                        if (state === 'input-available') {
+                          const { input } = toolPart;
+                          return (
+                            <ToolRenderer
+                              key={toolCallId}
+                              toolCallId={toolCallId}
+                              state={state}
+                              input={input}
+                              isReadonly={isReadonly}
+                              type={toolType as string}
+                            />
+                          );
+                        }
+                        if (state === 'output-available') {
+                          const { output, input } = toolPart;
+                          return (
+                            <ToolRenderer
+                              key={toolCallId}
+                              toolCallId={toolCallId}
+                              state={state}
+                              output={output}
+                              input={input}
+                              isReadonly={isReadonly}
+                              type={toolType as string}
+                            />
+                          );
+                        }
+                      }
+                    }
+                    return null;
+                  };
+
+                  return (
+                    <MessageReasoning
+                      key={key}
+                      isLoading={isLoading}
+                      reasoning={part.text}
+                    >
+                      {Array.isArray((part as any)._toolChildren)
+                        ? (part as any)._toolChildren.map((c: any, childIndex: number) =>
+                            renderToolChild(c, childIndex),
+                          )
+                        : null}
+                    </MessageReasoning>
+                  );
+                }
+
+                if (type === 'text') {
+                  if (mode === 'view') {
                     return (
-                      <ToolRenderer
-                        key={toolCallId}
-                        toolCallId={toolCallId}
-                        state={state}
-                        input={input}
-                        isReadonly={isReadonly}
-                        type={type}
-                      />
+                      <div
+                        key={key}
+                        className="flex flex-row gap-2 items-start"
+                      >
+                        {message.role === 'user' && !isReadonly && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                data-testid="message-edit-button"
+                                variant="ghost"
+                                className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                                onClick={() => {
+                                  setMode('edit');
+                                }}
+                              >
+                                <PencilEditIcon />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit message</TooltipContent>
+                          </Tooltip>
+                        )}
+
+                        <div
+                          data-testid="message-content"
+                          className={cn('flex flex-col gap-4', {
+                            'bg-muted text-primary px-3 py-2 rounded-xl':
+                              message.role === 'user',
+                          })}
+                        >
+                          <Markdown>{sanitizeText(part.text)}</Markdown>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (mode === 'edit') {
+                    return (
+                      <div
+                        key={key}
+                        className="flex flex-row gap-2 items-start"
+                      >
+                        <div className="size-8" />
+
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          setMode={setMode}
+                          setMessages={setMessages}
+                          regenerate={regenerate}
+                        />
+                      </div>
+                    );
+                  }
+                }
+
+                if (type === 'tool-getWeather') {
+                  const { toolCallId, state } = part;
+
+                  if (state === 'input-available') {
+                    return (
+                      <div key={toolCallId} className="text-sm">
+                        <Weather />
+                      </div>
                     );
                   }
 
                   if (state === 'output-available') {
-                    const { output, input } = part;
+                    const { output } = part;
                     return (
-                      <ToolRenderer
-                        key={toolCallId}
-                        toolCallId={toolCallId}
-                        state={state}
-                        output={output}
-                        input={input}
-                        isReadonly={isReadonly}
-                        type={type}
-                      />
+                      <div key={toolCallId} className="text-sm">
+                        <Weather weatherAtLocation={output} />
+                      </div>
                     );
                   }
                 }
-              }
 
-            })}
+                if (type === 'tool-createDocument') {
+                  const { toolCallId, state } = part;
+
+                  if (state === 'input-available') {
+                    const { input } = part;
+                    return (
+                      <div key={toolCallId}>
+                        <DocumentPreview isReadonly={isReadonly} args={input} />
+                      </div>
+                    );
+                  }
+
+                  if (state === 'output-available') {
+                    const { output } = part;
+
+                    if ('error' in output) {
+                      return (
+                        <div
+                          key={toolCallId}
+                          className="text-red-500 p-2 border rounded"
+                        >
+                          Error: {String(output.error)}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={toolCallId}>
+                        <DocumentPreview
+                          isReadonly={isReadonly}
+                          result={output}
+                        />
+                      </div>
+                    );
+                  }
+                }
+
+                if (type === 'tool-updateDocument') {
+                  const { toolCallId, state } = part;
+
+                  if (state === 'input-available') {
+                    const { input } = part;
+
+                    return (
+                      <div key={toolCallId}>
+                        <DocumentToolCall
+                          type="update"
+                          args={input}
+                          isReadonly={isReadonly}
+                        />
+                      </div>
+                    );
+                  }
+
+                  if (state === 'output-available') {
+                    const { output } = part;
+
+                    if ('error' in output) {
+                      return (
+                        <div
+                          key={toolCallId}
+                          className="text-red-500 p-2 border rounded"
+                        >
+                          Error: {String(output.error)}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={toolCallId}>
+                        <DocumentToolResult
+                          type="update"
+                          result={output}
+                          isReadonly={isReadonly}
+                        />
+                      </div>
+                    );
+                  }
+                }
+
+                if (type === 'tool-requestSuggestions') {
+                  const { toolCallId, state } = part;
+
+                  if (state === 'input-available') {
+                    const { input } = part;
+                    return (
+                      <div key={toolCallId}>
+                        <DocumentToolCall
+                          type="request-suggestions"
+                          args={input}
+                          isReadonly={isReadonly}
+                        />
+                      </div>
+                    );
+                  }
+
+                  if (state === 'output-available') {
+                    const { output } = part;
+
+                    if ('error' in output) {
+                      return (
+                        <div
+                          key={toolCallId}
+                          className="text-red-500 p-2 border rounded"
+                        >
+                          Error: {String(output.error)}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={toolCallId}>
+                        <DocumentToolResult
+                          type="request-suggestions"
+                          result={output}
+                          isReadonly={isReadonly}
+                        />
+                      </div>
+                    );
+                  }
+                }
+
+                // Tool parts are now only rendered as children of reasoning blocks
+                // Skip standalone tool rendering to avoid duplication
+              });
+            })()}
 
             {!isReadonly && (
               <MessageActions
