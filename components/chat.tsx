@@ -78,7 +78,9 @@ export function Chat({
       },
     }),
     onData: (dataPart) => {
-      setDataStream((ds) => (ds ? [...ds, dataPart as DataUIPart<CustomUIDataTypes>] : []));
+      setDataStream((ds) =>
+        ds ? [...ds, dataPart as DataUIPart<CustomUIDataTypes>] : [],
+      );
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
