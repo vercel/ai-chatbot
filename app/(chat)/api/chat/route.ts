@@ -50,7 +50,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
+import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 
 export const maxDuration = 60;
 
