@@ -183,7 +183,10 @@ const PurePreviewMessage = ({
                   (part.text?.trim().length > 0 ||
                     (part as any)._toolChildren?.length > 0)
                 ) {
-                  const renderToolChild = (toolPart: any, childIndex: number) => {
+                  const renderToolChild = (
+                    toolPart: any,
+                    childIndex: number,
+                  ) => {
                     const toolType = toolPart?.type as string | undefined;
 
                     // Handle reasoning parts that appear inline
@@ -374,8 +377,9 @@ const PurePreviewMessage = ({
                       reasoning={part.text}
                     >
                       {Array.isArray((part as any)._toolChildren)
-                        ? (part as any)._toolChildren.map((c: any, childIndex: number) =>
-                            renderToolChild(c, childIndex),
+                        ? (part as any)._toolChildren.map(
+                            (c: any, childIndex: number) =>
+                              renderToolChild(c, childIndex),
                           )
                         : null}
                     </MessageReasoning>
