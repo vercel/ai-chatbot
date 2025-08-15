@@ -12,6 +12,8 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL, chatModels } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
