@@ -1,0 +1,16 @@
+# Ignore dev artifacts and unnecessary files for image context
+node_modules
+.next/cache
+pnpm-store
+.git
+.gitignore
+Dockerfile
+README.md
+.next/trace
+.next/types
+.vscode
+**/*.log
+.env*
+azure.yaml
+playwright-report
+# DO NOT exclude the source 'artifacts' directory; it contains runtime code.

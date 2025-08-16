@@ -1,3 +1,20 @@
+# Current state
+- `azd` by default doesn't support `pnpm`
+- Created Dockerfile to hopefully guide it -- haven't tried
+- `pnpm` build isn't super clean, still some stuff with warnings
+- Docker build working - `docker build -t ai-chatbot:dev .`
+- Docker run working
+  - `docker run -d --name ai-chatbot-test -p 3000:80 -e NEXTAUTH_URL=http://localhost:3000 -e AUTH_SECRET=8cbed01116077e9906d52fcdd5a778cd -e AZURE_OPENAI_RESOURCE_NAME=aoai-services-22 -e AZURE_OPENAI_API_KEY=KEY -e AZURE_OPENAI_DEPLOYMENT_CHAT=gpt-4o-mini -e AZURE_OPENAI_DEPLOYMENT_TITLE=gpt-4o-mini -e POSTGRES_URL='postgresql://saam:PASS@db-saam.postgres.database.azure.com:5432/postgres?sslmode=require' ai-chatbot:dev`
+
+## Issues
+  - Next Auth failing / looping - can't load homepage due to too many redirects, browser stops
+  - Copilot did some interesting stuff in `providers.ts` to allow Docker build to complete without AZURE env
+    - suggest we just set dummy env vars in the Docker script?
+  - `azd up` deployment still not tested/working
+  - Dockerfile / .dockerignore could do with a review
+
+
+
 <a href="https://chat.vercel.ai/">
   <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
   <h1 align="center">Chat SDK</h1>
