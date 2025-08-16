@@ -48,11 +48,9 @@ export async function GET() {
         if (!availableChatModelIds.includes(model.id)) {
           return false;
         }
-      } else {
+      } else if (settings?.maxTier && !allowedPricingTiers.includes(settings.maxTier)) {
         // For admins, only respect explicit tier restrictions from admin settings
-        if (settings?.maxTier && !allowedPricingTiers.includes(settings.maxTier)) {
-          return false;
-        }
+        return false;
       }
 
       return true;

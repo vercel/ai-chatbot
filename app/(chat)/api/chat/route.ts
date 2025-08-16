@@ -26,6 +26,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import { allModels } from '@/lib/ai/models';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
 import {
@@ -151,19 +152,31 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
-        // Check if this is a reasoning model that doesn't support tools
+        // Find the model definition to check its capabilities
+        const modelDef = allModels.find(m => m.id === selectedChatModel);
+        
+        // Check if this is a reasoning/thinking model that may not support tools
+        const hasThinkingCapability = modelDef?.capabilities.thinking === true;
+        const hasReasoningCapability = modelDef?.capabilities.reasoning === true;
         const isModernReasoningModel = selectedChatModel.startsWith('o3') || selectedChatModel.startsWith('o4-');
-        const isReasoningModel = selectedChatModel === 'chat-model-reasoning' || isModernReasoningModel;
+        const isLegacyReasoningModel = selectedChatModel === 'chat-model-reasoning';
+        
+        // Models with thinking capability may have limitations with tools and system prompts
+        const isReasoningModel = isLegacyReasoningModel || isModernReasoningModel || hasThinkingCapability;
         
         // Debug logging for model selection and configuration
         if (process.env.NODE_ENV === 'development') {
           console.log(`\n🤖 Chat API Model Debug:`);
           console.log(`📝 Selected model: ${selectedChatModel}`);
-          console.log(`🧠 Is modern reasoning model: ${isModernReasoningModel}`);
-          console.log(`🎯 Is reasoning model: ${isReasoningModel}`);
+          console.log(`🎨 Model definition found: ${!!modelDef}`);
+          console.log(`🧠 Has thinking capability: ${hasThinkingCapability}`);
+          console.log(`🎯 Has reasoning capability: ${hasReasoningCapability}`);
+          console.log(`🔧 Is legacy reasoning model: ${isLegacyReasoningModel}`);
+          console.log(`⚡ Is modern reasoning model: ${isModernReasoningModel}`);
+          console.log(`🎯 Final reasoning model status: ${isReasoningModel}`);
           console.log(`🔧 Tools disabled: ${isReasoningModel}`);
-          console.log(`📨 System prompt enabled: ${!isModernReasoningModel}`);
-          console.log(`🎨 Transform enabled: ${!isModernReasoningModel}`);
+          console.log(`📨 System prompt enabled: ${!isModernReasoningModel && !hasThinkingCapability}`);
+          console.log(`🎨 Transform enabled: ${!isModernReasoningModel && !hasThinkingCapability}`);
           console.log(`👤 User: ${session.user.email || session.user.id} (${session.user.type})`);
         }
         
@@ -178,11 +191,11 @@ export async function POST(request: Request) {
           },
         };
 
-        // Modern reasoning models (o3, o4) may have special limitations
-        if (!isModernReasoningModel) {
-          // Add system prompt for non-reasoning models
+        // Modern reasoning models and thinking models may have special limitations
+        if (!isModernReasoningModel && !hasThinkingCapability) {
+          // Add system prompt for non-thinking models
           streamOptions.system = systemPrompt({ selectedChatModel, requestHints });
-          // Add transform for non-reasoning models  
+          // Add transform for non-thinking models  
           streamOptions.experimental_transform = smoothStream({ chunking: 'word' });
         }
 
