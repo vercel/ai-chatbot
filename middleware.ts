@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+import { isDevelopmentEnvironment } from './lib/constants';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -24,17 +24,16 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-    );
+    // Allow access to login and register pages for unauthenticated users
+    if (['/login', '/register'].includes(pathname)) {
+      return NextResponse.next();
+    }
+    // Redirect other pages to login for unauthenticated users
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  const isGuest = guestRegex.test(token?.email ?? '');
-
-  // Redirect authenticated non-guest users away from auth pages
-  if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
+  // Redirect authenticated users away from auth pages
+  if (token && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

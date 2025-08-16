@@ -65,14 +65,6 @@ export const {
         return { ...user, type: 'regular', isAdmin: user.isAdmin };
       },
     }),
-    Credentials({
-      id: 'guest',
-      credentials: {},
-      async authorize() {
-        const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: 'guest' };
-      },
-    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
