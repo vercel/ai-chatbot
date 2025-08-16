@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 
 import { AuthForm } from '@/components/auth-form';
@@ -13,9 +13,13 @@ import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
 
   const [state, formAction] = useActionState<RegisterActionState, FormData>(
     register,
@@ -26,6 +30,34 @@ export default function Page() {
 
   const { update: updateSession } = useSession();
 
+  // Validate invitation token on mount
+  useEffect(() => {
+    if (token) {
+      fetch('/api/invitations/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.valid) {
+            setIsValidToken(true);
+            setEmail(data.email);
+          } else {
+            setIsValidToken(false);
+            setTokenError(data.error || 'Invalid invitation');
+          }
+        })
+        .catch(() => {
+          setIsValidToken(false);
+          setTokenError('Failed to validate invitation');
+        });
+    } else {
+      setIsValidToken(false);
+      setTokenError('No invitation token provided');
+    }
+  }, [token]);
+
   useEffect(() => {
     if (state.status === 'user_exists') {
       toast({ type: 'error', description: 'Account already exists!' });
@@ -34,7 +66,17 @@ export default function Page() {
     } else if (state.status === 'invalid_data') {
       toast({
         type: 'error',
-        description: 'Failed validating your submission!',
+        description: 'Email must match the invitation!',
+      });
+    } else if (state.status === 'invalid_token') {
+      toast({
+        type: 'error',
+        description: 'Invalid or expired invitation token!',
+      });
+    } else if (state.status === 'expired_token') {
+      toast({
+        type: 'error',
+        description: 'This invitation has expired!',
       });
     } else if (state.status === 'success') {
       toast({ type: 'success', description: 'Account created successfully!' });
@@ -46,6 +88,9 @@ export default function Page() {
   }, [state]);
 
   const handleSubmit = (formData: FormData) => {
+    if (token) {
+      formData.append('token', token);
+    }
     setEmail(formData.get('email') as string);
     formAction(formData);
   };
@@ -55,23 +100,51 @@ export default function Page() {
       <div className="w-full max-w-md overflow-hidden rounded-2xl gap-12 flex flex-col">
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
           <h3 className="text-xl font-semibold dark:text-zinc-50">Sign Up</h3>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Create an account with your email and password
-          </p>
+          {isValidToken === null ? (
+            <p className="text-sm text-gray-500 dark:text-zinc-400">
+              Validating invitation...
+            </p>
+          ) : isValidToken ? (
+            <>
+              <p className="text-sm text-gray-500 dark:text-zinc-400">
+                You've been invited! Create your account below.
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-400">
+                Invitation for: {email}
+              </p>
+            </>
+          ) : (
+            <div className="text-sm text-red-600 dark:text-red-400">
+              <p>{tokenError}</p>
+              <p className="mt-2">Please request a new invitation to continue.</p>
+            </div>
+          )}
         </div>
-        <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
-          <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {'Already have an account? '}
+        {isValidToken && (
+          <AuthForm action={handleSubmit} defaultEmail={email}>
+            <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
+            <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
+              {'Already have an account? '}
+              <Link
+                href="/login"
+                className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
+              >
+                Sign in
+              </Link>
+              {' instead.'}
+            </p>
+          </AuthForm>
+        )}
+        {!isValidToken && isValidToken !== null && (
+          <div className="flex flex-col items-center gap-4 px-4 sm:px-16">
             <Link
               href="/login"
               className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
             >
-              Sign in
+              Sign in with existing account
             </Link>
-            {' instead.'}
-          </p>
-        </AuthForm>
+          </div>
+        )}
       </div>
     </div>
   );

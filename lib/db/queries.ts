@@ -27,6 +27,10 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  invitation,
+  type Invitation,
+  modelSettings,
+  type ModelSettings,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -53,11 +57,19 @@ export async function getUser(email: string): Promise<Array<User>> {
   }
 }
 
-export async function createUser(email: string, password: string) {
+export async function createUser(
+  email: string, 
+  password: string, 
+  invitedBy?: string
+) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await db.insert(user).values({ 
+      email, 
+      password: hashedPassword,
+      invitedBy: invitedBy || null,
+    });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
   }
@@ -533,6 +545,239 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+// Invitation-related queries
+export async function createInvitation({
+  email,
+  invitedBy,
+  expiresInDays = 7,
+}: {
+  email: string;
+  invitedBy: string;
+  expiresInDays?: number;
+}) {
+  const token = generateUUID();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+  try {
+    const [newInvitation] = await db
+      .insert(invitation)
+      .values({
+        email,
+        invitedBy,
+        token,
+        expiresAt,
+      })
+      .returning();
+    
+    return newInvitation;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to create invitation',
+    );
+  }
+}
+
+export async function getInvitationByToken(token: string) {
+  try {
+    const [invite] = await db
+      .select()
+      .from(invitation)
+      .where(eq(invitation.token, token));
+    
+    return invite;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get invitation by token',
+    );
+  }
+}
+
+export async function getInvitationsByEmail(email: string) {
+  try {
+    return await db
+      .select()
+      .from(invitation)
+      .where(eq(invitation.email, email))
+      .orderBy(desc(invitation.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get invitations by email',
+    );
+  }
+}
+
+export async function getInvitationsByInviter(inviterId: string) {
+  try {
+    return await db
+      .select()
+      .from(invitation)
+      .where(eq(invitation.invitedBy, inviterId))
+      .orderBy(desc(invitation.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get invitations by inviter',
+    );
+  }
+}
+
+export async function updateInvitationStatus(
+  token: string,
+  status: 'accepted' | 'expired' | 'revoked',
+) {
+  try {
+    const updates: any = { status };
+    if (status === 'accepted') {
+      updates.acceptedAt = new Date();
+    }
+
+    const [updated] = await db
+      .update(invitation)
+      .set(updates)
+      .where(eq(invitation.token, token))
+      .returning();
+    
+    return updated;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update invitation status',
+    );
+  }
+}
+
+export async function isUserAdmin(userId: string): Promise<boolean> {
+  try {
+    const [userRecord] = await db
+      .select({ isAdmin: user.isAdmin })
+      .from(user)
+      .where(eq(user.id, userId));
+    
+    return userRecord?.isAdmin ?? false;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to check admin status',
+    );
+  }
+}
+
+export async function getAllUsers() {
+  try {
+    return await db
+      .select({
+        id: user.id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
+        invitedBy: user.invitedBy,
+      })
+      .from(user)
+      .orderBy(desc(user.createdAt));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get all users',
+    );
+  }
+}
+
+// Model settings queries
+export async function getModelSettings(modelId?: string) {
+  try {
+    if (modelId) {
+      const [settings] = await db
+        .select()
+        .from(modelSettings)
+        .where(eq(modelSettings.modelId, modelId));
+      return settings;
+    }
+    
+    return await db
+      .select()
+      .from(modelSettings)
+      .orderBy(asc(modelSettings.modelId));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get model settings',
+    );
+  }
+}
+
+export async function upsertModelSettings({
+  modelId,
+  isEnabled,
+  isHidden,
+  customName,
+  customDescription,
+  maxTier,
+}: {
+  modelId: string;
+  isEnabled?: boolean;
+  isHidden?: boolean;
+  customName?: string;
+  customDescription?: string;
+  maxTier?: 'low' | 'medium' | 'high' | 'premium';
+}) {
+  try {
+    const existing = await getModelSettings(modelId);
+    
+    if (existing) {
+      // Update existing settings
+      const [updated] = await db
+        .update(modelSettings)
+        .set({
+          isEnabled: isEnabled ?? existing.isEnabled,
+          isHidden: isHidden ?? existing.isHidden,
+          customName: customName ?? existing.customName,
+          customDescription: customDescription ?? existing.customDescription,
+          maxTier: maxTier ?? existing.maxTier,
+          updatedAt: new Date(),
+        })
+        .where(eq(modelSettings.modelId, modelId))
+        .returning();
+      
+      return updated;
+    } else {
+      // Create new settings
+      const [created] = await db
+        .insert(modelSettings)
+        .values({
+          modelId,
+          isEnabled: isEnabled ?? true,
+          isHidden: isHidden ?? false,
+          customName,
+          customDescription,
+          maxTier,
+        })
+        .returning();
+      
+      return created;
+    }
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update model settings',
+    );
+  }
+}
+
+export async function toggleModelEnabled(modelId: string, isEnabled: boolean) {
+  try {
+    return await upsertModelSettings({ modelId, isEnabled });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to toggle model status',
     );
   }
 }

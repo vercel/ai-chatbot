@@ -33,8 +33,22 @@ export async function middleware(request: NextRequest) {
 
   const isGuest = guestRegex.test(token?.email ?? '');
 
+  // Redirect authenticated non-guest users away from auth pages
   if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Block access to registration without invitation token
+  if (pathname === '/register' && !token) {
+    const { searchParams } = request.nextUrl;
+    const inviteToken = searchParams.get('token');
+    
+    if (!inviteToken) {
+      // Redirect to login with error message
+      return NextResponse.redirect(
+        new URL('/login?error=invitation_required', request.url)
+      );
+    }
   }
 
   return NextResponse.next();

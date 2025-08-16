@@ -15,9 +15,45 @@ export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  invitedBy: uuid('invitedBy').references(() => user.id),
+  isAdmin: boolean('isAdmin').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
 
 export type User = InferSelectModel<typeof user>;
+
+export const invitation = pgTable('Invitation', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  email: varchar('email', { length: 64 }).notNull(),
+  invitedBy: uuid('invitedBy')
+    .notNull()
+    .references(() => user.id),
+  token: varchar('token', { length: 255 }).notNull().unique(),
+  status: varchar('status', { 
+    enum: ['pending', 'accepted', 'expired', 'revoked'] 
+  }).notNull().default('pending'),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  acceptedAt: timestamp('acceptedAt'),
+});
+
+export type Invitation = InferSelectModel<typeof invitation>;
+
+export const modelSettings = pgTable('ModelSettings', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  modelId: varchar('modelId', { length: 100 }).notNull().unique(),
+  isEnabled: boolean('isEnabled').notNull().default(true),
+  isHidden: boolean('isHidden').notNull().default(false),
+  customName: varchar('customName', { length: 100 }),
+  customDescription: text('customDescription'),
+  maxTier: varchar('maxTier', { 
+    enum: ['low', 'medium', 'high', 'premium'] 
+  }),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type ModelSettings = InferSelectModel<typeof modelSettings>;
 
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),

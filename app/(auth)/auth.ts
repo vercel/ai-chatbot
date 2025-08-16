@@ -13,6 +13,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       type: UserType;
+      isAdmin?: boolean;
     } & DefaultSession['user'];
   }
 
@@ -20,6 +21,7 @@ declare module 'next-auth' {
     id?: string;
     email?: string | null;
     type: UserType;
+    isAdmin?: boolean;
   }
 }
 
@@ -27,6 +29,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
+    isAdmin?: boolean;
   }
 }
 
@@ -59,7 +62,7 @@ export const {
 
         if (!passwordsMatch) return null;
 
-        return { ...user, type: 'regular' };
+        return { ...user, type: 'regular', isAdmin: user.isAdmin };
       },
     }),
     Credentials({
@@ -76,6 +79,7 @@ export const {
       if (user) {
         token.id = user.id as string;
         token.type = user.type;
+        token.isAdmin = user.isAdmin;
       }
 
       return token;
@@ -84,6 +88,7 @@ export const {
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
+        session.user.isAdmin = token.isAdmin;
       }
 
       return session;

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 import { toast } from '@/components/toast';
 
@@ -13,6 +13,8 @@ import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
@@ -57,18 +59,20 @@ export default function Page() {
           <p className="text-sm text-gray-500 dark:text-zinc-400">
             Use your email and password to sign in
           </p>
+          {error === 'invitation_required' && (
+            <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
+              This app is invite-only. Please request an invitation to sign up.
+            </p>
+          )}
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {"Don't have an account? "}
-            <Link
-              href="/register"
-              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
-            >
-              Sign up
-            </Link>
-            {' for free.'}
+            <span className="font-semibold text-gray-800 dark:text-zinc-200">
+              Request an invitation
+            </span>
+            {' to join.'}
           </p>
         </AuthForm>
       </div>

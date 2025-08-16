@@ -2,7 +2,12 @@
 
 import { z } from 'zod';
 
-import { createUser, getUser } from '@/lib/db/queries';
+import { 
+  createUser, 
+  getUser,
+  getInvitationByToken,
+  updateInvitationStatus,
+} from '@/lib/db/queries';
 
 import { signIn } from './auth';
 
@@ -48,7 +53,9 @@ export interface RegisterActionState {
     | 'success'
     | 'failed'
     | 'user_exists'
-    | 'invalid_data';
+    | 'invalid_data'
+    | 'invalid_token'
+    | 'expired_token';
 }
 
 export const register = async (
@@ -61,12 +68,52 @@ export const register = async (
       password: formData.get('password'),
     });
 
+    // Get the invitation token from form data
+    const token = formData.get('token') as string;
+    
+    if (!token) {
+      return { status: 'invalid_token' };
+    }
+
+    // Validate the invitation token
+    const invitation = await getInvitationByToken(token);
+    
+    if (!invitation) {
+      return { status: 'invalid_token' };
+    }
+
+    // Check if invitation is expired
+    if (new Date(invitation.expiresAt) < new Date()) {
+      return { status: 'expired_token' };
+    }
+
+    // Check if invitation has already been used or revoked
+    if (invitation.status !== 'pending') {
+      return { status: 'invalid_token' };
+    }
+
+    // Check if the email matches the invitation
+    if (invitation.email !== validatedData.email) {
+      return { status: 'invalid_data' };
+    }
+
     const [user] = await getUser(validatedData.email);
 
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
-    await createUser(validatedData.email, validatedData.password);
+
+    // Create the user with the inviter reference
+    await createUser(
+      validatedData.email, 
+      validatedData.password,
+      invitation.invitedBy,
+    );
+
+    // Mark the invitation as accepted
+    await updateInvitationStatus(token, 'accepted');
+
+    // Sign in the new user
     await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,

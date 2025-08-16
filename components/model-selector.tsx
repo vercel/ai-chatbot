@@ -12,12 +12,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { allModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { useProviders } from '@/hooks/use-providers';
+import { useAvailableModels } from '@/hooks/use-available-models';
 import type { Session } from 'next-auth';
 
 const providerLogos = {
@@ -52,43 +51,29 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
-  const userType = session.user.type;
-  const { availableChatModelIds } = entitlementsByUserType[userType];
-  const { providers, loading } = useProviders();
+  const { providers, loading: providersLoading } = useProviders();
+  const { models: availableModels, loading: modelsLoading } = useAvailableModels();
 
-  // Debug session and user type
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`\n👤 Session Debug:`);
-    console.log(`🏷️ User type: ${userType}`);
-    console.log(`👨‍💼 Session user:`, { id: session.user.id, email: session.user.email, type: session.user.type });
-    console.log(`🎫 Available model IDs for ${userType}:`, availableChatModelIds.slice(0, 10).join(', '));
-  }
-
-  const availableChatModels = allModels.filter((chatModel) => {
-    // Check if user has access to this model
-    const hasAccess = availableChatModelIds.includes(chatModel.id);
-    
+  // Filter models by provider configuration
+  const availableChatModels = availableModels.filter((chatModel) => {
     // Check if the provider is configured (only filter if not loading)
-    const providerConfigured = loading || providers[chatModel.provider];
-    
-    const included = hasAccess && providerConfigured;
+    const providerConfigured = providersLoading || providers[chatModel.provider];
     
     // Debug logging for model filtering
     if (process.env.NODE_ENV === 'development') {
-      if (!included) {
-        console.log(`🚫 Filtering out ${chatModel.id} (${chatModel.provider}): hasAccess=${hasAccess}, providerConfigured=${providerConfigured}, loading=${loading}`);
+      if (!providerConfigured) {
+        console.log(`🚫 Filtering out ${chatModel.id} (${chatModel.provider}): providerConfigured=${providerConfigured}, loading=${providersLoading}`);
       }
     }
     
-    return included;
+    return providerConfigured;
   });
 
   // Debug summary of available models
   if (process.env.NODE_ENV === 'development' && availableChatModels.length > 0) {
-    console.log(`\n🎯 Model Selector Debug for user type: ${userType}`);
-    console.log(`📊 Total models defined: ${allModels.length}`);
-    console.log(`🎫 Models user has access to: ${availableChatModelIds.length}`);
-    console.log(`⏳ Providers loading: ${loading}`);
+    console.log(`\n🎯 Model Selector Debug:`);
+    console.log(`📊 Models from API: ${availableModels.length}`);
+    console.log(`⏳ Providers loading: ${providersLoading}`);
     console.log(`🏭 Configured providers:`, Object.keys(providers).filter(p => providers[p]));
     console.log(`✅ Final available models: ${availableChatModels.length}`);
     console.log(`📝 Available model names: ${availableChatModels.map(m => m.name).join(', ')}`);
@@ -122,6 +107,8 @@ export function ModelSelector({
     return grouped;
   }, [availableChatModels]);
 
+  const loading = modelsLoading || providersLoading;
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
@@ -135,14 +122,24 @@ export function ModelSelector({
           data-testid="model-selector"
           variant="outline"
           className="md:px-2 md:h-[34px] flex items-center gap-2"
+          disabled={loading}
         >
-          {selectedChatModel && (
-            <span className="text-sm">
-              {providerLogos[selectedChatModel.provider]}
-            </span>
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              {selectedChatModel && (
+                <span className="text-sm">
+                  {providerLogos[selectedChatModel.provider]}
+                </span>
+              )}
+              {selectedChatModel?.name || 'Select Model'}
+              <ChevronDownIcon />
+            </>
           )}
-          {selectedChatModel?.name}
-          <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[350px] max-h-[60vh] overflow-y-auto">
