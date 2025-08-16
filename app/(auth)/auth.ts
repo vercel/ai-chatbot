@@ -6,7 +6,7 @@ import { authConfig } from './auth.config';
 import { DUMMY_PASSWORD } from '@/lib/constants';
 import type { DefaultJWT } from 'next-auth/jwt';
 
-export type UserType = 'guest' | 'regular';
+export type UserType = 'guest' | 'regular' | 'premium';
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {

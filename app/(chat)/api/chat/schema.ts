@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { allModels } from '@/lib/ai/models';
 
 const textPartSchema = z.object({
   type: z.enum(['text']),
@@ -14,6 +15,9 @@ const filePartSchema = z.object({
 
 const partSchema = z.union([textPartSchema, filePartSchema]);
 
+// Generate valid model IDs from the models definition
+const validModelIds = allModels.map(model => model.id) as [string, ...string[]];
+
 export const postRequestBodySchema = z.object({
   id: z.string().uuid(),
   message: z.object({
@@ -21,7 +25,7 @@ export const postRequestBodySchema = z.object({
     role: z.enum(['user']),
     parts: z.array(partSchema),
   }),
-  selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning']),
+  selectedChatModel: z.enum(validModelIds),
   selectedVisibilityType: z.enum(['public', 'private']),
 });
 

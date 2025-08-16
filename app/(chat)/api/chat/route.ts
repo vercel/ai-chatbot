@@ -151,22 +151,50 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
-        const result = streamText({
+        // Check if this is a reasoning model that doesn't support tools
+        const isModernReasoningModel = selectedChatModel.startsWith('o3') || selectedChatModel.startsWith('o4-');
+        const isReasoningModel = selectedChatModel === 'chat-model-reasoning' || isModernReasoningModel;
+        
+        // Debug logging for model selection and configuration
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`\n🤖 Chat API Model Debug:`);
+          console.log(`📝 Selected model: ${selectedChatModel}`);
+          console.log(`🧠 Is modern reasoning model: ${isModernReasoningModel}`);
+          console.log(`🎯 Is reasoning model: ${isReasoningModel}`);
+          console.log(`🔧 Tools disabled: ${isReasoningModel}`);
+          console.log(`📨 System prompt enabled: ${!isModernReasoningModel}`);
+          console.log(`🎨 Transform enabled: ${!isModernReasoningModel}`);
+          console.log(`👤 User: ${session.user.email || session.user.id} (${session.user.type})`);
+        }
+        
+        // Configure streamText options based on model type
+        const streamOptions: any = {
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          tools: {
+          experimental_telemetry: {
+            isEnabled: isProductionEnvironment,
+            functionId: 'stream-text',
+          },
+        };
+
+        // Modern reasoning models (o3, o4) may have special limitations
+        if (!isModernReasoningModel) {
+          // Add system prompt for non-reasoning models
+          streamOptions.system = systemPrompt({ selectedChatModel, requestHints });
+          // Add transform for non-reasoning models  
+          streamOptions.experimental_transform = smoothStream({ chunking: 'word' });
+        }
+
+        // Add tools only for non-reasoning models
+        if (!isReasoningModel) {
+          streamOptions.experimental_activeTools = [
+            'getWeather',
+            'createDocument',
+            'updateDocument',
+            'requestSuggestions',
+          ];
+          streamOptions.tools = {
             getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
@@ -174,14 +202,17 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
+          };
+        }
+
+        const result = streamText(streamOptions);
 
         result.consumeStream();
+
+        // Debug stream result
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🌊 Stream initialized for model: ${selectedChatModel}`);
+        }
 
         dataStream.merge(
           result.toUIMessageStream({
@@ -191,6 +222,11 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Stream finished for ${selectedChatModel}. Messages received: ${messages.length}`);
+          console.log(`📄 Message types:`, messages.map(m => `${m.role}(${m.parts?.length || 0} parts)`).join(', '));
+        }
+        
         await saveMessages({
           messages: messages.map((message) => ({
             id: message.id,
@@ -202,7 +238,8 @@ export async function POST(request: Request) {
           })),
         });
       },
-      onError: () => {
+      onError: (error) => {
+        console.error(`❌ Stream error for ${selectedChatModel}:`, error);
         return 'Oops, an error occurred!';
       },
     });
