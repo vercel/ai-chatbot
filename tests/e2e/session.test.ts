@@ -15,7 +15,8 @@ test.describe
         throw new Error('Failed to load page');
       }
 
-      let request = response.request();
+  // Playwright Request object (not Fetch API Request); type as any for chain tracing.
+  let request: any = response.request();
 
       const chain = [];
 
@@ -57,7 +58,8 @@ test.describe
         throw new Error('Failed to load page');
       }
 
-      let request = response.request();
+  // Playwright Request object (not Fetch API Request); type as any for chain tracing.
+  let request: any = response.request();
 
       const chain = [];
 

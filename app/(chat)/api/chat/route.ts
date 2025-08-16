@@ -105,9 +105,19 @@ export async function POST(request: Request) {
     const chat = await getChatById({ id });
 
     if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
+      // Derive a simple title from the first text part of the initial user message.
+      const textFromParts = message.parts
+        .map((p: any) => {
+          if (typeof p === 'string') return p; // unlikely
+            // Common shapes: { type: 'text', text: string } OR data events with { type: 'data-textDelta', data: { textDelta: string } }
+          if (p.type === 'text' && typeof p.text === 'string') return p.text;
+          if (p.type === 'data-textDelta' && typeof p.data?.textDelta === 'string') return p.data.textDelta;
+          return '';
+        })
+        .join(' ')
+        .trim();
+      const derivedTitle = textFromParts.slice(0, 60) || 'New Chat';
+      const title = derivedTitle;
 
       await saveChat({
         id,
@@ -222,6 +232,8 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+  console.error('Unhandled chat POST error', error);
+  return new ChatSDKError('bad_request:api').toResponse();
   }
 }
 
