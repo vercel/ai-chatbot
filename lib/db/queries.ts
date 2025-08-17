@@ -150,7 +150,7 @@ export async function getChatsByUserId({
     const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
-      getDb()
+      db
         .select()
         .from(chat)
         .where(
@@ -729,7 +729,7 @@ export async function upsertModelSettings({
   maxTier?: 'low' | 'medium' | 'high' | 'premium';
 }) {
   try {
-    const existing = await getModelSettings(modelId);
+    const existing = await getModelSettings(modelId) as any;
     
     if (existing) {
       // Update existing settings
