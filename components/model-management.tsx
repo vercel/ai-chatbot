@@ -165,7 +165,7 @@ export function ModelManagement() {
                       {editingModel === model.id ? (
                         <Input
                           value={tempSettings.customName}
-                          onChange={(e) => setTempSettings(prev => ({ ...prev, customName: e.target.value }))}
+                          onChange={(e) => setTempSettings((prev: any) => ({ ...prev, customName: e.target.value }))}
                           placeholder={model.name}
                           className="h-8"
                         />
@@ -177,7 +177,7 @@ export function ModelManagement() {
                       {editingModel === model.id ? (
                         <Input
                           value={tempSettings.customDescription}
-                          onChange={(e) => setTempSettings(prev => ({ ...prev, customDescription: e.target.value }))}
+                          onChange={(e) => setTempSettings((prev: any) => ({ ...prev, customDescription: e.target.value }))}
                           placeholder={model.description}
                           className="h-6 text-xs"
                         />
@@ -200,7 +200,7 @@ export function ModelManagement() {
                   {editingModel === model.id ? (
                     <Select
                       value={tempSettings.maxTier}
-                      onValueChange={(value) => setTempSettings(prev => ({ ...prev, maxTier: value }))}
+                      onValueChange={(value) => setTempSettings((prev: any) => ({ ...prev, maxTier: value }))}
                     >
                       <SelectTrigger className="w-24">
                         <SelectValue />
@@ -239,7 +239,7 @@ export function ModelManagement() {
                       <Label className="text-xs">Hidden:</Label>
                       <Switch
                         checked={tempSettings.isHidden}
-                        onCheckedChange={(checked) => setTempSettings(prev => ({ ...prev, isHidden: checked }))}
+                        onCheckedChange={(checked) => setTempSettings((prev: any) => ({ ...prev, isHidden: checked }))}
                       />
                     </div>
                   ) : (
@@ -281,7 +281,7 @@ export function ModelManagement() {
       <div className="text-xs text-muted-foreground space-y-1">
         <p><strong>Tips:</strong></p>
         <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Disabled models won't appear in the model selector for any users</li>
+          <li>Disabled models won&apos;t appear in the model selector for any users</li>
           <li>Hidden models are available but not prominently displayed</li>
           <li>Custom names and descriptions override the defaults</li>
           <li>Max tier restricts which user types can access the model</li>

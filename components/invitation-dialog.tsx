@@ -78,7 +78,7 @@ export function InvitationDialog() {
         <DialogHeader>
           <DialogTitle>Send Invitation</DialogTitle>
           <DialogDescription>
-            Invite someone to join the platform. They'll receive an invitation link via email.
+            Invite someone to join the platform. They&apos;ll receive an invitation link via email.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

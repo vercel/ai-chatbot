@@ -67,14 +67,6 @@ const createProviderModel = (modelId: string, provider: ModelProvider) => {
         throw new Error('OpenAI provider is not configured');
       }
       
-      // Special configuration for reasoning models
-      const isReasoningModel = modelId.startsWith('o3') || modelId.startsWith('o4-');
-      if (isReasoningModel) {
-        return openai(modelId, {
-          structuredOutputs: false, // Reasoning models may have limitations
-        });
-      }
-      
       return openai(modelId);
       
     case 'anthropic':

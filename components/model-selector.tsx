@@ -74,7 +74,7 @@ export function ModelSelector({
     console.log(`\n🎯 Model Selector Debug:`);
     console.log(`📊 Models from API: ${availableModels.length}`);
     console.log(`⏳ Providers loading: ${providersLoading}`);
-    console.log(`🏭 Configured providers:`, Object.keys(providers).filter(p => providers[p]));
+    console.log(`🏭 Configured providers:`, Object.keys(providers).filter(p => (providers as any)[p]));
     console.log(`✅ Final available models: ${availableChatModels.length}`);
     console.log(`📝 Available model names: ${availableChatModels.map(m => m.name).join(', ')}`);
   }

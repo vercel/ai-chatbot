@@ -29,7 +29,7 @@ export async function GET() {
 
     // Get all model settings from database
     const dbSettings = await getModelSettings();
-    const settingsMap = new Map(dbSettings?.map(s => [s.modelId, s]) || []);
+    const settingsMap = new Map(Array.isArray(dbSettings) ? dbSettings.map((s: any) => [s.modelId, s]) : []);
 
     // Combine with actual model definitions
     const modelsWithSettings = allModels.map(model => ({

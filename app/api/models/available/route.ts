@@ -22,14 +22,14 @@ export async function GET() {
 
     // Get admin model settings
     const dbSettings = await getModelSettings();
-    const settingsMap = new Map(dbSettings?.map(s => [s.modelId, s]) || []);
+    const settingsMap = new Map(Array.isArray(dbSettings) ? dbSettings.map((s: any) => [s.modelId, s]) : []);
 
     // Filter models based on:
     // 1. User tier access (admins bypass this)
     // 2. Admin enabled/disabled status
     // 3. Admin tier restrictions (admins bypass this unless explicitly set)
     const availableModels = allModels.filter(model => {
-      const settings = settingsMap.get(model.id);
+      const settings = settingsMap.get(model.id) as any;
       
       // Check if admin has disabled this model
       if (settings?.isEnabled === false) {
@@ -55,7 +55,7 @@ export async function GET() {
 
       return true;
     }).map(model => {
-      const settings = settingsMap.get(model.id);
+      const settings = settingsMap.get(model.id) as any;
       
       // Apply admin customizations
       return {

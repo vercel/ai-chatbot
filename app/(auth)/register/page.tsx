@@ -107,7 +107,7 @@ export default function Page() {
           ) : isValidToken ? (
             <>
               <p className="text-sm text-gray-500 dark:text-zinc-400">
-                You've been invited! Create your account below.
+                You&apos;ve been invited! Create your account below.
               </p>
               <p className="text-xs text-green-600 dark:text-green-400">
                 Invitation for: {email}
