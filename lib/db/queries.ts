@@ -389,7 +389,7 @@ export async function saveMessages({
     // Use Supabase client in production
     if (shouldUseSupabaseClient()) {
       const { data, error } = await supabase
-        .from('Message')
+        .from('Message_v2')
         .insert(messages)
         .select();
       
@@ -413,7 +413,7 @@ export async function getMessagesByChatId({ id }: { id: string }) {
     // Use Supabase client in production
     if (shouldUseSupabaseClient()) {
       const { data, error } = await supabase
-        .from('Message')
+        .from('Message_v2')
         .select('*')
         .eq('chatId', id)
         .order('createdAt', { ascending: true });
@@ -707,7 +707,7 @@ export async function getMessageCountByUserId({
 
       // Then count messages in those chats
       const { count, error } = await supabase
-        .from('Message')
+        .from('Message_v2')
         .select('*', { count: 'exact', head: true })
         .in('chatId', chatIds)
         .eq('role', 'user')
