@@ -4,6 +4,7 @@ import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import Cookies from 'js-cookie';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
@@ -49,6 +50,25 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
+  const [currentChatModel, setCurrentChatModel] = useState(initialChatModel);
+
+  // Watch for changes to the chat model cookie
+  useEffect(() => {
+    const checkChatModel = () => {
+      const modelFromCookie = Cookies.get('chat-model');
+      if (modelFromCookie && modelFromCookie !== currentChatModel) {
+        setCurrentChatModel(modelFromCookie);
+      }
+    };
+
+    // Check immediately
+    checkChatModel();
+
+    // Set up an interval to periodically check for changes
+    const interval = setInterval(checkChatModel, 100);
+
+    return () => clearInterval(interval);
+  }, [currentChatModel]);
 
   const {
     messages,
@@ -71,7 +91,7 @@ export function Chat({
           body: {
             id,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
+            selectedChatModel: currentChatModel,
             selectedVisibilityType: visibilityType,
             ...body,
           },
@@ -131,7 +151,7 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
+          selectedModelId={currentChatModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
@@ -146,7 +166,7 @@ export function Chat({
           regenerate={regenerate}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
-          modelId={initialChatModel}
+          modelId={currentChatModel}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
