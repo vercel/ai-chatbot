@@ -37,6 +37,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import { supabase, useSupabaseClient } from './supabase';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -48,6 +49,25 @@ const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
+    // Use Supabase client in production
+    if (useSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('User')
+        .select('*')
+        .eq('email', email);
+      
+      if (error) {
+        console.error('[getUser] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get user by email',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
     throw new ChatSDKError(
@@ -65,6 +85,26 @@ export async function createUser(
   const hashedPassword = generateHashedPassword(password);
 
   try {
+    // Use Supabase client in production
+    if (useSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('User')
+        .insert({
+          email,
+          password: hashedPassword,
+          invitedBy: invitedBy || null,
+        })
+        .select();
+      
+      if (error) {
+        console.error('[createUser] Supabase error:', error);
+        throw new ChatSDKError('bad_request:database', 'Failed to create user');
+      }
+      
+      return data;
+    }
+    
+    // Use direct connection in development
     return await db.insert(user).values({ 
       email, 
       password: hashedPassword,
@@ -80,6 +120,25 @@ export async function createGuestUser() {
   const password = generateHashedPassword(generateUUID());
 
   try {
+    // Use Supabase client in production
+    if (useSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('User')
+        .insert({ email, password })
+        .select('id, email');
+      
+      if (error) {
+        console.error('[createGuestUser] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to create guest user',
+        );
+      }
+      
+      return data;
+    }
+    
+    // Use direct connection in development
     return await db.insert(user).values({ email, password }).returning({
       id: user.id,
       email: user.email,
