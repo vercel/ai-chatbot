@@ -6,6 +6,7 @@ import {
   isUserAdmin,
   updateInvitationStatus,
 } from '@/lib/db/queries';
+import { sendInvitationEmail } from '@/lib/email';
 
 // GET /api/invitations - Get invitations created by current user
 export async function GET() {
@@ -67,13 +68,31 @@ export async function POST(request: Request) {
       expiresInDays: expiresInDays || 7,
     });
 
-    // TODO: Send invitation email here
-    // For now, we'll return the invitation token in the response
-    // In production, this should be sent via email only
+    // Send invitation email
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4004'}/register?token=${invitation.token}`;
+    
+    const emailResult = await sendInvitationEmail({
+      to: email,
+      inviteUrl,
+      inviterName: session.user.email || 'Measurelab Admin',
+      expiresAt: new Date(invitation.expiresAt),
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send invitation email:', emailResult.error);
+      // Still return success since invitation was created, but include warning
+      return NextResponse.json({
+        invitation,
+        inviteUrl, // Include URL for development/testing
+        warning: 'Invitation created but email could not be sent. Please configure email service.',
+      });
+    }
 
     return NextResponse.json({
       invitation,
-      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4004'}/register?token=${invitation.token}`,
+      emailSent: true,
+      // Only include inviteUrl in development
+      ...(process.env.NODE_ENV === 'development' && { inviteUrl }),
     });
   } catch (error) {
     console.error('Failed to create invitation:', error);
