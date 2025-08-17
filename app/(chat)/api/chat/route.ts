@@ -291,6 +291,9 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    
+    console.error('Unhandled error in chat API:', error);
+    return new ChatSDKError('internal_server_error:chat').toResponse();
   }
 }
 
