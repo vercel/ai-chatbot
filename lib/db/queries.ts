@@ -37,7 +37,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import { supabase, useSupabaseClient } from './supabase';
+import { supabase, shouldUseSupabaseClient } from './supabase';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -50,7 +50,7 @@ const db = drizzle(client);
 export async function getUser(email: string): Promise<Array<User>> {
   try {
     // Use Supabase client in production
-    if (useSupabaseClient()) {
+    if (shouldUseSupabaseClient()) {
       const { data, error } = await supabase
         .from('User')
         .select('*')
@@ -86,7 +86,7 @@ export async function createUser(
 
   try {
     // Use Supabase client in production
-    if (useSupabaseClient()) {
+    if (shouldUseSupabaseClient()) {
       const { data, error } = await supabase
         .from('User')
         .insert({
@@ -121,7 +121,7 @@ export async function createGuestUser() {
 
   try {
     // Use Supabase client in production
-    if (useSupabaseClient()) {
+    if (shouldUseSupabaseClient()) {
       const { data, error } = await supabase
         .from('User')
         .insert({ email, password })

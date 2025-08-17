@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 // Helper to check if we should use Supabase client
-export const useSupabaseClient = () => {
+export const shouldUseSupabaseClient = () => {
   // Use Supabase client in production or when direct connection fails
   return process.env.NODE_ENV === 'production' || process.env.USE_SUPABASE_CLIENT === 'true';
 };
