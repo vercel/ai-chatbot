@@ -163,6 +163,28 @@ export async function saveChat({
   visibility: VisibilityType;
 }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Chat')
+        .insert({
+          id,
+          createdAt: new Date().toISOString(),
+          userId,
+          title,
+          visibility,
+        })
+        .select();
+      
+      if (error) {
+        console.error('[saveChat] Supabase error:', error);
+        throw new ChatSDKError('bad_request:database', 'Failed to save chat');
+      }
+      
+      return data;
+    }
+    
+    // Use direct connection in development
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
@@ -206,6 +228,68 @@ export async function getChatsByUserId({
   endingBefore: string | null;
 }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const extendedLimit = limit + 1;
+      let query = supabase
+        .from('Chat')
+        .select('*')
+        .eq('userId', id)
+        .order('createdAt', { ascending: false })
+        .limit(extendedLimit);
+
+      if (startingAfter) {
+        const { data: selectedChat } = await supabase
+          .from('Chat')
+          .select('*')
+          .eq('id', startingAfter)
+          .single();
+
+        if (!selectedChat) {
+          throw new ChatSDKError(
+            'not_found:database',
+            `Chat with id ${startingAfter} not found`,
+          );
+        }
+
+        query = query.gt('createdAt', selectedChat.createdAt);
+      } else if (endingBefore) {
+        const { data: selectedChat } = await supabase
+          .from('Chat')
+          .select('*')
+          .eq('id', endingBefore)
+          .single();
+
+        if (!selectedChat) {
+          throw new ChatSDKError(
+            'not_found:database',
+            `Chat with id ${endingBefore} not found`,
+          );
+        }
+
+        query = query.lt('createdAt', selectedChat.createdAt);
+      }
+
+      const { data: filteredChats, error } = await query;
+
+      if (error) {
+        console.error('[getChatsByUserId] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get chats by user id',
+        );
+      }
+
+      const chats = filteredChats || [];
+      const hasMore = chats.length > limit;
+
+      return {
+        chats: hasMore ? chats.slice(0, limit) : chats,
+        hasMore,
+      };
+    }
+
+    // Use direct connection in development
     const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
@@ -272,6 +356,23 @@ export async function getChatsByUserId({
 
 export async function getChatById({ id }: { id: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Chat')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('[getChatById] Supabase error:', error);
+        throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
+      }
+      
+      return data || undefined;
+    }
+    
+    // Use direct connection in development
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
     return selectedChat;
   } catch (error) {
@@ -715,6 +816,26 @@ export async function updateInvitationStatus(
 
 export async function isUserAdmin(userId: string): Promise<boolean> {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('User')
+        .select('isAdmin')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('[isUserAdmin] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to check admin status',
+        );
+      }
+      
+      return data?.isAdmin ?? false;
+    }
+    
+    // Use direct connection in development
     const [userRecord] = await db
       .select({ isAdmin: user.isAdmin })
       .from(user)
@@ -731,6 +852,25 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
 
 export async function getAllUsers() {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('User')
+        .select('id, email, isAdmin, createdAt, invitedBy')
+        .order('createdAt', { ascending: false });
+      
+      if (error) {
+        console.error('[getAllUsers] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get all users',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     return await db
       .select({
         id: user.id,
