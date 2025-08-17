@@ -199,6 +199,31 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      // Delete related records first
+      await supabase.from('Vote_v2').delete().eq('chatId', id);
+      await supabase.from('Message_v2').delete().eq('chatId', id);
+      await supabase.from('Stream').delete().eq('chatId', id);
+
+      const { data, error } = await supabase
+        .from('Chat')
+        .delete()
+        .eq('id', id)
+        .select();
+      
+      if (error) {
+        console.error('[deleteChatById] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to delete chat by id',
+        );
+      }
+      
+      return data?.[0];
+    }
+    
+    // Use direct connection in development
     await db.delete(vote).where(eq(vote.chatId, id));
     await db.delete(message).where(eq(message.chatId, id));
     await db.delete(stream).where(eq(stream.chatId, id));
@@ -453,6 +478,50 @@ export async function voteMessage({
   type: 'up' | 'down';
 }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data: existingVotes, error: selectError } = await supabase
+        .from('Vote_v2')
+        .select('*')
+        .eq('messageId', messageId);
+      
+      if (selectError) {
+        console.error('[voteMessage] Supabase select error:', selectError);
+        throw new ChatSDKError('bad_request:database', 'Failed to vote message');
+      }
+
+      if (existingVotes && existingVotes.length > 0) {
+        const { error: updateError } = await supabase
+          .from('Vote_v2')
+          .update({ isUpvoted: type === 'up' })
+          .eq('messageId', messageId)
+          .eq('chatId', chatId);
+        
+        if (updateError) {
+          console.error('[voteMessage] Supabase update error:', updateError);
+          throw new ChatSDKError('bad_request:database', 'Failed to vote message');
+        }
+        
+        return;
+      }
+      
+      const { error: insertError } = await supabase
+        .from('Vote_v2')
+        .insert({
+          chatId,
+          messageId,
+          isUpvoted: type === 'up',
+        });
+      
+      if (insertError) {
+        console.error('[voteMessage] Supabase insert error:', insertError);
+        throw new ChatSDKError('bad_request:database', 'Failed to vote message');
+      }
+      
+      return;
+    }
+    
+    // Use direct connection in development
     const [existingVote] = await db
       .select()
       .from(vote)
@@ -476,6 +545,25 @@ export async function voteMessage({
 
 export async function getVotesByChatId({ id }: { id: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Vote_v2')
+        .select('*')
+        .eq('chatId', id);
+      
+      if (error) {
+        console.error('[getVotesByChatId] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get votes by chat id',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     return await db.select().from(vote).where(eq(vote.chatId, id));
   } catch (error) {
     throw new ChatSDKError(
@@ -756,6 +844,28 @@ export async function createStreamId({
   chatId: string;
 }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { error } = await supabase
+        .from('Stream')
+        .insert({
+          id: streamId,
+          chatId,
+          createdAt: new Date().toISOString(),
+        });
+      
+      if (error) {
+        console.error('[createStreamId] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to create stream id',
+        );
+      }
+      
+      return;
+    }
+    
+    // Use direct connection in development
     await db
       .insert(stream)
       .values({ id: streamId, chatId, createdAt: new Date() });
@@ -769,6 +879,26 @@ export async function createStreamId({
 
 export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Stream')
+        .select('id')
+        .eq('chatId', chatId)
+        .order('createdAt', { ascending: true });
+      
+      if (error) {
+        console.error('[getStreamIdsByChatId] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get stream ids by chat id',
+        );
+      }
+      
+      return (data || []).map(({ id }) => id);
+    }
+    
+    // Use direct connection in development
     const streamIds = await db
       .select({ id: stream.id })
       .from(stream)
