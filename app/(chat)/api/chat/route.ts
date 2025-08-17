@@ -254,25 +254,63 @@ export async function POST(request: Request) {
       onError: (error) => {
         console.error(`❌ Stream error for ${selectedChatModel}:`, error);
         
-        // Handle specific Anthropic errors
         if (error && typeof error === 'object' && 'message' in error) {
           const errorMessage = error.message;
           if (typeof errorMessage === 'string') {
+            // Handle OpenAI organization verification errors
+            if (errorMessage.includes('organization must be verified')) {
+              return `🔒 The ${selectedChatModel} model requires organization verification. Please visit https://platform.openai.com/settings/organization/general to verify your OpenAI organization. Verification can take up to 15 minutes to propagate. In the meantime, try using a different model like GPT-4o or Claude 3.5 Sonnet.`;
+            }
+            
+            // Handle OpenAI access/permission errors
+            if (errorMessage.includes('does not have access') || errorMessage.includes('not available')) {
+              return `🚫 Access denied to ${selectedChatModel}. This model may require special permissions or may not be available in your region. Please try a different model like GPT-4o or Claude 3.5 Sonnet.`;
+            }
+            
+            // Handle quota/billing errors
+            if (errorMessage.includes('quota') || errorMessage.includes('billing') || errorMessage.includes('usage limit')) {
+              return `💳 Usage limit reached for ${selectedChatModel}. Please check your OpenAI billing settings or try a different model.`;
+            }
+            
+            // Handle rate limiting
+            if (errorMessage.includes('rate limit') || errorMessage.includes('too many requests')) {
+              return `⏱️ Rate limit reached for ${selectedChatModel}. Please wait a moment before sending another message, or switch to a different model.`;
+            }
+            
+            // Handle API key issues
+            if (errorMessage.includes('api key') || errorMessage.includes('authentication') || errorMessage.includes('unauthorized')) {
+              return `🔑 Authentication issue with ${selectedChatModel}. Please contact support if this persists.`;
+            }
+            
+            // Handle specific Anthropic errors (JSON format)
             try {
               const parsedError = JSON.parse(errorMessage);
               if (parsedError.type === 'overloaded_error') {
-                return `Sorry, the ${selectedChatModel} model is currently overloaded. Please try again in a few moments, or switch to a different model like Claude 3.5 Sonnet.`;
+                return `🔄 The ${selectedChatModel} model is currently overloaded. Please try again in a few moments, or switch to a different model like Claude 3.5 Sonnet.`;
               }
               if (parsedError.type === 'rate_limit_error') {
-                return `Rate limit reached for ${selectedChatModel}. Please wait a moment before sending another message.`;
+                return `⏱️ Rate limit reached for ${selectedChatModel}. Please wait a moment before sending another message.`;
+              }
+              if (parsedError.type === 'invalid_request_error') {
+                return `❌ Invalid request for ${selectedChatModel}. Please try rephrasing your message or switch to a different model.`;
               }
             } catch {
-              // If parsing fails, fall through to generic error
+              // If parsing fails, fall through to check for other patterns
+            }
+            
+            // Handle model-specific availability
+            if (errorMessage.includes('model') && (errorMessage.includes('not found') || errorMessage.includes('unavailable'))) {
+              return `🤖 The ${selectedChatModel} model is currently unavailable. Please try a different model like GPT-4o or Claude 3.5 Sonnet.`;
+            }
+            
+            // Handle network/connectivity issues
+            if (errorMessage.includes('network') || errorMessage.includes('timeout') || errorMessage.includes('connection')) {
+              return `🌐 Network connectivity issue. Please check your internet connection and try again.`;
             }
           }
         }
         
-        return 'Oops, an error occurred! Please try again or switch to a different model.';
+        return `❌ Something went wrong with ${selectedChatModel}. Please try again or switch to a different model like GPT-4o or Claude 3.5 Sonnet.`;
       },
     });
 

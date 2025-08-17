@@ -605,6 +605,26 @@ export async function saveDocument({
 
 export async function getDocumentsById({ id }: { id: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Document')
+        .select('*')
+        .eq('id', id)
+        .order('createdAt', { ascending: true });
+      
+      if (error) {
+        console.error('[getDocumentsById] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get documents by id',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     const documents = await db
       .select()
       .from(document)
@@ -622,6 +642,28 @@ export async function getDocumentsById({ id }: { id: string }) {
 
 export async function getDocumentById({ id }: { id: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Document')
+        .select('*')
+        .eq('id', id)
+        .order('createdAt', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('[getDocumentById] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get document by id',
+        );
+      }
+      
+      return data || undefined;
+    }
+    
+    // Use direct connection in development
     const [selectedDocument] = await db
       .select()
       .from(document)

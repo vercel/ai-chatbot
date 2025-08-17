@@ -12,7 +12,7 @@ import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useArtifactSelector, useArtifact, initialArtifactData } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -48,6 +48,13 @@ export function Chat({
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
+  const { setArtifact } = useArtifact();
+
+  // Clear data stream and artifact when chat ID changes
+  useEffect(() => {
+    setDataStream([]);
+    setArtifact(initialArtifactData);
+  }, [id, setDataStream, setArtifact]);
 
   const [input, setInput] = useState<string>('');
   const [currentChatModel, setCurrentChatModel] = useState(initialChatModel);
@@ -105,11 +112,34 @@ export function Chat({
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
+      console.error('[Chat] Error occurred:', error);
+      
       if (error instanceof ChatSDKError) {
         toast({
           type: 'error',
           description: error.message,
         });
+      } else {
+        // Handle other error types and show them as messages
+        const errorMessage = error?.message || 'An unexpected error occurred';
+        
+        toast({
+          type: 'error',
+          description: errorMessage,
+        });
+        
+        // Also add error as a system message in the chat
+        const errorSystemMessage = {
+          id: generateUUID(),
+          role: 'assistant' as const,
+          parts: [{ 
+            type: 'text' as const, 
+            text: errorMessage
+          }],
+          createdAt: new Date(),
+        };
+        
+        setMessages(prevMessages => [...prevMessages, errorSystemMessage]);
       }
     },
   });
