@@ -293,7 +293,7 @@ export async function POST(request: Request) {
     }
     
     console.error('Unhandled error in chat API:', error);
-    return new ChatSDKError('internal_server_error:chat').toResponse();
+    return new ChatSDKError('offline:chat').toResponse();
   }
 }
 
