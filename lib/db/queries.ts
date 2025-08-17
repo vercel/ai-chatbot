@@ -386,6 +386,22 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Message')
+        .insert(messages)
+        .select();
+      
+      if (error) {
+        console.error('[saveMessages] Supabase error:', error);
+        throw new ChatSDKError('bad_request:database', 'Failed to save messages');
+      }
+      
+      return data;
+    }
+    
+    // Use direct connection in development
     return await db.insert(message).values(messages);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save messages');
@@ -394,6 +410,26 @@ export async function saveMessages({
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Message')
+        .select('*')
+        .eq('chatId', id)
+        .order('createdAt', { ascending: true });
+      
+      if (error) {
+        console.error('[getMessagesByChatId] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get messages by chat id',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     return await db
       .select()
       .from(message)
@@ -646,6 +682,46 @@ export async function getMessageCountByUserId({
   differenceInHours,
 }: { id: string; differenceInHours: number }) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const twentyFourHoursAgo = new Date(
+        Date.now() - differenceInHours * 60 * 60 * 1000,
+      );
+
+      // First get chats for the user
+      const { data: chats, error: chatsError } = await supabase
+        .from('Chat')
+        .select('id')
+        .eq('userId', id);
+
+      if (chatsError) {
+        console.error('[getMessageCountByUserId] Error fetching chats:', chatsError);
+        return 0; // Don't block usage on error
+      }
+
+      if (!chats || chats.length === 0) {
+        return 0;
+      }
+
+      const chatIds = chats.map(c => c.id);
+
+      // Then count messages in those chats
+      const { count, error } = await supabase
+        .from('Message')
+        .select('*', { count: 'exact', head: true })
+        .in('chatId', chatIds)
+        .eq('role', 'user')
+        .gte('createdAt', twentyFourHoursAgo.toISOString());
+
+      if (error) {
+        console.error('[getMessageCountByUserId] Supabase error:', error);
+        return 0; // Don't block usage on error
+      }
+
+      return count || 0;
+    }
+
+    // Use direct connection in development
     const twentyFourHoursAgo = new Date(
       Date.now() - differenceInHours * 60 * 60 * 1000,
     );
@@ -745,6 +821,26 @@ export async function createInvitation({
 
 export async function getInvitationByToken(token: string) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Invitation')
+        .select('*')
+        .eq('token', token)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('[getInvitationByToken] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get invitation by token',
+        );
+      }
+      
+      return data || undefined;
+    }
+    
+    // Use direct connection in development
     const [invite] = await db
       .select()
       .from(invitation)
@@ -794,6 +890,32 @@ export async function updateInvitationStatus(
   status: 'accepted' | 'expired' | 'revoked',
 ) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const updates: any = { status };
+      if (status === 'accepted') {
+        updates.acceptedAt = new Date().toISOString();
+      }
+
+      const { data, error } = await supabase
+        .from('Invitation')
+        .update(updates)
+        .eq('token', token)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('[updateInvitationStatus] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to update invitation status',
+        );
+      }
+      
+      return data;
+    }
+    
+    // Use direct connection in development
     const updates: any = { status };
     if (status === 'accepted') {
       updates.acceptedAt = new Date();
