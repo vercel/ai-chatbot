@@ -972,6 +972,31 @@ export async function createInvitation({
   expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Invitation')
+        .insert({
+          email,
+          invitedBy,
+          token,
+          expiresAt: expiresAt.toISOString(),
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('[createInvitation] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to create invitation',
+        );
+      }
+      
+      return data;
+    }
+    
+    // Use direct connection in development
     const [newInvitation] = await db
       .insert(invitation)
       .values({
@@ -1029,6 +1054,26 @@ export async function getInvitationByToken(token: string) {
 
 export async function getInvitationsByEmail(email: string) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Invitation')
+        .select('*')
+        .eq('email', email)
+        .order('createdAt', { ascending: false });
+      
+      if (error) {
+        console.error('[getInvitationsByEmail] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get invitations by email',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     return await db
       .select()
       .from(invitation)
@@ -1044,6 +1089,26 @@ export async function getInvitationsByEmail(email: string) {
 
 export async function getInvitationsByInviter(inviterId: string) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      const { data, error } = await supabase
+        .from('Invitation')
+        .select('*')
+        .eq('invitedBy', inviterId)
+        .order('createdAt', { ascending: false });
+      
+      if (error) {
+        console.error('[getInvitationsByInviter] Supabase error:', error);
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get invitations by inviter',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     return await db
       .select()
       .from(invitation)
