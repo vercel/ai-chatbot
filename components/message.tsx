@@ -2,6 +2,7 @@
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
+import * as React from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -20,6 +21,7 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { allModels } from '@/lib/ai/models';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
@@ -338,15 +340,29 @@ export const PreviewMessage = memo(
   },
 );
 
-export const ThinkingMessage = () => {
+export const ThinkingMessage = ({ modelId }: { modelId?: string }) => {
   const role = 'assistant';
+  const [dots, setDots] = useState('');
+
+  // Animate dots for thinking indicator
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => prev.length >= 3 ? '' : prev + '.');
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Check if this is a thinking/reasoning model
+  const modelDef = modelId ? allModels.find(m => m.id === modelId) : null;
+  const isThinkingModel = modelDef?.capabilities.thinking === true;
+  const isReasoningModel = modelDef?.capabilities.reasoning === true;
 
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="w-full mx-auto max-w-3xl px-4 group/message min-h-96"
+      className="w-full mx-auto max-w-3xl px-4 group/message"
       initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
+      animate={{ y: 0, opacity: 1, transition: { delay: 0.1 } }}
       data-role={role}
     >
       <div
@@ -362,9 +378,40 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
+          <div className="flex items-center gap-2">
+            {isThinkingModel ? (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <div className="size-2 rounded-full bg-primary animate-pulse" />
+                  <div className="size-2 rounded-full bg-primary animate-pulse [animation-delay:0.2s]" />
+                  <div className="size-2 rounded-full bg-primary animate-pulse [animation-delay:0.4s]" />
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  Thinking deeply{dots}
+                </span>
+              </>
+            ) : isReasoningModel ? (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <div className="size-2 rounded-full bg-primary animate-pulse" />
+                  <div className="size-2 rounded-full bg-primary animate-pulse [animation-delay:0.2s]" />
+                  <div className="size-2 rounded-full bg-primary animate-pulse [animation-delay:0.4s]" />
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  Reasoning{dots}
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground animate-pulse">
+                Processing{dots}
+              </span>
+            )}
           </div>
+          {isThinkingModel && (
+            <p className="text-xs text-muted-foreground/70">
+              This may take a few moments as I work through the problem
+            </p>
+          )}
         </div>
       </div>
     </motion.div>

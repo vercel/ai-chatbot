@@ -143,6 +143,9 @@ export function ModelSelector({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[350px] max-h-[60vh] overflow-y-auto">
+        <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
+          <strong>Artifacts</strong> create code, documents & content in a side panel
+        </div>
         {Object.entries(modelsByProvider).map(([provider, models]) => (
           <div key={provider}>
             <DropdownMenuLabel className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -188,6 +191,20 @@ export function ModelSelector({
                             Thinking
                           </span>
                         )}
+                        {/* Show artifact availability based on chat API logic */}
+                        {(() => {
+                          // Match the exact logic from chat API
+                          const isModernReasoningModel = chatModel.id.startsWith('o3') || chatModel.id.startsWith('o4-');
+                          const isLegacyReasoningModel = chatModel.id === 'chat-model-reasoning';
+                          const hasThinkingCapability = chatModel.capabilities.thinking === true;
+                          const isReasoningModel = isLegacyReasoningModel || isModernReasoningModel || hasThinkingCapability;
+                          
+                          return !isReasoningModel && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300">
+                              Artifacts
+                            </span>
+                          );
+                        })()}
                         {chatModel.capabilities.audio && (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
                             Audio

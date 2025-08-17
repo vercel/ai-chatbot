@@ -253,7 +253,26 @@ export async function POST(request: Request) {
       },
       onError: (error) => {
         console.error(`❌ Stream error for ${selectedChatModel}:`, error);
-        return 'Oops, an error occurred!';
+        
+        // Handle specific Anthropic errors
+        if (error && typeof error === 'object' && 'message' in error) {
+          const errorMessage = error.message;
+          if (typeof errorMessage === 'string') {
+            try {
+              const parsedError = JSON.parse(errorMessage);
+              if (parsedError.type === 'overloaded_error') {
+                return `Sorry, the ${selectedChatModel} model is currently overloaded. Please try again in a few moments, or switch to a different model like Claude 3.5 Sonnet.`;
+              }
+              if (parsedError.type === 'rate_limit_error') {
+                return `Rate limit reached for ${selectedChatModel}. Please wait a moment before sending another message.`;
+              }
+            } catch {
+              // If parsing fails, fall through to generic error
+            }
+          }
+        }
+        
+        return 'Oops, an error occurred! Please try again or switch to a different model.';
       },
     });
 

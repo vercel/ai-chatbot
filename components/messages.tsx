@@ -18,6 +18,7 @@ interface MessagesProps {
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  modelId?: string;
 }
 
 function PureMessages({
@@ -28,6 +29,7 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
+  modelId,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -71,7 +73,7 @@ function PureMessages({
 
       {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage modelId={modelId} />}
 
       <motion.div
         ref={messagesEndRef}

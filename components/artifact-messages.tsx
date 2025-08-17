@@ -17,6 +17,7 @@ interface ArtifactMessagesProps {
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
+  modelId?: string;
 }
 
 function PureArtifactMessages({
@@ -27,6 +28,7 @@ function PureArtifactMessages({
   setMessages,
   regenerate,
   isReadonly,
+  modelId,
 }: ArtifactMessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -66,7 +68,7 @@ function PureArtifactMessages({
 
       {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages[messages.length - 1].role === 'user' && <ThinkingMessage modelId={modelId} />}
 
       <motion.div
         ref={messagesEndRef}

@@ -67,6 +67,7 @@ function PureArtifact({
   votes,
   isReadonly,
   selectedVisibilityType,
+  modelId,
 }: {
   chatId: string;
   input: string;
@@ -82,6 +83,7 @@ function PureArtifact({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
+  modelId?: string;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -320,6 +322,7 @@ function PureArtifact({
                   regenerate={regenerate}
                   isReadonly={isReadonly}
                   artifactStatus={artifact.status}
+                  modelId={modelId}
                 />
 
                 <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
