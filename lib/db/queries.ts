@@ -892,6 +892,47 @@ export async function getAllUsers() {
 // Model settings queries
 export async function getModelSettings(modelId?: string) {
   try {
+    // Use Supabase client in production
+    if (shouldUseSupabaseClient()) {
+      if (modelId) {
+        const { data, error } = await supabase
+          .from('ModelSettings')
+          .select('*')
+          .eq('modelId', modelId)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+          console.error('[getModelSettings] Supabase error:', error);
+          throw new ChatSDKError(
+            'bad_request:database',
+            'Failed to get model settings',
+          );
+        }
+        
+        return data || undefined;
+      }
+      
+      const { data, error } = await supabase
+        .from('ModelSettings')
+        .select('*')
+        .order('modelId', { ascending: true });
+      
+      if (error) {
+        console.error('[getModelSettings] Supabase error:', error);
+        // Don't throw error for missing table, just return empty array
+        if (error.code === 'PGRST204' || error.code === '42P01') {
+          return [];
+        }
+        throw new ChatSDKError(
+          'bad_request:database',
+          'Failed to get model settings',
+        );
+      }
+      
+      return data || [];
+    }
+    
+    // Use direct connection in development
     if (modelId) {
       const [settings] = await db
         .select()
