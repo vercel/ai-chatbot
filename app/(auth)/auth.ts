@@ -1,4 +1,4 @@
-import { compare } from 'bcrypt-ts';
+import { compare } from 'bcryptjs';
 import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { createGuestUser, getUser } from '@/lib/db/queries';
@@ -44,25 +44,45 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
-        const users = await getUser(email);
+        console.log('[AUTH] Starting authorization for email:', email);
+        console.log('[AUTH] Environment:', process.env.NODE_ENV);
+        
+        try {
+          const users = await getUser(email);
+          console.log('[AUTH] Users found:', users.length);
 
-        if (users.length === 0) {
-          await compare(password, DUMMY_PASSWORD);
+          if (users.length === 0) {
+            console.log('[AUTH] No user found, running dummy password comparison');
+            await compare(password, DUMMY_PASSWORD);
+            return null;
+          }
+
+          const [user] = users;
+          console.log('[AUTH] User found - ID:', user.id, 'Has password:', !!user.password);
+
+          if (!user.password) {
+            console.log('[AUTH] User has no password, running dummy comparison');
+            await compare(password, DUMMY_PASSWORD);
+            return null;
+          }
+
+          console.log('[AUTH] Starting password comparison');
+          console.log('[AUTH] Password hash preview:', user.password.substring(0, 10) + '...');
+          
+          const passwordsMatch = await compare(password, user.password);
+          console.log('[AUTH] Password comparison result:', passwordsMatch);
+
+          if (!passwordsMatch) {
+            console.log('[AUTH] Password mismatch, returning null');
+            return null;
+          }
+
+          console.log('[AUTH] Authentication successful');
+          return { ...user, type: 'regular', isAdmin: user.isAdmin };
+        } catch (error) {
+          console.error('[AUTH] Error during authorization:', error);
           return null;
         }
-
-        const [user] = users;
-
-        if (!user.password) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
-
-        const passwordsMatch = await compare(password, user.password);
-
-        if (!passwordsMatch) return null;
-
-        return { ...user, type: 'regular', isAdmin: user.isAdmin };
       },
     }),
   ],
