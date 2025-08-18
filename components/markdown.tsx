@@ -1,13 +1,8 @@
 import Link from 'next/link';
 import React, { memo } from 'react';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { CodeBlock } from './code-block';
+import { type Components } from 'react-markdown';
 
 const components: Partial<Components> = {
-  // @ts-expect-error
-  code: CodeBlock,
-  pre: ({ children }) => <>{children}</>,
   ol: ({ node, children, ...props }) => {
     return (
       <ol className="list-decimal list-outside ml-4" {...props}>
@@ -93,15 +88,9 @@ const components: Partial<Components> = {
   },
 };
 
-const remarkPlugins = [remarkGfm];
-
-const NonMemoizedMarkdown = ({ children }: { children: string }) => {
-  return (
-    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
-      {children}
-    </ReactMarkdown>
-  );
-};
+const NonMemoizedMarkdown = ({ children }: { children: string }) => (
+  <Streamdown>{children}</Streamdown>
+);
 
 export const Markdown = memo(
   NonMemoizedMarkdown,
