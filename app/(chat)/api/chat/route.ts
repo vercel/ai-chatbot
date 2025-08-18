@@ -52,7 +52,6 @@ import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 
-export const maxDuration = 60;
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
