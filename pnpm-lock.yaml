@@ -185,9 +185,6 @@ importers:
       redis:
         specifier: ^5.0.0
         version: 5.0.0
-      remark-gfm:
-        specifier: ^4.0.0
-        version: 4.0.1
       resumable-stream:
         specifier: ^2.0.0
         version: 2.0.0
