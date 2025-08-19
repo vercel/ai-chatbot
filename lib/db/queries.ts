@@ -452,7 +452,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   }
 }
 
-export async function updateChatVisiblityById({
+export async function updateChatVisibilityById({
   chatId,
   visibility,
 }: {
