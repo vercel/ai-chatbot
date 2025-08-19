@@ -195,8 +195,8 @@ importers:
         specifier: ^1.5.0
         version: 1.7.4(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
       streamdown:
-        specifier: ^1.0.10
-        version: 1.0.10(@types/react@18.3.18)(react@19.0.0-rc-45804af1-20241021)
+        specifier: ^1.0.11
+        version: 1.0.11(@types/react@18.3.18)(react@19.0.0-rc-45804af1-20241021)
       swr:
         specifier: ^2.2.5
         version: 2.3.3(react@19.0.0-rc-45804af1-20241021)
@@ -3730,8 +3730,8 @@ packages:
   stable-hash@0.0.4:
     resolution: {integrity: sha512-LjdcbuBeLcdETCrPn9i8AYAZ1eCtu4ECAWtP7UleOiZ9LzVxRzzUZEoZ8zB24nhkQnDWyET0I+3sWokSDS3E7g==}
 
-  streamdown@1.0.10:
-    resolution: {integrity: sha512-P8woE/IEAHyT1apPv5AcX7lgpBLbuNtUOOUXZz9dbau5JeDkBKkzpfxG0ev2RnzKBktIbQp+mqX7eCnBmLKQyw==}
+  streamdown@1.0.11:
+    resolution: {integrity: sha512-BbUuTNThosAXxmMpKtEIsuMKBIDYU51VXuolgLImre4hrV1FM1I1P7M0KLG7JSfEdpcWtIsUwiS37nSSjHn+bg==}
     peerDependencies:
       react: ^19.1.1
 
@@ -7820,7 +7820,7 @@ snapshots:
 
   stable-hash@0.0.4: {}
 
-  streamdown@1.0.10(@types/react@18.3.18)(react@19.0.0-rc-45804af1-20241021):
+  streamdown@1.0.11(@types/react@18.3.18)(react@19.0.0-rc-45804af1-20241021):
     dependencies:
       clsx: 2.1.1
       harden-react-markdown: 1.0.4(react-markdown@10.1.0(@types/react@18.3.18)(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
