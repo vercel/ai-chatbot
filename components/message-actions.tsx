@@ -67,7 +67,7 @@ export function PureMessageActions({
           <TooltipTrigger asChild>
             <Button
               data-testid="message-upvote"
-              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              className="py-1 px-2 h-fit text-muted-foreground pointer-events-auto!"
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
@@ -120,7 +120,7 @@ export function PureMessageActions({
           <TooltipTrigger asChild>
             <Button
               data-testid="message-downvote"
-              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              className="py-1 px-2 h-fit text-muted-foreground pointer-events-auto!"
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
