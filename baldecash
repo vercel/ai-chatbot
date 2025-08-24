@@ -1,0 +1,89 @@
+import React, { useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check, Cpu, Laptop, Gauge, Rocket, Sparkles } from "lucide-react";
+
+
+// --- Tip: This file renders live in ChatGPT. Export default a React component.
+// Tailwind is available. Keep UI crisp, mobile-first, and accessible.
+
+
+const USE_OPTIONS = [
+{ id: "ofimatica", label: "Ofimática / Navegación" },
+{ id: "programacion", label: "Programación / Código" },
+{ id: "diseno", label: "Diseño / Foto / Video" },
+{ id: "gaming", label: "Gaming ligero" },
+{ id: "datos", label: "Análisis de datos" },
+];
+
+
+const CAREERS = [
+"Ingeniería",
+"Diseño / Comunicación",
+"Negocios / Administración",
+"Medicina / Salud",
+"Derecho / Humanidades",
+"Otro",
+];
+
+
+const BUDGETS = [
+{ id: "bajo", label: "Ajustado (≤ S/1500)" },
+{ id: "medio", label: "Medio (S/1500–2500)" },
+{ id: "alto", label: "Holgado (≥ S/2500)" },
+];
+
+
+const PORTABILIDAD = [
+{ id: "alta", label: "Alta (≤ 1.5 kg / 13–14")" },
+{ id: "media", label: "Media (15.6")" },
+{ id: "indiferente", label: "Me da igual" },
+];
+
+
+// Demo catalog (fictitious but realistic). Prices are ranges to avoid staleness.
+const CATALOG = [
+{
+id: "lenovo-v15-g3-i3",
+name: "Lenovo V15 G3 (Core i3 12ª)",
+price: "S/1600–2000",
+cpu: "Intel Core i3-1215U",
+ram: 8,
+storage: 256,
+gpu: "integrada",
+screen: '15.6" FHD',
+weight: 1.7,
+battery: 7,
+os: "Windows",
+tags: ["ofimatica", "estudios"],
+},
+{
+id: "asus-vivobook-14-i5",
+name: "ASUS VivoBook 14 (Core i5 12ª)",
+price: "S/2000–2600",
+cpu: "Intel Core i5",
+ram: 16,
+storage: 512,
+gpu: "integrada",
+screen: '14" FHD',
+weight: 1.4,
+battery: 8,
+os: "Windows",
+tags: ["programacion", "portabilidad"],
+},
+{
+id: "hp-15-ryzen5",
+name: "HP 15 (Ryzen 5 5500U)",
+price: "S/1900–2400",
+cpu: "Ryzen 5 5500U",
+ram: 16,
+storage: 512,
+gpu: "integrada",
+screen: '15.6" FHD',
+weight: 1.6,
+battery: 8,
+os: "Windows",
+tags: ["programacion", "datos"],
+},
+{
+id: "acer-aspire-5-rtx2050",
