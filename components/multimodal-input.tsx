@@ -16,7 +16,8 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, StopIcon, WebIcon, ThinkIcon } from './icons';
+import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
@@ -28,6 +29,7 @@ import { ArrowDown } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
+import { Toggle } from "@/components/ui/toggle"
 
 function PureMultimodalInput({
   chatId,
@@ -58,6 +60,8 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const [isThinkEnabled, setIsThinkEnabled] = useState(false);
+  const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -111,6 +115,12 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
+    const selectedModel = isWebSearchEnabled
+      ? 'chat-model-web-search'
+      : isThinkEnabled
+      ? 'chat-model-reasoning'
+      : 'chat-model';
+
     sendMessage({
       role: 'user',
       parts: [
@@ -125,12 +135,19 @@ function PureMultimodalInput({
           text: input,
         },
       ],
+    }, {
+      body: {
+        selectedChatModel: selectedModel,
+      },
     });
 
     setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
     setInput('');
+    // Reset button states after sending message
+    setIsThinkEnabled(false);
+    setIsWebSearchEnabled(false);
 
     if (width && width > 768) {
       textareaRef.current?.focus();
@@ -144,6 +161,8 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+  isThinkEnabled,
+  isWebSearchEnabled,
   ]);
 
   const uploadFile = async (file: File) => {
@@ -279,7 +298,7 @@ function PureMultimodalInput({
       <Textarea
         data-testid="multimodal-input"
         ref={textareaRef}
-        placeholder="Send a message..."
+        placeholder="Ask anything"
         value={input}
         onChange={handleInput}
         className={cx(
@@ -306,7 +325,14 @@ function PureMultimodalInput({
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <AttachmentsButton 
+          fileInputRef={fileInputRef} 
+          status={status} 
+          isThinkEnabled={isThinkEnabled}
+          setIsThinkEnabled={setIsThinkEnabled}
+          isWebSearchEnabled={isWebSearchEnabled}
+          setIsWebSearchEnabled={setIsWebSearchEnabled}
+        />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -340,23 +366,83 @@ export const MultimodalInput = memo(
 function PureAttachmentsButton({
   fileInputRef,
   status,
+  isThinkEnabled,
+  setIsThinkEnabled,
+  isWebSearchEnabled,
+  setIsWebSearchEnabled,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers<ChatMessage>['status'];
+  isThinkEnabled: boolean;
+  setIsThinkEnabled: (enabled: boolean) => void;
+  isWebSearchEnabled: boolean;
+  setIsWebSearchEnabled: (enabled: boolean) => void;
 }) {
   return (
-    <Button
-      data-testid="attachments-button"
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={status !== 'ready'}
-      variant="ghost"
-    >
-      <PaperclipIcon size={14} />
-    </Button>
+    <div className="flex flex-row gap-1">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            data-testid="attachments-button"
+            className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+            onClick={(event) => {
+              event.preventDefault();
+              fileInputRef.current?.click();
+            }}
+            disabled={status !== 'ready'}
+            variant="ghost"
+          >
+            <PaperclipIcon size={14} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Attach file</TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Toggle
+            data-testid="web-button"
+            className={`rounded-md rounded-bl-lg p-[7px] h-8 min-w-8 dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 flex items-center justify-center ${
+              isWebSearchEnabled ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600' : ''
+            }`}
+            onClick={(event) => {
+              event.preventDefault();
+              if (isThinkEnabled) {
+                setIsThinkEnabled(false);
+              }
+              setIsWebSearchEnabled(!isWebSearchEnabled);
+            }}
+            disabled={status !== 'ready'}
+          >
+            <WebIcon size={14} />
+          </Toggle>
+        </TooltipTrigger>
+        <TooltipContent>Search web</TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Toggle
+            data-testid="think-button"
+            className={`rounded-md rounded-bl-lg p-[7px] h-8 min-w-8 dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 flex items-center justify-center gap-1 ${
+              isThinkEnabled ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600' : ''
+            }`}
+            onClick={(event) => {
+              event.preventDefault();
+              if (isWebSearchEnabled) {
+                setIsWebSearchEnabled(false);
+              }
+              setIsThinkEnabled(!isThinkEnabled);
+            }}
+            disabled={status !== 'ready'}
+          >
+            <span className="text-xs">Think</span>
+            <ThinkIcon size={14} />
+          </Toggle>
+        </TooltipTrigger>
+        <TooltipContent>Use advanced reasoning</TooltipContent>
+      </Tooltip>
+    </div>
   );
 }
 

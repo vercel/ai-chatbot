@@ -222,6 +222,9 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    
+    console.error('Unexpected error in chat route:', error);
+    return new ChatSDKError('offline:chat').toResponse();
   }
 }
 

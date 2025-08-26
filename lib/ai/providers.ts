@@ -3,7 +3,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { xai } from '@ai-sdk/xai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import {
   artifactModel,
   chatModel,
@@ -12,26 +12,31 @@ import {
 } from './models.test';
 import { isTestEnvironment } from '../constants';
 
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+});
+
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
-        'chat-model': chatModel,
-        'chat-model-reasoning': reasoningModel,
-        'title-model': titleModel,
-        'artifact-model': artifactModel,
+        'chat-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'chat-model-reasoning': openrouter.chat('deepseek/deepseek-r1'),
+        'title-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'artifact-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
+        'web-search-model': openrouter.chat('openai/gpt-4o-mini')
       },
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        'chat-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
+          model: openrouter.chat('deepseek/deepseek-r1'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
-      },
-      imageModels: {
-        'small-model': xai.imageModel('grok-2-image'),
+        'title-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'artifact-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
+        'web-search-model': openrouter.chat('openai/gpt-4o-mini')
       },
     });

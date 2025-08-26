@@ -34,14 +34,14 @@ function PureChatHeader({
 
   return (
     <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
-      <SidebarToggle />
+      <SidebarToggle />      
 
       {(!open || windowWidth < 768) && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
+              className="order-2 md:order-1 md:px-2 px-2 md:h-fit"
               onClick={() => {
                 router.push('/');
                 router.refresh();
@@ -55,34 +55,33 @@ function PureChatHeader({
         </Tooltip>
       )}
 
-      {!isReadonly && (
+      {(!open || windowWidth < 768) && (
+        <span
+          className="text-lg font-semibold hover:bg-muted rounded-md cursor-pointer order-3 md:order-2 md:ml-2"
+          onClick={() => {
+            router.push('/');
+            router.refresh();
+          }}
+        >
+          WhatsonYourMind
+        </span>
+      )}
+
+      {/* {!isReadonly && (
         <ModelSelector
           session={session}
           selectedModelId={selectedModelId}
           className="order-1 md:order-2"
         />
-      )}
+      )} */}
 
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
           selectedVisibilityType={selectedVisibilityType}
-          className="order-1 md:order-3"
+          className="order-1 md:order-3 ml-auto"
         />
       )}
-
-      <Button
-        className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-4 md:ml-auto"
-        asChild
-      >
-        <Link
-          href={`https://vercel.com/new/clone?repository-url=https://github.com/vercel/ai-chatbot&env=AUTH_SECRET&envDescription=Learn more about how to get the API Keys for the application&envLink=https://github.com/vercel/ai-chatbot/blob/main/.env.example&demo-title=AI Chatbot&demo-description=An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.&demo-url=https://chat.vercel.ai&products=[{"type":"integration","protocol":"ai","productSlug":"grok","integrationSlug":"xai"},{"type":"integration","protocol":"storage","productSlug":"neon","integrationSlug":"neon"},{"type":"integration","protocol":"storage","productSlug":"upstash-kv","integrationSlug":"upstash"},{"type":"blob"}]`}
-          target="_noblank"
-        >
-          <VercelIcon size={16} />
-          Deploy with Vercel
-        </Link>
-      </Button>
     </header>
   );
 }
