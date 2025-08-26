@@ -27,12 +27,19 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  promptEnhancement,
+  type PromptEnhancement,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import type { 
+  PromptAnalysis, 
+  Enhancement, 
+  EnhancedPrompt 
+} from '../types';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -533,6 +540,152 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+// Prompt Enhancement functions
+export async function savePromptEnhancement({
+  messageId,
+  originalPrompt,
+  enhancedPrompt,
+  confidence,
+  changes,
+  analysis,
+  processingTime,
+  enhancementType = 'hybrid',
+}: {
+  messageId: string;
+  originalPrompt: string;
+  enhancedPrompt: string;
+  confidence: number;
+  changes: Enhancement[];
+  analysis: PromptAnalysis;
+  processingTime: number;
+  enhancementType?: 'template' | 'ai' | 'hybrid' | 'conservative';
+}) {
+  try {
+    return await db.insert(promptEnhancement).values({
+      messageId,
+      originalPrompt,
+      enhancedPrompt,
+      confidence: JSON.stringify(confidence),
+      changes: JSON.stringify(changes),
+      analysis: JSON.stringify(analysis),
+      processingTime: JSON.stringify(processingTime),
+      enhancementType,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save prompt enhancement',
+    );
+  }
+}
+
+export async function getPromptEnhancementByMessageId({ messageId }: { messageId: string }) {
+  try {
+    const [enhancement] = await db
+      .select()
+      .from(promptEnhancement)
+      .where(eq(promptEnhancement.messageId, messageId));
+    
+    if (!enhancement) {
+      return null;
+    }
+
+    return {
+      ...enhancement,
+      confidence: JSON.parse(enhancement.confidence as string),
+      changes: JSON.parse(enhancement.changes as string) as Enhancement[],
+      analysis: JSON.parse(enhancement.analysis as string) as PromptAnalysis,
+      processingTime: JSON.parse(enhancement.processingTime as string),
+    };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get prompt enhancement by message id',
+    );
+  }
+}
+
+export async function getPromptEnhancementsByChatId({ chatId }: { chatId: string }) {
+  try {
+    const enhancements = await db
+      .select({
+        id: promptEnhancement.id,
+        messageId: promptEnhancement.messageId,
+        originalPrompt: promptEnhancement.originalPrompt,
+        enhancedPrompt: promptEnhancement.enhancedPrompt,
+        confidence: promptEnhancement.confidence,
+        changes: promptEnhancement.changes,
+        analysis: promptEnhancement.analysis,
+        processingTime: promptEnhancement.processingTime,
+        enhancementType: promptEnhancement.enhancementType,
+        createdAt: promptEnhancement.createdAt,
+      })
+      .from(promptEnhancement)
+      .innerJoin(message, eq(promptEnhancement.messageId, message.id))
+      .where(eq(message.chatId, chatId))
+      .orderBy(asc(promptEnhancement.createdAt));
+
+    return enhancements.map(enhancement => ({
+      ...enhancement,
+      confidence: JSON.parse(enhancement.confidence as string),
+      changes: JSON.parse(enhancement.changes as string) as Enhancement[],
+      analysis: JSON.parse(enhancement.analysis as string) as PromptAnalysis,
+      processingTime: JSON.parse(enhancement.processingTime as string),
+    }));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get prompt enhancements by chat id',
+    );
+  }
+}
+
+export async function getEnhancementStats({ 
+  userId, 
+  startDate, 
+  endDate 
+}: { 
+  userId?: string; 
+  startDate?: Date; 
+  endDate?: Date; 
+}) {
+  try {
+    let query = db
+      .select({
+        count: count(promptEnhancement.id),
+        averageConfidence: promptEnhancement.confidence,
+        enhancementType: promptEnhancement.enhancementType,
+      })
+      .from(promptEnhancement);
+
+    if (userId) {
+      query = query
+        .innerJoin(message, eq(promptEnhancement.messageId, message.id))
+        .innerJoin(chat, eq(message.chatId, chat.id))
+        .where(eq(chat.userId, userId)) as any;
+    }
+
+    if (startDate && endDate) {
+      query = query.where(
+        and(
+          gte(promptEnhancement.createdAt, startDate),
+          lt(promptEnhancement.createdAt, endDate)
+        )
+      ) as any;
+    }
+
+    return await query
+      .groupBy(promptEnhancement.enhancementType)
+      .execute();
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get enhancement stats',
     );
   }
 }

@@ -34,9 +34,10 @@ import {
 } from 'resumable-stream';
 import { after } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
-import type { ChatMessage } from '@/lib/types';
+import type { ChatMessage, EnhancementContext } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import { enhancePrompt } from '@/lib/ai/enhancement/prompt-enhancer';
 
 export const maxDuration = 60;
 
@@ -133,6 +134,60 @@ export async function POST(request: Request) {
       country,
     };
 
+    // Enhancement middleware - process user message
+    let enhancedMessage = message;
+    
+    try {
+      // Extract text content from message parts for enhancement
+      const textContent = message.parts
+        .filter(part => part.type === 'text')
+        .map(part => part.text)
+        .join(' ');
+
+      if (textContent.trim().length > 0) {
+        // Create enhancement context
+        const enhancementContext: EnhancementContext = {
+          userContext: session.user,
+          chatHistory: uiMessages.slice(-5), // Last 5 messages for context
+          selectedModel: selectedChatModel,
+          requestHints
+        };
+
+        // Enhance the prompt
+        const enhancementResult = await enhancePrompt(textContent, enhancementContext);
+        
+        // Only use enhanced version if it's significantly different and has good confidence
+        if (enhancementResult.confidence > 0.6 && 
+            enhancementResult.enhanced !== enhancementResult.original &&
+            enhancementResult.enhanced.length > enhancementResult.original.length * 1.1) {
+          
+          // Create enhanced message with updated text parts
+          enhancedMessage = {
+            ...message,
+            parts: message.parts.map(part => {
+              if (part.type === 'text') {
+                return {
+                  ...part,
+                  text: enhancementResult.enhanced
+                };
+              }
+              return part;
+            })
+          };
+
+          console.log('Prompt enhanced:', {
+            original: enhancementResult.original.substring(0, 100),
+            enhanced: enhancementResult.enhanced.substring(0, 100),
+            confidence: enhancementResult.confidence,
+            changes: enhancementResult.changes.length
+          });
+        }
+      }
+    } catch (enhancementError) {
+      console.warn('Prompt enhancement failed, using original:', enhancementError);
+      // Continue with original message if enhancement fails
+    }
+
     await saveMessages({
       messages: [
         {
@@ -142,6 +197,14 @@ export async function POST(request: Request) {
           parts: message.parts,
           attachments: [],
           createdAt: new Date(),
+          // Store enhancement metadata if message was enhanced
+          ...(enhancedMessage !== message && {
+            metadata: {
+              original: message.parts,
+              enhanced: enhancedMessage.parts,
+              enhancements: [] // Enhancement details would be stored here in a full implementation
+            }
+          })
         },
       ],
     });
@@ -149,12 +212,15 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Update UI messages to include the enhanced message
+    const finalUIMessages = [...convertToUIMessages(messagesFromDb), enhancedMessage];
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
+          messages: convertToModelMessages(finalUIMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'

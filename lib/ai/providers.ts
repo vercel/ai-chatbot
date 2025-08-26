@@ -24,7 +24,8 @@ export const myProvider = isTestEnvironment
         'title-model': openrouter.chat('openai/gpt-5-nano'),
         'artifact-model': openrouter.chat('openai/gpt-5-nano'),
         'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
-        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online')
+        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online'),
+        'enhancement-model': openrouter.chat('mistralai/ministral-8b')
       },
     })
   : customProvider({
@@ -37,6 +38,7 @@ export const myProvider = isTestEnvironment
         'title-model': openrouter.chat('openai/gpt-5-nano'),
         'artifact-model': openrouter.chat('openai/gpt-5-nano'),
         'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
-        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online')
+        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online'),
+        'enhancement-model': openrouter.chat('mistralai/ministral-8b')
       },
     });
