@@ -19,24 +19,24 @@ const openrouter = createOpenRouter({
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
-        'chat-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
-        'chat-model-reasoning': openrouter.chat('deepseek/deepseek-r1'),
-        'title-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
-        'artifact-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'chat-model': openrouter.chat('openai/gpt-5-nano:online'),
+        'chat-model-reasoning': openrouter.chat('openai/gpt-5-nano'),
+        'title-model': openrouter.chat('openai/gpt-5-nano'),
+        'artifact-model': openrouter.chat('openai/gpt-5-nano'),
         'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
-        'web-search-model': openrouter.chat('openai/gpt-4o-mini')
+        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online')
       },
     })
   : customProvider({
       languageModels: {
-        'chat-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'chat-model': openrouter.chat('openai/gpt-5-nano:online'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: openrouter.chat('deepseek/deepseek-r1'),
+          model: openrouter.chat('openai/gpt-5-nano'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
-        'artifact-model': openrouter.chat('deepseek/deepseek-chat-v3.1'),
+        'title-model': openrouter.chat('openai/gpt-5-nano'),
+        'artifact-model': openrouter.chat('openai/gpt-5-nano'),
         'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
-        'web-search-model': openrouter.chat('openai/gpt-4o-mini')
+        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online')
       },
     });

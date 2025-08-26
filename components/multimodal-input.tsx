@@ -161,8 +161,8 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
-  isThinkEnabled,
-  isWebSearchEnabled,
+    isThinkEnabled,
+    isWebSearchEnabled,
   ]);
 
   const uploadFile = async (file: File) => {
