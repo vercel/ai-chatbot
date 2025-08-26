@@ -45,7 +45,6 @@ export class EnhancementAI {
         model: myProvider.languageModel(this.modelId),
         system: this.systemPrompt,
         prompt: enhancementPrompt,
-        maxTokens: this.maxTokens,
         temperature: this.temperature,
       });
 
@@ -81,7 +80,6 @@ export class EnhancementAI {
         model: myProvider.languageModel(this.modelId),
         system: this.getContextSystemPrompt(),
         prompt: contextPrompt,
-        maxTokens: this.maxTokens,
         temperature: 0.2, // Lower temperature for context addition
       });
 
@@ -100,7 +98,6 @@ export class EnhancementAI {
         model: myProvider.languageModel(this.modelId),
         system: this.getFormatSystemPrompt(),
         prompt: formatPrompt,
-        maxTokens: 200,
         temperature: 0.1, // Very low temperature for format suggestions
       });
 

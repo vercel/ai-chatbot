@@ -223,7 +223,7 @@ Include relevant context, examples, and practical applications where appropriate
     },
     action: (input: string, analysis: any) => {
       const format = analysis.contextGaps.missingFormat[0];
-      const formatInstructions = {
+      const formatInstructions: Record<FormatType, string> = {
         [FormatType.TABLE]: 'Please format the response as a clear table with headers.',
         [FormatType.LIST]: 'Please format the response as a numbered or bulleted list.',
         [FormatType.STEP_BY_STEP]: 'Please provide step-by-step instructions.',
@@ -232,7 +232,7 @@ Include relevant context, examples, and practical applications where appropriate
         [FormatType.EXAMPLE_BASED]: 'Please include practical examples to illustrate your points.'
       };
       
-      return `${input}\n\n${formatInstructions[format] || 'Please structure your response clearly.'}`;
+      return `${input}\n\n${formatInstructions[format as FormatType] || 'Please structure your response clearly.'}`;
     }
   },
   

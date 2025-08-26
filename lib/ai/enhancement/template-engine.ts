@@ -220,7 +220,11 @@ export class TemplateEngine {
 
     if (context?.chatHistory && context.chatHistory.length > 0) {
       variables.hasHistory = 'true';
-      variables.lastMessage = context.chatHistory[context.chatHistory.length - 1]?.content || '';
+      const lastMessage = context.chatHistory[context.chatHistory.length - 1];
+      variables.lastMessage = lastMessage?.parts
+        ?.filter((part: any) => part.type === 'text')
+        ?.map((part: any) => part.text)
+        ?.join('') || '';
     }
 
     // Add analysis-specific variables

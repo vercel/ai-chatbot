@@ -15,9 +15,9 @@ export class ContextAnalyzer {
     
     const positiveWords = ['please', 'thank', 'awesome', 'great', 'excellent', 'love', 'amazing', 'perfect', 'wonderful'];
     const negativeWords = ['urgent', 'problem', 'issue', 'error', 'broken', 'fail', 'wrong', 'bad', 'terrible', 'hate'];
-    const frustrationWords = ['why won\\'t', 'doesn\\'t work', 'not working', 'frustrated', 'annoying', 'stupid'];
-    const excitementWords = ['exciting', 'can\\'t wait', 'awesome', 'amazing', 'love this', 'incredible'];
-    const confusionWords = ['confused', 'don\\'t understand', 'unclear', 'what does this mean', 'how does this work'];
+    const frustrationWords = ["why won't", "doesn't work", 'not working', 'frustrated', 'annoying', 'stupid'];
+    const excitementWords = ['exciting', "can't wait", 'awesome', 'amazing', 'love this', 'incredible'];
+    const confusionWords = ['confused', "don't understand", 'unclear', 'what does this mean', 'how does this work'];
     const urgentWords = ['urgent', 'asap', 'quickly', 'immediately', 'deadline', 'rush', 'emergency'];
     
     let positiveScore = 0;
@@ -75,11 +75,11 @@ export class ContextAnalyzer {
     
     // Check for vague indicators
     const vagueIndicators = [
-      /^(what|how|why)\\s*\\?*$/i,  // Single word questions
-      /\\b(something|anything|somewhere|somehow)\\b/i,
-      /\\b(stuff|things|whatever)\\b/i,
-      /\\b(kind of|sort of|maybe|perhaps)\\b/i,
-      /\\b(general|basic|simple)\\b.*\\b(information|overview)\\b/i
+      /^(what|how|why)\s*\?*$/i,  // Single word questions
+      /\b(something|anything|somewhere|somehow)\b/i,
+      /\b(stuff|things|whatever)\b/i,
+      /\b(kind of|sort of|maybe|perhaps)\b/i,
+      /\b(general|basic|simple)\b.*\b(information|overview)\b/i
     ];
     
     vagueIndicators.forEach(indicator => {
@@ -92,11 +92,11 @@ export class ContextAnalyzer {
     
     // Check for specific details
     const specificIndicators = [
-      /\\b\\d+/,  // Numbers
-      /\\b(step|first|second|then|next|finally)\\b/i,  // Sequential words
-      /\\b(because|since|due to|reason)\\b/i,  // Causal words
-      /\\b(exactly|specifically|precisely)\\b/i,  // Precision words
-      /\\b[A-Z][a-z]+\\s[A-Z][a-z]+/  // Proper nouns (names, places)
+      /\b\d+/,  // Numbers
+      /\b(step|first|second|then|next|finally)\b/i,  // Sequential words
+      /\b(because|since|due to|reason)\b/i,  // Causal words
+      /\b(exactly|specifically|precisely)\b/i,  // Precision words
+      /\b[A-Z][a-z]+\s[A-Z][a-z]+/  // Proper nouns (names, places)
     ];
     
     specificIndicators.forEach(indicator => {
@@ -242,69 +242,69 @@ export class ContextAnalyzer {
 
   private shouldHaveTable(input: string): boolean {
     const tableIndicators = [
-      /\\b(compare|comparison|versus|vs)\\b/i,
-      /\\b(features|specifications|options)\\b/i,
-      /\\b(pros and cons|advantages|disadvantages)\\b/i,
-      /\\b(different|various|multiple)\\b.*\\b(options|choices|alternatives)\\b/i
+      /\b(compare|comparison|versus|vs)\b/i,
+      /\b(features|specifications|options)\b/i,
+      /\b(pros and cons|advantages|disadvantages)\b/i,
+      /\b(different|various|multiple)\b.*\b(options|choices|alternatives)\b/i
     ];
     return tableIndicators.some(indicator => indicator.test(input));
   }
 
   private shouldHaveList(input: string): boolean {
     const listIndicators = [
-      /\\b(list|steps|items|points)\\b/i,
-      /\\b(benefits|features|requirements|tools)\\b/i,
-      /\\b(top|best|main|key)\\b.*\\b(\\d+|few|several)\\b/i
+      /\b(list|steps|items|points)\b/i,
+      /\b(benefits|features|requirements|tools)\b/i,
+      /\b(top|best|main|key)\b.*\b(\d+|few|several)\b/i
     ];
     return listIndicators.some(indicator => indicator.test(input));
   }
 
   private shouldHaveSteps(input: string): boolean {
     const stepIndicators = [
-      /\\b(how to|tutorial|guide|walkthrough)\\b/i,
-      /\\b(steps|process|procedure|method)\\b/i,
-      /\\b(setup|install|configure|implement)\\b/i
+      /\b(how to|tutorial|guide|walkthrough)\b/i,
+      /\b(steps|process|procedure|method)\b/i,
+      /\b(setup|install|configure|implement)\b/i
     ];
     return stepIndicators.some(indicator => indicator.test(input));
   }
 
   private shouldHaveCodeBlock(input: string): boolean {
     const codeIndicators = [
-      /\\b(code|script|function|program|implementation)\\b/i,
-      /\\b(write|create|generate|build)\\b.*\\b(code|script|function)\\b/i,
-      /\\b(html|css|javascript|python|java|react|vue|angular)\\b/i
+      /\b(code|script|function|program|implementation)\b/i,
+      /\b(write|create|generate|build)\b.*\b(code|script|function)\b/i,
+      /\b(html|css|javascript|python|java|react|vue|angular)\b/i
     ];
     return codeIndicators.some(indicator => indicator.test(input));
   }
 
   private shouldHaveComparison(input: string): boolean {
     const comparisonIndicators = [
-      /\\b(compare|versus|vs|difference)\\b/i,
-      /\\b(better|worse|pros and cons)\\b/i,
-      /\\b(which is|what's the difference)\\b/i
+      /\b(compare|versus|vs|difference)\b/i,
+      /\b(better|worse|pros and cons)\b/i,
+      /\b(which is|what's the difference)\b/i
     ];
     return comparisonIndicators.some(indicator => indicator.test(input));
   }
 
   private shouldHaveExamples(input: string): boolean {
     const exampleIndicators = [
-      /\\b(example|sample|demo|illustration)\\b/i,
-      /\\b(show me|demonstrate|illustrate)\\b/i,
-      /\\b(practical|real-world|concrete)\\b/i
+      /\b(example|sample|demo|illustration)\b/i,
+      /\b(show me|demonstrate|illustrate)\b/i,
+      /\b(practical|real-world|concrete)\b/i
     ];
     return exampleIndicators.some(indicator => indicator.test(input));
   }
 
   private isCodeRequest(input: string): boolean {
-    return /\\b(write|create|generate|build|code|script|function|program)\\b/i.test(input);
+    return /\b(write|create|generate|build|code|script|function|program)\b/i.test(input);
   }
 
   private isComparisonRequest(input: string): boolean {
-    return /\\b(compare|versus|vs|difference|better)\\b/i.test(input);
+    return /\b(compare|versus|vs|difference|better)\b/i.test(input);
   }
 
   private isExplanationRequest(input: string): boolean {
-    return /\\b(explain|describe|what is|tell me about)\\b/i.test(input);
+    return /\b(explain|describe|what is|tell me about)\b/i.test(input);
   }
 
   private hasLanguageSpecification(input: string): boolean {
@@ -344,10 +344,10 @@ export class ContextAnalyzer {
 
   private findAmbiguousTerms(input: string): string[] {
     const ambiguousPatterns = [
-      /\\b(it|this|that|these|those)\\b/gi,
-      /\\b(thing|stuff|something)\\b/gi,
-      /\\b(good|bad|better|best)\\b/gi,
-      /\\b(big|small|fast|slow)\\b/gi
+      /\b(it|this|that|these|those)\b/gi,
+      /\b(thing|stuff|something)\b/gi,
+      /\b(good|bad|better|best)\b/gi,
+      /\b(big|small|fast|slow)\b/gi
     ];
     
     const found: string[] = [];
