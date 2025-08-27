@@ -16,15 +16,29 @@ export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}
   const [isMounted, setIsMounted] = useState(false);
   const [copyTooltip, setCopyTooltip] = useState(false);
   const [shareTooltip, setShareTooltip] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Inicialmente fechada em mobile
   const [visibility, setVisibility] = useState<'private' | 'public'>('private');
+  const [recentSessions, setRecentSessions] = useState<Array<{id: string, title: string, date: string}>>([]);
 
-  // Carrega a velocidade salva apenas no cliente após a montagem
+  // Carrega a velocidade salva e sessões recentes após a montagem
   useEffect(() => {
     setIsMounted(true);
     const savedSpeed = localStorage.getItem('streamSpeed');
     if (savedSpeed) {
       setStreamSpeed(parseInt(savedSpeed));
+    }
+    
+    // Carrega sessões recentes do localStorage
+    const savedSessions = localStorage.getItem('claudeRecentSessions');
+    if (savedSessions) {
+      try {
+        setRecentSessions(JSON.parse(savedSessions));
+      } catch {}
+    }
+    
+    // Define sidebar aberta por padrão em desktop
+    if (window.innerWidth >= 768) {
+      setSidebarOpen(true);
     }
   }, []);
 
@@ -67,8 +81,80 @@ export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}
     }
   };
 
+  // Salva sessão atual no histórico quando há mensagens
+  useEffect(() => {
+    if (sessionId && messages.length > 0) {
+      const currentSession = {
+        id: sessionId,
+        title: messages[0]?.content?.substring(0, 30) + '...' || 'Nova conversa',
+        date: new Date().toISOString()
+      };
+      
+      setRecentSessions(prev => {
+        const filtered = prev.filter(s => s.id !== sessionId);
+        const updated = [currentSession, ...filtered].slice(0, 10); // Mantém últimas 10
+        localStorage.setItem('claudeRecentSessions', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [sessionId, messages]);
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full relative">
+      {/* Sidebar */}
+      <div className={`absolute md:relative z-20 h-full bg-gray-50 border-r transition-all duration-300 ${
+        sidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-64 md:translate-x-0'
+      }`}>
+        <div className="p-4 h-full overflow-y-auto">
+          <h3 className="font-semibold mb-4">Sessões Recentes</h3>
+          {recentSessions.length === 0 ? (
+            <p className="text-sm text-gray-500">Nenhuma sessão ainda</p>
+          ) : (
+            <div className="space-y-2">
+              {recentSessions.map((session) => (
+                <button
+                  key={session.id}
+                  onClick={() => {
+                    const shortId = session.id.substring(0, 8);
+                    window.location.href = `/claude/${shortId}`;
+                  }}
+                  className={`w-full text-left p-2 rounded hover:bg-gray-100 text-sm ${
+                    session.id === sessionId ? 'bg-gray-200' : ''
+                  }`}
+                >
+                  <div className="font-medium truncate">{session.title}</div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(session.date).toLocaleDateString()}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          
+          <div className="mt-6 pt-4 border-t">
+            <button
+              onClick={() => {
+                clearMessages();
+                window.location.href = '/claude';
+              }}
+              className="w-full p-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Nova Conversa
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Overlay para mobile */}
+      {sidebarOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-10"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           {/* Botão Toggle Sidebar */}
@@ -256,6 +342,7 @@ export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

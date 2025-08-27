@@ -243,7 +243,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                   (paginatedChatHistory) => paginatedChatHistory.chats,
                 );
 
-                const groupedChats = groupChatsByDate(chatsFromHistory);
+                // Combina chats regulares com sessões do Claude
+                const allChats = [...chatsFromHistory, ...claudeSessions];
+                const groupedChats = groupChatsByDate(allChats);
 
                 return (
                   <div className="flex flex-col gap-6">
