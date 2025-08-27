@@ -14,6 +14,7 @@ import {
   ToolInput,
   ToolOutput,
 } from './elements/tool';
+import { StreamingMarkdown } from './streaming-markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
@@ -152,7 +153,11 @@ const PurePreviewMessage = ({
                           'bg-transparent -ml-4': message.role === 'assistant',
                         })}
                       >
-                        <Response>{sanitizeText(part.text)}</Response>
+                        <StreamingMarkdown
+                          content={sanitizeText(part.text)}
+                          isUser={message.role === 'user'}
+                          isStreaming={isLoading && index === message.parts.length - 1}
+                        />
                       </MessageContent>
                     </div>
                   );

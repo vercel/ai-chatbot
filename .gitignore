@@ -41,3 +41,42 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
+
+# Python
+api-python/__pycache__/
+api-python/*.pyc
+api-python/*.pyo
+api-python/*.pyd
+api-python/.Python
+api-python/venv/
+api-python/env/
+api-python/.env
+api-python/*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+dev.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.~*
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Documentation temp files
+README-DATABASE.md
+setup-db.sql
+venv/*

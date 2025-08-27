@@ -17,4 +17,9 @@ export const chatModels: Array<ChatModel> = [
     name: 'Grok Reasoning',
     description: 'Uses advanced chain-of-thought reasoning for complex problems',
   },
+  {
+    id: 'claude-code-sdk',
+    name: 'Claude Code (Local)',
+    description: 'Claude rodando localmente via Code SDK - sem API keys',
+  },
 ];

@@ -3,7 +3,7 @@
   "version": "3.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo --port 3033",
     "build": "tsx lib/db/migrate && next build",
     "start": "next start",
     "lint": "next lint && biome lint --write --unsafe",
@@ -84,6 +84,7 @@
     "react": "19.0.0-rc-45804af1-20241021",
     "react-data-grid": "7.0.0-beta.47",
     "react-dom": "19.0.0-rc-45804af1-20241021",
+    "react-hotkeys-hook": "^5.1.0",
     "react-resizable-panels": "^2.1.7",
     "react-syntax-highlighter": "^15.6.6",
     "redis": "^5.0.0",
@@ -97,7 +98,8 @@
     "tailwindcss-animate": "^1.0.7",
     "use-stick-to-bottom": "^1.1.1",
     "usehooks-ts": "^3.1.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

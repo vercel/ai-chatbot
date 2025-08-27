@@ -11,6 +11,12 @@ import {
   titleModel,
 } from './models.test';
 import { isTestEnvironment } from '../constants';
+import { claudeSDK } from './providers/claude-sdk';
+
+// Configuração do Claude SDK Provider
+const claudeSDKProvider = claudeSDK({
+  apiUrl: process.env.CLAUDE_SDK_API_URL || 'http://localhost:8001'
+});
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -19,6 +25,7 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
         'artifact-model': artifactModel,
+        'claude-code-sdk': claudeSDKProvider.languageModel('claude-code-sdk'),
       },
     })
   : customProvider({
@@ -30,5 +37,6 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': gateway.languageModel('xai/grok-2-1212'),
         'artifact-model': gateway.languageModel('xai/grok-2-1212'),
+        'claude-code-sdk': claudeSDKProvider.languageModel('claude-code-sdk'),
       },
     });
