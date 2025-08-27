@@ -3,7 +3,7 @@
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import type { User } from 'next-auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
@@ -96,6 +96,7 @@ export function getChatHistoryPaginationKey(
 export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
+  const [claudeSessions, setClaudeSessions] = useState<Chat[]>([]);
 
   const {
     data: paginatedChatHistories,
@@ -107,6 +108,36 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     fallbackData: [],
   });
 
+  // Busca sessões do Claude
+  useEffect(() => {
+    const fetchClaudeSessions = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8002/api/claude/sessions');
+        if (response.ok) {
+          const data = await response.json();
+          // Converte sessões do Claude para o formato Chat
+          const claudeChats: Chat[] = data.sessions.map((session: any) => ({
+            id: session.session_id.substring(0, 8), // Usa os 8 primeiros chars como ID
+            title: `Claude Session ${session.session_id.substring(0, 8)}`,
+            createdAt: session.created_at || new Date().toISOString(),
+            userId: user?.id || 'dev-user',
+            visibility: 'private' as const,
+            model: 'claude-code-sdk',
+            sharePath: `/claude/${session.session_id.substring(0, 8)}`,
+          }));
+          setClaudeSessions(claudeChats);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar sessões do Claude:', error);
+      }
+    };
+
+    fetchClaudeSessions();
+    // Atualiza a cada 5 segundos
+    const interval = setInterval(fetchClaudeSessions, 5000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -116,7 +147,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     : false;
 
   const hasEmptyChatHistory = paginatedChatHistories
-    ? paginatedChatHistories.every((page) => page.chats.length === 0)
+    ? paginatedChatHistories.every((page) => page.chats.length === 0) && claudeSessions.length === 0
     : false;
 
   const handleDelete = async () => {

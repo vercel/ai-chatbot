@@ -16,6 +16,8 @@ export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}
   const [isMounted, setIsMounted] = useState(false);
   const [copyTooltip, setCopyTooltip] = useState(false);
   const [shareTooltip, setShareTooltip] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [visibility, setVisibility] = useState<'private' | 'public'>('private');
 
   // Carrega a velocidade salva apenas no cliente após a montagem
   useEffect(() => {
@@ -68,8 +70,40 @@ export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">Claude Code SDK Chat</h2>
+        <div className="flex items-center gap-2">
+          {/* Botão Toggle Sidebar */}
+          <button
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 md:px-2 md:h-fit"
+            data-testid="sidebar-toggle-button"
+            data-state={sidebarOpen ? "open" : "closed"}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title="Toggle Sidebar"
+          >
+            <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16" style={{ color: 'currentcolor' }}>
+              <path fillRule="evenodd" clipRule="evenodd" d="M6.245 2.5H14.5V12.5C14.5 13.0523 14.0523 13.5 13.5 13.5H6.245V2.5ZM4.995 2.5H1.5V12.5C1.5 13.0523 1.94772 13.5 2.5 13.5H4.995V2.5ZM0 1H1.5H14.5H16V2.5V12.5C16 13.8807 14.8807 15 13.5 15H2.5C1.11929 15 0 13.8807 0 12.5V2.5V1Z" fill="currentColor" />
+            </svg>
+          </button>
+          
+          <h2 className="text-lg font-semibold">Claude Code SDK Chat</h2>
+        </div>
         <div className="flex items-center gap-4">
+          {/* Botão de Visibilidade (Private/Public) */}
+          <button
+            className="items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground order-1 md:order-3 hidden md:flex md:px-2 md:h-[34px]"
+            data-testid="visibility-selector"
+            type="button"
+            onClick={() => setVisibility(visibility === 'private' ? 'public' : 'private')}
+            title={`Modo: ${visibility === 'private' ? 'Privado' : 'Público'}`}
+          >
+            <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16" style={{ color: 'currentcolor' }}>
+              <path fillRule="evenodd" clipRule="evenodd" d="M10 4.5V6H6V4.5C6 3.39543 6.89543 2.5 8 2.5C9.10457 2.5 10 3.39543 10 4.5ZM4.5 6V4.5C4.5 2.567 6.067 1 8 1C9.933 1 11.5 2.567 11.5 4.5V6H12.5H14V7.5V12.5C14 13.8807 12.8807 15 11.5 15H4.5C3.11929 15 2 13.8807 2 12.5V7.5V6H3.5H4.5ZM11.5 7.5H10H6H4.5H3.5V12.5C3.5 13.0523 3.94772 13.5 4.5 13.5H11.5C12.0523 13.5 12.5 13.0523 12.5 12.5V7.5H11.5Z" fill="currentColor" />
+            </svg>
+            <span>{visibility === 'private' ? 'Private' : 'Public'}</span>
+            <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16" style={{ color: 'currentcolor' }}>
+              <path fillRule="evenodd" clipRule="evenodd" d="M12.0607 6.74999L11.5303 7.28032L8.7071 10.1035C8.31657 10.4941 7.68341 10.4941 7.29288 10.1035L4.46966 7.28032L3.93933 6.74999L4.99999 5.68933L5.53032 6.21966L7.99999 8.68933L10.4697 6.21966L11 5.68933L12.0607 6.74999Z" fill="currentColor" />
+            </svg>
+          </button>
+          
           {/* Slider de Velocidade Personalizado */}
           <div className="speed-control">
             <span className={`text-sm ${isMounted && streamSpeed > 100 ? 'speed-emoji-slow' : ''}`}>
@@ -142,9 +176,17 @@ export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}
 
       <div className="flex-1 overflow-auto p-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center text-gray-500 mt-8">
-            <p>💬 Chat direto com Claude Code SDK</p>
-            <p className="text-sm mt-2">Sem necessidade de API keys!</p>
+          <div className="max-w-3xl mx-auto md:mt-20 px-8 size-full flex flex-col justify-center">
+            <div className="text-2xl font-semibold" style={{ opacity: 1, transform: 'none' }}>
+              Hello there!
+            </div>
+            <div className="text-2xl text-zinc-500" style={{ opacity: 1, transform: 'none' }}>
+              How can I help you today?
+            </div>
+            <div className="text-center text-gray-400 mt-8">
+              <p className="text-sm">💬 Chat direto com Claude Code SDK</p>
+              <p className="text-xs mt-1">Sem necessidade de API keys!</p>
+            </div>
           </div>
         )}
         
