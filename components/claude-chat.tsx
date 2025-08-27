@@ -65,7 +65,7 @@ export function ClaudeChat() {
                 <span className="text-xs opacity-75">{isMounted ? `${streamSpeed}ms` : '100ms'}</span>
               </div>
             </div>
-            <span className={`text-sm ${streamSpeed < 50 ? 'speed-emoji-fast' : ''}`}>
+            <span className={`text-sm ${isMounted && streamSpeed < 50 ? 'speed-emoji-fast' : ''}`}>
               🚀
             </span>
           </div>
