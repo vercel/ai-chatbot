@@ -3,9 +3,13 @@
 import sys
 import os
 import asyncio
-from typing import AsyncGenerator, Optional, Dict, Any
+from typing import AsyncGenerator, Optional, Dict, Any, List
 import json
 import logging
+from datetime import datetime
+import uuid
+import aiofiles
+from pathlib import Path
 
 # Adiciona o diretório do SDK ao path
 sdk_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,6 +35,9 @@ class ClaudeHandler:
     def __init__(self):
         self.sessions: Dict[str, Dict[str, Any]] = {}
         self.clients: Dict[str, ClaudeSDKClient] = {}
+        # Diretório para armazenar históricos
+        self.history_dir = Path("./chat_history")
+        self.history_dir.mkdir(exist_ok=True)
         
     async def create_session(self, session_id: str, user_id: str) -> None:
         """Cria uma nova sessão de chat para um usuário."""
