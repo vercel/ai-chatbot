@@ -1,7 +1,10 @@
 // Rota simplificada para Claude SDK no chat principal
 import { auth } from '@/app/(auth)/auth';
 
-const CLAUDE_API = process.env.CLAUDE_SDK_API_URL || 'http://127.0.0.1:8002';
+const CLAUDE_API = process.env.CLAUDE_SDK_API_URL || 'http://localhost:8002';
+
+// Cache de sessões criadas
+const sessionMap = new Map<string, string>();
 
 export async function POST(request: Request) {
   try {
@@ -28,6 +31,34 @@ export async function POST(request: Request) {
 
     console.log('Sending to backend:', messageText);
 
+    // Gerencia sessão
+    let sessionId = sessionMap.get(body.id);
+    
+    // Se não tem sessão, cria uma nova
+    if (!sessionId) {
+      try {
+        const sessionResponse = await fetch(`${CLAUDE_API}/api/claude/session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (sessionResponse.ok) {
+          const sessionData = await sessionResponse.json();
+          sessionId = sessionData.session_id;
+          sessionMap.set(body.id, sessionId);
+          console.log('Created new session:', sessionId);
+        } else {
+          // Fallback
+          sessionId = `session-${Date.now()}`;
+        }
+      } catch (error) {
+        console.error('Failed to create session:', error);
+        sessionId = `session-${Date.now()}`;
+      }
+    }
+
     // Chama o backend Python
     const response = await fetch(`${CLAUDE_API}/api/claude/chat`, {
       method: 'POST',
@@ -37,7 +68,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         message: messageText,
-        session_id: body.id || `session-${Date.now()}`
+        session_id: sessionId
       })
     });
 
@@ -85,6 +116,10 @@ export async function POST(request: Request) {
                     // Formato específico do streaming protocol
                     const chunk = `0:${JSON.stringify(JSON.stringify(event))}\n`;
                     controller.enqueue(encoder.encode(chunk));
+                  } else if (data.type === 'error') {
+                    console.error('Backend error:', data.error);
+                    // Remove sessão inválida do cache
+                    sessionMap.delete(body.id);
                   }
                 } catch (e) {
                   console.error('Parse error:', e);

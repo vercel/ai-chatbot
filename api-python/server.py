@@ -116,6 +116,40 @@ async def delete_session(session_id: str):
     await claude_handler.destroy_session(session_id)
     return {"status": "deleted", "session_id": session_id}
 
+@app.get("/api/claude/session/by-short/{short_id}")
+async def get_session_by_short_id(short_id: str):
+    """Busca sessão usando os 8 primeiros caracteres do ID."""
+    if len(short_id) != 8:
+        raise HTTPException(status_code=400, detail="Short ID must be 8 characters")
+    
+    # Busca nas sessões ativas
+    for session_id in claude_handler.sessions.keys():
+        if session_id.startswith(short_id):
+            return {"session_id": session_id, "short_id": short_id}
+    
+    # Se não encontrar, retorna 404
+    raise HTTPException(status_code=404, detail="Session not found with this short ID")
+
+@app.get("/api/claude/session/{session_id}/history")
+async def get_session_history(session_id: str):
+    """Busca o histórico de mensagens de uma sessão."""
+    # Busca o histórico no handler
+    if session_id in claude_handler.sessions:
+        session_info = claude_handler.sessions[session_id]
+        # Retorna o histórico se existir
+        history = session_info.get('history', [])
+        return {
+            "session_id": session_id,
+            "message_count": session_info.get('message_count', 0),
+            "history": history
+        }
+    
+    return {
+        "session_id": session_id,
+        "message_count": 0,
+        "history": []
+    }
+
 @app.get("/")
 async def root():
     """Health check endpoint."""

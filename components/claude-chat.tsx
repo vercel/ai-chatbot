@@ -5,11 +5,17 @@ import { useClaudeSDK } from '@/hooks/use-claude-sdk';
 import { StreamingMarkdown } from './streaming-markdown';
 import '@/styles/slider.css';
 
-export function ClaudeChat() {
-  const { messages, sendMessage, clearMessages, isLoading, sessionId } = useClaudeSDK();
+interface ClaudeChatProps {
+  sessionId?: string;
+}
+
+export function ClaudeChat({ sessionId: initialSessionId }: ClaudeChatProps = {}) {
+  const { messages, sendMessage, clearMessages, isLoading, sessionId } = useClaudeSDK(initialSessionId);
   const [input, setInput] = useState('');
   const [streamSpeed, setStreamSpeed] = useState(100); // Valor padrão fixo para evitar hydration mismatch
   const [isMounted, setIsMounted] = useState(false);
+  const [copyTooltip, setCopyTooltip] = useState(false);
+  const [shareTooltip, setShareTooltip] = useState(false);
 
   // Carrega a velocidade salva apenas no cliente após a montagem
   useEffect(() => {
@@ -26,12 +32,37 @@ export function ClaudeChat() {
     
     const message = input;
     setInput('');
+    
+    // Se tem sessionId e é a primeira mensagem, atualiza a URL
+    if (sessionId && messages.length === 0 && !initialSessionId) {
+      const shortId = sessionId.substring(0, 8);
+      window.history.replaceState({}, '', `/claude/${shortId}`);
+    }
+    
     await sendMessage(message, { streamSpeed });
   };
 
   const handleSpeedChange = (newSpeed: number) => {
     setStreamSpeed(newSpeed);
     localStorage.setItem('streamSpeed', newSpeed.toString());
+  };
+
+  const handleCopySessionId = () => {
+    if (sessionId) {
+      navigator.clipboard.writeText(sessionId);
+      setCopyTooltip(true);
+      setTimeout(() => setCopyTooltip(false), 2000);
+    }
+  };
+
+  const handleShareLink = () => {
+    if (sessionId) {
+      const shortId = sessionId.substring(0, 8);
+      const shareUrl = `${window.location.origin}/claude/${shortId}`;
+      navigator.clipboard.writeText(shareUrl);
+      setShareTooltip(true);
+      setTimeout(() => setShareTooltip(false), 2000);
+    }
   };
 
   return (
@@ -70,9 +101,35 @@ export function ClaudeChat() {
             </span>
           </div>
           {sessionId && (
-            <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
-              Sessão: {sessionId.slice(0, 8)}...
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                Sessão: {sessionId.slice(0, 8)}...
+              </span>
+              <button
+                onClick={handleCopySessionId}
+                className="relative p-1 hover:bg-gray-100 rounded transition-colors"
+                title={`Copiar ID completo: ${sessionId}`}
+              >
+                <span className="text-sm">📋</span>
+                {copyTooltip && (
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    ID Copiado!
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={handleShareLink}
+                className="relative p-1 hover:bg-gray-100 rounded transition-colors"
+                title={`Compartilhar link curto: /claude/${sessionId?.slice(0, 8)}`}
+              >
+                <span className="text-sm">🔗</span>
+                {shareTooltip && (
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    Link Copiado!
+                  </span>
+                )}
+              </button>
+            </div>
           )}
           <button
             onClick={clearMessages}

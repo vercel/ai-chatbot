@@ -9,14 +9,81 @@ export interface ClaudeMessage {
   content: string;
 }
 
-export function useClaudeSDK() {
+export function useClaudeSDK(initialSessionId?: string) {
   const [messages, setMessages] = useState<ClaudeMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null);
 
-  // Cria sessão ao montar o componente
+  // Cria sessão ao montar o componente (se não foi fornecido um ID inicial)
   useEffect(() => {
     const initSession = async () => {
+      // Se já tem um sessionId inicial
+      if (initialSessionId) {
+        // Se tem 8 caracteres, é um shortId, precisa buscar a sessão completa
+        if (initialSessionId.length === 8) {
+          try {
+            // Tenta buscar a sessão completa
+            const response = await fetch(`${CLAUDE_API_URL}/api/claude/session/by-short/${initialSessionId}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              setSessionId(data.session_id);
+              
+              // Busca o histórico se existir
+              const historyResponse = await fetch(`${CLAUDE_API_URL}/api/claude/session/${data.session_id}/history`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+              
+              if (historyResponse.ok) {
+                const historyData = await historyResponse.json();
+                if (historyData.history && historyData.history.length > 0) {
+                  // Carrega o histórico
+                  setMessages(historyData.history);
+                }
+              }
+            } else {
+              // Se não encontrar, usa o shortId como início de uma nova sessão
+              setSessionId(initialSessionId);
+            }
+          } catch (error) {
+            console.error('Erro ao buscar sessão:', error);
+            setSessionId(initialSessionId);
+          }
+        } else {
+          // Se tem mais de 8 caracteres, é um ID completo
+          setSessionId(initialSessionId);
+          
+          // Busca o histórico
+          try {
+            const historyResponse = await fetch(`${CLAUDE_API_URL}/api/claude/session/${initialSessionId}/history`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (historyResponse.ok) {
+              const historyData = await historyResponse.json();
+              if (historyData.history && historyData.history.length > 0) {
+                setMessages(historyData.history);
+              }
+            }
+          } catch (error) {
+            console.error('Erro ao buscar histórico:', error);
+          }
+        }
+        return;
+      }
+      
+      // Se não tem sessionId inicial, cria uma nova sessão
       try {
         const response = await fetch(`${CLAUDE_API_URL}/api/claude/session`, {
           method: 'POST',
@@ -34,7 +101,7 @@ export function useClaudeSDK() {
     };
     
     initSession();
-  }, []);
+  }, [initialSessionId]);
 
   const sendMessage = useCallback(async (content: string, options?: { streamSpeed?: number }) => {
     // Aguarda sessão ser criada se ainda não existir
