@@ -81,7 +81,7 @@
     "resumable-stream": "^2.0.0",
     "server-only": "^0.0.1",
     "sonner": "^1.5.0",
-    "streamdown": "^1.0.11",
+    "streamdown": "^1.1.4",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
