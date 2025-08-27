@@ -15,7 +15,9 @@ import { claudeSDK } from './providers/claude-sdk';
 
 // Configuração do Claude SDK Provider
 const claudeSDKProvider = claudeSDK({
-  apiUrl: process.env.CLAUDE_SDK_API_URL || 'http://localhost:8001'
+  apiUrl: process.env.NEXT_PUBLIC_CLAUDE_SDK_API_URL || 
+         process.env.CLAUDE_SDK_API_URL || 
+         'http://127.0.0.1:8002'
 });
 
 export const myProvider = isTestEnvironment

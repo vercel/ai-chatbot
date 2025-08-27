@@ -30,7 +30,11 @@ export class ClaudeSDKProvider {
   private sessionId?: string;
 
   constructor(config?: ClaudeSDKProviderConfig) {
-    this.apiUrl = config?.apiUrl || process.env.CLAUDE_SDK_API_URL || 'http://localhost:8001';
+    // Use NEXT_PUBLIC_ para variáveis de ambiente no cliente
+    this.apiUrl = config?.apiUrl || 
+                  process.env.NEXT_PUBLIC_CLAUDE_SDK_API_URL || 
+                  process.env.CLAUDE_SDK_API_URL || 
+                  'http://127.0.0.1:8002';
     this.authToken = config?.authToken;
   }
 

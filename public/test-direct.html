@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Direct Connection</title>
+</head>
+<body>
+    <h1>Teste Direto de Conexão</h1>
+    <button onclick="testConnection()">Testar Conexão</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testando...';
+            
+            try {
+                // Teste 1: Health check
+                const healthRes = await fetch('http://localhost:8002/health');
+                const health = await healthRes.json();
+                resultDiv.innerHTML += '<br>✅ Health: ' + JSON.stringify(health);
+                
+                // Teste 2: Chat endpoint
+                const chatRes = await fetch('http://localhost:8002/api/claude/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer dev-token'
+                    },
+                    body: JSON.stringify({
+                        message: 'teste',
+                        session_id: 'test-123'
+                    })
+                });
+                
+                if (!chatRes.ok) {
+                    throw new Error('Chat request failed: ' + chatRes.status);
+                }
+                
+                resultDiv.innerHTML += '<br>✅ Chat endpoint: OK';
+                
+                // Lê um pouco da resposta
+                const reader = chatRes.body.getReader();
+                const { value, done } = await reader.read();
+                const chunk = new TextDecoder().decode(value);
+                resultDiv.innerHTML += '<br>✅ Resposta: ' + chunk.substring(0, 100) + '...';
+                
+            } catch (error) {
+                resultDiv.innerHTML += '<br>❌ Erro: ' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
