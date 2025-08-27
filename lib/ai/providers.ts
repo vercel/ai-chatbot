@@ -3,7 +3,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { xai } from '@ai-sdk/xai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import {
   artifactModel,
   chatModel,
@@ -12,26 +12,33 @@ import {
 } from './models.test';
 import { isTestEnvironment } from '../constants';
 
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+});
+
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
-        'chat-model': chatModel,
-        'chat-model-reasoning': reasoningModel,
-        'title-model': titleModel,
-        'artifact-model': artifactModel,
+        'chat-model': openrouter.chat('openai/gpt-5-nano:online'),
+        'chat-model-reasoning': openrouter.chat('openai/gpt-5-nano'),
+        'title-model': openrouter.chat('openai/gpt-5-nano'),
+        'artifact-model': openrouter.chat('openai/gpt-5-nano'),
+        'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
+        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online'),
+        'enhancement-model': openrouter.chat('mistralai/ministral-8b')
       },
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        'chat-model': openrouter.chat('openai/gpt-5-nano:online'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
+          model: openrouter.chat('openai/gpt-5-nano'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
-      },
-      imageModels: {
-        'small-model': xai.imageModel('grok-2-image'),
+        'title-model': openrouter.chat('openai/gpt-5-nano'),
+        'artifact-model': openrouter.chat('openai/gpt-5-nano'),
+        'suggestion-model': openrouter.chat('mistralai/ministral-8b'),
+        'chat-model-web-search': openrouter.chat('openai/gpt-5-nano:online'),
+        'enhancement-model': openrouter.chat('mistralai/ministral-8b')
       },
     });

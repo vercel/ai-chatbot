@@ -168,3 +168,25 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const promptEnhancement = pgTable(
+  'PromptEnhancement',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    messageId: uuid('messageId')
+      .notNull()
+      .references(() => message.id),
+    originalPrompt: text('originalPrompt').notNull(),
+    enhancedPrompt: text('enhancedPrompt').notNull(),
+    confidence: json('confidence').notNull(), // Store as decimal
+    changes: json('changes').notNull(), // Array of Enhancement objects
+    analysis: json('analysis').notNull(), // PromptAnalysis object
+    processingTime: json('processingTime').notNull(), // Processing time in ms
+    enhancementType: varchar('enhancementType', { 
+      enum: ['template', 'ai', 'hybrid', 'conservative'] 
+    }).notNull().default('hybrid'),
+    createdAt: timestamp('createdAt').notNull(),
+  }
+);
+
+export type PromptEnhancement = InferSelectModel<typeof promptEnhancement>;
