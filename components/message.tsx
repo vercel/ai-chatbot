@@ -3,9 +3,17 @@ import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall, DocumentToolResult } from './document';
+import { DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
-import { Markdown } from './markdown';
+import { Response } from './elements/response';
+import { MessageContent } from './elements/message';
+import {
+  Tool,
+  ToolHeader,
+  ToolContent,
+  ToolInput,
+  ToolOutput,
+} from './elements/tool';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
@@ -54,7 +62,7 @@ const PurePreviewMessage = ({
     <AnimatePresence>
       <motion.div
         data-testid={`message-${message.role}`}
-        className="w-full mx-auto max-w-3xl px-4 group/message"
+        className="px-4 mx-auto w-full max-w-3xl group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
@@ -69,7 +77,7 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div className="flex justify-center items-center rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
               </div>
@@ -84,7 +92,7 @@ const PurePreviewMessage = ({
             {attachmentsFromMessage.length > 0 && (
               <div
                 data-testid={`message-attachments`}
-                className="flex flex-row justify-end gap-2"
+                className="flex flex-row gap-2 justify-end"
               >
                 {attachmentsFromMessage.map((attachment) => (
                   <PreviewAttachment
@@ -123,7 +131,7 @@ const PurePreviewMessage = ({
                             <Button
                               data-testid="message-edit-button"
                               variant="ghost"
-                              className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                              className="px-2 rounded-full opacity-0 h-fit text-muted-foreground group-hover/message:opacity-100"
                               onClick={() => {
                                 setMode('edit');
                               }}
@@ -135,15 +143,16 @@ const PurePreviewMessage = ({
                         </Tooltip>
                       )}
 
-                      <div
+                      <MessageContent
                         data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                        className={cn('justify-start items-start text-left', {
+                          'bg-primary text-primary-foreground':
                             message.role === 'user',
+                          'bg-transparent': message.role === 'assistant',
                         })}
                       >
-                        <Markdown>{sanitizeText(part.text)}</Markdown>
-                      </div>
+                        <Response>{sanitizeText(part.text)}</Response>
+                      </MessageContent>
                     </div>
                   );
                 }
@@ -168,144 +177,120 @@ const PurePreviewMessage = ({
               if (type === 'tool-getWeather') {
                 const { toolCallId, state } = part;
 
-                if (state === 'input-available') {
-                  return (
-                    <div key={toolCallId} className="skeleton">
-                      <Weather />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-                  return (
-                    <div key={toolCallId}>
-                      <Weather weatherAtLocation={output} />
-                    </div>
-                  );
-                }
+                return (
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-getWeather" state={state} />
+                    <ToolContent>
+                      {state === 'input-available' && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === 'output-available' && (
+                        <ToolOutput
+                          output={<Weather weatherAtLocation={part.output} />}
+                          errorText={undefined}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
               }
 
               if (type === 'tool-createDocument') {
                 const { toolCallId, state } = part;
 
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentPreview isReadonly={isReadonly} args={input} />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-
-                  if ('error' in output) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-red-500 p-2 border rounded"
-                      >
-                        Error: {String(output.error)}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentPreview
-                        isReadonly={isReadonly}
-                        result={output}
-                      />
-                    </div>
-                  );
-                }
+                return (
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-createDocument" state={state} />
+                    <ToolContent>
+                      {state === 'input-available' && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === 'output-available' && (
+                        <ToolOutput
+                          output={
+                            'error' in part.output ? (
+                              <div className="p-2 text-red-500 rounded border">
+                                Error: {String(part.output.error)}
+                              </div>
+                            ) : (
+                              <DocumentPreview
+                                isReadonly={isReadonly}
+                                result={part.output}
+                              />
+                            )
+                          }
+                          errorText={undefined}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
               }
 
               if (type === 'tool-updateDocument') {
                 const { toolCallId, state } = part;
 
-                if (state === 'input-available') {
-                  const { input } = part;
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolCall
-                        type="update"
-                        args={input}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-
-                  if ('error' in output) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-red-500 p-2 border rounded"
-                      >
-                        Error: {String(output.error)}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolResult
-                        type="update"
-                        result={output}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
+                return (
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-updateDocument" state={state} />
+                    <ToolContent>
+                      {state === 'input-available' && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === 'output-available' && (
+                        <ToolOutput
+                          output={
+                            'error' in part.output ? (
+                              <div className="p-2 text-red-500 rounded border">
+                                Error: {String(part.output.error)}
+                              </div>
+                            ) : (
+                              <DocumentToolResult
+                                type="update"
+                                result={part.output}
+                                isReadonly={isReadonly}
+                              />
+                            )
+                          }
+                          errorText={undefined}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
               }
 
               if (type === 'tool-requestSuggestions') {
                 const { toolCallId, state } = part;
 
-                if (state === 'input-available') {
-                  const { input } = part;
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolCall
-                        type="request-suggestions"
-                        args={input}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
-
-                if (state === 'output-available') {
-                  const { output } = part;
-
-                  if ('error' in output) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="text-red-500 p-2 border rounded"
-                      >
-                        Error: {String(output.error)}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={toolCallId}>
-                      <DocumentToolResult
-                        type="request-suggestions"
-                        result={output}
-                        isReadonly={isReadonly}
-                      />
-                    </div>
-                  );
-                }
+                return (
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-requestSuggestions" state={state} />
+                    <ToolContent>
+                      {state === 'input-available' && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === 'output-available' && (
+                        <ToolOutput
+                          output={
+                            'error' in part.output ? (
+                              <div className="p-2 text-red-500 rounded border">
+                                Error: {String(part.output.error)}
+                              </div>
+                            ) : (
+                              <DocumentToolResult
+                                type="request-suggestions"
+                                result={part.output}
+                                isReadonly={isReadonly}
+                              />
+                            )
+                          }
+                          errorText={undefined}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
               }
             })}
 
@@ -345,7 +330,7 @@ export const ThinkingMessage = () => {
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="w-full mx-auto max-w-3xl px-4 group/message min-h-96"
+      className="px-4 mx-auto w-full max-w-3xl group/message min-h-96"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
@@ -358,7 +343,7 @@ export const ThinkingMessage = () => {
           },
         )}
       >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
+        <div className="flex justify-center items-center rounded-full ring-1 size-8 shrink-0 ring-border">
           <SparklesIcon size={14} />
         </div>
 
