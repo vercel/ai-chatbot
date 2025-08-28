@@ -148,7 +148,7 @@ export function Chat({
           isArtifactVisible={isArtifactVisible}
         />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <div className="sticky bottom-0 flex gap-2 px-4 pb-4 mx-auto w-full bg-background md:pb-6 md:max-w-3xl z-[1] border-t-0">
           {!isReadonly && (
             <MultimodalInput
               chatId={id}
@@ -164,7 +164,7 @@ export function Chat({
               selectedVisibilityType={visibilityType}
             />
           )}
-        </form>
+        </div>
       </div>
 
       <Artifact
