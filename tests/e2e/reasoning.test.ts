@@ -21,7 +21,7 @@ test.describe('chat activity with reasoning', () => {
     );
   });
 
-  test.only('Curie can toggle reasoning visibility', async () => {
+  test('Curie can toggle reasoning visibility', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
