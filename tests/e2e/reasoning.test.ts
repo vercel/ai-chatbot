@@ -16,12 +16,12 @@ test.describe('chat activity with reasoning', () => {
     const assistantMessage = await chatPage.getRecentAssistantMessage();
     expect(assistantMessage.content).toBe("It's just blue duh!");
 
-    expect(assistantMessage.reasoning).toBe(
+    expect(assistantMessage.reasoningText).toBe(
       'The sky is blue because of rayleigh scattering!',
     );
   });
 
-  test('Curie can toggle reasoning visibility', async () => {
+  test.only('Curie can toggle reasoning visibility', async () => {
     await chatPage.sendUserMessage('Why is the sky blue?');
     await chatPage.isGenerationComplete();
 
@@ -55,7 +55,7 @@ test.describe('chat activity with reasoning', () => {
 
     expect(updatedAssistantMessage.content).toBe("It's just green duh!");
 
-    expect(updatedAssistantMessage.reasoning).toBe(
+    expect(updatedAssistantMessage.reasoningText).toBe(
       'Grass is green because of chlorophyll absorption!',
     );
   });

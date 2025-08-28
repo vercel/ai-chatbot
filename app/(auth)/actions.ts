@@ -1,6 +1,6 @@
 'use server';
 
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 import { createUser, getUser } from '@/lib/db/queries';
 

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 const textPartSchema = z.object({
   type: z.enum(['text']),

@@ -59,7 +59,7 @@ export class ArtifactPage {
     return {
       element: lastMessageElement,
       content,
-      reasoning: reasoningElement,
+      reasoningText: reasoningElement,
       async toggleReasoningVisibility() {
         await lastMessageElement
           .getByTestId('message-reasoning-toggle')
