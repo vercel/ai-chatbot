@@ -6,7 +6,7 @@ import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Response } from './elements/response';
-import { Message, MessageContent } from './elements/message';
+import { MessageContent } from './elements/message';
 import {
   Tool,
   ToolHeader,
@@ -145,13 +145,11 @@ const PurePreviewMessage = ({
 
                       <MessageContent
                         data-testid="message-content"
-                        className={cn(
-                          'justify-start items-start text-left',
-                          {
-                            'bg-primary text-primary-foreground': message.role === 'user',
-                            'bg-transparent': message.role === 'assistant',
-                          }
-                        )}
+                        className={cn('justify-start items-start text-left', {
+                          'bg-primary text-primary-foreground':
+                            message.role === 'user',
+                          'bg-transparent': message.role === 'assistant',
+                        })}
                       >
                         <Response>{sanitizeText(part.text)}</Response>
                       </MessageContent>
@@ -237,16 +235,7 @@ const PurePreviewMessage = ({
                     <ToolHeader type="tool-updateDocument" state={state} />
                     <ToolContent>
                       {state === 'input-available' && (
-                        <ToolOutput
-                          output={
-                            <DocumentToolCall
-                              type="update"
-                              args={part.input}
-                              isReadonly={isReadonly}
-                            />
-                          }
-                          errorText={undefined}
-                        />
+                        <ToolInput input={part.input} />
                       )}
                       {state === 'output-available' && (
                         <ToolOutput
@@ -279,16 +268,7 @@ const PurePreviewMessage = ({
                     <ToolHeader type="tool-requestSuggestions" state={state} />
                     <ToolContent>
                       {state === 'input-available' && (
-                        <ToolOutput
-                          output={
-                            <DocumentToolCall
-                              type="request-suggestions"
-                              args={part.input}
-                              isReadonly={isReadonly}
-                            />
-                          }
-                          errorText={undefined}
-                        />
+                        <ToolInput input={part.input} />
                       )}
                       {state === 'output-available' && (
                         <ToolOutput
