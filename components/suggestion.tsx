@@ -9,7 +9,7 @@ import type { UISuggestion } from '@/lib/editor/suggestions';
 import { CrossIcon, MessageIcon } from './icons';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { ArtifactKind } from './artifact';
+import type { ArtifactKind } from './artifact';
 
 export const Suggestion = ({
   suggestion,
@@ -41,16 +41,16 @@ export const Suggestion = ({
       ) : (
         <motion.div
           key={suggestion.id}
-          className="absolute bg-background p-3 flex flex-col gap-3 rounded-2xl border text-sm w-56 shadow-xl z-50 -right-12 md:-right-16 font-sans"
+          className="flex absolute -right-12 z-50 flex-col gap-3 p-3 w-56 font-sans text-sm rounded-2xl border shadow-xl bg-background md:-right-16"
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: -20 }}
           exit={{ opacity: 0, y: -10 }}
           whileHover={{ scale: 1.05 }}
         >
-          <div className="flex flex-row items-center justify-between">
-            <div className="flex flex-row items-center gap-2">
-              <div className="size-4 bg-muted-foreground/25 rounded-full" />
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-row gap-2 items-center">
+              <div className="rounded-full size-4 bg-muted-foreground/25" />
               <div className="font-medium">Assistant</div>
             </div>
             <button
