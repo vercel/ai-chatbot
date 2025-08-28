@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall, DocumentToolResult } from './document';
+import { DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Response } from './elements/response';
 import { MessageContent } from './elements/message';
