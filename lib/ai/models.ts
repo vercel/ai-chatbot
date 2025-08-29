@@ -17,4 +17,9 @@ export const chatModels: Array<ChatModel> = [
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
   },
+  {
+    id: 'web-automation-model',
+    name: 'Web Automation Agent',
+    description: 'AI agent for web navigation and automation tasks',
+  },
 ];

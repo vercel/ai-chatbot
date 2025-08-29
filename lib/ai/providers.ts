@@ -5,6 +5,7 @@ import {
 } from 'ai';
 import { xai } from '@ai-sdk/xai';
 import { openai } from '@ai-sdk/openai';
+import { gateway } from '@ai-sdk/gateway'
 import {
   artifactModel,
   chatModel,
@@ -20,6 +21,7 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
         'artifact-model': artifactModel,
+        'web-automation-model': chatModel, // Use same test model for web automation
       },
     })
   : customProvider({
@@ -31,6 +33,7 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': openai('gpt-4o-mini'),
         'artifact-model': openai('gpt-4o'),
+        // 'web-automation-model' is handled by Mastra agent, not this provider
       },
       imageModels: {
         'small-model': openai.image('dall-e-3'),

@@ -307,6 +307,101 @@ const PurePreviewMessage = ({
                   );
                 }
               }
+
+              // Handle any other tool calls (including web automation tools)
+              if (type.startsWith('tool-') && !['tool-getWeather', 'tool-createDocument', 'tool-updateDocument', 'tool-requestSuggestions'].includes(type)) {
+                const { toolCallId, state } = part as any;
+
+                if (state === 'input-available') {
+                  const { input } = part as any;
+                  
+                  // Special handling for specific tools
+                  if ((type as string) === 'tool-search-participants-by-name') {
+                    return (
+                      <div key={toolCallId} className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 text-sm font-medium mb-2">
+                          🔍 Searching Database
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Looking up participant: <code className="bg-muted px-1 py-0.5 rounded">{input?.name || 'participant'}</code>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if ((type as string) === 'tool-updateWorkingMemory') {
+                    return (
+                      <div key={toolCallId} className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 text-sm font-medium">
+                          🧠 Updating Memory
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Generic tool call display
+                  const toolName = type.replace('tool-', '').replace(/-/g, ' ');
+                  return (
+                    <div key={toolCallId} className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg border border-gray-200 dark:border-gray-800">
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm font-medium">
+                        🔧 {toolName}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {input ? JSON.stringify(input, null, 2) : 'Executing...'}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { output } = part as any;
+
+                  if (output && 'error' in output) {
+                    return (
+                      <div key={toolCallId} className="text-red-500 p-2 border rounded">
+                        Error: {String(output.error)}
+                      </div>
+                    );
+                  }
+
+                  // Special handling for specific tools
+                  if ((type as string) === 'tool-search-participants-by-name') {
+                    return (
+                      <div key={toolCallId} className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-2 text-green-700 dark:text-green-300 text-sm font-medium mb-2">
+                          ✅ Database Search Complete
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Found {output?.count || 0} participant(s)
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if ((type as string) === 'tool-updateWorkingMemory') {
+                    return (
+                      <div key={toolCallId} className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 text-sm font-medium">
+                          ✅ Memory Updated
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Generic tool result display
+                  const toolName = type.replace('tool-', '').replace(/-/g, ' ');
+                  return (
+                    <div key={toolCallId} className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-2 text-green-700 dark:text-green-300 text-sm font-medium mb-2">
+                        ✅ {toolName} Complete
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <pre className="whitespace-pre-wrap">{JSON.stringify(output, null, 2)}</pre>
+                      </div>
+                    </div>
+                  );
+                }
+              }
             })}
 
             {!isReadonly && (

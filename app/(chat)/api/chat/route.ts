@@ -37,8 +37,9 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import { mastra } from '@/lib/mastra';
 
-export const maxDuration = 60;
+export const maxDuration = 300; // 5 minutes for web automation tasks
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
@@ -149,13 +150,41 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Handle web automation model with Mastra agent
+    if (selectedChatModel === 'web-automation-model') {
+      const webAutomationAgent = mastra.getAgent('webAutomationAgent');
+      
+      // Convert UI messages to Mastra format
+      const mastraMessages = uiMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.parts.map(part => part.type === 'text' ? part.text : '').join('\n')
+      }));
+
+      try {
+        const stream = await webAutomationAgent.streamVNext(mastraMessages, {
+          format: 'aisdk', // Enable AI SDK v5 compatibility
+          onStepFinish: (step: any) => {
+            // Log step details to help debug tool call visibility
+            console.log('Step finished:', JSON.stringify(step, null, 2));
+          }
+        });
+
+        // Return the stream as a UI message stream response
+        return stream.toUIMessageStreamResponse();
+      } catch (error) {
+        console.error('Error with Mastra web automation agent:', error);
+        return new ChatSDKError('internal_server_error:api').toResponse();
+      }
+    }
+
+    // Default handling for other models
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
+          stopWhen: stepCountIs(50),
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
