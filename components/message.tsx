@@ -19,9 +19,55 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
+
+// Mapping function for tool names to user-friendly descriptions
+const getToolDisplayName = (toolName: string, input?: any): string => {
+  const toolMappings: Record<string, (input?: any) => string> = {
+    'playwright_browser_navigate': (input) => input?.url ? `Navigated to ${input.url}` : 'Navigated to page',
+    'playwright_browser_click': (input) => input?.element ? `Clicked on ${input.element}` : 'Clicked element',
+    'playwright_browser_type': (input) => input?.text ? `Typed "${input.text}"` : 'Typed text',
+    'playwright_browser_fill_form': () => 'Filled form fields',
+    'playwright_browser_select_option': (input) => input?.values ? `Selected "${input.values.join(', ')}"` : 'Selected option',
+    'playwright_browser_take_screenshot': () => 'Took screenshot',
+    'playwright_browser_snapshot': () => 'Captured page snapshot',
+    'playwright_browser_wait_for': (input) => input?.text ? `Waited for "${input.text}"` : 'Waited for element',
+    'playwright_browser_hover': (input) => input?.element ? `Hovered over ${input.element}` : 'Hovered over element',
+    'playwright_browser_drag': () => 'Performed drag and drop',
+    'playwright_browser_press_key': (input) => input?.key ? `Pressed key "${input.key}"` : 'Pressed key',
+    'playwright_browser_evaluate': () => 'Executed JavaScript',
+    'playwright_browser_close': () => 'Closed browser',
+    'playwright_browser_resize': () => 'Resized browser window',
+    'playwright_browser_tabs': () => 'Managed browser tabs',
+    'playwright_browser_console_messages': () => 'Retrieved console messages',
+    'playwright_browser_network_requests': () => 'Retrieved network requests',
+    'playwright_browser_handle_dialog': () => 'Handled dialog',
+    'playwright_browser_file_upload': () => 'Uploaded files',
+    'playwright_browser_install': () => 'Installed browser',
+    'playwright_browser_navigate_back': () => 'Navigated back',
+    'search-participants-by-name': (input) => input?.name ? `Searched for participant "${input.name}"` : 'Searched for participant',
+    'get-participant-with-household': () => 'Retrieved participant data',
+    'updateWorkingMemory': () => 'Updated working memory',
+  };
+
+  const cleanToolName = toolName.replace('tool-', '');
+  const mapper = toolMappings[cleanToolName];
+  
+  if (mapper) {
+    return mapper(input);
+  }
+  
+  // Fallback: convert kebab-case to readable format
+  return cleanToolName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
 
 const PurePreviewMessage = ({
   chatId,
@@ -138,7 +184,7 @@ const PurePreviewMessage = ({
                       <div
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                          'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 rounded-xl':
                             message.role === 'user',
                         })}
                       >
@@ -314,91 +360,93 @@ const PurePreviewMessage = ({
 
                 if (state === 'input-available') {
                   const { input } = part as any;
+                  const displayName = getToolDisplayName(type, input);
                   
-                  // Special handling for specific tools
-                  if ((type as string) === 'tool-search-participants-by-name') {
-                    return (
-                      <div key={toolCallId} className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 text-sm font-medium mb-2">
-                          🔍 Searching Database
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Looking up participant: <code className="bg-muted px-1 py-0.5 rounded">{input?.name || 'participant'}</code>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  if ((type as string) === 'tool-updateWorkingMemory') {
-                    return (
-                      <div key={toolCallId} className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 text-sm font-medium">
-                          🧠 Updating Memory
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  // Generic tool call display
-                  const toolName = type.replace('tool-', '').replace(/-/g, ' ');
                   return (
-                    <div key={toolCallId} className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg border border-gray-200 dark:border-gray-800">
-                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm font-medium">
-                        🔧 {toolName}
+                    <Collapsible key={toolCallId} defaultOpen={false} className="border rounded-md">
+                      <div className="flex items-center justify-between p-3">
+                        <div className="text-sm font-medium">
+                          {displayName}
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="p-1 h-auto">
+                            <ChevronDown className="h-4 w-4" />
+                            <span className="sr-only">Toggle details</span>
+                          </Button>
+                        </CollapsibleTrigger>
                       </div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        {input ? JSON.stringify(input, null, 2) : 'Executing...'}
-                      </div>
-                    </div>
+                      <CollapsibleContent className="px-3 pb-3">
+                        <div className="border-t pt-3">
+                          <div className="text-xs text-muted-foreground mb-2">Input:</div>
+                          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded whitespace-pre-wrap">
+                            {input ? JSON.stringify(input, null, 2) : 'No input data'}
+                          </pre>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   );
                 }
 
                 if (state === 'output-available') {
-                  const { output } = part as any;
+                  const { output, input } = part as any;
+                  const displayName = getToolDisplayName(type, input);
 
                   if (output && 'error' in output) {
                     return (
-                      <div key={toolCallId} className="text-red-500 p-2 border rounded">
-                        Error: {String(output.error)}
-                      </div>
+                      <Collapsible key={toolCallId} defaultOpen={false} className="border border-red-200 rounded-md">
+                        <div className="flex items-center justify-between p-3">
+                          <div className="text-sm font-medium text-red-600">
+                            {displayName} (Error)
+                          </div>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-1 h-auto">
+                              <ChevronDown className="h-4 w-4" />
+                              <span className="sr-only">Toggle details</span>
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
+                        <CollapsibleContent className="px-3 pb-3">
+                          <div className="border-t pt-3">
+                            <div className="text-xs text-muted-foreground mb-2">Error:</div>
+                            <div className="text-xs text-red-600 bg-red-50 dark:bg-red-950 p-2 rounded">
+                              {String(output.error)}
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     );
                   }
 
-                  // Special handling for specific tools
-                  if ((type as string) === 'tool-search-participants-by-name') {
-                    return (
-                      <div key={toolCallId} className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="flex items-center gap-2 text-green-700 dark:text-green-300 text-sm font-medium mb-2">
-                          ✅ Database Search Complete
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Found {output?.count || 0} participant(s)
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  if ((type as string) === 'tool-updateWorkingMemory') {
-                    return (
-                      <div key={toolCallId} className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 text-sm font-medium">
-                          ✅ Memory Updated
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  // Generic tool result display
-                  const toolName = type.replace('tool-', '').replace(/-/g, ' ');
                   return (
-                    <div key={toolCallId} className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                      <div className="flex items-center gap-2 text-green-700 dark:text-green-300 text-sm font-medium mb-2">
-                        ✅ {toolName} Complete
+                    <Collapsible key={toolCallId} defaultOpen={false} className="border rounded-md">
+                      <div className="flex items-center justify-between p-3">
+                        <div className="text-sm font-medium">
+                          {displayName} Complete
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="p-1 h-auto">
+                            <ChevronDown className="h-4 w-4" />
+                            <span className="sr-only">Toggle details</span>
+                          </Button>
+                        </CollapsibleTrigger>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        <pre className="whitespace-pre-wrap">{JSON.stringify(output, null, 2)}</pre>
-                      </div>
-                    </div>
+                      <CollapsibleContent className="px-3 pb-3">
+                        <div className="border-t pt-3">
+                          {input && (
+                            <>
+                              <div className="text-xs text-muted-foreground mb-2">Input:</div>
+                              <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded whitespace-pre-wrap mb-3">
+                                {JSON.stringify(input, null, 2)}
+                              </pre>
+                            </>
+                          )}
+                          <div className="text-xs text-muted-foreground mb-2">Result:</div>
+                          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded whitespace-pre-wrap">
+                            {JSON.stringify(output, null, 2)}
+                          </pre>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   );
                 }
               }
