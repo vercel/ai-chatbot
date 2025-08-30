@@ -20,24 +20,24 @@ function PureSuggestedActions({
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Apply Ximena Vargas',
+      label: 'ruhealth.org/appointments/apply-4-wic-form',
+      action: 'Please apply Ximena Vargas to this WIC benefit: https://www.ruhealth.org/appointments/apply-4-wic-form',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Aplica a Yolanda Fuentes',
+      label: 'riversideihss.org/IntakeApp',
+      action: 'Por favor aplica a Yolanda Fuentes (DOB 30 de octubre 2001) para el beneficio de Riverside IHSS: https://riversideihss.org/IntakeApp',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Apply Daniel Scott',
+      label: 'riversideihss.org/IntakeApp',
+      action: 'Lookup Daniel Scott. His birthday is 3/15/2004. Apply him to IHSS please: https://riversideihss.org/IntakeApp',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Aplica a Juan Pacheco',
+      label: 'ruhealth.org/appointments/apply-4-wic-form',
+      action: 'Por favor aplica a Juan Pacheco para este beneficio de WIC: https://www.ruhealth.org/appointments/apply-4-wic-form',
     },
   ];
 
@@ -68,7 +68,7 @@ function PureSuggestedActions({
             className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
           >
             <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">
+            <span className="text-muted-foreground text-xs font-mono">
               {suggestedAction.label}
             </span>
           </Button>

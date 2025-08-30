@@ -22,6 +22,7 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { BrowserPanel } from './browser-panel';
 
 export function Chat({
   id,
@@ -49,6 +50,8 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
+  const [browserPanelVisible, setBrowserPanelVisible] = useState<boolean>(false);
+  const [browserSessionId, setBrowserSessionId] = useState<string>(id);
 
   const {
     messages,
@@ -119,6 +122,35 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Monitor messages for browser tool usage
+  useEffect(() => {
+    const hasBrowserToolCall = messages.some(message => 
+      message.parts?.some(part => {
+        const partType = (part as any).type;
+        const toolName = (part as any).toolName;
+        
+        // Check for tool-call type with playwright toolName
+        if (partType === 'tool-call' && 
+            (toolName?.startsWith('playwright_browser') || 
+             toolName?.startsWith('mcp_playwright_browser'))) {
+          return true;
+        }
+        
+        // Check for tool- prefixed types (how tools appear in message parts)
+        if (partType?.startsWith('tool-playwright_browser') ||
+            partType?.startsWith('tool-mcp_playwright_browser')) {
+          return true;
+        }
+        
+        return false;
+      })
+    );
+    
+    if (hasBrowserToolCall && !browserPanelVisible) {
+      setBrowserPanelVisible(true);
+    }
+  }, [messages, browserPanelVisible]);
+
   useAutoResume({
     autoResume,
     initialMessages,
@@ -128,43 +160,59 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader
-          chatId={id}
-          selectedModelId={initialChatModel}
-          selectedVisibilityType={initialVisibilityType}
-          isReadonly={isReadonly}
-          session={session}
-        />
+      <div className={`flex h-dvh bg-background ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}>
+        {/* Chat Panel */}
+        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-1/2 border-r' : 'w-full'}`}>
+          <ChatHeader
+            chatId={id}
+            selectedModelId={initialChatModel}
+            selectedVisibilityType={initialVisibilityType}
+            isReadonly={isReadonly}
+            session={session}
+          />
 
-        <Messages
-          chatId={id}
-          status={status}
-          votes={votes}
-          messages={messages}
-          setMessages={setMessages}
-          regenerate={regenerate}
-          isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
-        />
+          <Messages
+            chatId={id}
+            status={status}
+            votes={votes}
+            messages={messages}
+            setMessages={setMessages}
+            regenerate={regenerate}
+            isReadonly={isReadonly}
+            isArtifactVisible={isArtifactVisible}
+          />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          {!isReadonly && (
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              status={status}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              sendMessage={sendMessage}
-              selectedVisibilityType={visibilityType}
+          <div className="shrink-0 mx-auto px-4 bg-background pb-4 md:pb-6 w-full">
+            {!isReadonly && (
+              <form className="flex gap-2 w-full md:max-w-3xl mx-auto">
+                <MultimodalInput
+                  chatId={id}
+                  input={input}
+                  setInput={setInput}
+                  status={status}
+                  stop={stop}
+                  attachments={attachments}
+                  setAttachments={setAttachments}
+                  messages={messages}
+                  setMessages={setMessages}
+                  sendMessage={sendMessage}
+                  selectedVisibilityType={visibilityType}
+                />
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* Browser Panel */}
+        {browserPanelVisible && (
+          <div className="w-1/2 flex flex-col">
+            <BrowserPanel
+              sessionId={browserSessionId}
+              isVisible={browserPanelVisible}
+              onToggle={setBrowserPanelVisible}
             />
-          )}
-        </form>
+          </div>
+        )}
       </div>
 
       <Artifact
