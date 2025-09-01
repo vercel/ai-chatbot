@@ -9,6 +9,7 @@ import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { Conversation, ConversationContent, ConversationScrollButton } from './elements/conversation';
+import { cn } from '@/lib/utils';
 
 interface MessagesProps {
   chatId: string;
@@ -29,6 +30,7 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
+  isArtifactVisible,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -45,7 +47,7 @@ function PureMessages({
 
   return (
     <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
-      <Conversation className="flex flex-col min-w-0 gap-6 pt-4 pb-32">
+      <Conversation className="flex flex-col min-w-0 gap-6 pt-4 pb-32 px-4 max-w-4xl mx-auto">
         <ConversationContent className="flex flex-col gap-6">
           {messages.length === 0 && <Greeting />}
 
@@ -66,6 +68,7 @@ function PureMessages({
               requiresScrollPadding={
                 hasSentMessage && index === messages.length - 1
               }
+              isArtifactVisible={isArtifactVisible}
             />
           ))}
 

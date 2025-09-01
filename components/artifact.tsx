@@ -67,6 +67,7 @@ function PureArtifact({
   votes,
   isReadonly,
   selectedVisibilityType,
+  selectedModelId,
 }: {
   chatId: string;
   input: string;
@@ -82,6 +83,7 @@ function PureArtifact({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
+  selectedModelId: string;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -286,9 +288,9 @@ function PureArtifact({
                 x: 0,
                 scale: 1,
                 transition: {
-                  delay: 0.2,
+                  delay: 0.1,
                   type: 'spring',
-                  stiffness: 200,
+                  stiffness: 300,
                   damping: 30,
                 },
               }}
@@ -336,6 +338,7 @@ function PureArtifact({
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
+                    selectedModelId={selectedModelId}
                   />
                 </div>
               </div>
@@ -375,9 +378,9 @@ function PureArtifact({
                     transition: {
                       delay: 0,
                       type: 'spring',
-                      stiffness: 200,
+                      stiffness: 300,
                       damping: 30,
-                      duration: 5000,
+                      duration: 0.8,
                     },
                   }
                 : {
@@ -392,9 +395,9 @@ function PureArtifact({
                     transition: {
                       delay: 0,
                       type: 'spring',
-                      stiffness: 200,
+                      stiffness: 300,
                       damping: 30,
-                      duration: 5000,
+                      duration: 0.8,
                     },
                   }
             }

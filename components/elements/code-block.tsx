@@ -54,6 +54,9 @@ export const CodeBlock = ({
             fontSize: '0.875rem',
             background: 'hsl(var(--background))',
             color: 'hsl(var(--foreground))',
+            overflowX: 'auto',
+            overflowWrap: 'break-word',
+            wordBreak: 'break-all',
           }}
           language={language}
           lineNumberStyle={{
@@ -77,6 +80,9 @@ export const CodeBlock = ({
             fontSize: '0.875rem',
             background: 'hsl(var(--background))',
             color: 'hsl(var(--foreground))',
+            overflowX: 'auto',
+            overflowWrap: 'break-word',
+            wordBreak: 'break-all',
           }}
           language={language}
           lineNumberStyle={{

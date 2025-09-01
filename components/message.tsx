@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import { PencilEditIcon, SparklesIcon, LoaderIcon } from './icons';
 import { Response } from './elements/response';
 import { MessageContent } from './elements/message';
 import {
@@ -40,6 +40,7 @@ const PurePreviewMessage = ({
   regenerate,
   isReadonly,
   requiresScrollPadding,
+  isArtifactVisible,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -49,6 +50,7 @@ const PurePreviewMessage = ({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
+  isArtifactVisible: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -62,31 +64,30 @@ const PurePreviewMessage = ({
     <AnimatePresence>
       <motion.div
         data-testid={`message-${message.role}`}
-        className="px-4 mx-auto w-full max-w-3xl group/message"
+        className="w-full group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
       >
         <div
-          className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
-            {
-              'w-full': mode === 'edit',
-              'group-data-[role=user]/message:w-fit': mode !== 'edit',
-            },
-          )}
+          className={cn('flex items-start gap-3', {
+            'w-full': mode === 'edit',
+            'max-w-xl ml-auto justify-end mr-10':
+              message.role === 'user' && mode !== 'edit',
+            'justify-start': message.role === 'assistant',
+          })}
         >
           {message.role === 'assistant' && (
-            <div className="flex justify-center items-center rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
-              <div className="translate-y-px">
-                <SparklesIcon size={14} />
-              </div>
+            <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
+              <SparklesIcon size={14} />
             </div>
           )}
 
           <div
-            className={cn('flex flex-col gap-4 w-full', {
+            className={cn('flex flex-col gap-4', {
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
+              'w-full': message.role === 'assistant',
+              'w-fit': message.role === 'user',
             })}
           >
             {attachmentsFromMessage.length > 0 && (
@@ -159,16 +160,20 @@ const PurePreviewMessage = ({
 
                 if (mode === 'edit') {
                   return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
+                    <div
+                      key={key}
+                      className="flex flex-row gap-3 items-start w-full"
+                    >
                       <div className="size-8" />
-
-                      <MessageEditor
-                        key={message.id}
-                        message={message}
-                        setMode={setMode}
-                        setMessages={setMessages}
-                        regenerate={regenerate}
-                      />
+                      <div className="flex-1 min-w-0">
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          setMode={setMode}
+                          setMessages={setMessages}
+                          regenerate={regenerate}
+                        />
+                      </div>
                     </div>
                   );
                 }
@@ -196,67 +201,47 @@ const PurePreviewMessage = ({
               }
 
               if (type === 'tool-createDocument') {
-                const { toolCallId, state } = part;
+                const { toolCallId } = part;
+
+                if (part.output && 'error' in part.output) {
+                  return (
+                    <div
+                      key={toolCallId}
+                      className="p-4 text-red-500 bg-red-50 rounded-lg border border-red-200 dark:bg-red-950/50"
+                    >
+                      Error creating document: {String(part.output.error)}
+                    </div>
+                  );
+                }
 
                 return (
-                  <Tool key={toolCallId} defaultOpen={true}>
-                    <ToolHeader type="tool-createDocument" state={state} />
-                    <ToolContent>
-                      {state === 'input-available' && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === 'output-available' && (
-                        <ToolOutput
-                          output={
-                            'error' in part.output ? (
-                              <div className="p-2 text-red-500 rounded border">
-                                Error: {String(part.output.error)}
-                              </div>
-                            ) : (
-                              <DocumentPreview
-                                isReadonly={isReadonly}
-                                result={part.output}
-                              />
-                            )
-                          }
-                          errorText={undefined}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
+                  <DocumentPreview
+                    key={toolCallId}
+                    isReadonly={isReadonly}
+                    result={part.output}
+                  />
                 );
               }
 
               if (type === 'tool-updateDocument') {
-                const { toolCallId, state } = part;
+                const { toolCallId } = part;
 
+                if (part.output && 'error' in part.output) {
+                  return (
+                    <div key={toolCallId} className="p-4 text-red-500 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/50">
+                      Error updating document: {String(part.output.error)}
+                    </div>
+                  );
+                }
+                
                 return (
-                  <Tool key={toolCallId} defaultOpen={true}>
-                    <ToolHeader type="tool-updateDocument" state={state} />
-                    <ToolContent>
-                      {state === 'input-available' && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === 'output-available' && (
-                        <ToolOutput
-                          output={
-                            'error' in part.output ? (
-                              <div className="p-2 text-red-500 rounded border">
-                                Error: {String(part.output.error)}
-                              </div>
-                            ) : (
-                              <DocumentToolResult
-                                type="update"
-                                result={part.output}
-                                isReadonly={isReadonly}
-                              />
-                            )
-                          }
-                          errorText={undefined}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
+                  <div key={toolCallId} className="relative">
+                    <DocumentPreview
+                      isReadonly={isReadonly}
+                      result={part.output}
+                      args={{ ...part.output, isUpdate: true }}
+                    />
+                  </div>
                 );
               }
 
@@ -343,7 +328,7 @@ export const ThinkingMessage = () => {
           },
         )}
       >
-        <div className="flex justify-center items-center rounded-full ring-1 size-8 shrink-0 ring-border">
+        <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
           <SparklesIcon size={14} />
         </div>
 
