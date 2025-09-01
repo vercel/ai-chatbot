@@ -13,13 +13,6 @@ export const Response = memo(
         'size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
         className,
       )}
-      components={{
-        code: ({ children, className, ...props }) => (
-          <code className={className} {...props}>
-            {children}
-          </code>
-        ),
-      }}
       {...props}
     />
   ),
