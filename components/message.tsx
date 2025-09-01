@@ -72,9 +72,9 @@ const PurePreviewMessage = ({
         <div
           className={cn('flex items-start gap-3', {
             'w-full': mode === 'edit',
-            'max-w-xl ml-auto justify-end mr-10':
+            'max-w-xl ml-auto justify-end mr-6':
               message.role === 'user' && mode !== 'edit',
-            'justify-start': message.role === 'assistant',
+            'justify-start -ml-3': message.role === 'assistant',
           })}
         >
           {message.role === 'assistant' && (
@@ -149,7 +149,7 @@ const PurePreviewMessage = ({
                         className={cn('justify-start items-start text-left', {
                           'bg-primary text-primary-foreground':
                             message.role === 'user',
-                          'bg-transparent': message.role === 'assistant',
+                          'bg-transparent -ml-4': message.role === 'assistant',
                         })}
                       >
                         <Response>{sanitizeText(part.text)}</Response>
@@ -315,25 +315,18 @@ export const ThinkingMessage = () => {
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="px-4 mx-auto w-full max-w-3xl group/message min-h-96"
+      className="w-full group/message"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
     >
-      <div
-        className={cx(
-          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
-          {
-            'group-data-[role=user]/message:bg-muted': true,
-          },
-        )}
-      >
-        <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
+      <div className="flex gap-4 w-full items-start justify-start">
+        <div className="flex justify-center items-center rounded-full ring-1 size-8 shrink-0 ring-border bg-background mt-1">
           <SparklesIcon size={14} />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
+          <div className="flex flex-col gap-2 text-muted-foreground">
             Hmm...
           </div>
         </div>
