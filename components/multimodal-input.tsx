@@ -332,7 +332,7 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
-              className="rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-sidebar-accent dark:hover:bg-sidebar-accent/80 p-3 text-gray-700 dark:text-gray-300"
+              className="p-3 text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 dark:bg-sidebar-accent dark:hover:bg-sidebar-accent/80 dark:text-gray-300"
             >
               <ArrowUpIcon size={20} />
             </PromptInputSubmit>
