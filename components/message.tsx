@@ -228,12 +228,15 @@ const PurePreviewMessage = ({
 
                 if (part.output && 'error' in part.output) {
                   return (
-                    <div key={toolCallId} className="p-4 text-red-500 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/50">
+                    <div
+                      key={toolCallId}
+                      className="p-4 text-red-500 bg-red-50 rounded-lg border border-red-200 dark:bg-red-950/50"
+                    >
                       Error updating document: {String(part.output.error)}
                     </div>
                   );
                 }
-                
+
                 return (
                   <div key={toolCallId} className="relative">
                     <DocumentPreview
@@ -320,15 +323,15 @@ export const ThinkingMessage = () => {
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
     >
-      <div className="flex gap-4 w-full items-start justify-start">
-        <div className="flex justify-center items-center rounded-full ring-1 size-8 shrink-0 ring-border bg-background mt-1">
+      <div className="flex items-start gap-3 justify-start -ml-3">
+        <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
           <SparklesIcon size={14} />
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-2 text-muted-foreground">
-            Hmm...
-          </div>
+        <div className="flex flex-col gap-4 w-full">
+          <MessageContent className="bg-transparent -ml-4">
+            <div className="text-muted-foreground">Hmm...</div>
+          </MessageContent>
         </div>
       </div>
     </motion.div>
