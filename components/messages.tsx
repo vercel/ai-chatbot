@@ -9,6 +9,7 @@ import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { Conversation, ConversationContent, ConversationScrollButton } from './elements/conversation';
+import { cn } from '@/lib/utils';
 
 interface MessagesProps {
   chatId: string;
@@ -29,6 +30,7 @@ function PureMessages({
   setMessages,
   regenerate,
   isReadonly,
+  isArtifactVisible,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
