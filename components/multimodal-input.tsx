@@ -28,10 +28,7 @@ import {
   PromptInputModelSelectTrigger,
   PromptInputModelSelectContent,
 } from './elements/prompt-input';
-import {
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select';
+import { SelectItem, SelectValue } from '@/components/ui/select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -83,15 +80,13 @@ function PureMultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
+      textareaRef.current.style.height = '72px';
     }
   };
 
   const resetHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = '98px';
+      textareaRef.current.style.height = '72px';
     }
   };
 
@@ -269,7 +264,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="border border-transparent shadow-lg transition-all duration-200 shadow-black/10 hover:border-primary/20 focus-within:border-primary/30 focus-within:shadow-xl focus-within:shadow-primary/20"
+        className="bg-gray-50 rounded-3xl border border-gray-300 shadow-none transition-all duration-200 dark:bg-sidebar dark:border-sidebar-border hover:ring-1 hover:ring-primary/30 focus-within:ring-1 focus-within:ring-primary/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -319,15 +314,14 @@ function PureMultimodalInput({
           placeholder="Send a message..."
           value={input}
           onChange={handleInput}
-          minHeight={48}
-          maxHeight={48}
+          minHeight={72}
+          maxHeight={200}
           disableAutoResize={true}
-          style={{ height: '48px', minHeight: '48px', maxHeight: '48px' }}
-          className="text-sm resize-none py-1 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="text-base resize-none py-4 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
           rows={1}
           autoFocus
         />
-        <PromptInputToolbar className="px-2 py-1">
+        <PromptInputToolbar className="px-4 py-2 !border-t-0 !border-top-0 shadow-none dark:!border-transparent dark:border-0">
           <PromptInputTools className="gap-2">
             <AttachmentsButton fileInputRef={fileInputRef} status={status} />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
@@ -338,9 +332,10 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground size-8"
-              size="sm"
-            />
+              className="p-3 text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 dark:bg-sidebar-accent dark:hover:bg-sidebar-accent/80 dark:text-gray-300"
+            >
+              <ArrowUpIcon size={20} />
+            </PromptInputSubmit>
           )}
         </PromptInputToolbar>
       </PromptInput>
@@ -394,13 +389,15 @@ function PureModelSelectorCompact({
 }) {
   const [optimisticModelId, setOptimisticModelId] = useState(selectedModelId);
 
-  const selectedModel = chatModels.find(model => model.id === optimisticModelId);
+  const selectedModel = chatModels.find(
+    (model) => model.id === optimisticModelId,
+  );
 
   return (
     <PromptInputModelSelect
       value={selectedModel?.name}
       onValueChange={(modelName) => {
-        const model = chatModels.find(m => m.name === modelName);
+        const model = chatModels.find((m) => m.name === modelName);
         if (model) {
           setOptimisticModelId(model.id);
           startTransition(() => {
@@ -409,18 +406,20 @@ function PureModelSelectorCompact({
         }
       }}
     >
-      <PromptInputModelSelectTrigger 
+      <PromptInputModelSelectTrigger
         type="button"
         className="text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
       >
-        {selectedModel?.name || "Select model"}
+        {selectedModel?.name || 'Select model'}
       </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent>
         {chatModels.map((model) => (
           <SelectItem key={model.id} value={model.name}>
-            <div className="flex flex-col items-start gap-1 py-1">
+            <div className="flex flex-col gap-1 items-start py-1">
               <div className="font-medium">{model.name}</div>
-              <div className="text-xs text-muted-foreground">{model.description}</div>
+              <div className="text-xs text-muted-foreground">
+                {model.description}
+              </div>
             </div>
           </SelectItem>
         ))}
