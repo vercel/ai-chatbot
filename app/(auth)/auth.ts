@@ -39,7 +39,11 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      credentials: {},
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
       async authorize({ email, password }: any) {
         const users = await getUser(email);
 
@@ -64,6 +68,7 @@ export const {
     }),
     Credentials({
       id: 'guest',
+      name: 'guest',
       credentials: {},
       async authorize() {
         const [guestUser] = await createGuestUser();
