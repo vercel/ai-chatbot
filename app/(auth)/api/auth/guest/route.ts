@@ -5,7 +5,13 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const redirectUrl = searchParams.get('redirectUrl') || '/';
+  let redirectUrl = searchParams.get('redirectUrl') || '/';
+  
+  // Fix localhost redirects to use the current host
+  if (redirectUrl.includes('localhost:3000')) {
+    const currentUrl = new URL(request.url);
+    redirectUrl = redirectUrl.replace('http://localhost:3000', `${currentUrl.protocol}//${currentUrl.host}`);
+  }
 
   const token = await getToken({
     req: request,
