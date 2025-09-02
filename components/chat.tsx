@@ -11,7 +11,7 @@ import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -121,6 +121,8 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const { setArtifact } = useArtifact();
+  const [browserArtifactDismissed, setBrowserArtifactDismissed] = useState(false);
 
   // Monitor messages for browser tool usage
   useEffect(() => {
@@ -146,10 +148,71 @@ export function Chat({
       })
     );
     
-    if (hasBrowserToolCall && !browserPanelVisible) {
-      setBrowserPanelVisible(true);
+    if (hasBrowserToolCall) {
+      if (initialChatModel === 'web-automation-model') {
+        // For web-automation-model, create browser artifact (only if not manually dismissed)
+        if (!isArtifactVisible && !browserArtifactDismissed) {
+          const userMessage = messages.find(msg => msg.role === 'user');
+          const messageText = userMessage?.parts.find(part => part.type === 'text')?.text || 'Web Automation';
+          const title = `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
+          
+          setArtifact({
+            documentId: generateUUID(),
+            content: `# ${title}\n\nBrowser automation session starting...`,
+            kind: 'browser',
+            title,
+            status: 'idle',
+            isVisible: true,
+            boundingBox: {
+              top: 0,
+              left: 0,
+              width: 0,
+              height: 0,
+            },
+          });
+        }
+      } else {
+        // For other models, use the old BrowserPanel
+        if (!browserPanelVisible) {
+          setBrowserPanelVisible(true);
+        }
+      }
     }
-  }, [messages, browserPanelVisible]);
+  }, [messages, browserPanelVisible, initialChatModel, isArtifactVisible, setArtifact, browserArtifactDismissed]);
+
+  // Track when user manually closes the browser artifact
+  useEffect(() => {
+    // If artifact was visible and now it's not, and we have browser tool calls, user dismissed it
+    if (!isArtifactVisible && !browserArtifactDismissed) {
+      const hasBrowserToolCall = messages.some(message => 
+        message.parts?.some(part => {
+          const partType = (part as any).type;
+          const toolName = (part as any).toolName;
+          
+          return (partType === 'tool-call' && 
+                  (toolName?.startsWith('playwright_browser') || 
+                   toolName?.startsWith('mcp_playwright_browser'))) ||
+                 (partType?.startsWith('tool-playwright_browser') ||
+                  partType?.startsWith('tool-mcp_playwright_browser'));
+        })
+      );
+      
+      if (hasBrowserToolCall && initialChatModel === 'web-automation-model') {
+        setBrowserArtifactDismissed(true);
+      }
+    }
+  }, [isArtifactVisible, browserArtifactDismissed, messages, initialChatModel]);
+
+  // Reset dismissed state when messages change significantly (new automation request)
+  useEffect(() => {
+    // If we have new messages and the last message is from user, reset dismissed state
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user' && browserArtifactDismissed) {
+        setBrowserArtifactDismissed(false);
+      }
+    }
+  }, [messages.length, browserArtifactDismissed]);
 
   useAutoResume({
     autoResume,
