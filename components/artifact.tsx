@@ -20,6 +20,7 @@ import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
 import { useSidebar } from './ui/sidebar';
 import { useArtifact } from '@/hooks/use-artifact';
+import { browserArtifact } from '@/artifacts/browser/client';
 import { imageArtifact } from '@/artifacts/image/client';
 import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
@@ -34,6 +35,7 @@ export const artifactDefinitions = [
   codeArtifact,
   imageArtifact,
   sheetArtifact,
+  browserArtifact,
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
@@ -422,13 +424,26 @@ function PureArtifact({
                     </div>
                   ) : document ? (
                     <div className="text-sm text-muted-foreground">
-                      {`Updated ${formatDistance(
-                        new Date(document.createdAt),
+                      {artifact.kind === 'browser' 
+                        ? `Session started ${formatDistance(
+                            new Date(document.createdAt),
+                            new Date(),
+                            { addSuffix: true }
+                          )}`
+                        : `Updated ${formatDistance(
+                            new Date(document.createdAt),
+                            new Date(),
+                            { addSuffix: true }
+                          )}`
+                      }
+                    </div>
+                  ) : artifact.kind === 'browser' && metadata?.sessionId ? (
+                    <div className="text-sm text-muted-foreground">
+                      Session started {formatDistance(
+                        new Date(parseInt(metadata.sessionId.split('-').pop() || '0')),
                         new Date(),
-                        {
-                          addSuffix: true,
-                        },
-                      )}`}
+                        { addSuffix: true }
+                      )}
                     </div>
                   ) : (
                     <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
