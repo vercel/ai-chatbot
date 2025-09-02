@@ -41,6 +41,5 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
-artifacts/
 .mastra/
 vertex-ai-credentials.json
