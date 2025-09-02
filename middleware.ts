@@ -24,10 +24,22 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
+    // Get the correct host and protocol from headers
+    const host = request.headers.get('host') || request.nextUrl.host;
+    const protocol = request.headers.get('x-forwarded-proto') || request.nextUrl.protocol;
+    const baseUrl = `${protocol}//${host}`;
+    
+    let redirectUrl = request.url;
+    
+    // Fix localhost URLs to use the current host
+    if (redirectUrl.includes('localhost:3000')) {
+      redirectUrl = redirectUrl.replace('http://localhost:3000', baseUrl);
+    }
+    
+    const encodedRedirectUrl = encodeURIComponent(redirectUrl);
+    
     return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
+      new URL(`/api/auth/guest?redirectUrl=${encodedRedirectUrl}`, baseUrl),
     );
   }
 
