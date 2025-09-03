@@ -73,51 +73,13 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
-        // Custom purple variants based on the Nava brand colors
-        purple: {
-          dark: '#4A1A4A',      // Dark Purple
-          primary: '#7B2C7B',   // Primary Purple 
-          light: '#B19CD9',     // Light Purple
-          50: '#F3F0FF',
-          100: '#E9E3FF',
-          200: '#D1C4FF',
-          300: '#B19CD9',
-          400: '#9B7EDB',
-          500: '#7B2C7B',
-          600: '#6B1A6B',
-          700: '#5A0F5A',
-          800: '#4A1A4A',
-          900: '#3A0F3A',
-          950: '#2A0A2A',
-        },
+
       },
     },
   },
   plugins: [
     require('tailwindcss-animate'), 
     require('@tailwindcss/typography'),
-    function({ addComponents }) {
-      addComponents({
-        '.switch-root': {
-          '@apply inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50': {},
-          '&[data-state="checked"]': {
-            '@apply bg-primary': {},
-          },
-          '&[data-state="unchecked"]': {
-            '@apply bg-purple-100': {},
-          },
-        },
-        '.switch-thumb': {
-          '@apply pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform': {},
-          '&[data-state="checked"]': {
-            '@apply translate-x-5': {},
-          },
-          '&[data-state="unchecked"]': {
-            '@apply translate-x-0': {},
-          },
-        },
-      })
-    }
   ],
 };
 export default config;

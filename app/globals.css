@@ -162,3 +162,41 @@
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
 }
+
+/* Assistant message bubble styling */
+.assistant-message-bubble {
+    @apply bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 px-3 py-2 rounded-xl;
+}
+
+.assistant-message-reasoning {
+    @apply text-purple-700 dark:text-purple-300;
+}
+
+.assistant-message-reasoning-border {
+    @apply border-purple-200 dark:border-purple-700;
+}
+
+/* Switch component styling */
+.switch-root {
+    @apply inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.switch-root[data-state="checked"] {
+    @apply bg-primary;
+}
+
+.switch-root[data-state="unchecked"] {
+    @apply bg-muted;
+}
+
+.switch-thumb {
+    @apply pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform;
+}
+
+.switch-thumb[data-state="checked"] {
+    @apply translate-x-5;
+}
+
+.switch-thumb[data-state="unchecked"] {
+    @apply translate-x-0;
+}
