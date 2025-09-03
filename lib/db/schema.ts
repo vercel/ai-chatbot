@@ -10,14 +10,10 @@ import {
   foreignKey,
   boolean,
 } from 'drizzle-orm/pg-core';
+import { user } from './schema-auth';
 
-export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  email: varchar('email', { length: 64 }).notNull(),
-  password: varchar('password', { length: 64 }),
-});
-
-export type User = InferSelectModel<typeof user>;
+export { user } from './schema-auth';
+export type { User } from './schema-auth';
 
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
