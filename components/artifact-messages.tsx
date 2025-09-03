@@ -37,6 +37,7 @@ function PureArtifactMessages({
   } = useMessages({
     chatId,
     status,
+    messages,
   });
 
   return (

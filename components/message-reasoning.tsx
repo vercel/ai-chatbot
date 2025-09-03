@@ -35,18 +35,19 @@ export function MessageReasoning({
     <div className="flex flex-col">
       {isLoading ? (
         <div className="flex flex-row gap-2 items-center">
-          <div className="font-medium">Reasoning</div>
+          <div className="font-medium assistant-message-reasoning">Reasoning</div>
           <div className="animate-spin">
             <LoaderIcon />
           </div>
         </div>
       ) : (
         <div className="flex flex-row gap-2 items-center">
-          <div className="font-medium">Reasoned for a few seconds</div>
+          <div className="font-medium assistant-message-reasoning">Reasoned for a few seconds</div>
           <button
             data-testid="message-reasoning-toggle"
             type="button"
             className="cursor-pointer"
+            aria-label={isExpanded ? "Collapse reasoning" : "Expand reasoning"}
             onClick={() => {
               setIsExpanded(!isExpanded);
             }}
@@ -67,7 +68,7 @@ export function MessageReasoning({
             variants={variants}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
-            className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
+            className="pl-4 assistant-message-reasoning border-l assistant-message-reasoning-border flex flex-col gap-4"
           >
             <Markdown>{reasoning}</Markdown>
           </motion.div>
