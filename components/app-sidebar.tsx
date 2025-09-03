@@ -1,12 +1,5 @@
 'use client';
 
-import type { User } from 'next-auth';
-import { useRouter } from 'next/navigation';
-
-import { PlusIcon } from '@/components/icons';
-import { SidebarHistory } from '@/components/sidebar-history';
-import { SidebarUserNav } from '@/components/sidebar-user-nav';
-import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -15,8 +8,15 @@ import {
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
-import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { PlusIcon } from '@/components/icons';
+import { SidebarHistory } from '@/components/sidebar-history';
+import { SidebarUserNav } from '@/components/sidebar-user-nav';
+import type { User } from 'next-auth';
+import { useRouter } from 'next/navigation';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();

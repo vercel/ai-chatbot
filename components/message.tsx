@@ -188,6 +188,8 @@ const PurePreviewMessage = ({
                         className={cn('flex flex-col gap-4', {
                           'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 rounded-xl':
                             message.role === 'user',
+                          'bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 px-3 py-2 rounded-xl':
+                            message.role === 'assistant',
                         })}
                       >
                         <Markdown>{sanitizeText(part.text)}</Markdown>
@@ -508,7 +510,7 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
+          <div className="flex flex-col gap-4 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 px-3 py-2 rounded-xl">
             Hmm...
           </div>
         </div>
