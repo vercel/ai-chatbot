@@ -1,28 +1,29 @@
 'use client';
 
-import { DefaultChatTransport } from 'ai';
-import { useChat } from '@ai-sdk/react';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import { fetchWithErrorHandlers, fetcher, generateUUID } from '@/lib/utils';
+import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+
 import { Artifact } from './artifact';
-import { MultimodalInput } from './multimodal-input';
+import { BrowserPanel } from './browser-panel';
+import { ChatHeader } from '@/components/chat-header';
+import { ChatSDKError } from '@/lib/errors';
+import { DefaultChatTransport } from 'ai';
 import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
+import type { Session } from 'next-auth';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
-import { unstable_serialize } from 'swr/infinite';
+import type { Vote } from '@/lib/db/schema';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
-import type { Session } from 'next-auth';
-import { useSearchParams } from 'next/navigation';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { unstable_serialize } from 'swr/infinite';
 import { useAutoResume } from '@/hooks/use-auto-resume';
-import { ChatSDKError } from '@/lib/errors';
-import type { Attachment, ChatMessage } from '@/lib/types';
+import { useChat } from '@ai-sdk/react';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useDataStream } from './data-stream-provider';
-import { BrowserPanel } from './browser-panel';
+import { useSearchParams } from 'next/navigation';
 
 export function Chat({
   id,

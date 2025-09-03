@@ -1,13 +1,14 @@
 import { PreviewMessage, ThinkingMessage } from './message';
+
+import type { ChatMessage } from '@/lib/types';
 import { Greeting } from './greeting';
-import { memo } from 'react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
-import type { UseChatHelpers } from '@ai-sdk/react';
+import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { useMessages } from '@/hooks/use-messages';
-import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { useMessages } from '@/hooks/use-messages';
 
 interface MessagesProps {
   chatId: string;
@@ -38,6 +39,7 @@ function PureMessages({
   } = useMessages({
     chatId,
     status,
+    messages,
   });
 
   useDataStream();

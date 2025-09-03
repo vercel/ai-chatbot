@@ -1,17 +1,22 @@
 import useSWR from 'swr';
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 
 type ScrollFlag = ScrollBehavior | false;
 
 export function useScrollToBottom() {
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const { data: isAtBottom = false, mutate: setIsAtBottom } = useSWR(
     'messages:is-at-bottom',
     null,
     { fallbackData: false },
   );
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const { data: scrollBehavior = false, mutate: setScrollBehavior } =
     useSWR<ScrollFlag>('messages:should-scroll', null, { fallbackData: false });
@@ -41,7 +46,7 @@ export function useScrollToBottom() {
   return {
     containerRef,
     endRef,
-    isAtBottom,
+    isAtBottom: isHydrated ? isAtBottom : false,
     scrollToBottom,
     onViewportEnter,
     onViewportLeave,

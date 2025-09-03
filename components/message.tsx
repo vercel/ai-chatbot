@@ -1,30 +1,32 @@
 'use client';
-import cx from 'classnames';
+
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
-import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
-import { Markdown } from './markdown';
-import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
-import equal from 'fast-deep-equal';
-import { cn, sanitizeText } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
-import { MessageReasoning } from './message-reasoning';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage } from '@/lib/types';
-import { useDataStream } from './data-stream-provider';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible';
+import { DocumentToolCall, DocumentToolResult } from './document';
+import { PencilEditIcon, SparklesIcon } from './icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { cn, sanitizeText } from '@/lib/utils';
+import { memo, useState } from 'react';
+
+import { Button } from './ui/button';
+import type { ChatMessage } from '@/lib/types';
 import { ChevronDown } from 'lucide-react';
+import { DocumentPreview } from './document-preview';
+import { Markdown } from './markdown';
+import { MessageActions } from './message-actions';
+import { MessageEditor } from './message-editor';
+import { MessageReasoning } from './message-reasoning';
+import { PreviewAttachment } from './preview-attachment';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { Vote } from '@/lib/db/schema';
+import { Weather } from './weather';
+import cx from 'classnames';
+import equal from 'fast-deep-equal';
+import { useDataStream } from './data-stream-provider';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls

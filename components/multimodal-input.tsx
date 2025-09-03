@@ -200,6 +200,11 @@ function PureMultimodalInput({
   );
 
   const { isAtBottom, scrollToBottom } = useScrollToBottom();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (status === 'submitted') {
@@ -210,7 +215,7 @@ function PureMultimodalInput({
   return (
     <div className="relative w-full flex flex-col gap-4">
       <AnimatePresence>
-        {!isAtBottom && (
+        {isHydrated && !isAtBottom && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -251,6 +256,8 @@ function PureMultimodalInput({
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
+        aria-label="Upload files"
+        title="Upload files"
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
