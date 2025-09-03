@@ -1,11 +1,11 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Button } from './ui/button';
-import type { ChatMessage } from '@/lib/types';
+import { memo } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
-import { memo } from 'react';
-import { motion } from 'framer-motion';
+import type { ChatMessage } from '@/lib/types';
 
 interface SuggestedActionsProps {
   chatId: string;
