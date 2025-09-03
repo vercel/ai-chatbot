@@ -7,4 +7,8 @@ const handler = protectedResourceHandler({
   authServerUrls: ['https://intentional-oil-65-staging.authkit.app'],
 });
 
-export { handler as GET, metadataCorsOptionsRequestHandler as OPTIONS };
+export const GET = handler;
+
+export async function OPTIONS(): Promise<Response> {
+  return metadataCorsOptionsRequestHandler()();
+}
