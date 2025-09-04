@@ -14,9 +14,9 @@ Use this if you want to bring back an animated timeline with dots and a collapsi
 
 ### Integration notes
 
-1) Create a component file (for example `components/message-reasoning-timeline.tsx`) and paste the implementation below.
-2) In `components/message.tsx`, where we handle a reasoning part, render `MessageReasoningTimeline` instead of the current `MessageReasoning`.
-3) Pass tool content as `children` to appear after reasoning in the timeline.
+1. Create a component file (for example `components/message-reasoning-timeline.tsx`) and paste the implementation below.
+2. In `components/message.tsx`, where we handle a reasoning part, render `MessageReasoningTimeline` instead of the current `MessageReasoning`.
+3. Pass tool content as `children` to appear after reasoning in the timeline.
 
 If you previously used the now-removed `Markdown` component, you can swap it with the `Response` element to render rich text consistently with the rest of the app.
 
@@ -28,15 +28,15 @@ If you previously used the now-removed `Markdown` component, you can swap it wit
 ### Component implementation (drop-in)
 
 ```tsx
-'use client';
+"use client";
 
-import { type ReactNode, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { type ReactNode, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 // Option A (local icons):
 // import { ChevronDownIcon, LoaderIcon } from '@/components/icons';
 // Option B (lucide):
-import { ChevronDown, Loader2 } from 'lucide-react';
-import { Response } from '@/components/elements/response';
+import { ChevronDown, Loader2 } from "lucide-react";
+import { Response } from "@/components/elements/response";
 
 interface MessageReasoningTimelineProps {
   isLoading: boolean;
@@ -53,16 +53,28 @@ export function MessageReasoningTimeline({
 
   const variants = {
     collapsed: { height: 0, opacity: 0, marginTop: 0, marginBottom: 0 },
-    expanded: { height: 'auto', opacity: 1, marginTop: '1rem', marginBottom: '0.5rem' },
+    expanded: {
+      height: "auto",
+      opacity: 1,
+      marginTop: "1rem",
+      marginBottom: "0.5rem",
+    },
   } as const;
 
-  const childrenArray = Array.isArray(children) ? children : children ? [children] : [];
+  const childrenArray = Array.isArray(children)
+    ? children
+    : children
+    ? [children]
+    : [];
 
-  const timelineItems: Array<{ type: 'reasoning' | 'tool'; content: ReactNode }> = [];
+  const timelineItems: Array<{
+    type: "reasoning" | "tool";
+    content: ReactNode;
+  }> = [];
 
   if (reasoning && reasoning.trim().length > 0) {
     timelineItems.push({
-      type: 'reasoning',
+      type: "reasoning",
       content: (
         <div className="text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed pt-8">
           {/* If you prefer, swap <Response> for your own Markdown renderer. */}
@@ -73,7 +85,7 @@ export function MessageReasoningTimeline({
   }
 
   for (const child of childrenArray) {
-    timelineItems.push({ type: 'tool', content: child });
+    timelineItems.push({ type: "tool", content: child });
   }
 
   return (
@@ -110,8 +122,8 @@ export function MessageReasoningTimeline({
             animate="expanded"
             exit="collapsed"
             variants={variants}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
             className="relative"
           >
             {/* Timeline container */}
@@ -122,14 +134,21 @@ export function MessageReasoningTimeline({
               {/* Timeline items */}
               <div className="space-y-2">
                 {timelineItems.map((item, index) => (
-                  <div key={`timeline-item-${item.type}-${index}`} className="relative">
+                  <div
+                    key={`timeline-item-${item.type}-${index}`}
+                    className="relative"
+                  >
                     {/* Timeline dot */}
                     <div className="absolute -left-4 top-3 size-2.5 rounded-full bg-zinc-400 dark:bg-zinc-500 border-2 border-white dark:border-gray-900 z-10" />
                     {/* White strip to mask line under the dot */}
                     <div className="absolute -left-4 w-3 h-8 bg-white dark:bg-gray-900" />
 
                     {/* Content */}
-                    <div className={item.type === 'tool' ? 'text-sm pl-2' : 'text-sm'}>
+                    <div
+                      className={
+                        item.type === "tool" ? "text-sm pl-2" : "text-sm"
+                      }
+                    >
                       {item.content}
                     </div>
                   </div>
@@ -152,12 +171,12 @@ return (
   <MessageReasoningTimeline isLoading={isLoading} reasoning={part.text}>
     {/* Render tool children here if you want them in the timeline */}
     {Array.isArray((part as any)._toolChildren)
-      ? (part as any)._toolChildren.map((c: any, childIndex: number) => renderToolChild(c, childIndex))
+      ? (part as any)._toolChildren.map((c: any, childIndex: number) =>
+          renderToolChild(c, childIndex)
+        )
       : null}
   </MessageReasoningTimeline>
 );
 ```
 
 That’s it. You can tweak the spacing, colors, and animation timings to match your current design system.
-
-

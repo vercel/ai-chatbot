@@ -17,8 +17,9 @@ export const myProvider = isTestEnvironment
         'chat-model': gateway.languageModel('openai/gpt-5'),
         'title-model': gateway.languageModel('openai/gpt-4.1-nano'),
         'artifact-model': gateway.languageModel('openai/gpt-4.1'),
-      },
-      imageModels: {
-        'small-model': gateway.imageModel('openai/gpt-image-1'),
+        // Add Gemini 2.5 Flash as a multimodal language model
+        'gemini-multimodal': gateway.languageModel(
+          'google/gemini-2.5-flash-image-preview',
+        ),
       },
     });
