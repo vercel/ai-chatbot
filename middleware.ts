@@ -17,6 +17,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Permite acesso direto à página inicial, /claude e APIs temporariamente
+  if (pathname === '/' || pathname.startsWith('/claude') || pathname.startsWith('/api/claude') || pathname.startsWith('/api/test')) {
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
@@ -44,6 +49,7 @@ export const config = {
   matcher: [
     '/',
     '/chat/:id',
+    '/claude',
     '/api/:path*',
     '/login',
     '/register',

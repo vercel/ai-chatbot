@@ -1,0 +1,108 @@
+
+> ai-chatbot@3.1.0 dev /home/suthub/.claude/ai-chatbot
+> next dev --turbo --port 3033
+
+   ▲ Next.js 15.3.0-canary.31 (Turbopack)
+   - Local:        http://localhost:3033
+   - Network:      http://195.35.19.73:3033
+   - Experiments (use with caution):
+     ✓ ppr
+
+ ✓ Starting...
+ ✓ Compiled in 1291ms
+ ✓ Ready in 2.5s
+ ELIFECYCLE  Command failed.
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection:  Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ✓ Compiled middleware in 27ms
+ ✓ Compiled in 42ms
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ○ Compiling /claude ...
+ ✓ Compiled /claude in 4.9s
+ ⚠ ./node_modules/.pnpm/isomorphic-dompurify@2.26.0_bufferutil@4.0.9/node_modules/isomorphic-dompurify
+Package jsdom can't be external
+The request jsdom matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install jsdom from the project directory.
+
+
+ HEAD /claude 200 in 5786ms
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection:  Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection:  Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection:  Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection:  Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⚠ Failed to reload dynamic routes: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection: Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+ ⨯ unhandledRejection:  Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+Error: You cannot use different slug names for the same dynamic path ('sessionId' !== 'shortId').
+    at Array.forEach (<anonymous>)
+[?25h

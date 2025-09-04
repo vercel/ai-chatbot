@@ -1,0 +1,28 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+sse-starlette==1.8.2
+pydantic==2.5.0
+asyncio==3.4.3
+
+# Segurança e Rate Limiting
+redis==5.0.1
+psutil==5.9.6
+
+# Logging e Monitoramento  
+structlog==23.2.0
+
+# Validação e Sanitização
+bleach==6.1.0
+validators==0.22.0
+
+# Criptografia e Hashing
+cryptography==41.0.7
+bcrypt==4.1.2
+
+# Detecção de Ataques
+python-dateutil==2.8.2
+regex==2023.10.3
+
+# Utilitários
+pathlib==1.0.1

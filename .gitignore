@@ -80,3 +80,4 @@ Desktop.ini
 README-DATABASE.md
 setup-db.sql
 venv/*
+dashboard-venv/*

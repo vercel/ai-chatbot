@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste do Chat Interface</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-ok { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-loading { background: #ffc107; animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste do Chat Interface</h1>
+        
+        <div class="test-section">
+            <h2>1️⃣ Verificação da Página</h2>
+            <button onclick="checkPage()">Verificar Página /claude</button>
+            <div id="pageResult" class="test-result pending">Aguardando teste...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>2️⃣ Teste de Mensagem Simples</h2>
+            <button onclick="testSimpleMessage()">Enviar Mensagem de Teste</button>
+            <div id="messageResult" class="test-result pending">Aguardando teste...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>3️⃣ Teste de Stream SSE</h2>
+            <button onclick="testStreamSSE()">Testar Stream em Tempo Real</button>
+            <div id="streamResult" class="test-result pending">Aguardando teste...</div>
+            <div id="streamContent" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px; min-height: 50px; display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4️⃣ Teste de Conversa Completa</h2>
+            <button onclick="testFullConversation()">Simular Conversa</button>
+            <div id="conversationResult" class="test-result pending">Aguardando teste...</div>
+        </div>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3033';
+        const SESSION_ID = '00000000-0000-0000-0000-000000000001';
+
+        async function checkPage() {
+            const result = document.getElementById('pageResult');
+            result.className = 'test-result pending';
+            result.innerHTML = '<span class="status-indicator status-loading"></span>Verificando página...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/claude`);
+                if (response.ok) {
+                    result.className = 'test-result success';
+                    result.innerHTML = '<span class="status-indicator status-ok"></span>✅ Página carregada com sucesso (Status: ' + response.status + ')';
+                } else {
+                    result.className = 'test-result error';
+                    result.innerHTML = '<span class="status-indicator status-error"></span>❌ Erro ao carregar página (Status: ' + response.status + ')';
+                }
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = '<span class="status-indicator status-error"></span>❌ Erro de conexão: ' + error.message;
+            }
+        }
+
+        async function testSimpleMessage() {
+            const result = document.getElementById('messageResult');
+            result.className = 'test-result pending';
+            result.innerHTML = '<span class="status-indicator status-loading"></span>Enviando mensagem...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/claude/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: 'Olá, teste simples!' }],
+                        sessionId: SESSION_ID
+                    })
+                });
+                
+                if (response.ok) {
+                    result.className = 'test-result success';
+                    result.innerHTML = '<span class="status-indicator status-ok"></span>✅ Mensagem enviada com sucesso';
+                } else {
+                    result.className = 'test-result error';
+                    result.innerHTML = '<span class="status-indicator status-error"></span>❌ Erro no envio (Status: ' + response.status + ')';
+                }
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = '<span class="status-indicator status-error"></span>❌ Erro: ' + error.message;
+            }
+        }
+
+        async function testStreamSSE() {
+            const result = document.getElementById('streamResult');
+            const content = document.getElementById('streamContent');
+            
+            result.className = 'test-result pending';
+            result.innerHTML = '<span class="status-indicator status-loading"></span>Iniciando stream...';
+            content.style.display = 'block';
+            content.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/claude/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: 'Teste de streaming em tempo real' }],
+                        sessionId: SESSION_ID
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.type === 'text_chunk') {
+                                    fullText += data.content;
+                                    content.innerHTML = fullText;
+                                } else if (data.type === 'done') {
+                                    result.className = 'test-result success';
+                                    result.innerHTML = '<span class="status-indicator status-ok"></span>✅ Stream completado com sucesso';
+                                }
+                            } catch (e) {
+                                console.error('Erro ao processar chunk:', e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = '<span class="status-indicator status-error"></span>❌ Erro no stream: ' + error.message;
+            }
+        }
+
+        async function testFullConversation() {
+            const result = document.getElementById('conversationResult');
+            const responseDiv = document.getElementById('response');
+            
+            result.className = 'test-result pending';
+            result.innerHTML = '<span class="status-indicator status-loading"></span>Simulando conversa...';
+            responseDiv.innerHTML = '📝 Iniciando conversa simulada...\n\n';
+
+            const messages = [
+                { role: 'user', content: 'Olá! Como você está?' },
+                { role: 'user', content: 'Você pode me ajudar com programação?' },
+                { role: 'user', content: 'O que é Python?' }
+            ];
+
+            try {
+                for (let i = 0; i < messages.length; i++) {
+                    responseDiv.innerHTML += `👤 Usuário: ${messages[i].content}\n`;
+                    
+                    const response = await fetch(`${API_BASE}/api/claude/test`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            messages: messages.slice(0, i + 1),
+                            sessionId: SESSION_ID
+                        })
+                    });
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let assistantResponse = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    if (data.type === 'text_chunk') {
+                                        assistantResponse += data.content;
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    }
+
+                    responseDiv.innerHTML += `🤖 Assistente: ${assistantResponse}\n\n`;
+                    
+                    // Delay entre mensagens
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                result.className = 'test-result success';
+                result.innerHTML = '<span class="status-indicator status-ok"></span>✅ Conversa simulada com sucesso';
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = '<span class="status-indicator status-error"></span>❌ Erro na conversa: ' + error.message;
+            }
+        }
+
+        // Teste inicial ao carregar a página
+        window.addEventListener('load', () => {
+            console.log('🚀 Teste do Chat Interface carregado');
+            console.log('📍 API Base:', API_BASE);
+            console.log('🔑 Session ID:', SESSION_ID);
+        });
+    </script>
+</body>
+</html>

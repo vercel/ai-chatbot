@@ -1,0 +1,376 @@
+#!/usr/bin/env python3
+"""
+Claude - Interface de chat interativo para o Claude Code SDK.
+Digite suas mensagens e pressione Enter para enviar.
+"""
+
+import sys
+import asyncio
+import os
+import json
+import requests
+from pathlib import Path
+from datetime import datetime
+
+# Adiciona o diretório ao path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
+
+from src import AssistantMessage, TextBlock, ResultMessage, ClaudeSDKClient, __version__
+
+# Configurações do viewer
+VIEWER_API_URL = "http://localhost:3043"
+
+async def get_sessions():
+    """Busca sessões do viewer HTTP."""
+    try:
+        response = requests.get(f"{VIEWER_API_URL}/api/sessions", timeout=5)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"❌ Erro HTTP {response.status_code} ao carregar sessões")
+            return []
+    except requests.exceptions.ConnectionError:
+        print(f"❌ Não foi possível conectar ao viewer em {VIEWER_API_URL}")
+        print("💡 Certifique-se de que o viewer está rodando")
+        return []
+    except Exception as e:
+        print(f"❌ Erro ao carregar sessões: {str(e)}")
+        return []
+
+async def session_browser():
+    """Interface de navegação de sessões no CLI."""
+    print("\n" + "=" * 60)
+    print("🔍 NAVEGADOR DE SESSÕES")
+    print("=" * 60)
+    
+    sessions = await get_sessions()
+    if not sessions:
+        input("\n📭 Nenhuma sessão encontrada. Pressione Enter para continuar...")
+        return
+    
+    print(f"📊 {len(sessions)} sessões encontradas")
+    
+    while True:
+        print("\n" + "-" * 60)
+        print("🔍 OPÇÕES:")
+        print("1. 📋 Listar todas as sessões")
+        print("2. 🔍 Buscar sessão por ID")
+        print("3. 📁 Filtrar por diretório/projeto")
+        print("4. 🌐 Abrir sessão no viewer web")
+        print("5. 📝 Gerar resumo de sessão")
+        print("0. ⬅️  Voltar ao chat")
+        
+        try:
+            choice = input("\n👤 Escolha uma opção: ").strip()
+        except EOFError:
+            break
+            
+        if choice == "0":
+            break
+        elif choice == "1":
+            await list_sessions(sessions)
+        elif choice == "2":
+            await search_session(sessions)
+        elif choice == "3":
+            await filter_by_directory(sessions)
+        elif choice == "4":
+            await open_in_web(sessions)
+        elif choice == "5":
+            await generate_summary(sessions)
+        else:
+            print("❌ Opção inválida")
+
+async def list_sessions(sessions, limit=20):
+    """Lista sessões com paginação."""
+    print(f"\n📋 LISTAGEM DE SESSÕES (últimas {min(limit, len(sessions))})")
+    print("-" * 60)
+    
+    # Ordenar por última interação (mais recentes primeiro)
+    sorted_sessions = sorted(sessions, key=lambda x: x.get('last_interaction', ''), reverse=True)
+    
+    for i, session in enumerate(sorted_sessions[:limit]):
+        directory_short = session['directory'].split('/')[-1] if '/' in session['directory'] else session['directory']
+        print(f"{i+1:2d}. 📄 {session['session_id'][:12]}... | 📁 {directory_short} | ⏰ {session.get('last_interaction', 'N/A')}")
+    
+    if len(sessions) > limit:
+        print(f"\n... e mais {len(sessions) - limit} sessões")
+    
+    input("\nPressione Enter para continuar...")
+
+async def search_session(sessions):
+    """Busca sessão por ID parcial."""
+    try:
+        search_term = input("\n🔍 Digite parte do ID da sessão: ").strip().lower()
+    except EOFError:
+        return
+        
+    if not search_term:
+        return
+    
+    matches = [s for s in sessions if search_term in s['session_id'].lower()]
+    
+    if not matches:
+        print(f"❌ Nenhuma sessão encontrada com '{search_term}'")
+        input("Pressione Enter para continuar...")
+        return
+    
+    print(f"\n🎯 {len(matches)} sessão(ões) encontrada(s):")
+    print("-" * 60)
+    
+    for i, session in enumerate(matches):
+        directory_short = session['directory'].split('/')[-1] if '/' in session['directory'] else session['directory']
+        print(f"{i+1}. 📄 {session['session_id']} | 📁 {directory_short}")
+    
+    if len(matches) == 1:
+        await show_session_details(matches[0])
+    else:
+        input("\nPressione Enter para continuar...")
+
+async def filter_by_directory(sessions):
+    """Filtra sessões por diretório/projeto."""
+    directories = sorted(list(set(s['directory'] for s in sessions)))
+    
+    print(f"\n📁 DIRETÓRIOS/PROJETOS ({len(directories)} encontrados):")
+    print("-" * 60)
+    
+    for i, directory in enumerate(directories):
+        session_count = sum(1 for s in sessions if s['directory'] == directory)
+        directory_short = directory.split('/')[-1] if '/' in directory else directory
+        print(f"{i+1:2d}. 📁 {directory_short} ({session_count} sessões)")
+    
+    try:
+        choice = input(f"\n👤 Escolha um diretório (1-{len(directories)}): ").strip()
+        dir_idx = int(choice) - 1
+        
+        if 0 <= dir_idx < len(directories):
+            selected_dir = directories[dir_idx]
+            filtered_sessions = [s for s in sessions if s['directory'] == selected_dir]
+            await list_sessions(filtered_sessions, 50)  # Mostrar mais sessões do diretório selecionado
+        else:
+            print("❌ Número inválido")
+            input("Pressione Enter para continuar...")
+    except (ValueError, EOFError):
+        print("❌ Entrada inválida")
+        input("Pressione Enter para continuar...")
+
+async def open_in_web(sessions):
+    """Abre sessão selecionada no browser web."""
+    try:
+        session_id = input("\n🌐 Digite o ID da sessão (ou parte): ").strip()
+    except EOFError:
+        return
+        
+    if not session_id:
+        return
+    
+    matches = [s for s in sessions if session_id.lower() in s['session_id'].lower()]
+    
+    if not matches:
+        print(f"❌ Sessão '{session_id}' não encontrada")
+        input("Pressione Enter para continuar...")
+        return
+    
+    if len(matches) > 1:
+        print(f"⚠️  Múltiplas sessões encontradas ({len(matches)}). Use um ID mais específico.")
+        for session in matches[:5]:  # Mostrar apenas 5 primeiros
+            print(f"   📄 {session['session_id']}")
+        input("Pressione Enter para continuar...")
+        return
+    
+    session = matches[0]
+    await show_session_details(session)
+
+async def show_session_details(session):
+    """Mostra detalhes de uma sessão específica."""
+    print("\n" + "=" * 60)
+    print("📄 DETALHES DA SESSÃO")
+    print("=" * 60)
+    
+    print(f"🆔 ID: {session['session_id']}")
+    print(f"📁 Diretório: {session['directory']}")
+    print(f"⏰ Última interação: {session.get('last_interaction', 'N/A')}")
+    print(f"📂 Arquivo: {session.get('file_path', 'N/A')}")
+    
+    # Carregar estatísticas se possível
+    file_path = Path(session.get('file_path', ''))
+    if file_path.exists():
+        try:
+            with open(file_path, 'r') as f:
+                lines = f.readlines()
+            
+            user_msgs = sum(1 for line in lines if '"type":"user"' in line)
+            assistant_msgs = sum(1 for line in lines if '"type":"assistant"' in line)
+            
+            print(f"📊 Estatísticas:")
+            print(f"   📄 Linhas no arquivo: {len(lines)}")
+            print(f"   👤 Mensagens usuário: {user_msgs}")
+            print(f"   🤖 Respostas Claude: {assistant_msgs}")
+            print(f"   💬 Total mensagens: {user_msgs + assistant_msgs}")
+            
+        except Exception as e:
+            print(f"❌ Erro ao ler estatísticas: {str(e)}")
+    
+    print(f"\n🌐 URLs disponíveis:")
+    base_url = f"{VIEWER_API_URL}/{session['directory']}/{session['session_id']}"
+    print(f"   📄 Ver sessão: {base_url}")
+    print(f"   📝 Resumo conciso: {base_url}/resumo?tipo=conciso")
+    print(f"   📋 Resumo detalhado: {base_url}/resumo?tipo=detalhado")
+    
+    input("\nPressione Enter para continuar...")
+
+async def generate_summary(sessions):
+    """Gera resumo de uma sessão."""
+    try:
+        session_id = input("\n📝 Digite o ID da sessão para resumo (ou parte): ").strip()
+    except EOFError:
+        return
+        
+    if not session_id:
+        return
+    
+    matches = [s for s in sessions if session_id.lower() in s['session_id'].lower()]
+    
+    if not matches:
+        print(f"❌ Sessão '{session_id}' não encontrada")
+        input("Pressione Enter para continuar...")
+        return
+    
+    if len(matches) > 1:
+        print(f"⚠️  Múltiplas sessões encontradas ({len(matches)}). Use um ID mais específico.")
+        input("Pressione Enter para continuar...")
+        return
+    
+    session = matches[0]
+    
+    print(f"\n📝 Tipos de resumo disponíveis:")
+    print("1. 📝 Conciso (20 palavras)")
+    print("2. 📋 Detalhado (400 palavras)") 
+    print("3. • Bullet Points")
+    
+    try:
+        choice = input("👤 Escolha o tipo (1-3): ").strip()
+        
+        types_map = {"1": "conciso", "2": "detalhado", "3": "bullet_points"}
+        summary_type = types_map.get(choice)
+        
+        if not summary_type:
+            print("❌ Opção inválida")
+            input("Pressione Enter para continuar...")
+            return
+        
+        print(f"\n🤖 Gerando resumo {summary_type}...")
+        
+        payload = {
+            "directory": session['directory'],
+            "session_id": session['session_id'],
+            "summary_type": summary_type
+        }
+        
+        response = requests.post(f"{VIEWER_API_URL}/api/summarize", json=payload, timeout=60)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('success'):
+                print(f"\n✅ Resumo gerado com sucesso:")
+                print("-" * 60)
+                print(result.get('summary', ''))
+                print("-" * 60)
+            else:
+                print(f"❌ Erro na API: {result.get('error')}")
+        else:
+            print(f"❌ Erro HTTP {response.status_code}")
+            
+    except (ValueError, EOFError, requests.RequestException) as e:
+        print(f"❌ Erro: {str(e)}")
+    
+    input("\nPressione Enter para continuar...")
+
+async def chat_mode():
+    """Modo chat interativo com contexto mantido."""
+    print("=" * 60)
+    print(f"🤖 Claude Code SDK Python v{__version__} - Chat Interativo")
+    print("=" * 60)
+    print("💬 Digite suas mensagens e pressione Enter para enviar")
+    print("📝 Comandos: 's' ou 'sair' para sair, Ctrl+I para interromper")
+    print("🔄 Comandos: 'l' ou 'limpar', 'n' ou 'novo' para limpar contexto")
+    print("🔍 Comandos: 'v' ou 'viewer' para navegar sessões")
+    print("-" * 60)
+    
+    client = ClaudeSDKClient()
+    await client.connect()
+    
+    try:
+        while True:
+            # Aguarda input do usuário
+            try:
+                prompt = input("\n👤 Você: ").strip()
+            except EOFError:
+                break
+                
+            if not prompt:
+                continue
+                
+            # Comandos especiais
+            if prompt.lower() in ['s', 'sair']:
+                print("👋 Até logo!")
+                break
+            
+            if prompt.lower() in ['l', 'limpar', 'n', 'novo']:
+                print("🔄 Contexto limpo. Iniciando nova conversa...")
+                await client.disconnect()
+                client = ClaudeSDKClient()
+                await client.connect()
+                continue
+            
+            if prompt.lower() in ['v', 'viewer']:
+                await session_browser()
+                continue
+            
+            # Envia query e mostra resposta
+            print("-" * 40)
+            try:
+                await client.query(prompt)
+                
+                async for message in client.receive_response():
+                    if isinstance(message, AssistantMessage):
+                        print("🤖 Claude: ", end="")
+                        for block in message.content:
+                            if isinstance(block, TextBlock):
+                                print(block.text)
+                    elif isinstance(message, ResultMessage):
+                        if hasattr(message, 'usage') and message.usage:
+                            tokens_info = ""
+                            if hasattr(message.usage, 'input_tokens'):
+                                tokens_info = f"[Tokens: {message.usage.input_tokens}↑ {message.usage.output_tokens}↓]"
+                            elif isinstance(message.usage, dict):
+                                tokens_info = f"[Tokens: {message.usage.get('input_tokens', 0)}↑ {message.usage.get('output_tokens', 0)}↓]"
+                            if tokens_info:
+                                print(f"\n{tokens_info}", end="")
+                        if hasattr(message, 'total_cost_usd') and message.total_cost_usd:
+                            print(f" [Custo: ${message.total_cost_usd:.6f}]")
+                        
+            except Exception as e:
+                print(f"❌ Erro: {e}")
+                
+    except KeyboardInterrupt:
+        print("\n\n👋 Interrompido!")
+    finally:
+        await client.disconnect()
+
+if __name__ == "__main__":
+    # Desabilita buffer do output
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 1)
+    
+    # Sempre executa modo chat
+    try:
+        asyncio.run(chat_mode())
+    except KeyboardInterrupt:
+        print("\n👋 Até logo!")
+        sys.exit(0)
+    except Exception as e:
+        print(f"❌ Erro fatal: {e}")
+        sys.exit(1)
+    finally:
+        sys.exit(0)

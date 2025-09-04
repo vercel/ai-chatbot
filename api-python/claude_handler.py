@@ -205,3 +205,109 @@ class ClaudeHandler:
             await self.destroy_session(session_id)
             
         return len(old_sessions)
+    
+    # Novos métodos para suportar histórico JSONL e compatibilidade com CC-SDK-Chat
+    
+    def _get_history_file(self, session_id: str, user_id: str) -> Path:
+        """Retorna o caminho do arquivo de histórico para uma sessão."""
+        # Usa um nome de arquivo único baseado no session_id e user_id
+        filename = f"{user_id}_{session_id}.jsonl"
+        return self.history_dir / filename
+    
+    async def save_to_history(self, session_id: str, user_id: str, user_message: str, assistant_message: str) -> None:
+        """Salva mensagem no histórico JSONL."""
+        history_file = self._get_history_file(session_id, user_id)
+        
+        # Cria entradas de mensagem
+        messages = [
+            {
+                "id": str(uuid.uuid4()),
+                "role": "user",
+                "content": user_message,
+                "timestamp": datetime.now().isoformat(),
+                "session_id": session_id
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "role": "assistant",
+                "content": assistant_message,
+                "timestamp": datetime.now().isoformat(),
+                "session_id": session_id
+            }
+        ]
+        
+        # Salva no arquivo JSONL (append)
+        async with aiofiles.open(history_file, mode='a') as f:
+            for msg in messages:
+                await f.write(json.dumps(msg) + '\n')
+                
+        logger.info(f"Saved messages to history: {history_file}")
+    
+    async def load_history(self, session_id: str, user_id: str) -> List[Dict[str, Any]]:
+        """Carrega histórico do arquivo JSONL."""
+        history_file = self._get_history_file(session_id, user_id)
+        messages = []
+        
+        if not history_file.exists():
+            return messages
+            
+        try:
+            async with aiofiles.open(history_file, mode='r') as f:
+                async for line in f:
+                    if line.strip():
+                        messages.append(json.loads(line))
+        except Exception as e:
+            logger.error(f"Error loading history: {e}")
+            
+        return messages
+    
+    async def delete_message(self, session_id: str, message_id: str, user_id: str) -> bool:
+        """Deleta uma mensagem específica do histórico."""
+        history_file = self._get_history_file(session_id, user_id)
+        
+        if not history_file.exists():
+            return False
+            
+        try:
+            # Carrega todas as mensagens
+            messages = await self.load_history(session_id, user_id)
+            
+            # Filtra mensagem a ser deletada
+            filtered_messages = [msg for msg in messages if msg.get('id') != message_id]
+            
+            if len(filtered_messages) == len(messages):
+                # Mensagem não encontrada
+                return False
+                
+            # Reescreve arquivo sem a mensagem deletada
+            async with aiofiles.open(history_file, mode='w') as f:
+                for msg in filtered_messages:
+                    await f.write(json.dumps(msg) + '\n')
+                    
+            logger.info(f"Deleted message {message_id} from history")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error deleting message: {e}")
+            return False
+    
+    async def set_chat_history(self, session_id: str, messages: List[Dict[str, Any]], user_id: str) -> None:
+        """Define o histórico de chat para uma sessão (para compatibilidade com CC-SDK)."""
+        # Se necessário, pode processar o histórico aqui
+        # Por enquanto, apenas registra
+        logger.info(f"Set chat history for session {session_id} with {len(messages)} messages")
+        
+        # Opcionalmente, pode salvar o histórico inicial se necessário
+        if not self._get_history_file(session_id, user_id).exists():
+            # Converte formato do CC-SDK para nosso formato
+            for msg in messages[:-1]:  # Ignora a última mensagem (já será processada)
+                if msg.get("role") in ["user", "assistant"]:
+                    formatted_msg = {
+                        "id": str(uuid.uuid4()),
+                        "role": msg.get("role"),
+                        "content": msg.get("content", ""),
+                        "timestamp": datetime.now().isoformat(),
+                        "session_id": session_id
+                    }
+                    async with aiofiles.open(self._get_history_file(session_id, user_id), mode='a') as f:
+                        await f.write(json.dumps(formatted_msg) + '\n')
