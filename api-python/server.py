@@ -103,6 +103,19 @@ class ChatResponse(BaseModel):
 
 # Endpoints
 
+@app.post("/api/claude/session")
+async def create_session():
+    """Cria uma nova sessão e retorna o session_id."""
+    session_id = str(uuid.uuid4())
+    await claude_handler.create_session(session_id, "dev-user")
+    return {"session_id": session_id}
+
+@app.delete("/api/claude/session/{session_id}")
+async def delete_session(session_id: str):
+    """Deleta uma sessão específica."""
+    await claude_handler.destroy_session(session_id)
+    return {"status": "deleted", "session_id": session_id}
+
 @app.get("/")
 async def root():
     """Health check endpoint."""
@@ -309,6 +322,188 @@ async def list_sessions(
     return {
         "sessions": user_sessions,
         "count": len(user_sessions)
+    }
+
+# Novos endpoints compatíveis com CC-SDK-Chat
+
+@app.post("/api/chat")
+async def chat_endpoint(
+    request: ChatRequest,
+    authorization: Optional[str] = Header(None)
+):
+    """Endpoint principal do chat compatível com CC-SDK-Chat."""
+    
+    # Validação de autenticação
+    user_info = auth_bridge.validate_request_auth(authorization)
+    
+    # Em desenvolvimento, permite teste sem auth
+    if not user_info and os.getenv('NODE_ENV') == 'development':
+        user_info = {
+            'id': 'dev-user',
+            'email': 'dev@test.com',
+            'type': 'regular'
+        }
+    
+    if not user_info:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Usa sessionId fixo ou fornecido
+    session_id = request.sessionId or "00000000-0000-0000-0000-000000000001"
+    user_id = user_info['id']
+    
+    # Extrai última mensagem do usuário
+    user_message = ""
+    if request.messages:
+        for msg in reversed(request.messages):
+            if msg.get("role") == "user":
+                user_message = msg.get("content", "")
+                break
+    
+    if not user_message:
+        raise HTTPException(status_code=400, detail="No user message found")
+    
+    async def generate_stream():
+        """Gera stream SSE para a resposta."""
+        try:
+            # Envia evento inicial
+            yield {
+                "event": "start",
+                "data": json.dumps({
+                    "session_id": session_id,
+                    "user_id": user_id,
+                    "model": request.model
+                })
+            }
+            
+            # Processa histórico se necessário
+            if len(request.messages) > 1:
+                await claude_handler.set_chat_history(session_id, request.messages, user_id)
+            
+            # Stream de respostas do Claude
+            full_response = ""
+            async for response in claude_handler.send_message(
+                session_id,
+                user_message,
+                user_id
+            ):
+                # Formata como SSE
+                if response.get("type") == "assistant_text":
+                    full_response += response.get("content", "")
+                    yield {
+                        "event": "message",
+                        "data": json.dumps({
+                            "type": "text",
+                            "content": response.get("content", ""),
+                            "session_id": session_id
+                        })
+                    }
+                elif response.get("type") == "tool_use":
+                    yield {
+                        "event": "tool",
+                        "data": json.dumps(response)
+                    }
+                elif response.get("type") == "error":
+                    yield {
+                        "event": "error",
+                        "data": json.dumps(response)
+                    }
+                    break
+                    
+            # Salva mensagem no histórico JSONL
+            await claude_handler.save_to_history(
+                session_id,
+                user_id,
+                user_message,
+                full_response
+            )
+            
+            # Evento de conclusão
+            yield {
+                "event": "done",
+                "data": json.dumps({
+                    "session_id": session_id,
+                    "status": "completed",
+                    "message_saved": True
+                })
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in chat stream: {e}")
+            yield {
+                "event": "error",
+                "data": json.dumps({
+                    "error": str(e),
+                    "session_id": session_id
+                })
+            }
+    
+    return EventSourceResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Session-ID": session_id
+        }
+    )
+
+@app.get("/api/load-project-history")
+async def load_project_history(
+    sessionId: Optional[str] = None,
+    authorization: Optional[str] = Header(None)
+):
+    """Carrega o histórico de conversas do projeto."""
+    
+    # Validação de autenticação
+    user_info = auth_bridge.validate_request_auth(authorization)
+    
+    if not user_info and os.getenv('NODE_ENV') == 'development':
+        user_info = {'id': 'dev-user'}
+        
+    if not user_info:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Usa sessionId fixo se não fornecido
+    session_id = sessionId or "00000000-0000-0000-0000-000000000001"
+    
+    # Carrega histórico do arquivo JSONL
+    history = await claude_handler.load_history(session_id, user_info['id'])
+    
+    return {
+        "messages": history,
+        "session_id": session_id
+    }
+
+@app.post("/api/delete-message")
+async def delete_message(
+    request: DeleteMessageRequest,
+    authorization: Optional[str] = Header(None)
+):
+    """Deleta uma mensagem específica do histórico."""
+    
+    # Validação de autenticação
+    user_info = auth_bridge.validate_request_auth(authorization)
+    
+    if not user_info and os.getenv('NODE_ENV') == 'development':
+        user_info = {'id': 'dev-user'}
+        
+    if not user_info:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Deleta mensagem do histórico
+    success = await claude_handler.delete_message(
+        request.sessionId,
+        request.messageId,
+        user_info['id']
+    )
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Message not found or unauthorized")
+    
+    return {
+        "status": "deleted",
+        "message_id": request.messageId,
+        "session_id": request.sessionId
     }
 
 # Endpoint de teste para desenvolvimento

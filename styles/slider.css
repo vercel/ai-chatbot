@@ -1,0 +1,125 @@
+/* Estilos customizados para o slider de velocidade */
+
+/* Slider personalizado */
+.speed-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 128px;
+  height: 6px;
+  background: linear-gradient(to right, #10b981 0%, #3b82f6 50%, #ef4444 100%);
+  border-radius: 3px;
+  outline: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.speed-slider:hover {
+  opacity: 1;
+}
+
+/* Thumb (bolinha) do slider */
+.speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.speed-slider::-webkit-slider-thumb:hover {
+  width: 20px;
+  height: 20px;
+  border-color: #2563eb;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.speed-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.speed-slider::-moz-range-thumb:hover {
+  width: 20px;
+  height: 20px;
+  border-color: #2563eb;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Container do slider */
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(243, 244, 246, 0.5);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.speed-control:hover {
+  background: rgba(243, 244, 246, 0.8);
+}
+
+/* Indicador de velocidade */
+.speed-indicator {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.speed-control:hover .speed-indicator {
+  opacity: 1;
+}
+
+/* Animação do emoji baseada na velocidade */
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes pulse-fast {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.speed-emoji-slow {
+  animation: pulse-slow 2s infinite;
+}
+
+.speed-emoji-fast {
+  animation: pulse-fast 0.5s infinite;
+}
+
+/* Estados visuais baseados no valor */
+.speed-slider[data-speed="slow"] {
+  background: linear-gradient(to right, #ef4444 0%, #f59e0b 100%);
+}
+
+.speed-slider[data-speed="normal"] {
+  background: linear-gradient(to right, #10b981 0%, #3b82f6 100%);
+}
+
+.speed-slider[data-speed="fast"] {
+  background: linear-gradient(to right, #3b82f6 0%, #8b5cf6 100%);
+}

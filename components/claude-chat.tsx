@@ -1,12 +1,24 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useClaudeSDK } from '@/hooks/use-claude-sdk';
 import { StreamingMarkdown } from './streaming-markdown';
+import '@/styles/slider.css';
 
 export function ClaudeChat() {
-  const { messages, sendMessage, clearMessages, isLoading } = useClaudeSDK();
+  const { messages, sendMessage, clearMessages, isLoading, sessionId } = useClaudeSDK();
   const [input, setInput] = useState('');
+  const [streamSpeed, setStreamSpeed] = useState(100); // Valor padrão fixo para evitar hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Carrega a velocidade salva apenas no cliente após a montagem
+  useEffect(() => {
+    setIsMounted(true);
+    const savedSpeed = localStorage.getItem('streamSpeed');
+    if (savedSpeed) {
+      setStreamSpeed(parseInt(savedSpeed));
+    }
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -14,19 +26,61 @@ export function ClaudeChat() {
     
     const message = input;
     setInput('');
-    await sendMessage(message);
+    await sendMessage(message, { streamSpeed });
+  };
+
+  const handleSpeedChange = (newSpeed: number) => {
+    setStreamSpeed(newSpeed);
+    localStorage.setItem('streamSpeed', newSpeed.toString());
   };
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b">
         <h2 className="text-lg font-semibold">Claude Code SDK Chat</h2>
-        <button
-          onClick={clearMessages}
-          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
-        >
-          Limpar
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Slider de Velocidade Personalizado */}
+          <div className="speed-control">
+            <span className={`text-sm ${isMounted && streamSpeed > 100 ? 'speed-emoji-slow' : ''}`}>
+              🐢
+            </span>
+            <div className="relative">
+              <input
+                type="range"
+                min="10"
+                max="200"
+                value={streamSpeed}
+                onChange={(e) => handleSpeedChange(parseInt(e.target.value))}
+                className="speed-slider"
+                data-speed={isMounted ? (streamSpeed > 100 ? 'slow' : streamSpeed < 50 ? 'fast' : 'normal') : 'normal'}
+              />
+              <div className="speed-indicator">
+                {isMounted ? (
+                  streamSpeed < 30 ? 'Ultra Rápido' :
+                  streamSpeed < 70 ? 'Rápido' :
+                  streamSpeed < 120 ? 'Normal' :
+                  streamSpeed < 170 ? 'Lento' : 'Ultra Lento'
+                ) : 'Normal'}
+                <br />
+                <span className="text-xs opacity-75">{isMounted ? `${streamSpeed}ms` : '100ms'}</span>
+              </div>
+            </div>
+            <span className={`text-sm ${streamSpeed < 50 ? 'speed-emoji-fast' : ''}`}>
+              🚀
+            </span>
+          </div>
+          {sessionId && (
+            <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+              Sessão: {sessionId.slice(0, 8)}...
+            </span>
+          )}
+          <button
+            onClick={clearMessages}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
+          >
+            Limpar
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto p-4 space-y-4">
@@ -57,6 +111,7 @@ export function ClaudeChat() {
                 <StreamingMarkdown
                   content={message.content}
                   isStreaming={isLoading && index === messages.length - 1}
+                  speed={streamSpeed}
                 />
               )}
             </div>
@@ -83,15 +138,22 @@ export function ClaudeChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Digite sua mensagem..."
-            disabled={isLoading}
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            {isLoading ? '...' : 'Enviar'}
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse delay-75"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse delay-150"></div>
+              </div>
+            ) : (
+              'Enviar'
+            )}
           </button>
         </div>
       </form>

@@ -64,7 +64,7 @@ export function Chat({
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
-      api: initialChatModel === 'claude-code-sdk' ? '/api/claude-sdk' : '/api/chat',
+      api: initialChatModel === 'claude-code-sdk' ? '/api/claude-main' : '/api/chat',
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest({ messages, id, body }) {
         return {

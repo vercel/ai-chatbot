@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { Markdown } from './markdown';
 
 interface StreamingMarkdownProps {
   content: string;
@@ -9,6 +10,7 @@ interface StreamingMarkdownProps {
   isStreaming?: boolean;
   onStreamComplete?: () => void;
   className?: string;
+  speed?: number; // Nova prop para controlar velocidade
 }
 
 export function StreamingMarkdown({
@@ -16,15 +18,27 @@ export function StreamingMarkdown({
   isUser = false,
   isStreaming = false,
   onStreamComplete,
-  className
+  className,
+  speed = 100 // Valor padrão mais lento
 }: StreamingMarkdownProps) {
   const [displayedContent, setDisplayedContent] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isStreamingRef = useRef(false);
 
-  // Velocidade de digitação: 10ms para usuário, 20ms para assistente
-  const typeSpeed = isUser ? 10 : 20;
+  // Usa a velocidade configurada ou valores padrão
+  // Velocidade invertida: valores menores = mais rápido
+  const calculateTypeSpeed = () => {
+    if (!speed) return isUser ? 20 : 40;
+    
+    // Mapeia o range do slider (10-200) para velocidade real (5-200ms)
+    // Invertido: slider baixo = rápido, slider alto = lento  
+    // Aumentando o range para permitir velocidades mais lentas
+    const mappedSpeed = Math.floor((200 - speed) * 1.5) + 5;
+    return Math.min(Math.max(mappedSpeed, 5), 200);
+  };
+  
+  const typeSpeed = calculateTypeSpeed();
 
   useEffect(() => {
     // Limpa quando o conteúdo muda completamente
@@ -97,7 +111,11 @@ export function StreamingMarkdown({
   return (
     <div className={cn('relative', className)}>
       <div className="whitespace-pre-wrap break-words">
-        {displayedContent}
+        {isUser ? (
+          displayedContent
+        ) : (
+          <Markdown>{displayedContent}</Markdown>
+        )}
         {showCursor && (
           <span className="animate-pulse inline-block w-[2px] h-4 ml-[1px] bg-current align-middle" />
         )}

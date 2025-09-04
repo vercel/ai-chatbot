@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
-const CLAUDE_API_URL = process.env.NEXT_PUBLIC_CLAUDE_SDK_API_URL || 'http://127.0.0.1:8002';
+const CLAUDE_API_URL = process.env.NEXT_PUBLIC_CLAUDE_SDK_API_URL || 'http://localhost:8002';
 
 export interface ClaudeMessage {
   role: 'user' | 'assistant';
@@ -12,9 +12,36 @@ export interface ClaudeMessage {
 export function useClaudeSDK() {
   const [messages, setMessages] = useState<ClaudeMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionId] = useState(`session-${Date.now()}`);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const sendMessage = useCallback(async (content: string) => {
+  // Cria sessão ao montar o componente
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        const response = await fetch(`${CLAUDE_API_URL}/api/claude/session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        setSessionId(data.session_id);
+      } catch (error) {
+        console.error('Erro ao criar sessão:', error);
+        // Fallback para sessão local se API falhar
+        setSessionId(`session-${Date.now()}`);
+      }
+    };
+    
+    initSession();
+  }, []);
+
+  const sendMessage = useCallback(async (content: string, options?: { streamSpeed?: number }) => {
+    // Aguarda sessão ser criada se ainda não existir
+    if (!sessionId) {
+      console.warn('Sessão ainda não criada');
+      return;
+    }
     // Adiciona mensagem do usuário
     const userMessage: ClaudeMessage = { role: 'user', content };
     setMessages(prev => [...prev, userMessage]);
@@ -30,7 +57,8 @@ export function useClaudeSDK() {
         },
         body: JSON.stringify({
           message: content,
-          session_id: sessionId
+          session_id: sessionId,
+          stream_speed: options?.streamSpeed || 50
         })
       });
 
@@ -46,6 +74,9 @@ export function useClaudeSDK() {
         throw new Error('No response body');
       }
 
+      // Adiciona mensagem vazia do assistente imediatamente
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      
       let assistantMessage = '';
       let buffer = '';
 
@@ -64,18 +95,13 @@ export function useClaudeSDK() {
               
               if (data.type === 'assistant_text' && data.content) {
                 assistantMessage += data.content;
-                // Atualiza mensagem do assistente em tempo real
+                // Atualiza a última mensagem do assistente
                 setMessages(prev => {
                   const newMessages = [...prev];
                   const lastMessage = newMessages[newMessages.length - 1];
                   
                   if (lastMessage?.role === 'assistant') {
                     lastMessage.content = assistantMessage;
-                  } else {
-                    newMessages.push({ 
-                      role: 'assistant', 
-                      content: assistantMessage 
-                    });
                   }
                   
                   return newMessages;
@@ -98,9 +124,33 @@ export function useClaudeSDK() {
     }
   }, [sessionId]);
 
-  const clearMessages = useCallback(() => {
+  const clearMessages = useCallback(async () => {
     setMessages([]);
-  }, []);
+    
+    // Cria nova sessão ao limpar
+    try {
+      // Deleta sessão anterior se existir
+      if (sessionId) {
+        await fetch(`${CLAUDE_API_URL}/api/claude/session/${sessionId}`, {
+          method: 'DELETE'
+        });
+      }
+      
+      // Cria nova sessão
+      const response = await fetch(`${CLAUDE_API_URL}/api/claude/session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      setSessionId(data.session_id);
+    } catch (error) {
+      console.error('Erro ao recriar sessão:', error);
+      // Fallback para sessão local
+      setSessionId(`session-${Date.now()}`);
+    }
+  }, [sessionId]);
 
   return {
     messages,
