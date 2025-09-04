@@ -1,5 +1,5 @@
 import { customProvider } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { gateway } from '@ai-sdk/gateway';
 import { artifactModel, chatModel, titleModel } from './models.test';
 import { isTestEnvironment } from '../constants';
 
@@ -13,12 +13,12 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        // Use standard OpenAI chat model id; reasoning is enabled via providerOptions
-        'chat-model': openai.responses('gpt-5'),
-        'title-model': openai('gpt-4.1-nano'),
-        'artifact-model': openai('gpt-4.1'),
+        // Use gateway with your chosen OpenAI models
+        'chat-model': gateway.languageModel('openai/gpt-5'),
+        'title-model': gateway.languageModel('openai/gpt-4.1-nano'),
+        'artifact-model': gateway.languageModel('openai/gpt-4.1'),
       },
       imageModels: {
-        'small-model': openai.imageModel('gpt-image-1'),
+        'small-model': gateway.imageModel('openai/gpt-image-1'),
       },
     });

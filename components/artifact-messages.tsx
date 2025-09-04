@@ -42,7 +42,7 @@ function PureArtifactMessages({
   return (
     <div
       ref={messagesContainerRef}
-      className="flex flex-col gap-4 h-full items-center overflow-y-scroll px-4 pt-20"
+      className="flex overflow-y-scroll flex-col gap-4 items-center px-4 pt-20 h-full"
     >
       {messages.map((message, index) => (
         <PreviewMessage
@@ -61,6 +61,7 @@ function PureArtifactMessages({
           requiresScrollPadding={
             hasSentMessage && index === messages.length - 1
           }
+          isArtifactVisible={true}
         />
       ))}
 
