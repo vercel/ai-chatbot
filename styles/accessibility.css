@@ -1,0 +1,143 @@
+/* Estilos para acessibilidade do Yello Solar Hub */
+
+/* Estilos para modo de alto contraste */
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --primary: 45 100% 45%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 90%;
+  --secondary-foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --border: 0 0% 0%;
+  --input: 0 0% 80%;
+  --ring: 45 100% 45%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 0 0% 0%;
+  
+  /* Aumentar contraste das bordas */
+  --border-width: 2px;
+  
+  /* Remover efeitos de transparência para melhor legibilidade */
+  --opacity-hover: 1;
+  --opacity-disabled: 0.7;
+}
+
+.dark.high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 45 100% 60%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 100%;
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+  --border: 0 0% 100%;
+  --input: 0 0% 20%;
+  --ring: 45 100% 60%;
+  --sidebar-background: 0 0% 0%;
+  --sidebar-foreground: 0 0% 100%;
+}
+
+/* Estilos para diferentes tamanhos de fonte */
+.font-size-normal {
+  /* Tamanho padrão, não precisa de alterações */
+}
+
+.font-size-large {
+  font-size: 112.5%; /* 1.125 vezes o tamanho normal */
+  line-height: 1.5;
+}
+
+.font-size-x-large {
+  font-size: 125%; /* 1.25 vezes o tamanho normal */
+  line-height: 1.6;
+}
+
+/* Redução de movimento para usuários que preferem menos animações */
+.motion-reduced * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Melhorias de foco para usuários de teclado */
+body:not(.user-is-tabbing) :focus {
+  outline: none !important;
+}
+
+body.user-is-tabbing :focus {
+  outline: 2px solid hsl(var(--brand)) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px hsla(var(--brand) / 0.3) !important;
+}
+
+body.user-is-tabbing.high-contrast :focus {
+  outline: 3px solid hsl(var(--brand)) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Classes de utilidade para elementos visualmente ocultos mas acessíveis a leitores de tela */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Aumentar área de clique para elementos interativos */
+.clickable-area {
+  position: relative;
+}
+
+.clickable-area::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  z-index: 10;
+}
+
+/* Estilos para exibição de skip links (links de pular navegação) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: hsl(var(--brand));
+  color: hsl(var(--brand-foreground));
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Melhorias de acessibilidade para inputs */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: hsl(var(--brand)) !important;
+}
+
+/* Estilos para estados de erro mais acessíveis */
+.input-error {
+  border-color: hsl(var(--destructive)) !important;
+  background-color: hsl(var(--destructive) / 10%);
+}
+
+.error-message {
+  color: hsl(var(--destructive));
+  font-weight: 500;
+}

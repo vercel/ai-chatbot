@@ -15,6 +15,18 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        // YSH variantes específicas
+        savings: 
+          "border-transparent bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-inner",
+        installation: 
+          "border-transparent bg-gradient-to-r from-[hsl(var(--brand))] to-[hsl(var(--brand-accent))] text-primary-foreground shadow-sm",
+        eco: 
+          "border-[#4CAF50] bg-[#4CAF50]/10 text-[#388E3C] font-medium",
+        status: {
+          pending: "border-amber-400 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+          progress: "border-blue-400 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+          completed: "border-green-400 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+        },
       },
     },
     defaultVariants: {

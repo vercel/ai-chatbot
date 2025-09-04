@@ -5,13 +5,15 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { auth } from '../(auth)/auth';
 import Script from 'next/script';
 import { DataStreamProvider } from '@/components/data-stream-provider';
+import { AccessibilityButton } from '@/components/accessibility-button';
+import { SkipLink } from '@/components/skip-link';
 
 export const experimental_ppr = true;
 
 export default async function Layout({
   children,
 }: {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }) {
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
   const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
@@ -22,10 +24,18 @@ export default async function Layout({
         src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
         strategy="beforeInteractive"
       />
+      <SkipLink mainId="main-content" />
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
           <AppSidebar user={session?.user} />
-          <SidebarInset>{children}</SidebarInset>
+          <SidebarInset>
+            <div className="absolute top-4 right-4 z-10">
+              <AccessibilityButton />
+            </div>
+            <main id="main-content" className="outline-none" tabIndex={-1}>
+              {children}
+            </main>
+          </SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
     </>
