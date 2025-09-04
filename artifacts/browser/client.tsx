@@ -479,7 +479,7 @@ export const browserArtifact = new Artifact<'browser', BrowserArtifactMetadata>(
               </div>
             ) : (
               <div 
-                className="absolute inset-2 rounded-md overflow-hidden shadow-lg ring-1 ring-black/5"
+                className="absolute inset-6 rounded-md overflow-hidden shadow-lg ring-1 ring-black/5"
                 tabIndex={metadata.controlMode === 'user' ? 0 : -1}
                 onKeyDown={metadata.controlMode === 'user' ? handleKeyboardInput : undefined}
                 onKeyUp={metadata.controlMode === 'user' ? handleKeyboardInput : undefined}

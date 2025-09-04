@@ -380,8 +380,8 @@ const PurePreviewMessage = ({
                       <CollapsibleContent className="px-3 pb-3">
                         <div className="border-t pt-3">
                           <div className="text-xs text-muted-foreground mb-2">Input:</div>
-                          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded whitespace-pre-wrap">
-                            {input ? JSON.stringify(input, null, 2) : 'No input data'}
+                          <pre className="text-[10px] bg-gray-50 dark:bg-gray-900 p-1 rounded whitespace-pre-wrap break-words overflow-x-auto">
+                            {input ? JSON.stringify(input, null, 1) : 'No input data'}
                           </pre>
                         </div>
                       </CollapsibleContent>
@@ -395,7 +395,7 @@ const PurePreviewMessage = ({
 
                   if (output && 'error' in output) {
                     return (
-                      <Collapsible key={toolCallId} defaultOpen={false} className="border border-red-200 rounded-md">
+                      <Collapsible hidden={true} key={toolCallId} defaultOpen={false} className="border border-red-200 rounded-md">
                         <div className="flex items-center justify-between p-3">
                           <div className="text-sm font-medium text-red-600">
                             {displayName} (Error)
@@ -437,14 +437,14 @@ const PurePreviewMessage = ({
                           {input && (
                             <>
                               <div className="text-xs text-muted-foreground mb-2">Input:</div>
-                              <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded whitespace-pre-wrap mb-3">
-                                {JSON.stringify(input, null, 2)}
+                              <pre className="text-[10px] bg-gray-50 dark:bg-gray-900 p-1 rounded whitespace-pre-wrap break-words overflow-x-auto mb-3">
+                                {JSON.stringify(input, null, 1)}
                               </pre>
                             </>
                           )}
                           <div className="text-xs text-muted-foreground mb-2">Result:</div>
-                          <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded whitespace-pre-wrap">
-                            {JSON.stringify(output, null, 2)}
+                          <pre className="text-[10px] bg-gray-50 dark:bg-gray-900 p-1 rounded whitespace-pre-wrap break-words overflow-x-auto">
+                            {JSON.stringify(output, null, 1)}
                           </pre>
                         </div>
                       </CollapsibleContent>
