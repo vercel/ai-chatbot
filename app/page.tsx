@@ -1,7 +1,7 @@
 'use client';
 
-import { DemoChat } from '@/components/chat/DemoChat';
+import { GenerativeChat } from '@/components/chat/GenerativeChat';
 
 export default function HomePage() {
-  return <DemoChat />;
+  return <GenerativeChat />;
 }

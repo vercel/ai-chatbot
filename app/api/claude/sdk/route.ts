@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const messages = body.messages || [];
     const sessionId = body.sessionId || body.session_id;
+    const systemPrompt = body.system || '';
     
     // Extrai última mensagem do usuário
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
@@ -34,6 +35,13 @@ export async function POST(req: NextRequest) {
             .replace(/\r/g, '\\r')
             .replace(/\t/g, '\\t');
             
+          const escapedSystem = systemPrompt
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+            
           const pythonScript = `
 import sys
 import os
@@ -44,7 +52,15 @@ sys.path.insert(0, '${SDK_PATH}/src')
 from src import query, ClaudeCodeOptions
 
 async def main():
-    prompt = "${escapedContent}"
+    # Combina system prompt com user message
+    system = """${escapedSystem}"""
+    user_msg = "${escapedContent}"
+    
+    # Se tiver system prompt, adiciona contexto
+    if system:
+        prompt = f"{system}\\n\\nUsuário: {user_msg}"
+    else:
+        prompt = user_msg
     
     # Só usa session_id se for um UUID válido
     import re

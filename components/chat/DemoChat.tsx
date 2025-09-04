@@ -7,9 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Bot, RefreshCw, Settings, Download, Trash2, PlayCircle } from 'lucide-react';
 
-// Log para debug
-console.log('🏁 DemoChat.tsx carregado!');
-
 // Histórico de demonstração
 const DEMO_HISTORY = [
   {
@@ -50,34 +47,15 @@ const DEMO_HISTORY = [
   }
 ];
 
-console.log('📚 DEMO_HISTORY criado:', DEMO_HISTORY);
-console.log('📊 Total de mensagens no histórico:', DEMO_HISTORY.length);
-
 export function DemoChat() {
-  const [messages, setMessages] = React.useState(DEMO_HISTORY);
+  const [messages, setMessages] = React.useState<typeof DEMO_HISTORY>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRunningDemo, setIsRunningDemo] = React.useState(false);
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   
-  // Log inicial
-  React.useEffect(() => {
-    console.log('🚀 DemoChat montado!');
-    console.log('📝 Mensagens iniciais:', messages);
-    console.log('📊 Total de mensagens:', messages.length);
-  }, []);
-  
-  // Log quando mensagens mudam
-  React.useEffect(() => {
-    console.log('📬 Mensagens atualizadas:', messages);
-    console.log('📊 Total atual:', messages.length);
-  }, [messages]);
   
   const handleSend = async (input: string) => {
-    console.log('🎯 handleSend chamado com input:', input);
-    if (!input.trim() || isLoading) {
-      console.log('⚠️ Input vazio ou carregando:', { input, isLoading });
-      return;
-    }
+    if (!input.trim() || isLoading) return;
     
     const userMessage = {
       id: `msg-${Date.now()}`,
@@ -86,14 +64,10 @@ export function DemoChat() {
       timestamp: new Date().toISOString()
     };
     
-    console.log('👤 Mensagem do usuário criada:', userMessage);
-    
     // Adicionar mensagem do usuário primeiro
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setIsLoading(true);
-    
-    console.log('📤 Enviando para Claude com contexto:', updatedMessages.length, 'mensagens');
     
     // Para manter contexto, enviamos todas as mensagens anteriores + a nova
     // O Claude SDK precisa do histórico completo para manter contexto
@@ -131,18 +105,14 @@ export function DemoChat() {
                 
                 // Captura o session_id se não temos ainda
                 if (data.session_id && !sessionId) {
-                  console.log('🔑 Session ID capturado:', data.session_id);
                   setSessionId(data.session_id);
                 }
                 
                 if (data.type === 'text_chunk' && data.content) {
                   assistantContent += data.content;
-                  console.log('📝 Chunk recebido:', data.content);
                 }
               } catch (e) {
-                if (line.trim() !== 'data: ') {
-                  console.log('⚠️ Erro ao fazer parse de linha:', line);
-                }
+                // Ignora erros de parse para linhas vazias
               }
             }
           }
@@ -150,15 +120,12 @@ export function DemoChat() {
       }
       
       if (assistantContent) {
-        console.log('📥 Resposta do Claude:', assistantContent.substring(0, 100) + '...');
         setMessages(prev => [...prev, {
           id: `msg-${Date.now()}-assistant`,
           role: 'assistant',
           content: assistantContent,
           timestamp: new Date().toISOString()
         }]);
-      } else {
-        console.log('⚠️ Nenhuma resposta do Claude recebida');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -169,7 +136,7 @@ export function DemoChat() {
   
   const clearMessages = () => {
     setMessages([]);
-    setInput('');
+    setSessionId(null); // Limpa o session ID também
   };
   
   const runDemo = async () => {
@@ -261,7 +228,7 @@ export function DemoChat() {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Bot className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-semibold">Claude Chat - Demo com Histórico</h1>
+            <h1 className="text-xl font-semibold">Claude Chat</h1>
           </div>
           <div className="flex items-center gap-2">
             <Button 
@@ -296,7 +263,7 @@ export function DemoChat() {
         </div>
         <div className="border-b bg-muted/30 px-4 py-2">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>🎯 Conversa de Teste Bem-Sucedida - {messages.length} mensagens</span>
+            <span>💬 {messages.length} {messages.length === 1 ? 'mensagem' : 'mensagens'}</span>
             {isRunningDemo && (
               <span className="animate-pulse text-primary">
                 🤖 Executando demonstração ao vivo...
@@ -311,12 +278,10 @@ export function DemoChat() {
         <div className="mx-auto max-w-4xl space-y-4">
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              <p>Nenhuma mensagem ainda. Clique em ▶️ para executar uma demonstração!</p>
+              <p>Digite uma mensagem para começar a conversa com Claude</p>
             </div>
           ) : (
-            messages.map((message, index) => {
-              console.log(`🔍 Renderizando mensagem ${index}:`, message);
-              return (
+            messages.map((message, index) => (
                 <ChatMessage 
                   key={message.id} 
                   role={message.role}

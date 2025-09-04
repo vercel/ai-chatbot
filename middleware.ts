@@ -17,8 +17,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Permite acesso direto à página inicial, /claude e APIs temporariamente
-  if (pathname === '/' || pathname.startsWith('/claude') || pathname.startsWith('/api/claude') || pathname.startsWith('/api/test')) {
+  // Permite acesso direto à página inicial, /claude, /api/mcp e APIs temporariamente
+  if (pathname === '/' || pathname.startsWith('/claude') || pathname.startsWith('/api/claude') || pathname.startsWith('/api/test') || pathname.startsWith('/api/mcp')) {
     return NextResponse.next();
   }
 

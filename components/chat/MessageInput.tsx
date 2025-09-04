@@ -24,16 +24,10 @@ export function MessageInput({
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const handleSend = () => {
-    console.log('🔵 MessageInput handleSend chamado');
-    console.log('🔵 Estado atual:', { message, disabled, isStreaming });
-    
     if (message.trim() && !disabled && !isStreaming) {
-      console.log('✅ Enviando mensagem:', message.trim());
       onSendMessage(message.trim());
       setMessage('');
       textareaRef.current?.focus();
-    } else {
-      console.log('❌ Condições não atendidas para envio');
     }
   };
 
