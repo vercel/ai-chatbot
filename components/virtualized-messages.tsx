@@ -35,46 +35,48 @@ export function VirtualizedMessages({
   const { height: windowHeight } = useWindowSize();
   const listRef = useRef<List>(null);
   const sizeMap = useRef<{ [key: number]: number }>({});
-  const [messageHeights, setMessageHeights] = useState<{ [key: string]: number }>({});
+  const [messageHeights, setMessageHeights] = useState<{
+    [key: string]: number;
+  }>({});
 
   // Estima a altura das mensagens para pre-caching (podemos ajustar com base na complexidade da mensagem)
   const getEstimatedHeight = (index: number): number => {
     const messageId = messages[index]?.id;
-    
+
     if (messageId && messageHeights[messageId]) {
       return messageHeights[messageId];
     }
-    
+
     // Altura padrão estimada com base no tipo da mensagem
     const message = messages[index];
     if (!message) return 100;
-    
+
     const isUserMessage = message.role === 'user';
-    const hasAttachments = message.parts.some(part => part.type === 'file');
-    
+    const hasAttachments = message.parts.some((part) => part.type === 'file');
+
     if (isUserMessage && !hasAttachments) {
       return 100; // Mensagens de usuário são geralmente mais simples
     }
-    
+
     // Estimar com base no número de partes e tipos de conteúdo
-    return 150 + (message.parts.length * 50);
+    return 150 + message.parts.length * 50;
   };
 
   // Quando o tamanho da mensagem é realmente calculado, atualizamos o cache
   const setMeasuredHeight = (index: number, height: number) => {
     const messageId = messages[index]?.id;
     if (messageId) {
-      setMessageHeights(prev => ({
+      setMessageHeights((prev) => ({
         ...prev,
-        [messageId]: height
+        [messageId]: height,
       }));
     }
-    
+
     sizeMap.current = {
       ...sizeMap.current,
-      [index]: height
+      [index]: height,
     };
-    
+
     listRef.current?.resetAfterIndex(index);
   };
 
@@ -84,15 +86,13 @@ export function VirtualizedMessages({
   }, [messages]);
 
   return (
-    <div 
-      className="relative flex-1 overflow-y-auto" 
-      ref={containerRef}
-    >
+    <div className="relative flex-1 overflow-y-auto" ref={containerRef}>
       <List
         ref={listRef}
         height={windowHeight * 0.75} // Altura dinâmica baseada na janela
         itemCount={
-          messages.length + (status === 'in_progress' || status === 'submitting' ? 1 : 0)
+          messages.length +
+          (status === 'in_progress' || status === 'submitting' ? 1 : 0)
         }
         itemSize={getEstimatedHeight}
         width="100%"
@@ -101,7 +101,7 @@ export function VirtualizedMessages({
           overflowX: 'hidden',
           paddingLeft: '1rem',
           paddingRight: '1rem',
-          marginTop: '1rem'
+          marginTop: '1rem',
         }}
       >
         {({ index, style }) => {
@@ -127,7 +127,7 @@ export function VirtualizedMessages({
             <div
               style={{
                 ...style,
-                height: 'auto' // Permitir que as mensagens determinem sua própria altura
+                height: 'auto', // Permitir que as mensagens determinem sua própria altura
               }}
               onLoad={(e) => {
                 // Depois que a mensagem é renderizada completamente, calculamos a altura real
