@@ -301,14 +301,28 @@ const PurePreviewMessage = ({
 export const PreviewMessage = memo(
   PurePreviewMessage,
   (prevProps, nextProps) => {
+    // Verificações prioritárias para rejeição rápida
     if (prevProps.isLoading !== nextProps.isLoading) return false;
     if (prevProps.message.id !== nextProps.message.id) return false;
-    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
-      return false;
+    if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding) return false;
+    
+    // Uso da comparação shallow para mensagens pequenas e deep para mensagens complexas
+    const partsLength = prevProps.message.parts.length;
+    if (partsLength !== nextProps.message.parts.length) return false;
+    
+    // Otimização: para mensagens simples, fazemos verificações mais diretas
+    if (partsLength === 1 && 
+        prevProps.message.parts[0].type === 'text' && 
+        nextProps.message.parts[0].type === 'text') {
+      return prevProps.message.parts[0].text === nextProps.message.parts[0].text &&
+             equal(prevProps.vote, nextProps.vote);
+    }
+    
+    // Para mensagens complexas, ainda precisamos de deep equal
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
 
-    return false;
+    return true;
   },
 );
 
