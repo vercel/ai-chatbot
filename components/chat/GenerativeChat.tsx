@@ -330,13 +330,16 @@ ${m.content}`
           ) : (
             messages.map((message) => (
               <div key={message.id} className="space-y-2">
-                <ChatMessage 
-                  role={message.role}
-                  content={message.content}
-                  timestamp={new Date(message.timestamp)}
-                />
+                {/* Se é mensagem do assistente com ferramenta de clima, não mostra a mensagem */}
+                {!(message.role === 'assistant' && message.tool?.name === 'getWeather') && (
+                  <ChatMessage 
+                    role={message.role}
+                    content={message.content}
+                    timestamp={new Date(message.timestamp)}
+                  />
+                )}
                 {message.tool && (
-                  <div className="ml-12 animate-in fade-in slide-in-from-bottom-2">
+                  <div className={message.role === 'assistant' && message.tool?.name === 'getWeather' ? "" : "ml-12 animate-in fade-in slide-in-from-bottom-2"}>
                     <ToolRenderer
                       type={message.tool.type}
                       data={message.tool.data}

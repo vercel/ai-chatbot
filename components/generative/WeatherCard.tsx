@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, CloudSun, Wind, Droplets } from 'lucide-react';
+import { Cloud, CloudRain, Sun, CloudSun, Wind, Droplets, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface WeatherData {
   location: string;
@@ -36,6 +36,8 @@ interface WeatherCardProps {
 }
 
 export function WeatherCard({ data }: WeatherCardProps) {
+  const [isForecastOpen, setIsForecastOpen] = useState(false);
+  
   const getWeatherIcon = (condition: string) => {
     switch (condition.toLowerCase()) {
       case 'ensolarado':
@@ -90,9 +92,20 @@ export function WeatherCard({ data }: WeatherCardProps) {
 
       {(data.previsao && data.previsao.length > 0) ? (
         <div className="mt-6 pt-4 border-t">
-          <h4 className="text-sm font-semibold mb-3">Previsão Detalhada</h4>
-          <div className="space-y-2">
-            {data.previsao.map((item, index) => (
+          <button 
+            onClick={() => setIsForecastOpen(!isForecastOpen)}
+            className="flex items-center justify-between w-full text-left hover:opacity-80 transition-opacity"
+          >
+            <h4 className="text-sm font-semibold">Previsão Detalhada</h4>
+            {isForecastOpen ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {isForecastOpen && (
+            <div className="space-y-2 mt-3">
+              {data.previsao.map((item, index) => (
               <div key={index} className="flex items-center justify-between text-sm">
                 <span className="font-medium">{item.hora}</span>
                 <div className="flex items-center gap-3">
@@ -110,7 +123,8 @@ export function WeatherCard({ data }: WeatherCardProps) {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       ) : data.forecast && (
         <div className="mt-6 pt-4 border-t">
