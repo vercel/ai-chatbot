@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { MessageInput } from './MessageInput';
 import { ToolRenderer } from '../generative/ToolRenderer';
 import { Button } from '@/components/ui/button';
-import { Bot, Trash2, Sparkles } from 'lucide-react';
+import { Bot, Trash2, Sparkles, ChevronDown } from 'lucide-react';
 import { executeTool } from '@/lib/claude-tools';
 import { executeMCPTool } from '@/lib/mcp-tools';
 import { getWeatherViaMCP } from '@/lib/mcp-direct';
@@ -24,9 +24,46 @@ interface Message {
 }
 
 export function GenerativeChat() {
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [sessionId, setSessionId] = React.useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  
+  // Refs para controle de scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Estados para auto scroll
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [showNewMessageButton, setShowNewMessageButton] = useState(false);
+  
+  // Funções de scroll
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior,
+      block: 'end' 
+    });
+  }, []);
+  
+  const checkIfAtBottom = useCallback(() => {
+    if (!scrollContainerRef.current) return true;
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const threshold = 100; // pixels de margem
+    
+    return scrollHeight - scrollTop - clientHeight < threshold;
+  }, []);
+  
+  const handleScroll = useCallback(() => {
+    const atBottom = checkIfAtBottom();
+    setIsAtBottom(atBottom);
+    
+    // Mostrar/esconder botão de nova mensagem
+    if (!atBottom && messages.length > 0) {
+      setShowNewMessageButton(true);
+    } else {
+      setShowNewMessageButton(false);
+    }
+  }, [checkIfAtBottom, messages.length]);
   
   const handleSend = async (input: string) => {
     if (!input.trim() || isLoading) return;
@@ -256,6 +293,31 @@ ${m.content}`
     setSessionId(null);
   };
   
+  // Effects para auto scroll
+  useEffect(() => {
+    // Auto scroll quando novas mensagens chegam (apenas se está no final)
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }, [messages, isAtBottom, scrollToBottom]);
+  
+  // Scroll inicial quando componente monta
+  useEffect(() => {
+    scrollToBottom('instant');
+  }, [scrollToBottom]);
+  
+  // Scroll quando uma nova mensagem do usuário é enviada
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        // Sempre scroll para baixo quando usuário envia mensagem
+        setIsAtBottom(true);
+        scrollToBottom();
+      }
+    }
+  }, [messages, scrollToBottom]);
+  
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
@@ -292,7 +354,16 @@ ${m.content}`
       </header>
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 py-6"
+        style={{
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch',
+          willChange: 'scroll-position'
+        }}
+      >
         <div className="mx-auto max-w-4xl space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-12">
@@ -355,8 +426,25 @@ ${m.content}`
               <div className="animate-pulse">Aguarde um momento, estou pensando...</div>
             </div>
           )}
+          
+          {/* Âncora invisível para scroll */}
+          <div ref={messagesEndRef} />
         </div>
       </div>
+      
+      {/* Botão flutuante de nova mensagem */}
+      {showNewMessageButton && (
+        <button
+          onClick={() => {
+            scrollToBottom();
+            setIsAtBottom(true);
+          }}
+          className="absolute bottom-24 right-6 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200 animate-pulse"
+          title="Ir para última mensagem"
+        >
+          <ChevronDown className="h-5 w-5" />
+        </button>
+      )}
       
       {/* Input */}
       <MessageInput
