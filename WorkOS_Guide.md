@@ -1,6 +1,5 @@
 # AuthKit
 
-
 ## Introduction {{ "visibility": "no-quick-nav" }}
 
 Integrating AuthKit into your app is quick and easy. In this guide, we'll walk you through adding a hosted authentication flow to your application using AuthKit.
@@ -43,7 +42,6 @@ Let's add the necessary dependencies and configuration in your WorkOS Dashboard.
   ```bash title="Install Next.js SDK"
   npm install @workos-inc/authkit-nextjs
   ```
-
 
 ### Configure a redirect URI
 
@@ -128,6 +126,23 @@ You can configure the initiate login URL from the _Redirects_ section of the Wor
   openssl rand -base64 32
   ```
 
+  ### Preview Deployment Configuration
+
+  For Vercel preview deployments, configure the following environment variables in your Vercel Project Settings:
+
+  ```plain title="Vercel Environment Variables for Preview Deployments"
+  WORKOS_API_KEY='sk_example_123456789'
+  WORKOS_CLIENT_ID='client_123456789'
+  WORKOS_COOKIE_PASSWORD='<your-generated-password>'
+  ```
+
+  **Important Notes:**
+
+  - The `NEXT_PUBLIC_WORKOS_REDIRECT_URI` is **not needed** when using dynamic redirect URI computation in middleware
+  - `VERCEL_BRANCH_URL` and `VERCEL_URL` are automatically provided by Vercel at runtime
+  - Configure wildcard redirect URIs in the WorkOS Dashboard: `https://*-gitethanwoos-projects.vercel.app/callback`
+  - Keep a non-wildcard default redirect URI (e.g., `https://yourdomain.com/callback`) for production
+  - The middleware automatically computes the correct redirect URI for each preview deployment
 
 > The code examples use your staging API keys when [signed in](https://dashboard.workos.com)
 
@@ -136,7 +151,6 @@ You can configure the initiate login URL from the _Redirects_ section of the Wor
 ## (2) Add AuthKit to your app
 
 Let's integrate the hosted authentication flow into your app.
-
 
 - $ frontend="nextjs"
 
