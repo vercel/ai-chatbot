@@ -1,33 +1,35 @@
 import { authkitMiddleware } from '@workos-inc/authkit-nextjs';
 
-export default async function middleware(req: any) {
-  const proto = req.headers.get('x-forwarded-proto') ?? 'https';
-  // Prefer branch URL for stable preview domains, then fall back to deployment URL.
-  const host =
-    process.env.VERCEL_BRANCH_URL ??
-    req.headers.get('x-forwarded-host') ??
-    process.env.VERCEL_URL ??
-    req.nextUrl.host;
+// Set WORKOS_REDIRECT_URI environment variable dynamically for preview deployments
+const setupRedirectUri = () => {
+  if (!process.env.WORKOS_REDIRECT_URI) {
+    const proto = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host =
+      process.env.VERCEL_BRANCH_URL ||
+      process.env.VERCEL_URL ||
+      'localhost:3000';
+    process.env.WORKOS_REDIRECT_URI = `${proto}://${host}/callback`;
+  }
+};
 
-  const redirectUri = `${proto}://${host}/callback`;
+// Setup redirect URI before configuring middleware
+setupRedirectUri();
 
-  return authkitMiddleware({
-    redirectUri,
-    middlewareAuth: {
-      enabled: true,
-      unauthenticatedPaths: [
-        '/login',
-        '/register',
-        '/callback',
-        '/ping',
-        '/.well-known/oauth-protected-resource',
-        '/.well-known/oauth-authorization-server',
-        '/api/mcp',
-      ],
-    },
-    debug: true,
-  });
-}
+export default authkitMiddleware({
+  middlewareAuth: {
+    enabled: true,
+    unauthenticatedPaths: [
+      '/login',
+      '/register',
+      '/callback',
+      '/ping',
+      '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-authorization-server',
+      '/api/mcp',
+    ],
+  },
+  debug: true,
+});
 
 export const config = {
   matcher: [
