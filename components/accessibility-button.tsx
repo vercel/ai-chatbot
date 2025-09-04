@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type FC } from 'react';
 import { AccessibilitySettings } from './accessibility-settings';
 import { Button } from './ui/button';

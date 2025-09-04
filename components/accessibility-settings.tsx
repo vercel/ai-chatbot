@@ -48,9 +48,25 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({
   // Aplica as configurações quando o diálogo é fechado
   const handleClose = (open: boolean) => {
     if (!open) {
-      toggleHighContrast();
-      setFontSize(localSettings.fontSize);
-      toggleReduceMotion();
+      // Só aplicar as alterações se realmente houver mudanças
+      const hasChanges = 
+        localSettings.highContrast !== highContrast ||
+        localSettings.fontSize !== fontSize ||
+        localSettings.reduceMotion !== reduceMotion;
+      
+      if (hasChanges) {
+        if (localSettings.highContrast !== highContrast) {
+          toggleHighContrast();
+        }
+        
+        if (localSettings.fontSize !== fontSize) {
+          setFontSize(localSettings.fontSize);
+        }
+        
+        if (localSettings.reduceMotion !== reduceMotion) {
+          toggleReduceMotion();
+        }
+      }
     }
     onOpenChange(open);
   };
@@ -186,14 +202,23 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({
           </Button>
           <Button
             onClick={() => {
-              if (localSettings.highContrast !== highContrast) {
-                toggleHighContrast();
-              }
+              const hasChanges = 
+                localSettings.highContrast !== highContrast ||
+                localSettings.fontSize !== fontSize ||
+                localSettings.reduceMotion !== reduceMotion;
+              
+              if (hasChanges) {
+                if (localSettings.highContrast !== highContrast) {
+                  toggleHighContrast();
+                }
 
-              setFontSize(localSettings.fontSize);
+                if (localSettings.fontSize !== fontSize) {
+                  setFontSize(localSettings.fontSize);
+                }
 
-              if (localSettings.reduceMotion !== reduceMotion) {
-                toggleReduceMotion();
+                if (localSettings.reduceMotion !== reduceMotion) {
+                  toggleReduceMotion();
+                }
               }
 
               onOpenChange(false);

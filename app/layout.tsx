@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AccessibilityProvider } from '@/lib/accessibility/context';
+import { AccessibilityListener } from '@/components/accessibility-listener';
 
 import './globals.css';
 import '../styles/accessibility.css';
@@ -81,7 +82,10 @@ export default async function RootLayout({
         >
           <Toaster position="top-center" />
           <AccessibilityProvider>
-            <SessionProvider>{children}</SessionProvider>
+            <SessionProvider>
+              {children}
+              <AccessibilityListener />
+            </SessionProvider>
           </AccessibilityProvider>
         </ThemeProvider>
       </body>

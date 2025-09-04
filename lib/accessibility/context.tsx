@@ -1,3 +1,5 @@
+'use client';
+
 import {
   createContext,
   useContext,
@@ -5,17 +7,24 @@ import {
   useEffect,
   type ReactNode,
   useMemo,
+  useCallback,
 } from 'react';
 
 // Tipo para tamanhos de fonte
 type FontSizeType = 'normal' | 'large' | 'x-large';
+
+// Tipo para anúncios
+interface Announcement {
+  id: string;
+  text: string;
+}
 
 // Interface para o estado de acessibilidade
 interface AccessibilityState {
   highContrast: boolean;
   fontSize: FontSizeType;
   reduceMotion: boolean;
-  announcements: string[];
+  announcements: Announcement[];
 }
 
 // Interface para o contexto de acessibilidade
@@ -45,7 +54,7 @@ export function AccessibilityProvider({
       highContrast: false,
       fontSize: 'normal',
       reduceMotion: false,
-      announcements: [],
+      announcements: [], // inicializado como array vazio de Announcement
     });
 
   // Efeito para aplicar classes de acessibilidade ao documento
@@ -66,38 +75,8 @@ export function AccessibilityProvider({
     // Aplicar redução de movimento
     document.documentElement.classList.toggle('motion-reduced', reduceMotion);
 
-    // Verificar preferências do sistema
-    const checkSystemPreferences = () => {
-      const prefersReducedMotion = window.matchMedia(
-        '(prefers-reduced-motion: reduce)',
-      ).matches;
-
-      if (prefersReducedMotion && !reduceMotion) {
-        setAccessibilityState((prev) => ({ ...prev, reduceMotion: true }));
-      }
-    };
-
-    // Verificar preferências do sistema ao montar o componente
-    checkSystemPreferences();
-
-    // Recuperar configurações salvas
-    const savedSettings = localStorage.getItem('ysh-accessibility-settings');
-    if (savedSettings) {
-      try {
-        const parsed = JSON.parse(savedSettings);
-        setAccessibilityState((prev) => ({
-          ...prev,
-          highContrast: parsed.highContrast ?? prev.highContrast,
-          fontSize: parsed.fontSize ?? prev.fontSize,
-          reduceMotion: parsed.reduceMotion ?? prev.reduceMotion,
-        }));
-      } catch (e) {
-        console.error('Erro ao recuperar configurações de acessibilidade:', e);
-      }
-    }
-
     // Salvar configurações quando mudarem
-    const saveSettings = () => {
+    try {
       localStorage.setItem(
         'ysh-accessibility-settings',
         JSON.stringify({
@@ -106,50 +85,97 @@ export function AccessibilityProvider({
           reduceMotion,
         }),
       );
-    };
+    } catch (e) {
+      console.error('Erro ao salvar configurações:', e);
+    }
+  }, [
+    accessibilityState.highContrast,
+    accessibilityState.fontSize,
+    accessibilityState.reduceMotion,
+  ]);
 
-    saveSettings();
-  }, [accessibilityState]);
+  // Efeito separado para carregar preferências iniciais (executa apenas uma vez)
+  useEffect(() => {
+    // Verificar preferências do sistema
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
 
-  // Toggle para modo de alto contraste
-  const toggleHighContrast = () => {
+    // Recuperar configurações salvas
+    const savedSettings = localStorage.getItem('ysh-accessibility-settings');
+
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        setAccessibilityState((prev) => ({
+          ...prev,
+          highContrast: parsed.highContrast ?? prev.highContrast,
+          fontSize: parsed.fontSize ?? prev.fontSize,
+          reduceMotion:
+            parsed.reduceMotion ?? (prev.reduceMotion || prefersReducedMotion),
+        }));
+      } catch (e) {
+        console.error('Erro ao recuperar configurações de acessibilidade:', e);
+        // Se falhou, pelo menos aplique as preferências do sistema
+        if (prefersReducedMotion) {
+          setAccessibilityState((prev) => ({ ...prev, reduceMotion: true }));
+        }
+      }
+    } else if (prefersReducedMotion) {
+      // Nenhuma configuração salva, mas o sistema prefere redução de movimento
+      setAccessibilityState((prev) => ({ ...prev, reduceMotion: true }));
+    }
+  }, []);
+
+  // Funções memoizadas para manipular o estado
+  const toggleHighContrast = useCallback(() => {
     setAccessibilityState((prev) => ({
       ...prev,
       highContrast: !prev.highContrast,
     }));
-  };
+  }, []);
 
   // Definir tamanho da fonte
-  const setFontSize = (size: 'normal' | 'large' | 'x-large') => {
+  const setFontSize = useCallback((size: 'normal' | 'large' | 'x-large') => {
     setAccessibilityState((prev) => ({
       ...prev,
       fontSize: size,
     }));
-  };
+  }, []);
 
   // Toggle para redução de movimento
-  const toggleReduceMotion = () => {
+  const toggleReduceMotion = useCallback(() => {
     setAccessibilityState((prev) => ({
       ...prev,
       reduceMotion: !prev.reduceMotion,
     }));
-  };
+  }, []);
 
   // Função para anunciar mensagens para leitores de tela
-  const announce = (message: string) => {
+  const announce = useCallback((message: string) => {
+    // Validar se a mensagem existe e não está vazia
+    if (!message || typeof message !== 'string') return;
+    
+    // Usar um ID único para cada anúncio (timestamp + string parcial)
+    const announcementId = `${Date.now()}-${message.slice(0, 10)}`;
+    
+    // Adicionar mensagem com ID único
     setAccessibilityState((prev) => ({
       ...prev,
-      announcements: [...prev.announcements, message],
+      announcements: [...prev.announcements, { id: announcementId, text: message }],
     }));
 
     // Remover mensagem após ser lida (tempo arbitrário para leitores de tela)
     setTimeout(() => {
-      setAccessibilityState((prev) => ({
-        ...prev,
-        announcements: prev.announcements.filter((m) => m !== message),
-      }));
+      setAccessibilityState((prev) => {
+        // Filtra a mensagem específica pelo ID
+        return {
+          ...prev,
+          announcements: prev.announcements.filter(a => a.id !== announcementId)
+        };
+      });
     }, 3000);
-  };
+  }, []);
 
   // Memoize o valor do contexto para evitar re-renders desnecessários
   const contextValue = useMemo(
@@ -160,13 +186,19 @@ export function AccessibilityProvider({
       toggleReduceMotion,
       announce,
     }),
-    [accessibilityState],
+    [
+      accessibilityState,
+      toggleHighContrast,
+      setFontSize,
+      toggleReduceMotion,
+      announce,
+    ],
   );
 
   // Memoize os anúncios para reduzir a profundidade da aninhação
   const announcements = useMemo(() => {
-    return accessibilityState.announcements.map((announcement, index) => (
-      <p key={`${index}-${announcement.slice(0, 10)}`}>{announcement}</p>
+    return accessibilityState.announcements.map((announcement) => (
+      <p key={announcement.id}>{announcement.text}</p>
     ));
   }, [accessibilityState.announcements]);
 
@@ -197,21 +229,27 @@ export function useAccessibility() {
 // Hook para anunciar alterações de rota para leitores de tela
 export function useRouteAnnouncer() {
   const { announce } = useAccessibility();
-
+  
+  // Retorna um objeto com a função para anunciar mudanças de rota
   return {
     announceRouteChange: (pageTitle: string) => {
-      announce(`Navegou para ${pageTitle}`);
-    },
+      if (pageTitle) {
+        announce(`Navegou para ${pageTitle}`);
+      }
+    }
   };
 }
 
 // Hook para anunciar atualizações de conteúdo
 export function useContentAnnouncer() {
   const { announce } = useAccessibility();
-
+  
+  // Retorna um objeto com a função para anunciar atualizações de conteúdo
   return {
     announceContentUpdate: (message: string) => {
-      announce(message);
-    },
+      if (message) {
+        announce(message);
+      }
+    }
   };
 }

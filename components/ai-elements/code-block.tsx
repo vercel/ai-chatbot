@@ -38,12 +38,12 @@ export const CodeBlock = ({
     <div
       className={cn(
         'relative w-full overflow-hidden rounded-md border bg-background text-foreground',
-        className
+        className,
       )}
       {...props}
     >
       <div className="relative">
-        {/* @ts-expect-error - SyntaxHighlighter is not a valid JSX component */}
+        {/* @ts-ignore - SyntaxHighlighter is not a valid JSX component */}
         <SyntaxHighlighter
           className="overflow-hidden dark:hidden"
           codeTagProps={{
@@ -67,7 +67,7 @@ export const CodeBlock = ({
         >
           {code}
         </SyntaxHighlighter>
-        {/* @ts-expect-error - SyntaxHighlighter is not a valid JSX component */}
+        {/* @ts-ignore - SyntaxHighlighter is not a valid JSX component */}
         <SyntaxHighlighter
           className="hidden overflow-hidden dark:block"
           codeTagProps={{

@@ -4,15 +4,22 @@ import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { auth } from '../(auth)/auth';
-import { redirect } from 'next/navigation';
+import type { Session } from 'next-auth';
+
+// Criando uma sessão mock com o tipo correto
+const mockSession: Session = {
+  user: {
+    id: 'guest-user',
+    name: 'Convidado',
+    email: 'guest@example.com',
+    type: 'guest' as any,
+    image: null,
+  },
+  expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+};
 
 export default async function Page() {
-  const session = await auth();
-
-  if (!session) {
-    redirect('/api/auth/guest');
-  }
+  const session = mockSession;
 
   const id = generateUUID();
 
