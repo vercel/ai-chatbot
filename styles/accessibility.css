@@ -15,10 +15,10 @@
   --ring: 45 100% 45%;
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 0 0% 0%;
-  
+
   /* Aumentar contraste das bordas */
   --border-width: 2px;
-  
+
   /* Remover efeitos de transparência para melhor legibilidade */
   --opacity-hover: 1;
   --opacity-disabled: 0.7;

@@ -1,13 +1,20 @@
-import { useState, type FC } from "react";
-import { AccessibilitySettings } from "./accessibility-settings";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { useState, type FC } from 'react';
+import { AccessibilitySettings } from './accessibility-settings';
+import { Button } from './ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 interface AccessibilityButtonProps {
   className?: string;
 }
 
-export const AccessibilityButton: FC<AccessibilityButtonProps> = ({ className = "" }) => {
+export const AccessibilityButton: FC<AccessibilityButtonProps> = ({
+  className = '',
+}) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -43,8 +50,11 @@ export const AccessibilityButton: FC<AccessibilityButtonProps> = ({ className = 
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      
-      <AccessibilitySettings open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      <AccessibilitySettings
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+      />
     </>
   );
 };

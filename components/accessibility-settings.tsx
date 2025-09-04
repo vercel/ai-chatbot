@@ -1,4 +1,4 @@
-import { Button } from "../components/ui/button";
+import { Button } from '../components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -6,20 +6,30 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
-import { Label } from "../components/ui/label";
-import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
-import { Switch } from "../components/ui/switch";
-import { useAccessibility } from "../lib/accessibility/context";
-import { useState, useEffect, type FC } from "react";
+} from '../components/ui/dialog';
+import { Label } from '../components/ui/label';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { Switch } from '../components/ui/switch';
+import { useAccessibility } from '../lib/accessibility/context';
+import { useState, useEffect, type FC } from 'react';
 
 interface AccessibilitySettingsProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
 }
 
-export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, onOpenChange }) => {
-  const { highContrast, fontSize, reduceMotion, toggleHighContrast, setFontSize, toggleReduceMotion } = useAccessibility();
+export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({
+  open,
+  onOpenChange,
+}) => {
+  const {
+    highContrast,
+    fontSize,
+    reduceMotion,
+    toggleHighContrast,
+    setFontSize,
+    toggleReduceMotion,
+  } = useAccessibility();
   const [localSettings, setLocalSettings] = useState({
     highContrast,
     fontSize,
@@ -51,7 +61,8 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
         <DialogHeader>
           <DialogTitle>Configurações de Acessibilidade</DialogTitle>
           <DialogDescription>
-            Personalize sua experiência para melhor atender às suas necessidades de acessibilidade.
+            Personalize sua experiência para melhor atender às suas necessidades
+            de acessibilidade.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -82,9 +93,9 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
               id="font-size"
               value={localSettings.fontSize}
               onValueChange={(value: string) =>
-                setLocalSettings({ 
-                  ...localSettings, 
-                  fontSize: value as "normal" | "large" | "x-large" 
+                setLocalSettings({
+                  ...localSettings,
+                  fontSize: value as 'normal' | 'large' | 'x-large',
                 })
               }
               className="grid grid-cols-3 gap-2"
@@ -98,9 +109,9 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
                 <Label
                   htmlFor="font-normal"
                   className={`flex h-12 items-center justify-center rounded-md border-2 ${
-                    localSettings.fontSize === "normal"
-                      ? "border-brand bg-brand/10"
-                      : "border-muted bg-transparent"
+                    localSettings.fontSize === 'normal'
+                      ? 'border-brand bg-brand/10'
+                      : 'border-muted bg-transparent'
                   } px-3 py-2 hover:border-brand/30 hover:bg-brand/5`}
                 >
                   Normal
@@ -115,9 +126,9 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
                 <Label
                   htmlFor="font-large"
                   className={`flex h-12 items-center justify-center rounded-md border-2 ${
-                    localSettings.fontSize === "large"
-                      ? "border-brand bg-brand/10"
-                      : "border-muted bg-transparent"
+                    localSettings.fontSize === 'large'
+                      ? 'border-brand bg-brand/10'
+                      : 'border-muted bg-transparent'
                   } px-3 py-2 hover:border-brand/30 hover:bg-brand/5`}
                 >
                   Grande
@@ -132,9 +143,9 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
                 <Label
                   htmlFor="font-x-large"
                   className={`flex h-12 items-center justify-center rounded-md border-2 ${
-                    localSettings.fontSize === "x-large"
-                      ? "border-brand bg-brand/10"
-                      : "border-muted bg-transparent"
+                    localSettings.fontSize === 'x-large'
+                      ? 'border-brand bg-brand/10'
+                      : 'border-muted bg-transparent'
                   } px-3 py-2 hover:border-brand/30 hover:bg-brand/5 text-lg`}
                 >
                   Extra grande
@@ -178,13 +189,13 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
               if (localSettings.highContrast !== highContrast) {
                 toggleHighContrast();
               }
-              
+
               setFontSize(localSettings.fontSize);
-              
+
               if (localSettings.reduceMotion !== reduceMotion) {
                 toggleReduceMotion();
               }
-              
+
               onOpenChange(false);
             }}
           >
@@ -194,4 +205,4 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({ open, on
       </DialogContent>
     </Dialog>
   );
-}
+};

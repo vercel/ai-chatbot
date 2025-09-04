@@ -13,14 +13,17 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       className={cn(
         'rounded-lg border bg-card text-card-foreground shadow-sm',
         // Variantes personalizadas para YSH
-        variant === 'savings' && 'border-l-4 border-l-[hsl(var(--brand))] bg-gradient-to-br from-card to-card/90',
-        variant === 'solar-panel' && 'border-none bg-gradient-to-br from-[hsl(var(--brand))/10] to-[hsl(var(--brand-accent))/5] shadow-md',
-        variant === 'highlight' && 'border-none shadow-md shadow-[hsl(var(--brand-accent))/15] bg-gradient-to-br from-[hsl(var(--brand))/5] to-background',
+        variant === 'savings' &&
+          'border-l-4 border-l-[hsl(var(--brand))] bg-gradient-to-br from-card to-card/90',
+        variant === 'solar-panel' &&
+          'border-none bg-gradient-to-br from-[hsl(var(--brand))/10] to-[hsl(var(--brand-accent))/5] shadow-md',
+        variant === 'highlight' &&
+          'border-none shadow-md shadow-[hsl(var(--brand-accent))/15] bg-gradient-to-br from-[hsl(var(--brand))/5] to-background',
         className,
       )}
       {...props}
     />
-  )
+  ),
 );
 Card.displayName = 'Card';
 

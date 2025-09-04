@@ -7,10 +7,7 @@ interface SkipLinkProps {
 
 export const SkipLink: FC<SkipLinkProps> = ({ mainId, className = '' }) => {
   return (
-    <a 
-      href={`#${mainId}`} 
-      className={`skip-link ${className}`}
-    >
+    <a href={`#${mainId}`} className={`skip-link ${className}`}>
       Pular para o conteúdo principal
     </a>
   );
