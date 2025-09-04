@@ -1,21 +1,14 @@
 import { authkitMiddleware } from '@workos-inc/authkit-nextjs';
 
-// Set WORKOS_REDIRECT_URI environment variable dynamically for preview deployments
-const setupRedirectUri = () => {
-  if (!process.env.WORKOS_REDIRECT_URI) {
-    const proto = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const host =
-      process.env.VERCEL_BRANCH_URL ||
-      process.env.VERCEL_URL ||
-      'localhost:3000';
-    process.env.WORKOS_REDIRECT_URI = `${proto}://${host}/callback`;
-  }
-};
+// Compute redirect URI for preview deployments
+const host =
+  process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL || 'localhost:3000';
 
-// Setup redirect URI before configuring middleware
-setupRedirectUri();
+const proto = host.includes('localhost') ? 'http' : 'https';
+const REDIRECT_URI = `${proto}://${host}/callback`;
 
 export default authkitMiddleware({
+  redirectUri: REDIRECT_URI, // overrides any WORKOS_REDIRECT_URI env var
   middlewareAuth: {
     enabled: true,
     unauthenticatedPaths: [

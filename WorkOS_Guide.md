@@ -138,11 +138,12 @@ You can configure the initiate login URL from the _Redirects_ section of the Wor
 
   **Important Notes:**
 
-  - The middleware automatically sets `WORKOS_REDIRECT_URI` based on Vercel environment variables
+  - The middleware uses `redirectUri` option which **overrides** any `WORKOS_REDIRECT_URI` environment variable
   - `VERCEL_BRANCH_URL` and `VERCEL_URL` are automatically provided by Vercel at runtime
+  - **Do not** set `WORKOS_REDIRECT_URI=https://${VERCEL_URL}/callback` - Vercel won't interpolate it
   - Configure wildcard redirect URIs in the WorkOS Dashboard: `https://*-gitethanwoos-projects.vercel.app/callback`
   - Keep a non-wildcard default redirect URI (e.g., `https://yourdomain.com/callback`) for production
-  - The middleware dynamically computes the correct redirect URI for each deployment environment
+  - The middleware computes the redirect URI at startup using Vercel system environment variables
 
 > The code examples use your staging API keys when [signed in](https://dashboard.workos.com)
 
