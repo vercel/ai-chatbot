@@ -423,7 +423,7 @@ const PurePreviewMessage = ({
                     <Collapsible key={toolCallId} defaultOpen={false} className="border rounded-md">
                       <div className="flex items-center justify-between p-3">
                         <div className="text-sm font-medium">
-                          {displayName} Complete
+                          {displayName}
                         </div>
                         <CollapsibleTrigger asChild>
                           <Button variant="ghost" size="sm" className="p-1 h-auto">
