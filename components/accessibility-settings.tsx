@@ -49,20 +49,20 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({
   const handleClose = (open: boolean) => {
     if (!open) {
       // Só aplicar as alterações se realmente houver mudanças
-      const hasChanges = 
+      const hasChanges =
         localSettings.highContrast !== highContrast ||
         localSettings.fontSize !== fontSize ||
         localSettings.reduceMotion !== reduceMotion;
-      
+
       if (hasChanges) {
         if (localSettings.highContrast !== highContrast) {
           toggleHighContrast();
         }
-        
+
         if (localSettings.fontSize !== fontSize) {
           setFontSize(localSettings.fontSize);
         }
-        
+
         if (localSettings.reduceMotion !== reduceMotion) {
           toggleReduceMotion();
         }
@@ -202,11 +202,11 @@ export const AccessibilitySettings: FC<AccessibilitySettingsProps> = ({
           </Button>
           <Button
             onClick={() => {
-              const hasChanges = 
+              const hasChanges =
                 localSettings.highContrast !== highContrast ||
                 localSettings.fontSize !== fontSize ||
                 localSettings.reduceMotion !== reduceMotion;
-              
+
               if (hasChanges) {
                 if (localSettings.highContrast !== highContrast) {
                   toggleHighContrast();

@@ -16,11 +16,11 @@ export function AccessibilityListener() {
   // Função para formatar o título da página fora do useEffect
   function getPageTitle(path: string): string {
     if (!path) return '';
-    
+
     if (path === '/') {
       return 'Página inicial';
     }
-    
+
     // Formatar o pathname para criar um título legível
     const segments = path
       .split('/')
@@ -31,10 +31,10 @@ export function AccessibilityListener() {
       const title = segments.join(' - ');
       return title.charAt(0).toUpperCase() + title.slice(1);
     }
-    
+
     return 'Página inicial';
   }
-  
+
   // Efeito para anunciar mudanças de rota
   useEffect(() => {
     // Evitar anúncios desnecessários durante o carregamento inicial
@@ -47,7 +47,7 @@ export function AccessibilityListener() {
         announceRouteChange(pageTitle);
       }
     }, 300); // Aumentado para 300ms para dar mais tempo à renderização
-    
+
     return () => clearTimeout(timer);
   }, [pathname, announceRouteChange]);
 

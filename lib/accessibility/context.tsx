@@ -155,14 +155,17 @@ export function AccessibilityProvider({
   const announce = useCallback((message: string) => {
     // Validar se a mensagem existe e não está vazia
     if (!message || typeof message !== 'string') return;
-    
+
     // Usar um ID único para cada anúncio (timestamp + string parcial)
     const announcementId = `${Date.now()}-${message.slice(0, 10)}`;
-    
+
     // Adicionar mensagem com ID único
     setAccessibilityState((prev) => ({
       ...prev,
-      announcements: [...prev.announcements, { id: announcementId, text: message }],
+      announcements: [
+        ...prev.announcements,
+        { id: announcementId, text: message },
+      ],
     }));
 
     // Remover mensagem após ser lida (tempo arbitrário para leitores de tela)
@@ -171,7 +174,9 @@ export function AccessibilityProvider({
         // Filtra a mensagem específica pelo ID
         return {
           ...prev,
-          announcements: prev.announcements.filter(a => a.id !== announcementId)
+          announcements: prev.announcements.filter(
+            (a) => a.id !== announcementId,
+          ),
         };
       });
     }, 3000);
@@ -229,27 +234,27 @@ export function useAccessibility() {
 // Hook para anunciar alterações de rota para leitores de tela
 export function useRouteAnnouncer() {
   const { announce } = useAccessibility();
-  
+
   // Retorna um objeto com a função para anunciar mudanças de rota
   return {
     announceRouteChange: (pageTitle: string) => {
       if (pageTitle) {
         announce(`Navegou para ${pageTitle}`);
       }
-    }
+    },
   };
 }
 
 // Hook para anunciar atualizações de conteúdo
 export function useContentAnnouncer() {
   const { announce } = useAccessibility();
-  
+
   // Retorna um objeto com a função para anunciar atualizações de conteúdo
   return {
     announceContentUpdate: (message: string) => {
       if (message) {
         announce(message);
       }
-    }
+    },
   };
 }
