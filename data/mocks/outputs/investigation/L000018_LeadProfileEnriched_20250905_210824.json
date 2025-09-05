@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000018",
+  "geocode": {
+    "lat": 6.950839,
+    "lon": -15.545469,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3548558"
+    },
+    "city_name": "Santo André"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.79371468257159
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 29,
+      "azimuth": 235
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-04-12T18:24:33.219Z"
+}

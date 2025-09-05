@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000027",
+  "geocode": {
+    "lat": -0.190636,
+    "lon": -23.649702,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "29",
+      "city": "3513556"
+    },
+    "city_name": "Feira de Santana"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.077533906791359
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.8,
+    "meta": {
+      "tilt": 38,
+      "azimuth": 151
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-09-11T01:23:38.898Z"
+}

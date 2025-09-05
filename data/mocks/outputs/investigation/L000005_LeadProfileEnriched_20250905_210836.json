@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000005",
+  "geocode": {
+    "lat": 6.684799,
+    "lon": -5.558184,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "29",
+      "city": "3599231"
+    },
+    "city_name": "Salvador"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.103110938798636
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 28,
+      "azimuth": 160
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-05-24T10:07:19.943Z"
+}

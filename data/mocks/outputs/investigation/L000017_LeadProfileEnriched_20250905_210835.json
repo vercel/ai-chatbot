@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000017",
+  "geocode": {
+    "lat": -1.861093,
+    "lon": -28.209623,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "41",
+      "city": "3507777"
+    },
+    "city_name": "Curitiba"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.300336165353656
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 4.8,
+    "meta": {
+      "tilt": 39,
+      "azimuth": 200
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-06-22T20:29:07.533Z"
+}

@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000008",
+  "geocode": {
+    "lat": 2.227277,
+    "lon": -11.541839,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "41",
+      "city": "3511659"
+    },
+    "city_name": "Curitiba"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.566313693765551
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 26,
+      "azimuth": 86
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-06-13T22:58:19.115Z"
+}

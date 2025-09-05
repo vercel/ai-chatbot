@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000002",
+  "geocode": {
+    "lat": -15.311266,
+    "lon": -43.075218,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "31",
+      "city": "3529520"
+    },
+    "city_name": "Uberlândia"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.186251536477357
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 33,
+      "azimuth": 357
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-10-15T23:00:55.665Z"
+}

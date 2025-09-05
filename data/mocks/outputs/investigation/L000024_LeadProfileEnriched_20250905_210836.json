@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000024",
+  "geocode": {
+    "lat": 1.268279,
+    "lon": -18.704032,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "33",
+      "city": "3504063"
+    },
+    "city_name": "Niterói"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.024845458101481
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5,
+    "meta": {
+      "tilt": 34,
+      "azimuth": 39
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-12-01T14:00:16.920Z"
+}

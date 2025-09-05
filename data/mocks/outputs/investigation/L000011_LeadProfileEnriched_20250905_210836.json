@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000011",
+  "geocode": {
+    "lat": 0.46819,
+    "lon": -25.43462,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "31",
+      "city": "3542334"
+    },
+    "city_name": "Belo Horizonte"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.695703760255128
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.3,
+    "meta": {
+      "tilt": 38,
+      "azimuth": 323
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-03-25T00:10:52.285Z"
+}

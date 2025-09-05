@@ -1,0 +1,875 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000001",
+        "name": "Pessoa L000001",
+        "email": "pessoal000001@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.487Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000002",
+        "name": "Pessoa L000002",
+        "email": "pessoal000002@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.536Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000003",
+        "name": "Pessoa L000003",
+        "email": "pessoal000003@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.545Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000004",
+        "name": "Pessoa L000004",
+        "email": "pessoal000004@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.551Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000005",
+        "name": "Pessoa L000005",
+        "email": "pessoal000005@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.557Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000006",
+        "name": "Pessoa L000006",
+        "email": "pessoal000006@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.563Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000007",
+        "name": "Pessoa L000007",
+        "email": "pessoal000007@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.569Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000008",
+        "name": "Pessoa L000008",
+        "email": "pessoal000008@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.574Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000009",
+        "name": "Pessoa L000009",
+        "email": "pessoal000009@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.579Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000010",
+        "name": "Pessoa L000010",
+        "email": "pessoal000010@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.584Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000011",
+        "name": "Pessoa L000011",
+        "email": "pessoal000011@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.589Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000012",
+        "name": "Pessoa L000012",
+        "email": "pessoal000012@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.593Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000013",
+        "name": "Pessoa L000013",
+        "email": "pessoal000013@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.598Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000014",
+        "name": "Pessoa L000014",
+        "email": "pessoal000014@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.602Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000015",
+        "name": "Pessoa L000015",
+        "email": "pessoal000015@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.606Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000016",
+        "name": "Pessoa L000016",
+        "email": "pessoal000016@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.610Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000017",
+        "name": "Pessoa L000017",
+        "email": "pessoal000017@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.614Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000018",
+        "name": "Pessoa L000018",
+        "email": "pessoal000018@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.619Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000019",
+        "name": "Pessoa L000019",
+        "email": "pessoal000019@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.623Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000020",
+        "name": "Pessoa L000020",
+        "email": "pessoal000020@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "666.666.666-66",
+        "cnpj": "",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.628Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000021",
+        "name": "Empresa L000021",
+        "email": "empresal000021@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.632Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000022",
+        "name": "Empresa L000022",
+        "email": "empresal000022@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.636Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000023",
+        "name": "Empresa L000023",
+        "email": "empresal000023@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.640Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000024",
+        "name": "Empresa L000024",
+        "email": "empresal000024@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.644Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000025",
+        "name": "Empresa L000025",
+        "email": "empresal000025@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.648Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000026",
+        "name": "Empresa L000026",
+        "email": "empresal000026@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.652Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000027",
+        "name": "Empresa L000027",
+        "email": "empresal000027@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.656Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000028",
+        "name": "Empresa L000028",
+        "email": "empresal000028@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.659Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000029",
+        "name": "Empresa L000029",
+        "email": "empresal000029@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.664Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "lead_id": "L000030",
+        "name": "Empresa L000030",
+        "email": "empresal000030@example.com",
+        "phone": "(51) 66666-6666",
+        "cpf": "",
+        "cnpj": "66.666.666/6666-66",
+        "street": "Rua 602",
+        "number": "6011",
+        "city": "RS City 31",
+        "state": "RS",
+        "cep": "66666-666",
+        "system_size_kWp": 8.01,
+        "annual_production_kWh": 9213,
+        "coverage_pct": 58.1,
+        "payback_years": 7.8,
+        "estimated_cost_brl": 50055.19,
+        "created_at": "2025-01-29T11:29:21.669Z"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -42.977925,
+          -6.966887
+        ]
+      }
+    }
+  ]
+}

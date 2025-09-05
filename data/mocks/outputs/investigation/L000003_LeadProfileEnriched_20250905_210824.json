@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000003",
+  "geocode": {
+    "lat": 2.709249,
+    "lon": -13.833446,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "41",
+      "city": "3527548"
+    },
+    "city_name": "Londrina"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.558213593903929
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 4.8,
+    "meta": {
+      "tilt": 24,
+      "azimuth": 357
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-02-08T23:20:22.670Z"
+}

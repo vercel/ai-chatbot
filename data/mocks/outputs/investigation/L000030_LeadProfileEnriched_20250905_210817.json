@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000030",
+  "geocode": {
+    "lat": -5.707855,
+    "lon": -14.178128,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "33",
+      "city": "3516962"
+    },
+    "city_name": "Rio de Janeiro"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.73572393739596
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 36,
+      "azimuth": 115
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-05-17T20:03:20.960Z"
+}

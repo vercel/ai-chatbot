@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000019",
+  "geocode": {
+    "lat": 3.528193,
+    "lon": -12.519192,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "33",
+      "city": "3561180"
+    },
+    "city_name": "Duque de Caxias"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.123306363355368
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 38,
+      "azimuth": 186
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-10-02T03:46:44.719Z"
+}

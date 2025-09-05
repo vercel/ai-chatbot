@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000013",
+  "geocode": {
+    "lat": -16.306789,
+    "lon": -49.68189,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "31",
+      "city": "3553152"
+    },
+    "city_name": "Uberlândia"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.3577916282229125
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.3,
+    "meta": {
+      "tilt": 33,
+      "azimuth": 343
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-11-03T00:38:11.484Z"
+}

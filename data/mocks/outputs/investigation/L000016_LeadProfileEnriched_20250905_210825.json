@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000016",
+  "geocode": {
+    "lat": 0.561894,
+    "lon": -29.072004,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "29",
+      "city": "3579512"
+    },
+    "city_name": "Vitória da Conquista"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.916352654341608
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.8,
+    "meta": {
+      "tilt": 26,
+      "azimuth": 200
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-01-30T13:45:45.779Z"
+}

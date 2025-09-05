@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000022",
+  "geocode": {
+    "lat": -21.235111,
+    "lon": -39.654283,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "31",
+      "city": "3507491"
+    },
+    "city_name": "Belo Horizonte"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.638447355013341
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 33,
+      "azimuth": 65
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-01-28T02:10:11.466Z"
+}

@@ -179,9 +179,6 @@ importers:
       orderedmap:
         specifier: ^2.1.1
         version: 2.1.1
-      papaparse:
-        specifier: ^5.5.2
-        version: 5.5.2
       pdfjs-dist:
         specifier: ^5.4.149
         version: 5.4.149
@@ -339,6 +336,9 @@ importers:
       jsdom:
         specifier: ^26.1.0
         version: 26.1.0(bufferutil@4.0.9)
+      papaparse:
+        specifier: ^5.5.2
+        version: 5.5.2
       postcss:
         specifier: ^8
         version: 8.5.3

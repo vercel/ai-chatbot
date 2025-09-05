@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000016",
+  "geocode": {
+    "lat": -7.746852,
+    "lon": -39.953416,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "41",
+      "city": "3561963"
+    },
+    "city_name": "Maringá"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.8794944267719984
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 4.8,
+    "meta": {
+      "tilt": 36,
+      "azimuth": 79
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-09-16T01:59:30.440Z"
+}

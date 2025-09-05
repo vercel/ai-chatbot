@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000009",
+  "geocode": {
+    "lat": -7.97891,
+    "lon": -53.402315,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3584122"
+    },
+    "city_name": "Santo André"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.372168893925846
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.2,
+    "meta": {
+      "tilt": 26,
+      "azimuth": 199
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-01-02T09:51:50.019Z"
+}

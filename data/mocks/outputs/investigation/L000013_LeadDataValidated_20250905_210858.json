@@ -1,0 +1,30 @@
+{
+  "lead_id": "L000013",
+  "valid": false,
+  "violations": [
+    {
+      "instancePath": "",
+      "schemaPath": "#/required",
+      "keyword": "required",
+      "params": {
+        "missingProperty": "coordinates"
+      },
+      "message": "must have required property 'coordinates'"
+    },
+    {
+      "instancePath": "/email",
+      "schemaPath": "#/properties/email/format",
+      "keyword": "format",
+      "params": {
+        "format": "email"
+      },
+      "message": "must match format \"email\""
+    }
+  ],
+  "normalized_fields": {
+    "email": "pessoa l000013_at_example.com"
+  },
+  "confidence": 0.3,
+  "rules_version": "v1.0",
+  "checked_at": "2025-01-31T05:14:46.480Z"
+}

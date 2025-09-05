@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000019",
+  "geocode": {
+    "lat": 3.492738,
+    "lon": -8.821158,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "33",
+      "city": "3548145"
+    },
+    "city_name": "Niterói"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.696728329639882
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 39,
+      "azimuth": 107
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-04-08T20:33:00.076Z"
+}

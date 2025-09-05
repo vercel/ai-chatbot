@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000025",
+  "geocode": {
+    "lat": -12.17341,
+    "lon": -35.93541,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "41",
+      "city": "3555992"
+    },
+    "city_name": "Maringá"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.36708016321063
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 33,
+      "azimuth": 92
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-05-28T01:38:04.577Z"
+}

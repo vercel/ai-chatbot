@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000021",
+  "geocode": {
+    "lat": -10.737533,
+    "lon": -14.953105,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "43",
+      "city": "3537668"
+    },
+    "city_name": "Pelotas"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.086627531796694
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 4.5,
+    "meta": {
+      "tilt": 38,
+      "azimuth": 61
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-08-14T12:48:12.660Z"
+}

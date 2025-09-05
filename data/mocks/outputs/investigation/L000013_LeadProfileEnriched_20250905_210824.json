@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000013",
+  "geocode": {
+    "lat": 1.654509,
+    "lon": -24.853263,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "26",
+      "city": "3589119"
+    },
+    "city_name": "Olinda"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.186709686648101
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 38,
+      "azimuth": 183
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-10-05T23:59:26.746Z"
+}

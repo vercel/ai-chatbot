@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000015",
+  "geocode": {
+    "lat": -24.20716,
+    "lon": -45.791984,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "26",
+      "city": "3572650"
+    },
+    "city_name": "Jaboatão dos Guararapes"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.06101209577173
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 29,
+      "azimuth": 164
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-09-03T11:29:53.684Z"
+}

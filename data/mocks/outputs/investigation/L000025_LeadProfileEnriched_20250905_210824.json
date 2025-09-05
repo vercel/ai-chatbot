@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000025",
+  "geocode": {
+    "lat": 1.549891,
+    "lon": -10.276,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3508820"
+    },
+    "city_name": "Campinas"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.7528827250935137
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.2,
+    "meta": {
+      "tilt": 23,
+      "azimuth": 297
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-06-16T08:03:43.105Z"
+}

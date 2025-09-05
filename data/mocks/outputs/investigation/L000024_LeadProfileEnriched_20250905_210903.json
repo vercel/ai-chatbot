@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000024",
+  "geocode": {
+    "lat": -10.573999,
+    "lon": -50.616818,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "26",
+      "city": "3533977"
+    },
+    "city_name": "Jaboatão dos Guararapes"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.395619296934456
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.6,
+    "meta": {
+      "tilt": 21,
+      "azimuth": 178
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-12-08T16:44:04.875Z"
+}

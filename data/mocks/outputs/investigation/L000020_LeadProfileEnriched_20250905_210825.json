@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000020",
+  "geocode": {
+    "lat": -8.703455,
+    "lon": -16.437917,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "43",
+      "city": "3534229"
+    },
+    "city_name": "Caxias do Sul"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.20827435515821
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 4.5,
+    "meta": {
+      "tilt": 21,
+      "azimuth": 53
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-03-26T07:03:15.756Z"
+}

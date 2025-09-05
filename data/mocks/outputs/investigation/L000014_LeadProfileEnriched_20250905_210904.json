@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000014",
+  "geocode": {
+    "lat": -23.431947,
+    "lon": -52.034115,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "29",
+      "city": "3589450"
+    },
+    "city_name": "Feira de Santana"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.995668776798993
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 28,
+      "azimuth": 343
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-07-26T06:51:28.063Z"
+}

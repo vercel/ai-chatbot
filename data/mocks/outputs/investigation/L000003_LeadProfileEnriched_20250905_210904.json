@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000003",
+  "geocode": {
+    "lat": 4.587949,
+    "lon": -46.384067,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "33",
+      "city": "3506202"
+    },
+    "city_name": "Rio de Janeiro"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.605060841422528
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5,
+    "meta": {
+      "tilt": 25,
+      "azimuth": 222
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-01-12T17:19:08.841Z"
+}

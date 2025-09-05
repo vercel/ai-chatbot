@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000028",
+  "geocode": {
+    "lat": -0.050549,
+    "lon": -25.308935,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "26",
+      "city": "3558689"
+    },
+    "city_name": "Olinda"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.342543066013604
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.6,
+    "meta": {
+      "tilt": 20,
+      "azimuth": 71
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-02-13T22:40:13.729Z"
+}

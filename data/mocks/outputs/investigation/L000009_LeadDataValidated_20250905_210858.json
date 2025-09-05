@@ -1,0 +1,21 @@
+{
+  "lead_id": "L000009",
+  "valid": false,
+  "violations": [
+    {
+      "instancePath": "",
+      "schemaPath": "#/required",
+      "keyword": "required",
+      "params": {
+        "missingProperty": "coordinates"
+      },
+      "message": "must have required property 'coordinates'"
+    }
+  ],
+  "normalized_fields": {
+    "email": "pessoal000009@example.com"
+  },
+  "confidence": 0.3,
+  "rules_version": "v1.0",
+  "checked_at": "2025-08-19T16:50:57.703Z"
+}

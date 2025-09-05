@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000015",
+  "geocode": {
+    "lat": 2.023773,
+    "lon": -44.512296,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3508797"
+    },
+    "city_name": "São Paulo"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.340240088291466
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 27,
+      "azimuth": 253
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-02-22T04:08:03.016Z"
+}

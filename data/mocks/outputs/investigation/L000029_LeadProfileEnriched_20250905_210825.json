@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000029",
+  "geocode": {
+    "lat": -1.977097,
+    "lon": -25.998216,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3560005"
+    },
+    "city_name": "Campinas"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.265777750406414
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 39,
+      "azimuth": 52
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-01-07T01:11:18.101Z"
+}

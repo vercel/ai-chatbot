@@ -1,0 +1,39 @@
+{
+  "lead_id": "L000020",
+  "valid": false,
+  "violations": [
+    {
+      "instancePath": "",
+      "schemaPath": "#/required",
+      "keyword": "required",
+      "params": {
+        "missingProperty": "coordinates"
+      },
+      "message": "must have required property 'coordinates'"
+    },
+    {
+      "instancePath": "/email",
+      "schemaPath": "#/properties/email/format",
+      "keyword": "format",
+      "params": {
+        "format": "email"
+      },
+      "message": "must match format \"email\""
+    },
+    {
+      "instancePath": "/address/cep",
+      "schemaPath": "#/properties/address/properties/cep/pattern",
+      "keyword": "pattern",
+      "params": {
+        "pattern": "^\\d{5}-\\d{3}$"
+      },
+      "message": "must match pattern \"^\\d{5}-\\d{3}$\""
+    }
+  ],
+  "normalized_fields": {
+    "email": "pessoa l000020_at_example.com"
+  },
+  "confidence": 0.3,
+  "rules_version": "v1.0",
+  "checked_at": "2024-11-26T14:48:18.041Z"
+}

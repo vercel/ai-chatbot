@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000007",
+  "geocode": {
+    "lat": 3.542459,
+    "lon": -24.180221,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "43",
+      "city": "3521892"
+    },
+    "city_name": "Porto Alegre"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.687291909940541
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 32,
+      "azimuth": 263
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-08-23T20:39:56.866Z"
+}

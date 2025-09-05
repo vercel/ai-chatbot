@@ -1,0 +1,32 @@
+{
+  "lead_id": "L000010",
+  "geocode": {
+    "lat": -3.470664,
+    "lon": -9.906722,
+    "provider": "PVGIS"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "31",
+      "city": "3509508"
+    },
+    "city_name": "Contagem"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.786687493789941
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "value_kWh_m2_day": 5.3,
+    "meta": {
+      "tilt": 34,
+      "azimuth": 128
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-10-26T08:53:03.179Z"
+}

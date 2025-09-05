@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000022",
+  "geocode": {
+    "lat": -8.056576,
+    "lon": -16.334804,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "31",
+      "city": "3596874"
+    },
+    "city_name": "Contagem"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.455523021519184
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 24,
+      "azimuth": 286
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-08-11T07:04:00.933Z"
+}
