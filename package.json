@@ -17,6 +17,7 @@
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
     "generate:leads": "node scripts/generate-leads.js",
+    "generate:intent-classification": "node scripts/generate-intent-classification.js",
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
