@@ -1,0 +1,13 @@
+{
+  "lead_id": "L000012",
+  "valid": false,
+  "violations": [
+    "invalid_contact"
+  ],
+  "normalized_fields": {
+    "email": "pessoa l000012_at_example.com"
+  },
+  "confidence": 0.3,
+  "rules_version": "v1.0",
+  "checked_at": "2024-09-08T10:41:30.122Z"
+}

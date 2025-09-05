@@ -1,0 +1,21 @@
+{
+  "lead_id": "L000017",
+  "valid": false,
+  "violations": [
+    {
+      "instancePath": "/email",
+      "schemaPath": "#/properties/email/format",
+      "keyword": "format",
+      "params": {
+        "format": "email"
+      },
+      "message": "must match format \"email\""
+    }
+  ],
+  "normalized_fields": {
+    "email": "pessoa l000017_at_example.com"
+  },
+  "confidence": 0.3,
+  "rules_version": "v1.0",
+  "checked_at": "2025-06-17T17:40:13.489Z"
+}

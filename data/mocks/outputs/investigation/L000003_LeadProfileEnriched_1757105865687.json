@@ -1,0 +1,29 @@
+{
+  "lead_id": "L000003",
+  "geocode": {
+    "lat": 6.592555,
+    "lon": -31.058216,
+    "provider": "mock"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3529149"
+    }
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.5
+    }
+  },
+  "irradiance": {
+    "provider": "PVGIS",
+    "meta": {
+      "tilt": 20
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-05-06T00:20:52.000Z"
+}

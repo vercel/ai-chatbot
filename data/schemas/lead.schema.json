@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lead Fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lead_id",
+    "name",
+    "email",
+    "phone",
+    "address",
+    "proposal",
+    "coordinates",
+    "created_at"
+  ],
+  "properties": {
+    "lead_id": {
+      "type": "string",
+      "pattern": "^L\\d{6}$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "cpf": {
+      "type": "string",
+      "pattern": "^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$"
+    },
+    "cnpj": {
+      "type": "string",
+      "pattern": "^\\d{2}\\.\\d{3}\\.\\d{3}/\\d{4}-\\d{2}$"
+    },
+    "address": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "street",
+        "number",
+        "city",
+        "state",
+        "cep"
+      ],
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "complement": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "cep": {
+          "type": "string",
+          "pattern": "^\\d{5}-\\d{3}$"
+        }
+      }
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system_size_kWp",
+        "annual_production_kWh",
+        "coverage_pct",
+        "payback_years",
+        "estimated_cost_brl"
+      ],
+      "properties": {
+        "system_size_kWp": {
+          "type": "number"
+        },
+        "annual_production_kWh": {
+          "type": "number"
+        },
+        "coverage_pct": {
+          "type": "number"
+        },
+        "payback_years": {
+          "type": "number"
+        },
+        "estimated_cost_brl": {
+          "type": "number"
+        }
+      }
+    },
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lon": {
+          "type": "number"
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "cpf"
+      ]
+    },
+    {
+      "required": [
+        "cnpj"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+[
+  {
+    "lead_id": "L000021",
+    "name": "Empresa L000021",
+    "email": "empresal000021@example.com",
+    "phone": "(31) 63167-5989",
+    "address": {
+      "street": "Rua 740",
+      "number": "6660",
+      "complement": "",
+      "city": "MG City 40",
+      "state": "MG",
+      "cep": "43592-442"
+    },
+    "proposal": {
+      "system_size_kWp": 7.95,
+      "annual_production_kWh": 8101,
+      "coverage_pct": 41.1,
+      "payback_years": 9.8,
+      "estimated_cost_brl": 32601.57
+    },
+    "created_at": "2025-08-14T19:08:51.867Z",
+    "cnpj": "60.171.213/9478-82",
+    "coordinates": {
+      "lat": -8.607239,
+      "lon": -24.049303
+    }
+  },
+  {
+    "lead_id": "L000022",
+    "name": "Empresa L000022",
+    "email": "empresal000022@example.com",
+    "phone": "(41) 80878-2183",
+    "address": {
+      "street": "Rua 636",
+      "number": "2750",
+      "complement": "",
+      "city": "PR City 13",
+      "state": "PR",
+      "cep": "87665-949"
+    },
+    "proposal": {
+      "system_size_kWp": 7.67,
+      "annual_production_kWh": 12391,
+      "coverage_pct": 42.8,
+      "payback_years": 5.9,
+      "estimated_cost_brl": 46737.15
+    },
+    "created_at": "2025-08-20T16:00:50.950Z",
+    "cnpj": "29.955.108/2296-23",
+    "coordinates": {
+      "lat": 7.386477,
+      "lon": -28.241744
+    }
+  },
+  {
+    "lead_id": "L000023",
+    "name": "Empresa L000023",
+    "email": "empresal000023@example.com",
+    "phone": "(21) 13180-5720",
+    "address": {
+      "street": "Rua 593",
+      "number": "3536",
+      "complement": "",
+      "city": "RJ City 29",
+      "state": "RJ",
+      "cep": "44462-686"
+    },
+    "proposal": {
+      "system_size_kWp": 6.99,
+      "annual_production_kWh": 2840,
+      "coverage_pct": 73.4,
+      "payback_years": 6.8,
+      "estimated_cost_brl": 31782
+    },
+    "created_at": "2025-01-22T16:09:35.208Z",
+    "cnpj": "55.891.087/5022-84",
+    "coordinates": {
+      "lat": 0.578506,
+      "lon": -26.419152
+    }
+  },
+  {
+    "lead_id": "L000024",
+    "name": "Empresa L000024",
+    "email": "empresal000024@example.com",
+    "phone": "(81) 92703-5697",
+    "address": {
+      "street": "Rua 855",
+      "number": "3631",
+      "complement": "",
+      "city": "PE City 46",
+      "state": "PE",
+      "cep": "10562-997"
+    },
+    "proposal": {
+      "system_size_kWp": 9.48,
+      "annual_production_kWh": 11743,
+      "coverage_pct": 89.5,
+      "payback_years": 9.4,
+      "estimated_cost_brl": 62957.18
+    },
+    "created_at": "2025-01-29T13:29:47.602Z",
+    "cnpj": "93.503.272/6272-01",
+    "coordinates": {
+      "lat": 9.239206,
+      "lon": -6.699577
+    }
+  },
+  {
+    "lead_id": "L000025",
+    "name": "Empresa L000025",
+    "email": "empresal000025@example.com",
+    "phone": "(21) 29158-3997",
+    "address": {
+      "street": "Rua 581",
+      "number": "8984",
+      "complement": "",
+      "city": "RJ City 17",
+      "state": "RJ",
+      "cep": "78867-224"
+    },
+    "proposal": {
+      "system_size_kWp": 3.84,
+      "annual_production_kWh": 4378,
+      "coverage_pct": 50.6,
+      "payback_years": 10.1,
+      "estimated_cost_brl": 40011.94
+    },
+    "created_at": "2024-11-06T10:47:32.944Z",
+    "cnpj": "00.631.682/0012-98",
+    "coordinates": {
+      "lat": -6.676622,
+      "lon": -20.081925
+    }
+  },
+  {
+    "lead_id": "L000026",
+    "name": "Empresa L000026",
+    "email": "empresal000026@example.com",
+    "phone": "(41) 22443-5404",
+    "address": {
+      "street": "Rua 536",
+      "number": "631",
+      "complement": "",
+      "city": "PR City 25",
+      "state": "PR",
+      "cep": "85611-593"
+    },
+    "proposal": {
+      "system_size_kWp": 9.43,
+      "annual_production_kWh": 3599,
+      "coverage_pct": 11.9,
+      "payback_years": 5.3,
+      "estimated_cost_brl": 31275.4
+    },
+    "created_at": "2025-03-31T11:54:25.761Z",
+    "cnpj": "98.646.291/6856-36",
+    "coordinates": {
+      "lat": -2.740005,
+      "lon": -27.393752
+    }
+  },
+  {
+    "lead_id": "L000027",
+    "name": "Empresa L000027",
+    "email": "empresal000027@example.com",
+    "phone": "(41) 51182-5475",
+    "address": {
+      "street": "Rua 365",
+      "number": "3199",
+      "complement": "",
+      "city": "PR City 17",
+      "state": "PR",
+      "cep": "27048-640"
+    },
+    "proposal": {
+      "system_size_kWp": 6.94,
+      "annual_production_kWh": 11896,
+      "coverage_pct": 59.8,
+      "payback_years": 6.1,
+      "estimated_cost_brl": 31914.31
+    },
+    "created_at": "2024-12-28T20:37:30.419Z",
+    "cnpj": "99.786.111/9745-26",
+    "coordinates": {
+      "lat": -4.596882,
+      "lon": -25.560187
+    }
+  },
+  {
+    "lead_id": "L000028",
+    "name": "Empresa L000028",
+    "email": "empresal000028@example.com",
+    "phone": "(41) 63477-8311",
+    "address": {
+      "street": "Rua 107",
+      "number": "544",
+      "complement": "",
+      "city": "PR City 46",
+      "state": "PR",
+      "cep": "42886-093"
+    },
+    "proposal": {
+      "system_size_kWp": 6.93,
+      "annual_production_kWh": 4577,
+      "coverage_pct": 72.1,
+      "payback_years": 7.4,
+      "estimated_cost_brl": 50104.44
+    },
+    "created_at": "2024-10-02T01:40:28.400Z",
+    "cnpj": "67.210.070/0024-40",
+    "coordinates": {
+      "lat": -3.007743,
+      "lon": -6.11401
+    }
+  },
+  {
+    "lead_id": "L000029",
+    "name": "Empresa L000029",
+    "email": "empresal000029@example.com",
+    "phone": "(51) 14940-1959",
+    "address": {
+      "street": "Rua 80",
+      "number": "347",
+      "complement": "",
+      "city": "RS City 5",
+      "state": "RS",
+      "cep": "17732-471"
+    },
+    "proposal": {
+      "system_size_kWp": 6.62,
+      "annual_production_kWh": 7049,
+      "coverage_pct": 43.1,
+      "payback_years": 3.8,
+      "estimated_cost_brl": 59843.58
+    },
+    "created_at": "2025-01-04T07:01:52.998Z",
+    "cnpj": "19.964.262/1693-91",
+    "coordinates": {
+      "lat": -5.028162,
+      "lon": -24.163594
+    }
+  },
+  {
+    "lead_id": "L000030",
+    "name": "Empresa L000030",
+    "email": "empresa l000030_at_example.com",
+    "phone": "(00) 1234-567",
+    "address": {
+      "street": "Rua 152",
+      "number": "942",
+      "complement": "",
+      "city": "BA City 23",
+      "state": "BA",
+      "cep": "95077-746"
+    },
+    "proposal": {
+      "system_size_kWp": 9.31,
+      "annual_production_kWh": 12573,
+      "coverage_pct": 23.8,
+      "payback_years": 9.4,
+      "estimated_cost_brl": 41526.39
+    },
+    "created_at": "2025-03-03T01:27:05.564Z",
+    "cnpj": "97.514.189/5921-75",
+    "coordinates": {
+      "lat": -1.545496,
+      "lon": -30.2682
+    }
+  }
+]

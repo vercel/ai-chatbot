@@ -1,0 +1,29 @@
+{
+  "lead_id": "L000030",
+  "geocode": {
+    "lat": -1.545496,
+    "lon": -30.2682,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "35",
+      "city": "3596218"
+    }
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 3.5
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 20
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-05-18T10:58:17.008Z"
+}

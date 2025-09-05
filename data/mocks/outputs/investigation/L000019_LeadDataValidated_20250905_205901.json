@@ -1,0 +1,11 @@
+{
+  "lead_id": "L000019",
+  "valid": true,
+  "violations": [],
+  "normalized_fields": {
+    "email": "pessoal000019@example.com"
+  },
+  "confidence": 0.98,
+  "rules_version": "v1.0",
+  "checked_at": "2024-10-20T09:24:36.152Z"
+}
