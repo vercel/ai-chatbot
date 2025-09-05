@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useSWRConfig } from 'swr';
@@ -25,10 +25,7 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import {
-  Actions,
-  Action
-} from '@/components/ai-elements/actions';
+import { Actions, Action } from '@/components/ai-elements/actions';
 import { Response } from '@/components/ai-elements/response';
 import {
   Source,
@@ -43,9 +40,12 @@ import {
 } from '@/components/ai-elements/reasoning';
 import { Loader } from '@/components/ai-elements/loader';
 
-import { fetchWithErrorHandlers, generateUUID, getChatHistoryPaginationKey } from '@/lib/utils';
+import {
+  fetchWithErrorHandlers,
+  generateUUID,
+  getChatHistoryPaginationKey,
+} from '@/lib/utils';
 import { ChatHeader } from './chat-header';
-import { MultimodalInput } from './multimodal-input';
 import { useDataStream } from './data-stream-provider';
 import { toast } from './toast';
 import { ChatSDKError } from '@/lib/errors';
@@ -54,26 +54,7 @@ import type { Session } from 'next-auth';
 import type { VisibilityType } from './visibility-selector';
 import type { ChatMessage, Attachment } from '@/lib/types';
 import type { Vote } from '@/lib/db/schema';
-
-// Modelos disponíveis na plataforma
-const models = [
-  {
-    name: 'Grok-3-mini',
-    value: 'grok-3-mini',
-  },
-  {
-    name: 'Grok-2-vision',
-    value: 'grok-2-vision-1212',
-  },
-  {
-    name: 'Claude 3.5 Sonnet',
-    value: 'anthropic/claude-3-5-sonnet',
-  },
-  {
-    name: 'GPT-4o',
-    value: 'openai/gpt-4o',
-  },
-];
+import { chatModels } from '@/lib/ai/models';
 
 interface EnhancedChatProps {
   id: string;
@@ -174,28 +155,30 @@ export function EnhancedChat({
           <ConversationContent>
             {messages.map((message) => (
               <div key={message.id}>
-                {message.role === 'assistant' && message.parts.filter((part) => part.type === 'source-url').length > 0 && (
-                  <Sources>
-                    <SourcesTrigger
-                      count={
-                        message.parts.filter(
-                          (part) => part.type === 'source-url',
-                        ).length
-                      }
-                    />
-                    <SourcesContent>
-                      {message.parts
-                        .filter((part) => part.type === 'source-url')
-                        .map((part: any, i) => (
-                          <Source
-                            key={`${message.id}-${i}`}
-                            href={part.url}
-                            title={part.title || part.url}
-                          />
-                        ))}
-                    </SourcesContent>
-                  </Sources>
-                )}
+                {message.role === 'assistant' &&
+                  message.parts.filter((part) => part.type === 'source-url')
+                    .length > 0 && (
+                    <Sources>
+                      <SourcesTrigger
+                        count={
+                          message.parts.filter(
+                            (part) => part.type === 'source-url',
+                          ).length
+                        }
+                      />
+                      <SourcesContent>
+                        {message.parts
+                          .filter((part) => part.type === 'source-url')
+                          .map((part: any, i) => (
+                            <Source
+                              key={`${message.id}-${i}`}
+                              href={part.url}
+                              title={part.title || part.url}
+                            />
+                          ))}
+                      </SourcesContent>
+                    </Sources>
+                  )}
                 {message.parts.map((part: any, i) => {
                   switch (part.type) {
                     case 'text':
@@ -203,32 +186,30 @@ export function EnhancedChat({
                         <div key={`${message.id}-${i}`}>
                           <Message from={message.role}>
                             <MessageContent>
-                              <Response>
-                                {part.text}
-                              </Response>
+                              <Response>{part.text}</Response>
                             </MessageContent>
                           </Message>
-                          {message.role === 'assistant' && 
+                          {message.role === 'assistant' &&
                             message === messages[messages.length - 1] &&
-                            i === message.parts.length - 1 && 
+                            i === message.parts.length - 1 &&
                             !isReadonly && (
-                            <Actions className="mt-2">
-                              <Action
-                                onClick={() => regenerate()}
-                                label="Repetir"
-                              >
-                                <RefreshCcwIcon className="size-3" />
-                              </Action>
-                              <Action
-                                onClick={() =>
-                                  navigator.clipboard.writeText(part.text)
-                                }
-                                label="Copiar"
-                              >
-                                <CopyIcon className="size-3" />
-                              </Action>
-                            </Actions>
-                          )}
+                              <Actions className="mt-2">
+                                <Action
+                                  onClick={() => regenerate()}
+                                  label="Repetir"
+                                >
+                                  <RefreshCcwIcon className="size-3" />
+                                </Action>
+                                <Action
+                                  onClick={() =>
+                                    navigator.clipboard.writeText(part.text)
+                                  }
+                                  label="Copiar"
+                                >
+                                  <CopyIcon className="size-3" />
+                                </Action>
+                              </Actions>
+                            )}
                         </div>
                       );
                     case 'reasoning':
@@ -236,7 +217,11 @@ export function EnhancedChat({
                         <Reasoning
                           key={`${message.id}-${i}`}
                           className="w-full"
-                          isStreaming={status === 'in_progress' && i === message.parts.length - 1 && message.id === messages.at(-1)?.id}
+                          isStreaming={
+                            status === 'in_progress' &&
+                            i === message.parts.length - 1 &&
+                            message.id === messages.at(-1)?.id
+                          }
                         >
                           <ReasoningTrigger />
                           <ReasoningContent>{part.text}</ReasoningContent>
@@ -265,7 +250,7 @@ export function EnhancedChat({
             <PromptInputToolbar>
               <PromptInputTools>
                 <PromptInputButton
-                  variant={webSearch ? "default" : "ghost"}
+                  variant={webSearch ? 'default' : 'ghost'}
                   onClick={() => setWebSearch(!webSearch)}
                 >
                   <GlobeIcon size={16} />
@@ -281,15 +266,21 @@ export function EnhancedChat({
                     <PromptInputModelSelectValue />
                   </PromptInputModelSelectTrigger>
                   <PromptInputModelSelectContent>
-                    {models.map((model) => (
-                      <PromptInputModelSelectItem key={model.value} value={model.value}>
+                    {chatModels.map((model) => (
+                      <PromptInputModelSelectItem
+                        key={model.id}
+                        value={model.id}
+                      >
                         {model.name}
                       </PromptInputModelSelectItem>
                     ))}
                   </PromptInputModelSelectContent>
                 </PromptInputModelSelect>
               </PromptInputTools>
-              <PromptInputSubmit disabled={!input.trim()} status={status === 'in_progress' ? 'streaming' : status} />
+              <PromptInputSubmit
+                disabled={!input.trim()}
+                status={status === 'in_progress' ? 'streaming' : status}
+              />
             </PromptInputToolbar>
           </PromptInput>
         )}

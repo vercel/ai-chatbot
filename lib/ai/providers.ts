@@ -19,6 +19,8 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
         'artifact-model': artifactModel,
+        'anthropic-claude-3-5-sonnet': chatModel,
+        'openai-gpt-4o': chatModel,
       },
     })
   : customProvider({
@@ -30,5 +32,9 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': gateway.languageModel('xai/grok-2-1212'),
         'artifact-model': gateway.languageModel('xai/grok-2-1212'),
+        'anthropic-claude-3-5-sonnet': gateway.languageModel(
+          'anthropic/claude-3-5-sonnet',
+        ),
+        'openai-gpt-4o': gateway.languageModel('openai/gpt-4o'),
       },
     });
