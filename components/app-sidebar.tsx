@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { PersonaSwitcher } from '@/components/persona-switcher';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -61,7 +62,12 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <SidebarContent>
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter>
+        <div className="p-2 space-y-2">
+          <PersonaSwitcher />
+          {user && <SidebarUserNav user={user} />}
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }
