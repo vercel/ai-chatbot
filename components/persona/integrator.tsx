@@ -4,9 +4,7 @@ export function SpecLibrary() {
   return <div className="p-2 border rounded">Spec Library</div>;
 }
 
-export function LayoutOptimizerPanel() {
-  return <div className="p-2 border rounded">Layout Optimizer Panel</div>;
-}
+export { LayoutOptimizerPanel } from "@/apps/web/components/personas/integrator/LayoutOptimizerPanel";
 
 export function ConstraintsEditor() {
   return <div className="p-2 border rounded">Constraints Editor</div>;

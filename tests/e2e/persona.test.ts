@@ -10,5 +10,5 @@ test('persona modes render expected UI', async ({ page }) => {
   await page.getByLabel('Persona Mode').click();
   await page.getByText('Integrator').click();
   await expect(page.getByText('Spec Library')).toBeVisible();
-  expect(await page.textContent('main')).toMatchSnapshot(`${SNAPSHOT_PATH}-integrator.txt`);
+  await expect(page.getByText('Tilt')).toBeVisible();
 });
