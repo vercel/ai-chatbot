@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { ChartKit } from '../ui-charts';
 import { z } from 'zod';
 
 export const anomalySchema = z.object({
@@ -28,44 +29,11 @@ export function isOutlier(score: number, thresholds: Thresholds): boolean {
 export const AnomaliesCard: React.FC<AnomaliesCardProps> = (props) => {
   const parsed = anomaliesCardSchema.parse(props);
   const [thresholds, setThresholds] = useState(parsed.thresholds);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<any>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Draw chart using Chart.js
-  useEffect(() => {
-    (async () => {
-      try {
-        const ChartKit = (await import('chart.js/auto')).default;
-        if (!canvasRef.current) return;
-        const labels = parsed.anomalies.map((a) => a.feature);
-        const scores = parsed.anomalies.map((a) => a.score);
-        const colors = parsed.anomalies.map((a) =>
-          isOutlier(a.score, thresholds) ? '#dc2626' : '#16a34a',
-        );
-        chartRef.current?.destroy();
-        chartRef.current = new ChartKit(canvasRef.current, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: 'Anomaly Score',
-                data: scores,
-                backgroundColor: colors,
-              },
-            ],
-          },
-          options: {
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, max: 1 } },
-          },
-        });
-      } catch {
-        // Chart library not available
-      }
-    })();
-  }, [parsed.anomalies, thresholds]);
+  const scores = parsed.anomalies.map((a) => a.score);
+  const width = 300;
+  const height = 160;
 
   const exportAsPNG = async () => {
     if (!cardRef.current) return;
@@ -89,12 +57,37 @@ export const AnomaliesCard: React.FC<AnomaliesCardProps> = (props) => {
 
   return (
     <div ref={cardRef} className="p-4 border rounded w-80">
-      <canvas
-        ref={canvasRef}
-        role="img"
-        aria-label="Outliers chart"
-        className="w-full h-40"
-      />
+      <div className="relative" style={{ width, height }}>
+        <ChartKit
+          type="histogram"
+          data={scores}
+          width={width}
+          height={height}
+          ariaLabel="Outliers chart"
+        />
+        <svg
+          width={width}
+          height={height}
+          className="absolute top-0 left-0 pointer-events-none"
+        >
+          <line
+            x1={thresholds.lower * width}
+            x2={thresholds.lower * width}
+            y1={0}
+            y2={height}
+            stroke="#dc2626"
+            strokeWidth={2}
+          />
+          <line
+            x1={thresholds.upper * width}
+            x2={thresholds.upper * width}
+            y1={0}
+            y2={height}
+            stroke="#dc2626"
+            strokeWidth={2}
+          />
+        </svg>
+      </div>
       <div className="mt-4 space-y-2">
         <label className="flex items-center gap-2">
           <span>Lower</span>
@@ -137,7 +130,10 @@ export const AnomaliesCard: React.FC<AnomaliesCardProps> = (props) => {
         </thead>
         <tbody>
           {parsed.anomalies.map((a) => (
-            <tr key={a.feature}>
+            <tr
+              key={a.feature}
+              className={isOutlier(a.score, thresholds) ? 'text-red-600' : undefined}
+            >
               <td>{a.feature}</td>
               <td className="text-right">{a.score}</td>
               <td className="text-right">{a.type}</td>
