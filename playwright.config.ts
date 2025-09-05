@@ -53,14 +53,14 @@ export default defineConfig({
   projects: [
     {
       name: 'e2e',
-      testMatch: /e2e\/.*.test.ts/,
+      testMatch: /e2e\/.*\.(test|spec)\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
       name: 'routes',
-      testMatch: /routes\/.*.test.ts/,
+      testMatch: /routes\/.*\.(test|spec)\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
