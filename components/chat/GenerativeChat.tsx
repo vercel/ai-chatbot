@@ -439,7 +439,7 @@ ${m.content}`
             scrollToBottom();
             setIsAtBottom(true);
           }}
-          className="absolute bottom-24 right-6 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200 animate-pulse"
+          className="absolute bottom-24 right-6 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200"
           title="Ir para última mensagem"
         >
           <ChevronDown className="h-5 w-5" />
