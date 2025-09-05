@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import Papa from 'papaparse';
 import { Line } from 'react-chartjs-2';
 import {
@@ -21,16 +21,28 @@ import { Button } from '@/components/ui/button';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
-type DataPoint = {
+export type DataPoint = {
   date: string;
   value: number;
 };
 
-export function ConsumptionCard() {
-  const [data, setData] = useState<DataPoint[]>([]);
+type ConsumptionCardProps = {
+  externalData?: DataPoint[];
+};
+
+export function ConsumptionCard({ externalData }: ConsumptionCardProps) {
+  const [data, setData] = useState<DataPoint[]>(externalData ?? []);
   const [view, setView] = useState<'daily' | 'monthly'>('daily');
   const [sanity, setSanity] = useState<string | null>(null);
   const chartRef = useRef<ChartJS<'line'> | null>(null);
+
+  useEffect(() => {
+    if (externalData) {
+      setData(externalData);
+      runSanityChecks(externalData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalData]);
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

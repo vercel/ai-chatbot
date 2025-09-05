@@ -56,15 +56,29 @@ const scenarios: Record<string, Assumptions> = {
   pessimistic: { tariff: 80, losses: 0.15, years: 5 },
 };
 
-export const FinancialAnalysisCard: React.FC = () => {
+interface FinancialAnalysisCardProps {
+  externalAssumptions?: Assumptions;
+}
+
+export const FinancialAnalysisCard: React.FC<FinancialAnalysisCardProps> = ({
+  externalAssumptions,
+}) => {
   const [scenario, setScenario] = useState<keyof typeof scenarios>('base');
-  const [assumptions, setAssumptions] = useState<Assumptions>(scenarios[scenario]);
+  const [assumptions, setAssumptions] = useState<Assumptions>(
+    externalAssumptions ?? scenarios[scenario],
+  );
   const indicators = useMemo(() => computeIndicators(assumptions), [assumptions]);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setAssumptions(scenarios[scenario]);
   }, [scenario]);
+
+  useEffect(() => {
+    if (externalAssumptions) {
+      setAssumptions(externalAssumptions);
+    }
+  }, [externalAssumptions]);
 
   useEffect(() => {
     (async () => {
