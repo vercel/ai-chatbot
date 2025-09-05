@@ -31,50 +31,81 @@ function tsForFilename(d) {
   return `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 }
 
-function generateIntentProbabilities(rng) {
-  // Generate 3 probabilities that sum to 1
-  let probs = [];
-  let sum = 0;
+function generateIntentProbabilities(rng, tieHint = false) {
+  // Generate 3 base probabilities then normalize
+  const raw = [rng(), rng(), rng()];
+  let s = raw[0] + raw[1] + raw[2] || 1;
+  let p = raw.map(x => x / s);
 
-  // Generate base probabilities
-  for (let i = 0; i < 3; i++) {
-    const p = rng();
-    probs.push(p);
-    sum += p;
-  }
-
-  // Normalize to sum = 1
-  probs = probs.map(p => p / sum);
-
-  // Create close ties for at least 3 cases (every 5th lead)
-  if (Math.floor(rng() * 5) === 0) {
+  if (tieHint) {
+    // deterministically pick a tie type and create a close tie
     const tieType = Math.floor(rng() * 3);
+    const base = 0.38 + rng() * 0.08; // ~0.38-0.46
+    const small = 0.02 + rng() * 0.06; // small perturbation
+    const other = Math.max(0.02, 1 - base * 2 - small);
     if (tieType === 0) {
-      // Tie between expansion and optimization
-      const base = 0.4 + rng() * 0.1;
-      const diff = (rng() - 0.5) * 0.05;
-      probs = [base + diff, base - diff, 0.2 + rng() * 0.1];
+      p = [base + small / 2, base - small / 2, other];
     } else if (tieType === 1) {
-      // Tie between optimization and new project
-      const base = 0.4 + rng() * 0.1;
-      const diff = (rng() - 0.5) * 0.05;
-      probs = [0.2 + rng() * 0.1, base + diff, base - diff];
+      p = [other, base + small / 2, base - small / 2];
     } else {
-      // Tie between expansion and new project
-      const base = 0.4 + rng() * 0.1;
-      const diff = (rng() - 0.5) * 0.05;
-      probs = [base + diff, 0.2 + rng() * 0.1, base - diff];
+      p = [base + small / 2, other, base - small / 2];
     }
-    // Re-normalize
-    sum = probs.reduce((a, b) => a + b, 0);
-    probs = probs.map(p => p / sum);
   }
 
+  // normalize & round
+  s = p.reduce((a, b) => a + b, 0) || 1;
+  p = p.map(x => x / s);
   return {
-    expansion: Number(probs[0].toFixed(4)),
-    optimization: Number(probs[1].toFixed(4)),
-    new_project: Number(probs[2].toFixed(4))
+    expansion: Number(p[0].toFixed(4)),
+    optimization: Number(p[1].toFixed(4)),
+    new_project: Number(p[2].toFixed(4))
   };
+}
+
+// Small utility: generate a radar SVG (1280x720) showing 3 probabilities
+function generateRadarSVG(probabilities, leadId) {
+  const w = 1280;
+  const h = 720;
+  const cx = w / 2;
+  const cy = h / 2;
+  const radius = Math.min(w, h) * 0.32;
+  const labels = ['expansion', 'optimization', 'new_project'];
+  const vals = [probabilities.expansion, probabilities.optimization, probabilities.new_project];
+
+  const points = vals.map((v, i) => {
+    const angle = (Math.PI * 2 * i) / 3 - Math.PI / 2; // start at top
+    const x = cx + Math.cos(angle) * radius * v;
+    const y = cy + Math.sin(angle) * radius * v;
+    return `${x},${y}`;
+  }).join(' ');
+
+  // Axis lines and labels
+  const axes = labels.map((lab, i) => {
+    const angle = (Math.PI * 2 * i) / 3 - Math.PI / 2;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+    const lx = cx + Math.cos(angle) * (radius + 40);
+    const ly = cy + Math.sin(angle) * (radius + 40);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#ccc" stroke-width="2"/>` +
+      `<text x="${lx}" y="${ly}" font-family="Arial" font-size="20" text-anchor="middle">${lab}</text>`;
+  }).join('\n');
+
+  const valueLabels = vals.map((v, i) => {
+    const angle = (Math.PI * 2 * i) / 3 - Math.PI / 2;
+    const lx = cx + Math.cos(angle) * (radius * 0.6);
+    const ly = cy + Math.sin(angle) * (radius * 0.6) + 6;
+    return `<text x="${lx}" y="${ly}" font-family="Arial" font-size="18" fill="#111" text-anchor="middle">${(v*100).toFixed(1)}%</text>`;
+  }).join('\n');
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">\n` +
+    `<rect width="100%" height="100%" fill="#ffffff"/>\n` +
+    `${axes}\n` +
+    `<polygon points="${points}" fill="#2b82ff55" stroke="#1f5fb433" stroke-width="4"/>\n` +
+    `${valueLabels}\n` +
+    `<text x="${cx}" y="40" font-family="Arial" font-size="22" text-anchor="middle">Radar - ${leadId}</text>\n` +
+    `</svg>`;
+  return svg;
 }
 
 function determineIntents(probabilities) {
@@ -108,9 +139,16 @@ function generateIntentClassification(seed, leads) {
 
   const now = new Date();
   const ts = tsForFilename(now);
+  // deterministically choose 3 indices (within the 15) to be tie-cases
+  const tiePositions = [];
+  while (tiePositions.length < 3) {
+    const p = Math.floor(rng() * 15);
+    if (!tiePositions.includes(p)) tiePositions.push(p);
+  }
 
-  selectedLeads.forEach(lead => {
-    const probabilities = generateIntentProbabilities(rng);
+  selectedLeads.forEach((lead, idx) => {
+    const tieHint = tiePositions.includes(idx);
+    const probabilities = generateIntentProbabilities(rng, tieHint);
     const intents = determineIntents(probabilities);
     const confidence = 0.55 + rng() * 0.43; // 0.55 to 0.98
 
@@ -123,6 +161,28 @@ function generateIntentClassification(seed, leads) {
       source: 'intent-classification-model-v1.0',
       classified_at: isoNow(rng)
     };
+    // generate radar SVG (and try PNG)
+    const svg = generateRadarSVG(probabilities, lead.lead_id);
+    const svgName = `${lead.lead_id}_IntentClassified_${ts}.svg`;
+    const svgPath = path.join(outDir, svgName);
+    fs.writeFileSync(svgPath, svg, 'utf8');
+
+    // try to convert SVG -> PNG using sharp if available
+    let pngPath = null;
+    try {
+      const sharp = require('sharp');
+      const pngName = `${lead.lead_id}_IntentClassified_${ts}.png`;
+      pngPath = path.join(outDir, pngName);
+      // rasterize at 1280x720 (720p) - keep aspect
+      sharp(Buffer.from(svg)).resize(1280, 720).png().toFile(pngPath);
+    } catch (e) {
+      console.warn('PNG conversion skipped (sharp not installed or failed):', e.message);
+      pngPath = null;
+    }
+
+    // include asset paths in metadata
+    intentData.assets = { svg: path.relative(path.join(__dirname,'..','data','mocks','outputs'), svgPath) };
+    if (pngPath) intentData.assets.png = path.relative(path.join(__dirname,'..','data','mocks','outputs'), pngPath);
 
     const filename = `${lead.lead_id}_IntentClassified_${ts}.json`;
     const filepath = path.join(outDir, filename);
