@@ -1,8 +1,6 @@
 "use client";
 
-export function SpecLibrary() {
-  return <div className="p-2 border rounded">Spec Library</div>;
-}
+export { SpecLibrary } from '@/apps/web/components/personas/integrator/SpecLibrary';
 
 export function LayoutOptimizerPanel() {
   return <div className="p-2 border rounded">Layout Optimizer Panel</div>;
@@ -45,5 +43,9 @@ export function DataSourceSelector() {
 }
 
 export function BatchRunner() {
-  return <button className="border p-2 rounded">Run Batch</button>;
+  return (
+    <button type="button" className="border p-2 rounded">
+      Run Batch
+    </button>
+  );
 }
