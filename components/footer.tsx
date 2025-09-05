@@ -31,22 +31,22 @@ export const Footer: FC<FooterProps> = ({ className = '' }) => {
             <h3 className="text-lg font-semibold mb-4">Links Úteis</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:underline">
+                <a href="/" className="hover:underline">
                   Sobre nós
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:underline">
+                <a href="/" className="hover:underline">
                   Nossos serviços
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:underline">
+                <a href="/" className="hover:underline">
                   FAQ
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:underline">
+                <a href="/" className="hover:underline">
                   Blog
                 </a>
               </li>
