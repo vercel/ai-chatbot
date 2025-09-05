@@ -7,6 +7,7 @@ import {
 import type { Chat } from '@/lib/db/schema';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
+import { convertToUIMessages } from '@/lib/utils';
 import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
 import { getStreamContext } from '../../route';
 import { differenceInSeconds } from 'date-fns';
@@ -96,7 +97,7 @@ export async function GET(
       execute: ({ writer }) => {
         writer.write({
           type: 'data-appendMessage',
-          data: JSON.stringify(mostRecentMessage),
+          data: JSON.stringify(convertToUIMessages([mostRecentMessage])[0]),
           transient: true,
         });
       },
