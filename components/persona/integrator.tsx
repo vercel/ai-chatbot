@@ -8,17 +8,7 @@ export function ConstraintsEditor() {
   return <div className="p-2 border rounded">Constraints Editor</div>;
 }
 
-export function TariffSelector() {
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor="tariff">Tariff</label>
-      <select id="tariff" className="border p-1 rounded">
-        <option>Residential</option>
-        <option>Commercial</option>
-      </select>
-    </div>
-  );
-}
+export { TariffSelector } from "@/apps/web/components/personas/integrator/TariffSelector";
 
 export function PricingRules() {
   return <div className="p-2 border rounded">Pricing Rules</div>;
