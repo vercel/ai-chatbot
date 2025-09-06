@@ -6,7 +6,7 @@ import { MessageInput } from './MessageInput';
 import { ToolRenderer } from '../generative/ToolRenderer';
 import { StreamingMessage } from './StreamingMessage';
 import { Button } from '@/components/ui/button';
-import { Bot, Trash2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, Trash2, Sparkles, ChevronDown, ChevronUp, Zap, ZapOff } from 'lucide-react';
 import { executeTool } from '@/lib/claude-tools';
 import { executeMCPTool } from '@/lib/mcp-tools';
 import { getWeatherViaMCP } from '@/lib/mcp-direct';
@@ -43,6 +43,9 @@ export function GenerativeChat() {
   const [isInputVisible, setIsInputVisible] = useState(true);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+  
+  // Estado para controle do streaming
+  const [isStreamingEnabled, setIsStreamingEnabled] = useState(true);
   
   // Funções de scroll
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
@@ -456,6 +459,19 @@ ${m.content}`
             <Button 
               variant="ghost" 
               size="icon"
+              onClick={() => setIsStreamingEnabled(!isStreamingEnabled)}
+              title={isStreamingEnabled ? "Desativar streaming" : "Ativar streaming"}
+              className={isStreamingEnabled ? "text-primary" : "text-muted-foreground"}
+            >
+              {isStreamingEnabled ? (
+                <Zap className="h-5 w-5" />
+              ) : (
+                <ZapOff className="h-5 w-5" />
+              )}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
               onClick={clearMessages}
               title="Limpar conversa"
             >
@@ -466,7 +482,12 @@ ${m.content}`
         <div className="border-b bg-muted/30 px-4 py-2">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>💬 {messages.length} {messages.length === 1 ? 'mensagem' : 'mensagens'}</span>
-
+            {!isStreamingEnabled && (
+              <span className="flex items-center gap-1">
+                <ZapOff className="h-3 w-3" />
+                Streaming desativado
+              </span>
+            )}
           </div>
         </div>
       </header>
@@ -523,7 +544,7 @@ ${m.content}`
               <div key={message.id} className="space-y-2">
                 {/* Se é mensagem do assistente com ferramenta de clima, não mostra a mensagem */}
                 {!(message.role === 'assistant' && message.tool?.name === 'getWeather') && (
-                  message.role === 'assistant' && streamingMessageId === message.id ? (
+                  message.role === 'assistant' && streamingMessageId === message.id && isStreamingEnabled ? (
                     // Usa StreamingMessage para mensagens do assistente que estão chegando
                     <div className="flex gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
