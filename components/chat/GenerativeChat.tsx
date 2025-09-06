@@ -404,7 +404,7 @@ ${m.content}`
             <div className="text-center py-12">
               <Sparkles className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
               <p className="text-muted-foreground mb-6">
-                Experimente perguntar sobre clima!
+                Experimente perguntar o que quiser!
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto text-left">
                 <button
