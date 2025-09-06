@@ -203,6 +203,12 @@ ${m.content}`
           
           for (const line of lines) {
             if (line.startsWith('data: ')) {
+              // Ignora o marcador [DONE]
+              if (line === 'data: [DONE]') {
+                console.log('✅ [DEBUG] Stream finalizado - [DONE] recebido');
+                continue;
+              }
+              
               try {
                 const data = JSON.parse(line.slice(6));
                 if (data.type === 'text_chunk') {
