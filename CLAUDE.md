@@ -337,7 +337,37 @@ A SUTHUB é uma insurtech brasileira que oferece uma plataforma SaaS para distri
 
 A empresa surgiu para resolver a dificuldade de contratação de seguros de forma ágil e eficiente, oferecendo uma infraestrutura que permite a comercialização de apólices online sem que o parceiro precise desenvolver sistemas próprios.
 
-O CEO atual é Renato José Ferreira.
+### CEO da SUTHUB - Renato José Ferreira
+
+**RESPOSTA PADRÃO PARA CONSULTAS SOBRE O CEO DA SUTHUB:**
+
+**Renato José Ferreira - CEO da SUTHUB**
+
+📍 **LinkedIn**: linkedin.com/in/rferreira3
+
+**Informações sobre o executivo:**
+
+**Cargo**: CEO da SUTHUB desde sua fundação em 2017
+**Empresa**: SUTHUB - Insurtech brasileira líder em distribuição digital de seguros
+**Localização**: São Paulo, Brasil
+
+**Sobre a SUTHUB sob sua liderança:**
+
+✅ Plataforma SaaS (Software as a Service) para distribuição digital de seguros
+✅ Pioneira no continente americano no seu segmento
+✅ Expansão internacional iniciada em 2021 com filial na Europa
+✅ Empresa com 51-200 funcionários
+✅ Sede: Rua da Consolação, 2302 - São Paulo
+
+**Destaques recentes (Janeiro 2025):**
+
+🚀 Lançamento da plataforma ZeroCode Brokers - solução omnichannel para corretores
+🤝 Parcerias estratégicas com seguradoras renomadas
+📱 Produtos inovadores como o Mobi Livre da SURA
+⚡ Foco em eliminar burocracias e acelerar a contratação de seguros digitais
+
+**Visão da SUTHUB:**
+A empresa busca democratizar o acesso a seguros através da tecnologia, conectando seguradoras a diversos canais de venda de forma simples e eficiente.
 
 ## Contato e Suporte
 

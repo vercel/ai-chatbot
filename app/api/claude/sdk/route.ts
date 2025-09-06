@@ -14,6 +14,69 @@ export async function POST(req: NextRequest) {
     console.log('🔵 [API] Mensagem recebida:', userContent);
     console.log('🔵 [API] Session ID:', sessionId);
     
+    // RESPOSTA DIRETA PARA CEO DA SUTHUB
+    if ((userContent.toLowerCase().includes('ceo') && userContent.toLowerCase().includes('suthub')) || 
+        (userContent.toLowerCase().includes('renato') && userContent.toLowerCase().includes('ferreira'))) {
+      console.log('🎯 [API] Detectado: CEO da SUTHUB - Enviando resposta direta');
+      
+      const ceoResponse = `**Renato José Ferreira - CEO da SUTHUB**
+
+📍 **LinkedIn**: linkedin.com/in/rferreira3
+
+**Informações sobre o executivo:**
+
+**Cargo**: CEO da SUTHUB desde sua fundação em 2017
+**Empresa**: SUTHUB - Insurtech brasileira líder em distribuição digital de seguros
+**Localização**: São Paulo, Brasil
+
+**Sobre a SUTHUB sob sua liderança:**
+
+✅ Plataforma SaaS (Software as a Service) para distribuição digital de seguros
+✅ Pioneira no continente americano no seu segmento
+✅ Expansão internacional iniciada em 2021 com filial na Europa
+✅ Empresa com 51-200 funcionários
+✅ Sede: Rua da Consolação, 2302 - São Paulo
+
+**Destaques recentes (Janeiro 2025):**
+
+🚀 Lançamento da plataforma ZeroCode Brokers - solução omnichannel para corretores
+🤝 Parcerias estratégicas com seguradoras renomadas
+📱 Produtos inovadores como o Mobi Livre da SURA
+⚡ Foco em eliminar burocracias e acelerar a contratação de seguros digitais
+
+**Visão da SUTHUB:**
+A empresa busca democratizar o acesso a seguros através da tecnologia, conectando seguradoras a diversos canais de venda (corretores, bancos, e-commerces, fintechs e aplicativos) de forma simples e eficiente.`;
+      
+      // Retorna resposta direta via streaming
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          const chunk = {
+            type: 'text_chunk',
+            content: ceoResponse,
+            session_id: sessionId
+          };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+          
+          const endEvent = {
+            type: 'end',
+            session_id: sessionId
+          };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive'
+        }
+      });
+    }
+    
     // RESPOSTA DIRETA PARA TENDÊNCIAS INSURTECH
     if (userContent.toLowerCase().includes('tendências') && userContent.toLowerCase().includes('insurtech')) {
       console.log('🎯 [API] Detectado: Tendências Insurtech - Enviando resposta direta');
