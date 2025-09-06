@@ -44,8 +44,9 @@ export function StreamingMessage({
             clearInterval(intervalRef.current);
             intervalRef.current = null;
           }
+          // Chama onStreamComplete fora do ciclo de renderização
           if (onStreamComplete) {
-            onStreamComplete();
+            setTimeout(onStreamComplete, 0);
           }
           return content.length;
         }

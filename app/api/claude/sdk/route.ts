@@ -55,17 +55,21 @@ A empresa busca democratizar o acesso a seguros através da tecnologia, conectan
           const lines = ceoResponse.split('\n');
           
           // Envia cada linha com um pequeno delay
-          for (const line of lines) {
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            // Envia linha vazia como quebra de parágrafo ou linha com conteúdo
+            const chunk = {
+              type: 'text_chunk',
+              content: line + (i < lines.length - 1 ? '\n' : ''), // Adiciona quebra exceto na última linha
+              session_id: sessionId
+            };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+            
+            // Aguarda um pouco antes de enviar a próxima linha (efeito de digitação)
             if (line.trim()) {
-              const chunk = {
-                type: 'text_chunk',
-                content: line + '\n',
-                session_id: sessionId
-              };
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-              
-              // Aguarda um pouco antes de enviar a próxima linha (efeito de digitação)
               await new Promise(resolve => setTimeout(resolve, 50));
+            } else {
+              await new Promise(resolve => setTimeout(resolve, 20)); // Menor delay para linhas vazias
             }
           }
           
