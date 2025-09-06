@@ -221,6 +221,8 @@ ${m.content}`
                 
                 if (data.type === 'text_chunk' && data.content) {
                   assistantContent += data.content;
+                  console.log('📦 [DEBUG] Chunk recebido:', data.content);
+                  console.log('📦 [DEBUG] Total acumulado:', assistantContent.length, 'caracteres');
                   
                   // Detecta comandos de tool
                   const toolMatch = assistantContent.match(/TOOL:(\w+):(.+?)(?:\n|$)/);
@@ -241,12 +243,20 @@ ${m.content}`
       }
       
       // Cria mensagem do assistente
+      console.log('📝 [DEBUG] Conteúdo final recebido:', assistantContent);
+      console.log('📝 [DEBUG] Tamanho:', assistantContent.length, 'caracteres');
+      
+      const cleanContent = assistantContent.replace(/TOOL:\w+:.+?(?:\n|$)/g, '').trim();
+      console.log('📝 [DEBUG] Conteúdo limpo (sem TOOL):', cleanContent);
+      
       const assistantMessage: Message = {
         id: `msg-${Date.now()}-assistant`,
         role: 'assistant',
-        content: assistantContent.replace(/TOOL:\w+:.+?(?:\n|$)/g, '').trim(),
+        content: cleanContent,
         timestamp: new Date().toISOString()
       };
+      
+      console.log('📨 [DEBUG] Mensagem criada:', assistantMessage);
       
       // Se detectou uma tool, executa ela
       if (toolPending) {
@@ -290,7 +300,15 @@ ${m.content}`
           ));
         }
       } else if (assistantContent) {
-        setMessages(prev => [...prev, assistantMessage]);
+        console.log('✅ [DEBUG] Adicionando mensagem (sem tool), conteúdo:', assistantContent);
+        setMessages(prev => {
+          const newMessages = [...prev, assistantMessage];
+          console.log('📨 [DEBUG] Total de mensagens agora:', newMessages.length);
+          console.log('📨 [DEBUG] Última mensagem:', newMessages[newMessages.length - 1]);
+          return newMessages;
+        });
+      } else {
+        console.log('⚠️ [DEBUG] Nenhum conteúdo do assistente para adicionar!');
       }
     } catch (error) {
       console.error('❌ [DEBUG] === ERRO NO PROCESSAMENTO ===');
