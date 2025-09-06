@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+import { getBaseUrl, createAbsoluteUrl } from './lib/get-url';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,17 +30,25 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
+    // Usa detecção automática para obter a URL base correta
+    const baseUrl = getBaseUrl(request);
+    
+    // Constrói a URL correta usando o domínio detectado
+    const correctUrl = `${baseUrl}${pathname}`;
+    const redirectUrl = encodeURIComponent(correctUrl);
+    
+    // Cria URL de redirect usando o domínio correto detectado
+    const guestAuthUrl = `${baseUrl}/api/auth/guest?redirectUrl=${redirectUrl}`;
 
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-    );
+    return NextResponse.redirect(new URL(guestAuthUrl));
   }
 
   const isGuest = guestRegex.test(token?.email ?? '');
 
   if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
+    // Usa a URL base detectada para redirecionar para home
+    const baseUrl = getBaseUrl(request);
+    return NextResponse.redirect(new URL('/', baseUrl));
   }
 
   return NextResponse.next();
