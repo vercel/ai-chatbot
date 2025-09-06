@@ -5,6 +5,7 @@ import { ChatMessage } from './ChatMessage';
 import { MessageInput } from './MessageInput';
 import { ToolRenderer } from '../generative/ToolRenderer';
 import { StreamingMessage } from './StreamingMessage';
+import { SmartLoadingState } from './SmartLoadingState';
 import { Button } from '@/components/ui/button';
 import { Bot, Trash2, Sparkles, ChevronDown, Zap, ZapOff } from 'lucide-react';
 import { executeTool } from '@/lib/claude-tools';
@@ -45,6 +46,9 @@ export function GenerativeChat() {
   // Estado para controle do streaming
   const [isStreamingEnabled, setIsStreamingEnabled] = useState(true);
   
+  // Estado para a query atual (para o loading inteligente)
+  const [currentQuery, setCurrentQuery] = useState('');
+  
   // Funções de scroll
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ 
@@ -76,6 +80,9 @@ export function GenerativeChat() {
   
   const handleSend = async (input: string) => {
     if (!input.trim() || isLoading) return;
+    
+    // Armazena a query atual para o loading inteligente
+    setCurrentQuery(input);
     
     console.log('🔵 [DEBUG] === INICIANDO ENVIO DE MENSAGEM ===');
     console.log('🔵 [DEBUG] Mensagem:', input);
@@ -156,10 +163,12 @@ export function GenerativeChat() {
         }
         
         setIsLoading(false);
+        setCurrentQuery(''); // Limpa a query
         return; // Não continua para o Claude
       } catch (error) {
         console.error('Tool execution error:', error);
         setIsLoading(false);
+        setCurrentQuery(''); // Limpa a query
       }
     }
     
@@ -327,6 +336,7 @@ ${m.content}`
       console.error('❌ [DEBUG] Stack:', error instanceof Error ? error.stack : 'No stack');
     } finally {
       setIsLoading(false);
+      setCurrentQuery(''); // Limpa a query após completar
     }
   };
   
@@ -511,10 +521,14 @@ ${m.content}`
               </div>
             ))
           )}
+          
+          {/* Smart Loading State */}
           {isLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="animate-pulse">Aguarde um momento, estou pensando...</div>
-            </div>
+            <SmartLoadingState 
+              isLoading={isLoading}
+              estimatedTime={currentQuery.length > 200 ? 20 : currentQuery.length > 100 ? 15 : 10}
+              currentQuery={currentQuery}
+            />
           )}
           
           {/* Âncora invisível para scroll */}
