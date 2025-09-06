@@ -70,24 +70,23 @@ const PurePreviewMessage = ({
         data-role={message.role}
       >
         <div
-          className={cn('flex items-start gap-3', {
-            'w-full': mode === 'edit',
-            'max-w-xl ml-auto justify-end mr-6':
-              message.role === 'user' && mode !== 'edit',
-            'justify-start -ml-3': message.role === 'assistant',
+          className={cn('flex items-start gap-3 w-full', {
+            'justify-end items-end': message.role === 'user' && mode !== 'edit',
+            'justify-start': message.role === 'assistant',
           })}
         >
           {message.role === 'assistant' && (
-            <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
+            <div className="flex justify-center items-center -mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
               <SparklesIcon size={14} />
             </div>
           )}
 
           <div
-            className={cn('flex flex-col gap-4', {
+            className={cn('flex flex-col gap-2 md:gap-4', {
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
-              'w-full': message.role === 'assistant',
-              'w-fit': message.role === 'user',
+              'w-full': message.role === 'assistant' || mode === 'edit',
+              'max-w-[90%] sm:max-w-[min(fit-content,80%)] origin-top-right':
+                message.role === 'user' && mode !== 'edit',
             })}
           >
             {attachmentsFromMessage.length > 0 && (
@@ -125,32 +124,20 @@ const PurePreviewMessage = ({
               if (type === 'text') {
                 if (mode === 'view') {
                   return (
-                    <div key={key} className="flex flex-row gap-2 items-start">
-                      {message.role === 'user' && !isReadonly && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              data-testid="message-edit-button"
-                              variant="ghost"
-                              className="px-2 rounded-full opacity-0 h-fit text-muted-foreground group-hover/message:opacity-100"
-                              onClick={() => {
-                                setMode('edit');
-                              }}
-                            >
-                              <PencilEditIcon />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
-                        </Tooltip>
-                      )}
-
+                    <div key={key}>
                       <MessageContent
                         data-testid="message-content"
-                        className={cn('justify-start items-start text-left', {
-                          'bg-primary text-primary-foreground':
+                        className={cn({
+                          'rounded-2xl px-3 py-2 break-words text-white text-right w-fit':
                             message.role === 'user',
-                          'bg-transparent -ml-4': message.role === 'assistant',
+                          'bg-transparent px-0 py-0 text-left':
+                            message.role === 'assistant',
                         })}
+                        style={
+                          message.role === 'user'
+                            ? { backgroundColor: '#006cff' }
+                            : undefined
+                        }
                       >
                         <Response>{sanitizeText(part.text)}</Response>
                       </MessageContent>
@@ -289,6 +276,7 @@ const PurePreviewMessage = ({
                 message={message}
                 vote={vote}
                 isLoading={isLoading}
+                setMode={setMode}
               />
             )}
           </div>
@@ -320,20 +308,43 @@ export const ThinkingMessage = () => {
       data-testid="message-assistant-loading"
       className="w-full group/message"
       initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
+      animate={{ y: 0, opacity: 1, transition: { delay: 0.3 } }}
       data-role={role}
     >
-      <div className="flex items-start gap-3 justify-start -ml-3">
-        <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
+      <div className="flex gap-3 justify-start items-start">
+        <div className="flex justify-center items-center -mt-0.5 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
           <SparklesIcon size={14} />
         </div>
 
         <div className="flex flex-col gap-4 w-full">
-          <MessageContent className="bg-transparent -ml-4">
-            <div className="text-muted-foreground">Hmm...</div>
-          </MessageContent>
+          <div className="px-0 py-0 text-sm text-muted-foreground">
+            <LoadingText>Thinking...</LoadingText>
+          </div>
         </div>
       </div>
+    </motion.div>
+  );
+};
+
+const LoadingText = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <motion.div
+      animate={{ backgroundPosition: ['100% 50%', '-100% 50%'] }}
+      transition={{
+        duration: 1.5,
+        repeat: Number.POSITIVE_INFINITY,
+        ease: 'linear',
+      }}
+      style={{
+        background:
+          'linear-gradient(90deg, hsl(var(--muted-foreground)) 0%, hsl(var(--muted-foreground)) 35%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground)) 65%, hsl(var(--muted-foreground)) 100%)',
+        backgroundSize: '200% 100%',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+      }}
+      className="flex items-center text-transparent"
+    >
+      {children}
     </motion.div>
   );
 };
