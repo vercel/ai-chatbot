@@ -68,8 +68,10 @@ AUTH_SECRET=zZ9tLz4Twoi9NkELbkSbtzqdifNsIPkLUmzms/HK0mA=
 ### Servidores MCP (Model Context Protocol)
 - **Exa**: Servidor de busca avançada
   - URL: `https://server.smithery.ai/exa/mcp`
-  - Status: Configurado (requer autenticação)
+  - Status: ✅ Configurado e pronto para uso
   - Permissões: `mcp:exa:*` liberado em config.json
+  - Portas OAuth: 60000-60500 mapeadas no Docker
+  - Autenticação: Credenciais sincronizadas do host
 
 ## Comandos
 
