@@ -15,6 +15,8 @@ interface ChatMessageProps {
   tokens?: { input?: number; output?: number };
   cost?: number;
   isStreaming?: boolean;
+  streamingSpeed?: number;
+  onStreamComplete?: () => void;
 }
 
 export function ChatMessage({ 
@@ -23,15 +25,90 @@ export function ChatMessage({
   timestamp, 
   tokens, 
   cost,
-  isStreaming = false
+  isStreaming = false,
+  streamingSpeed = 30,
+  onStreamComplete
 }: ChatMessageProps) {
   const [copied, setCopied] = React.useState(false);
+  const [displayedContent, setDisplayedContent] = React.useState('');
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  const hasCompletedRef = React.useRef(false);
+
+  // Reset quando streaming muda
+  React.useEffect(() => {
+    if (!isStreaming) {
+      hasCompletedRef.current = false;
+    }
+  }, [isStreaming]);
+
+  // Efeito para streaming
+  React.useEffect(() => {
+    // Se não é streaming ou já completou, mostra tudo
+    if (!isStreaming || role === 'user') {
+      setDisplayedContent(content);
+      if (!isStreaming) {
+        hasCompletedRef.current = false;
+      }
+      return;
+    }
+
+    // Se já completou anteriormente, mostra tudo instantaneamente
+    if (hasCompletedRef.current) {
+      setDisplayedContent(content);
+      return;
+    }
+
+    // Reset para novo streaming
+    setDisplayedContent('');
+    setCurrentIndex(0);
+
+    // Calcula o intervalo baseado na velocidade
+    const interval = 1000 / streamingSpeed;
+
+    // Inicia o streaming
+    intervalRef.current = setInterval(() => {
+      setCurrentIndex(prev => {
+        const next = prev + 1;
+        
+        if (next >= content.length) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          hasCompletedRef.current = true;
+          if (onStreamComplete) {
+            setTimeout(onStreamComplete, 0);
+          }
+          return content.length;
+        }
+        
+        return next;
+      });
+    }, interval);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [content, isStreaming, role, streamingSpeed, onStreamComplete]);
+
+  // Atualiza o conteúdo exibido
+  React.useEffect(() => {
+    if (isStreaming && role === 'assistant' && currentIndex > 0 && currentIndex <= content.length) {
+      setDisplayedContent(content.slice(0, currentIndex));
+    } else if (!isStreaming || hasCompletedRef.current) {
+      setDisplayedContent(content);
+    }
+  }, [currentIndex, content, isStreaming, role]);
 
   const handleCopy = React.useCallback(async () => {
-    await navigator.clipboard.writeText(content);
+    await navigator.clipboard.writeText(displayedContent || content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [content]);
+  }, [displayedContent, content]);
 
   const getIcon = () => {
     switch (role) {
@@ -45,25 +122,31 @@ export function ChatMessage({
   };
 
   const renderContent = React.useMemo(() => {
-    // Garantir que content nunca seja null ou undefined
-    const safeContent = content || '';
+    // Usa displayedContent se estiver definido (durante streaming)
+    const contentToShow = displayedContent || content || '';
     
     if (role === 'user') {
-      return <p className="whitespace-pre-wrap">{safeContent}</p>;
+      return <p className="whitespace-pre-wrap">{contentToShow}</p>;
     }
 
-    const html = marked(safeContent, { 
+    const html = marked(contentToShow, { 
       breaks: true,
       gfm: true
     });
 
     return (
-      <div 
-        className="markdown-content prose prose-sm dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
-      />
+      <>
+        <div 
+          className="markdown-content prose prose-sm dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
+        />
+        {/* Cursor piscante durante streaming */}
+        {isStreaming && role === 'assistant' && currentIndex < content.length && (
+          <span className="inline-block w-0.5 h-4 bg-gray-600 animate-pulse ml-0.5" />
+        )}
+      </>
     );
-  }, [role, content]);
+  }, [role, content, displayedContent, isStreaming, currentIndex]);
 
   return (
     <div 
