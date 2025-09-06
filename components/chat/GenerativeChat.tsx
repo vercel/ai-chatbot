@@ -68,6 +68,11 @@ export function GenerativeChat() {
   const handleSend = async (input: string) => {
     if (!input.trim() || isLoading) return;
     
+    console.log('🔵 [DEBUG] === INICIANDO ENVIO DE MENSAGEM ===');
+    console.log('🔵 [DEBUG] Mensagem:', input);
+    console.log('🔵 [DEBUG] SessionId:', sessionId || 'novo');
+    console.log('🔵 [DEBUG] Total mensagens:', messages.length);
+    
     // Detecção automática de intenção para ferramentas
     const lowerInput = input.toLowerCase();
     let autoTool = null;
@@ -76,9 +81,12 @@ export function GenerativeChat() {
     if (lowerInput.includes('clima') || lowerInput.includes('tempo') || lowerInput.includes('weather')) {
       const cityMatch = input.match(/(?:em|in|de|para)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$|,)/i);
       if (cityMatch) {
+        console.log('🔧 [DEBUG] Tool de clima detectada:', cityMatch[1].trim());
         autoTool = { name: 'getWeather', args: cityMatch[1].trim() };
       }
     }
+    
+    console.log('🔧 [DEBUG] AutoTool detectada?', autoTool ? 'SIM' : 'NÃO');
     
     
     const userMessage: Message = {
@@ -147,6 +155,7 @@ export function GenerativeChat() {
     }
     
     try {
+      console.log('📡 [DEBUG] Enviando request para /api/claude/sdk');
       const response = await fetch('/api/claude/sdk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,7 +179,14 @@ ${m.content}`
         })
       });
       
-      if (!response.ok) throw new Error('Failed to get response');
+      if (!response.ok) {
+        console.error('❌ [DEBUG] Response error:', response.status, response.statusText);
+        const errorBody = await response.text();
+        console.error('❌ [DEBUG] Error body:', errorBody);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      console.log('✅ [DEBUG] Response OK, iniciando stream...');
       
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
@@ -189,6 +205,9 @@ ${m.content}`
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
+                if (data.type === 'text_chunk') {
+                  console.log('📦 [DEBUG] Chunk:', data.content?.substring(0, 50) + '...');
+                }
                 
                 if (data.session_id && !sessionId) {
                   setSessionId(data.session_id);
@@ -200,6 +219,7 @@ ${m.content}`
                   // Detecta comandos de tool
                   const toolMatch = assistantContent.match(/TOOL:(\w+):(.+?)(?:\n|$)/);
                   if (toolMatch && !toolPending) {
+                    console.log('🔨 [DEBUG] Tool no response:', toolMatch[1], toolMatch[2]);
                     toolPending = {
                       name: toolMatch[1],
                       args: toolMatch[2]
@@ -207,7 +227,7 @@ ${m.content}`
                   }
                 }
               } catch (e) {
-                // Ignora erros de parse
+                console.warn('⚠️ [DEBUG] Parse error:', e, 'Line:', line);
               }
             }
           }
@@ -267,7 +287,9 @@ ${m.content}`
         setMessages(prev => [...prev, assistantMessage]);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ [DEBUG] === ERRO NO PROCESSAMENTO ===');
+      console.error('❌ [DEBUG] Error:', error);
+      console.error('❌ [DEBUG] Stack:', error instanceof Error ? error.stack : 'No stack');
     } finally {
       setIsLoading(false);
     }

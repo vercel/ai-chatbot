@@ -93,7 +93,9 @@ export async function POST(req: NextRequest) {
           
           // Tratamento de erro do processo
           claudeProcess.on('error', (error) => {
-            console.error('Claude process error:', error);
+            console.error('❌ [API] ERRO AO EXECUTAR CLAUDE CLI');
+            console.error('❌ [API] Error:', error);
+            console.error('❌ [API] Verifique se o Claude CLI está instalado');
             
             // Fallback para respostas básicas se Claude falhar
             let fallbackResponse = '';
