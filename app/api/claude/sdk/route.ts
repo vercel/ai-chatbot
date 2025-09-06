@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userContent = lastUserMessage?.content || '';
     
+    console.log('🔵 [Claude SDK] Mensagem recebida:', userContent);
+    console.log('🔵 [Claude SDK] Session ID:', sessionId);
+    
     if (!userContent) {
+      console.log('❌ [Claude SDK] Mensagem vazia');
       return NextResponse.json(
         { error: 'No message content provided' },
         { status: 400 }
@@ -23,11 +27,17 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Usa timeout para evitar travamento e echo para enviar comando
-          const escapedContent = userContent.replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/\$/g, "\\$");
+          // Usa arquivo temporário para evitar problemas de escape
+          const fs = require('fs');
+          const tmpFile = `/tmp/claude-input-${Date.now()}.txt`;
+          fs.writeFileSync(tmpFile, userContent);
+          
+          console.log('📝 [Claude SDK] Arquivo temporário criado:', tmpFile);
+          console.log('🚀 [Claude SDK] Executando comando Claude...');
+          
           const claudeProcess = spawn('bash', [
             '-c', 
-            `timeout 10 bash -c 'echo "${escapedContent}" | CI=true NONINTERACTIVE=1 claude -p 2>&1'`
+            `CI=true NONINTERACTIVE=1 timeout 30 claude -p < "${tmpFile}" 2>&1; rm -f "${tmpFile}"`
           ], {
             env: process.env,
             shell: false
@@ -39,6 +49,7 @@ export async function POST(req: NextRequest) {
           claudeProcess.stdout.on('data', (data) => {
             const text = data.toString();
             buffer += text;
+            console.log('✅ [Claude SDK] Resposta recebida:', text.substring(0, 100) + '...');
             
             // Envia chunks conforme recebe
             const chunk = {
@@ -57,6 +68,9 @@ export async function POST(req: NextRequest) {
           
           // Quando o processo termina
           claudeProcess.on('close', (code) => {
+            console.log('🏁 [Claude SDK] Processo finalizado com código:', code);
+            console.log('🏁 [Claude SDK] Buffer length:', buffer.length);
+            
             if (code !== 0 && buffer.length === 0) {
               // Se falhou e não tem resposta, envia mensagem de erro
               const errorChunk = {

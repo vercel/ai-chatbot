@@ -1,0 +1,69 @@
+{
+  "permissions": {
+    "allow": [
+      "read:**/*",
+      "write:**/*",
+      "edit:**/*",
+      "create:**/*",
+      "delete:**/*",
+      "bash:ls",
+      "bash:cat",
+      "bash:grep",
+      "bash:find",
+      "bash:mkdir",
+      "bash:rm",
+      "bash:cp",
+      "bash:mv"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "projectContext": {
+    "name": "AI Chatbot - Vercel Chat SDK",
+    "description": "Aplicação de chat com integração real ao Claude Code SDK, autenticação de convidados (guest auth), e interface moderna com Next.js 15, React 19 RC e TypeScript. O projeto permite conversas com IA através de streaming SSE, suporta múltiplos modelos e implementa sistema de entitlements diferenciados para usuários guest e regulares.",
+    "mainLanguages": ["portuguese", "typescript", "javascript"],
+    "framework": "Next.js 15.3.0-canary.31 com App Router, React 19 RC, Tailwind CSS, NextAuth.js, Vercel AI SDK",
+    "defaultModel": "opus",
+    "autoApprove": {
+      "fileOperations": true,
+      "bashCommands": true,
+      "mcpTools": true
+    },
+    "projectDetails": {
+      "mainFeatures": [
+        "Integração real com Claude Code SDK via comando CLI",
+        "Autenticação guest automática sem necessidade de cadastro",
+        "Chat com streaming de respostas em tempo real",
+        "Sistema de entitlements (20 msgs/dia para guests, 100 para usuários)",
+        "Seletor de modelos de IA",
+        "Persistência de conversas com PostgreSQL/SQLite"
+      ],
+      "techStack": {
+        "frontend": ["Next.js 15", "React 19 RC", "TypeScript", "Tailwind CSS", "Radix UI"],
+        "backend": ["Node.js", "NextAuth.js", "Drizzle ORM", "Server-Sent Events"],
+        "database": ["PostgreSQL (produção)", "SQLite (desenvolvimento)"],
+        "ai": ["Claude Code SDK", "Vercel AI SDK"],
+        "testing": ["Playwright", "Vitest"]
+      },
+      "importantFiles": [
+        "/app/api/claude/sdk/route.ts - Integração principal com Claude",
+        "/app/(auth)/auth.ts - Configuração de autenticação e guest users",
+        "/lib/ai/entitlements.ts - Sistema de limitações por tipo de usuário",
+        "/components/chat/GenerativeChat.tsx - Componente principal do chat"
+      ],
+      "currentStatus": {
+        "working": [
+          "Chat funcionando com respostas reais do Claude",
+          "Autenticação guest configurada",
+          "Limite de mensagens implementado",
+          "Frontend responsivo e moderno"
+        ],
+        "needsWork": [
+          "Diferenciação real de modelos entre guest/regular",
+          "Sistema de upgrade de guest para usuário registrado",
+          "Melhor tratamento de erros e timeouts"
+        ]
+      }
+    }
+  }
+}
