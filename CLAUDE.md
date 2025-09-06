@@ -127,6 +127,61 @@ Todas as ferramentas abaixo estão configuradas e liberadas no `.claude/config.j
    - Monitore com `deep_researcher_check` até completar
    - Ideal para análises aprofundadas e síntese de múltiplas fontes
 
+## 🔍 REGRAS DE PESQUISA - IMPORTANTE
+
+### Prioridade de Ferramentas de Busca
+
+**SEMPRE que o usuário solicitar uma pesquisa, busca ou informação atualizada:**
+
+1. **PRIMEIRO**: Usar as ferramentas MCP Exa (configuradas globalmente)
+   - `mcp__exa__web_search_exa` - Para buscas gerais na web
+   - `mcp__exa__company_research_exa` - Para pesquisas sobre empresas
+   - `mcp__exa__linkedin_search_exa` - Para perfis profissionais
+   - `mcp__exa__crawling_exa` - Para extrair conteúdo de URLs específicas
+   - `mcp__exa__deep_researcher_start/check` - Para pesquisas complexas
+
+2. **SEGUNDO**: Apenas se MCP Exa falhar, usar ferramentas alternativas
+   - WebSearch - Busca web genérica
+   - WebFetch - Para URLs específicas
+
+### Configuração Global MCP Exa
+
+O MCP Exa está configurado **GLOBALMENTE** no sistema:
+- **Arquivo de configuração**: `/root/.claude.json`
+- **Funciona em qualquer diretório** do sistema
+- **Não depende do projeto** específico
+- **Status**: ✅ Conectado e operacional
+
+Para verificar o status:
+```bash
+cd /root/.claude/
+claude mcp list
+```
+
+### Exemplos de Uso Correto
+
+✅ **CORRETO** - Usuário pede pesquisa:
+```
+Usuário: "Pesquise sobre tendências de insurtech"
+Claude: [Usa mcp__exa__web_search_exa primeiro]
+```
+
+✅ **CORRETO** - Usuário pede informações sobre empresa:
+```
+Usuário: "Informações sobre a SUTHUB"
+Claude: [Usa mcp__exa__company_research_exa primeiro]
+```
+
+✅ **CORRETO** - Usuário pede perfil LinkedIn:
+```
+Usuário: "CEO da SUTHUB no LinkedIn"
+Claude: [Usa mcp__exa__linkedin_search_exa primeiro]
+```
+
+❌ **INCORRETO** - Usar WebSearch antes de tentar MCP Exa
+❌ **INCORRETO** - Responder sem pesquisar quando solicitado
+❌ **INCORRETO** - Usar apenas conhecimento interno para informações atuais
+
 ## Comandos
 
 ### Desenvolvimento
