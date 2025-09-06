@@ -14,7 +14,13 @@
       "bash:rm",
       "bash:cp",
       "bash:mv",
-      "mcp:exa:*"
+      "mcp:exa:*",
+      "mcp__exa__web_search_exa",
+      "mcp__exa__company_research_exa",
+      "mcp__exa__crawling_exa",
+      "mcp__exa__linkedin_search_exa",
+      "mcp__exa__deep_researcher_start",
+      "mcp__exa__deep_researcher_check"
     ],
     "deny": [],
     "ask": []
