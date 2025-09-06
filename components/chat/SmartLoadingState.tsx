@@ -21,7 +21,7 @@ export function SmartLoadingState({
   // Dicas rotativas durante o loading
   const tips = [
     "💡 Você sabia que pode abrir múltiplas abas para fazer várias consultas?",
-    "🚀 Processando com Claude 3.5 Sonnet, o modelo mais avançado da Anthropic...",
+    "🚀 Processando com Claude 4.1 Opus, o melhor modelo do mundo para programar...",
     "📚 Analisando informações em tempo real para sua resposta...",
     "🧠 Conectando com servidores MCP Exa para buscar as informações mais recentes...",
     "⚡ Quase lá! Preparando uma resposta personalizada para você...",
