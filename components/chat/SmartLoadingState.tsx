@@ -16,7 +16,6 @@ export function SmartLoadingState({
 }: SmartLoadingStateProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [loadingTip, setLoadingTip] = useState(0);
-  const [dots, setDots] = useState('');
   
   // Dicas rotativas durante o loading
   const tips = [
@@ -40,7 +39,6 @@ export function SmartLoadingState({
   useEffect(() => {
     if (!isLoading) {
       setElapsedTime(0);
-      setDots('');
       return;
     }
 
@@ -52,14 +50,9 @@ export function SmartLoadingState({
       setLoadingTip(prev => (prev + 1) % tips.length);
     }, 3000);
 
-    const dotsTimer = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '' : prev + '.');
-    }, 500);
-
     return () => {
       clearInterval(timer);
       clearInterval(tipTimer);
-      clearInterval(dotsTimer);
     };
   }, [isLoading, tips.length]);
 
@@ -83,7 +76,7 @@ export function SmartLoadingState({
           {/* Conteúdo */}
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
-              Processando{dots}
+              Processando
               <Sparkles className="w-5 h-5 text-yellow-500 animate-pulse" />
             </h3>
             
