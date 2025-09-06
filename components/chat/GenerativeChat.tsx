@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { MessageInput } from './MessageInput';
 import { ToolRenderer } from '../generative/ToolRenderer';
+import { StreamingMessage } from './StreamingMessage';
 import { Button } from '@/components/ui/button';
 import { Bot, Trash2, Sparkles, ChevronDown } from 'lucide-react';
 import { executeTool } from '@/lib/claude-tools';
@@ -27,6 +28,7 @@ export function GenerativeChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   
   // Refs para controle de scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -307,6 +309,8 @@ ${m.content}`
           console.log('📨 [DEBUG] Última mensagem:', newMessages[newMessages.length - 1]);
           return newMessages;
         });
+        // Marca esta mensagem para streaming
+        setStreamingMessageId(assistantMessage.id);
       } else {
         console.log('⚠️ [DEBUG] Nenhum conteúdo do assistente para adicionar!');
       }
@@ -434,11 +438,28 @@ ${m.content}`
               <div key={message.id} className="space-y-2">
                 {/* Se é mensagem do assistente com ferramenta de clima, não mostra a mensagem */}
                 {!(message.role === 'assistant' && message.tool?.name === 'getWeather') && (
-                  <ChatMessage 
-                    role={message.role}
-                    content={message.content}
-                    timestamp={new Date(message.timestamp)}
-                  />
+                  message.role === 'assistant' && streamingMessageId === message.id ? (
+                    // Usa StreamingMessage para mensagens do assistente que estão chegando
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Bot className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <StreamingMessage
+                          content={message.content}
+                          isStreaming={true}
+                          speed={50} // 50 caracteres por segundo
+                          onStreamComplete={() => setStreamingMessageId(null)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <ChatMessage 
+                      role={message.role}
+                      content={message.content}
+                      timestamp={new Date(message.timestamp)}
+                    />
+                  )
                 )}
                 {message.tool && (
                   <div className={message.role === 'assistant' && message.tool?.name === 'getWeather' ? "" : "ml-12 animate-in fade-in slide-in-from-bottom-2"}>
