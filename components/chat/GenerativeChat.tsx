@@ -332,7 +332,7 @@ ${m.content}`
               <Bot className="h-6 w-6 text-primary" />
               <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
             </button>
-            <h1 className="text-xl font-semibold">Chat - Clima</h1>
+            <h1 className="text-xl font-semibold">Chat</h1>
           </div>
           <div className="flex items-center gap-2">
             <Button 

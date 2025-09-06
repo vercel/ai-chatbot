@@ -12,7 +12,7 @@ export default function TestClaude() {
     setResponse('');
     
     try {
-      const res = await fetch('/api/claude-sdk', {
+      const res = await fetch('/api/claude/sdk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export default function TestClaude() {
           <h3 className="font-semibold text-yellow-800">Info:</h3>
           <p className="text-sm text-yellow-700">
             Backend: http://localhost:8002<br/>
-            Rota: /api/claude-sdk<br/>
+            Rota: /api/claude/sdk<br/>
             Status: {loading ? '🔄 Enviando...' : '✅ Pronto'}
           </p>
         </div>
