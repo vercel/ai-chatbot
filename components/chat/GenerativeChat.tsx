@@ -80,21 +80,6 @@ export function GenerativeChat() {
       }
     }
     
-    // Detecta solicitações de cálculo
-    if (lowerInput.includes('quanto') || lowerInput.includes('calcul')) {
-      const mathMatch = input.match(/(\d+[\s\+\-\*\/\%\(\)]+\d+)/);
-      if (mathMatch) {
-        autoTool = { name: 'calculate', args: mathMatch[1] };
-      }
-    }
-    
-    // Detecta solicitações de ações
-    if (lowerInput.includes('ação') || lowerInput.includes('stock') || lowerInput.includes('cotação')) {
-      const stockMatch = input.match(/(?:da|de|do)\s+([A-Z]{3,5})/i);
-      if (stockMatch) {
-        autoTool = { name: 'getStockPrice', args: stockMatch[1].toUpperCase() };
-      }
-    }
     
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
@@ -171,7 +156,7 @@ export function GenerativeChat() {
             if (idx === 0 && m.role === 'user') {
               return {
                 role: m.role,
-                content: `[INSTRUÇÕES: Você tem ferramentas disponíveis. Use TOOL:getWeather:cidade para clima, TOOL:getStockPrice:símbolo para ações, TOOL:calculate:expressão para cálculos]
+                content: `[INSTRUÇÕES: Você tem ferramentas disponíveis. Use TOOL:getWeather:cidade para informações sobre o clima]
 
 ${m.content}`
               };

@@ -34,48 +34,6 @@ export async function getWeather(location: string): Promise<ToolResult> {
   };
 }
 
-// Stock Price Tool
-export async function getStockPrice(symbol: string): Promise<ToolResult> {
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  const stockData = {
-    symbol: symbol.toUpperCase(),
-    price: (Math.random() * 1000 + 50).toFixed(2),
-    change: (Math.random() * 10 - 5).toFixed(2),
-    changePercent: (Math.random() * 5 - 2.5).toFixed(2),
-    volume: Math.floor(Math.random() * 10000000),
-    marketCap: `${Math.floor(Math.random() * 900 + 100)}B`
-  };
-  
-  return {
-    type: 'stock',
-    data: stockData
-  };
-}
-
-// Calculator Tool
-export async function calculate(expression: string): Promise<ToolResult> {
-  try {
-    // Avaliação segura de expressões matemáticas
-    const result = Function('"use strict"; return (' + expression + ')')();
-    
-    return {
-      type: 'calculation',
-      data: {
-        expression,
-        result: Number(result)
-      }
-    };
-  } catch (error) {
-    return {
-      type: 'calculation',
-      data: {
-        expression,
-        error: 'Expressão inválida'
-      }
-    };
-  }
-}
 
 // Code Execution Tool (simulated)
 export async function runCode(code: string, language: string): Promise<ToolResult> {
@@ -132,8 +90,6 @@ export async function search(query: string): Promise<ToolResult> {
 // Registro de todas as tools disponíveis
 export const availableTools = {
   getWeather,
-  getStockPrice,
-  calculate,
   runCode,
   search
 };
