@@ -19,14 +19,22 @@ export function StreamingMessage({
   const [displayedContent, setDisplayedContent] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCompletedRef = useRef(false); // Flag para controlar se já completou
 
   useEffect(() => {
-    if (!isStreaming) {
+    // Se já completou uma vez, mostra tudo imediatamente
+    if (hasCompletedRef.current) {
       setDisplayedContent(content);
       return;
     }
 
-    // Reset quando o conteúdo muda
+    if (!isStreaming) {
+      setDisplayedContent(content);
+      hasCompletedRef.current = true;
+      return;
+    }
+
+    // Reset quando o conteúdo muda (apenas na primeira vez)
     setDisplayedContent('');
     setCurrentIndex(0);
 
@@ -44,6 +52,8 @@ export function StreamingMessage({
             clearInterval(intervalRef.current);
             intervalRef.current = null;
           }
+          // Marca como completado
+          hasCompletedRef.current = true;
           // Chama onStreamComplete fora do ciclo de renderização
           if (onStreamComplete) {
             setTimeout(onStreamComplete, 0);

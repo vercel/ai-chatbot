@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { MessageInput } from './MessageInput';
 import { ToolRenderer } from '../generative/ToolRenderer';
@@ -531,6 +531,7 @@ ${m.content}`
                       </div>
                       <div className="flex-1">
                         <StreamingMessage
+                          key={`streaming-${message.id}`} // Key único e estável
                           content={message.content}
                           isStreaming={true}
                           speed={50} // 50 caracteres por segundo
