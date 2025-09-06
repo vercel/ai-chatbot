@@ -37,7 +37,7 @@ export type ReasoningProps = ComponentProps<typeof Collapsible> & {
   duration?: number;
 };
 
-const AUTO_CLOSE_DELAY = 1000;
+const AUTO_CLOSE_DELAY = 500;
 const MS_IN_S = 1000;
 
 export const Reasoning = memo(
@@ -98,7 +98,7 @@ export const Reasoning = memo(
         value={{ isStreaming, isOpen, setIsOpen, duration }}
       >
         <Collapsible
-          className={cn('not-prose mb-4', className)}
+          className={cn('not-prose', className)}
           onOpenChange={handleOpenChange}
           open={isOpen}
           {...props}
@@ -119,7 +119,7 @@ export const ReasoningTrigger = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          'flex items-center gap-2 text-muted-foreground text-sm',
+          'flex items-center gap-1.5 text-muted-foreground text-xs hover:text-foreground transition-colors',
           className,
         )}
         {...props}
@@ -130,11 +130,11 @@ export const ReasoningTrigger = memo(
             {isStreaming || duration === 0 ? (
               <p>Thinking...</p>
             ) : (
-              <p>Thought for {duration} seconds</p>
+              <p>Thought for {duration}s</p>
             )}
             <ChevronDownIcon
               className={cn(
-                'size-4 text-muted-foreground transition-transform',
+                'size-3 text-muted-foreground transition-transform',
                 isOpen ? 'rotate-180' : 'rotate-0',
               )}
             />
@@ -155,8 +155,8 @@ export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
     <CollapsibleContent
       className={cn(
-        'mt-4 text-sm',
-        'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
+        'mt-2 text-xs text-muted-foreground',
+        'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
         className,
       )}
       {...props}
