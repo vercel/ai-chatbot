@@ -358,22 +358,22 @@ ${m.content}`
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto text-left">
                 <button
-                  onClick={() => handleSend("Qual é o clima em São Paulo?")}
+                  onClick={() => handleSend("Notícias do Brasil e do Mundo Hoje")}
                   className="p-3 border rounded-lg hover:bg-muted/50 transition-colors text-sm font-semibold"
                 >
-                  Qual é o clima em São Paulo?
+                  Notícias do Brasil e do Mundo Hoje
                 </button>
                 <button
-                  onClick={() => handleSend("Como está o tempo no Rio de Janeiro?")}
+                  onClick={() => handleSend("Tendências de Insurtech 2025")}
                   className="p-3 border rounded-lg hover:bg-muted/50 transition-colors text-sm font-semibold"
                 >
-                  Como está o tempo no Rio de Janeiro?
+                  Tendências de Insurtech 2025
                 </button>
                 <button
-                  onClick={() => handleSend("Qual é o clima em Hong Kong?")}
+                  onClick={() => handleSend("CEO da SUTHUB Renato Ferreira LinkedIn")}
                   className="p-3 border rounded-lg hover:bg-muted/50 transition-colors text-sm font-semibold"
                 >
-                  Qual é o clima em Hong Kong?
+                  CEO da SUTHUB Renato Ferreira LinkedIn
                 </button>
                 <button
                   onClick={() => handleSend("Qual é o clima em Nova York?")}
