@@ -70,9 +70,12 @@ export function StreamingMessage({
 
   return (
     <div className="streaming-message">
-      <ReactMarkdown className="prose prose-sm max-w-none">
-        {displayedContent}
-      </ReactMarkdown>
+      {/* Wrapper div com classes ao invés de passar className direto */}
+      <div className="prose prose-sm max-w-none">
+        <ReactMarkdown>
+          {displayedContent}
+        </ReactMarkdown>
+      </div>
       
       {/* Cursor piscante durante streaming */}
       {isStreaming && currentIndex < content.length && (
