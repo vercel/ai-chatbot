@@ -416,28 +416,25 @@ ${m.content}`
   // Atalhos de teclado
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + Shift + I para toggle input
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
+      // Ctrl/Cmd + / para toggle input (mostrar/ocultar)
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
         e.preventDefault();
         setIsInputVisible(prev => !prev);
+        // Se estiver mostrando, focar no input
+        if (!isInputVisible) {
+          setTimeout(() => inputRef.current?.focus(), 100);
+        }
       }
       
       // Esc para ocultar (quando não está focado)
       if (e.key === 'Escape' && !isInputFocused) {
         setIsInputVisible(false);
       }
-      
-      // / para focar no input (como no GitHub)
-      if (e.key === '/' && !isInputFocused && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-        setIsInputVisible(true);
-        setTimeout(() => inputRef.current?.focus(), 100);
-      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isInputFocused]);
+  }, [isInputFocused, isInputVisible]);
   
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -589,7 +586,7 @@ ${m.content}`
       {/* Pills de Status quando input oculto */}
       {!isInputVisible && !isLoading && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2 animate-fadeIn z-50">
-          Pressione <kbd className="px-1 py-0.5 bg-white/20 rounded">/</kbd> para abrir o chat
+          Pressione <kbd className="px-1 py-0.5 bg-white/20 rounded">Ctrl</kbd> + <kbd className="px-1 py-0.5 bg-white/20 rounded">/</kbd> para abrir o chat
         </div>
       )}
 
@@ -639,8 +636,7 @@ ${m.content}`
           <div className="text-center py-1 text-xs text-muted-foreground bg-muted/50">
             <kbd className="px-1 py-0.5 bg-background rounded text-xs">Enter</kbd> enviar • 
             <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">Shift+Enter</kbd> nova linha • 
-            <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">Esc</kbd> ocultar • 
-            <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">/</kbd> focar
+            <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">Ctrl+/</kbd> ocultar
           </div>
         )}
       </div>
