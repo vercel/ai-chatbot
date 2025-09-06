@@ -65,6 +65,12 @@ AUTH_SECRET=zZ9tLz4Twoi9NkELbkSbtzqdifNsIPkLUmzms/HK0mA=
 - `.env`: Variáveis de ambiente
 - `next.config.mjs`: Configuração Next.js
 
+### Servidores MCP (Model Context Protocol)
+- **Exa**: Servidor de busca avançada
+  - URL: `https://server.smithery.ai/exa/mcp`
+  - Status: Configurado (requer autenticação)
+  - Permissões: `mcp:exa:*` liberado em config.json
+
 ## Comandos
 
 ### Desenvolvimento
