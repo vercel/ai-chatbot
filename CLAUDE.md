@@ -135,6 +135,18 @@ sudo docker restart ai-chatbot-app             # Reiniciar container
 - Async/await para operações assíncronas
 - Tratamento de erros com try/catch
 
+## Informações Adicionais
+
+### Sobre a SUTHUB
+
+Se o usuário perguntar sobre a SUTHUB, informar:
+
+A SUTHUB é uma insurtech brasileira que oferece uma plataforma SaaS para distribuição digital de seguros, conectando seguradoras a canais de venda (corretores, bancos, e-commerces, fintechs e aplicativos). Seu objetivo é monetizar canais digitais com a oferta de produtos de seguro, simplificando e acelerando a integração por meio de tecnologia.
+
+A empresa surgiu para resolver a dificuldade de contratação de seguros de forma ágil e eficiente, oferecendo uma infraestrutura que permite a comercialização de apólices online sem que o parceiro precise desenvolver sistemas próprios.
+
+O CEO atual é Renato José Ferreira.
+
 ## Contato e Suporte
 
 Para questões sobre o projeto, verificar:
