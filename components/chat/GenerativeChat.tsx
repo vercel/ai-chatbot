@@ -593,42 +593,46 @@ ${m.content}`
         </div>
       )}
 
+      {/* Botão Toggle (sempre visível) */}
+      {!isInputVisible && (
+        <button
+          onClick={() => setIsInputVisible(true)}
+          className="fixed bottom-4 right-4 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200 z-50"
+        >
+          <ChevronUp className="w-5 h-5" />
+        </button>
+      )}
+
       {/* Container do Input com Toggle */}
       <div className={`
         fixed bottom-0 left-0 right-0 
-        bg-background border-t border-border
         transform transition-all duration-300 ease-in-out
-        ${isInputVisible ? 'translate-y-0' : 'translate-y-[calc(100%-3rem)]'}
+        ${isInputVisible ? 'translate-y-0' : 'translate-y-full'}
       `}>
-        {/* Botão Toggle */}
-        <button
-          onClick={() => setIsInputVisible(!isInputVisible)}
-          className="absolute -top-10 right-4 bg-background rounded-t-lg px-4 py-2 border border-b-0 border-border flex items-center gap-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
-        >
-          {isInputVisible ? (
-            <>
-              <ChevronDown className="w-4 h-4" />
-              Ocultar
-            </>
-          ) : (
-            <>
-              <ChevronUp className="w-4 h-4" />
-              Mostrar Chat
-            </>
-          )}
-        </button>
+        {/* Botão Toggle quando visível */}
+        {isInputVisible && (
+          <button
+            onClick={() => setIsInputVisible(false)}
+            className="absolute -top-10 right-4 bg-background rounded-t-lg px-4 py-2 border border-b-0 border-border flex items-center gap-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <ChevronDown className="w-4 h-4" />
+            Ocultar
+          </button>
+        )}
 
-        {/* Input Area */}
-        <MessageInput
-          ref={inputRef}
-          onSendMessage={handleSend}
-          disabled={isLoading}
-          isStreaming={isLoading}
-          placeholder="Pergunte o que quiser..."
-          onFocus={() => setIsInputFocused(true)}
-          onBlur={() => setIsInputFocused(false)}
-          className={isInputFocused ? 'ring-2 ring-primary' : ''}
-        />
+        {/* Input Area com visibilidade controlada */}
+        <div className={`${!isInputVisible ? 'invisible' : 'visible'}`}>
+          <MessageInput
+            ref={inputRef}
+            onSendMessage={handleSend}
+            disabled={isLoading}
+            isStreaming={isLoading}
+            placeholder="Pergunte o que quiser..."
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
+            className={isInputFocused ? 'ring-2 ring-primary' : ''}
+          />
+        </div>
 
         {/* Atalhos de teclado */}
         {isInputVisible && (
