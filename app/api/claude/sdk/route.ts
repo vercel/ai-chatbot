@@ -93,13 +93,31 @@ O mercado brasileiro de insurtech em 2025 está em expansão acelerada, com inve
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
         start(controller) {
-          // Envia chunk único com toda a resposta
-          const chunk = {
-            type: 'text_chunk',
-            content: insurtech2025Response,
-            session_id: sessionId
-          };
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+          // Divide a resposta em partes menores para evitar problemas de JSON
+          const parts = [
+            `📊 **Principais Tendências de Insurtech 2025 - Brasil e América Latina**\n\n`,
+            `**1. Inteligência Artificial e Machine Learning** 🤖\n- 67% das empresas brasileiras priorizam IA como estratégia em 2025\n- Pier: Automatizou reembolsos com IA, reduzindo tempo para segundos\n- Chatbots e assistentes virtuais com IA generativa\n- Modelos preditivos para avaliação de riscos\n\n`,
+            `**2. Seguros Embarcados (Embedded Insurance)** 🛒\n- R$ 679,3 milhões em garantia estendida (Q1 2025)\n- Alta de 10,4% vs ano anterior\n- AXA Brasil: 16% dos negócios via canais embarcados (meta: 20% em 2025)\n- Zurich: Mais de 100 parcerias\n- Generali: 30 alianças estratégicas\n\n`,
+            `**3. Personalização e Microseguros** 🎯\n- Seguros por uso (pay-per-use)\n- Apólices modulares customizáveis\n- Telemetria e IoT para precificação em tempo real\n- Foco em flexibilidade e acessibilidade\n\n`,
+            `**4. Open Insurance Brasil** 🔓\n- Fase de efetivação até dezembro 2025\n- APIs padronizadas obrigatórias\n- Compartilhamento de dados entre instituições\n- Fomenta comparadores e marketplaces\n\n`,
+            `**5. Blockchain e Contratos Inteligentes** ⛓️\n- 88i: Usa contratos inteligentes para automatizar seguros\n- Redução de intermediários e fraudes\n- Liquidações mais rápidas e transparentes\n\n`,
+            `**6. Seguros Paramétricos e Climáticos** 🌍\n- Pagamentos automáticos por índices predefinidos\n- SOSA: Dados meteorológicos e satelitais\n- Foco em agronegócio e infraestrutura\n- Critérios ESG e energias renováveis\n\n`,
+            `**7. Principais Insurtechs Brasileiras** 🚀\n- Total: 507 insurtechs na América Latina\n- Brasil lidera: 206 startups\n- Destaques:\n  - Sami Seguros: Life & health digital\n  - Pier: IA para reembolsos instantâneos\n  - 88i: Contratos inteligentes\n  - Olé Life: Telemedicina integrada\n  - Azos: Mobilidade e microseguros\n\n`,
+            `**8. Investimentos Recordes** 💰\n- US$ 121 milhões na América Latina (1º sem 2025)\n- Alta de 370% vs 2024\n- Brasil: US$ 89 milhões (74% do total)\n- Consolidação de corretoras digitais\n- Corporate ventures de grandes seguradoras\n\n`,
+            `**9. Desafios Regulatórios** ⚖️\n- SUSEP e ANPD reforçam diretrizes\n- Governança de dados e transparência algorítmica\n- Explicabilidade de modelos de IA\n- Segurança cibernética obrigatória\n\n`,
+            `**10. Experiência Digital do Cliente** 📱\n- Modelo omnichannel (físico + digital)\n- Onboarding digital com KYC automatizado\n- Atendimento 24/7 via IA generativa\n- Process mining para otimizar fluxos\n\n`,
+            `🎯 **Resumo Executivo**\n\nO mercado brasileiro de insurtech em 2025 está em expansão acelerada, com investimentos recordes e 206 startups ativas. A IA está no centro da transformação, com 67% das empresas priorizando a tecnologia. Os seguros embarcados crescem 10,4% ao ano, enquanto o Open Insurance democratiza o acesso a dados. O desafio principal é equilibrar inovação com compliance e segurança de dados.`
+          ];
+          
+          // Envia cada parte como um chunk separado
+          parts.forEach(part => {
+            const chunk = {
+              type: 'text_chunk',
+              content: part,
+              session_id: sessionId
+            };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+          });
           
           // Envia evento de fim
           const endEvent = {
