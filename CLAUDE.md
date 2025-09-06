@@ -72,6 +72,60 @@ AUTH_SECRET=zZ9tLz4Twoi9NkELbkSbtzqdifNsIPkLUmzms/HK0mA=
   - Permissões: `mcp:exa:*` liberado em config.json
   - Portas OAuth: 60000-60500 mapeadas no Docker
   - Autenticação: Credenciais sincronizadas do host
+  - **Importante**: Para buscas em português brasileiro, sempre incluir "em português" ou "Brazil" nas queries para obter resultados relevantes em PT-BR
+
+#### Ferramentas MCP Exa Disponíveis
+
+Todas as ferramentas abaixo estão configuradas e liberadas no `.claude/config.json`:
+
+1. **mcp__exa__web_search_exa** - Busca na web
+   - Realiza pesquisas em tempo real na internet
+   - Parâmetros: `query` (obrigatório), `numResults` (opcional, padrão: 5)
+   - Exemplo: Buscar notícias, artigos, informações atualizadas
+   - Dica: Para resultados em PT-BR, adicione "em português" ou "Brasil" na query
+
+2. **mcp__exa__company_research_exa** - Pesquisa de empresas
+   - Busca informações detalhadas sobre empresas e corporações
+   - Parâmetros: `companyName` (obrigatório), `numResults` (opcional, padrão: 5)
+   - Exemplo: Pesquisar dados sobre startups, insurtechs, grandes empresas
+   - Retorna: Notícias, informações financeiras, análises do setor
+
+3. **mcp__exa__crawling_exa** - Extração de conteúdo
+   - Extrai conteúdo completo de URLs específicas
+   - Parâmetros: `url` (obrigatório), `maxCharacters` (opcional, padrão: 3000)
+   - Exemplo: Ler artigos completos, extrair informações de páginas web
+   - Útil para: Análise detalhada de conteúdo já identificado
+
+4. **mcp__exa__linkedin_search_exa** - Busca no LinkedIn
+   - Pesquisa perfis profissionais e páginas de empresas no LinkedIn
+   - Parâmetros: `query` (obrigatório), `numResults` (opcional), `searchType` (profiles/companies/all)
+   - Exemplo: Buscar CEOs, profissionais específicos, páginas corporativas
+   - Aplicações: Networking, recrutamento, pesquisa de negócios
+
+5. **mcp__exa__deep_researcher_start** - Pesquisa profunda (iniciar)
+   - Inicia uma pesquisa profunda com IA sobre tópicos complexos
+   - Parâmetros: `instructions` (obrigatório), `model` (exa-research ou exa-research-pro)
+   - Modelos: 
+     - `exa-research`: Mais rápido (15-45s), ideal para a maioria das consultas
+     - `exa-research-pro`: Mais completo (45s-2min), para tópicos complexos
+   - Retorna: `taskId` para acompanhar o progresso
+
+6. **mcp__exa__deep_researcher_check** - Verificar status da pesquisa
+   - Verifica o progresso e obtém resultados da pesquisa profunda
+   - Parâmetros: `taskId` (obrigatório - obtido do deep_researcher_start)
+   - Importante: Chamar repetidamente até status ser "completed"
+   - Retorna: Relatório detalhado de pesquisa quando concluído
+
+#### Como Usar as Ferramentas
+
+1. **Busca Simples**: Use `web_search_exa` para pesquisas rápidas
+2. **Pesquisa de Empresas**: Use `company_research_exa` para informações corporativas
+3. **Conteúdo Específico**: Use `crawling_exa` quando já tiver a URL
+4. **Perfis Profissionais**: Use `linkedin_search_exa` para buscar pessoas/empresas
+5. **Pesquisas Complexas**: 
+   - Inicie com `deep_researcher_start` 
+   - Monitore com `deep_researcher_check` até completar
+   - Ideal para análises aprofundadas e síntese de múltiplas fontes
 
 ## Comandos
 
