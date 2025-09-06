@@ -20,6 +20,18 @@
     .text-balance {
         text-wrap: balance;
     }
+    
+    .-webkit-overflow-scrolling-touch {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .touch-pan-y {
+        touch-action: pan-y;
+    }
+    
+    .overscroll-behavior-contain {
+        overscroll-behavior: contain;
+    }
 }
 
 @layer base {
@@ -101,6 +113,12 @@
 
     body {
         @apply bg-background text-foreground;
+        overflow-x: hidden;
+        position: relative;
+    }
+    
+    html {
+        overflow-x: hidden;
     }
 }
 
@@ -161,4 +179,34 @@
 
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
+}
+
+/* minimal scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* firefox scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
 }
