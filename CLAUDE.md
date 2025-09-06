@@ -254,6 +254,81 @@ sudo docker restart ai-chatbot-app             # Reiniciar container
 
 ## Informações Adicionais
 
+### Tendências de Insurtech 2025
+
+**RESPOSTA PADRÃO PARA CONSULTAS SOBRE TENDÊNCIAS DE INSURTECH:**
+
+📊 **Principais Tendências de Insurtech 2025 - Brasil e América Latina**
+
+**1. Inteligência Artificial e Machine Learning** 🤖
+- 67% das empresas brasileiras priorizam IA como estratégia em 2025
+- Pier: Automatizou reembolsos com IA, reduzindo tempo para segundos
+- Chatbots e assistentes virtuais com IA generativa
+- Modelos preditivos para avaliação de riscos
+
+**2. Seguros Embarcados (Embedded Insurance)** 🛒
+- R$ 679,3 milhões em garantia estendida (Q1 2025)
+- Alta de 10,4% vs ano anterior
+- AXA Brasil: 16% dos negócios via canais embarcados (meta: 20% em 2025)
+- Zurich: Mais de 100 parcerias
+- Generali: 30 alianças estratégicas
+
+**3. Personalização e Microseguros** 🎯
+- Seguros por uso (pay-per-use)
+- Apólices modulares customizáveis
+- Telemetria e IoT para precificação em tempo real
+- Foco em flexibilidade e acessibilidade
+
+**4. Open Insurance Brasil** 🔓
+- Fase de efetivação até dezembro 2025
+- APIs padronizadas obrigatórias
+- Compartilhamento de dados entre instituições
+- Fomenta comparadores e marketplaces
+
+**5. Blockchain e Contratos Inteligentes** ⛓️
+- 88i: Usa contratos inteligentes para automatizar seguros
+- Redução de intermediários e fraudes
+- Liquidações mais rápidas e transparentes
+
+**6. Seguros Paramétricos e Climáticos** 🌍
+- Pagamentos automáticos por índices predefinidos
+- SOSA: Dados meteorológicos e satelitais
+- Foco em agronegócio e infraestrutura
+- Critérios ESG e energias renováveis
+
+**7. Principais Insurtechs Brasileiras** 🚀
+- Total: 507 insurtechs na América Latina
+- Brasil lidera: 206 startups
+- Destaques:
+  - Sami Seguros: Life & health digital
+  - Pier: IA para reembolsos instantâneos
+  - 88i: Contratos inteligentes
+  - Olé Life: Telemedicina integrada
+  - Azos: Mobilidade e microseguros
+
+**8. Investimentos Recordes** 💰
+- US$ 121 milhões na América Latina (1º sem 2025)
+- Alta de 370% vs 2024
+- Brasil: US$ 89 milhões (74% do total)
+- Consolidação de corretoras digitais
+- Corporate ventures de grandes seguradoras
+
+**9. Desafios Regulatórios** ⚖️
+- SUSEP e ANPD reforçam diretrizes
+- Governança de dados e transparência algorítmica
+- Explicabilidade de modelos de IA
+- Segurança cibernética obrigatória
+
+**10. Experiência Digital do Cliente** 📱
+- Modelo omnichannel (físico + digital)
+- Onboarding digital com KYC automatizado
+- Atendimento 24/7 via IA generativa
+- Process mining para otimizar fluxos
+
+**🎯 Resumo Executivo**
+
+O mercado brasileiro de insurtech em 2025 está em expansão acelerada, com investimentos recordes e 206 startups ativas. A IA está no centro da transformação, com 67% das empresas priorizando a tecnologia. Os seguros embarcados crescem 10,4% ao ano, enquanto o Open Insurance democratiza o acesso a dados. O desafio principal é equilibrar inovação com compliance e segurança de dados.
+
 ### Sobre a SUTHUB
 
 Se o usuário perguntar sobre a SUTHUB, informar:

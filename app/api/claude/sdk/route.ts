@@ -90,19 +90,57 @@ export async function POST(req: NextRequest) {
               const lowerContent = userContent.toLowerCase();
               
               if (lowerContent.includes('tendências') && lowerContent.includes('insurtech')) {
-                fallbackResponse = `As principais tendências de Insurtech para 2025 incluem:
+                fallbackResponse = `📊 **Principais Tendências de Insurtech 2025 - Brasil e América Latina**
 
-1. **Inteligência Artificial e Machine Learning**: Automação de processos, análise preditiva e personalização de produtos.
+**1. Inteligência Artificial e Machine Learning** 🤖
+- 67% das empresas brasileiras priorizam IA como estratégia em 2025
+- Pier: Automatizou reembolsos com IA, reduzindo tempo para segundos
+- Chatbots e assistentes virtuais com IA generativa
+- Modelos preditivos para avaliação de riscos
 
-2. **Embedded Insurance**: Seguros integrados em produtos e serviços, oferecendo proteção no momento da compra.
+**2. Seguros Embarcados (Embedded Insurance)** 🛒
+- R$ 679,3 milhões em garantia estendida (Q1 2025)
+- Alta de 10,4% vs ano anterior
+- AXA Brasil: 16% dos negócios via canais embarcados (meta: 20% em 2025)
+- Zurich: Mais de 100 parcerias
 
-3. **Open Insurance**: Compartilhamento seguro de dados entre instituições para criar produtos mais personalizados.
+**3. Personalização e Microseguros** 🎯
+- Seguros por uso (pay-per-use)
+- Apólices modulares customizáveis
+- Telemetria e IoT para precificação em tempo real
 
-4. **ESG e Sustentabilidade**: Produtos focados em riscos climáticos e responsabilidade ambiental.
+**4. Open Insurance Brasil** 🔓
+- Fase de efetivação até dezembro 2025
+- APIs padronizadas obrigatórias
+- Compartilhamento de dados entre instituições
 
-5. **Hiperpersonalização**: Uso de dados para criar produtos sob medida para cada cliente.
+**5. Blockchain e Contratos Inteligentes** ⛓️
+- 88i: Usa contratos inteligentes para automatizar seguros
+- Redução de intermediários e fraudes
 
-Para informações mais detalhadas e atualizadas, recomendo pesquisar sobre o evento Insurtech Brasil 2025.`;
+**6. Seguros Paramétricos e Climáticos** 🌍
+- Pagamentos automáticos por índices predefinidos
+- SOSA: Dados meteorológicos e satelitais
+- Foco em agronegócio e infraestrutura
+
+**7. Principais Insurtechs Brasileiras** 🚀
+- Brasil lidera: 206 startups
+- Destaques: Sami Seguros, Pier, 88i, Olé Life, Azos
+
+**8. Investimentos Recordes** 💰
+- US$ 121 milhões na América Latina (1º sem 2025)
+- Brasil: US$ 89 milhões (74% do total)
+
+**9. Desafios Regulatórios** ⚖️
+- SUSEP e ANPD reforçam diretrizes
+- Governança de dados e transparência algorítmica
+
+**10. Experiência Digital do Cliente** 📱
+- Modelo omnichannel (físico + digital)
+- Onboarding digital com KYC automatizado
+- Atendimento 24/7 via IA generativa
+
+🎯 **Resumo**: O mercado brasileiro de insurtech em 2025 está em expansão acelerada, com investimentos recordes e 206 startups ativas. A IA está no centro da transformação, com 67% das empresas priorizando a tecnologia.`;
               } else if (lowerContent.includes('notícias')) {
                 fallbackResponse = 'Para notícias atualizadas do Brasil e do mundo, recomendo acessar portais de notícias confiáveis ou usar ferramentas de busca especializadas.';
               } else if (lowerContent.includes('linkedin') || lowerContent.includes('ceo')) {
