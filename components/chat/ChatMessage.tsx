@@ -171,8 +171,7 @@ export function ChatMessage({
 
         {/* Message Content */}
         <Card className={cn(
-          "flex-1 overflow-hidden",
-          isStreaming && "animate-pulse"
+          "flex-1 overflow-hidden"
         )}>
           <div className="p-4">
             {/* Header */}
