@@ -13,7 +13,8 @@
       "bash:mkdir",
       "bash:rm",
       "bash:cp",
-      "bash:mv"
+      "bash:mv",
+      "mcp:exa:*"
     ],
     "deny": [],
     "ask": []
