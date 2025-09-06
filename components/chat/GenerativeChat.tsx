@@ -352,6 +352,17 @@ ${m.content}`
       }
     }
   }, [messages, scrollToBottom]);
+
+  // Scroll durante streaming
+  useEffect(() => {
+    if (streamingMessageId && isAtBottom) {
+      const interval = setInterval(() => {
+        scrollToBottom('smooth');
+      }, 100); // Atualiza scroll a cada 100ms durante streaming
+      
+      return () => clearInterval(interval);
+    }
+  }, [streamingMessageId, isAtBottom, scrollToBottom]);
   
   return (
     <div className="flex h-screen flex-col bg-background">
