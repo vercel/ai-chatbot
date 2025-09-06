@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Plus, ExternalLink, Brain, Sparkles, Clock, Zap, TrendingUp, Search } from 'lucide-react';
+import { Loader2, ExternalLink, Brain, Sparkles, Clock, TrendingUp, Search } from 'lucide-react';
 
 interface SmartLoadingStateProps {
   isLoading: boolean;
@@ -123,27 +123,18 @@ export function SmartLoadingState({
             {/* CTA para Nova Consulta */}
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-lg p-4 border border-green-200 dark:border-green-800">
               <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3">
-                🎯 Enquanto aguarda, que tal fazer uma nova consulta?
+                🎯 Enquanto aguarda, que tal escrever uma nova pergunta?
               </p>
               
               <div className="flex gap-3">
-                <button
-                  onClick={() => window.open(window.location.href, '_blank')}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all transform hover:scale-105 active:scale-95"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nova Consulta
-                  <ExternalLink className="w-3 h-3" />
-                </button>
-
                 <button
                   onClick={() => {
                     const newWindow = window.open(window.location.href, '_blank');
                     newWindow?.focus();
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all transform hover:scale-105 active:scale-95"
                 >
-                  <Zap className="w-4 h-4" />
+                  <ExternalLink className="w-4 h-4" />
                   Abrir em Nova Aba
                 </button>
               </div>
