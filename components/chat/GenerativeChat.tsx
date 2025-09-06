@@ -6,7 +6,7 @@ import { MessageInput } from './MessageInput';
 import { ToolRenderer } from '../generative/ToolRenderer';
 import { StreamingMessage } from './StreamingMessage';
 import { Button } from '@/components/ui/button';
-import { Bot, Trash2, Sparkles, ChevronDown } from 'lucide-react';
+import { Bot, Trash2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { executeTool } from '@/lib/claude-tools';
 import { executeMCPTool } from '@/lib/mcp-tools';
 import { getWeatherViaMCP } from '@/lib/mcp-direct';
@@ -33,10 +33,16 @@ export function GenerativeChat() {
   // Refs para controle de scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   
   // Estados para auto scroll
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showNewMessageButton, setShowNewMessageButton] = useState(false);
+  
+  // Estados para controle do input
+  const [isInputVisible, setIsInputVisible] = useState(true);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
   
   // Funções de scroll
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
@@ -363,6 +369,75 @@ ${m.content}`
       return () => clearInterval(interval);
     }
   }, [streamingMessageId, isAtBottom, scrollToBottom]);
+
+  // Auto-hide inteligente ao scrollar
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return;
+      
+      const currentScrollY = scrollContainerRef.current.scrollTop;
+      
+      // Se está digitando, manter visível
+      if (isInputFocused) return;
+      
+      // Scrolling para baixo - ocultar após threshold
+      if (currentScrollY > lastScrollY && currentScrollY > 100 && !isLoading) {
+        setIsInputVisible(false);
+      } 
+      // Scrolling para cima - mostrar
+      else if (currentScrollY < lastScrollY) {
+        setIsInputVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+
+      // Auto-mostrar após parar de scrollar
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsInputVisible(true);
+      }, 3000);
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+      clearTimeout(timeoutId);
+    };
+  }, [lastScrollY, isInputFocused, isLoading]);
+
+  // Atalhos de teclado
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Shift + I para toggle input
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        setIsInputVisible(prev => !prev);
+      }
+      
+      // Esc para ocultar (quando não está focado)
+      if (e.key === 'Escape' && !isInputFocused) {
+        setIsInputVisible(false);
+      }
+      
+      // / para focar no input (como no GitHub)
+      if (e.key === '/' && !isInputFocused && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        setIsInputVisible(true);
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isInputFocused]);
   
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -403,7 +478,9 @@ ${m.content}`
       <div 
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-6"
+        className={`flex-1 overflow-y-auto px-4 py-6 transition-all duration-300 ${
+          isInputVisible ? 'pb-40' : 'pb-20'
+        }`}
         style={{
           scrollBehavior: 'smooth',
           WebkitOverflowScrolling: 'touch',
@@ -509,13 +586,60 @@ ${m.content}`
         </button>
       )}
       
-      {/* Input */}
-      <MessageInput
-        onSendMessage={handleSend}
-        disabled={isLoading}
-        isStreaming={isLoading}
-        placeholder="Pergunte sobre clima na sua cidade..."
-      />
+      {/* Pills de Status quando input oculto */}
+      {!isInputVisible && !isLoading && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2 animate-fadeIn z-50">
+          Pressione <kbd className="px-1 py-0.5 bg-white/20 rounded">/</kbd> para abrir o chat
+        </div>
+      )}
+
+      {/* Container do Input com Toggle */}
+      <div className={`
+        fixed bottom-0 left-0 right-0 
+        bg-background border-t border-border
+        transform transition-all duration-300 ease-in-out
+        ${isInputVisible ? 'translate-y-0' : 'translate-y-[calc(100%-3rem)]'}
+      `}>
+        {/* Botão Toggle */}
+        <button
+          onClick={() => setIsInputVisible(!isInputVisible)}
+          className="absolute -top-10 right-4 bg-background rounded-t-lg px-4 py-2 border border-b-0 border-border flex items-center gap-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
+        >
+          {isInputVisible ? (
+            <>
+              <ChevronDown className="w-4 h-4" />
+              Ocultar
+            </>
+          ) : (
+            <>
+              <ChevronUp className="w-4 h-4" />
+              Mostrar Chat
+            </>
+          )}
+        </button>
+
+        {/* Input Area */}
+        <MessageInput
+          ref={inputRef}
+          onSendMessage={handleSend}
+          disabled={isLoading}
+          isStreaming={isLoading}
+          placeholder="Pergunte o que quiser..."
+          onFocus={() => setIsInputFocused(true)}
+          onBlur={() => setIsInputFocused(false)}
+          className={isInputFocused ? 'ring-2 ring-primary' : ''}
+        />
+
+        {/* Atalhos de teclado */}
+        {isInputVisible && (
+          <div className="text-center py-1 text-xs text-muted-foreground bg-muted/50">
+            <kbd className="px-1 py-0.5 bg-background rounded text-xs">Enter</kbd> enviar • 
+            <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">Shift+Enter</kbd> nova linha • 
+            <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">Esc</kbd> ocultar • 
+            <kbd className="px-1 py-0.5 bg-background rounded text-xs ml-2">/</kbd> focar
+          </div>
+        )}
+      </div>
     </div>
   );
 }

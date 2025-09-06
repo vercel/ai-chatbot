@@ -11,17 +11,24 @@ interface MessageInputProps {
   isStreaming?: boolean;
   disabled?: boolean;
   placeholder?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  className?: string;
 }
 
-export function MessageInput({
+export const MessageInput = React.forwardRef<HTMLTextAreaElement, MessageInputProps>(({
   onSendMessage,
   onInterrupt,
   isStreaming = false,
   disabled = false,
-  placeholder = "Digite sua mensagem... (Enter para enviar)"
-}: MessageInputProps) {
+  placeholder = "Digite sua mensagem... (Enter para enviar)",
+  onFocus,
+  onBlur,
+  className
+}, ref) => {
   const [message, setMessage] = React.useState('');
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const internalRef = React.useRef<HTMLTextAreaElement>(null);
+  const textareaRef = ref || internalRef;
 
   const handleSend = () => {
     if (message.trim() && !disabled && !isStreaming) {
@@ -56,13 +63,16 @@ export function MessageInput({
         <div className="relative flex items-end gap-2">
           <div className="relative flex-1">
             <textarea
-              ref={textareaRef}
+              ref={textareaRef as any}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={onFocus}
+              onBlur={onBlur}
               placeholder={placeholder}
               disabled={disabled || isStreaming}
               className={cn(
+                className,
                 "w-full resize-none rounded-lg border bg-background px-4 py-3 pr-12",
                 "text-sm placeholder:text-muted-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -109,4 +119,6 @@ export function MessageInput({
       </div>
     </div>
   );
-}
+});
+
+MessageInput.displayName = 'MessageInput';
