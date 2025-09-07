@@ -196,7 +196,10 @@ export function ChatInterface({
       
       // Adicionar cada mensagem
       demoMessages.forEach(msg => {
-        addMessage(demoId, msg);
+        addMessage(demoId, {
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        } as any);
       });
       
       // Definir como sessão ativa
@@ -546,7 +549,7 @@ export function ChatInterface({
           {/* Message Input */}
           {!readOnly && (
             <MessageInput
-              onSend={handleSendMessage}
+              onSendMessage={handleSendMessage}
               onInterrupt={handleInterrupt}
               isStreaming={isStreaming}
               disabled={!activeSessionId}

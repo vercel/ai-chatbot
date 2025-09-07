@@ -47,8 +47,10 @@ export async function POST(request: Request) {
         if (sessionResponse.ok) {
           const sessionData = await sessionResponse.json();
           sessionId = sessionData.session_id;
-          sessionMap.set(body.id, sessionId);
-          console.log('Created new session:', sessionId);
+          if (sessionId) {
+            sessionMap.set(body.id, sessionId);
+            console.log('Created new session:', sessionId);
+          }
         } else {
           // Fallback
           sessionId = `session-${Date.now()}`;

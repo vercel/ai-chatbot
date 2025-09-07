@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.accessToken || 'dev-token'}`
+        'Authorization': `Bearer ${(session as any)?.accessToken || 'dev-token'}`
       },
       body: JSON.stringify({
         message: messageText,

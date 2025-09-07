@@ -35,7 +35,7 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
 ];
-export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
+export type ArtifactKind = 'text' | 'code' | 'image' | 'sheet';
 
 export interface UIArtifact {
   title: string;
@@ -245,8 +245,8 @@ function PureArtifact({
 
   useEffect(() => {
     if (artifact.documentId !== 'init') {
-      if (artifactDefinition.initialize) {
-        artifactDefinition.initialize({
+      if ((artifactDefinition as any).initialize) {
+        (artifactDefinition as any).initialize({
           documentId: artifact.documentId,
           setMetadata,
         });
@@ -338,7 +338,6 @@ function PureArtifact({
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
-                    selectedModelId={selectedModelId}
                   />
                 </div>
               </div>
@@ -451,7 +450,10 @@ function PureArtifact({
             </div>
 
             <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
-              <artifactDefinition.content
+              {(() => {
+                const ArtifactContent = (artifactDefinition as any).content;
+                return ArtifactContent ? (
+                  <ArtifactContent
                 title={artifact.title}
                 content={
                   isCurrentVersion
@@ -470,6 +472,8 @@ function PureArtifact({
                 metadata={metadata}
                 setMetadata={setMetadata}
               />
+                ) : null;
+              })()}
 
               <AnimatePresence>
                 {isCurrentVersion && (

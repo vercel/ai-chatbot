@@ -70,10 +70,13 @@ export function DisableDevTools() {
           iframe.style.display = 'none';
           document.body.appendChild(iframe);
           if (iframe.contentWindow) {
-            console.log = iframe.contentWindow.console.log;
-            console.warn = iframe.contentWindow.console.warn;
-            console.error = iframe.contentWindow.console.error;
-            console.info = iframe.contentWindow.console.info;
+            const iframeConsole = (iframe.contentWindow as any).console;
+            if (iframeConsole) {
+              console.log = iframeConsole.log;
+              console.warn = iframeConsole.warn;
+              console.error = iframeConsole.error;
+              console.info = iframeConsole.info;
+            }
           }
           iframe.remove();
         }

@@ -22,8 +22,8 @@ export function DataStreamHandler() {
         (artifactDefinition) => artifactDefinition.kind === artifact.kind,
       );
 
-      if (artifactDefinition?.onStreamPart) {
-        artifactDefinition.onStreamPart({
+      if ((artifactDefinition as any)?.onStreamPart) {
+        (artifactDefinition as any).onStreamPart({
           streamPart: delta,
           setArtifact,
           setMetadata,

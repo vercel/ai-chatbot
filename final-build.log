@@ -1,0 +1,61 @@
+   ▲ Next.js 15.3.0-canary.31
+   - Environments: .env
+   - Experiments (use with caution):
+     ✓ ppr
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (308kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (128kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⚠ Compiled with warnings
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (setImmediate at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (setImmediate at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (process.nextTick at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (process.nextTick at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./components/artifact.tsx:453:35
+Type error: Property 'content' does not exist on type '{ type: string; kind: string; render: () => null; actions: never[]; }'.
+
+[0m [90m 451 |[39m[0m
+[0m [90m 452 |[39m             [33m<[39m[33mdiv[39m className[33m=[39m[32m"dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 453 |[39m               [33m<[39m[33martifactDefinition[39m[33m.[39mcontent[0m
+[0m [90m     |[39m                                   [31m[1m^[22m[39m[0m
+[0m [90m 454 |[39m                 title[33m=[39m{artifact[33m.[39mtitle}[0m
+[0m [90m 455 |[39m                 content[33m=[39m{[0m
+[0m [90m 456 |[39m                   isCurrentVersion[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -288,8 +288,7 @@ export function DemoChat() {
                   content={message.content}
                   timestamp={new Date(message.timestamp)}
                 />
-              );
-            })
+              ))
           )}
           {isLoading && (
             <div className="flex items-center gap-2 text-muted-foreground">

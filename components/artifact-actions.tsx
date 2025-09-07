@@ -28,7 +28,7 @@ function PureArtifactActions({
   const [isLoading, setIsLoading] = useState(false);
 
   const artifactDefinition = artifactDefinitions.find(
-    (definition) => definition.kind === artifact.kind,
+    (definition) => (definition as any).kind === (artifact as any).kind || definition.type === (artifact as any).type,
   );
 
   if (!artifactDefinition) {
@@ -47,7 +47,7 @@ function PureArtifactActions({
 
   return (
     <div className="flex flex-row gap-1">
-      {artifactDefinition.actions.map((action) => (
+      {((artifactDefinition as any).actions || []).map((action: any) => (
         <Tooltip key={action.description}>
           <TooltipTrigger asChild>
             <Button

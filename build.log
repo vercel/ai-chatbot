@@ -1,0 +1,62 @@
+   ▲ Next.js 15.3.0-canary.31
+   - Environments: .env
+   - Experiments (use with caution):
+     ✓ ppr
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (308kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (128kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⚠ Compiled with warnings
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (setImmediate at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (setImmediate at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (process.nextTick at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+./node_modules/bcrypt-ts/dist/browser.mjs
+A Node.js API is used (process.nextTick at line: 1) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcrypt-ts/dist/browser.mjs
+./lib/db/utils.ts
+./lib/constants.ts
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/(chat)/api/claude-main/route.ts:50:35
+Type error: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[0m [90m 48 |[39m           [36mconst[39m sessionData [33m=[39m [36mawait[39m sessionResponse[33m.[39mjson()[33m;[39m[0m
+[0m [90m 49 |[39m           sessionId [33m=[39m sessionData[33m.[39msession_id[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 50 |[39m           sessionMap[33m.[39m[36mset[39m(body[33m.[39mid[33m,[39m sessionId)[33m;[39m[0m
+[0m [90m    |[39m                                   [31m[1m^[22m[39m[0m
+[0m [90m 51 |[39m           console[33m.[39mlog([32m'Created new session:'[39m[33m,[39m sessionId)[33m;[39m[0m
+[0m [90m 52 |[39m         } [36melse[39m {[0m
+[0m [90m 53 |[39m           [90m// Fallback[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -65,7 +65,7 @@ export function Chat({
     generateId: generateUUID,
     transport: new DefaultChatTransport({
       api: initialChatModel === 'claude-code-sdk' ? '/api/claude-main' : '/api/chat',
-      fetch: fetchWithErrorHandlers,
+      fetch: fetchWithErrorHandlers as any,
       prepareSendMessagesRequest({ messages, id, body }) {
         return {
           body: {
@@ -161,7 +161,6 @@ export function Chat({
               setMessages={setMessages}
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
-              selectedModelId={initialChatModel}
             />
           )}
         </div>

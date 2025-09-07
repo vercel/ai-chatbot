@@ -34,7 +34,9 @@ export const MessageInput = React.forwardRef<HTMLTextAreaElement, MessageInputPr
     if (message.trim() && !disabled && !isStreaming) {
       onSendMessage(message.trim());
       setMessage('');
-      textareaRef.current?.focus();
+      if (typeof textareaRef === 'object' && textareaRef?.current) {
+        textareaRef.current.focus();
+      }
     }
   };
 
@@ -46,8 +48,8 @@ export const MessageInput = React.forwardRef<HTMLTextAreaElement, MessageInputPr
   };
 
   const adjustHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
+    if (typeof textareaRef === 'object' && textareaRef?.current) {
+      const textarea = textareaRef.current;
       textarea.style.height = 'auto';
       textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }

@@ -138,7 +138,7 @@ export function ChatMessage({
       <>
         <div 
           className="markdown-content prose prose-sm dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(typeof html === 'string' ? html : '') }}
         />
         {/* Cursor piscante durante streaming */}
         {isStreaming && role === 'assistant' && currentIndex < content.length && (

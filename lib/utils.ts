@@ -51,3 +51,46 @@ export function getCurrentClaudeSessionId(): string | null {
   
   return null
 }
+
+// Funções adicionais necessárias para o build
+export const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch');
+  return res.json();
+};
+
+export const fetchWithErrorHandlers = async (url: string, options?: RequestInit) => {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
+};
+
+export const getTextFromMessage = (message: any): string => {
+  if (typeof message === 'string') return message;
+  if (message?.content) return message.content;
+  if (message?.text) return message.text;
+  return '';
+};
+
+export const sanitizeText = (text: string): string => {
+  return text.replace(/<[^>]*>/g, '').trim();
+};
+
+export const getDocumentTimestampByIndex = (docs: any[], index: number): string => {
+  if (!docs || !docs[index]) return '';
+  return docs[index].timestamp || new Date().toISOString();
+};
+
+export const convertToUIMessages = (messages: any[]): any[] => {
+  return messages.map(msg => ({
+    id: msg.id || generateUUID(),
+    role: msg.role || 'user',
+    content: msg.content || '',
+    timestamp: msg.timestamp || new Date().toISOString()
+  }));
+};
