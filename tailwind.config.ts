@@ -11,8 +11,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-geist)'],
-        mono: ['var(--font-geist-mono)'],
+        sans: ['var(--font-geist)', 'Inter', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'Menlo', 'monospace'],
       },
       screens: {
         'toast-mobile': '600px',
@@ -73,9 +73,74 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        layer: {
+          DEFAULT: '#9333ea', // purple-600
+          foreground: '#c4b5fd', // purple-300
+          background: '#f5f3ff', // purple-50
+          darkBackground: 'rgba(76, 29, 149, 0.1)', // custom dark bg
+        },
       },
+      typography: ({ theme }) => ({
+        DEFAULT: {
+          css: {
+            color: theme('colors.foreground'),
+            a: {
+              color: theme('colors.blue.600'),
+              '&:hover': {
+                color: theme('colors.blue.800'),
+              },
+            },
+            strong: {
+              color: theme('colors.purple.700'),
+              fontWeight: theme('fontWeight.semibold'),
+            },
+            h3: {
+              color: theme('colors.layer.DEFAULT'),
+              fontWeight: theme('fontWeight.semibold'),
+              borderLeft: `4px solid ${theme('colors.layer.foreground')}`,
+              paddingLeft: '0.75rem',
+              backgroundColor: theme('colors.layer.background'),
+              borderRadius: theme('borderRadius.md'),
+              marginTop: '1.5rem',
+              marginBottom: '1rem',
+            },
+            code: {
+              backgroundColor: theme('colors.muted.DEFAULT'),
+              padding: '0.25rem 0.5rem',
+              borderRadius: theme('borderRadius.sm'),
+              fontSize: theme('fontSize.sm'),
+              fontFamily: theme('fontFamily.mono').join(', '),
+            },
+            pre: {
+              backgroundColor: theme('colors.zinc.900'),
+              color: theme('colors.white'),
+              padding: '1rem',
+              borderRadius: theme('borderRadius.lg'),
+              overflowX: 'auto',
+            },
+            ul: {
+              paddingLeft: '1.5rem',
+              listStyleType: 'disc',
+            },
+          },
+        },
+        dark: {
+          css: {
+            color: theme('colors.foreground'),
+            h3: {
+              color: theme('colors.layer.foreground'),
+              backgroundColor: theme('colors.layer.darkBackground'),
+              borderLeftColor: theme('colors.layer.foreground'),
+            },
+            strong: {
+              color: theme('colors.purple.300'),
+            },
+          },
+        },
+      }),
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 };
+
 export default config;
