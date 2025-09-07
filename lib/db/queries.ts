@@ -192,6 +192,10 @@ export async function getChatsByUserId({
       hasMore,
     };
   } catch (error) {
+    // Log original error for easier local debugging before rethrowing
+    // (kept as development-only; do not leak sensitive details in production)
+    // eslint-disable-next-line no-console
+    console.error('getChatsByUserId error:', error);
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chats by user id',
