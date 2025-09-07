@@ -9,7 +9,13 @@
   "plugins": ["tailwindcss"],
   "rules": {
     "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "off"
+    "tailwindcss/classnames-order": "off",
+    "react/no-unescaped-entities": "off",
+    "tailwindcss/enforces-shorthand": "warn",
+    "import/no-named-as-default-member": "warn",
+    "import/no-named-as-default": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "@next/next/no-img-element": "warn"
   },
   "settings": {
     "import/resolver": {
