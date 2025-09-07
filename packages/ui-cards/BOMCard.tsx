@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export type BOMCardProps = Readonly<{
@@ -18,7 +13,9 @@ export function BOMCard({ items = [], onExport }: BOMCardProps) {
     <Card>
       <CardHeader className="flex items-center justify-between">
         <CardTitle>BOM</CardTitle>
-        <div className="text-sm text-muted-foreground">Items: {items.length}</div>
+        <div className="text-sm text-muted-foreground">
+          Items: {items.length}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-2">Total: R$ {total.toFixed(2)}</div>
@@ -43,7 +40,9 @@ export function BOMCard({ items = [], onExport }: BOMCardProps) {
           </table>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" onClick={onExport}>Exportar CSV</Button>
+          <Button size="sm" onClick={onExport}>
+            Exportar CSV
+          </Button>
         </div>
       </CardContent>
     </Card>
