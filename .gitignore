@@ -94,4 +94,7 @@ mcp-config.json
 mcp-servers/
 .mcp-servers/
 claude-desktop-config.json
+claude_desktop_config.json
 .claude-desktop/
+mcp-server.js
+mcp.json
