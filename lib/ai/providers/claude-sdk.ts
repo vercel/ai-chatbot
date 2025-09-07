@@ -1,5 +1,5 @@
-import type { CoreMessage, LanguageModelV1 } from '@ai-sdk/provider';
-import { createEventSourceResponseHandler } from 'ai';
+import type { LanguageModelV2Message, LanguageModelV2 } from '@ai-sdk/provider';
+// import { createEventSourceResponseHandler } from 'ai';
 
 interface ClaudeSDKProviderConfig {
   apiUrl?: string;
@@ -39,7 +39,7 @@ export class ClaudeSDKProvider {
   }
 
   async *streamText(
-    messages: CoreMessage[],
+    messages: LanguageModelV2Message[],
     options?: {
       sessionId?: string;
       temperature?: number;

@@ -162,7 +162,7 @@ export function processMCPResponse(text: string): {
   
   return {
     cleanText: cleanText.trim(),
-    mcpCall,
+    mcpCall: mcpCall || undefined,
     mcpResult,
     uiData
   };

@@ -96,11 +96,17 @@ export const availableTools = {
 
 // Helper para executar tool baseado no nome
 export async function executeTool(toolName: string, args: any): Promise<ToolResult | null> {
-  const tool = availableTools[toolName as keyof typeof availableTools];
-  if (!tool) return null;
-  
   try {
-    return await tool(...(Array.isArray(args) ? args : [args]));
+    switch(toolName) {
+      case 'getWeather':
+        return await getWeather(args.location || args);
+      case 'runCode':
+        return await runCode(args.code || args, args.language || 'javascript');
+      case 'search':
+        return await search(args.query || args);
+      default:
+        return null;
+    }
   } catch (error) {
     console.error(`Erro ao executar tool ${toolName}:`, error);
     return null;

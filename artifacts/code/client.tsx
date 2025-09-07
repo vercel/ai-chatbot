@@ -6,5 +6,6 @@ export const codeArtifact = {
   type: 'code',
   kind: 'code',
   render: () => null,
-  actions: []
+  actions: [],
+  toolbar: []
 };

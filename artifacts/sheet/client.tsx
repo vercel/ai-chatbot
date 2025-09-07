@@ -6,5 +6,6 @@ export const sheetArtifact = {
   type: 'sheet',
   kind: 'sheet',
   render: () => null,
-  actions: []
+  actions: [],
+  toolbar: []
 };

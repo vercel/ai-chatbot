@@ -6,5 +6,6 @@ export const imageArtifact = {
   type: 'image',
   kind: 'image',
   render: () => null,
-  actions: []
+  actions: [],
+  toolbar: []
 };

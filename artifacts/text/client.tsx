@@ -6,5 +6,6 @@ export const textArtifact = {
   type: 'text',
   kind: 'text',
   render: () => null,
-  actions: []
+  actions: [],
+  toolbar: []
 };

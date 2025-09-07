@@ -8,6 +8,11 @@ config({
 });
 
 const runMigrate = async () => {
+  if (process.env.SKIP_DB_MIGRATE === '1') {
+    console.log('⏭️ Skipping database migration (SKIP_DB_MIGRATE=1)');
+    process.exit(0);
+  }
+  
   if (!process.env.POSTGRES_URL) {
     throw new Error('POSTGRES_URL is not defined');
   }
