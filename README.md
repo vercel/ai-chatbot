@@ -68,3 +68,23 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+## Jornadas dos Proprietários
+
+1. **Investigação** – o usuário envia conta de luz ou endereço, e o sistema classifica a intenção com o **IntentCard** e valida dados com o **LeadValidationCard**.
+2. **Detecção** – identifica painéis ou oportunidades no telhado usando **PanelDetectionCard** e apresenta riscos e anomalias.
+3. **Análise** – o assistente calcula consumo, viabilidade técnica e retorno financeiro com cards como **TechnicalFeasibilityCard**, **FinancialAnalysisCard** e **FinancingCard**.
+4. **Dimensionamento** – gera o tamanho do sistema, layout e estimativas de geração com **SystemSizeCard**, **LayoutCard** e **GenerationCard**.
+5. **Recomendação** – apresenta proposta, contratos e produtos recomendados para aprovação.
+6. **Gestão do Lead** – acompanha status, consentimentos e histórico até o fechamento.
+
+Recursos de modo proprietário incluem **GuidedWizardOverlay**, **SavingsSlider & GoalPicker**, **FinancingPicker**, **AppointmentScheduler** e **ConsentManager** para uma experiência guiada e simples.
+
+## Jornadas dos Parceiros (Integradores)
+
+1. **Investigação e Detecção** – ingestão de leads em lote e validação automática usando **BatchRunner** e **DataSourceSelector**.
+2. **Análise e Dimensionamento** – otimiza layouts, define restrições e tarifa com **LayoutOptimizerPanel**, **ConstraintsEditor** e **TariffSelector**.
+3. **Recomendação** – gera proposta personalizada aplicando **PricingRules**, consultando **SpecLibrary** e comparando cenários.
+4. **Gestão do Lead** – acompanha consentimentos, status e auditoria com **ComplianceChecklist** e **EnrichmentAuditCard**.
+
+Essas jornadas estruturam todo o fluxo de ponta a ponta, permitindo que proprietários obtenham rápida visão de viabilidade e que parceiros ofereçam soluções otimizadas.
