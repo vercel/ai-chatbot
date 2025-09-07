@@ -3,15 +3,23 @@ import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
 import { getBaseUrl, createAbsoluteUrl } from './lib/get-url';
 import { applyRateLimit } from './lib/middleware/rate-limit';
+import { applyCORS, setSecurityHeaders } from './lib/middleware/cors';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Aplicar rate limiting primeiro (para todas as rotas API)
+  // Aplicar CORS e headers de segurança para APIs
   if (pathname.startsWith('/api')) {
+    // CORS primeiro para OPTIONS requests
+    const corsResponse = await applyCORS(request);
+    if (request.method === 'OPTIONS') {
+      return corsResponse;
+    }
+    
+    // Rate limiting
     const rateLimitResponse = await applyRateLimit(request);
     if (rateLimitResponse.status === 429) {
-      return rateLimitResponse;
+      return setSecurityHeaders(rateLimitResponse);
     }
   }
 
