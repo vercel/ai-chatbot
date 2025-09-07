@@ -81,3 +81,17 @@ README-DATABASE.md
 setup-db.sql
 venv/*
 dashboard-venv/*
+
+# Claude Flow configuration
+.claude/
+claude-flow.config.json
+claude-flow.config.js
+claude-flow.config.ts
+.claude-flow/
+claude_flow/
+.mcp/
+mcp-config.json
+mcp-servers/
+.mcp-servers/
+claude-desktop-config.json
+.claude-desktop/
