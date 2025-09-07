@@ -27,7 +27,7 @@ const FLAGS: Record<PersonaMode, Record<string, boolean>> = {
 
 export function PersonaProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<PersonaMode>("owner");
-  const [featureFlags, setFeatureFlags] = useState<Record<string, boolean>>(FLAGS["owner"]);
+  const [featureFlags, setFeatureFlags] = useState<Record<string, boolean>>(FLAGS.owner);
 
   useEffect(() => {
     const storedMode = window.localStorage.getItem("persona-mode") as PersonaMode | null;

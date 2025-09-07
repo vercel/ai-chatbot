@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { AgentPhase, phaseDetails, phaseStyles } from './phase';
+import { type AgentPhase, phaseDetails, phaseStyles } from './phase';
 
 interface PhaseMessageProps {
   phase: AgentPhase;

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 
 // Simple seeded RNG
 function mulberry32(a: number) {
-  return function() {
+  return () => {
     let t = a += 0x6D2B79F5
     t = Math.imul(t ^ t >>> 15, t | 1)
     t ^= t + Math.imul(t ^ t >>> 7, t | 61)
@@ -33,7 +33,7 @@ for (const d of [dataDir, mocksDir, outputsDir, schemasDir]){
 const argv = process.argv.slice(2)
 let seed = 42
 for (let i=0;i<argv.length;i++){
-  if (argv[i]==='--seed' && argv[i+1]) seed = parseInt(argv[i+1],10)
+  if (argv[i]==='--seed' && argv[i+1]) seed = Number.parseInt(argv[i+1],10)
 }
 
 const rnd = mulberry32(seed)
@@ -125,7 +125,7 @@ const csvRow = [
   lead.address.street, lead.address.number, lead.address.city, lead.address.state, lead.address.cep,
   String(lead.proposal.system_size_kWp), String(lead.proposal.annual_production_kWh), String(lead.proposal.coverage_pct), String(lead.proposal.payback_years), String(lead.proposal.estimated_cost_brl), lead.created_at
 ]
-fs.writeFileSync(csvPath, csvHeader.join(',') + '\n' + csvRow.join(','), 'utf8')
+fs.writeFileSync(csvPath, `${csvHeader.join(',')}\n${csvRow.join(',')}`, 'utf8')
 
 // write GeoJSON point for the address (fake coords deterministic)
 const lat = -23.5 + (rnd()-0.5)

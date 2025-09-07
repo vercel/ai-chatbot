@@ -31,7 +31,7 @@ export function MessageActions({ message }: { message: ChatMessage }) {
         size="sm"
         variant="ghost"
         onClick={() => {
-          append({ id: message.id + '-r', role: 'user', content: text });
+          append({ id: `${message.id}-r`, role: 'user', content: text });
           logAction(message.id, 'regenerate');
         }}
       >
@@ -76,7 +76,7 @@ export function MessageActions({ message }: { message: ChatMessage }) {
         size="sm"
         variant="ghost"
         onClick={() => {
-          append({ id: message.id + '-c', role: 'user', content: `compare: ${text}` });
+          append({ id: `${message.id}-c`, role: 'user', content: `compare: ${text}` });
           logAction(message.id, 'compare');
         }}
       >

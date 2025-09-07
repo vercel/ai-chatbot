@@ -65,7 +65,7 @@ export function InstallationProgress({
             <div
               className="h-full bg-gradient-to-r from-[hsl(var(--brand))] to-[hsl(var(--brand-accent))] rounded-full transition-all duration-500"
               style={{ width: `${totalProgress}%` }}
-            ></div>
+            />
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export function InstallationProgress({
             <div key={step.id} className="relative">
               {/* Linha de conexão vertical entre etapas */}
               {step.id !== steps.length && (
-                <div className="absolute left-3.5 top-10 h-full w-0.5 bg-muted"></div>
+                <div className="absolute left-3.5 top-10 h-full w-0.5 bg-muted" />
               )}
 
               <div className="flex items-start gap-4">
@@ -102,11 +102,11 @@ export function InstallationProgress({
                       strokeLinejoin="round"
                       className="text-white"
                     >
-                      <polyline points="20 6 9 17 4 12"></polyline>
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
                   )}
                   {step.status === 'progress' && (
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <div className="w-3 h-3 bg-white rounded-full" />
                   )}
                 </div>
 

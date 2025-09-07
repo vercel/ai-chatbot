@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { z, ZodEnum, ZodEffects, ZodNumber, ZodObject, ZodRawShape } from 'zod';
+import { type z, ZodEnum, ZodEffects, ZodNumber, type ZodObject, type ZodRawShape } from 'zod';
 
 export type ParameterSheetProps<T extends ZodObject<ZodRawShape>> = {
   schema: T;

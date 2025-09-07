@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // PRNG determinístico
 function mulberry32(a) {
@@ -116,10 +116,10 @@ function generateSVG(leads_pf, leads_pj, outDir) {
   const height = 600;
 
   // Simple projection (Brazil bounds approx)
-  const minLon = -74,
-    maxLon = -35,
-    minLat = -34,
-    maxLat = 5;
+  const minLon = -74;
+  const maxLon = -35;
+  const minLat = -34;
+  const maxLat = 5;
   const scaleX = width / (maxLon - minLon);
   const scaleY = height / (maxLat - minLat);
 
@@ -147,7 +147,7 @@ function generateSVG(leads_pf, leads_pj, outDir) {
 }
 
 function padLeadId(n) {
-  return 'L' + String(n).padStart(6, '0');
+  return `L${String(n).padStart(6, '0')}`;
 }
 
 function sample(rng, arr) {
@@ -161,28 +161,14 @@ function randomInt(rng, min, max) {
 function formatCPF(rng) {
   const nums = Array.from({ length: 11 }, () => Math.floor(rng() * 10));
   return (
-    nums.slice(0, 3).join('') +
-    '.' +
-    nums.slice(3, 6).join('') +
-    '.' +
-    nums.slice(6, 9).join('') +
-    '-' +
-    nums.slice(9, 11).join('')
+    `${nums.slice(0, 3).join('')}.${nums.slice(3, 6).join('')}.${nums.slice(6, 9).join('')}-${nums.slice(9, 11).join('')}`
   );
 }
 
 function formatCNPJ(rng) {
   const nums = Array.from({ length: 14 }, () => Math.floor(rng() * 10));
   return (
-    nums.slice(0, 2).join('') +
-    '.' +
-    nums.slice(2, 5).join('') +
-    '.' +
-    nums.slice(5, 8).join('') +
-    '/' +
-    nums.slice(8, 12).join('') +
-    '-' +
-    nums.slice(12, 14).join('')
+    `${nums.slice(0, 2).join('')}.${nums.slice(2, 5).join('')}.${nums.slice(5, 8).join('')}/${nums.slice(8, 12).join('')}-${nums.slice(12, 14).join('')}`
   );
 }
 
@@ -195,7 +181,7 @@ function makePhone(rng, ddd) {
 function formatCEP(rng, valid = true) {
   const nums = Array.from({ length: 8 }, () => Math.floor(rng() * 10));
   if (!valid) nums[0] = 9; // force unlikely
-  return nums.slice(0, 5).join('') + '-' + nums.slice(5).join('');
+  return `${nums.slice(0, 5).join('')}-${nums.slice(5).join('')}`;
 }
 
 function isoNow(rng, offsetDays = 0) {
@@ -278,9 +264,9 @@ function generate(seed, outDir) {
 }
 
 function generateAddress(rng, state, ddd, valid) {
-  const city = state + ' City ' + randomInt(rng, 1, 50);
+  const city = `${state} City ${randomInt(rng, 1, 50)}`;
   return {
-    street: 'Rua ' + (Math.floor(rng() * 1000) + 1),
+    street: `Rua ${Math.floor(rng() * 1000) + 1}`,
     number: String(randomInt(rng, 1, 9999)),
     complement: '',
     city: city,
@@ -307,7 +293,7 @@ function generateLead(rng, i, states, stateKeys) {
   const valid = rng() > 0.1;
 
   const address = generateAddress(rng, state, ddd, valid);
-  const name = isPJ ? 'Empresa ' + lead_id : 'Pessoa ' + lead_id;
+  const name = isPJ ? `Empresa ${lead_id}` : `Pessoa ${lead_id}`;
   const email = valid
     ? `${name.toLowerCase().replace(/\s+/g, '')}@example.com`
     : `${name.toLowerCase()}_at_example.com`;

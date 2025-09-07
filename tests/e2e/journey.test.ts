@@ -32,6 +32,6 @@ test('journey deviation flow', async ({ page }) => {
   await page.click('#reset');
   await expect(page.getByRole('heading', { name: 'Investigation' })).toBeVisible();
   const telemetry = await page.evaluate(() => (window as any).__journey.telemetry);
-  expect(telemetry['Recommendation'].start).toBeTruthy();
-  expect(telemetry['Dimensioning'].start).toBeTruthy();
+  expect(telemetry.Recommendation.start).toBeTruthy();
+  expect(telemetry.Dimensioning.start).toBeTruthy();
 });

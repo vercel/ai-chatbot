@@ -97,14 +97,7 @@ function generateRadarSVG(probabilities, leadId) {
     return `<text x="${lx}" y="${ly}" font-family="Arial" font-size="18" fill="#111" text-anchor="middle">${(v*100).toFixed(1)}%</text>`;
   }).join('\n');
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>\n` +
-    `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">\n` +
-    `<rect width="100%" height="100%" fill="#ffffff"/>\n` +
-    `${axes}\n` +
-    `<polygon points="${points}" fill="#2b82ff55" stroke="#1f5fb433" stroke-width="4"/>\n` +
-    `${valueLabels}\n` +
-    `<text x="${cx}" y="40" font-family="Arial" font-size="22" text-anchor="middle">Radar - ${leadId}</text>\n` +
-    `</svg>`;
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">\n<rect width="100%" height="100%" fill="#ffffff"/>\n${axes}\n<polygon points="${points}" fill="#2b82ff55" stroke="#1f5fb433" stroke-width="4"/>\n${valueLabels}\n<text x="${cx}" y="40" font-family="Arial" font-size="22" text-anchor="middle">Radar - ${leadId}</text>\n</svg>`;
   return svg;
 }
 

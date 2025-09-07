@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { summarizeEnrichment, EnrichmentEvent } from './EnrichmentAuditCard';
+import { summarizeEnrichment, type EnrichmentEvent } from './EnrichmentAuditCard';
 
 describe('summarizeEnrichment', () => {
   it('aggregates sources and metrics', () => {
