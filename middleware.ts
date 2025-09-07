@@ -2,9 +2,18 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
 import { getBaseUrl, createAbsoluteUrl } from './lib/get-url';
+import { applyRateLimit } from './lib/middleware/rate-limit';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Aplicar rate limiting primeiro (para todas as rotas API)
+  if (pathname.startsWith('/api')) {
+    const rateLimitResponse = await applyRateLimit(request);
+    if (rateLimitResponse.status === 429) {
+      return rateLimitResponse;
+    }
+  }
 
   /*
    * Playwright starts the dev server and requires a 200 status to
