@@ -108,6 +108,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@modelcontextprotocol/server-filesystem": "^2025.8.21",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/typography": "^0.5.15",
     "@types/d3-scale": "^4.0.8",
