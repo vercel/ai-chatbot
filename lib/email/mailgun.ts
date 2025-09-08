@@ -1,13 +1,23 @@
-import { Resend } from 'resend';
+import Mailgun from 'mailgun.js';
+import FormData from 'form-data';
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY environment variable is not set');
+if (!process.env.MAILGUN_API_KEY) {
+  throw new Error('MAILGUN_API_KEY environment variable is not set');
 }
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+if (!process.env.MAILGUN_DOMAIN) {
+  throw new Error('MAILGUN_DOMAIN environment variable is not set');
+}
+
+const mailgun = new Mailgun(FormData);
+export const mg = mailgun.client({
+  username: 'api',
+  key: process.env.MAILGUN_API_KEY,
+});
 
 export const CHECKY_EMAIL = process.env.CHECKY_FROM_EMAIL || 'checky@app.growingproducts.io';
 export const CHECKY_DOMAIN = process.env.CHECKY_DOMAIN || 'app.growingproducts.io';
+export const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 
 // Generate unique email addresses for threading
 export const generateReplyToEmail = (reportId: string) => {

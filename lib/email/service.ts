@@ -1,4 +1,4 @@
-import { resend, CHECKY_EMAIL, generateReplyToEmail } from './resend';
+import { mg, CHECKY_EMAIL, generateReplyToEmail, MAILGUN_DOMAIN } from './mailgun';
 import { generateEmailProps, generatePlainTextEmail, generateEmailHtml } from './templates';
 import type { ConflictReport } from '@/lib/db/schema';
 
@@ -42,19 +42,19 @@ export async function sendReviewEmail({
   };
 
   try {
-    const emailData = await resend.emails.send({
+    const emailData = await mg.messages.create(MAILGUN_DOMAIN, {
       from: CHECKY_EMAIL,
       to: [report.userEmail],
-      replyTo: replyToEmail, // This enables email threading
+      'h:Reply-To': replyToEmail, // This enables email threading
       subject: getSubject(),
       html: generateEmailHtml(emailProps),
       text: generatePlainTextEmail(emailProps),
       // Add headers for email threading
-      headers: {
-        'Message-ID': `<report-${report.id}-${Date.now()}@${replyToEmail.split('@')[1]}>`,
-        'References': report.emailThreadId ? `<${report.emailThreadId}>` : undefined,
-        'In-Reply-To': report.emailThreadId ? `<${report.emailThreadId}>` : undefined,
-      },
+      'h:Message-ID': `<report-${report.id}-${Date.now()}@${replyToEmail.split('@')[1]}>`,
+      ...(report.emailThreadId && {
+        'h:References': `<${report.emailThreadId}>`,
+        'h:In-Reply-To': `<${report.emailThreadId}>`,
+      }),
     });
 
     console.log('Email sent successfully:', emailData);
@@ -70,10 +70,10 @@ export async function sendReportSubmissionEmail(report: ConflictReport) {
   const replyToEmail = generateReplyToEmail(report.id);
   
   try {
-    const emailData = await resend.emails.send({
+    const emailData = await mg.messages.create(MAILGUN_DOMAIN, {
       from: CHECKY_EMAIL,
       to: [report.userEmail],
-      replyTo: replyToEmail,
+      'h:Reply-To': replyToEmail,
       subject: `📋 Conflict Report Submitted - #${report.id.slice(0, 8)}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -117,9 +117,7 @@ What happens next?
 
 Need help? Contact Ethics & Compliance at compliance@${replyToEmail.split('@')[1]}
       `.trim(),
-      headers: {
-        'Message-ID': `<report-${report.id}-initial@${replyToEmail.split('@')[1]}>`,
-      },
+      'h:Message-ID': `<report-${report.id}-initial@${replyToEmail.split('@')[1]}>`,
     });
 
     console.log('Submission confirmation email sent:', emailData);

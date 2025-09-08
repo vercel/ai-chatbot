@@ -17,16 +17,17 @@ interface SearchParams {
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
+  const params = await searchParams;
   const conditions = [];
 
-  if (searchParams.status) {
-    conditions.push(eq(conflictReport.status, searchParams.status as any));
+  if (params.status) {
+    conditions.push(eq(conflictReport.status, params.status as any));
   }
 
-  if (searchParams.priority) {
-    conditions.push(eq(conflictReport.priority, searchParams.priority as any));
+  if (params.priority) {
+    conditions.push(eq(conflictReport.priority, params.priority as any));
   }
 
   const reports = await db
