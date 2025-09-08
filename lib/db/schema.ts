@@ -11,6 +11,7 @@ import {
   foreignKey,
   boolean,
 } from 'drizzle-orm/pg-core';
+import type { LanguageModelV2Usage } from '@ai-sdk/provider';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -30,7 +31,7 @@ export const chat = pgTable('Chat', {
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
-  lastContext: jsonb('lastContext'),
+  lastContext: jsonb('lastContext').$type<LanguageModelV2Usage | null>(),
 });
 
 export type Chat = InferSelectModel<typeof chat>;

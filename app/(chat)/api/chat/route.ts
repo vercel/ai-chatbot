@@ -263,7 +263,7 @@ export async function DELETE(request: Request) {
 
   const chat = await getChatById({ id });
 
-  if (chat.userId !== session.user.id) {
+  if (chat?.userId !== session.user.id) {
     return new ChatSDKError('forbidden:chat').toResponse();
   }
 

@@ -207,10 +207,7 @@ export async function getChatById({ id }: { id: string }) {
       return null;
     }
 
-    return {
-      ...selectedChat,
-      lastContext: selectedChat.lastContext as LanguageModelV2Usage | undefined,
-    };
+    return selectedChat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
   }
@@ -488,7 +485,7 @@ export async function updateChatLastContextById({
   try {
     return await db
       .update(chat)
-      .set({ lastContext: context as any })
+      .set({ lastContext: context })
       .where(eq(chat.id, chatId));
   } catch (error) {
     console.warn('Failed to update lastContext for chat', chatId, error);
