@@ -1,42 +1,45 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
-import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-
+import { toast } from '@/components/toast';
 import { login, type LoginActionState } from '../actions';
 
 export default function Page() {
-  const router = useRouter();
-
   const [email, setEmail] = useState('');
-  const [isSuccessful, setIsSuccessful] = useState(false);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
-    {
-      status: 'idle',
-    },
+    { status: 'idle' },
   );
 
   useEffect(() => {
-    if (state.status === 'failed') {
-      toast({
-        type: 'error',
-        description: 'Invalid credentials!',
-      });
-    } else if (state.status === 'invalid_data') {
-      toast({
-        type: 'error',
-        description: 'Failed validating your submission!',
-      });
-    } else if (state.status === 'success') {
-      setIsSuccessful(true);
-      router.refresh();
+    const handleStateChange = () => {
+      switch (state.status) {
+        case 'failed':
+          toast({
+            type: 'error',
+            description: 'Invalid email or password. Please try again.',
+          });
+          break;
+        case 'invalid_data':
+          toast({
+            type: 'error',
+            description: 'Please check your information and try again.',
+          });
+          break;
+      }
+    };
+
+    if (
+      state.status !== 'idle' &&
+      state.status !== 'in_progress' &&
+      state.status !== 'success'
+    ) {
+      handleStateChange();
     }
   }, [state.status]);
 
@@ -55,7 +58,9 @@ export default function Page() {
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
+          <SubmitButton isSuccessful={state.status === 'success'}>
+            Sign in
+          </SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {"Don't have an account? "}
             <Link

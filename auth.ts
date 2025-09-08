@@ -3,13 +3,17 @@ import { db } from './lib/db/client';
 import { nextCookies } from 'better-auth/next-js';
 import { betterAuth } from 'better-auth';
 import { anonymous, customSession } from 'better-auth/plugins';
-import { eq, InferSelectModel } from 'drizzle-orm';
+import { eq, type InferSelectModel } from 'drizzle-orm';
 import { user } from './lib/db/schema';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
   }),
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: true,
+  },
   appName: 'ai-chatbot',
   plugins: [
     anonymous(),
@@ -32,4 +36,6 @@ export const auth = betterAuth({
   ],
 });
 
-export type AuthUser = InferSelectModel<typeof user>;
+export type AuthUser = InferSelectModel<typeof user> & {
+  isAnonymous?: boolean | null;
+};

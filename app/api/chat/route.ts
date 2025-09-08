@@ -2,7 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   JsonToSseTransformStream,
-  LanguageModelUsage,
+  type LanguageModelUsage,
   smoothStream,
   stepCountIs,
   streamText,
@@ -39,7 +39,7 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { headers } from 'next/headers';
-import { Session } from '@/lib/db/schema';
+import type { Session } from '@/lib/db/schema';
 
 export const maxDuration = 60;
 
@@ -246,7 +246,7 @@ export async function DELETE(request: Request) {
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:chat').toResponse();
