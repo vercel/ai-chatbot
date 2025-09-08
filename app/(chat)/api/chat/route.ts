@@ -202,8 +202,9 @@ export async function POST(request: Request) {
           })),
         });
       },
-      onError: () => {
-        return 'Oops, an error occurred!';
+      onError: (error) => {
+        console.error('Streaming error:', error);
+        return 'An error occurred while processing your message. Please try again.';
       },
     });
 
@@ -224,7 +225,36 @@ export async function POST(request: Request) {
     }
 
     console.error('Unhandled error in chat API:', error);
-    return new ChatSDKError('offline:chat').toResponse();
+
+    if (error instanceof Error) {
+      // Provide more specific error messages based on error type
+      if (
+        error.message.includes('fetch') ||
+        error.message.includes('network')
+      ) {
+        return new ChatSDKError('offline:chat').toResponse();
+      }
+      if (error.message.includes('AI') || error.message.includes('model')) {
+        return new ChatSDKError(
+          'bad_request:chat',
+          'AI service temporarily unavailable. Please try again.',
+        ).toResponse();
+      }
+      if (
+        error.message.includes('database') ||
+        error.message.includes('postgres')
+      ) {
+        return new ChatSDKError(
+          'bad_request:database',
+          'Database connection issue. Please try again.',
+        ).toResponse();
+      }
+    }
+
+    return new ChatSDKError(
+      'bad_request:chat',
+      'An unexpected error occurred. Please try again.',
+    ).toResponse();
   }
 }
 

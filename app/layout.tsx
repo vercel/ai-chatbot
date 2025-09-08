@@ -91,7 +91,7 @@ export default async function RootLayout({
           <TooltipProvider>
             <AccessibilityProvider>
               <PersonaProvider>
-                <SessionProvider>
+                <SessionProvider basePath="/api/auth" baseUrl="http://localhost:3000">
                   <DataStreamProvider>
                     {children}
                     <AccessibilityListener />
