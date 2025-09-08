@@ -9,7 +9,7 @@ import {
   chatModel,
   reasoningModel,
   titleModel,
-} from './models.test';
+} from './models.mock';
 import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment
