@@ -5,14 +5,17 @@ Este documento explica como configurar e usar os diferentes AI gateways disponí
 ## Configuração de Ambiente
 
 ### 1. Ollama (Local)
+
 ```bash
 # .env.local
 AI_GATEWAY_API_KEY=local
 ```
 
 **Pré-requisitos:**
-- Instalar Ollama: https://ollama.ai/
+
+- Instalar Ollama: <https://ollama.ai/>
 - Executar modelos localmente:
+
 ```bash
 ollama pull qwen3:30b
 ollama pull llama3.2-vision:latest
@@ -21,6 +24,7 @@ ollama pull llava:latest
 ```
 
 ### 2. Vertex AI (Google Cloud)
+
 ```bash
 # .env.local
 AI_GATEWAY_API_KEY=vertex
@@ -29,11 +33,13 @@ GOOGLE_CLOUD_PROJECT_ID=your-project-id  # Opcional
 ```
 
 **Pré-requisitos:**
+
 - Conta Google Cloud Platform
 - API Key válida do Google Cloud
 - Projeto GCP configurado (opcional)
 
 ### 3. Vercel AI Gateway (Padrão)
+
 ```bash
 # .env.local
 AI_GATEWAY_API_KEY=your-vercel-gateway-key
@@ -42,6 +48,7 @@ AI_GATEWAY_API_KEY=your-vercel-gateway-key
 ## Modelos Disponíveis
 
 ### Ollama (Local)
+
 - **chat-model**: qwen3:30b
 - **chat-model-reasoning**: qwen3:30b (com reasoning)
 - **title-model**: falcon3:latest
@@ -52,6 +59,7 @@ AI_GATEWAY_API_KEY=your-vercel-gateway-key
 - **vertex-gemini-pro-vision**: llava:latest
 
 ### Vertex AI (Google Cloud)
+
 - **chat-model**: models/gemini-pro
 - **chat-model-reasoning**: models/gemini-pro (com reasoning)
 - **title-model**: models/gemini-pro
@@ -62,6 +70,7 @@ AI_GATEWAY_API_KEY=your-vercel-gateway-key
 - **vertex-gemini-pro-vision**: models/gemini-pro-vision
 
 ### Vercel AI Gateway
+
 - **chat-model**: xai/grok-2-vision-1212
 - **chat-model-reasoning**: xai/grok-3-mini-beta (com reasoning)
 - **title-model**: xai/grok-2-1212
@@ -74,6 +83,7 @@ AI_GATEWAY_API_KEY=your-vercel-gateway-key
 ## Como Usar
 
 ### 1. Seleção de Provider
+
 Use o componente `ProviderSelector` para permitir que os usuários alternem entre os providers:
 
 ```tsx
@@ -92,12 +102,15 @@ function MyComponent() {
 ```
 
 ### 2. Configuração Dinâmica
+
 O sistema detecta automaticamente o provider baseado na variável `AI_GATEWAY_API_KEY`:
+
 - `local` → Ollama
 - `vertex` → Vertex AI
 - Qualquer outro valor → Vercel AI Gateway
 
 ### 3. Modelos Disponíveis
+
 Todos os modelos estão disponíveis independentemente do provider selecionado, mas são mapeados para modelos específicos de cada provider.
 
 ## APIs do Google Cloud Utilizadas
@@ -112,12 +125,14 @@ O sistema está configurado para usar as seguintes APIs do Google Cloud Platform
 ## Monitoramento e Logs
 
 ### Métricas Disponíveis
+
 - Solicitações por API
 - Taxa de erros (%)
 - Latência mediana (ms)
 - Latência 95% (ms)
 
 ### APIs Monitoradas
+
 - Maps Static API
 - Maps JavaScript API
 - Street View Static API
