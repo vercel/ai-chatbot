@@ -13,21 +13,24 @@ const PROVIDERS = {
   local: {
     name: 'Local (Ollama)',
     env: { AI_GATEWAY_API_KEY: 'local' },
-    description: 'Usa modelos locais via Ollama'
+    description: 'Usa modelos locais via Ollama',
   },
   vertex: {
     name: 'Vertex AI',
     env: {
       AI_GATEWAY_API_KEY: 'vertex',
-      GOOGLE_CLOUD_API_KEY: process.env.GOOGLE_CLOUD_API_KEY || 'your-vertex-api-key'
+      GOOGLE_CLOUD_API_KEY:
+        process.env.GOOGLE_CLOUD_API_KEY || 'your-vertex-api-key',
     },
-    description: 'Usa Google Cloud Vertex AI'
+    description: 'Usa Google Cloud Vertex AI',
   },
   gateway: {
     name: 'Gateway Padrão',
-    env: { AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY || 'your-gateway-key' },
-    description: 'Usa Vercel AI Gateway'
-  }
+    env: {
+      AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY || 'your-gateway-key',
+    },
+    description: 'Usa Vercel AI Gateway',
+  },
 };
 
 async function testProvider(providerKey) {
@@ -37,7 +40,11 @@ async function testProvider(providerKey) {
 
   return new Promise((resolve, reject) => {
     const env = { ...process.env, ...provider.env };
-    const testProcess = spawn('node', ['-e', `
+    const testProcess = spawn(
+      'node',
+      [
+        '-e',
+        `
       console.log('Testing ${provider.name}...');
       process.env = ${JSON.stringify(env)};
       console.log('AI_GATEWAY_API_KEY:', process.env.AI_GATEWAY_API_KEY);
@@ -50,11 +57,14 @@ async function testProvider(providerKey) {
       } catch (error) {
         console.log('❌ Provider import failed:', error.message);
       }
-    `], {
-      cwd: process.cwd(),
-      env,
-      stdio: 'inherit'
-    });
+    `,
+      ],
+      {
+        cwd: process.cwd(),
+        env,
+        stdio: 'inherit',
+      },
+    );
 
     testProcess.on('close', (code) => {
       if (code === 0) {
