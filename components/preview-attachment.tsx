@@ -47,7 +47,7 @@ export const PreviewAttachment = ({
         </Button>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-[10px] px-1 py-0.5 truncate">
+      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent text-white text-[10px] px-1 py-0.5 truncate">
         {name}
       </div>
     </div>

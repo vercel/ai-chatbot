@@ -156,7 +156,7 @@ export const ReasoningContent = memo(
     <CollapsibleContent
       className={cn(
         'mt-2 text-xs text-muted-foreground',
-        'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
+        'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-hidden data-[state=closed]:animate-out data-[state=open]:animate-in',
         className,
       )}
       {...props}

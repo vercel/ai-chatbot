@@ -300,7 +300,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="rounded-xl border shadow-sm transition-all duration-200 bg-background border-border focus-within:border-border hover:border-muted-foreground/50"
+        className="rounded-xl border shadow-xs transition-all duration-200 bg-background border-border focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -353,11 +353,11 @@ function PureMultimodalInput({
           minHeight={44}
           maxHeight={200}
           disableAutoResize={true}
-          className="text-sm resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
+          className="text-sm resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent border-0! border-none! outline-hidden ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-hidden placeholder:text-muted-foreground"
           rows={1}
           autoFocus
         />
-        <PromptInputToolbar className="px-3 py-2 !border-t-0 !border-top-0 shadow-none dark:!border-transparent dark:border-0">
+        <PromptInputToolbar className="px-3 py-2 border-t-0! !border-top-0 shadow-none dark:border-transparent! dark:border-0">
           <PromptInputTools className="gap-2">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -454,7 +454,7 @@ function PureModelSelectorCompact({
     >
       <PromptInputModelSelectTrigger
         type="button"
-        className="text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
+        className="text-xs focus:outline-hidden focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
       >
         {selectedModel?.name || 'Select model'}
       </PromptInputModelSelectTrigger>
