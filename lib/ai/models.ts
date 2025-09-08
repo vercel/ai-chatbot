@@ -28,4 +28,14 @@ export const chatModels: Array<ChatModel> = [
     name: 'GPT-4o',
     description: "OpenAI's multimodal flagship model",
   },
+  {
+    id: 'vertex-gemini-pro',
+    name: 'Gemini Pro',
+    description: 'Google\'s advanced language model via Vertex AI',
+  },
+  {
+    id: 'vertex-gemini-pro-vision',
+    name: 'Gemini Pro Vision',
+    description: 'Google\'s multimodal model with vision capabilities via Vertex AI',
+  },
 ];
