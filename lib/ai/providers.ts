@@ -4,23 +4,25 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
-import {
-  artifactModel,
-  chatModel,
-  reasoningModel,
-  titleModel,
-} from './models.test';
 import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment
-  ? customProvider({
-      languageModels: {
-        'chat-model': chatModel,
-        'chat-model-reasoning': reasoningModel,
-        'title-model': titleModel,
-        'artifact-model': artifactModel,
-      },
-    })
+  ? (() => {
+      const {
+        artifactModel,
+        chatModel,
+        reasoningModel,
+        titleModel,
+      } = require('./models.test');
+      return customProvider({
+        languageModels: {
+          'chat-model': chatModel,
+          'chat-model-reasoning': reasoningModel,
+          'title-model': titleModel,
+          'artifact-model': artifactModel,
+        },
+      });
+    })()
   : customProvider({
       languageModels: {
         'chat-model': gateway.languageModel('xai/grok-2-vision-1212'),
