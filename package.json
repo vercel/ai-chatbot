@@ -19,7 +19,7 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "2.0.0-beta.1",
+    "@ai-sdk/anthropic": "2.0.14",
     "@ai-sdk/gateway": "^1.0.15",
     "@ai-sdk/google": "2.0.3",
     "@ai-sdk/openai": "2.0.14",
@@ -104,15 +104,16 @@
     "remark-gfm": "^4.0.1",
     "resumable-stream": "^2.2.3",
     "server-only": "^0.0.1",
-    "shiki": "^3.12.0",
-    "sonner": "^1.7.4",
-    "streamdown": "^1.1.6",
+    "shiki": "^3.12.2",
+    "sonner": "^2.0.7",
+    "streamdown": "^1.2.0",
+    "tokenlens": "^1.0.0",
     "use-stick-to-bottom": "^1.1.1",
     "swr": "^2.3.6",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.1",
-    "zod": "^3.25.76"
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -128,7 +129,7 @@
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "drizzle-kit": "^0.31.4",
-    "eslint": "^8.57.1",
+    "eslint": "^9.35.0",
     "eslint-config-next": "15.1.4",
     "eslint-config-prettier": "^9.1.2",
     "eslint-import-resolver-typescript": "^3.10.1",

@@ -22,13 +22,6 @@ export function useMessages({
   const [hasSentMessage, setHasSentMessage] = useState(false);
 
   useEffect(() => {
-    if (chatId) {
-      scrollToBottom('instant');
-      setHasSentMessage(false);
-    }
-  }, [chatId, scrollToBottom]);
-
-  useEffect(() => {
     if (status === 'submitted') {
       setHasSentMessage(true);
     }

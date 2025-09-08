@@ -2,6 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   JsonToSseTransformStream,
+  type LanguageModelUsage,
   smoothStream,
   stepCountIs,
   streamText,
@@ -51,7 +52,6 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
@@ -171,7 +171,6 @@ export async function POST(request: Request) {
 
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
-
     // Check role for tool availability
     const isMemberRole = session.role === 'member';
     console.log(
@@ -189,6 +188,8 @@ export async function POST(request: Request) {
       role: session.role, // Move role to session level to match Session interface
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     } as any;
+
+    let finalUsage: LanguageModelUsage | undefined;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -309,6 +310,10 @@ export async function POST(request: Request) {
               reasoningEffort: 'medium',
               reasoningSummary: 'auto',
             } satisfies OpenAIResponsesProviderOptions,
+          },
+          onFinish: ({ usage }) => {
+            finalUsage = usage;
+            dataStream.write({ type: 'data-usage', data: usage });
           },
         });
 

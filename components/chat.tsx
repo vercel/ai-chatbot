@@ -1,12 +1,12 @@
 'use client';
 
-import { DefaultChatTransport, type DataUIPart } from 'ai';
+import { DefaultChatTransport, type DataUIPart, LanguageModelUsage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
-import { fetcher, fetchWithErrorHandlers, generateUUID, cn } from '@/lib/utils';
+import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
@@ -48,6 +48,7 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
+  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(undefined);
 
   const {
     messages,
@@ -81,6 +82,9 @@ export function Chat({
       setDataStream((ds) =>
         ds ? [...ds, dataPart as DataUIPart<CustomUIDataTypes>] : [],
       );
+      if ((dataPart as any).type === 'data-usage') {
+        setUsage((dataPart as any).data);
+      }
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -129,7 +133,7 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background overflow-x-hidden">
+      <div className="flex flex-col min-w-0 h-dvh bg-background touch-pan-y overscroll-behavior-contain">
         <ChatHeader
           chatId={id}
           selectedVisibilityType={initialVisibilityType}
@@ -146,9 +150,10 @@ export function Chat({
           regenerate={regenerate}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
+          selectedModelId={initialChatModel}
         />
 
-        <div className="sticky bottom-0 flex gap-2 px-4 pb-4 mx-auto w-full bg-background md:pb-6 md:max-w-3xl z-[1] border-t-0">
+        <div className="sticky bottom-0 flex gap-2 px-2 md:px-4 pb-3 md:pb-4 mx-auto w-full bg-background max-w-4xl z-[1] border-t-0">
           {!isReadonly && (
             <MultimodalInput
               chatId={id}
@@ -163,6 +168,7 @@ export function Chat({
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
               selectedModelId={initialChatModel}
+              usage={usage}
             />
           )}
         </div>

@@ -17,7 +17,7 @@ import type { getMem0Memories } from './ai/tools/get-mem0-memories';
 import type { createMem0Project } from './ai/tools/create-mem0-project';
 import type { createMem0Memory } from './ai/tools/create-mem0-memory';
 import type { getSlackThreadReplies } from './ai/tools/get-slack-thread-replies';
-import type { InferUITool, UIMessage } from 'ai';
+import type { InferUITool, LanguageModelUsage, UIMessage } from 'ai';
 
 import type { ArtifactKind } from '@/components/artifact';
 import type { Suggestion } from './db/schema';
@@ -73,24 +73,14 @@ type getSlackThreadRepliesTool = InferUITool<
 type listGoogleCalendarEventsTool = InferUITool<
   ReturnType<typeof listGoogleCalendarEvents>
 >;
-type listGmailMessagesTool = InferUITool<
-  ReturnType<typeof listGmailMessages>
->;
+type listGmailMessagesTool = InferUITool<ReturnType<typeof listGmailMessages>>;
 type getGmailMessageDetailsTool = InferUITool<
   ReturnType<typeof getGmailMessageDetails>
 >;
-type getMem0ProjectsTool = InferUITool<
-  ReturnType<typeof getMem0Projects>
->;
-type getMem0MemoriesTool = InferUITool<
-  ReturnType<typeof getMem0Memories>
->;
-type createMem0ProjectTool = InferUITool<
-  ReturnType<typeof createMem0Project>
->;
-type createMem0MemoryTool = InferUITool<
-  ReturnType<typeof createMem0Memory>
->;
+type getMem0ProjectsTool = InferUITool<ReturnType<typeof getMem0Projects>>;
+type getMem0MemoriesTool = InferUITool<ReturnType<typeof getMem0Memories>>;
+type createMem0ProjectTool = InferUITool<ReturnType<typeof createMem0Project>>;
+type createMem0MemoryTool = InferUITool<ReturnType<typeof createMem0Memory>>;
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -125,6 +115,7 @@ export type CustomUIDataTypes = {
   kind: ArtifactKind;
   clear: null;
   finish: null;
+  usage: LanguageModelUsage;
 };
 
 export type ChatMessage = UIMessage<

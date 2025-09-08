@@ -1,16 +1,18 @@
 import { customProvider } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
-import { artifactModel, chatModel, titleModel } from './models.test';
 import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment
-  ? customProvider({
-      languageModels: {
-        'chat-model': chatModel,
-        'title-model': titleModel,
-        'artifact-model': artifactModel,
-      },
-    })
+  ? (() => {
+      const { artifactModel, chatModel, titleModel } = require('./models.test');
+      return customProvider({
+        languageModels: {
+          'chat-model': chatModel,
+          'title-model': titleModel,
+          'artifact-model': artifactModel,
+        },
+      });
+    })()
   : customProvider({
       languageModels: {
         // Use gateway with your chosen OpenAI models
