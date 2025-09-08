@@ -2,7 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   JsonToSseTransformStream,
-  LanguageModelUsage,
+  type LanguageModelUsage,
   smoothStream,
   stepCountIs,
   streamText,

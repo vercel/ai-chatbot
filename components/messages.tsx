@@ -58,7 +58,7 @@ function PureMessages({
         }
       });
     }
-  }, [status]);
+  }, [status, messagesContainerRef]);
 
   return (
     <div
@@ -66,7 +66,7 @@ function PureMessages({
       className="overflow-y-scroll flex-1 touch-pan-y overscroll-behavior-contain -webkit-overflow-scrolling-touch"
       style={{ overflowAnchor: 'none' }}
     >
-      <Conversation className="flex flex-col gap-4 px-2 pt-4 pb-4 mx-auto min-w-0 max-w-4xl md:gap-6 md:px-4">
+      <Conversation className="flex flex-col gap-4 px-2 py-4 mx-auto min-w-0 max-w-4xl md:gap-6 md:px-4">
         <ConversationContent className="flex flex-col gap-4 md:gap-6">
           {messages.length === 0 && <Greeting />}
 
