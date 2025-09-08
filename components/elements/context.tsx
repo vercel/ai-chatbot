@@ -229,40 +229,28 @@ export const Context = ({
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-muted-foreground">
-                    <span
-                      className="inline-block size-2 rounded-sm"
-                      style={{ background: 'var(--chart-2)' }}
-                    />
+                    <span className="inline-block size-2 rounded-sm bg-chart-1" />
                     Cache Hits
                   </span>
                   <span>{fmtOrUnknown(uBreakdown.cacheReads)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-muted-foreground">
-                    <span
-                      className="inline-block size-2 rounded-sm"
-                      style={{ background: 'var(--chart-4)' }}
-                    />
+                    <span className="inline-block size-2 rounded-sm bg-chart-2" />
                     Cache Writes
                   </span>
                   <span>{fmtOrUnknown(uBreakdown.cacheWrites)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-muted-foreground">
-                    <span
-                      className="inline-block size-2 rounded-sm"
-                      style={{ background: 'var(--chart-1)' }}
-                    />
+                    <span className="inline-block size-2 rounded-sm bg-chart-3" />
                     Input
                   </span>
                   <span>{formatTokens(uNorm.input)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-muted-foreground">
-                    <span
-                      className="inline-block size-2 rounded-sm"
-                      style={{ background: 'var(--chart-3)' }}
-                    />
+                    <span className="inline-block size-2 rounded-sm bg-chart-4" />
                     Output
                   </span>
                   <span>{formatTokens(uNorm.output)}</span>
