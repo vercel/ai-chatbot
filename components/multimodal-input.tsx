@@ -323,7 +323,7 @@ function PureMultimodalInput({
         />
         <PromptInputToolbar className="px-3 py-2 !border-t-0 !border-top-0 shadow-none dark:!border-transparent dark:border-0">
           <PromptInputTools className="gap-2">
-            <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+            <AttachmentsButton fileInputRef={fileInputRef} status={status} selectedModelId={selectedModelId} />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
           </PromptInputTools>
           {status === 'submitted' ? (
@@ -360,10 +360,14 @@ export const MultimodalInput = memo(
 function PureAttachmentsButton({
   fileInputRef,
   status,
+  selectedModelId,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers<ChatMessage>['status'];
+  selectedModelId: string;
 }) {
+  const isReasoningModel = selectedModelId === 'chat-model-reasoning';
+  
   return (
     <Button
       data-testid="attachments-button"
@@ -372,7 +376,7 @@ function PureAttachmentsButton({
         event.preventDefault();
         fileInputRef.current?.click();
       }}
-      disabled={status !== 'ready'}
+      disabled={status !== 'ready' || isReasoningModel}
       variant="ghost"
       size="sm"
     >
