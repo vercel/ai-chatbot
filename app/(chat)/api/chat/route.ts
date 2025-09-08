@@ -214,11 +214,7 @@ export async function POST(request: Request) {
           try {
             await updateChatLastContextById({
               chatId: id,
-              context: {
-                inputTokens: finalUsage.inputTokens,
-                outputTokens: finalUsage.outputTokens,
-                totalTokens: finalUsage.totalTokens,
-              },
+              context: finalUsage,
             });
           } catch (err) {
             console.warn('Unable to persist last usage for chat', id, err);

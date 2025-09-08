@@ -479,11 +479,7 @@ export async function updateChatLastContextById({
 }: {
   chatId: string;
   // Store raw LanguageModelUsage to keep it simple
-  context: {
-    inputTokens?: number;
-    outputTokens?: number;
-    totalTokens?: number;
-  };
+  context: LanguageModelV2Usage;
 }) {
   try {
     return await db

@@ -80,6 +80,11 @@ const formatUSD = (value?: number) => {
   return `$${trimmed}`;
 };
 
+const formatUSDFixed = (value?: number, decimals = 5) => {
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  return `$${Number(value).toFixed(decimals)}`;
+};
+
 type ContextIconProps = {
   percent: number; // 0 - 100
 };
@@ -204,7 +209,7 @@ export const Context = ({
 
   // Per-segment costs
   const inputCostText = modelId
-    ? formatUSD(
+    ? formatUSDFixed(
         estimateCost({
           modelId,
           usage: { input: displayInput ?? 0, output: 0 },
@@ -212,7 +217,7 @@ export const Context = ({
       )
     : undefined;
   const outputCostText = modelId
-    ? formatUSD(
+    ? formatUSDFixed(
         estimateCost({
           modelId,
           usage: { input: 0, output: displayOutput ?? 0 },
@@ -220,8 +225,38 @@ export const Context = ({
       )
     : undefined;
   // Not supported by tokenlens pricing hints; leave undefined so no bullet is shown
-  const cacheReadsCostText = undefined;
-  const cacheWritesCostText = undefined;
+  const cacheReadsTokens = uBreakdown.cacheReads ?? 0;
+  const cacheWritesTokens = uBreakdown.cacheWrites ?? 0;
+  const cacheReadsCostText =
+    modelId && cacheReadsTokens > 0
+      ? formatUSDFixed(
+          estimateCost({
+            modelId,
+            // Cast to any to support extended pricing fields provided by tokenlens
+            usage: { cacheReads: cacheReadsTokens } as any,
+          }).totalUSD,
+        )
+      : undefined;
+  const cacheWritesCostText =
+    modelId && cacheWritesTokens > 0
+      ? formatUSDFixed(
+          estimateCost({
+            modelId,
+            usage: { cacheWrites: cacheWritesTokens } as any,
+          }).totalUSD,
+        )
+      : undefined;
+
+  const reasoningTokens = uBreakdown.reasoningTokens ?? 0;
+  const reasoningCostText =
+    modelId && reasoningTokens > 0
+      ? formatUSDFixed(
+          estimateCost({
+            modelId,
+            usage: { reasoningTokens },
+          }).totalUSD,
+        )
+      : undefined;
 
   const costUSD = modelId
     ? estimateCost({
@@ -229,7 +264,7 @@ export const Context = ({
         usage: { input: displayInput ?? 0, output: displayOutput ?? 0 },
       }).totalUSD
     : undefined;
-  const costText = formatUSD(costUSD);
+  const costText = formatUSDFixed(costUSD);
 
   const fmtOrUnknown = (n?: number) =>
     n === undefined ? '—' : formatTokens(n);
@@ -286,14 +321,11 @@ export const Context = ({
               tokens={displayOutput}
               costText={outputCostText}
             />
-            {hasUsage &&
-              uBreakdown.reasoningTokens &&
-              uBreakdown.reasoningTokens > 0 && (
-                <InfoRow
-                  label="Reasoning"
-                  tokens={uBreakdown.reasoningTokens}
-                />
-              )}
+            <InfoRow
+              label="Reasoning"
+              tokens={reasoningTokens > 0 ? reasoningTokens : undefined}
+              costText={reasoningCostText}
+            />
             {costText && (
               <>
                 <Separator className="mt-1" />
