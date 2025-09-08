@@ -89,7 +89,7 @@
     "redis": "^5.0.0",
     "resumable-stream": "^2.0.0",
     "server-only": "^0.0.1",
-    "shiki": "^3.12.0",
+    "shiki": "^3.12.2",
     "sonner": "^1.5.0",
     "streamdown": "^1.2.0",
     "swr": "^2.2.5",
