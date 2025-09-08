@@ -4,6 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { createGuestUser, getUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
 import { DUMMY_PASSWORD } from '@/lib/constants';
+import { isAllowedHost } from '@/lib/get-url';
 import type { DefaultJWT } from 'next-auth/jwt';
 
 export type UserType = 'guest' | 'regular';
@@ -87,6 +88,24 @@ export const {
       }
 
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Se a URL começa com /, adiciona o domínio correto
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
+      }
+      
+      // Se é uma URL absoluta, valida se é um dos nossos domínios
+      try {
+        const urlObj = new URL(url);
+        if (isAllowedHost(urlObj.host)) {
+          return url;
+        }
+      } catch {
+        // URL inválida, retorna para base
+      }
+      
+      return baseUrl;
     },
   },
 });

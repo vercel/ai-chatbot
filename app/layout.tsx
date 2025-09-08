@@ -3,9 +3,22 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { DisableDevTools } from './disable-devtools';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { CriticalErrorFallback } from '@/components/error-fallbacks';
+import { initializeErrorReporting } from '@/lib/error-reporting';
 
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
+
+// Initialize error reporting
+if (typeof window !== 'undefined') {
+  initializeErrorReporting({
+    enabled: true,
+    environment: process.env.NODE_ENV as 'development' | 'production' | 'staging',
+    enableConsoleLogging: process.env.NODE_ENV === 'development',
+    enableRemoteReporting: process.env.NODE_ENV === 'production',
+  });
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
@@ -73,16 +86,31 @@ export default async function RootLayout({
       </head>
       <body className="antialiased">
         <DisableDevTools />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-          forcedTheme="light"
+        <ErrorBoundary
+          fallback={CriticalErrorFallback}
+          level="critical"
+          maxRetries={2}
+          onError={(error, errorInfo, errorId) => {
+            console.error('Critical layout error:', { error, errorInfo, errorId });
+          }}
         >
-          <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
-        </ThemeProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+            forcedTheme="light"
+          >
+            <ErrorBoundary
+              level="page"
+              maxRetries={3}
+              resetOnPropsChange={true}
+            >
+              <Toaster position="top-center" />
+              <SessionProvider>{children}</SessionProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

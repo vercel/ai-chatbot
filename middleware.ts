@@ -1,9 +1,27 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+import { getBaseUrl, createAbsoluteUrl } from './lib/get-url';
+import { applyRateLimit } from './lib/middleware/rate-limit';
+import { applyCORS, setSecurityHeaders } from './lib/middleware/cors';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Aplicar CORS e headers de segurança para APIs
+  if (pathname.startsWith('/api')) {
+    // CORS primeiro para OPTIONS requests
+    const corsResponse = await applyCORS(request);
+    if (request.method === 'OPTIONS') {
+      return corsResponse;
+    }
+    
+    // Rate limiting
+    const rateLimitResponse = await applyRateLimit(request);
+    if (rateLimitResponse.status === 429) {
+      return setSecurityHeaders(rateLimitResponse);
+    }
+  }
 
   /*
    * Playwright starts the dev server and requires a 200 status to
@@ -29,17 +47,25 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
+    // Usa detecção automática para obter a URL base correta
+    const baseUrl = getBaseUrl(request);
+    
+    // Constrói a URL correta usando o domínio detectado
+    const correctUrl = `${baseUrl}${pathname}`;
+    const redirectUrl = encodeURIComponent(correctUrl);
+    
+    // Cria URL de redirect usando o domínio correto detectado
+    const guestAuthUrl = `${baseUrl}/api/auth/guest?redirectUrl=${redirectUrl}`;
 
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-    );
+    return NextResponse.redirect(new URL(guestAuthUrl));
   }
 
   const isGuest = guestRegex.test(token?.email ?? '');
 
   if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
+    // Usa a URL base detectada para redirecionar para home
+    const baseUrl = getBaseUrl(request);
+    return NextResponse.redirect(new URL('/', baseUrl));
   }
 
   return NextResponse.next();

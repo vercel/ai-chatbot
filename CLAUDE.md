@@ -1,382 +1,352 @@
-# AI Chatbot - Documentação Claude Code
+# Claude Code Configuration - SPARC Development Environment
 
-## Visão Geral
+## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
-Este é um chatbot AI desenvolvido com Next.js 15 e integração direta com Claude Code SDK via CLI. O projeto roda em ambiente Docker Ubuntu e utiliza autenticação NextAuth.js com suporte a convidados.
+**ABSOLUTE RULES**:
+1. ALL operations MUST be concurrent/parallel in a single message
+2. **NEVER save working files, text/mds and tests to the root folder**
+3. ALWAYS organize files in appropriate subdirectories
+4. **USE CLAUDE CODE'S TASK TOOL** for spawning agents concurrently, not just MCP
 
-## Ambiente de Desenvolvimento
+### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 
-### Estrutura Docker
-- **Container**: `ai-chatbot-app` (Ubuntu 24.04)
-- **Diretório de trabalho**: `/root/.claude/ai-chatbot/`
-- **Node.js**: v18.19.1
-- **Claude Code**: Instalado globalmente via npm
+**MANDATORY PATTERNS:**
+- **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
+- **Task tool (Claude Code)**: ALWAYS spawn ALL agents in ONE message with full instructions
+- **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
+- **Bash commands**: ALWAYS batch ALL terminal operations in ONE message
+- **Memory operations**: ALWAYS batch ALL memory store/retrieve in ONE message
 
-### Comunicação entre Ambientes
-- **Docker Chat (Ubuntu)**: Desenvolvimento e edição de código
-- **Host Chat (Debian)**: Gerenciamento de container e configurações Docker
-- **Usuário**: Ponte entre os dois ambientes
+### 🎯 CRITICAL: Claude Code Task Tool for Agent Execution
 
-## Stack Tecnológica
+**Claude Code's Task tool is the PRIMARY way to spawn agents:**
+```javascript
+// ✅ CORRECT: Use Claude Code's Task tool for parallel agent execution
+[Single Message]:
+  Task("Research agent", "Analyze requirements and patterns...", "researcher")
+  Task("Coder agent", "Implement core features...", "coder")
+  Task("Tester agent", "Create comprehensive tests...", "tester")
+  Task("Reviewer agent", "Review code quality...", "reviewer")
+  Task("Architect agent", "Design system architecture...", "system-architect")
+```
 
-### Frontend
-- **Framework**: Next.js 15.3.0-canary.31 com App Router
-- **UI**: React 19 RC + TypeScript
-- **Estilização**: Tailwind CSS
-- **Componentes**: Radix UI + shadcn/ui
-- **Tema**: Forçado como Light (sem toggle)
+**MCP tools are ONLY for coordination setup:**
+- `mcp__claude-flow__swarm_init` - Initialize coordination topology
+- `mcp__claude-flow__agent_spawn` - Define agent types for coordination
+- `mcp__claude-flow__task_orchestrate` - Orchestrate high-level workflows
 
-### Backend
-- **API Routes**: Next.js Route Handlers
-- **Autenticação**: NextAuth.js com suporte a convidados
-- **Integração Claude**: CLI direto via spawn process
-- **Streaming**: Server-Sent Events (SSE)
+### 📁 File Organization Rules
 
-### Ferramentas Disponíveis
-- **Previsão do Tempo**: Integração com API de clima
-- **Busca**: Simulação de resultados de pesquisa
-- **Execução de Código**: Simulação de execução (Python, JS, TS)
+**NEVER save to root folder. Use these directories:**
+- `/src` - Source code files
+- `/tests` - Test files
+- `/docs` - Documentation and markdown files
+- `/config` - Configuration files
+- `/scripts` - Utility scripts
+- `/examples` - Example code
 
-## Arquitetura
+## Project Overview
 
-### Fluxo de Dados
-1. **Usuário** → Envia mensagem via interface React
-2. **Frontend** → Detecta intenção e ferramentas necessárias
-3. **API Route** → `/api/claude/sdk` processa a requisição
-4. **Claude CLI** → Executa via spawn com input de arquivo temporário
-5. **Streaming** → Resposta enviada via SSE
-6. **UI Generativa** → Renderiza componentes especializados
+This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) methodology with Claude-Flow orchestration for systematic Test-Driven Development.
 
-### Componentes Principais
-- `GenerativeChat.tsx`: Interface principal do chat
-- `ToolRenderer.tsx`: Renderizador de ferramentas UI
-- `route.ts`: Integração com Claude SDK
-- `claude-tools.ts`: Definição de ferramentas disponíveis
+## SPARC Commands
 
-## Configuração
+### Core Commands
+- `npx claude-flow sparc modes` - List available modes
+- `npx claude-flow sparc run <mode> "<task>"` - Execute specific mode
+- `npx claude-flow sparc tdd "<feature>"` - Run complete TDD workflow
+- `npx claude-flow sparc info <mode>` - Get mode details
 
-### Variáveis de Ambiente
+### Batchtools Commands
+- `npx claude-flow sparc batch <modes> "<task>"` - Parallel execution
+- `npx claude-flow sparc pipeline "<task>"` - Full pipeline processing
+- `npx claude-flow sparc concurrent <mode> "<tasks-file>"` - Multi-task processing
+
+### Build Commands
+- `npm run build` - Build project
+- `npm run test` - Run tests
+- `npm run lint` - Linting
+- `npm run typecheck` - Type checking
+
+## SPARC Workflow Phases
+
+1. **Specification** - Requirements analysis (`sparc run spec-pseudocode`)
+2. **Pseudocode** - Algorithm design (`sparc run spec-pseudocode`)
+3. **Architecture** - System design (`sparc run architect`)
+4. **Refinement** - TDD implementation (`sparc tdd`)
+5. **Completion** - Integration (`sparc run integration`)
+
+## Code Style & Best Practices
+
+- **Modular Design**: Files under 500 lines
+- **Environment Safety**: Never hardcode secrets
+- **Test-First**: Write tests before implementation
+- **Clean Architecture**: Separate concerns
+- **Documentation**: Keep updated
+
+## 🚀 Available Agents (54 Total)
+
+### Core Development
+`coder`, `reviewer`, `tester`, `planner`, `researcher`
+
+### Swarm Coordination
+`hierarchical-coordinator`, `mesh-coordinator`, `adaptive-coordinator`, `collective-intelligence-coordinator`, `swarm-memory-manager`
+
+### Consensus & Distributed
+`byzantine-coordinator`, `raft-manager`, `gossip-coordinator`, `consensus-builder`, `crdt-synchronizer`, `quorum-manager`, `security-manager`
+
+### Performance & Optimization
+`perf-analyzer`, `performance-benchmarker`, `task-orchestrator`, `memory-coordinator`, `smart-agent`
+
+### GitHub & Repository
+`github-modes`, `pr-manager`, `code-review-swarm`, `issue-tracker`, `release-manager`, `workflow-automation`, `project-board-sync`, `repo-architect`, `multi-repo-swarm`
+
+### SPARC Methodology
+`sparc-coord`, `sparc-coder`, `specification`, `pseudocode`, `architecture`, `refinement`
+
+### Specialized Development
+`backend-dev`, `mobile-dev`, `ml-developer`, `cicd-engineer`, `api-docs`, `system-architect`, `code-analyzer`, `base-template-generator`
+
+### Testing & Validation
+`tdd-london-swarm`, `production-validator`
+
+### Migration & Planning
+`migration-planner`, `swarm-init`
+
+## 🎯 Claude Code vs MCP Tools
+
+### Claude Code Handles ALL EXECUTION:
+- **Task tool**: Spawn and run agents concurrently for actual work
+- File operations (Read, Write, Edit, MultiEdit, Glob, Grep)
+- Code generation and programming
+- Bash commands and system operations
+- Implementation work
+- Project navigation and analysis
+- TodoWrite and task management
+- Git operations
+- Package management
+- Testing and debugging
+
+### MCP Tools ONLY COORDINATE:
+- Swarm initialization (topology setup)
+- Agent type definitions (coordination patterns)
+- Task orchestration (high-level planning)
+- Memory management
+- Neural features
+- Performance tracking
+- GitHub integration
+
+**KEY**: MCP coordinates the strategy, Claude Code's Task tool executes with real agents.
+
+## 🚀 Quick Setup
+
 ```bash
-AUTH_SECRET=zZ9tLz4Twoi9NkELbkSbtzqdifNsIPkLUmzms/HK0mA=
+# Add MCP servers (Claude Flow required, others optional)
+claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruv-swarm npx ruv-swarm mcp start  # Optional: Enhanced coordination
+claude mcp add flow-nexus npx flow-nexus@latest mcp start  # Optional: Cloud features
 ```
 
-### Arquivos de Configuração
-- `.claude/config.json`: Configuração do projeto Claude
-- `.env`: Variáveis de ambiente
-- `next.config.mjs`: Configuração Next.js
+## MCP Tool Categories
 
-### Servidores MCP (Model Context Protocol)
-- **Exa**: Servidor de busca avançada
-  - URL: `https://server.smithery.ai/exa/mcp`
-  - Status: ✅ Configurado e pronto para uso
-  - Permissões: `mcp:exa:*` liberado em config.json
-  - Portas OAuth: 60000-60500 mapeadas no Docker
-  - Autenticação: Credenciais sincronizadas do host
-  - **Importante**: Para buscas em português brasileiro, sempre incluir "em português" ou "Brazil" nas queries para obter resultados relevantes em PT-BR
+### Coordination
+`swarm_init`, `agent_spawn`, `task_orchestrate`
 
-#### Ferramentas MCP Exa Disponíveis
+### Monitoring
+`swarm_status`, `agent_list`, `agent_metrics`, `task_status`, `task_results`
 
-Todas as ferramentas abaixo estão configuradas e liberadas no `.claude/config.json`:
+### Memory & Neural
+`memory_usage`, `neural_status`, `neural_train`, `neural_patterns`
 
-1. **mcp__exa__web_search_exa** - Busca na web
-   - Realiza pesquisas em tempo real na internet
-   - Parâmetros: `query` (obrigatório), `numResults` (opcional, padrão: 5)
-   - Exemplo: Buscar notícias, artigos, informações atualizadas
-   - Dica: Para resultados em PT-BR, adicione "em português" ou "Brasil" na query
+### GitHub Integration
+`github_swarm`, `repo_analyze`, `pr_enhance`, `issue_triage`, `code_review`
 
-2. **mcp__exa__company_research_exa** - Pesquisa de empresas
-   - Busca informações detalhadas sobre empresas e corporações
-   - Parâmetros: `companyName` (obrigatório), `numResults` (opcional, padrão: 5)
-   - Exemplo: Pesquisar dados sobre startups, insurtechs, grandes empresas
-   - Retorna: Notícias, informações financeiras, análises do setor
+### System
+`benchmark_run`, `features_detect`, `swarm_monitor`
 
-3. **mcp__exa__crawling_exa** - Extração de conteúdo
-   - Extrai conteúdo completo de URLs específicas
-   - Parâmetros: `url` (obrigatório), `maxCharacters` (opcional, padrão: 3000)
-   - Exemplo: Ler artigos completos, extrair informações de páginas web
-   - Útil para: Análise detalhada de conteúdo já identificado
+### Flow-Nexus MCP Tools (Optional Advanced Features)
+Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
 
-4. **mcp__exa__linkedin_search_exa** - Busca no LinkedIn
-   - Pesquisa perfis profissionais e páginas de empresas no LinkedIn
-   - Parâmetros: `query` (obrigatório), `numResults` (opcional), `searchType` (profiles/companies/all)
-   - Exemplo: Buscar CEOs, profissionais específicos, páginas corporativas
-   - Aplicações: Networking, recrutamento, pesquisa de negócios
+**Key MCP Tool Categories:**
+- **Swarm & Agents**: `swarm_init`, `swarm_scale`, `agent_spawn`, `task_orchestrate`
+- **Sandboxes**: `sandbox_create`, `sandbox_execute`, `sandbox_upload` (cloud execution)
+- **Templates**: `template_list`, `template_deploy` (pre-built project templates)
+- **Neural AI**: `neural_train`, `neural_patterns`, `seraphina_chat` (AI assistant)
+- **GitHub**: `github_repo_analyze`, `github_pr_manage` (repository management)
+- **Real-time**: `execution_stream_subscribe`, `realtime_subscribe` (live monitoring)
+- **Storage**: `storage_upload`, `storage_list` (cloud file management)
 
-5. **mcp__exa__deep_researcher_start** - Pesquisa profunda (iniciar)
-   - Inicia uma pesquisa profunda com IA sobre tópicos complexos
-   - Parâmetros: `instructions` (obrigatório), `model` (exa-research ou exa-research-pro)
-   - Modelos: 
-     - `exa-research`: Mais rápido (15-45s), ideal para a maioria das consultas
-     - `exa-research-pro`: Mais completo (45s-2min), para tópicos complexos
-   - Retorna: `taskId` para acompanhar o progresso
+**Authentication Required:**
+- Register: `mcp__flow-nexus__user_register` or `npx flow-nexus@latest register`
+- Login: `mcp__flow-nexus__user_login` or `npx flow-nexus@latest login`
+- Access 70+ specialized MCP tools for advanced orchestration
 
-6. **mcp__exa__deep_researcher_check** - Verificar status da pesquisa
-   - Verifica o progresso e obtém resultados da pesquisa profunda
-   - Parâmetros: `taskId` (obrigatório - obtido do deep_researcher_start)
-   - Importante: Chamar repetidamente até status ser "completed"
-   - Retorna: Relatório detalhado de pesquisa quando concluído
+## 🚀 Agent Execution Flow with Claude Code
 
-#### Como Usar as Ferramentas
+### The Correct Pattern:
 
-1. **Busca Simples**: Use `web_search_exa` para pesquisas rápidas
-2. **Pesquisa de Empresas**: Use `company_research_exa` para informações corporativas
-3. **Conteúdo Específico**: Use `crawling_exa` quando já tiver a URL
-4. **Perfis Profissionais**: Use `linkedin_search_exa` para buscar pessoas/empresas
-5. **Pesquisas Complexas**: 
-   - Inicie com `deep_researcher_start` 
-   - Monitore com `deep_researcher_check` até completar
-   - Ideal para análises aprofundadas e síntese de múltiplas fontes
+1. **Optional**: Use MCP tools to set up coordination topology
+2. **REQUIRED**: Use Claude Code's Task tool to spawn agents that do actual work
+3. **REQUIRED**: Each agent runs hooks for coordination
+4. **REQUIRED**: Batch all operations in single messages
 
-## 🔍 REGRAS DE PESQUISA - IMPORTANTE
+### Example Full-Stack Development:
 
-### Prioridade de Ferramentas de Busca
+```javascript
+// Single message with all agent spawning via Claude Code's Task tool
+[Parallel Agent Execution]:
+  Task("Backend Developer", "Build REST API with Express. Use hooks for coordination.", "backend-dev")
+  Task("Frontend Developer", "Create React UI. Coordinate with backend via memory.", "coder")
+  Task("Database Architect", "Design PostgreSQL schema. Store schema in memory.", "code-analyzer")
+  Task("Test Engineer", "Write Jest tests. Check memory for API contracts.", "tester")
+  Task("DevOps Engineer", "Setup Docker and CI/CD. Document in memory.", "cicd-engineer")
+  Task("Security Auditor", "Review authentication. Report findings via hooks.", "reviewer")
+  
+  // All todos batched together
+  TodoWrite { todos: [...8-10 todos...] }
+  
+  // All file operations together
+  Write "backend/server.js"
+  Write "frontend/App.jsx"
+  Write "database/schema.sql"
+```
 
-**SEMPRE que o usuário solicitar uma pesquisa, busca ou informação atualizada:**
+## 📋 Agent Coordination Protocol
 
-1. **PRIMEIRO**: Usar as ferramentas MCP Exa (configuradas globalmente)
-   - `mcp__exa__web_search_exa` - Para buscas gerais na web
-   - `mcp__exa__company_research_exa` - Para pesquisas sobre empresas
-   - `mcp__exa__linkedin_search_exa` - Para perfis profissionais
-   - `mcp__exa__crawling_exa` - Para extrair conteúdo de URLs específicas
-   - `mcp__exa__deep_researcher_start/check` - Para pesquisas complexas
+### Every Agent Spawned via Task Tool MUST:
 
-2. **SEGUNDO**: Apenas se MCP Exa falhar, usar ferramentas alternativas
-   - WebSearch - Busca web genérica
-   - WebFetch - Para URLs específicas
-
-### Configuração Global MCP Exa
-
-O MCP Exa está configurado **GLOBALMENTE** no sistema:
-- **Arquivo de configuração**: `/root/.claude.json`
-- **Funciona em qualquer diretório** do sistema
-- **Não depende do projeto** específico
-- **Status**: ✅ Conectado e operacional
-
-Para verificar o status:
+**1️⃣ BEFORE Work:**
 ```bash
-cd /root/.claude/
-claude mcp list
+npx claude-flow@alpha hooks pre-task --description "[task]"
+npx claude-flow@alpha hooks session-restore --session-id "swarm-[id]"
 ```
 
-### Exemplos de Uso Correto
-
-✅ **CORRETO** - Usuário pede pesquisa:
-```
-Usuário: "Pesquise sobre tendências de insurtech"
-Claude: [Usa mcp__exa__web_search_exa primeiro]
-```
-
-✅ **CORRETO** - Usuário pede informações sobre empresa:
-```
-Usuário: "Informações sobre a SUTHUB"
-Claude: [Usa mcp__exa__company_research_exa primeiro]
-```
-
-✅ **CORRETO** - Usuário pede perfil LinkedIn:
-```
-Usuário: "CEO da SUTHUB no LinkedIn"
-Claude: [Usa mcp__exa__linkedin_search_exa primeiro]
-```
-
-❌ **INCORRETO** - Usar WebSearch antes de tentar MCP Exa
-❌ **INCORRETO** - Responder sem pesquisar quando solicitado
-❌ **INCORRETO** - Usar apenas conhecimento interno para informações atuais
-
-## Comandos
-
-### Desenvolvimento
+**2️⃣ DURING Work:**
 ```bash
-npm run dev        # Servidor de desenvolvimento
-npm run build      # Build de produção
-npm run start      # Servidor de produção
-npm run lint       # Linting
-npm run type-check # Verificação de tipos
+npx claude-flow@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
+npx claude-flow@alpha hooks notify --message "[what was done]"
 ```
 
-### Git
+**3️⃣ AFTER Work:**
 ```bash
-git status         # Status do repositório
-git add .          # Adicionar mudanças
-git commit -m ""   # Criar commit
-git push          # Enviar para GitHub
+npx claude-flow@alpha hooks post-task --task-id "[task]"
+npx claude-flow@alpha hooks session-end --export-metrics true
 ```
 
-### Docker (via Host)
-```bash
-sudo docker exec -it ai-chatbot-app /bin/bash  # Entrar no container
-sudo docker logs ai-chatbot-app                # Ver logs
-sudo docker restart ai-chatbot-app             # Reiniciar container
+## 🎯 Concurrent Execution Examples
+
+### ✅ CORRECT WORKFLOW: MCP Coordinates, Claude Code Executes
+
+```javascript
+// Step 1: MCP tools set up coordination (optional, for complex tasks)
+[Single Message - Coordination Setup]:
+  mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
+  mcp__claude-flow__agent_spawn { type: "researcher" }
+  mcp__claude-flow__agent_spawn { type: "coder" }
+  mcp__claude-flow__agent_spawn { type: "tester" }
+
+// Step 2: Claude Code Task tool spawns ACTUAL agents that do the work
+[Single Message - Parallel Agent Execution]:
+  // Claude Code's Task tool spawns real agents concurrently
+  Task("Research agent", "Analyze API requirements and best practices. Check memory for prior decisions.", "researcher")
+  Task("Coder agent", "Implement REST endpoints with authentication. Coordinate via hooks.", "coder")
+  Task("Database agent", "Design and implement database schema. Store decisions in memory.", "code-analyzer")
+  Task("Tester agent", "Create comprehensive test suite with 90% coverage.", "tester")
+  Task("Reviewer agent", "Review code quality and security. Document findings.", "reviewer")
+  
+  // Batch ALL todos in ONE call
+  TodoWrite { todos: [
+    {id: "1", content: "Research API patterns", status: "in_progress", priority: "high"},
+    {id: "2", content: "Design database schema", status: "in_progress", priority: "high"},
+    {id: "3", content: "Implement authentication", status: "pending", priority: "high"},
+    {id: "4", content: "Build REST endpoints", status: "pending", priority: "high"},
+    {id: "5", content: "Write unit tests", status: "pending", priority: "medium"},
+    {id: "6", content: "Integration tests", status: "pending", priority: "medium"},
+    {id: "7", content: "API documentation", status: "pending", priority: "low"},
+    {id: "8", content: "Performance optimization", status: "pending", priority: "low"}
+  ]}
+  
+  // Parallel file operations
+  Bash "mkdir -p app/{src,tests,docs,config}"
+  Write "app/package.json"
+  Write "app/src/server.js"
+  Write "app/tests/server.test.js"
+  Write "app/docs/API.md"
 ```
 
-## Status do Projeto
+### ❌ WRONG (Multiple Messages):
+```javascript
+Message 1: mcp__claude-flow__swarm_init
+Message 2: Task("agent 1")
+Message 3: TodoWrite { todos: [single todo] }
+Message 4: Write "file.js"
+// This breaks parallel coordination!
+```
 
-### ✅ Implementado
-- Integração real com Claude Code SDK
-- Autenticação com NextAuth.js
-- UI responsiva com Tailwind
-- Detecção automática de ferramentas
-- Streaming de respostas
-- Tema claro forçado
-- Ferramenta de previsão do tempo
+## Performance Benefits
 
-### 🚧 Pendente
-- Implementação de limitações de usuário
-- Integração real com APIs de clima
-- Sistema de histórico persistente
-- Melhorias na detecção de intenção
+- **84.8% SWE-Bench solve rate**
+- **32.3% token reduction**
+- **2.8-4.4x speed improvement**
+- **27+ neural models**
 
-## Manutenção
+## Hooks Integration
 
-### Logs e Debug
-- Logs do Claude: Console do navegador e terminal
-- Logs do servidor: `npm run dev` output
-- Logs do Docker: `docker logs ai-chatbot-app`
+### Pre-Operation
+- Auto-assign agents by file type
+- Validate commands for safety
+- Prepare resources automatically
+- Optimize topology by complexity
+- Cache searches
 
-### Solução de Problemas Comuns
-1. **Erro 500 na autenticação**: Verificar AUTH_SECRET no .env
-2. **Claude não responde**: Verificar instalação do Claude CLI
-3. **Timeout em respostas**: Aumentar timeout em route.ts
-4. **Erro de permissão**: Verificar permissões do diretório
+### Post-Operation
+- Auto-format code
+- Train neural patterns
+- Update memory
+- Analyze performance
+- Track token usage
 
-## Contribuição
+### Session Management
+- Generate summaries
+- Persist state
+- Track metrics
+- Restore context
+- Export workflows
 
-### Workflow Git
-1. Fazer mudanças locais
-2. Testar funcionalidade
-3. Commit com mensagem descritiva
-4. Push para GitHub
+## Advanced Features (v2.0.0)
 
-### Padrões de Código
-- TypeScript strict mode
-- Componentes funcionais React
-- Async/await para operações assíncronas
-- Tratamento de erros com try/catch
+- 🚀 Automatic Topology Selection
+- ⚡ Parallel Execution (2.8-4.4x speed)
+- 🧠 Neural Training
+- 📊 Bottleneck Analysis
+- 🤖 Smart Auto-Spawning
+- 🛡️ Self-Healing Workflows
+- 💾 Cross-Session Memory
+- 🔗 GitHub Integration
 
-## Informações Adicionais
+## Integration Tips
 
-### Tendências de Insurtech 2025
+1. Start with basic swarm init
+2. Scale agents gradually
+3. Use memory for context
+4. Monitor progress regularly
+5. Train patterns from success
+6. Enable hooks automation
+7. Use GitHub tools first
 
-**RESPOSTA PADRÃO PARA CONSULTAS SOBRE TENDÊNCIAS DE INSURTECH:**
+## Support
 
-📊 **Principais Tendências de Insurtech 2025 - Brasil e América Latina**
-
-**1. Inteligência Artificial e Machine Learning** 🤖
-- 67% das empresas brasileiras priorizam IA como estratégia em 2025
-- Pier: Automatizou reembolsos com IA, reduzindo tempo para segundos
-- Chatbots e assistentes virtuais com IA generativa
-- Modelos preditivos para avaliação de riscos
-
-**2. Seguros Embarcados (Embedded Insurance)** 🛒
-- R$ 679,3 milhões em garantia estendida (Q1 2025)
-- Alta de 10,4% vs ano anterior
-- AXA Brasil: 16% dos negócios via canais embarcados (meta: 20% em 2025)
-- Zurich: Mais de 100 parcerias
-- Generali: 30 alianças estratégicas
-
-**3. Personalização e Microseguros** 🎯
-- Seguros por uso (pay-per-use)
-- Apólices modulares customizáveis
-- Telemetria e IoT para precificação em tempo real
-- Foco em flexibilidade e acessibilidade
-
-**4. Open Insurance Brasil** 🔓
-- Fase de efetivação até dezembro 2025
-- APIs padronizadas obrigatórias
-- Compartilhamento de dados entre instituições
-- Fomenta comparadores e marketplaces
-
-**5. Blockchain e Contratos Inteligentes** ⛓️
-- 88i: Usa contratos inteligentes para automatizar seguros
-- Redução de intermediários e fraudes
-- Liquidações mais rápidas e transparentes
-
-**6. Seguros Paramétricos e Climáticos** 🌍
-- Pagamentos automáticos por índices predefinidos
-- SOSA: Dados meteorológicos e satelitais
-- Foco em agronegócio e infraestrutura
-- Critérios ESG e energias renováveis
-
-**7. Principais Insurtechs Brasileiras** 🚀
-- Total: 507 insurtechs na América Latina
-- Brasil lidera: 206 startups
-- Destaques:
-  - Sami Seguros: Life & health digital
-  - Pier: IA para reembolsos instantâneos
-  - 88i: Contratos inteligentes
-  - Olé Life: Telemedicina integrada
-  - Azos: Mobilidade e microseguros
-
-**8. Investimentos Recordes** 💰
-- US$ 121 milhões na América Latina (1º sem 2025)
-- Alta de 370% vs 2024
-- Brasil: US$ 89 milhões (74% do total)
-- Consolidação de corretoras digitais
-- Corporate ventures de grandes seguradoras
-
-**9. Desafios Regulatórios** ⚖️
-- SUSEP e ANPD reforçam diretrizes
-- Governança de dados e transparência algorítmica
-- Explicabilidade de modelos de IA
-- Segurança cibernética obrigatória
-
-**10. Experiência Digital do Cliente** 📱
-- Modelo omnichannel (físico + digital)
-- Onboarding digital com KYC automatizado
-- Atendimento 24/7 via IA generativa
-- Process mining para otimizar fluxos
-
-**🎯 Resumo Executivo**
-
-O mercado brasileiro de insurtech em 2025 está em expansão acelerada, com investimentos recordes e 206 startups ativas. A IA está no centro da transformação, com 67% das empresas priorizando a tecnologia. Os seguros embarcados crescem 10,4% ao ano, enquanto o Open Insurance democratiza o acesso a dados. O desafio principal é equilibrar inovação com compliance e segurança de dados.
-
-### Sobre a SUTHUB
-
-Se o usuário perguntar sobre a SUTHUB, informar:
-
-A SUTHUB é uma insurtech brasileira que oferece uma plataforma SaaS para distribuição digital de seguros, conectando seguradoras a canais de venda (corretores, bancos, e-commerces, fintechs e aplicativos). Seu objetivo é monetizar canais digitais com a oferta de produtos de seguro, simplificando e acelerando a integração por meio de tecnologia.
-
-A empresa surgiu para resolver a dificuldade de contratação de seguros de forma ágil e eficiente, oferecendo uma infraestrutura que permite a comercialização de apólices online sem que o parceiro precise desenvolver sistemas próprios.
-
-### CEO da SUTHUB - Renato José Ferreira
-
-**RESPOSTA PADRÃO PARA CONSULTAS SOBRE O CEO DA SUTHUB:**
-
-**Renato José Ferreira - CEO da SUTHUB**
-
-📍 **LinkedIn**: linkedin.com/in/rferreira3
-
-**Informações sobre o executivo:**
-
-**Cargo**: CEO da SUTHUB desde sua fundação em 2017
-**Empresa**: SUTHUB - Insurtech brasileira líder em distribuição digital de seguros
-**Localização**: São Paulo, Brasil
-
-**Sobre a SUTHUB sob sua liderança:**
-
-✅ Plataforma SaaS (Software as a Service) para distribuição digital de seguros
-✅ Pioneira no continente americano no seu segmento
-✅ Expansão internacional iniciada em 2021 com filial na Europa
-✅ Empresa com 51-200 funcionários
-✅ Sede: Rua da Consolação, 2302 - São Paulo
-
-**Destaques recentes (Janeiro 2025):**
-
-🚀 Lançamento da plataforma ZeroCode Brokers - solução omnichannel para corretores
-🤝 Parcerias estratégicas com seguradoras renomadas
-📱 Produtos inovadores como o Mobi Livre da SURA
-⚡ Foco em eliminar burocracias e acelerar a contratação de seguros digitais
-
-**Visão da SUTHUB:**
-A empresa busca democratizar o acesso a seguros através da tecnologia, conectando seguradoras a diversos canais de venda de forma simples e eficiente.
-
-## Contato e Suporte
-
-Para questões sobre o projeto, verificar:
-- Documentação Next.js: https://nextjs.org/docs
-- Claude Code Docs: https://docs.anthropic.com/claude-code
-- Repositório GitHub: [configurado no projeto]
+- Documentation: https://github.com/ruvnet/claude-flow
+- Issues: https://github.com/ruvnet/claude-flow/issues
+- Flow-Nexus Platform: https://flow-nexus.ruv.io (registration required for cloud features)
 
 ---
 
-*Última atualização: 06/09/2025*
-*Ambiente: Docker Ubuntu em Host Debian*
+Remember: **Claude Flow coordinates, Claude Code creates!**
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+Never save working files, text/mds and tests to the root folder.
