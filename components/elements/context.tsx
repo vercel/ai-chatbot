@@ -248,15 +248,16 @@ export const Context = ({
       : undefined;
 
   const reasoningTokens = uBreakdown.reasoningTokens ?? 0;
-  const reasoningCostText =
-    modelId && reasoningTokens > 0
-      ? formatUSDFixed(
-          estimateCost({
-            modelId,
-            usage: { reasoningTokens },
-          }).totalUSD,
-        )
-      : undefined;
+  let reasoningCostText: string | undefined;
+  if (modelId && reasoningTokens > 0) {
+    const est = estimateCost({
+      modelId,
+      usage: { reasoningTokens },
+    }).totalUSD;
+    // TokenLens does not provide reasoning pricing for some models. Show em dash when unknown.
+    reasoningCostText =
+      est && Number.isFinite(est) && est > 0 ? formatUSDFixed(est) : '—';
+  }
 
   const costUSD = modelId
     ? estimateCost({
