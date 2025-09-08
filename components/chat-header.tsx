@@ -14,6 +14,16 @@ import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 import type { Session } from 'next-auth';
 import { JourneyNavigation } from './journey-navigation';
 
+// Custom hook to safely use sidebar
+function useSidebarSafe() {
+  try {
+    return useSidebar();
+  } catch {
+    // Return a mock object when SidebarProvider is not available
+    return { open: false, toggleSidebar: () => {} };
+  }
+}
+
 function PureChatHeader({
   chatId,
   selectedVisibilityType,
@@ -26,7 +36,7 @@ function PureChatHeader({
   session: Session;
 }>) {
   const router = useRouter();
-  const { open } = useSidebar();
+  const { open } = useSidebarSafe();
 
   const { width: windowWidth } = useWindowSize();
 
