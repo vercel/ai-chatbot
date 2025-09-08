@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { geocodeAddress, reverseGeocode } from './GoogleMap';
 
 interface AddressCoordsInputProps {
   onCenterMap: (coords: { lat: number; lng: number }) => void;
@@ -20,23 +21,6 @@ export function AddressCoordsInput({
   const [lng, setLng] = useState('');
   const [useReverse, setUseReverse] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const geocodeAddress = async (addr: string) => {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`,
-    );
-    const data = await res.json();
-    if (!data[0]) throw new Error('Endereço não encontrado');
-    return { lat: Number.parseFloat(data[0].lat), lng: Number.parseFloat(data[0].lon) };
-  };
-
-  const reverseGeocode = async (la: number, lo: number) => {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`,
-    );
-    const data = await res.json();
-    return data.display_name as string;
-  };
 
   const validateCoords = (la: number, lo: number) => {
     return la >= -90 && la <= 90 && lo >= -180 && lo <= 180;
