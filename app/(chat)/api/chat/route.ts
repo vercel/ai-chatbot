@@ -2,6 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   JsonToSseTransformStream,
+  LanguageModelUsage,
   smoothStream,
   stepCountIs,
   streamText,
@@ -149,6 +150,8 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    let finalUsage: LanguageModelUsage | undefined;
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -178,6 +181,10 @@ export async function POST(request: Request) {
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
+          },
+          onFinish: ({ usage }) => {
+            finalUsage = usage;
+            dataStream.write({ type: 'data-usage', data: usage });
           },
         });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import type { UIMessage } from 'ai';
+import type { LanguageModelUsage, UIMessage } from 'ai';
 import {
   useRef,
   useEffect,
@@ -10,6 +10,7 @@ import {
   type SetStateAction,
   type ChangeEvent,
   memo,
+  useMemo,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
@@ -39,6 +40,9 @@ import type { Attachment, ChatMessage } from '@/lib/types';
 import { chatModels } from '@/lib/ai/models';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
+import { getContextWindow, normalizeUsage } from 'tokenlens';
+import { Context } from './elements/context';
+import { myProvider } from '@/lib/ai/providers';
 
 function PureMultimodalInput({
   chatId,
@@ -54,6 +58,7 @@ function PureMultimodalInput({
   className,
   selectedVisibilityType,
   selectedModelId,
+  usage,
 }: {
   chatId: string;
   input: string;
@@ -68,6 +73,7 @@ function PureMultimodalInput({
   className?: string;
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
+  usage?: LanguageModelUsage;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -182,6 +188,36 @@ function PureMultimodalInput({
       toast.error('Failed to upload file, please try again!');
     }
   };
+
+  const modelResolver = useMemo(() => {
+    return myProvider.languageModel(selectedModelId);
+  }, [selectedModelId]);
+
+  const contextMax = useMemo(() => {
+    // Resolve from selected model; stable across chunks.
+    const cw = getContextWindow(modelResolver.modelId);
+    return cw.combinedMax ?? cw.inputMax ?? 0;
+  }, [modelResolver]);
+
+  const usedTokens = useMemo(() => {
+    // Prefer explicit usage data part captured via onData
+    if (!usage) return 0; // update only when final usage arrives
+    const n = normalizeUsage(usage);
+    return typeof n.total === 'number'
+      ? n.total
+      : (n.input ?? 0) + (n.output ?? 0);
+  }, [usage]);
+
+  const contextProps = useMemo(
+    () => ({
+      maxTokens: contextMax,
+      usedTokens,
+      usage,
+      modelId: modelResolver.modelId,
+      showBreakdown: true as const,
+    }),
+    [contextMax, usedTokens, usage, modelResolver],
+  );
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -323,8 +359,13 @@ function PureMultimodalInput({
         />
         <PromptInputToolbar className="px-3 py-2 !border-t-0 !border-top-0 shadow-none dark:!border-transparent dark:border-0">
           <PromptInputTools className="gap-2">
-            <AttachmentsButton fileInputRef={fileInputRef} status={status} selectedModelId={selectedModelId} />
+            <AttachmentsButton
+              fileInputRef={fileInputRef}
+              status={status}
+              selectedModelId={selectedModelId}
+            />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
+            <Context {...contextProps} />
           </PromptInputTools>
           {status === 'submitted' ? (
             <StopButton stop={stop} setMessages={setMessages} />
@@ -367,7 +408,7 @@ function PureAttachmentsButton({
   selectedModelId: string;
 }) {
   const isReasoningModel = selectedModelId === 'chat-model-reasoning';
-  
+
   return (
     <Button
       data-testid="attachments-button"
