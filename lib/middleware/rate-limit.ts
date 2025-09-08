@@ -1,47 +1,169 @@
 /**
- * Rate Limiting Middleware para Next.js
- * Proteção contra abuso de API
+ * Rate Limiting Middleware for Next.js
+ * Protection against API abuse with Redis backend and memory fallback
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { appConfig } from '@/lib/config/app-config';
+import { redisClient, isRedisAvailable } from '@/lib/cache/redis-client';
 
 interface RateLimitEntry {
   count: number;
   resetTime: number;
 }
 
-// Store em memória (em produção, usar Redis)
-const rateLimitStore = new Map<string, RateLimitEntry>();
+interface RateLimitResult {
+  success: boolean;
+  limit: number;
+  remaining: number;
+  resetTime: number;
+  retryAfter?: number;
+}
 
-// Limpar entradas expiradas periodicamente
+// Fallback in-memory store when Redis is unavailable
+const memoryRateLimitStore = new Map<string, RateLimitEntry>();
+
+// Clean expired entries periodically for memory fallback
 setInterval(() => {
   const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
+  for (const [key, entry] of memoryRateLimitStore.entries()) {
     if (entry.resetTime < now) {
-      rateLimitStore.delete(key);
+      memoryRateLimitStore.delete(key);
     }
   }
-}, 60000); // Limpar a cada minuto
+}, 60000); // Clean every minute
 
 /**
- * Obtém identificador único do cliente
+ * Get unique client identifier
  */
 function getClientIdentifier(request: NextRequest): string {
-  // Tentar obter IP real
+  // Try to get real IP
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
   const ip = forwarded?.split(',')[0] || realIp || 'unknown';
   
-  // Adicionar user agent para mais granularidade
+  // Add user agent for more granularity
   const userAgent = request.headers.get('user-agent') || 'unknown';
   
-  // Criar hash simples
+  // Create simple hash
   return `${ip}-${userAgent.substring(0, 50)}`;
 }
 
 /**
- * Middleware de rate limiting
+ * Redis-based rate limit check with memory fallback
+ */
+async function checkRateLimit(
+  key: string,
+  windowMs: number,
+  maxRequests: number
+): Promise<RateLimitResult> {
+  const now = Date.now();
+  const resetTime = now + windowMs;
+
+  if (isRedisAvailable()) {
+    try {
+      return await checkRateLimitRedis(key, windowMs, maxRequests, now, resetTime);
+    } catch (error) {
+      console.warn('Redis rate limit check failed, falling back to memory:', error);
+      return checkRateLimitMemory(key, windowMs, maxRequests, now, resetTime);
+    }
+  } else {
+    return checkRateLimitMemory(key, windowMs, maxRequests, now, resetTime);
+  }
+}
+
+/**
+ * Redis implementation of rate limiting
+ */
+async function checkRateLimitRedis(
+  key: string,
+  windowMs: number,
+  maxRequests: number,
+  now: number,
+  resetTime: number
+): Promise<RateLimitResult> {
+  const redisKey = `rate_limit:${key}`;
+  const client = redisClient.getClient()!;
+
+  // Use pipeline for atomic operations
+  const pipeline = client.pipeline();
+  
+  // Get current count and TTL
+  pipeline.get(redisKey);
+  pipeline.ttl(redisKey);
+  
+  const results = await pipeline.exec();
+  const currentCount = parseInt((results?.[0]?.[1] as string) || '0');
+  const ttl = (results?.[1]?.[1] as number) || -1;
+
+  let count = currentCount;
+  let actualResetTime = resetTime;
+
+  // If key exists and hasn't expired, increment
+  if (ttl > 0) {
+    count = currentCount + 1;
+    actualResetTime = now + (ttl * 1000);
+    
+    if (count <= maxRequests) {
+      await client.incr(redisKey);
+    }
+  } else {
+    // New window or expired key
+    count = 1;
+    actualResetTime = resetTime;
+    await client.setex(redisKey, Math.ceil(windowMs / 1000), '1');
+  }
+
+  const remaining = Math.max(0, maxRequests - count);
+  const retryAfter = count > maxRequests ? Math.ceil((actualResetTime - now) / 1000) : undefined;
+
+  return {
+    success: count <= maxRequests,
+    limit: maxRequests,
+    remaining,
+    resetTime: actualResetTime,
+    retryAfter,
+  };
+}
+
+/**
+ * Memory fallback implementation of rate limiting
+ */
+function checkRateLimitMemory(
+  key: string,
+  windowMs: number,
+  maxRequests: number,
+  now: number,
+  resetTime: number
+): RateLimitResult {
+  let entry = memoryRateLimitStore.get(key);
+
+  if (!entry || entry.resetTime < now) {
+    // New window
+    entry = {
+      count: 1,
+      resetTime,
+    };
+    memoryRateLimitStore.set(key, entry);
+  } else {
+    // Increment counter
+    entry.count++;
+  }
+
+  const remaining = Math.max(0, maxRequests - entry.count);
+  const retryAfter = entry.count > maxRequests ? Math.ceil((entry.resetTime - now) / 1000) : undefined;
+
+  return {
+    success: entry.count <= maxRequests,
+    limit: maxRequests,
+    remaining,
+    resetTime: entry.resetTime,
+    retryAfter,
+  };
+}
+
+/**
+ * Rate limiting middleware with Redis backend and memory fallback
  */
 export async function rateLimit(
   request: NextRequest,
@@ -53,7 +175,7 @@ export async function rateLimit(
     keyGenerator?: (req: NextRequest) => string;
   }
 ) {
-  // Verificar se rate limiting está habilitado
+  // Check if rate limiting is enabled
   if (!appConfig.isFeatureEnabled('enableRateLimiting')) {
     return NextResponse.next();
   }
@@ -62,57 +184,41 @@ export async function rateLimit(
   const windowMs = options?.windowMs || config.windowMs;
   const maxRequests = options?.maxRequests || config.maxRequests;
   
-  // Gerar chave única para o cliente
+  // Generate unique key for the client
   const key = options?.keyGenerator 
     ? options.keyGenerator(request)
     : getClientIdentifier(request);
   
-  const now = Date.now();
-  const resetTime = now + windowMs;
+  // Check rate limit
+  const result = await checkRateLimit(key, windowMs, maxRequests);
   
-  // Obter ou criar entrada
-  let entry = rateLimitStore.get(key);
-  
-  if (!entry || entry.resetTime < now) {
-    // Nova janela de tempo
-    entry = {
-      count: 1,
-      resetTime,
-    };
-    rateLimitStore.set(key, entry);
-  } else {
-    // Incrementar contador
-    entry.count++;
-  }
-  
-  // Verificar limite
-  if (entry.count > maxRequests) {
-    // Calcular tempo de retry
-    const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
-    
+  // If rate limit exceeded
+  if (!result.success) {
     return NextResponse.json(
       {
         error: 'Too Many Requests',
-        message: `Rate limit exceeded. Please try again in ${retryAfter} seconds.`,
-        retryAfter,
+        message: `Rate limit exceeded. Please try again in ${result.retryAfter} seconds.`,
+        retryAfter: result.retryAfter,
       },
       {
         status: 429,
         headers: {
-          'Retry-After': retryAfter.toString(),
-          'X-RateLimit-Limit': maxRequests.toString(),
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': new Date(entry.resetTime).toISOString(),
+          'Retry-After': result.retryAfter?.toString() || '60',
+          'X-RateLimit-Limit': result.limit.toString(),
+          'X-RateLimit-Remaining': result.remaining.toString(),
+          'X-RateLimit-Reset': new Date(result.resetTime).toISOString(),
+          'X-RateLimit-Backend': isRedisAvailable() ? 'redis' : 'memory',
         },
       }
     );
   }
   
-  // Adicionar headers informativos
+  // Add informative headers
   const response = NextResponse.next();
-  response.headers.set('X-RateLimit-Limit', maxRequests.toString());
-  response.headers.set('X-RateLimit-Remaining', (maxRequests - entry.count).toString());
-  response.headers.set('X-RateLimit-Reset', new Date(entry.resetTime).toISOString());
+  response.headers.set('X-RateLimit-Limit', result.limit.toString());
+  response.headers.set('X-RateLimit-Remaining', result.remaining.toString());
+  response.headers.set('X-RateLimit-Reset', new Date(result.resetTime).toISOString());
+  response.headers.set('X-RateLimit-Backend', isRedisAvailable() ? 'redis' : 'memory');
   
   return response;
 }
@@ -202,6 +308,55 @@ export async function applyRateLimit(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Exportar tipos
+// Export types and utilities
 export type RateLimiter = typeof rateLimiters[keyof typeof rateLimiters];
 export type RateLimitOptions = Parameters<typeof rateLimit>[1];
+export type { RateLimitResult, RateLimitEntry };
+
+// Export backend status
+export const getRateLimitBackend = () => isRedisAvailable() ? 'redis' : 'memory';
+
+// Export rate limit statistics
+export async function getRateLimitStats(key: string): Promise<{
+  count: number;
+  remaining: number;
+  resetTime: number;
+  backend: 'redis' | 'memory';
+} | null> {
+  if (isRedisAvailable()) {
+    try {
+      const redisKey = `rate_limit:${key}`;
+      const client = redisClient.getClient()!;
+      
+      const [count, ttl] = await Promise.all([
+        client.get(redisKey),
+        client.ttl(redisKey)
+      ]);
+      
+      if (count && ttl > 0) {
+        const resetTime = Date.now() + (ttl * 1000);
+        return {
+          count: parseInt(count),
+          remaining: Math.max(0, 100 - parseInt(count)), // Default limit, should be configurable
+          resetTime,
+          backend: 'redis'
+        };
+      }
+    } catch (error) {
+      console.warn('Failed to get rate limit stats from Redis:', error);
+    }
+  }
+  
+  // Fallback to memory
+  const entry = memoryRateLimitStore.get(key);
+  if (entry) {
+    return {
+      count: entry.count,
+      remaining: Math.max(0, 100 - entry.count), // Default limit
+      resetTime: entry.resetTime,
+      backend: 'memory'
+    };
+  }
+  
+  return null;
+}
