@@ -184,7 +184,6 @@ export async function POST(request: Request) {
           },
           onFinish: ({ usage }) => {
             finalUsage = usage;
-            console.log('[api/chat] onFinish usage', usage);
             dataStream.write({ type: 'data-usage', data: usage });
           },
         });

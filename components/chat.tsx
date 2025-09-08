@@ -82,7 +82,6 @@ export function Chat({
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
       if (dataPart.type === 'data-usage') {
-        console.log('dataPart', dataPart);
         setUsage(dataPart.data);
       }
     },
