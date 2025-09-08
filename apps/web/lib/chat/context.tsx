@@ -1,9 +1,10 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useChat, type UseChatHelpers } from 'ai/react';
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import type { ErrorState, ToolStep } from './types';
+import type { UIMessage } from 'ai';
 
-interface ChatContextValue extends UseChatHelpers {
+interface ChatContextValue extends UseChatHelpers<UIMessage> {
   errorState?: ErrorState;
   steps: ToolStep[];
   setSteps: (s: ToolStep[]) => void;
@@ -13,12 +14,10 @@ const ChatContext = createContext<ChatContextValue | undefined>(undefined);
 
 export function ChatProvider({
   children,
-  api = '/api/chat',
 }: {
-  children: React.ReactNode;
-  api?: string;
+  readonly children: React.ReactNode;
 }) {
-  const chat = useChat({ api });
+  const chat = useChat();
   const [errorState, setErrorState] = useState<ErrorState>();
   const [steps, setSteps] = useState<ToolStep[]>([]);
 
@@ -31,11 +30,12 @@ export function ChatProvider({
     setErrorState({ type, message });
   }, [chat.error]);
 
-  return (
-    <ChatContext.Provider value={{ ...chat, errorState, steps, setSteps }}>
-      {children}
-    </ChatContext.Provider>
+  const value = useMemo(
+    () => ({ ...chat, errorState, steps, setSteps }),
+    [chat, errorState, steps],
   );
+
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }
 
 export function useChatContext() {

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import { ConsumptionCard, type DataPoint } from '@/packages/ui-cards/ConsumptionCard';
