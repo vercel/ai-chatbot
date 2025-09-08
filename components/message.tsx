@@ -317,7 +317,7 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full md:gap-4">
-          <div className="px-0 py-0 text-sm text-muted-foreground">
+          <div className="p-0 text-sm text-muted-foreground">
             <LoadingText>Thinking...</LoadingText>
           </div>
         </div>
