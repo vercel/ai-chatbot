@@ -33,7 +33,6 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import { LanguageModelV2Usage } from '@ai-sdk/provider';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -203,10 +202,7 @@ export async function getChatsByUserId({
 export async function getChatById({ id }: { id: string }) {
   try {
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
-    return {
-      ...selectedChat,
-      lastContext: selectedChat.lastContext as LanguageModelV2Usage,
-    };
+    return selectedChat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
   }
@@ -473,32 +469,10 @@ export async function updateChatVisiblityById({
   }
 }
 
-export async function updateChatLastContextById({
-  chatId,
-  context,
-}: {
-  chatId: string;
-  // Store raw LanguageModelUsage to keep it simple
-  context: LanguageModelV2Usage;
-}) {
-  try {
-    return await db
-      .update(chat)
-      .set({ lastContext: context as any })
-      .where(eq(chat.id, chatId));
-  } catch (error) {
-    console.warn('Failed to update lastContext for chat', chatId, error);
-    return;
-  }
-}
-
 export async function getMessageCountByUserId({
   id,
   differenceInHours,
-}: {
-  id: string;
-  differenceInHours: number;
-}) {
+}: { id: string; differenceInHours: number }) {
   try {
     const twentyFourHoursAgo = new Date(
       Date.now() - differenceInHours * 60 * 60 * 1000,

@@ -214,6 +214,7 @@ function PureMultimodalInput({
       usedTokens,
       usage,
       modelId: modelResolver.modelId,
+      showBreakdown: true as const,
     }),
     [contextMax, usedTokens, usage, modelResolver],
   );
@@ -342,22 +343,20 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className="flex flex-row gap-2 items-start">
-          <PromptInputTextarea
-            data-testid="multimodal-input"
-            ref={textareaRef}
-            placeholder="Send a message..."
-            value={input}
-            onChange={handleInput}
-            minHeight={44}
-            maxHeight={200}
-            disableAutoResize={true}
-            className="text-sm flex-grow resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
-            rows={1}
-            autoFocus
-          />{' '}
-          <Context {...contextProps} />
-        </div>
+
+        <PromptInputTextarea
+          data-testid="multimodal-input"
+          ref={textareaRef}
+          placeholder="Send a message..."
+          value={input}
+          onChange={handleInput}
+          minHeight={44}
+          maxHeight={200}
+          disableAutoResize={true}
+          className="text-sm resize-none p-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
+          rows={1}
+          autoFocus
+        />
         <PromptInputToolbar className="px-3 py-2 !border-t-0 !border-top-0 shadow-none dark:!border-transparent dark:border-0">
           <PromptInputTools className="gap-2">
             <AttachmentsButton
@@ -366,8 +365,8 @@ function PureMultimodalInput({
               selectedModelId={selectedModelId}
             />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
+            <Context {...contextProps} />
           </PromptInputTools>
-
           {status === 'submitted' ? (
             <StopButton stop={stop} setMessages={setMessages} />
           ) : (
