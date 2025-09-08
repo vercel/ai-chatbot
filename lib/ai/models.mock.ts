@@ -1,11 +1,12 @@
-import { type LanguageModelV2 } from 'ai';
+import { type LanguageModel } from 'ai';
 
-const createMockModel = (): LanguageModelV2 => {
+const createMockModel = (): LanguageModel => {
   return {
     specificationVersion: 'v2',
     provider: 'mock',
     modelId: 'mock-model',
     defaultObjectGenerationMode: 'tool',
+    supportedUrls: [],
     supportsImageUrls: false,
     supportsStructuredOutputs: false,
     doGenerate: async () => ({
@@ -20,14 +21,15 @@ const createMockModel = (): LanguageModelV2 => {
         start(controller) {
           controller.enqueue({
             type: 'text-delta',
-            textDelta: 'Mock response',
+            id: 'mock-id',
+            delta: 'Mock response',
           });
           controller.close();
         },
       }),
       rawCall: { rawPrompt: null, rawSettings: {} },
     }),
-  } as LanguageModelV2;
+  } as unknown as LanguageModel;
 };
 
 export const chatModel = createMockModel();
