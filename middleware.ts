@@ -44,6 +44,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  // Check admin routes access
+  if (pathname.startsWith('/admin')) {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    
+    const userRole = token.role || 'employee';
+    if (!['compliance_officer', 'admin'].includes(userRole)) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -54,6 +66,7 @@ export const config = {
     '/api/:path*',
     '/login',
     '/register',
+    '/admin/:path*',
 
     /*
      * Match all request paths except for the ones starting with:

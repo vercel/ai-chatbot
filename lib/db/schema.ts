@@ -15,6 +15,9 @@ export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  role: varchar('role', { enum: ['employee', 'compliance_officer', 'admin'] })
+    .notNull()
+    .default('employee'),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -168,3 +171,41 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const conflictReport = pgTable('ConflictReport', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userEmail: varchar('userEmail', { length: 64 }).notNull(),
+  documentId: uuid('documentId').notNull(),
+  content: text('content').notNull(),
+  status: varchar('status', { 
+    enum: ['pending', 'under_review', 'requires_more_info', 'approved', 'rejected'] 
+  })
+    .notNull()
+    .default('pending'),
+  priority: varchar('priority', { enum: ['low', 'medium', 'high', 'urgent'] })
+    .notNull()
+    .default('medium'),
+  submittedAt: timestamp('submittedAt').notNull(),
+  reviewedAt: timestamp('reviewedAt'),
+  reviewerId: uuid('reviewerId').references(() => user.id),
+  emailThreadId: varchar('emailThreadId', { length: 255 }), // For tracking email conversations
+});
+
+export type ConflictReport = InferSelectModel<typeof conflictReport>;
+
+export const reviewResponse = pgTable('ReviewResponse', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  conflictReportId: uuid('conflictReportId')
+    .notNull()
+    .references(() => conflictReport.id),
+  reviewerId: uuid('reviewerId').references(() => user.id), // Null for user responses
+  actionType: varchar('actionType', {
+    enum: ['acknowledge', 'request_more_info', 'approve', 'reject', 'user_response']
+  }).notNull(),
+  responseContent: text('responseContent').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+  emailId: varchar('emailId', { length: 255 }), // Resend email ID
+  isFromUser: boolean('isFromUser').notNull().default(false), // True for user email replies
+});
+
+export type ReviewResponse = InferSelectModel<typeof reviewResponse>;

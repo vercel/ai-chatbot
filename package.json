@@ -88,6 +88,7 @@
     "react-resizable-panels": "^2.1.9",
     "react-syntax-highlighter": "^15.6.6",
     "redis": "^5.8.2",
+    "resend": "^6.0.3",
     "resumable-stream": "^2.2.3",
     "server-only": "^0.0.1",
     "shiki": "^3.12.2",

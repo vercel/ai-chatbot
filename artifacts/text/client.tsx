@@ -13,6 +13,7 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
+import { CheckCircle } from 'lucide-react';
 import type { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
@@ -250,6 +251,39 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
           console.error('PDF generation error:', error);
           toast.error('Failed to generate PDF. Please try again.');
         }
+      },
+    },
+    {
+      icon: <CheckCircle size={18} />,
+      description: 'Submit for Review',
+      onClick: async ({ content }) => {
+        try {
+          const response = await fetch('/api/conflict-reports', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              documentId: crypto.randomUUID(), // Generate a unique ID for the report
+              content,
+              priority: 'medium',
+            }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            toast.success('Conflict report submitted for review successfully!');
+          } else {
+            toast.error(result.error || 'Failed to submit report for review');
+          }
+        } catch (error) {
+          console.error('Submit for review error:', error);
+          toast.error('Failed to submit report for review. Please try again.');
+        }
+      },
+      isDisabled: ({ isCurrentVersion }) => {
+        return !isCurrentVersion;
       },
     },
   ],

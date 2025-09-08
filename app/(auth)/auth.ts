@@ -13,6 +13,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       type: UserType;
+      role: 'employee' | 'compliance_officer' | 'admin';
     } & DefaultSession['user'];
   }
 
@@ -20,6 +21,7 @@ declare module 'next-auth' {
     id?: string;
     email?: string | null;
     type: UserType;
+    role: 'employee' | 'compliance_officer' | 'admin';
   }
 }
 
@@ -27,6 +29,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
+    role: 'employee' | 'compliance_officer' | 'admin';
   }
 }
 
@@ -59,7 +62,7 @@ export const {
 
         if (!passwordsMatch) return null;
 
-        return { ...user, type: 'regular' };
+        return { ...user, type: 'regular', role: user.role || 'employee' };
       },
     }),
   ],
@@ -68,6 +71,7 @@ export const {
       if (user) {
         token.id = user.id as string;
         token.type = user.type;
+        token.role = user.role;
       }
 
       return token;
@@ -76,6 +80,7 @@ export const {
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
+        session.user.role = token.role;
       }
 
       return session;
