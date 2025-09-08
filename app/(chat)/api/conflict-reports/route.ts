@@ -3,12 +3,8 @@ import { conflictReport } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { eq, desc } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { sendReportSubmissionEmail } from '@/lib/email/service';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 const submitReportSchema = z.object({
   documentId: z.string().uuid(),

@@ -3,12 +3,8 @@ import { conflictReport, reviewResponse } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { sendReviewEmail } from '@/lib/email/service';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 const reviewResponseSchema = z.object({
   actionType: z.enum(['acknowledge', 'request_more_info', 'approve', 'reject']),

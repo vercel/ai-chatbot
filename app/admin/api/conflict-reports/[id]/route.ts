@@ -3,11 +3,7 @@ import { conflictReport } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 const updateReportSchema = z.object({
   status: z.enum(['pending', 'under_review', 'requires_more_info', 'approved', 'rejected']).optional(),

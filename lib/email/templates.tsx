@@ -46,7 +46,7 @@ export const ConflictReportEmail: React.FC<ConflictReportEmailProps> = ({
   };
 
   return (
-    <html>
+    <html lang="en">
       <head>
         <title>{getSubject()}</title>
       </head>

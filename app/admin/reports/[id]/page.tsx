@@ -1,16 +1,12 @@
 import { auth } from '@/app/(auth)/auth';
 import { conflictReport, reviewResponse, user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { notFound } from 'next/navigation';
 import { formatDistance } from 'date-fns';
 import { ReviewActions } from './review-actions';
 import Link from 'next/link';
 import { Response } from '@/components/elements/response';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 export default async function ReportDetailPage({
   params,

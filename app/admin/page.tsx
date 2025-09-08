@@ -1,12 +1,8 @@
 import { auth } from '@/app/(auth)/auth';
 import { conflictReport } from '@/lib/db/schema';
 import { eq, count, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import Link from 'next/link';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 export default async function AdminDashboard() {
   const session = await auth();

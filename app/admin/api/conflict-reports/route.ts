@@ -2,11 +2,7 @@ import { auth } from '@/app/(auth)/auth';
 import { conflictReport } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
 import { desc, eq, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {

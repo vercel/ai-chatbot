@@ -1,12 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { extractReportIdFromEmail } from '@/lib/email/mailgun';
 import { conflictReport, reviewResponse } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   console.log('🔔 Mailgun webhook received!', new Date().toISOString());

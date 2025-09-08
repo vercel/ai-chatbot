@@ -1,13 +1,9 @@
 import { conflictReport } from '@/lib/db/schema';
 import { desc, eq, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { ReportFilters } from './filters';
-
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+import { db } from '@/lib/db';
 
 interface SearchParams {
   status?: string;
