@@ -31,7 +31,6 @@ export function Chat({
   isReadonly,
   session,
   autoResume,
-  initialLastContext,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -40,7 +39,6 @@ export function Chat({
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
-  initialLastContext?: LanguageModelUsage;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -51,9 +49,7 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
-  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(
-    initialLastContext,
-  );
+  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(undefined);
 
   const {
     messages,
