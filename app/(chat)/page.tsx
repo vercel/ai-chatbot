@@ -1,18 +1,11 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { auth } from '@/auth';
 
 export default async function Page() {
-  let session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    await auth.api.signInAnonymous();
-  }
-
   const id = generateUUID();
 
   const cookieStore = await cookies();

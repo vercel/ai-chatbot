@@ -7,7 +7,7 @@ import {
   stepCountIs,
   streamText,
 } from 'ai';
-import { auth, type UserType } from '@/app/(auth)/auth';
+import { auth } from '@/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
   createStreamId,
@@ -38,6 +38,8 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import { headers } from 'next/headers';
+import { Session } from '@/lib/db/schema';
 
 export const maxDuration = 60;
 
@@ -86,20 +88,20 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
     } = requestBody;
 
-    const session = await auth();
+    const user = await auth.api.getSession({ headers: await headers() });
 
-    if (!session?.user) {
+    if (!user?.user) {
       return new ChatSDKError('unauthorized:chat').toResponse();
     }
 
-    const userType: UserType = session.user.type;
-
     const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
+      id: user.user.id,
       differenceInHours: 24,
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    if (
+      messageCount > entitlementsByUserType[user.user.role].maxMessagesPerDay
+    ) {
       return new ChatSDKError('rate_limit:chat').toResponse();
     }
 
@@ -112,12 +114,12 @@ export async function POST(request: Request) {
 
       await saveChat({
         id,
-        userId: session.user.id,
+        userId: user.user.id,
         title,
         visibility: selectedVisibilityType,
       });
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== user.user.id) {
         return new ChatSDKError('forbidden:chat').toResponse();
       }
     }
@@ -151,6 +153,7 @@ export async function POST(request: Request) {
     await createStreamId({ streamId, chatId: id });
 
     let finalUsage: LanguageModelUsage | undefined;
+    const session = user.session as Session;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {

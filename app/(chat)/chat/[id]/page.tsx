@@ -21,7 +21,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    await auth.api.signInAnonymous();
+    redirect('/api/auth/guest');
   }
 
   if (chat.visibility === 'private') {

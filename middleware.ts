@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getSessionCookie } from "better-auth/cookies";
+import { getSessionCookie } from 'better-auth/cookies';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -17,16 +17,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname === '/api/auth/guest') {
+    return NextResponse.next();
+  }
+
   const token = getSessionCookie(request);
 
   if (!token) {
-    if (pathname === '/chat') {
+    if (pathname === '/') {
       return NextResponse.next();
+    }
+
+    // Redirect /chat to guest auth when no token
+    if (pathname === '/chat') {
+      return NextResponse.redirect(new URL('/api/auth/guest', request.url));
     }
 
     const redirectUrl = encodeURIComponent(request.url);
 
-    if (pathname.startsWith('/chat/') || pathname === '/') {
+    if (pathname.startsWith('/chat/')) {
       return NextResponse.redirect(new URL('/chat', request.url));
     }
 
