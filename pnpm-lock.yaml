@@ -240,8 +240,8 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
       tokenlens:
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.1.2
+        version: 1.1.2
       use-stick-to-bottom:
         specifier: ^1.1.1
         version: 1.1.1(react@19.0.0-rc-45804af1-20241021)
@@ -4707,8 +4707,8 @@ packages:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
 
-  tokenlens@1.1.1:
-    resolution: {integrity: sha512-MsCJaOFMde0OgoO4BJ79DvGFcntLB0PofZQGCbdW2ez+5MJSnBEcZjxMd0Adts8AcIrejYgw/LGA362zS+SUSw==}
+  tokenlens@1.1.2:
+    resolution: {integrity: sha512-PICXahAiVS/2nyc30SijuYZj5wIm2G9+2U7fdvQbl5pa/hIUpQ8H+RdYOzOrSvva6GMqPM5+6cWd9Hqi81Yv3g==}
 
   trim-lines@3.0.1:
     resolution: {integrity: sha512-kRj8B+YHZCc9kQYdWfJB2/oUl9rA99qbowYYBtr4ui4mZyAQ2JpvVBd/6U2YloATfqBhBTSMhTpgBHtU0Mf3Rg==}
@@ -9738,7 +9738,7 @@ snapshots:
     dependencies:
       is-number: 7.0.0
 
-  tokenlens@1.1.1: {}
+  tokenlens@1.1.2: {}
 
   trim-lines@3.0.1: {}
 
