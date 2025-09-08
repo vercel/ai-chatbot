@@ -3,6 +3,9 @@ export type Phase =
   | 'Detection'
   | 'Analysis'
   | 'Dimensioning'
+  | 'Simulation'
+  | 'Installation'
+  | 'Monitoring'
   | 'Recommendation'
   | 'LeadMgmt';
 
@@ -33,12 +36,30 @@ export const journeyMap: Record<Phase, PhaseConfig> = {
   },
   Dimensioning: {
     prev: 'Analysis',
-    next: 'Recommendation',
+    next: 'Simulation',
     cards: ['Dimensioning'],
     viewers: [],
   },
-  Recommendation: {
+  Simulation: {
     prev: 'Dimensioning',
+    next: 'Installation',
+    cards: ['Simulation'],
+    viewers: [],
+  },
+  Installation: {
+    prev: 'Simulation',
+    next: 'Monitoring',
+    cards: ['Installation'],
+    viewers: [],
+  },
+  Monitoring: {
+    prev: 'Installation',
+    next: 'Recommendation',
+    cards: ['Monitoring'],
+    viewers: [],
+  },
+  Recommendation: {
+    prev: 'Monitoring',
     next: 'LeadMgmt',
     cards: ['Recommendation'],
     viewers: [],
@@ -55,6 +76,9 @@ export const phases: Phase[] = [
   'Detection',
   'Analysis',
   'Dimensioning',
+  'Simulation',
+  'Installation',
+  'Monitoring',
   'Recommendation',
   'LeadMgmt',
 ];
