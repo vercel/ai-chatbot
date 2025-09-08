@@ -2,6 +2,7 @@
 import { PhaseGuard } from '@/apps/web/lib/journey/guard';
 import { usePhase, useJourneyActions } from '@/apps/web/lib/journey/hooks';
 import type { Phase } from '@/apps/web/lib/journey/map';
+import { blueprint } from '@/apps/web/lib/journey/blueprint';
 
 export default function Page({ params }: { params: { phase: Phase } }) {
   return (
@@ -14,9 +15,19 @@ export default function Page({ params }: { params: { phase: Phase } }) {
 function PhaseView() {
   const phase = usePhase();
   const { next, prev, skip, reset } = useJourneyActions();
+  const nodes = blueprint[phase] ?? [];
   return (
     <div>
       <h1>{phase}</h1>
+      {nodes.length > 0 && (
+        <ul>
+          {nodes.map((n) => (
+            <li key={n.id}>
+              <strong>{n.type === 'input' ? 'Input' : 'Output'}:</strong> {n.label} - {n.description}
+            </li>
+          ))}
+        </ul>
+      )}
       <button id="prev" onClick={prev}>
         Prev
       </button>
