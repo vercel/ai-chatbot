@@ -1,4 +1,5 @@
-import { PreviewMessage, ThinkingMessage } from './message';
+import { ThinkingMessage } from './message';
+import { AgentMessageWrapper } from './agent-message-wrapper';
 import { Greeting } from './greeting';
 import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
@@ -8,7 +9,11 @@ import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
-import { Conversation, ConversationContent, ConversationScrollButton } from './elements/conversation';
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from './elements/conversation';
 
 interface MessagesProps {
   chatId: string;
@@ -30,7 +35,7 @@ function PureMessages({
   regenerate,
   isReadonly,
   isArtifactVisible,
-}: MessagesProps) {
+}: Readonly<MessagesProps>) {
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
@@ -51,11 +56,13 @@ function PureMessages({
           {messages.length === 0 && <Greeting />}
 
           {messages.map((message, index) => (
-            <PreviewMessage
+            <AgentMessageWrapper
               key={message.id}
               chatId={chatId}
               message={message}
-              isLoading={status === 'streaming' && messages.length - 1 === index}
+              isLoading={
+                status === 'streaming' && messages.length - 1 === index
+              }
               vote={
                 votes
                   ? votes.find((vote) => vote.messageId === message.id)
@@ -73,7 +80,9 @@ function PureMessages({
 
           {status === 'submitted' &&
             messages.length > 0 &&
-            messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+            messages[messages.length - 1].role === 'user' && (
+              <ThinkingMessage />
+            )}
 
           <motion.div
             ref={messagesEndRef}

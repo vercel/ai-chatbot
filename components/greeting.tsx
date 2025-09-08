@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { RouteIcon } from './icons';
 
 export const Greeting = () => {
   return (
@@ -11,18 +12,31 @@ export const Greeting = () => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
-        className="text-2xl font-semibold"
+        className="text-2xl font-semibold flex items-center gap-3"
       >
-        Hello there!
+        <RouteIcon size={32} />
+        Jornada Solar Inteligente
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.6 }}
-        className="text-2xl text-zinc-500"
+        className="text-lg text-zinc-500 mt-2"
       >
-        How can I help you today?
+        Descubra o potencial solar da sua propriedade com nossos co-agentes
+        especializados
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ delay: 0.7 }}
+        className="text-sm text-zinc-400 mt-4 max-w-2xl"
+      >
+        Envie uma foto do seu telhado, conta de luz ou endereço para começar.
+        Nossos agentes vão guiá-lo através das fases: Investigação → Detecção →
+        Análise → Dimensionamento → Recomendação.
       </motion.div>
     </div>
   );

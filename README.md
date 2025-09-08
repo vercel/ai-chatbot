@@ -71,22 +71,41 @@ pnpm dev
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
 
-## Jornadas dos Proprietários
+## Jornada Solar com Co-Agentes
 
-1. **Investigação** – o usuário envia conta de luz ou endereço, e o sistema classifica a intenção com o **IntentCard** e valida dados com o **LeadValidationCard**.
-2. **Detecção** – identifica painéis ou oportunidades no telhado usando **PanelDetectionCard** e apresenta riscos e anomalias.
-3. **Análise** – o assistente calcula consumo, viabilidade técnica e retorno financeiro com cards como **TechnicalFeasibilityCard**, **FinancialAnalysisCard** e **FinancingCard**.
-4. **Dimensionamento** – gera o tamanho do sistema, layout e estimativas de geração com **SystemSizeCard**, **LayoutCard** e **GenerationCard**.
-5. **Recomendação** – apresenta proposta, contratos e produtos recomendados para aprovação.
-6. **Gestão do Lead** – acompanha status, consentimentos e histórico até o fechamento.
+Esta aplicação foi personalizada para oferecer uma experiência completa de pré-vendas para energia solar, utilizando um sistema de co-agentes especializados em cada fase da jornada do cliente.
 
-Recursos de modo proprietário incluem **GuidedWizardOverlay**, **SavingsSlider & GoalPicker**, **FinancingPicker**, **AppointmentScheduler** e **ConsentManager** para uma experiência guiada e simples.
+### Co-Agentes da Jornada Solar
 
-## Jornadas dos Parceiros (Integradores)
+1. **Agente de Investigação** 🔍
+   - Classifica intenções do usuário
+   - Valida dados de leads
+   - Analisa contas de luz e endereços
 
-1. **Investigação e Detecção** – ingestão de leads em lote e validação automática usando **BatchRunner** e **DataSourceSelector**.
-2. **Análise e Dimensionamento** – otimiza layouts, define restrições e tarifa com **LayoutOptimizerPanel**, **ConstraintsEditor** e **TariffSelector**.
-3. **Recomendação** – gera proposta personalizada aplicando **PricingRules**, consultando **SpecLibrary** e comparando cenários.
-4. **Gestão do Lead** – acompanha consentimentos, status e auditoria com **ComplianceChecklist** e **EnrichmentAuditCard**.
+2. **Agente de Detecção** 📡
+   - Identifica oportunidades no telhado
+   - Detecta painéis solares existentes
+   - Realiza análise visual remota
 
-Essas jornadas estruturam todo o fluxo de ponta a ponta, permitindo que proprietários obtenham rápida visão de viabilidade e que parceiros ofereçam soluções otimizadas.
+3. **Agente de Análise** 📊
+   - Calcula consumo elétrico
+   - Avalia viabilidade técnica
+   - Realiza análise financeira e ROI
+
+4. **Agente de Dimensionamento** 📏
+   - Dimensiona o sistema fotovoltaico
+   - Otimiza layout e configuração
+   - Calcula especificações técnicas
+
+5. **Agente de Recomendação** 🤝
+   - Gera propostas personalizadas
+   - Prepara contratos e documentação
+   - Gerencia leads até o fechamento
+
+### Funcionalidades Multimodais
+
+- **Entrada multimodal**: Texto, imagens, arquivos
+- **Análise de documentos**: Contas de luz, fotos de telhado
+- **Interface visual**: Navegação intuitiva entre fases
+- **Streaming em tempo real**: Respostas dos co-agentes
+- **Persistência de dados**: Histórico completo das conversas

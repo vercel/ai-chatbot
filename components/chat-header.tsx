@@ -12,18 +12,19 @@ import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { type VisibilityType, VisibilitySelector } from './visibility-selector';
 import type { Session } from 'next-auth';
+import { JourneyNavigation } from './journey-navigation';
 
 function PureChatHeader({
   chatId,
   selectedVisibilityType,
   isReadonly,
   session,
-}: {
+}: Readonly<{
   chatId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
-}) {
+}>) {
   const router = useRouter();
   const { open } = useSidebar();
 
@@ -59,6 +60,8 @@ function PureChatHeader({
           className="order-1 md:order-2"
         />
       )}
+
+      <JourneyNavigation className="order-2 md:order-3" />
 
       <Button
         className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-3 md:ml-auto"
