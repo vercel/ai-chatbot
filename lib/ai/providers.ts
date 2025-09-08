@@ -4,12 +4,6 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { gateway } from '@ai-sdk/gateway';
-import {
-  artifactModel,
-  chatModel,
-  reasoningModel,
-  titleModel,
-} from './models.test';
 import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment
