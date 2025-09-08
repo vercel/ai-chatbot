@@ -9,7 +9,6 @@ import { SubmitButton } from '@/components/submit-button';
 
 import { register, type RegisterActionState } from '../actions';
 import { toast } from '@/components/toast';
-import { useSession } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
@@ -23,8 +22,6 @@ export default function Page() {
       status: 'idle',
     },
   );
-
-  const { update: updateSession } = useSession();
 
   useEffect(() => {
     if (state.status === 'user_exists') {
@@ -40,7 +37,6 @@ export default function Page() {
       toast({ type: 'success', description: 'Account created successfully!' });
 
       setIsSuccessful(true);
-      updateSession();
       router.refresh();
     }
   }, [state]);

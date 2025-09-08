@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+
+import { getSessionCookie } from "better-auth/cookies";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -17,24 +17,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
-  });
+  const token = getSessionCookie(request);
 
   if (!token) {
+    if (pathname === '/chat') {
+      return NextResponse.next();
+    }
+
     const redirectUrl = encodeURIComponent(request.url);
 
+    if (pathname.startsWith('/chat/') || pathname === '/') {
+      return NextResponse.redirect(new URL('/chat', request.url));
+    }
+
     return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
+      new URL(`/chat?redirectUrl=${redirectUrl}`, request.url),
     );
-  }
-
-  const isGuest = guestRegex.test(token?.email ?? '');
-
-  if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

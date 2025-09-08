@@ -31,8 +31,10 @@
 - Data Persistence
   - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
   - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+- [Better Auth](https://better-auth.com)
+  - Simple and secure authentication with anonymous support
+  - Users can try the chatbot without providing personal information
+  - Anonymous users can later link their account to full authentication
 
 ## Model Providers
 

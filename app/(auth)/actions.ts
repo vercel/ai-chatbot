@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { createUser, getUser } from '@/lib/db/queries';
 
-import { signIn } from './auth';
+import { auth } from '@/auth';
 
 const authFormSchema = z.object({
   email: z.string().email(),
@@ -25,10 +25,13 @@ export const login = async (
       password: formData.get('password'),
     });
 
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
+    await auth.api.signInEmail({
+      body: {
+        email: validatedData.email,
+        password: validatedData.password,
+        callbackURL: '/',
+        rememberMe: false,
+      },
     });
 
     return { status: 'success' };
@@ -67,10 +70,13 @@ export const register = async (
       return { status: 'user_exists' } as RegisterActionState;
     }
     await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
+    await auth.api.signInEmail({
+      body: {
+        email: validatedData.email,
+        password: validatedData.password,
+        callbackURL: '/',
+        rememberMe: false,
+      },
     });
 
     return { status: 'success' };
