@@ -203,9 +203,13 @@ export async function getChatsByUserId({
 export async function getChatById({ id }: { id: string }) {
   try {
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
+    if (!selectedChat) {
+      return null;
+    }
+
     return {
       ...selectedChat,
-      lastContext: selectedChat.lastContext as LanguageModelV2Usage,
+      lastContext: selectedChat.lastContext as LanguageModelV2Usage | undefined,
     };
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
