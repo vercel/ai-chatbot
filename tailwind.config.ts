@@ -13,6 +13,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-geist)'],
         mono: ['var(--font-geist-mono)'],
+        'ibm-plex-mono': ['var(--font-ibm-plex-mono)'],
       },
       screens: {
         'toast-mobile': '600px',

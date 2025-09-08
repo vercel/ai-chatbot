@@ -135,8 +135,30 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  const { setArtifact } = useArtifact();
+  const { setArtifact, artifact } = useArtifact();
   const [browserArtifactDismissed, setBrowserArtifactDismissed] = useState(false);
+
+  // Get artifact title
+  const getArtifactTitle = () => {
+    // If we have an artifact with a title, use it
+    if (artifact?.title) {
+      return artifact.title;
+    }
+    
+    // Otherwise, create a title from the first user message
+    const userMessage = messages.find(msg => msg.role === 'user');
+    if (userMessage) {
+      const messageText = userMessage.parts?.find(part => part.type === 'text')?.text || 'Browser session';
+      return `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
+    }
+    
+    return 'Browser:';
+  };
+  
+  const artifactTitle = getArtifactTitle();
+  
+  // Simple session start time
+  const sessionStartTime = 'Session started';
 
   // Monitor messages for browser tool usage
   useEffect(() => {
@@ -538,9 +560,10 @@ export function Chat({
           {/* Left Panel - Chat (responsive width based on browser panel visibility) */}
           <div className={`${browserPanelVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} flex flex-col bg-white`}>
             <SideChatHeader
-              title="Benefit Applications Assistant"
-              description="Get help with benefit applications and eligibility"
+              title="Apply for Benefits"
               status="online"
+              artifactTitle={artifactTitle}
+              sessionStartTime={sessionStartTime}
             />
             
             {/* Chat Content */}
@@ -585,8 +608,7 @@ export function Chat({
                       }
                     }}
                     disabled={!input.trim() || isReadonly}
-                    className="absolute bottom-2 right-2 h-8 w-8 rounded-full text-white p-0 flex items-center justify-center"
-                    style={{ backgroundColor: '#814092' }}
+                    className="absolute right-2 h-8 w-8 rounded-full text-white p-2 flex items-center justify-center bg-[#814092] bottom-[14px]"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </Button>

@@ -4,18 +4,22 @@ import { memo } from 'react';
 
 interface SideChatHeaderProps {
   title: string;
-  description: string;
   status?: 'online' | 'offline' | 'busy';
   statusText?: string;
   className?: string;
+  onLogout?: () => void;
+  artifactTitle?: string;
+  sessionStartTime?: string;
 }
 
 function PureSideChatHeader({
   title,
-  description,
   status = 'online',
   statusText,
   className = '',
+  onLogout = () => {},
+  artifactTitle,
+  sessionStartTime,
 }: SideChatHeaderProps) {
   const getStatusColor = () => {
     switch (status) {
@@ -45,19 +49,31 @@ function PureSideChatHeader({
   };
 
   return (
-    <div className={`border-b border-gray-200 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 ${className}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-          <p className="text-sm text-gray-600">{description}</p>
-        </div>
+    <div className={`border-b border-gray-200 px-4 py-3 bg-white ${className}`}>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-purple-200">
-            <div className={`w-2 h-2 rounded-full ${getStatusColor()}`}></div>
-            <span className="text-xs text-gray-600">{getStatusText()}</span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-purple-200">
+            <div className={`w-3 h-3 rounded-full ${getStatusColor()}`}></div>
+            <span className="text-sm text-gray-600">{getStatusText()}</span>
           </div>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full border border-gray-200 transition-colors"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
+      <hr className="my-2" />
+      <h3 className="text-sm font-semibold text-gray-900">
+        {artifactTitle || 'Browser:'}
+      </h3>
+      <p className="font-mono text-[10px] font-normal text-black">
+        {sessionStartTime}
+      </p>
     </div>
   );
 }
