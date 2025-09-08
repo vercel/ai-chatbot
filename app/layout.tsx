@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AccessibilityProvider } from '@/lib/accessibility/context';
 import { AccessibilityListener } from '@/components/accessibility-listener';
 import { PersonaProvider } from '@/lib/persona/context';
+import { DataStreamProvider } from '@/components/data-stream-provider';
 
 import './globals.css';
 import '../styles/accessibility.css';
@@ -89,8 +90,10 @@ export default async function RootLayout({
           <AccessibilityProvider>
             <PersonaProvider>
               <SessionProvider>
-                {children}
-                <AccessibilityListener />
+                <DataStreamProvider>
+                  {children}
+                  <AccessibilityListener />
+                </DataStreamProvider>
               </SessionProvider>
             </PersonaProvider>
           </AccessibilityProvider>
