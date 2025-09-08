@@ -16,13 +16,12 @@ interface SuggestedActionsProps {
 function PureSuggestedActions({
   chatId,
   sendMessage,
-  selectedVisibilityType,
 }: SuggestedActionsProps) {
   const suggestedActions = [
-    'What are the advantages of using Next.js?',
-    'Write code to demonstrate Dijkstra\'s algorithm',
-    'Help me write an essay about Silicon Valley',
-    'What is the weather in San Francisco?',
+    'I have a possible conflict of interest to report',
+    'What are common conflict of interest scenarios?',
+    'Is this chat confidential?',
+    'How do I disclose a financial interest?',
   ];
 
   return (
@@ -58,9 +57,6 @@ export const SuggestedActions = memo(
   PureSuggestedActions,
   (prevProps, nextProps) => {
     if (prevProps.chatId !== nextProps.chatId) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-      return false;
-
-    return true;
+    return prevProps.selectedVisibilityType === nextProps.selectedVisibilityType;
   },
 );

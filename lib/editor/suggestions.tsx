@@ -117,7 +117,6 @@ export function createSuggestionWidget(
     <PreviewSuggestion
       suggestion={suggestion}
       onApply={onApply}
-      artifactKind={artifactKind}
     />,
   );
 

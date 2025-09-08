@@ -19,11 +19,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const session = await auth();
 
-  if (!session) {
-    redirect('/api/auth/guest');
-  }
-
+  // For private chats, require authentication
   if (chat.visibility === 'private') {
+    if (!session) {
+      redirect('/login');
+    }
+
     if (!session.user) {
       return notFound();
     }
@@ -32,6 +33,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       return notFound();
     }
   }
+
+  // For public chats, allow access without authentication (read-only mode)
 
   const messagesFromDb = await getMessagesByChatId({
     id,
@@ -50,7 +53,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialMessages={uiMessages}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
+          isReadonly={!session || session?.user?.id !== chat.userId}
           session={session}
           autoResume={true}
         />
@@ -66,7 +69,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={uiMessages}
         initialChatModel={chatModelFromCookie.value}
         initialVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
+        isReadonly={!session || session?.user?.id !== chat.userId}
         session={session}
         autoResume={true}
       />

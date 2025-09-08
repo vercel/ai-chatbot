@@ -131,6 +131,7 @@ export async function POST(request: Request) {
       latitude,
       city,
       country,
+      userEmail: session.user.email || null,
     };
 
     await saveMessages({

@@ -1,10 +1,13 @@
+import React from 'react';
 import { Artifact } from '@/components/create-artifact';
 import { DiffView } from '@/components/diffview';
 import { DocumentSkeleton } from '@/components/document-skeleton';
 import { Editor } from '@/components/text-editor';
+import { Document, Page, Text, pdf, StyleSheet } from '@react-pdf/renderer';
 import {
   ClockRewind,
   CopyIcon,
+  DownloadIcon,
   MessageIcon,
   PenIcon,
   RedoIcon,
@@ -65,7 +68,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     metadata,
   }) => {
     if (isLoading) {
-      return <DocumentSkeleton artifactKind="text" />;
+      return <DocumentSkeleton />;
     }
 
     if (mode === 'diff') {
@@ -101,12 +104,8 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('toggle');
       },
-      isDisabled: ({ currentVersionIndex, setMetadata }) => {
-        if (currentVersionIndex === 0) {
-          return true;
-        }
-
-        return false;
+      isDisabled: ({ currentVersionIndex }) => {
+        return currentVersionIndex === 0;
       },
     },
     {
@@ -116,11 +115,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
         handleVersionChange('prev');
       },
       isDisabled: ({ currentVersionIndex }) => {
-        if (currentVersionIndex === 0) {
-          return true;
-        }
-
-        return false;
+        return currentVersionIndex === 0;
       },
     },
     {
@@ -130,11 +125,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
         handleVersionChange('next');
       },
       isDisabled: ({ isCurrentVersion }) => {
-        if (isCurrentVersion) {
-          return true;
-        }
-
-        return false;
+        return isCurrentVersion;
       },
     },
     {
@@ -143,6 +134,122 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       onClick: ({ content }) => {
         navigator.clipboard.writeText(content);
         toast.success('Copied to clipboard!');
+      },
+    },
+    {
+      icon: <DownloadIcon size={18} />,
+      description: 'Download as PDF',
+      onClick: async ({ content }) => {
+        try {
+          
+          const styles = StyleSheet.create({
+            page: {
+              flexDirection: 'column',
+              backgroundColor: '#ffffff',
+              padding: 30,
+            },
+            h1: {
+              fontSize: 20,
+              marginBottom: 10,
+              marginTop: 5,
+              fontFamily: 'Helvetica-Bold',
+            },
+            h2: {
+              fontSize: 16,
+              marginBottom: 8,
+              marginTop: 15,
+              fontFamily: 'Helvetica-Bold',
+            },
+            h3: {
+              fontSize: 14,
+              marginBottom: 6,
+              marginTop: 12,
+              fontFamily: 'Helvetica-Bold',
+            },
+            text: {
+              fontSize: 12,
+              lineHeight: 1.5,
+              fontFamily: 'Helvetica',
+              marginBottom: 6,
+            },
+            strong: {
+              fontSize: 12,
+              lineHeight: 1.5,
+              fontFamily: 'Helvetica-Bold',
+              marginBottom: 6,
+            },
+          });
+
+          // Simple markdown parsing - convert to PDF elements
+          const lines = content.split('\n');
+          const elements: any[] = [];
+          
+          lines.forEach((line, index) => {
+            if (line.startsWith('# ')) {
+              elements.push(
+                React.createElement(Text, { 
+                  key: `h1-${index}`, 
+                  style: styles.h1 
+                }, line.substring(2))
+              );
+            } else if (line.startsWith('## ')) {
+              elements.push(
+                React.createElement(Text, { 
+                  key: `h2-${index}`, 
+                  style: styles.h2 
+                }, line.substring(3))
+              );
+            } else if (line.startsWith('### ')) {
+              elements.push(
+                React.createElement(Text, { 
+                  key: `h3-${index}`, 
+                  style: styles.h3 
+                }, line.substring(4))
+              );
+            } else if (line.trim() !== '') {
+              // Check for bold text **text**
+              if (line.includes('**')) {
+                elements.push(
+                  React.createElement(Text, { 
+                    key: `text-${index}`, 
+                    style: styles.strong 
+                  }, line.replace(/\*\*(.*?)\*\*/g, '$1'))
+                );
+              } else {
+                elements.push(
+                  React.createElement(Text, { 
+                    key: `text-${index}`, 
+                    style: styles.text 
+                  }, line)
+                );
+              }
+            }
+          });
+
+          const MyDocument = () => React.createElement(
+            Document,
+            {},
+            React.createElement(
+              Page,
+              { style: styles.page },
+              ...elements
+            )
+          );
+
+          const blob = await pdf(React.createElement(MyDocument)).toBlob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'document.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success('PDF downloaded!');
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          toast.error('Failed to generate PDF. Please try again.');
+        }
       },
     },
   ],

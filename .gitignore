@@ -15,7 +15,9 @@ build
 
 # misc
 .DS_Store
+.idea
 *.pem
+tsconfig.tsbuildinfo
 
 # debug
 npm-debug.log*
