@@ -1,6 +1,7 @@
 /**
  * Componentes com lazy loading para otimização de bundle
  */
+'use client';
 
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
@@ -21,14 +22,14 @@ export const LazyArtifactPanel = dynamic(
   }
 );
 
-// Lazy load do Chat com Artifacts
-export const LazyChatWithArtifacts = dynamic(
-  () => import('@/components/chat/chat-with-artifacts').then(mod => mod.ChatWithArtifacts),
-  {
-    loading: LoadingSpinner,
-    ssr: false,
-  }
-);
+// Removido temporariamente - chat-with-artifacts precisa de resizable que não existe
+// export const LazyChatWithArtifacts = dynamic(
+//   () => import('@/components/chat/chat-with-artifacts').then(mod => mod.ChatWithArtifacts),
+//   {
+//     loading: LoadingSpinner,
+//     ssr: false,
+//   }
+// );
 
 // Lazy load do Editor de Texto
 export const LazyTextEditor = dynamic(
@@ -90,13 +91,13 @@ export const LazyDataGrid = dynamic(
   }
 );
 
-// Lazy load de charts (se usado)
-export const LazyCharts = dynamic(
-  () => import('@/components/charts').then(mod => ({ 
-    default: mod.default 
-  })),
-  {
-    loading: LoadingSpinner,
-    ssr: false,
-  }
-);
+// Removido - componente charts não existe
+// export const LazyCharts = dynamic(
+//   () => import('@/components/charts').then(mod => ({ 
+//     default: mod.default 
+//   })),
+//   {
+//     loading: LoadingSpinner,
+//     ssr: false,
+//   }
+// );
