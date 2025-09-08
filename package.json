@@ -68,7 +68,7 @@
     "geist": "^1.5.1",
     "lucide-react": "^0.446.0",
     "nanoid": "^5.1.5",
-    "next": "15.4.7",
+    "next": "15.5.1-canary.32",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
     "orderedmap": "^2.1.1",
