@@ -62,6 +62,8 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
 
+For recursos de mapa e geocodificação do Google, defina `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` com a chave de API do Google Maps.
+
 ```bash
 pnpm install
 pnpm dev
