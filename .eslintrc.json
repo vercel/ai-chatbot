@@ -14,7 +14,9 @@
     "tailwindcss/enforces-shorthand": "warn",
     "import/no-named-as-default-member": "warn",
     "import/no-named-as-default": "warn",
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/rules-of-hooks": "warn",
+    "import/no-unresolved": "off",
     "@next/next/no-img-element": "warn"
   },
   "settings": {

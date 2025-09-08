@@ -27,7 +27,7 @@ export default async function Layout({
       <ErrorBoundary
         level="page"
         maxRetries={2}
-        resetKeys={[session?.user?.id]}
+        resetKeys={[session?.user?.id || '']}
       >
         <DataStreamProvider>
           <ErrorBoundary
