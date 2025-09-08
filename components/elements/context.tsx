@@ -10,6 +10,7 @@ import type { ComponentProps } from 'react';
 import type { LanguageModelUsage } from 'ai';
 import { breakdownTokens, estimateCost, normalizeUsage } from 'tokenlens';
 import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 
 export type ContextProps = ComponentProps<'button'> & {
   /** Total context window size in tokens */
@@ -20,8 +21,6 @@ export type ContextProps = ComponentProps<'button'> & {
   usage?: LanguageModelUsage | undefined;
   /** Optional model id (canonical or alias) to compute cost */
   modelId?: string;
-  /** Show token breakdown and optional cost inside hover */
-  showBreakdown?: boolean;
 };
 
 const THOUSAND = 1000;
@@ -81,6 +80,11 @@ const formatUSD = (value?: number) => {
   return `$${trimmed}`;
 };
 
+const formatUSDFixed = (value?: number, decimals = 5) => {
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  return `$${Number(value).toFixed(decimals)}`;
+};
+
 type ContextIconProps = {
   percent: number; // 0 - 100
 };
@@ -125,13 +129,46 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   );
 };
 
+function TokensWithCost({
+  tokens,
+  costText,
+}: {
+  tokens?: number;
+  costText?: string;
+}) {
+  return (
+    <span>
+      {tokens === undefined ? '—' : formatTokens(tokens)}
+      {costText ? (
+        <span className="ml-2 text-muted-foreground">• {costText}</span>
+      ) : null}
+    </span>
+  );
+}
+
+function InfoRow({
+  label,
+  tokens,
+  costText,
+}: {
+  label: string;
+  tokens?: number;
+  costText?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <TokensWithCost tokens={tokens} costText={costText} />
+    </div>
+  );
+}
+
 export const Context = ({
   className,
   maxTokens,
   usedTokens,
   usage,
   modelId,
-  showBreakdown,
   ...props
 }: ContextProps) => {
   const safeMax = Math.max(0, Number.isFinite(maxTokens) ? maxTokens : 0);
@@ -139,38 +176,105 @@ export const Context = ({
     Math.max(0, Number.isFinite(usedTokens) ? usedTokens : 0),
     safeMax,
   );
+
+  // used percent and used tokens to display (demo-aware)
+  const displayUsedTokens = safeUsed;
   const usedPercent =
     safeMax > 0
-      ? Math.min(PERCENT_MAX, Math.max(0, (safeUsed / safeMax) * PERCENT_MAX))
+      ? Math.min(
+          PERCENT_MAX,
+          Math.max(0, (displayUsedTokens / safeMax) * PERCENT_MAX),
+        )
       : 0;
 
   const displayPct = formatPercent(Math.round(usedPercent * 10) / 10);
 
-  const used = formatTokens(safeUsed);
+  const used = formatTokens(displayUsedTokens);
   const total = formatTokens(safeMax);
 
-  const uNorm = normalizeUsage(usage as any);
-  const uBreakdown = breakdownTokens(usage as any);
-  const costUSD = modelId
-    ? estimateCost({ modelId, usage: uNorm }).totalUSD
-    : undefined;
-  const costText = formatUSD(costUSD);
+  const uNorm = normalizeUsage(usage);
+  const uBreakdown = breakdownTokens(usage);
 
-  const segInput = Math.max(0, uNorm.input ?? 0);
-  const segOutput = Math.max(0, uNorm.output ?? 0);
-  const segCacheR = Math.max(0, uBreakdown.cacheReads ?? 0);
-  const segCacheW = Math.max(0, uBreakdown.cacheWrites ?? 0);
-  const denom = safeMax > 0 ? safeMax : 1;
-  const w = (n: number) =>
-    `${Math.min(100, Math.max(0, (n / denom) * 100)).toFixed(2)}%`;
+  const hasUsage =
+    !!usage &&
+    ((uNorm.input ?? 0) > 0 ||
+      (uNorm.output ?? 0) > 0 ||
+      (uBreakdown.cacheReads ?? 0) > 0 ||
+      (uBreakdown.cacheWrites ?? 0) > 0 ||
+      (uBreakdown.reasoningTokens ?? 0) > 0);
+
+  // Values to render in rows (demo or real)
+  const displayInput = uNorm.input;
+  const displayOutput = uNorm.output;
+
+  // Per-segment costs
+  const inputCostText = modelId
+    ? formatUSDFixed(
+        estimateCost({
+          modelId,
+          usage: { input: displayInput ?? 0, output: 0 },
+        }).inputUSD,
+      )
+    : undefined;
+  const outputCostText = modelId
+    ? formatUSDFixed(
+        estimateCost({
+          modelId,
+          usage: { input: 0, output: displayOutput ?? 0 },
+        }).outputUSD,
+      )
+    : undefined;
+  // Not supported by tokenlens pricing hints; leave undefined so no bullet is shown
+  const cacheReadsTokens = uBreakdown.cacheReads ?? 0;
+  const cacheWritesTokens = uBreakdown.cacheWrites ?? 0;
+  const cacheReadsCostText =
+    modelId && cacheReadsTokens > 0
+      ? formatUSDFixed(
+          estimateCost({
+            modelId,
+            // Cast to any to support extended pricing fields provided by tokenlens
+            usage: { cacheReads: cacheReadsTokens } as any,
+          }).totalUSD,
+        )
+      : undefined;
+  const cacheWritesCostText =
+    modelId && cacheWritesTokens > 0
+      ? formatUSDFixed(
+          estimateCost({
+            modelId,
+            usage: { cacheWrites: cacheWritesTokens } as any,
+          }).totalUSD,
+        )
+      : undefined;
+
+  const reasoningTokens = uBreakdown.reasoningTokens ?? 0;
+  const reasoningCostText =
+    modelId && reasoningTokens > 0
+      ? formatUSDFixed(
+          estimateCost({
+            modelId,
+            usage: { reasoningTokens },
+          }).totalUSD,
+        )
+      : undefined;
+
+  const costUSD = modelId
+    ? estimateCost({
+        modelId,
+        usage: { input: displayInput ?? 0, output: displayOutput ?? 0 },
+      }).totalUSD
+    : undefined;
+  const costText = formatUSDFixed(costUSD);
+
   const fmtOrUnknown = (n?: number) =>
     n === undefined ? '—' : formatTokens(n);
+
   return (
     <HoverCard closeDelay={100} openDelay={100}>
       <HoverCardTrigger asChild>
         <button
           className={cn(
-            'inline-flex select-none items-center gap-2 rounded-md px-2.5 py-1 text-sm',
+            'inline-flex select-none items-center gap-1 rounded-md px-2.5 py-1 text-sm',
             'bg-background text-foreground',
           )}
           type="button"
@@ -182,111 +286,56 @@ export const Context = ({
           <ContextIcon percent={usedPercent} />
         </button>
       </HoverCardTrigger>
-      <HoverCardContent align="center" className="w-fit p-3">
+      <HoverCardContent align="end" side="top" className="w-fit p-3">
         <div className="min-w-[240px] space-y-2">
-          <p className="text-center text-sm">
+          <p className="text-start text-sm">
             {displayPct} • {used} / {total} tokens
-            {costText ? (
-              <span className="ml-1 text-muted-foreground">• {costText}</span>
-            ) : null}
           </p>
-          {true && (
-            <div className="space-y-2">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full"
-                  style={{
-                    width: w(segCacheR),
-                    background: 'var(--chart-2)',
-                    opacity: 0.9,
-                  }}
+          <div className="space-y-2">
+            <Progress className="h-2 bg-muted" value={usedPercent} />
+          </div>
+          <div className="mt-1 space-y-1">
+            {hasUsage && uBreakdown.cacheReads && uBreakdown.cacheReads > 0 && (
+              <InfoRow
+                label="Cache Hits"
+                tokens={uBreakdown.cacheReads}
+                costText={cacheReadsCostText}
+              />
+            )}
+            {hasUsage &&
+              uBreakdown.cacheWrites &&
+              uBreakdown.cacheWrites > 0 && (
+                <InfoRow
+                  label="Cache Writes"
+                  tokens={uBreakdown.cacheWrites}
+                  costText={cacheWritesCostText}
                 />
-                <div
-                  className="h-full"
-                  style={{
-                    width: w(segCacheW),
-                    background: 'var(--chart-4)',
-                    opacity: 0.9,
-                  }}
-                />
-                <div
-                  className="h-full"
-                  style={{
-                    width: w(segInput),
-                    background: 'var(--chart-1)',
-                    opacity: 0.9,
-                  }}
-                />
-                <div
-                  className="h-full"
-                  style={{
-                    width: w(segOutput),
-                    background: 'var(--chart-3)',
-                    opacity: 0.9,
-                  }}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-muted-foreground">
-                    <span className="inline-block size-2 rounded-sm bg-chart-1" />
-                    Cache Hits
-                  </span>
-                  <span>{fmtOrUnknown(uBreakdown.cacheReads)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-muted-foreground">
-                    <span className="inline-block size-2 rounded-sm bg-chart-2" />
-                    Cache Writes
-                  </span>
-                  <span>{fmtOrUnknown(uBreakdown.cacheWrites)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-muted-foreground">
-                    <span className="inline-block size-2 rounded-sm bg-chart-3" />
-                    Input
-                  </span>
-                  <span>{formatTokens(uNorm.input)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-muted-foreground">
-                    <span className="inline-block size-2 rounded-sm bg-chart-4" />
-                    Output
-                  </span>
-                  <span>{formatTokens(uNorm.output)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-          {showBreakdown && (
-            <div className="mt-1 space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Cache Hits</span>
-                <span>{fmtOrUnknown(uBreakdown.cacheReads)}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Cache Writes</span>
-                <span>{fmtOrUnknown(uBreakdown.cacheWrites)}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Input</span>
-                <span>{formatTokens(uNorm.input)}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Output</span>
-                <span>{formatTokens(uNorm.output)}</span>
-              </div>
-              {costText && (
-                <>
-                  <Separator className="mt-1" />
-                  <div className="flex items-center justify-between pt-1 text-xs">
-                    <span className="text-muted-foreground">Total cost</span>
-                    <span>{costText}</span>
-                  </div>
-                </>
               )}
-            </div>
-          )}
+            <InfoRow
+              label="Input"
+              tokens={displayInput}
+              costText={inputCostText}
+            />
+            <InfoRow
+              label="Output"
+              tokens={displayOutput}
+              costText={outputCostText}
+            />
+            <InfoRow
+              label="Reasoning"
+              tokens={reasoningTokens > 0 ? reasoningTokens : undefined}
+              costText={reasoningCostText}
+            />
+            {costText && (
+              <>
+                <Separator className="mt-1" />
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <span className="text-muted-foreground">Total cost</span>
+                  <span>{costText}</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </HoverCardContent>
     </HoverCard>
