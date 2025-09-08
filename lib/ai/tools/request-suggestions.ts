@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { Session, ChatMessage } from '@/lib/types';
 import { streamObject, tool, type UIMessageStreamWriter } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';

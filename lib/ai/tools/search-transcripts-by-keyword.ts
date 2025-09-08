@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { Session, ChatMessage } from '@/lib/types';
 import { tool, type UIMessageStreamWriter } from 'ai';
 import { createClient } from '@supabase/supabase-js';
@@ -119,7 +119,11 @@ export const searchTranscriptsByKeyword = ({
       }
 
       // RBAC: If user role is 'member' or 'org-fte', only return transcripts where they are a verified participant
-      if (session.role && ['member', 'org-fte'].includes(session.role) && session.user.email) {
+      if (
+        session.role &&
+        ['member', 'org-fte'].includes(session.role) &&
+        session.user.email
+      ) {
         query = query.contains('verified_participant_emails', [
           session.user.email,
         ]);
@@ -134,7 +138,11 @@ export const searchTranscriptsByKeyword = ({
       }
 
       // Provide helpful message if member or org-fte has no results due to permissions
-      if (session.role && ['member', 'org-fte'].includes(session.role) && (!data || data.length === 0)) {
+      if (
+        session.role &&
+        ['member', 'org-fte'].includes(session.role) &&
+        (!data || data.length === 0)
+      ) {
         return {
           result: JSON.stringify([]),
           message:

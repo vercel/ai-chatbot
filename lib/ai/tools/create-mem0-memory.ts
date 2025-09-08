@@ -1,5 +1,5 @@
 import { tool, type UIMessageStreamWriter } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { ChatMessage, Session } from '@/lib/types';
 import { ChatSDKError } from '@/lib/errors';
 import { createMem0Client } from '@/lib/mem0/client';
@@ -14,7 +14,8 @@ export const createMem0Memory = ({
   dataStream,
 }: CreateMem0MemoryProps) =>
   tool({
-    description: 'Creates a new memory in a Mem0 project. The user ID is automatically determined from the authenticated session.',
+    description:
+      'Creates a new memory in a Mem0 project. The user ID is automatically determined from the authenticated session.',
     inputSchema: z.object({
       projectId: z
         .string()
@@ -22,14 +23,18 @@ export const createMem0Memory = ({
       messages: z
         .array(
           z.object({
-            role: z.enum(['user', 'assistant']).describe('The role of the message sender'),
+            role: z
+              .enum(['user', 'assistant'])
+              .describe('The role of the message sender'),
             content: z.string().describe('The content of the message'),
-          })
+          }),
         )
         .min(1)
-        .describe('Array of messages to create a memory from (at least 1 message required)'),
+        .describe(
+          'Array of messages to create a memory from (at least 1 message required)',
+        ),
       metadata: z
-        .record(z.any())
+        .record(z.string(), z.any())
         .optional()
         .describe('Optional metadata to associate with the memory'),
     }),
@@ -60,7 +65,7 @@ export const createMem0Memory = ({
         const userId = session.user.id;
 
         const client = createMem0Client();
-        
+
         // Add metadata to include session info
         const enhancedMetadata = {
           ...metadata,
@@ -100,14 +105,20 @@ export const createMem0Memory = ({
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
 
-        if (errorMessage.includes('MEM0_API_KEY') || errorMessage.includes('MEM0_ORG_ID')) {
+        if (
+          errorMessage.includes('MEM0_API_KEY') ||
+          errorMessage.includes('MEM0_ORG_ID')
+        ) {
           throw new ChatSDKError(
             'bad_request:chat',
             'Mem0 API credentials not configured. Please check your environment variables.',
           );
         }
 
-        if (errorMessage.includes('project not found') || errorMessage.includes('invalid project')) {
+        if (
+          errorMessage.includes('project not found') ||
+          errorMessage.includes('invalid project')
+        ) {
           throw new ChatSDKError(
             'bad_request:chat',
             `Project with ID "${projectId}" not found. Please verify the project ID exists.`,

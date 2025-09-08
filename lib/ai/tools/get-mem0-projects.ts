@@ -1,5 +1,5 @@
 import { tool, type UIMessageStreamWriter } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { ChatMessage, Session } from '@/lib/types';
 import { ChatSDKError } from '@/lib/errors';
 import { createMem0Client } from '@/lib/mem0/client';
@@ -56,7 +56,10 @@ export const getMem0Projects = ({
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
 
-        if (errorMessage.includes('MEM0_API_KEY') || errorMessage.includes('MEM0_ORG_ID')) {
+        if (
+          errorMessage.includes('MEM0_API_KEY') ||
+          errorMessage.includes('MEM0_ORG_ID')
+        ) {
           throw new ChatSDKError(
             'bad_request:chat',
             'Mem0 API credentials not configured. Please check your environment variables.',

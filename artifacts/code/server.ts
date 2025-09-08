@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { streamObject } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
 import { codePrompt, updateDocumentPrompt } from '@/lib/ai/prompts';

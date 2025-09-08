@@ -1,6 +1,6 @@
 import { generateUUID } from '@/lib/utils';
 import { tool, type UIMessageStreamWriter } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import {
   artifactKinds,
   documentHandlersByArtifactKind,

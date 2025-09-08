@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const getWeather = tool({
   description: 'Get the current weather at a location',

@@ -1,5 +1,5 @@
 import { tool, type UIMessageStreamWriter } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { ChatMessage, Session } from '@/lib/types';
 import { ChatSDKError } from '@/lib/errors';
 import { getDatabaseUserFromWorkOS } from '@/lib/db/queries';
@@ -123,8 +123,9 @@ export const listGmailMessages = ({
 
               const headers = messageResponse.data.payload?.headers || [];
               const getHeader = (name: string) =>
-                headers.find((h) => h.name?.toLowerCase() === name.toLowerCase())
-                  ?.value || '';
+                headers.find(
+                  (h) => h.name?.toLowerCase() === name.toLowerCase(),
+                )?.value || '';
 
               return {
                 id: message.id,

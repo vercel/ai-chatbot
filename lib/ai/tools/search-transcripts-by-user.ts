@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { Session, ChatMessage } from '@/lib/types';
 import { tool, type UIMessageStreamWriter } from 'ai';
 import { createClient } from '@supabase/supabase-js';

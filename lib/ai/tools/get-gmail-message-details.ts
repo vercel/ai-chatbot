@@ -1,5 +1,5 @@
 import { tool, type UIMessageStreamWriter } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { ChatMessage, Session } from '@/lib/types';
 import { ChatSDKError } from '@/lib/errors';
 import { getDatabaseUserFromWorkOS } from '@/lib/db/queries';
@@ -112,9 +112,10 @@ export const getGmailMessageDetails = ({
 
             // Handle text content
             if (part.body?.data) {
-              const decodedBody = Buffer.from(part.body.data, 'base64').toString(
-                'utf-8',
-              );
+              const decodedBody = Buffer.from(
+                part.body.data,
+                'base64',
+              ).toString('utf-8');
               extractedParts.push({
                 mimeType,
                 body: decodedBody,
@@ -146,8 +147,9 @@ export const getGmailMessageDetails = ({
 
               // Extract common headers
               const getHeader = (name: string) =>
-                headers.find((h) => h.name?.toLowerCase() === name.toLowerCase())
-                  ?.value || '';
+                headers.find(
+                  (h) => h.name?.toLowerCase() === name.toLowerCase(),
+                )?.value || '';
 
               // Extract message parts based on format
               let bodyParts: MessagePart[] = [];
@@ -202,8 +204,9 @@ export const getGmailMessageDetails = ({
                 cc: getHeader('Cc'),
                 date: getHeader('Date'),
                 text: cleanText || message.snippet || '',
-                attachments: attachments.map((att) => 
-                  `${att.filename} (${Math.round((att.size || 0) / 1024)}KB)`
+                attachments: attachments.map(
+                  (att) =>
+                    `${att.filename} (${Math.round((att.size || 0) / 1024)}KB)`,
                 ),
               };
             } catch (error) {

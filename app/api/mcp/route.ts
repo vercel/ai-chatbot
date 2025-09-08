@@ -1,6 +1,6 @@
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 

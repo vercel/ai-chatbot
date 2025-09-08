@@ -37,12 +37,12 @@ import { ArrowDown } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
-import { chatModels } from '@/lib/ai/models';
+import { chatModels, resolveProviderModelId } from '@/lib/ai/models';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
-import { myProvider } from '@/lib/ai/providers';
+// Avoid importing server-only providers in client components.
 
 // (Removed Google Docs picker functionality)
 
@@ -199,15 +199,15 @@ function PureMultimodalInput({
     }
   };
 
-  const modelResolver = useMemo(() => {
-    return myProvider.languageModel(selectedModelId);
+  const providerModelId = useMemo(() => {
+    return resolveProviderModelId(selectedModelId);
   }, [selectedModelId]);
 
   const contextMax = useMemo(() => {
     // Resolve from selected model; stable across chunks.
-    const cw = getContextWindow(modelResolver.modelId);
+    const cw = getContextWindow(providerModelId);
     return cw.combinedMax ?? cw.inputMax ?? 0;
-  }, [modelResolver]);
+  }, [providerModelId]);
 
   const usedTokens = useMemo(() => {
     // Prefer explicit usage data part captured via onData
@@ -223,10 +223,10 @@ function PureMultimodalInput({
       maxTokens: contextMax,
       usedTokens,
       usage,
-      modelId: modelResolver.modelId,
+      modelId: providerModelId,
       showBreakdown: true as const,
     }),
-    [contextMax, usedTokens, usage, modelResolver],
+    [contextMax, usedTokens, usage, providerModelId],
   );
 
   const handleFileChange = useCallback(

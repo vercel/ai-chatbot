@@ -1,5 +1,5 @@
 import { tool, type UIMessageStreamWriter } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { ChatMessage, Session } from '@/lib/types';
 import {
   fetchSlackUserIdByEmail,
