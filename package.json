@@ -111,7 +111,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "2.2.3",
     "@cspell/dict-bash": "^4.2.1",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/typography": "^0.5.15",

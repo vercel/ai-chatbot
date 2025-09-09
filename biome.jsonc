@@ -5,6 +5,7 @@
     "includes": [
       "**",
       "!server/db/migrations",
+      "!lib/db/migrations",
       "!lib/editor/react-renderer.tsx",
       "!node_modules",
       "!**/.next",
@@ -44,10 +45,7 @@
           "level": "warn",
           "options": {
             "ignoreNonDom": false,
-            "allowInvalidRoles": [
-              "none",
-              "text"
-            ]
+            "allowInvalidRoles": ["none", "text"]
           }
         },
         "useSemanticElements": "off", // Rule is buggy, revisit later
@@ -131,9 +129,7 @@
     // Playwright requires an object destructure, even if empty
     // https://github.com/microsoft/playwright/issues/30007
     {
-      "includes": [
-        "playwright/**"
-      ],
+      "includes": ["playwright/**"],
       "linter": {
         "rules": {
           "correctness": {
