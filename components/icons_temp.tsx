@@ -15,7 +15,7 @@ export const BotIcon = () => {
       />
     </svg>
   );
-};
+
 
 export const UserIcon = () => {
   return (
@@ -35,7 +35,7 @@ export const UserIcon = () => {
       />
     </svg>
   );
-};
+
 
 export const AttachmentIcon = () => {
   return (
@@ -54,7 +54,7 @@ export const AttachmentIcon = () => {
       />
     </svg>
   );
-};
+
 
 export const VercelIcon = ({ size = 17 }) => {
   return (
@@ -73,7 +73,7 @@ export const VercelIcon = ({ size = 17 }) => {
       />
     </svg>
   );
-};
+
 
 export const GitIcon = () => {
   return (
@@ -99,7 +99,7 @@ export const GitIcon = () => {
       </defs>
     </svg>
   );
-};
+
 
 export const BoxIcon = ({ size = 16 }: { size: number }) => {
   return (
@@ -118,7 +118,7 @@ export const BoxIcon = ({ size = 16 }: { size: number }) => {
       />
     </svg>
   );
-};
+
 
 export const HomeIcon = ({ size = 16 }: { size: number }) => {
   return (
@@ -137,7 +137,7 @@ export const HomeIcon = ({ size = 16 }: { size: number }) => {
       />
     </svg>
   );
-};
+
 
 export const GPSIcon = ({ size = 16 }: { size: number }) => {
   return (
@@ -158,7 +158,7 @@ export const GPSIcon = ({ size = 16 }: { size: number }) => {
       />
     </svg>
   );
-};
+
 
 export const InvoiceIcon = ({ size = 16 }: { size: number }) => {
   return (
@@ -177,7 +177,7 @@ export const InvoiceIcon = ({ size = 16 }: { size: number }) => {
       />
     </svg>
   );
-};
+
 
 export const LogoOpenAI = ({ size = 16 }: { size?: number }) => {
   return (
@@ -194,7 +194,7 @@ export const LogoOpenAI = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
   <svg
@@ -424,7 +424,7 @@ export const TerminalWindowIcon = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const TerminalIcon = ({ size = 16 }: { size?: number }) => {
   return (
@@ -443,7 +443,7 @@ export const TerminalIcon = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const ClockRewind = ({ size = 16 }: { size?: number }) => {
   return (
@@ -462,7 +462,7 @@ export const ClockRewind = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const LogsIcon = ({ size = 16 }: { size?: number }) => {
   return (
@@ -481,7 +481,7 @@ export const LogsIcon = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const ImageIcon = ({ size = 16 }: { size?: number }) => {
   return (
@@ -500,7 +500,7 @@ export const ImageIcon = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const FullscreenIcon = ({ size = 16 }: { size?: number }) => (
   <svg
@@ -570,7 +570,7 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
       />
     </svg>
   );
-};
+
 
 export const BoldIcon = ({ size = 16 }: { size?: number }) => (
   <svg
