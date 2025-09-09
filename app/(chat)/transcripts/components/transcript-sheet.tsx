@@ -47,11 +47,10 @@ export function TranscriptSheet({
   const shouldFetch = isOpen && transcript?.id && !isMember;
   const { data, error, isLoading } = useSWR(
     shouldFetch ? `/api/transcripts/${transcript.id}` : null,
-    fetcher
+    fetcher,
   );
 
   const transcriptContent = data?.content || null;
-
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -187,7 +186,9 @@ export function TranscriptSheet({
                   </div>
                 ) : error ? (
                   <div className="text-center py-8">
-                    <p className="text-destructive">Error: {error.message || String(error)}</p>
+                    <p className="text-destructive">
+                      Error: {error.message || String(error)}
+                    </p>
                     <Button
                       onClick={() => window.location.reload()}
                       className="mt-4"

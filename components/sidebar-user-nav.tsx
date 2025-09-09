@@ -59,7 +59,10 @@ export function SidebarUserNav() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <form action={handleSignOut}>
-                <button type="submit" className="w-full text-left cursor-pointer">
+                <button
+                  type="submit"
+                  className="w-full text-left cursor-pointer"
+                >
                   Sign out
                 </button>
               </form>

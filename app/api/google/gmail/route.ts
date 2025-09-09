@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action') || 'list'; // 'list' or 'get'
-    
+
     // Common parameters
     const maxResults = Number.parseInt(
       searchParams.get('maxResults') || '10',
@@ -40,7 +40,9 @@ export async function GET(request: Request) {
 
     // Parameters for getting specific messages
     const messageIds = searchParams.get('messageIds')?.split(',');
-    const format = (searchParams.get('format') as 'full' | 'metadata' | 'minimal') || 'metadata';
+    const format =
+      (searchParams.get('format') as 'full' | 'metadata' | 'minimal') ||
+      'metadata';
 
     // Check if user has Google credentials
     const hasCredentials = await hasGoogleCredentials(databaseUser.id);
@@ -79,13 +81,7 @@ export async function GET(request: Request) {
               userId: 'me',
               id: message.id || '',
               format: 'metadata',
-              metadataHeaders: [
-                'Subject',
-                'From',
-                'To',
-                'Date',
-                'Message-ID',
-              ],
+              metadataHeaders: ['Subject', 'From', 'To', 'Date', 'Message-ID'],
             });
 
             const headers = messageResponse.data.payload?.headers || [];
@@ -182,7 +178,8 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           error: 'Invalid action or missing parameters',
-          message: 'Use action=list to list messages or action=get with messageIds to get specific messages.',
+          message:
+            'Use action=list to list messages or action=get with messageIds to get specific messages.',
         },
         { status: 400 },
       );
@@ -232,7 +229,8 @@ export async function GET(request: Request) {
         return NextResponse.json(
           {
             error: 'Invalid query',
-            message: 'Invalid Gmail search query. Please check your search syntax.',
+            message:
+              'Invalid Gmail search query. Please check your search syntax.',
           },
           { status: 400 },
         );

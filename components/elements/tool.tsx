@@ -50,7 +50,10 @@ const getStatusBadge = (status: ToolUIPart['state']) => {
   } as const;
 
   return (
-    <Badge className="rounded-full text-xs flex items-center gap-1" variant="secondary">
+    <Badge
+      className="rounded-full text-xs flex items-center gap-1"
+      variant="secondary"
+    >
       {icons[status]}
       <span>{labels[status]}</span>
     </Badge>

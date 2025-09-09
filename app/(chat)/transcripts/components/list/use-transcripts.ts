@@ -53,19 +53,16 @@ export function useTranscripts() {
     }
   }, [data]);
 
-  const filteredTranscripts = useMemo(
-    () => {
-      const transcripts: Transcript[] = data?.data || [];
-      return transcripts.filter(
-        (transcript) =>
-          transcript.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transcript.extracted_participants.some((participant) =>
-            participant.toLowerCase().includes(searchTerm.toLowerCase()),
-          ),
-      );
-    },
-    [data?.data, searchTerm],
-  );
+  const filteredTranscripts = useMemo(() => {
+    const transcripts: Transcript[] = data?.data || [];
+    return transcripts.filter(
+      (transcript) =>
+        transcript.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transcript.extracted_participants.some((participant) =>
+          participant.toLowerCase().includes(searchTerm.toLowerCase()),
+        ),
+    );
+  }, [data?.data, searchTerm]);
 
   const groupedTranscripts = useMemo(() => {
     const groups: { [key: string]: Transcript[] } = {};

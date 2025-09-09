@@ -33,7 +33,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import { LanguageModelV2Usage } from '@ai-sdk/provider';
+import type { LanguageModelV2Usage } from '@ai-sdk/provider';
 
 // Database queries for user management and WorkOS integration
 
@@ -264,6 +264,12 @@ export async function getChatsByUserId({
       hasMore,
     };
   } catch (error) {
+    console.error('getChatsByUserId failed', {
+      userId: id,
+      startingAfter,
+      endingBefore,
+      error,
+    });
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chats by user id',

@@ -57,7 +57,9 @@ export function AppSidebar({ user }: { user: any | undefined }) {
                   <PlusIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent align="end" className="hidden md:block">New Chat</TooltipContent>
+              <TooltipContent align="end" className="hidden md:block">
+                New Chat
+              </TooltipContent>
             </Tooltip>
           </div>
         </SidebarMenu>

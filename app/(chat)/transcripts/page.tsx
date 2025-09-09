@@ -7,7 +7,9 @@ export default async function TranscriptsPage() {
 
   // Role-based access check
   const isMemberRole = session.role === 'member';
-  console.log(`📋 Transcripts page - User ${user.email} has role '${session.role}' (${isMemberRole ? 'MEMBER - limited access' : 'ELEVATED - full access'})`);
+  console.log(
+    `📋 Transcripts page - User ${user.email} has role '${session.role}' (${isMemberRole ? 'MEMBER - limited access' : 'ELEVATED - full access'})`,
+  );
 
   return (
     <div className="container mx-auto px-12 py-8">

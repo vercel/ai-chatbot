@@ -53,7 +53,7 @@ function PureMessages({
         if (container) {
           container.scrollTo({
             top: container.scrollHeight,
-            behavior: 'smooth'
+            behavior: 'smooth',
           });
         }
       });
@@ -96,9 +96,7 @@ function PureMessages({
           {status === 'submitted' &&
             messages.length > 0 &&
             messages[messages.length - 1].role === 'user' &&
-            selectedModelId !== 'chat-model-reasoning' && (
-              <ThinkingMessage />
-            )}
+            selectedModelId !== 'chat-model-reasoning' && <ThinkingMessage />}
 
           <div
             ref={messagesEndRef}

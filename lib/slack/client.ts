@@ -1,6 +1,6 @@
 import 'server-only';
 
-// We intentionally avoid DB writes here to keep upstream schema as source of truth.
+import { createClient, type RedisClientType } from 'redis';
 
 export class SlackError extends Error {
   public statusCode: number;
@@ -14,13 +14,30 @@ export class SlackError extends Error {
   }
 }
 
-// In-memory cache for membership checks (5-minute TTL)
-const membershipCache = new Map<string, { result: boolean; expiry: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const EMAIL_TTL_SECONDS = 24 * 60 * 60 * 7; // 7d
+const MEMBER_TTL_POS_SECONDS = 24 * 60 * 60; // 24h for confirmed members
+const MEMBER_TTL_NEG_SECONDS = 5 * 60; // 5m for non-members
 
-// In-memory cache for email -> slackUserId (24-hour TTL)
-const emailToSlackIdCache = new Map<string, { id: string; expiry: number }>();
-const EMAIL_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+let redisClient: RedisClientType | null = null;
+let redisReady: Promise<unknown> | null = null;
+
+async function getRedis(): Promise<RedisClientType> {
+  if (!process.env.REDIS_URL) {
+    throw new SlackError('REDIS_URL not configured', 500);
+  }
+  if (!redisClient) {
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    redisClient.on('error', (err) => {
+      console.error('Redis error', err);
+    });
+    redisReady = redisClient.connect();
+  }
+  if (redisReady) await redisReady;
+  if (!redisClient) {
+    throw new SlackError('Redis client not initialized', 500);
+  }
+  return redisClient;
+}
 
 function getCacheKey(channelId: string, slackUserId: string): string {
   return `${channelId}:${slackUserId}`;
@@ -52,7 +69,6 @@ async function makeSlackRequest(
     });
 
     if (response.status === 429) {
-      // Rate limited
       const retryAfter = response.headers.get('Retry-After');
       const waitTime = retryAfter
         ? Number.parseInt(retryAfter) * 1000
@@ -89,12 +105,11 @@ async function makeSlackRequest(
 
 export async function fetchSlackUserIdByEmail(email: string): Promise<string> {
   try {
-    const cached = emailToSlackIdCache.get(email);
-    if (cached && cached.expiry > Date.now()) {
-      return cached.id;
-    }
+    const redis = await getRedis();
+    const emailKey = `slack:email:${email.toLowerCase()}`;
+    const cachedId = await redis.get(emailKey);
+    if (cachedId) return cachedId;
 
-    // Look up the Slack user ID
     const data = await makeSlackRequest('users.lookupByEmail', { email });
     const slackUserId = data.user?.id;
 
@@ -102,11 +117,7 @@ export async function fetchSlackUserIdByEmail(email: string): Promise<string> {
       throw new SlackError('User not found in Slack workspace', 404);
     }
 
-    // Cache in memory (best-effort)
-    emailToSlackIdCache.set(email, {
-      id: slackUserId,
-      expiry: Date.now() + EMAIL_CACHE_TTL,
-    });
+    await redis.set(emailKey, slackUserId, { EX: EMAIL_TTL_SECONDS });
 
     return slackUserId;
   } catch (error) {
@@ -121,25 +132,21 @@ export async function isMember(
   channelId: string,
   slackUserId: string,
 ): Promise<boolean> {
-  const cacheKey = getCacheKey(channelId, slackUserId);
-  const cached = membershipCache.get(cacheKey);
-
-  if (cached && cached.expiry > Date.now()) {
-    return cached.result;
-  }
+  const redis = await getRedis();
+  const key = `slack:member:${getCacheKey(channelId, slackUserId)}`;
+  const cached = await redis.get(key);
+  if (cached === '1') return true;
+  if (cached === '0') return false;
 
   try {
     const data = await makeSlackRequest('conversations.members', {
       channel: channelId,
-      limit: '1000', // Slack's max
+      limit: '1000',
     });
 
     const isMemberResult = data.members?.includes(slackUserId) || false;
-
-    // Cache the result
-    membershipCache.set(cacheKey, {
-      result: isMemberResult,
-      expiry: Date.now() + CACHE_TTL,
+    await redis.set(key, isMemberResult ? '1' : '0', {
+      EX: isMemberResult ? MEMBER_TTL_POS_SECONDS : MEMBER_TTL_NEG_SECONDS,
     });
 
     return isMemberResult;

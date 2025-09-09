@@ -138,8 +138,8 @@ export function TranscriptsList({ isMember }: TranscriptsListProps) {
       )}
 
       {isSelectionMode && selectedTranscripts.size > 0 && (
-        <TranscriptChatInput 
-          selectedTranscripts={selectedTranscriptData} 
+        <TranscriptChatInput
+          selectedTranscripts={selectedTranscriptData}
           isMember={isMember}
         />
       )}

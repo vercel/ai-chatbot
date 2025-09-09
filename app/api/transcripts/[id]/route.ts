@@ -17,14 +17,21 @@ export async function GET(
 
     // Role-based access check - members cannot access full transcript content
     if (session.role === 'member') {
-      console.log(`🚫 Member ${session.user.email} attempted to access transcript ${id} via API`);
+      console.log(
+        `🚫 Member ${session.user.email} attempted to access transcript ${id} via API`,
+      );
       return NextResponse.json(
-        { error: 'Access denied: Members cannot view transcript details. This feature is restricted to elevated roles only.' },
-        { status: 403 }
+        {
+          error:
+            'Access denied: Members cannot view transcript details. This feature is restricted to elevated roles only.',
+        },
+        { status: 403 },
       );
     }
 
-    console.log(`✅ User with role '${session.role}' (${session.user.email}) accessing transcript ${id} via API`);
+    console.log(
+      `✅ User with role '${session.role}' (${session.user.email}) accessing transcript ${id} via API`,
+    );
     const transcriptId = Number.parseInt(id);
     if (Number.isNaN(transcriptId)) {
       return NextResponse.json(
@@ -52,7 +59,9 @@ export async function GET(
 
     // Only return transcripts where user is a verified participant (applies to all users)
     if (session.user.email) {
-      query = query.contains('verified_participant_emails', [session.user.email]);
+      query = query.contains('verified_participant_emails', [
+        session.user.email,
+      ]);
     }
 
     const { data, error } = await query.single();

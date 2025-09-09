@@ -33,7 +33,6 @@ export const GET = handleAuth({
         lastName: user.lastName ?? undefined,
       });
 
-
       if (oauthTokens && databaseUser) {
         // Try different property names as WorkOS might use different naming
         const accessToken =
@@ -43,7 +42,6 @@ export const GET = handleAuth({
           (oauthTokens as any).refresh_token;
         const expiresAt =
           (oauthTokens as any).expiresAt || (oauthTokens as any).expires_at;
-
 
         // Check if we have Google Drive/Docs scopes
         const scopes = (oauthTokens as any).scopes || [];

@@ -64,14 +64,13 @@ export function TranscriptChatInput({
             const date = new Date(
               transcript.recording_start,
             ).toLocaleDateString();
-            const time = new Date(transcript.recording_start).toLocaleTimeString(
-              'en-US',
-              {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-              },
-            );
+            const time = new Date(
+              transcript.recording_start,
+            ).toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            });
 
             return `**Meeting: ${topic}**\nDate: ${date} at ${time}\nType: ${transcript.meeting_type}\nSummary:\n${transcript.summary || 'No summary available'}`;
           })
@@ -103,14 +102,13 @@ export function TranscriptChatInput({
             const date = new Date(
               transcript.recording_start,
             ).toLocaleDateString();
-            const time = new Date(transcript.recording_start).toLocaleTimeString(
-              'en-US',
-              {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-              },
-            );
+            const time = new Date(
+              transcript.recording_start,
+            ).toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            });
 
             const fullContent = transcriptContents[idx];
 

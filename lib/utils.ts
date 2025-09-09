@@ -126,34 +126,39 @@ export function getTextFromMessage(message: ChatMessage): string {
 
 export function htmlToText(html: string): string {
   if (!html || typeof html !== 'string') return '';
-  
-  return html
-    // Remove script, style, and other non-content elements
-    .replace(/<(script|style|head|meta|link)[^>]*>[\s\S]*?<\/\1>/gi, '')
-    .replace(/<(script|style|head|meta|link)[^>]*\/?>[\s\S]*?/gi, '')
-    // Remove HTML comments
-    .replace(/<!--[\s\S]*?-->/g, '')
-    // Convert block elements to newlines
-    .replace(/<\/?(div|p|h[1-6]|section|article|header|footer|nav|aside|main)[^>]*>/gi, '\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/?(tr|td|th)[^>]*>/gi, '\n')
-    // Convert list items to bullet points
-    .replace(/<li[^>]*>/gi, '• ')
-    .replace(/<\/li>/gi, '\n')
-    // Remove all remaining HTML tags
-    .replace(/<[^>]*>/g, '')
-    // Decode common HTML entities
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–')
-    .replace(/&hellip;/g, '…')
-    // Clean up excessive whitespace
-    .replace(/\n\s*\n\s*\n/g, '\n\n')
-    .replace(/[ \t]+/g, ' ')
-    .trim();
+
+  return (
+    html
+      // Remove script, style, and other non-content elements
+      .replace(/<(script|style|head|meta|link)[^>]*>[\s\S]*?<\/\1>/gi, '')
+      .replace(/<(script|style|head|meta|link)[^>]*\/?>[\s\S]*?/gi, '')
+      // Remove HTML comments
+      .replace(/<!--[\s\S]*?-->/g, '')
+      // Convert block elements to newlines
+      .replace(
+        /<\/?(div|p|h[1-6]|section|article|header|footer|nav|aside|main)[^>]*>/gi,
+        '\n',
+      )
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/?(tr|td|th)[^>]*>/gi, '\n')
+      // Convert list items to bullet points
+      .replace(/<li[^>]*>/gi, '• ')
+      .replace(/<\/li>/gi, '\n')
+      // Remove all remaining HTML tags
+      .replace(/<[^>]*>/g, '')
+      // Decode common HTML entities
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;|&apos;/g, "'")
+      .replace(/&mdash;/g, '—')
+      .replace(/&ndash;/g, '–')
+      .replace(/&hellip;/g, '…')
+      // Clean up excessive whitespace
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
+      .replace(/[ \t]+/g, ' ')
+      .trim()
+  );
 }
