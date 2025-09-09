@@ -14,7 +14,7 @@ export function useScrollToBottom() {
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    
+
     // Check if we are within 100px of the bottom (like v0 does)
     setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 100);
   }, []);
@@ -36,7 +36,7 @@ export function useScrollToBottom() {
       const container = containerRef.current;
       const scrollOptions: ScrollToOptions = {
         top: container.scrollHeight,
-        behavior: scrollBehavior
+        behavior: scrollBehavior,
       };
       container.scrollTo(scrollOptions);
       setScrollBehavior(false);
