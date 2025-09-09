@@ -1,5 +1,6 @@
 import { generateDummyPassword } from './db/utils';
 
+// We're not using T3 Env here because we want to use process.env.NODE_ENV
 export const isProductionEnvironment = process.env.NODE_ENV === 'production';
 export const isDevelopmentEnvironment = process.env.NODE_ENV === 'development';
 export const isTestEnvironment = Boolean(

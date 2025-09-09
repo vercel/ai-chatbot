@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
@@ -108,6 +108,7 @@ const PurePreviewMessage = ({
             </div>
           )}
 
+          {/* biome-ignore lint/suspicious/useIterableCallbackReturn: we're not returning anything */}
           {message.parts?.map((part, index) => {
             const { type } = part;
             const key = `message-${message.id}-part-${index}`;

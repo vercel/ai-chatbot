@@ -1,17 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { env } from '@/env';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import { config } from 'dotenv';
-
-config({
-  path: '.env.local',
-});
-
-/* Use process.env.PORT by default and fallback to port 3000 */
-const PORT = process.env.PORT || 3000;
+/* Use env.PORT by default and fallback to port 3000 */
+const PORT = env.PORT || 3000;
 
 /**
  * Set webServer.url and use.baseURL with the location
@@ -27,11 +18,11 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: !!env.CI,
   /* Retry on CI only */
   retries: 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 2 : 8,
+  workers: env.CI ? 2 : 8,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -102,6 +93,6 @@ export default defineConfig({
     command: 'pnpm dev',
     url: `${baseURL}/ping`,
     timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !env.CI,
   },
 });
