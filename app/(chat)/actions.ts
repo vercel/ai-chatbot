@@ -1,4 +1,5 @@
 'use server';
+import 'server-only';
 
 import { generateText, type UIMessage } from 'ai';
 import { cookies } from 'next/headers';
