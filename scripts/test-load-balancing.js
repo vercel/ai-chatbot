@@ -15,10 +15,9 @@ async function testEndpoint(url, description) {
     if (data.success) {
       console.log(`✅ ${description}: OK`);
       return data;
-    } else {
+    }
       console.log(`❌ ${description}: ${data.error}`);
       return null;
-    }
   } catch (error) {
     console.log(`❌ ${description}: ${error.message}`);
     return null;
