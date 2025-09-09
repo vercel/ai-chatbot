@@ -99,3 +99,45 @@ if (isTestEnvironment) {
 }
 
 export const myProvider = customProvider(providerConfig);
+
+// Função para obter provider com load balancing inteligente
+export async function getSmartProvider(
+  modelType: 'chat' | 'vision' | 'reasoning' | 'artifact' = 'chat',
+  userPreferences?: {
+    preferredProvider?: string;
+    maxCost?: number;
+    maxLatency?: number;
+  }
+) {
+  // Import dinâmico para evitar dependências circulares
+  const { selectOptimalProvider } = await import('../load-balancing/load-balancer');
+
+  const availableProviders = ['xai', 'anthropic', 'openai', 'google', 'ollama'];
+
+  try {
+    const decision = await selectOptimalProvider(availableProviders, modelType, userPreferences);
+
+    // Retornar provider baseado na decisão
+    const modelId = decision.model;
+    const provider = myProvider.languageModel(modelId);
+
+    return {
+      provider,
+      decision
+    };
+  } catch (error) {
+    console.warn('Load balancing failed, using default provider:', error);
+
+    // Fallback para provider padrão
+    return {
+      provider: myProvider.languageModel('chat-model'),
+      decision: {
+        provider: 'xai',
+        model: 'chat-model',
+        reason: 'Fallback due to load balancing error',
+        score: 0,
+        alternatives: []
+      }
+    };
+  }
+}

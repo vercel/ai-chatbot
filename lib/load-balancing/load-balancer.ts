@@ -34,51 +34,51 @@ class LoadBalancer {
   private initializeDefaultConfigs() {
     // Configurações padrão para cada provider
     const defaultConfigs: Record<string, ProviderConfig> = {
-      'xai': {
+      xai: {
         name: 'xAI (Grok)',
         priority: 1,
         maxConcurrent: 10,
         costWeight: 0.3,
         latencyWeight: 0.4,
         reliabilityWeight: 0.3,
-        enabled: true
+        enabled: true,
       },
-      'anthropic': {
+      anthropic: {
         name: 'Anthropic',
         priority: 2,
         maxConcurrent: 5,
         costWeight: 0.4,
         latencyWeight: 0.3,
         reliabilityWeight: 0.3,
-        enabled: true
+        enabled: true,
       },
-      'openai': {
+      openai: {
         name: 'OpenAI',
         priority: 2,
         maxConcurrent: 8,
         costWeight: 0.3,
         latencyWeight: 0.4,
         reliabilityWeight: 0.3,
-        enabled: true
+        enabled: true,
       },
-      'google': {
+      google: {
         name: 'Google (Vertex)',
         priority: 3,
         maxConcurrent: 6,
         costWeight: 0.2,
         latencyWeight: 0.5,
         reliabilityWeight: 0.3,
-        enabled: true
+        enabled: true,
       },
-      'ollama': {
+      ollama: {
         name: 'Ollama (Local)',
         priority: 4,
         maxConcurrent: 3,
         costWeight: 0.1, // custo zero
         latencyWeight: 0.6, // pode ser mais lento
         reliabilityWeight: 0.3,
-        enabled: true
-      }
+        enabled: true,
+      },
     };
 
     Object.entries(defaultConfigs).forEach(([provider, config]) => {
@@ -100,17 +100,21 @@ class LoadBalancer {
       preferredProvider?: string;
       maxCost?: number;
       maxLatency?: number;
-    }
+    },
   ): Promise<LoadBalancingDecision> {
     const candidates = availableProviders
-      .filter(provider => {
+      .filter((provider) => {
         const config = this.providerConfigs.get(provider);
         return config?.enabled && this.canAcceptRequest(provider);
       })
-      .map(provider => ({
+      .map((provider) => ({
         provider,
-        score: this.calculateProviderScore(provider, modelType, userPreferences),
-        reason: this.getProviderReason(provider, modelType)
+        score: this.calculateProviderScore(
+          provider,
+          modelType,
+          userPreferences,
+        ),
+        reason: this.getProviderReason(provider, modelType),
       }))
       .sort((a, b) => b.score - a.score);
 
@@ -126,19 +130,23 @@ class LoadBalancer {
       model: this.getModelForProvider(best.provider, modelType),
       reason: best.reason,
       score: best.score,
-      alternatives: alternatives.map(alt => ({
+      alternatives: alternatives.map((alt) => ({
         provider: alt.provider,
         model: this.getModelForProvider(alt.provider, modelType),
         score: alt.score,
-        reason: alt.reason
-      }))
+        reason: alt.reason,
+      })),
     };
   }
 
   private calculateProviderScore(
     provider: string,
     modelType: 'chat' | 'vision' | 'reasoning' | 'artifact',
-    userPreferences?: { preferredProvider?: string; maxCost?: number; maxLatency?: number }
+    userPreferences?: {
+      preferredProvider?: string;
+      maxCost?: number;
+      maxLatency?: number;
+    },
   ): number {
     const config = this.providerConfigs.get(provider);
     if (!config) return 0;
@@ -153,44 +161,59 @@ class LoadBalancer {
     const concurrentLoad = this.activeRequests.get(provider) || 0;
 
     // Fatores de pontuação (0-1, maior é melhor)
-    const costScore = this.normalizeCostScore(provider, currentCost, userPreferences?.maxCost);
-    const latencyScore = this.normalizeLatencyScore(currentLatency, userPreferences?.maxLatency);
+    const costScore = this.normalizeCostScore(
+      provider,
+      currentCost,
+      userPreferences?.maxCost,
+    );
+    const latencyScore = this.normalizeLatencyScore(
+      currentLatency,
+      userPreferences?.maxLatency,
+    );
     const reliabilityScore = reliability;
-    const loadScore = 1 - (concurrentLoad / config.maxConcurrent);
+    const loadScore = 1 - concurrentLoad / config.maxConcurrent;
     const priorityScore = 1 / config.priority; // prioridade inversa (1 é melhor)
 
     // Preferência do usuário
-    const preferenceBonus = userPreferences?.preferredProvider === provider ? 0.2 : 0;
+    const preferenceBonus =
+      userPreferences?.preferredProvider === provider ? 0.2 : 0;
 
     // Pontuação final ponderada
     const finalScore =
-      (costScore * config.costWeight) +
-      (latencyScore * config.latencyWeight) +
-      (reliabilityScore * config.reliabilityWeight) +
-      (loadScore * 0.1) + // 10% para carga
-      (priorityScore * 0.1) + // 10% para prioridade
+      costScore * config.costWeight +
+      latencyScore * config.latencyWeight +
+      reliabilityScore * config.reliabilityWeight +
+      loadScore * 0.1 + // 10% para carga
+      priorityScore * 0.1 + // 10% para prioridade
       preferenceBonus;
 
     return Math.max(0, Math.min(1, finalScore)); // Clamp entre 0-1
   }
 
-  private normalizeCostScore(provider: string, currentCost: number, maxCost?: number): number {
+  private normalizeCostScore(
+    provider: string,
+    currentCost: number,
+    maxCost?: number,
+  ): number {
     if (maxCost && currentCost > maxCost) return 0; // Excede limite
 
     // Custo normalizado (menor custo = maior pontuação)
     const baseCosts: Record<string, number> = {
-      'ollama': 0,
-      'google': 0.001,
-      'xai': 0.0012,
-      'openai': 0.002,
-      'anthropic': 0.0025
+      ollama: 0,
+      google: 0.001,
+      xai: 0.0012,
+      openai: 0.002,
+      anthropic: 0.0025,
     };
 
     const baseCost = baseCosts[provider] || 0.001;
-    return Math.max(0, 1 - (currentCost / baseCost));
+    return Math.max(0, 1 - currentCost / baseCost);
   }
 
-  private normalizeLatencyScore(currentLatency: number, maxLatency?: number): number {
+  private normalizeLatencyScore(
+    currentLatency: number,
+    maxLatency?: number,
+  ): number {
     if (maxLatency && currentLatency > maxLatency) return 0; // Excede limite
 
     // Latência normalizada (menor latência = maior pontuação)
@@ -200,7 +223,11 @@ class LoadBalancer {
     if (currentLatency <= optimalLatency) return 1;
     if (currentLatency >= maxAcceptableLatency) return 0;
 
-    return 1 - ((currentLatency - optimalLatency) / (maxAcceptableLatency - optimalLatency));
+    return (
+      1 -
+      (currentLatency - optimalLatency) /
+        (maxAcceptableLatency - optimalLatency)
+    );
   }
 
   private canAcceptRequest(provider: string): boolean {
@@ -231,38 +258,41 @@ class LoadBalancer {
     return reasons.join(', ');
   }
 
-  private getModelForProvider(provider: string, modelType: 'chat' | 'vision' | 'reasoning' | 'artifact'): string {
+  private getModelForProvider(
+    provider: string,
+    modelType: 'chat' | 'vision' | 'reasoning' | 'artifact',
+  ): string {
     const modelMappings: Record<string, Record<string, string>> = {
-      'xai': {
+      xai: {
         chat: 'grok-2-1212',
         vision: 'grok-2-vision-1212',
         reasoning: 'grok-3-mini-beta',
-        artifact: 'grok-2-1212'
+        artifact: 'grok-2-1212',
       },
-      'anthropic': {
+      anthropic: {
         chat: 'claude-3-5-sonnet',
         vision: 'claude-3-5-sonnet',
         reasoning: 'claude-3-5-sonnet',
-        artifact: 'claude-3-5-sonnet'
+        artifact: 'claude-3-5-sonnet',
       },
-      'openai': {
+      openai: {
         chat: 'gpt-4o',
         vision: 'gpt-4o',
         reasoning: 'gpt-4o',
-        artifact: 'gpt-4o'
+        artifact: 'gpt-4o',
       },
-      'google': {
+      google: {
         chat: 'gemini-pro',
         vision: 'gemini-pro-vision',
         reasoning: 'gemini-pro',
-        artifact: 'gemini-pro'
+        artifact: 'gemini-pro',
       },
-      'ollama': {
+      ollama: {
         chat: 'qwen3:30b',
         vision: 'llama3.2-vision:latest',
         reasoning: 'qwen3:30b',
-        artifact: 'falcon3:latest'
-      }
+        artifact: 'falcon3:latest',
+      },
     };
 
     return modelMappings[provider]?.[modelType] || 'default-model';
@@ -305,7 +335,11 @@ export async function selectOptimalProvider(
     preferredProvider?: string;
     maxCost?: number;
     maxLatency?: number;
-  }
+  },
 ): Promise<LoadBalancingDecision> {
-  return loadBalancer.selectProvider(availableProviders, modelType, userPreferences);
+  return loadBalancer.selectProvider(
+    availableProviders,
+    modelType,
+    userPreferences,
+  );
 }
