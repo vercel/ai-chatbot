@@ -1,17 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { Chat } from '../chat';
-import { Message } from '../message';
-import { Artifact } from '../artifact';
-import { PersonaSwitcher } from '../persona-switcher';
-import { ModelSelector } from '../model-selector';
-import { JourneyNavigation } from '../journey-navigation';
-import { Button } from '../ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import type { ChatMessage } from '@/lib/types';
+import { Button } from '../components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import { PersonaSwitcher } from '../components/persona-switcher';
+import { ModelSelector } from '../components/model-selector';
+import { JourneyNavigation } from '../components/journey-navigation';
 import type { Session } from 'next-auth';
-import type { Phase } from '@/apps/web/lib/journey/map';
 
-// Mock data
+// Mock session
 const mockSession: Session = {
   user: {
     id: '1',
@@ -20,29 +15,6 @@ const mockSession: Session = {
   },
   expires: '2024-12-31',
 };
-
-const conversationMessages: ChatMessage[] = [
-  {
-    id: '1',
-    role: 'user',
-    parts: [{ type: 'text', text: 'Hi, I want to install solar panels on my home. Can you help me?' }],
-  },
-  {
-    id: '2',
-    role: 'assistant',
-    parts: [{ type: 'text', text: 'Absolutely! I can help you with your solar panel installation. Let me start by understanding your situation better. What type of property do you have and what\'s your monthly electricity bill?' }],
-  },
-  {
-    id: '3',
-    role: 'user',
-    parts: [{ type: 'text', text: 'I have a 3-bedroom house and my average monthly bill is $180.' }],
-  },
-  {
-    id: '4',
-    role: 'assistant',
-    parts: [{ type: 'text', text: 'Great! Based on your 3-bedroom house and $180 monthly electricity bill, I can provide you with a personalized solar analysis. Let me create a detailed assessment for you.' }],
-  },
-];
 
 const meta: Meta = {
   title: 'Scenarios/End-to-End Flows',
@@ -116,20 +88,35 @@ export const SolarConsultationFlow: Story = {
         <main className="flex-1 flex flex-col">
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {conversationMessages.map((message) => (
-              <Message
-                key={message.id}
-                chatId="demo-chat"
-                message={message}
-                vote={undefined}
-                isLoading={false}
-                setMessages={() => {}}
-                regenerate={() => {}}
-                isReadonly={false}
-                requiresScrollPadding={false}
-                isArtifactVisible={false}
-              />
-            ))}
+            <div className="max-w-4xl mx-auto space-y-4">
+              {/* User Message */}
+              <div className="flex justify-end">
+                <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-md">
+                  Hi, I want to install solar panels on my home. Can you help me?
+                </div>
+              </div>
+
+              {/* Assistant Message */}
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-lg px-4 py-2 max-w-2xl">
+                  Absolutely! I can help you with your solar panel installation. Let me start by understanding your situation better. What type of property do you have and what&apos;s your monthly electricity bill?
+                </div>
+              </div>
+
+              {/* User Response */}
+              <div className="flex justify-end">
+                <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-md">
+                  I have a 3-bedroom house and my average monthly bill is $180.
+                </div>
+              </div>
+
+              {/* Assistant Analysis */}
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-lg px-4 py-2 max-w-2xl">
+                  Great! Based on your 3-bedroom house and $180 monthly electricity bill, I can provide you with a personalized solar analysis. Let me create a detailed assessment for you.
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Chat Input */}
@@ -146,27 +133,6 @@ export const SolarConsultationFlow: Story = {
             </div>
           </div>
         </main>
-
-        {/* Artifact Panel */}
-        <aside className="w-96 border-l bg-background">
-          <Artifact
-            chatId="demo-chat"
-            input=""
-            setInput={() => {}}
-            status="ready"
-            stop={() => {}}
-            attachments={[]}
-            setAttachments={() => {}}
-            sendMessage={() => {}}
-            messages={conversationMessages}
-            setMessages={() => {}}
-            regenerate={() => {}}
-            votes={[]}
-            isReadonly={false}
-            selectedVisibilityType="private"
-            selectedModelId="gpt-4"
-          />
-        </aside>
       </div>
     </div>
   ),
@@ -243,12 +209,12 @@ export const IntegratorDashboard: Story = {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { name: 'Sarah Johnson', action: 'Requested quote for 8.5kW system', time: '2 hours ago' },
-                  { name: 'Mike Chen', action: 'Scheduled site assessment', time: '4 hours ago' },
-                  { name: 'Emma Davis', action: 'Completed financing application', time: '6 hours ago' },
-                  { name: 'Robert Wilson', action: 'Downloaded system specifications', time: '1 day ago' },
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between py-2">
+                  { name: 'Sarah Johnson', action: 'Requested quote for 8.5kW system', time: '2 hours ago', id: 1 },
+                  { name: 'Mike Chen', action: 'Scheduled site assessment', time: '4 hours ago', id: 2 },
+                  { name: 'Emma Davis', action: 'Completed financing application', time: '6 hours ago', id: 3 },
+                  { name: 'Robert Wilson', action: 'Downloaded system specifications', time: '1 day ago', id: 4 },
+                ].map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between py-2">
                     <div>
                       <p className="font-medium">{activity.name}</p>
                       <p className="text-sm text-muted-foreground">{activity.action}</p>
@@ -283,23 +249,22 @@ export const MobileResponsiveFlow: Story = {
 
       {/* Mobile Chat */}
       <div className="flex-1 p-4 space-y-4">
-        {conversationMessages.slice(0, 2).map((message) => (
-          <Message
-            key={message.id}
-            chatId="mobile-chat"
-            message={message}
-            vote={undefined}
-            isLoading={false}
-            setMessages={() => {}}
-            regenerate={() => {}}
-            isReadonly={false}
-            requiresScrollPadding={false}
-            isArtifactVisible={false}
-          />
-        ))}
+        {/* User Message */}
+        <div className="flex justify-end">
+          <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-md">
+            Hi, I want to install solar panels on my home. Can you help me?
+          </div>
+        </div>
+
+        {/* Assistant Message */}
+        <div className="flex justify-start">
+          <div className="bg-muted rounded-lg px-4 py-2 max-w-2xl">
+            Absolutely! I can help you with your solar panel installation. Let me start by understanding your situation better.
+          </div>
+        </div>
 
         {/* Mobile Input */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t">
+        <div className="fixed inset-x-0 bottom-0 p-4 bg-background border-t">
           <div className="flex gap-2">
             <input
               className="flex-1 px-3 py-2 border rounded-md text-sm"
