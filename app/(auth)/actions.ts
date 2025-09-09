@@ -6,7 +6,6 @@ import { SignInSchema, SignUpSchema } from '@/lib/validators';
 import { signIn } from '@/app/(auth)/auth';
 import { createUser, getUser } from '@/lib/db/queries';
 import { returnValidationErrors } from 'next-safe-action';
-import { redirect } from 'next/navigation';
 
 export const login = actionClient
   .inputSchema(SignInSchema)
@@ -17,7 +16,7 @@ export const login = actionClient
       redirect: false,
     });
 
-    redirect('/');
+    return { success: true }
   });
 
 export const register = actionClient
@@ -36,5 +35,5 @@ export const register = actionClient
       redirect: false,
     });
 
-    redirect('/');
+    return { success: true }
   });

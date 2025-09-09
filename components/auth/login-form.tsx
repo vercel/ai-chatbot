@@ -18,6 +18,7 @@ import { Alert, AlertTitle } from '../ui/alert';
 
 import { SignInSchema } from '@/lib/validators';
 import { login } from '@/app/(auth)/actions';
+import { redirect } from 'next/navigation';
 
 export const LoginForm = () => {
   const { form, action, handleSubmitWithAction, resetFormAndAction } =
@@ -28,6 +29,7 @@ export const LoginForm = () => {
       actionProps: {
         onSuccess: () => {
           resetFormAndAction();
+          redirect('/');
         },
       },
     });
