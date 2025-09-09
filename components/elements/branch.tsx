@@ -12,8 +12,8 @@ type BranchContextType = {
   totalBranches: number;
   goToPrevious: () => void;
   goToNext: () => void;
-  branches: ReactElement[];
-  setBranches: (branches: ReactElement[]) => void;
+  branches: ReactElement<any>[];
+  setBranches: (branches: ReactElement<any>[]) => void;
 };
 
 const BranchContext = createContext<BranchContextType | null>(null);
@@ -40,7 +40,7 @@ export const Branch = ({
   ...props
 }: BranchProps) => {
   const [currentBranch, setCurrentBranch] = useState(defaultBranch);
-  const [branches, setBranches] = useState<ReactElement[]>([]);
+  const [branches, setBranches] = useState<ReactElement<any>[]>([]);
 
   const handleBranchChange = (newBranch: number) => {
     setCurrentBranch(newBranch);
