@@ -1,5 +1,7 @@
 import { performanceMonitor } from '../monitoring/performance';
 
+export type ModelType = 'chat' | 'vision' | 'reasoning' | 'artifact';
+
 export interface ProviderConfig {
   name: string;
   priority: number; // 1 = highest priority
@@ -23,66 +25,88 @@ export interface LoadBalancingDecision {
   }>;
 }
 
+export interface LoadBalancerConfig {
+  globalCostWeight: number;
+  globalLatencyWeight: number;
+  globalReliabilityWeight: number;
+  maxCostPerRequest: number;
+  maxLatencyMs: number;
+  providerTimeoutMs: number;
+  providerPriorityOrder: string[];
+}
+
 class LoadBalancer {
   private readonly providerConfigs: Map<string, ProviderConfig> = new Map();
   private readonly activeRequests: Map<string, number> = new Map(); // provider -> count
+  private config: LoadBalancerConfig;
 
   constructor() {
+    this.config = this.loadConfigFromEnv();
     this.initializeDefaultConfigs();
   }
 
+  private loadConfigFromEnv(): LoadBalancerConfig {
+    return {
+      globalCostWeight: parseFloat(process.env.LOAD_BALANCER_COST_WEIGHT || '30') / 100,
+      globalLatencyWeight: parseFloat(process.env.LOAD_BALANCER_LATENCY_WEIGHT || '40') / 100,
+      globalReliabilityWeight: parseFloat(process.env.LOAD_BALANCER_RELIABILITY_WEIGHT || '30') / 100,
+      maxCostPerRequest: parseFloat(process.env.MAX_COST_PER_REQUEST || '0.10'),
+      maxLatencyMs: parseInt(process.env.MAX_LATENCY_MS || '10000'),
+      providerTimeoutMs: parseInt(process.env.PROVIDER_TIMEOUT_MS || '30000'),
+      providerPriorityOrder: (process.env.PROVIDER_PRIORITY_ORDER || 'xai,ollama,anthropic,openai,google').split(','),
+    };
+  }
+
+  updateConfig(newConfig: Partial<LoadBalancerConfig>) {
+    this.config = { ...this.config, ...newConfig };
+  }
+
+  getConfig(): LoadBalancerConfig {
+    return { ...this.config };
+  }
+
   private initializeDefaultConfigs() {
-    // Configurações padrão para cada provider
-    const defaultConfigs: Record<string, ProviderConfig> = {
+    // Configurações padrão para cada provider usando pesos globais
+    const defaultConfigs: Record<string, Omit<ProviderConfig, 'costWeight' | 'latencyWeight' | 'reliabilityWeight'>> = {
       xai: {
         name: 'xAI (Grok)',
         priority: 1,
         maxConcurrent: 10,
-        costWeight: 0.3,
-        latencyWeight: 0.4,
-        reliabilityWeight: 0.3,
         enabled: true,
       },
       anthropic: {
         name: 'Anthropic',
         priority: 2,
         maxConcurrent: 5,
-        costWeight: 0.4,
-        latencyWeight: 0.3,
-        reliabilityWeight: 0.3,
         enabled: true,
       },
       openai: {
         name: 'OpenAI',
         priority: 2,
         maxConcurrent: 8,
-        costWeight: 0.3,
-        latencyWeight: 0.4,
-        reliabilityWeight: 0.3,
         enabled: true,
       },
       google: {
         name: 'Google (Vertex)',
         priority: 3,
         maxConcurrent: 6,
-        costWeight: 0.2,
-        latencyWeight: 0.5,
-        reliabilityWeight: 0.3,
         enabled: true,
       },
       ollama: {
         name: 'Ollama (Local)',
         priority: 4,
         maxConcurrent: 3,
-        costWeight: 0.1, // custo zero
-        latencyWeight: 0.6, // pode ser mais lento
-        reliabilityWeight: 0.3,
         enabled: true,
       },
     };
 
     Object.entries(defaultConfigs).forEach(([provider, config]) => {
-      this.providerConfigs.set(provider, config);
+      this.providerConfigs.set(provider, {
+        ...config,
+        costWeight: this.config.globalCostWeight,
+        latencyWeight: this.config.globalLatencyWeight,
+        reliabilityWeight: this.config.globalReliabilityWeight,
+      });
     });
   }
 
@@ -95,7 +119,7 @@ class LoadBalancer {
 
   async selectProvider(
     availableProviders: string[],
-    modelType: 'chat' | 'vision' | 'reasoning' | 'artifact' = 'chat',
+    modelType: ModelType = 'chat',
     userPreferences?: {
       preferredProvider?: string;
       maxCost?: number;
@@ -141,7 +165,7 @@ class LoadBalancer {
 
   private calculateProviderScore(
     provider: string,
-    modelType: 'chat' | 'vision' | 'reasoning' | 'artifact',
+    modelType: ModelType,
     userPreferences?: {
       preferredProvider?: string;
       maxCost?: number;
@@ -260,7 +284,7 @@ class LoadBalancer {
 
   private getModelForProvider(
     provider: string,
-    modelType: 'chat' | 'vision' | 'reasoning' | 'artifact',
+    modelType: ModelType,
   ): string {
     const modelMappings: Record<string, Record<string, string>> = {
       xai: {
@@ -330,7 +354,7 @@ export const loadBalancer = new LoadBalancer();
 // Função helper para usar o load balancer
 export async function selectOptimalProvider(
   availableProviders: string[],
-  modelType: 'chat' | 'vision' | 'reasoning' | 'artifact' = 'chat',
+  modelType: ModelType = 'chat',
   userPreferences?: {
     preferredProvider?: string;
     maxCost?: number;
