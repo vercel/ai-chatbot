@@ -1,5 +1,5 @@
 import { Toast } from './toast';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 const meta: Meta<typeof Toast> = {
   component: Toast,
@@ -21,7 +21,7 @@ export const Default: StoryObj<typeof Toast> = {
   },
 };
 
-export const Error: StoryObj<typeof Toast> = {
+export const Destructive: StoryObj<typeof Toast> = {
   args: {
     title: 'Error!',
     description: 'Something went wrong.',

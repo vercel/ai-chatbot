@@ -1,17 +1,13 @@
 import { SubmitButton } from './submit-button';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 const meta: Meta<typeof SubmitButton> = {
   component: SubmitButton,
   title: 'UI/SubmitButton',
   argTypes: {
-    isLoading: {
+    isSuccessful: {
       control: 'boolean',
-      description: 'Shows loading state',
-    },
-    disabled: {
-      control: 'boolean',
-      description: 'Disables the button',
+      description: 'Shows success state',
     },
   },
 };
@@ -20,19 +16,13 @@ export default meta;
 export const Default: StoryObj<typeof SubmitButton> = {
   args: {
     children: 'Submit',
+    isSuccessful: false,
   },
 };
 
-export const Loading: StoryObj<typeof SubmitButton> = {
+export const Successful: StoryObj<typeof SubmitButton> = {
   args: {
-    children: 'Submitting...',
-    isLoading: true,
-  },
-};
-
-export const Disabled: StoryObj<typeof SubmitButton> = {
-  args: {
-    children: 'Submit',
-    disabled: true,
+    children: 'Submitted!',
+    isSuccessful: true,
   },
 };
