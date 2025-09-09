@@ -163,14 +163,14 @@ export function PerformanceDashboard({
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Monitoramento de Performance</h2>
           <Button onClick={() => refresh()} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="size-4 mr-2" />
             Carregar Métricas
           </Button>
         </div>
         <Alert>
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="size-4" />
           <AlertDescription>
-            Nenhuma métrica disponível. Clique em "Carregar Métricas" para buscar dados.
+            Nenhuma métrica disponível. Clique em &quot;Carregar Métricas&quot; para buscar dados.
           </AlertDescription>
         </Alert>
       </div>

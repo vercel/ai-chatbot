@@ -4,7 +4,7 @@ import { PromptBar } from '@/apps/web/components/chat/PromptBar';
 
 export default function Page() {
   return (
-    <ChatProvider api="/api/test-chat">
+    <ChatProvider>
       <div className="flex flex-col h-screen">
         <ConversationStream />
         <PromptBar />

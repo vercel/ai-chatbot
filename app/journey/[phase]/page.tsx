@@ -1,21 +1,24 @@
-'use client';
 import { PhaseGuard } from '@/apps/web/lib/journey/guard';
 import { usePhase, useJourneyActions } from '@/apps/web/lib/journey/hooks';
 import type { Phase } from '@/apps/web/lib/journey/map';
 import { blueprint } from '@/apps/web/lib/journey/blueprint';
 
-export default function Page({ params }: { params: { phase: Phase } }) {
+export default async function Page({ params }: { params: Promise<{ phase: Phase }> }) {
+  const { phase } = await params;
+
   return (
-    <PhaseGuard phase={params.phase}>
+    <PhaseGuard phase={phase}>
       <PhaseView />
     </PhaseGuard>
   );
 }
 
 function PhaseView() {
+  'use client';
   const phase = usePhase();
   const { next, prev, skip, reset } = useJourneyActions();
   const nodes = blueprint[phase] ?? [];
+
   return (
     <div>
       <h1>{phase}</h1>
