@@ -85,6 +85,14 @@ export const solarViabilityTool: ToolDefinition = {
     const totalCost = requiredPower * costPerWp;
     const paybackYears = totalCost / (monthlyConsumption * 0.7 * 12); // 70% economia
 
+    // Determinar viabilidade
+    let viability: string;
+    if (budget > 0) {
+      viability = totalCost <= budget ? 'viable' : 'not_viable';
+    } else {
+      viability = 'needs_budget_check';
+    }
+
     return {
       location,
       analysis: {
@@ -95,7 +103,7 @@ export const solarViabilityTool: ToolDefinition = {
         totalCost,
         paybackYears,
         monthlySavings: monthlyConsumption * 0.7,
-        viability: budget > 0 ? (totalCost <= budget ? 'viable' : 'not_viable') : 'needs_budget_check',
+        viability,
       },
       recommendations: [
         `Sistema de ${requiredPower.toFixed(0)} kWp necessário`,
