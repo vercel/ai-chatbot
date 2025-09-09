@@ -13,6 +13,7 @@ const mailgun = new Mailgun(FormData);
 export const mg = mailgun.client({
   username: 'api',
   key: process.env.MAILGUN_API_KEY,
+  url: process.env.MAILGUN_URL || 'https://api.mailgun.net', // Use EU endpoint if needed: https://api.eu.mailgun.net
 });
 
 export const CHECKY_EMAIL = process.env.CHECKY_FROM_EMAIL || 'checky@app.growingproducts.io';
