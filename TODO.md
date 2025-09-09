@@ -11,7 +11,8 @@ This pull request is meant to:
 - Adds Lefthook (left out for now)
 - Update authjs
 - Upgrade zod
-- Move data base stuff and auth stuff to server folder
+- Move data base stuff and auth stuff to server folder  (not included)
+- Update eslint (not included)
 
 The next PR will update the login and signup pages design
 The following will update the AI Chatbot design

@@ -27,7 +27,7 @@ import {
   type DBMessage,
   type Chat,
   stream,
-} from './schema';
+} from './schema/index';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';

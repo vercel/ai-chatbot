@@ -15,6 +15,9 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Generate types
+        run: pnpm typegen
+      
       - name: Run type check
         run: pnpm typecheck
 

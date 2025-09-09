@@ -7,9 +7,8 @@ import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
-import { LanguageModelV2Usage } from '@ai-sdk/provider';
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
+export default async function Page(props: PageProps<'/chat/[id]'>) {
   const params = await props.params;
   const { id } = params;
   const chat = await getChatById({ id });

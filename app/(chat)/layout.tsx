@@ -10,9 +10,7 @@ export const experimental_ppr = true;
 
 export default async function Layout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: LayoutProps<'/'>) {
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
   const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
 

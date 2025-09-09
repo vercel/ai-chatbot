@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "typegen": "next typegen",
     "build": "tsx lib/db/migrate && next build",
     "start": "next start",
     "check": "biome check .",
