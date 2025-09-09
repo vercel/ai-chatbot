@@ -170,7 +170,7 @@ export const ChainOfThoughtStep = memo(
                 />
               </CollapsibleTrigger>
               {description && (
-                <div className="text-muted-foreground text-xs mt-1">
+                <div className="text-muted-foreground text-sm mt-1">
                   {description}
                 </div>
               )}
@@ -182,7 +182,7 @@ export const ChainOfThoughtStep = memo(
             <>
               {label && <div>{label}</div>}
               {description && (
-                <div className="text-muted-foreground text-xs">{description}</div>
+                <div className="text-muted-foreground text-sm">{description}</div>
               )}
               {children}
             </>
@@ -206,7 +206,7 @@ export type ChainOfThoughtSearchResultProps = ComponentProps<typeof Badge>;
 export const ChainOfThoughtSearchResult = memo(
   ({ className, children, ...props }: ChainOfThoughtSearchResultProps) => (
     <Badge
-      className={cn("gap-1 px-2 py-0.5 font-normal text-xs", className)}
+      className={cn("gap-1 px-2 py-0.5 font-normal text-sm", className)}
       variant="secondary"
       {...props}
     >
@@ -250,7 +250,7 @@ export const ChainOfThoughtImage = memo(
       <div className="relative flex max-h-[22rem] items-center justify-center overflow-hidden rounded-lg bg-muted p-3">
         {children}
       </div>
-      {caption && <p className="text-muted-foreground text-xs">{caption}</p>}
+      {caption && <p className="text-muted-foreground text-sm">{caption}</p>}
     </div>
   )
 );

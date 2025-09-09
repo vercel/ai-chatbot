@@ -24,7 +24,10 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
   <Collapsible
-    className={cn('not-prose mb-4 w-full min-w-0 rounded-md border overflow-hidden', className)}
+    className={cn(
+      'not-prose mb-4 w-full min-w-0 rounded-md border overflow-hidden',
+      className,
+    )}
     {...props}
   />
 );
@@ -54,7 +57,7 @@ const getStatusBadge = (status: ToolUIPart['state']) => {
 
   return (
     <Badge
-      className="rounded-full text-xs flex items-center gap-1"
+      className="rounded-full text-sm flex items-center gap-1"
       variant="secondary"
     >
       {icons[status]}
@@ -111,7 +114,7 @@ export type ToolInputProps = ComponentProps<'div'> & {
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
   <div className={cn('space-y-2 overflow-hidden p-4', className)} {...props}>
-    <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+    <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wide">
       Parameters
     </h4>
     <div className="rounded-md bg-muted/50">
@@ -137,12 +140,12 @@ export const ToolOutput = ({
 
   return (
     <div className={cn('space-y-2 p-4', className)} {...props}>
-      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+      <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wide">
         {errorText ? 'Error' : 'Result'}
       </h4>
       <div
         className={cn(
-          'overflow-x-auto rounded-md text-xs [&_table]:w-full',
+          'overflow-x-auto rounded-md text-sm [&_table]:w-full',
           errorText
             ? 'bg-destructive/10 text-destructive'
             : 'bg-muted/50 text-foreground',

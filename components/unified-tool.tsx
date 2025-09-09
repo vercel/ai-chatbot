@@ -75,7 +75,7 @@ export function UnifiedTool({
             output={
               !error && output
                 ? (
-                    <pre className="p-1.5 text-xs overflow-auto max-h-40">
+                    <pre className="p-1.5 text-sm overflow-auto max-h-40">
                       {typeof output === 'string'
                         ? output
                         : JSON.stringify(output, null, 2)}

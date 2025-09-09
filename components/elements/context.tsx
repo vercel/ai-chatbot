@@ -156,7 +156,7 @@ function InfoRow({
   costText?: string;
 }) {
   return (
-    <div className="flex items-center justify-between text-xs">
+    <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>
       <TokensWithCost tokens={tokens} costText={costText} />
     </div>
@@ -330,7 +330,7 @@ export const Context = ({
             {costText && (
               <>
                 <Separator className="mt-1" />
-                <div className="flex items-center justify-between pt-1 text-xs">
+                <div className="flex items-center justify-between pt-1 text-sm">
                   <span className="text-muted-foreground">Total cost</span>
                   <span>{costText}</span>
                 </div>

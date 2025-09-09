@@ -230,7 +230,7 @@ export const WebPreviewConsole = ({
             logs.map((log, index) => (
               <div
                 className={cn(
-                  'text-xs',
+                  'text-sm',
                   log.level === 'error' && 'text-destructive',
                   log.level === 'warn' && 'text-yellow-600',
                   log.level === 'log' && 'text-foreground',

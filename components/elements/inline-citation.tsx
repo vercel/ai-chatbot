@@ -174,7 +174,7 @@ export const InlineCitationCarouselIndex = ({
   return (
     <div
       className={cn(
-        'flex flex-1 items-center justify-end px-3 py-1 text-muted-foreground text-xs',
+        'flex flex-1 items-center justify-end px-3 py-1 text-muted-foreground text-sm',
         className,
       )}
       {...props}
@@ -257,7 +257,7 @@ export const InlineCitationSource = ({
       <h4 className="truncate font-medium text-sm leading-tight">{title}</h4>
     )}
     {url && (
-      <p className="truncate break-all text-muted-foreground text-xs">{url}</p>
+      <p className="truncate break-all text-muted-foreground text-sm">{url}</p>
     )}
     {description && (
       <p className="line-clamp-3 text-muted-foreground text-sm leading-relaxed">

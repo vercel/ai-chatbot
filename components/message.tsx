@@ -78,12 +78,6 @@ const PurePreviewMessage = ({
             'justify-start -ml-3': message.role === 'assistant',
           })}
         >
-          {message.role === 'assistant' && (
-            <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
-              <SparklesIcon size={14} />
-            </div>
-          )}
-
           <div
             className={cn('flex flex-col gap-4', {
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
@@ -408,5 +402,3 @@ export const ThinkingMessage = () => {
     </motion.div>
   );
 };
-
-// LoadingText moved to components/elements/loading-text.tsx
