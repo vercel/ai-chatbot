@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, LogOut } from 'lucide-react';
+import { ArrowLeft, LogOut } from 'lucide-react';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { fetchWithErrorHandlers, fetcher, generateUUID } from '@/lib/utils';
 import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact';
@@ -454,6 +454,8 @@ export function Chat({
           votes={votes}
           isReadonly={isReadonly}
           selectedVisibilityType={visibilityType}
+          initialChatModel={initialChatModel}
+          isCompactMode={false}
         />
       </>
     );
@@ -485,49 +487,6 @@ export function Chat({
                 isArtifactVisible={isArtifactVisible}
               />
 
-              <div className="mt-8">
-                {!isReadonly && (
-                  <form className="flex gap-3 max-w-2xl mx-auto">
-                    <div className="relative flex-1">
-                      <textarea
-                        placeholder="Write something"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        className="w-full h-24 resize-none text-lg border-2 border-purple-300 rounded-lg pr-14 pl-3 py-3 focus:outline-none"
-                        style={{
-                          borderColor: '#D1D5DB',
-                          '--tw-ring-color': '#814092',
-                          width: '100%',
-                          minWidth: '600px', // Make textarea bigger
-                          maxWidth: '100%',
-                        } as React.CSSProperties}
-                        onFocus={e => (e.target.style.borderColor = '#814092')}
-                        onBlur={e => (e.target.style.borderColor = '#D1D5DB')}
-                        disabled={isReadonly}
-                      />
-                      <Button
-                        type="submit"
-                        disabled={!input.trim() || isReadonly}
-                        className="absolute bottom-3 right-3 h-10 w-10 rounded-full text-white p-0 flex items-center justify-center"
-                        style={{ backgroundColor: '#814092' }}
-                        onClick={e => {
-                          e.preventDefault();
-                          if (input.trim()) {
-                            sendMessage({
-                              role: 'user' as const,
-                              parts: [{ type: 'text', text: input.trim() }],
-                            });
-                            setInput('');
-                          }
-                        }}
-                        tabIndex={-1}
-                      >
-                        <ArrowRight className="w-6 h-6" />
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </div>
             </div>
           </div>
         </div>
@@ -547,6 +506,9 @@ export function Chat({
           votes={votes}
           isReadonly={isReadonly}
           selectedVisibilityType={visibilityType}
+          initialChatModel={initialChatModel}
+          isCompactMode={false}
+          showInputOnly={true}
         />
       </>
     );
@@ -580,41 +542,6 @@ export function Chat({
               />
             </div>
 
-            {/* Input Area */}
-            <div className="border-t border-gray-200" style={{ backgroundColor: '#EFD9E9', padding: '18px' }}>
-              {!isReadonly && (
-                <div className="relative">
-                  <textarea
-                    placeholder="Send a message..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    className="w-full h-20 resize-none text-sm border border-gray-300 rounded-lg pr-12 pl-3 py-3 focus:outline-none"
-                    style={{ 
-                      borderColor: '#D1D5DB',
-                      '--tw-ring-color': '#814092'
-                    } as React.CSSProperties}
-                    onFocus={(e) => e.target.style.borderColor = '#814092'}
-                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
-                    disabled={isReadonly}
-                  />
-                  <Button
-                    onClick={() => {
-                      if (input.trim()) {
-                        sendMessage({
-                          role: 'user' as const,
-                          parts: [{ type: 'text', text: input.trim() }],
-                        });
-                        setInput('');
-                      }
-                    }}
-                    disabled={!input.trim() || isReadonly}
-                    className="absolute right-2 h-8 w-8 rounded-full text-white p-2 flex items-center justify-center bg-[#814092] bottom-[14px]"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Right Panel - Browser View (only show when browserPanelVisible is true) */}
@@ -644,6 +571,9 @@ export function Chat({
           votes={votes}
           isReadonly={isReadonly}
           selectedVisibilityType={visibilityType}
+          initialChatModel={initialChatModel}
+          isCompactMode={true}
+          showInputOnly={true}
         />
       </>
     );
@@ -728,6 +658,7 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
+        initialChatModel={initialChatModel}
       />
     </>
   );
