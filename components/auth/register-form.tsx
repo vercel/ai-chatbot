@@ -18,20 +18,22 @@ import { TriangleAlertIcon as IconWarning, LoaderIcon } from 'lucide-react';
 import { CheckCircleFillIcon as IconCheckCircle } from '@/components/icons';
 import { Alert, AlertTitle } from '../ui/alert';
 
-import { SignInSchema, SignIn } from '@/lib/validators';
-import { login } from '@/app/(auth)/actions';
+import { SignUpSchema } from '@/lib/validators';
+import { register } from '@/app/(auth)/actions';
+import { SignUp } from '@/lib/validators/sign-up';
 
 export const RegisterForm = () => {
   const form = useForm({
-    resolver: zodResolver(SignInSchema),
+    resolver: zodResolver(SignUpSchema),
     defaultValues: {
       email: '',
+      password: '',
     },
   });
 
-  const { execute, result, status } = useAction(login);
+  const { execute, result, status } = useAction(register);
 
-  const onSubmit = (values: SignIn) => {
+  const onSubmit = (values: SignUp) => {
     execute(values);
   };
 

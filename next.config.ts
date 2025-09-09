@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
         hostname: 'avatar.vercel.sh',
       },
       {
-        hostname: 'misc-assets.raycast.com',
+        hostname: 'images.unsplash.com',
       }
     ],
   },

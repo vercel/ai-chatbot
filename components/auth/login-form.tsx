@@ -21,11 +21,13 @@ import { Alert, AlertTitle } from '../ui/alert';
 import { SignInSchema, SignIn } from '@/lib/validators';
 import { login } from '@/app/(auth)/actions';
 
+// made it two forms so it'd be easier to add more fields later
 export const LoginForm = () => {
   const form = useForm({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
       email: '',
+      password: '',
     },
   });
 

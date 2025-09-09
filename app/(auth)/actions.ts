@@ -2,28 +2,53 @@
 import 'server-only';
 
 import { actionClient, ActionError } from '@/lib/safe-action';
-import { SignInSchema } from '@/lib/validators';
-import { redirect } from 'next/navigation';
-import { Route } from 'next';
+import { SignInSchema, SignUpSchema } from '@/lib/validators';
 import { signIn } from '@/app/(auth)/auth';
+import { createUser, getUser } from '@/lib/db/queries';
+import { redirect } from 'next/navigation';
 
 export const login = actionClient
-  .schema(SignInSchema)
-  .action(async ({ parsedInput: { email } }) => {
-    const res = (await signIn('resend', {
-      email,
-      redirect: false,
-    })) as Route;
+  .inputSchema(SignInSchema)
+  .action(async ({ parsedInput: { email, password } }) => {
+    try {
+      const res = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
 
-    // if (res) redirect(res);
-    // throw new ActionError("Failed to sign in with magic link.");
+      if (res) {
+        redirect(res);
+      }
+    } catch (error) {
+      console.error(error);
+      throw new ActionError('Failed to sign in with credentials.');
+    }
   });
 
-export const signInWithKeycloak = async () => {
-  const res = (await signIn('keycloak', {
-    redirect: false,
-  })) as Route;
+export const register = actionClient
+  .inputSchema(SignUpSchema)
+  .action(async ({ parsedInput: { email, password } }) => {
+    try {
+      const [user] = await getUser(email);
 
-  if (res) redirect(res);
-  throw new ActionError('Failed to sign in with keycloak.');
-};
+      if (user) {
+        throw new ActionError('User already exists.');
+      }
+
+      await createUser(email, password);
+      const res = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (res) {
+        redirect(res);
+      }
+    } catch (error) {
+      console.error(error);
+
+      throw new ActionError('Failed to register with credentials.');
+    }
+  });
