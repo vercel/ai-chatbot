@@ -4,6 +4,7 @@ import {
   varchar,
   timestamp,
   json,
+  jsonb,
   uuid,
   text,
   primaryKey,
@@ -11,6 +12,7 @@ import {
   boolean,
   pgEnum,
 } from 'drizzle-orm/pg-core';
+import type { LanguageModelV2Usage } from '@ai-sdk/provider';
 
 export const userRoleEnum = pgEnum('user_role', ['guest', 'regular']);
 
@@ -24,6 +26,7 @@ export const chat = pgTable('Chat', {
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
+  lastContext: jsonb('lastContext').$type<LanguageModelV2Usage | null>(),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
