@@ -1,11 +1,18 @@
 import express from 'express';
+import { blueprint, Phase } from './blueprint';
 
 const app = express();
+const port = process.env.PORT || 3001;
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+app.get('/journey/:phase', (req, res) => {
+  const phase = req.params.phase as Phase;
+  const nodes = blueprint[phase];
+  if (!nodes) {
+    return res.status(404).json({ error: 'Phase not found' });
+  }
+  res.json(nodes);
 });
 
-app.listen(3000, () => {
-  console.log('REST API server listening on port 3000');
+app.listen(port, () => {
+  console.log(`REST API listening on port ${port}`);
 });
