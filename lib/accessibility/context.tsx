@@ -121,7 +121,7 @@ export function AccessibilityProvider({
       // Nenhuma configuração salva, mas o sistema prefere redução de movimento
       setAccessibilityState((prev) => ({ ...prev, reduceMotion: true }));
     }
-  }, [accessibilityState]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Funções memoizadas para manipular o estado
   const toggleHighContrast = useCallback(() => {

@@ -32,7 +32,7 @@ export function VirtualizedMessages({
   isArtifactVisible,
   containerRef,
 }: VirtualizedMessagesProps) {
-  const { height: windowHeight } = useWindowSize();
+  const { height: windowHeight } = useWindowSize({ initializeWithValue: false });
   const listRef = useRef<FixedSizeList>(null);
   const sizeMap = useRef<{ [key: number]: number }>({});
   const [messageHeights, setMessageHeights] = useState<{
@@ -89,7 +89,7 @@ export function VirtualizedMessages({
     <div className="relative flex-1 overflow-y-auto" ref={containerRef}>
       <FixedSizeList
         ref={listRef}
-        height={windowHeight * 0.75}
+        height={windowHeight ? windowHeight * 0.75 : 600}
         itemCount={messages.length + (status === 'streaming' ? 1 : 0)}
         itemSize={120} // valor fixo, pode ser ajustado
         width={"100%"}
