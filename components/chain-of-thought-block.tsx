@@ -42,7 +42,10 @@ type ToolState = 'input-available' | 'output-available';
 function isCoTPart(part: any) {
   const t = part?.type as string | undefined;
   if (!t) return false;
-  if (t === 'reasoning') return true; // render CoT immediately on reasoning start, even if empty
+  if (t === 'reasoning') {
+    const txt = (part as any)?.text;
+    return typeof txt === 'string' && txt.trim().length > 0;
+  }
   return t.startsWith('tool-');
 }
 
@@ -80,6 +83,9 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
     .slice(firstIndex, endBoundaryIndex + 1)
     .filter((p) => isCoTPart(p));
 
+  // If no renderable steps remain, don't render the block at all
+  if (cotParts.length === 0) return null;
+
   type ToolPartLike = {
     state?: ToolState | 'input-streaming' | 'output-error';
     input?: any;
@@ -106,11 +112,7 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
   return (
     <ChainOfThought defaultOpen={isLoading}>
       <ChainOfThoughtHeader>
-        {isLoading ? (
-          <LoadingText>{latestReasoningTitle ?? 'Working'}</LoadingText>
-        ) : (
-          'Finished working'
-        )}
+        {isLoading ? <LoadingText>Working</LoadingText> : 'Finished working'}
       </ChainOfThoughtHeader>
       <ChainOfThoughtContent>
         {cotParts.map((part, idx) => {
@@ -123,6 +125,10 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
               typeof (part as any).text === 'string'
                 ? extractReasoningTitleAndBody((part as any).text)
                 : { body: '' };
+            // Skip empty reasoning parts (prelude placeholders)
+            if (!(parsed.title || (parsed.body && parsed.body.trim().length))) {
+              return null;
+            }
             return (
               <ChainOfThoughtStep
                 key={key}
@@ -132,7 +138,7 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                 defaultOpen={false}
               >
                 {parsed.body && (
-                  <Response className="text-xs text-muted-foreground/90">
+                  <Response className="text-sm text-muted-foreground/90">
                     {parsed.body}
                   </Response>
                 )}
@@ -174,9 +180,6 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
               : isInput
                 ? 'Running tool'
                 : 'Tool result';
-            const params: string | undefined = cfg
-              ? cfg.formatParameters(toolPart.input, type)
-              : undefined;
             const summary: string | undefined =
               !isInput && cfg && cfg.getResultSummary
                 ? cfg.getResultSummary(toolPart.output, toolPart.input, type)
@@ -189,10 +192,8 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                   key={key}
                   label={isInput ? 'Checking weather' : 'Weather'}
                   status={isInput ? 'active' : 'complete'}
-                  collapsible
-                  defaultOpen={false}
                 >
-                  <Tool defaultOpen={true}>
+                  <Tool defaultOpen={false}>
                     <ToolHeader type="tool-getWeather" state={state} />
                     <ToolContent>
                       {state === 'input-available' && (
@@ -218,8 +219,6 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                   key={key}
                   label={isInput ? 'Creating document' : 'Document created'}
                   status={isInput ? 'active' : 'complete'}
-                  collapsible
-                  defaultOpen={false}
                 >
                   {state === 'output-available' &&
                   toolPart.output &&
@@ -246,8 +245,6 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                   key={key}
                   label={isInput ? 'Updating document' : 'Document updated'}
                   status={isInput ? 'active' : 'complete'}
-                  collapsible
-                  defaultOpen={false}
                 >
                   {state === 'output-available' &&
                   toolPart.output &&
@@ -278,14 +275,10 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
               return (
                 <ChainOfThoughtStep
                   key={key}
-                  label={
-                    isInput ? 'Requesting suggestions' : 'Suggestions ready'
-                  }
+                  label={isInput ? 'Requesting suggestions' : 'Suggestions ready'}
                   status={isInput ? 'active' : 'complete'}
-                  collapsible
-                  defaultOpen={false}
                 >
-                  <Tool defaultOpen={true}>
+                  <Tool defaultOpen={false}>
                     <ToolHeader type="tool-requestSuggestions" state={state} />
                     <ToolContent>
                       {state === 'input-available' && (
@@ -320,12 +313,9 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
               <ChainOfThoughtStep
                 key={key}
                 label={label}
-                description={[params, summary].filter(Boolean).join(' ')}
                 status={isInput ? 'active' : 'complete'}
-                collapsible
-                defaultOpen={false}
               >
-                {/* Compact badges when we have a summary */}
+                {/* Optional compact badges when we have a summary */}
                 {!isInput && summary && (
                   <ChainOfThoughtSearchResults>
                     <ChainOfThoughtSearchResult>
@@ -334,7 +324,7 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                   </ChainOfThoughtSearchResults>
                 )}
 
-                {/* Full details via UnifiedTool */}
+                {/* Render the unified expandable Tool UI directly */}
                 <div className="mt-1 w-full min-w-0 overflow-hidden">
                   <ToolRenderer
                     toolCallId={toolPart.toolCallId as string}
@@ -343,6 +333,7 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                     input={toolPart.input}
                     isReadonly={isReadonly}
                     type={type}
+                    defaultOpen={false}
                   />
                 </div>
               </ChainOfThoughtStep>

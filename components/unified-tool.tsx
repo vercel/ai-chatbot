@@ -18,6 +18,7 @@ interface UnifiedToolProps {
   input?: any;
   isReadonly?: boolean;
   config: ToolConfig;
+  defaultOpen?: boolean;
 }
 
 export function UnifiedTool({
@@ -27,6 +28,7 @@ export function UnifiedTool({
   input,
   isReadonly = false,
   config,
+  defaultOpen = false,
 }: UnifiedToolProps) {
   const toolType = config.getToolType(toolCallId);
   const Icon = config.icon;
@@ -64,7 +66,7 @@ export function UnifiedTool({
       : '';
 
   return (
-    <Tool defaultOpen={true}>
+    <Tool defaultOpen={defaultOpen}>
       <ToolHeader type={toolType} state={state} label={config.displayName || toolType} icon={Icon} />
       <ToolContent>
         {input && <ToolInput input={input} />}

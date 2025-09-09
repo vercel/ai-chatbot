@@ -1,6 +1,7 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -24,6 +25,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { ChainOfThoughtBlock } from './chain-of-thought-block';
+import { ChainOfThoughtPlaceholder } from './chain-of-thought-placeholder';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
@@ -79,7 +81,7 @@ const PurePreviewMessage = ({
           })}
         >
           <div
-            className={cn('flex flex-col gap-4', {
+            className={cn('flex flex-col gap-2', {
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
               'w-full': message.role === 'assistant',
               'w-fit': message.role === 'user',
@@ -111,7 +113,10 @@ const PurePreviewMessage = ({
               const isCoTPart = (p: any) => {
                 const t = p?.type as string | undefined;
                 if (!t) return false;
-                if (t === 'reasoning') return true;
+                if (t === 'reasoning') {
+                  const txt = (p as any)?.text;
+                  return typeof txt === 'string' && txt.trim().length > 0;
+                }
                 return t.startsWith('tool-');
               };
 
@@ -136,108 +141,125 @@ const PurePreviewMessage = ({
               if (cotFirstIndex !== null && cotEndBoundary === null)
                 cotEndBoundary = parts.length - 1;
 
-              return parts.map((part, index) => {
-                const { type } = part;
-                const key = `message-${message.id}-part-${index}`;
+              const elements: ReactNode[] = [];
 
-                // Render the unified Chain-of-Thought block at the beginning of the first run
-                if (
-                  cotFirstIndex !== null &&
-                  cotEndBoundary !== null &&
-                  index === cotFirstIndex
-                ) {
-                  return (
-                    <ChainOfThoughtBlock
-                      key={`cot-${message.id}-${index}`}
-                      message={message}
-                      isLoading={isLoading}
-                      isReadonly={isReadonly}
-                    />
-                  );
-                }
+              // While loading, if no CoT parts have arrived yet, render an immediate placeholder
+              // so there is never a blank gap. It disappears as soon as a real CoT part appears.
+              if (
+                message.role === 'assistant' &&
+                isLoading &&
+                cotFirstIndex === null
+              ) {
+                elements.push(
+                  <div key={`cot-placeholder-${message.id}`}>
+                    <ChainOfThoughtPlaceholder />
+                  </div>,
+                );
+              }
 
-                // Skip the rest of parts that belong to the CoT run
-                if (
-                  cotFirstIndex !== null &&
-                  cotEndBoundary !== null &&
-                  index > cotFirstIndex &&
-                  index <= cotEndBoundary
-                ) {
-                  return null;
-                }
+              elements.push(
+                ...parts.map((part, index) => {
+                  const { type } = part;
+                  const key = `message-${message.id}-part-${index}`;
 
-                if (type === 'reasoning' && part.text?.trim().length > 0) {
-                  return (
-                    <MessageReasoning
-                      key={key}
-                      isLoading={isLoading}
-                      reasoning={part.text}
-                    />
-                  );
-                }
-
-                if (type === 'text') {
-                  if (mode === 'view') {
+                  // Render the unified Chain-of-Thought block at the beginning of the first run
+                  if (
+                    cotFirstIndex !== null &&
+                    cotEndBoundary !== null &&
+                    index === cotFirstIndex
+                  ) {
                     return (
-                      <div
-                        key={key}
-                        className="flex flex-row gap-2 items-start"
-                      >
-                        {message.role === 'user' && !isReadonly && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                data-testid="message-edit-button"
-                                variant="ghost"
-                                className="px-2 rounded-full opacity-0 h-fit text-muted-foreground group-hover/message:opacity-100"
-                                onClick={() => {
-                                  setMode('edit');
-                                }}
-                              >
-                                <PencilEditIcon />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit message</TooltipContent>
-                          </Tooltip>
-                        )}
+                      <ChainOfThoughtBlock
+                        key={`cot-${message.id}-${index}`}
+                        message={message}
+                        isLoading={isLoading}
+                        isReadonly={isReadonly}
+                      />
+                    );
+                  }
 
-                        <MessageContent
-                          data-testid="message-content"
-                          className={cn('justify-start items-start text-left', {
-                            'bg-primary text-primary-foreground':
-                              message.role === 'user',
-                            'bg-transparent -ml-4':
-                              message.role === 'assistant',
-                          })}
+                  // Skip the rest of parts that belong to the CoT run
+                  if (
+                    cotFirstIndex !== null &&
+                    cotEndBoundary !== null &&
+                    index > cotFirstIndex &&
+                    index <= cotEndBoundary
+                  ) {
+                    return null;
+                  }
+
+                  if (type === 'reasoning' && part.text?.trim().length > 0) {
+                    return (
+                      <MessageReasoning
+                        key={key}
+                        isLoading={isLoading}
+                        reasoning={part.text}
+                      />
+                    );
+                  }
+
+                  if (type === 'text') {
+                    if (mode === 'view') {
+                      return (
+                        <div
+                          key={key}
+                          className="flex flex-row gap-2 items-start"
                         >
-                          <Response>{sanitizeText(part.text)}</Response>
-                        </MessageContent>
-                      </div>
-                    );
-                  }
+                          {message.role === 'user' && !isReadonly && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  data-testid="message-edit-button"
+                                  variant="ghost"
+                                  className="px-2 rounded-full opacity-0 h-fit text-muted-foreground group-hover/message:opacity-100"
+                                  onClick={() => {
+                                    setMode('edit');
+                                  }}
+                                >
+                                  <PencilEditIcon />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit message</TooltipContent>
+                            </Tooltip>
+                          )}
 
-                  if (mode === 'edit') {
-                    return (
-                      <div
-                        key={key}
-                        className="flex flex-row gap-3 items-start w-full"
-                      >
-                        <div className="size-8" />
-                        <div className="flex-1 min-w-0">
-                          <MessageEditor
-                            key={message.id}
-                            message={message}
-                            setMode={setMode}
-                            setMessages={setMessages}
-                            regenerate={regenerate}
-                          />
+                          <MessageContent
+                            data-testid="message-content"
+                            className={cn('justify-start items-start text-left', {
+                              'bg-primary text-primary-foreground':
+                                message.role === 'user',
+                              'bg-transparent -ml-4':
+                                message.role === 'assistant',
+                            })}
+                          >
+                            <Response>{sanitizeText(part.text)}</Response>
+                          </MessageContent>
                         </div>
-                      </div>
-                    );
-                  }
-                }
+                      );
+                    }
 
-                if (type === 'tool-getWeather') {
+                    if (mode === 'edit') {
+                      return (
+                        <div
+                          key={key}
+                          className="flex flex-row gap-3 items-start w-full"
+                        >
+                          <div className="size-8" />
+                          <div className="flex-1 min-w-0">
+                            <MessageEditor
+                              key={message.id}
+                              message={message}
+                              setMode={setMode}
+                              setMessages={setMessages}
+                              regenerate={regenerate}
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (type === 'tool-getWeather') {
                   const { toolCallId, state } = part;
 
                   return (
@@ -343,7 +365,10 @@ const PurePreviewMessage = ({
                 }
 
                 return null;
-              });
+                }),
+              );
+
+              return elements;
             })()}
 
             {!isReadonly && (
@@ -389,10 +414,6 @@ export const ThinkingMessage = () => {
       data-role={role}
     >
       <div className="flex items-start gap-3 justify-start -ml-3">
-        <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
-          <SparklesIcon size={14} />
-        </div>
-
         <div className="flex flex-col gap-2 w-full md:gap-4">
           <div className="p-0 text-sm text-muted-foreground">
             <LoadingText>Thinking...</LoadingText>

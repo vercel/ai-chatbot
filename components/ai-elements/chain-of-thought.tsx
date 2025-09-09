@@ -8,12 +8,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import {
-  BrainIcon,
-  ChevronDownIcon,
-  DotIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDownIcon, DotIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { createContext, memo, useContext } from "react";
 
@@ -61,7 +56,7 @@ export const ChainOfThought = memo(
       <ChainOfThoughtContext.Provider value={{ isOpen, setIsOpen }}>
         <div
           className={cn(
-            "not-prose max-w-prose w-full min-w-0 space-y-4",
+            "not-prose max-w-prose w-full min-w-0",
             className
           )}
           {...props}
@@ -85,12 +80,11 @@ export const ChainOfThoughtHeader = memo(
       <Collapsible onOpenChange={setIsOpen} open={isOpen}>
         <CollapsibleTrigger
           className={cn(
-            "inline-flex items-center gap-1.5 text-muted-foreground text-sm transition-colors hover:text-foreground",
+            "inline-flex items-center gap-1.5 text-muted-foreground text-base font-medium transition-colors hover:text-foreground",
             className
           )}
           {...props}
         >
-          <BrainIcon className="size-4" />
           <span className="text-left">{children ?? "Chain of Thought"}</span>
           <ChevronDownIcon
             className={cn(

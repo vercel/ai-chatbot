@@ -16,6 +16,7 @@ interface ToolRendererProps {
   input?: any;
   isReadonly?: boolean;
   type: string; // The tool type like 'tool-listGmailMessages'
+  defaultOpen?: boolean;
 }
 
 // Map tool types to their configurations
@@ -52,6 +53,7 @@ export function ToolRenderer({
   input,
   isReadonly = false,
   type,
+  defaultOpen = false,
 }: ToolRendererProps) {
   const config = TOOL_CONFIG_MAP[type as keyof typeof TOOL_CONFIG_MAP];
 
@@ -69,6 +71,7 @@ export function ToolRenderer({
       input={input}
       isReadonly={isReadonly}
       config={config}
+      defaultOpen={defaultOpen}
     />
   );
 }
