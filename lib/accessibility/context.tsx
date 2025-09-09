@@ -88,11 +88,7 @@ export function AccessibilityProvider({
     } catch (e) {
       console.error('Erro ao salvar configurações:', e);
     }
-  }, [
-    accessibilityState.highContrast,
-    accessibilityState.fontSize,
-    accessibilityState.reduceMotion,
-  ]);
+  }, [accessibilityState]);
 
   // Efeito separado para carregar preferências iniciais (executa apenas uma vez)
   useEffect(() => {
@@ -125,7 +121,7 @@ export function AccessibilityProvider({
       // Nenhuma configuração salva, mas o sistema prefere redução de movimento
       setAccessibilityState((prev) => ({ ...prev, reduceMotion: true }));
     }
-  }, []);
+  }, [accessibilityState]);
 
   // Funções memoizadas para manipular o estado
   const toggleHighContrast = useCallback(() => {

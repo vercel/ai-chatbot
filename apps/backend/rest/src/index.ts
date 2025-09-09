@@ -1,5 +1,5 @@
 import express from 'express';
-import { blueprint, Phase } from './blueprint';
+import { blueprint, type Phase } from './blueprint';
 
 const app = express();
 const port = process.env.PORT || 3001;
