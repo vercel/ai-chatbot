@@ -15,7 +15,7 @@
       "!.vercel",
       "!pnpm-lock.yaml",
       "!bun.lock",
-      "!src/components/ui",
+      "!components/ui",
       "!**/*.grit"
     ]
   },
