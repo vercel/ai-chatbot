@@ -154,6 +154,7 @@
     "@playwright/test": "^1.55.0",
     "@storybook/addon-a11y": "9.1.5",
     "@storybook/addon-docs": "9.1.5",
+    "@storybook/addon-themes": "^9.1.5",
     "@storybook/addon-vitest": "9.1.5",
     "@storybook/nextjs-vite": "^9.1.5",
     "@tailwindcss/typography": "^0.5.15",

@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/nextjs-vite'
+import { withThemeByClassName } from '@storybook/addon-themes'
 
 const preview: Preview = {
   parameters: {
@@ -14,8 +15,30 @@ const preview: Preview = {
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
       test: 'todo'
-    }
+    },
+
+    docs: {
+      toc: true,
+    },
+
+    themes: {
+      default: 'light',
+      list: [
+        { name: 'light', class: 'light', color: '#ffffff' },
+        { name: 'dark', class: 'dark', color: '#000000' },
+      ],
+    },
   },
+
+  decorators: [
+    withThemeByClassName({
+      themes: {
+        light: 'light',
+        dark: 'dark',
+      },
+      defaultTheme: 'light',
+    }),
+  ],
 };
 
 export default preview;
