@@ -43,8 +43,8 @@ import { Loader } from '@/components/ai-elements/loader';
 import {
   fetchWithErrorHandlers,
   generateUUID,
-  getChatHistoryPaginationKey,
 } from '@/lib/utils';
+import { getChatHistoryPaginationKey } from './sidebar-history';
 import { ChatHeader } from './chat-header';
 import { useDataStream } from './data-stream-provider';
 import { toast } from './toast';
@@ -218,7 +218,7 @@ export function EnhancedChat({
                           key={`${message.id}-${i}`}
                           className="w-full"
                           isStreaming={
-                            status === 'in_progress' &&
+                            status === 'streaming' &&
                             i === message.parts.length - 1 &&
                             message.id === messages.at(-1)?.id
                           }
@@ -233,7 +233,7 @@ export function EnhancedChat({
                 })}
               </div>
             ))}
-            {status === 'submitting' && <Loader />}
+            {status === 'streaming' && <Loader />}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
@@ -279,7 +279,7 @@ export function EnhancedChat({
               </PromptInputTools>
               <PromptInputSubmit
                 disabled={!input.trim()}
-                status={status === 'in_progress' ? 'streaming' : status}
+                status={status === 'streaming' ? 'streaming' : status}
               />
             </PromptInputToolbar>
           </PromptInput>

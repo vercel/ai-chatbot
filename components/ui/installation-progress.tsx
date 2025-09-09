@@ -11,6 +11,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
+// Função helper para obter o texto do status
+function getStatusText(status: string): string {
+  switch (status) {
+    case 'completed':
+      return 'Concluído';
+    case 'progress':
+      return 'Em andamento';
+    default:
+      return 'Pendente';
+  }
+}
+
 // Tipos de etapas na instalação solar
 type InstallationStep = {
   id: number;
@@ -113,20 +125,8 @@ export function InstallationProgress({
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">{step.title}</h4>
-                    <Badge
-                      variant={
-                        step.status === 'completed'
-                          ? 'status.completed'
-                          : step.status === 'progress'
-                            ? 'status.progress'
-                            : 'status.pending'
-                      }
-                    >
-                      {step.status === 'completed'
-                        ? 'Concluído'
-                        : step.status === 'progress'
-                          ? 'Em andamento'
-                          : 'Pendente'}
+                    <Badge variant="status">
+                      {getStatusText(step.status)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">

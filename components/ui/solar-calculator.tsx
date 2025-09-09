@@ -177,7 +177,7 @@ export function SolarCalculator({
           <div className="mt-6 p-4 bg-muted/50 rounded-lg space-y-4">
             <div className="flex justify-between items-center">
               <h4 className="text-lg font-medium">Resultados Estimados</h4>
-              <Badge variant="solar">Economia Solar</Badge>
+              <Badge variant="installation">Economia Solar</Badge>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

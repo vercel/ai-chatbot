@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { VariableSizeList as List } from 'react-window';
+import { FixedSizeList } from 'react-window';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { motion } from 'framer-motion';
 import { useWindowSize } from 'usehooks-ts';
@@ -33,7 +33,7 @@ export function VirtualizedMessages({
   containerRef,
 }: VirtualizedMessagesProps) {
   const { height: windowHeight } = useWindowSize();
-  const listRef = useRef<List>(null);
+  const listRef = useRef<FixedSizeList>(null);
   const sizeMap = useRef<{ [key: number]: number }>({});
   const [messageHeights, setMessageHeights] = useState<{
     [key: string]: number;
@@ -87,16 +87,13 @@ export function VirtualizedMessages({
 
   return (
     <div className="relative flex-1 overflow-y-auto" ref={containerRef}>
-      <List
+      <FixedSizeList
         ref={listRef}
-        height={windowHeight * 0.75} // Altura dinâmica baseada na janela
-        itemCount={
-          messages.length +
-          (status === 'in_progress' || status === 'submitting' ? 1 : 0)
-        }
-        itemSize={getEstimatedHeight}
-        width="100%"
-        overscanCount={3} // Pré-renderiza algumas mensagens extras para scrolling suave
+        height={windowHeight * 0.75}
+        itemCount={messages.length + (status === 'streaming' ? 1 : 0)}
+        itemSize={120} // valor fixo, pode ser ajustado
+        width={"100%"}
+        overscanCount={3}
         style={{
           overflowX: 'hidden',
           paddingLeft: '1rem',
@@ -104,39 +101,19 @@ export function VirtualizedMessages({
           marginTop: '1rem',
         }}
       >
-        {({ index, style }) => {
-          // Renderiza a mensagem de "pensando" no final durante o carregamento
-          if (
-            index === messages.length &&
-            (status === 'in_progress' || status === 'submitting')
-          ) {
+        {({ index, style }: { index: number; style: React.CSSProperties }) => {
+          if (index === messages.length && status === 'streaming') {
             return (
               <div style={style}>
                 <ThinkingMessage />
               </div>
             );
           }
-
           const message = messages[index];
           if (!message) return null;
-
-          // Encontrar o voto correspondente para esta mensagem
           const vote = votes.find((vote) => vote.messageId === message.id);
-
           return (
-            <div
-              style={{
-                ...style,
-                height: 'auto', // Permitir que as mensagens determinem sua própria altura
-              }}
-              onLoad={(e) => {
-                // Depois que a mensagem é renderizada completamente, calculamos a altura real
-                const height = e.currentTarget.getBoundingClientRect().height;
-                if (height > 0 && height !== sizeMap.current[index]) {
-                  setMeasuredHeight(index, height);
-                }
-              }}
-            >
+            <div style={{ ...style, height: 'auto' }}>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -157,7 +134,7 @@ export function VirtualizedMessages({
             </div>
           );
         }}
-      </List>
+      </FixedSizeList>
       {/* Elemento para detecção do fim do scroll */}
       <div id="messages-end" className="h-px" />
     </div>
