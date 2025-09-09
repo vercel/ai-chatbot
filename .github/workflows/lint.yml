@@ -1,25 +1,32 @@
-name: Lint
+name: CI
+
 on:
   push:
 
 jobs:
-  build:
+  types:
+    name: TypeScript
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        node-version: [20]
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install
-      - name: Run lint
-        run: pnpm lint
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run type check
+        run: pnpm typecheck
+
+  biome:
+    name: Biome
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run Biome
+        run: pnpm check
