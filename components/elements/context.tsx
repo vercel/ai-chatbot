@@ -1,10 +1,10 @@
 'use client';
 
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { ComponentProps } from 'react';
 import type { LanguageModelUsage } from 'ai';
@@ -97,11 +97,11 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   return (
     <svg
       aria-label={`${formatPercent(percent)} of model context used`}
-      height="20"
+      height="28"
       role="img"
       style={{ color: 'currentcolor' }}
       viewBox={`0 0 ${ICON_VIEWBOX} ${ICON_VIEWBOX}`}
-      width="20"
+      width="28"
     >
       <circle
         cx={ICON_CENTER}
@@ -271,8 +271,8 @@ export const Context = ({
     n === undefined ? '—' : formatTokens(n);
 
   return (
-    <HoverCard closeDelay={100} openDelay={100}>
-      <HoverCardTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <button
           className={cn(
             'inline-flex select-none items-center gap-1 rounded-md px-1.5 py-1 text-sm',
@@ -282,17 +282,18 @@ export const Context = ({
           type="button"
           {...props}
         >
-          <span className="font-medium text-muted-foreground">
+          <span className="font-medium text-muted-foreground hidden">
             {displayPct}
           </span>
           <ContextIcon percent={usedPercent} />
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent align="end" side="top" className="w-fit p-3">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" side="top" className="w-fit p-3">
         <div className="min-w-[240px] space-y-2">
-          <p className="text-start text-sm">
-            {displayPct} • {used} / {total} tokens
-          </p>
+          <div className="flex justify-between items-start text-sm">
+            <span>{displayPct}</span>
+            <span className="text-muted-foreground">{used} / {total} tokens</span>
+          </div>
           <div className="space-y-2">
             <Progress className="h-2 bg-muted" value={usedPercent} />
           </div>
@@ -339,7 +340,7 @@ export const Context = ({
             )}
           </div>
         </div>
-      </HoverCardContent>
-    </HoverCard>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
