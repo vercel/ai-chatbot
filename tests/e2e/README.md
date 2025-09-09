@@ -201,22 +201,33 @@ pnpm install
 # Executar todas as stories
 pnpm test:e2e
 
-# Executar uma story específica
-pnpm test:e2e story-chat-basico.spec.ts
-```
-
-### Executar com UI
-
-```bash
 # Executar com interface visual
-pnpm test:e2e --ui
+pnpm test:e2e:ui
+
+# Executar em modo debug
+pnpm test:e2e:debug
 ```
 
-### Executar em Modo Debug
+### Executar Stories Específicas
 
 ```bash
-# Executar em modo debug
-pnpm test:e2e --debug
+# Chat básico
+pnpm test:e2e:chat
+
+# Journey completa
+pnpm test:e2e:journey
+
+# Persona switching
+pnpm test:e2e:persona
+
+# Canvas interativo
+pnpm test:e2e:canvas
+
+# Upload de conta
+pnpm test:e2e:upload
+
+# Autenticação
+pnpm test:e2e:auth
 ```
 
 ## Relatórios e Resultados

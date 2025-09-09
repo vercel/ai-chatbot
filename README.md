@@ -71,6 +71,46 @@ pnpm dev
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
 
+## Testing
+
+### End-to-End Tests
+
+O projeto inclui um conjunto completo de testes end-to-end (E2E) usando Playwright, cobrindo os principais fluxos de usuário da aplicação.
+
+#### Scripts de Teste Disponíveis
+
+```bash
+# Executar todos os testes E2E
+pnpm test:e2e
+
+# Executar com interface visual
+pnpm test:e2e:ui
+
+# Executar em modo debug
+pnpm test:e2e:debug
+
+# Executar stories específicas
+pnpm test:e2e:chat      # Testes de chat básico
+pnpm test:e2e:journey   # Testes de journey completa
+pnpm test:e2e:persona   # Testes de persona switching
+pnpm test:e2e:canvas    # Testes de canvas interativo
+pnpm test:e2e:upload    # Testes de upload de conta
+pnpm test:e2e:auth      # Testes de autenticação
+```
+
+#### Stories de Teste Criadas
+
+1. **Story Chat Básico** - Testa funcionalidades básicas de chat e mensagens
+2. **Story Journey Completa** - Testa navegação através de todas as fases da jornada solar
+3. **Story Persona Switching** - Testa alternância entre personas Owner/Integrator
+4. **Story Canvas Interativo** - Testa funcionalidades do canvas para criação visual
+5. **Story Upload de Conta** - Testa upload e processamento de contas de energia
+6. **Story Autenticação** - Testa sistema completo de login/logout e segurança
+
+**Total**: 78 testes automatizados cobrindo cenários críticos de usuário.
+
+Para mais detalhes, consulte [`tests/e2e/README.md`](tests/e2e/README.md).
+
 ## Jornada Solar com Co-Agentes
 
 Esta aplicação foi personalizada para oferecer uma experiência completa de pré-vendas para energia solar, utilizando um sistema de co-agentes especializados em cada fase da jornada do cliente.
