@@ -108,6 +108,7 @@ const PurePreviewMessage = ({
             </div>
           )}
 
+          {/* biome-ignore lint/suspicious/useIterableCallbackReturn: we're not returning anything */}
           {message.parts?.map((part, index) => {
             const { type } = part;
             const key = `message-${message.id}-part-${index}`;
