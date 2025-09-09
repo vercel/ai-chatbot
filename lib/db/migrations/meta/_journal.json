@@ -57,6 +57,13 @@
       "when": 1757362773211,
       "tag": "0007_flowery_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757404938596,
+      "tag": "0008_real_wonder_man",
+      "breakpoints": true
     }
   ]
 }
