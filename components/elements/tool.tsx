@@ -50,10 +50,7 @@ const getStatusBadge = (status: ToolUIPart['state']) => {
   } as const;
 
   return (
-    <Badge
-      className="flex items-center gap-1 rounded-full text-xs"
-      variant="secondary"
-    >
+    <Badge className="rounded-full text-xs flex items-center gap-1" variant="secondary">
       {icons[status]}
       <span>{labels[status]}</span>
     </Badge>
@@ -68,16 +65,16 @@ export const ToolHeader = ({
 }: ToolHeaderProps) => (
   <CollapsibleTrigger
     className={cn(
-      'flex w-full min-w-0 items-center justify-between gap-2 p-3',
+      'flex w-full items-center justify-between gap-2 p-3 min-w-0',
       className,
     )}
     {...props}
   >
-    <div className="flex min-w-0 flex-1 items-center gap-2">
-      <WrenchIcon className="size-4 shrink-0 text-muted-foreground" />
-      <span className="truncate font-medium text-sm">{type}</span>
+    <div className="flex items-center gap-2 min-w-0 flex-1">
+      <WrenchIcon className="size-4 text-muted-foreground shrink-0" />
+      <span className="font-medium text-sm truncate">{type}</span>
     </div>
-    <div className="flex shrink-0 items-center gap-2">
+    <div className="flex items-center gap-2 shrink-0">
       {getStatusBadge(state)}
       <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
     </div>
@@ -89,7 +86,7 @@ export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 export const ToolContent = ({ className, ...props }: ToolContentProps) => (
   <CollapsibleContent
     className={cn(
-      'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-hidden data-[state=closed]:animate-out data-[state=open]:animate-in',
+      'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
       className,
     )}
     {...props}

@@ -25,7 +25,7 @@ export function SubmitButton({
       {children}
 
       {(pending || isSuccessful) && (
-        <span className="absolute right-4 animate-spin">
+        <span className="animate-spin absolute right-4">
           <LoaderIcon />
         </span>
       )}

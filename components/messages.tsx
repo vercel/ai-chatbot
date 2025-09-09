@@ -53,7 +53,7 @@ function PureMessages({
         if (container) {
           container.scrollTo({
             top: container.scrollHeight,
-            behavior: 'smooth',
+            behavior: 'smooth'
           });
         }
       });
@@ -63,7 +63,7 @@ function PureMessages({
   return (
     <div
       ref={messagesContainerRef}
-      className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll"
+      className="overflow-y-scroll flex-1 touch-pan-y overscroll-behavior-contain -webkit-overflow-scrolling-touch"
       style={{ overflowAnchor: 'none' }}
     >
       <Conversation className="flex flex-col gap-4 px-2 py-4 mx-auto min-w-0 max-w-4xl md:gap-6 md:px-4">
@@ -96,18 +96,20 @@ function PureMessages({
           {status === 'submitted' &&
             messages.length > 0 &&
             messages[messages.length - 1].role === 'user' &&
-            selectedModelId !== 'chat-model-reasoning' && <ThinkingMessage />}
+            selectedModelId !== 'chat-model-reasoning' && (
+              <ThinkingMessage />
+            )}
 
           <div
             ref={messagesEndRef}
-            className="min-h-[24px] min-w-[24px] shrink-0"
+            className="shrink-0 min-w-[24px] min-h-[24px]"
           />
         </ConversationContent>
       </Conversation>
 
       {!isAtBottom && (
         <button
-          className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
+          className="absolute bottom-40 left-1/2 z-10 p-2 rounded-full border shadow-lg transition-colors -translate-x-1/2 bg-background hover:bg-muted"
           onClick={() => scrollToBottom('smooth')}
           type="button"
           aria-label="Scroll to bottom"

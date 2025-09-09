@@ -474,25 +474,6 @@ export async function updateChatVisiblityById({
   }
 }
 
-export async function updateChatLastContextById({
-  chatId,
-  context,
-}: {
-  chatId: string;
-  // Store raw LanguageModelUsage to keep it simple
-  context: LanguageModelV2Usage;
-}) {
-  try {
-    return await db
-      .update(chat)
-      .set({ lastContext: context })
-      .where(eq(chat.id, chatId));
-  } catch (error) {
-    console.warn('Failed to update lastContext for chat', chatId, error);
-    return;
-  }
-}
-
 export async function getMessageCountByUserId({
   id,
   differenceInHours,
