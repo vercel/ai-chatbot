@@ -16,13 +16,13 @@ export const mg = mailgun.client({
   url: process.env.MAILGUN_URL || 'https://api.mailgun.net', // Use EU endpoint if needed: https://api.eu.mailgun.net
 });
 
-export const CHECKY_EMAIL = process.env.CHECKY_FROM_EMAIL || 'checky@app.growingproducts.io';
-export const CHECKY_DOMAIN = process.env.CHECKY_DOMAIN || 'app.growingproducts.io';
+export const CHECKY_EMAIL = process.env.CHECKY_FROM_EMAIL || 'checky@mg.growingproducts.io';
+export const CHECKY_DOMAIN = process.env.CHECKY_DOMAIN || 'mg.growingproducts.io';
 export const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 
 // Generate unique email addresses for threading
 export const generateReplyToEmail = (reportId: string) => {
-  return `report-${reportId}@${CHECKY_DOMAIN}`;
+  return `report-${reportId}@${MAILGUN_DOMAIN}`;
 };
 
 // Extract report ID from reply-to email
