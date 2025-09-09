@@ -1,7 +1,7 @@
 'use client';
 
 import { isAfter } from 'date-fns';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';

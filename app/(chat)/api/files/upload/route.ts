@@ -9,11 +9,11 @@ const FileSchema = z.object({
   file: z
     .instanceof(Blob)
     .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: 'File size should be less than 5MB',
+        error: 'File size should be less than 5MB'
     })
     // Update the file type based on the kind of files you want to accept
     .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), {
-      message: 'File type should be JPEG or PNG',
+        error: 'File type should be JPEG or PNG'
     }),
 });
 
@@ -39,8 +39,8 @@ export async function POST(request: Request) {
     const validatedFile = FileSchema.safeParse({ file });
 
     if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
-        .map((error) => error.message)
+      const errorMessage = validatedFile.error.issues
+        .map((issue) => issue.message)
         .join(', ');
 
       return NextResponse.json({ error: errorMessage }, { status: 400 });

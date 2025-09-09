@@ -50,9 +50,7 @@ const THEME_COLOR_SCRIPT = `\
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: LayoutProps<'/'>) {
   return (
     <html
       lang="en"

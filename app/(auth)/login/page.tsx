@@ -1,54 +1,18 @@
-'use client';
+import type { Metadata } from 'next';
+import { CardWrapper } from '@/components/auth/card-wrapper';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
-import { toast } from '@/components/toast';
+import { MessageSquare } from 'lucide-react';
+import { AbstractImage } from '../../../components/auth/abstract-image';
+import { LoginForm } from '@/components/auth/login-form';
 
-import { AuthForm } from '@/components/auth-form';
-import { SubmitButton } from '@/components/submit-button';
+export const metadata: Metadata = {
+  title: 'Login',
+  description: 'Login to AI Chatbot',
+};
 
-import { login, type LoginActionState } from '../actions';
-import { useSession } from 'next-auth/react';
+export const dynamic = 'force-dynamic';
 
-export default function Page() {
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [isSuccessful, setIsSuccessful] = useState(false);
-
-  const [state, formAction] = useActionState<LoginActionState, FormData>(
-    login,
-    {
-      status: 'idle',
-    },
-  );
-
-  const { update: updateSession } = useSession();
-
-  useEffect(() => {
-    if (state.status === 'failed') {
-      toast({
-        type: 'error',
-        description: 'Invalid credentials!',
-      });
-    } else if (state.status === 'invalid_data') {
-      toast({
-        type: 'error',
-        description: 'Failed validating your submission!',
-      });
-    } else if (state.status === 'success') {
-      setIsSuccessful(true);
-      updateSession();
-      router.refresh();
-    }
-  }, [state.status, router, updateSession]);
-
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    formAction(formData);
-  };
-
+export default async function LoginPage() {
   return (
     <div className="flex h-dvh w-screen items-start justify-center bg-background pt-12 md:items-center md:pt-0">
       <div className="flex w-full max-w-md flex-col gap-12 overflow-hidden rounded-2xl">
@@ -66,12 +30,11 @@ export default function Page() {
               href="/register"
               className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
             >
-              Sign up
-            </Link>
-            {' for free.'}
-          </p>
-        </AuthForm>
+              <LoginForm />
+            </CardWrapper>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

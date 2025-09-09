@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  types:
+    name: TypeScript
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Generate types
+        run: pnpm typegen
+      
+      - name: Run type check
+        run: pnpm typecheck
+
+  biome:
+    name: Biome
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run Biome
+        run: pnpm check
+
+  spelling:
+    name: Spelling
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run spelling check
+        run: pnpm check:spelling

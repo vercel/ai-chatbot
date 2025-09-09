@@ -13,7 +13,7 @@ import { differenceInSeconds } from 'date-fns';
 
 export async function GET(
   _: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: RouteContext<'/api/chat/[id]/stream'>,
 ) {
   const { id: chatId } = await params;
 
