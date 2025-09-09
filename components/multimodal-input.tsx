@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, CpuIcon, StopIcon, ChevronDownIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';
@@ -26,10 +26,10 @@ import {
   PromptInputTools,
   PromptInputSubmit,
   PromptInputModelSelect,
-  PromptInputModelSelectTrigger,
   PromptInputModelSelectContent,
 } from './elements/prompt-input';
 import { SelectItem } from '@/components/ui/select';
+import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -352,14 +352,14 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className='grow resize-none border-0! border-none! bg-transparent px-2 py-3 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:px-3 [&::-webkit-scrollbar]:hidden'
+            className='grow resize-none border-0! border-none! bg-transparent px-2 pt-1 pb-3 ml-1 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden'
             rows={1}
             autoFocus
           />{' '}
-          <Context {...contextProps} className="mr-1.5" />
+          <Context {...contextProps} className="mr-0.5 mt-1" />
         </div>
         <PromptInputToolbar className='!border-top-0 border-t-0! px-2 py-2 shadow-none dark:border-0 dark:border-transparent!'>
-          <PromptInputTools className="gap-1 sm:gap-2">
+          <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
               status={status}
@@ -374,7 +374,7 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
-              className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground -mt-2"
             >
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
@@ -413,7 +413,7 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className='h-fit rounded-md p-1 transition-colors duration-200 hover:bg-muted'
+      className='h-8 rounded-lg p-1 transition-colors hover:bg-accent'
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -452,18 +452,22 @@ function PureModelSelectorCompact({
         }
       }}
     >
-      <PromptInputModelSelectTrigger
+      <SelectPrimitive.Trigger
         type="button"
-        className='max-w-[120px] truncate text-xs focus:outline-hidden focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=closed]:ring-0 data-[state=open]:ring-0 sm:max-w-none'
+        className='flex items-center gap-2 px-2 h-8 rounded-lg border-0 bg-background text-foreground hover:bg-accent transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none'
       >
-        {selectedModel?.name || 'Select model'}
-      </PromptInputModelSelectTrigger>
-      <PromptInputModelSelectContent className="max-w-[90vw] sm:max-w-[400px]">
+        <CpuIcon size={16} />
+        <span className="text-xs font-medium sm:block hidden">{selectedModel?.name}</span>
+        <ChevronDownIcon size={16} />
+      </SelectPrimitive.Trigger>
+      <PromptInputModelSelectContent className="min-w-[260px] p-0">
         {chatModels.map((model) => (
-          <SelectItem key={model.id} value={model.name}>
-            <div className='flex flex-col items-start gap-1 py-1'>
-              <div className='font-medium text-sm'>{model.name}</div>
-              <div className='line-clamp-2 text-muted-foreground text-xs'>
+          <SelectItem key={model.id} value={model.name} className="px-3 py-2 text-xs">
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="font-medium truncate text-xs">
+                {model.name}
+              </div>
+              <div className="text-[10px] text-muted-foreground truncate leading-tight">
                 {model.description}
               </div>
             </div>
