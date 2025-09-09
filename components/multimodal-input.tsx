@@ -369,11 +369,12 @@ function PureMultimodalInput({
           </PromptInputTools>
 
           {status === 'submitted' ? (
-            <StopButton stop={stop} setMessages={setMessages} />
+            <StopButton stop={stop} setMessages={setMessages} data-testid="send-button" />
           ) : (
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
+              data-testid="send-button"
               className="p-2 rounded-full transition-colors duration-200 text-primary-foreground bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
             >
               <ArrowUpIcon size={16} />
