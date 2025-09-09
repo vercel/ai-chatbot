@@ -109,7 +109,7 @@
     "tokenlens": "^1.1.2",
     "use-stick-to-bottom": "^1.1.1",
     "usehooks-ts": "^3.1.1",
-    "zod": "^3.25.76"
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",

@@ -7,7 +7,7 @@ export const env = createEnv({
   server: {
     NODE_ENV: z
       .enum(['development', 'production', 'test'])
-      .default('development'),
+      .prefault('development'),
     // Bundle analyzer
     ANALYZE: z.enum(['true', 'false']).optional(),
     // AI SDK - OpenAI
@@ -15,10 +15,10 @@ export const env = createEnv({
     // Auth
     AUTH_SECRET: z.string(),
     // Database
-    POSTGRES_URL: z.string().url(),
+    POSTGRES_URL: z.url(),
     BLOB_READ_WRITE_TOKEN: z.string().startsWith('vercel_blob_'),
     // Redis
-    REDIS_URL: z.string().url(),
+    REDIS_URL: z.url(),
     // Playwright
     PLAYWRIGHT_TEST_BASE_URL: z.string().optional(),
     PLAYWRIGHT: z.string().optional(),
