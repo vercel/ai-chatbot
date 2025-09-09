@@ -369,7 +369,7 @@ function PureMultimodalInput({
           </PromptInputTools>
 
           {status === 'submitted' ? (
-            <StopButton stop={stop} setMessages={setMessages} data-testid="send-button" />
+            <StopButton stop={stop} setMessages={setMessages} data-testid="stop-button" />
           ) : (
             <PromptInputSubmit
               status={status}
@@ -457,6 +457,7 @@ function PureModelSelectorCompact({
       <PromptInputModelSelectTrigger
         type="button"
         className="text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
+        data-testid="model-selector"
       >
         {selectedModel?.name || 'Select model'}
       </PromptInputModelSelectTrigger>
