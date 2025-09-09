@@ -275,8 +275,9 @@ export const Context = ({
       <HoverCardTrigger asChild>
         <button
           className={cn(
-            'inline-flex select-none items-center gap-1 rounded-md px-2.5 py-1 text-sm',
+            'inline-flex select-none items-center gap-1 rounded-md px-1.5 py-1 text-sm',
             'bg-background text-foreground',
+            className,
           )}
           type="button"
           {...props}

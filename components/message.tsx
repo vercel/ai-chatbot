@@ -63,7 +63,7 @@ const PurePreviewMessage = ({
       data-role={message.role}
     >
       <div
-        className={cn('flex w-full items-start gap-3', {
+        className={cn('flex w-full items-start gap-2 md:gap-3', {
           'justify-end': message.role === 'user' && mode !== 'edit',
           'justify-start': message.role === 'assistant',
         })}
@@ -86,7 +86,7 @@ const PurePreviewMessage = ({
                   (p) => p.type === 'text' && p.text?.trim(),
                 )) ||
               mode === 'edit',
-            'max-w-[90%] sm:max-w-[min(fit-content,80%)]':
+            'max-w-[calc(100%-2.5rem)] sm:max-w-[min(fit-content,80%)]':
               message.role === 'user' && mode !== 'edit',
           })}
         >
@@ -317,7 +317,7 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-sm text-muted-foreground">
+          <div className='p-0 text-muted-foreground text-sm'>
             <LoadingText>Thinking...</LoadingText>
           </div>
         </div>
