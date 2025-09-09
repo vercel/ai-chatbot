@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: AI YSH Backend REST API
+  version: 0.1.0
+paths:
+  /journey/{phase}:
+    get:
+      summary: Get blueprint nodes for a journey phase
+      parameters:
+        - in: path
+          name: phase
+          required: true
+          schema:
+            type: string
+            enum: [Investigation, Detection, Analysis, Dimensioning, Simulation, Installation, Monitoring, Recommendation, LeadMgmt]
+      responses:
+        '200':
+          description: List of nodes for the phase
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Node'
+        '404':
+          description: Phase not found
+components:
+  schemas:
+    Node:
+      type: object
+      required: [id, type, label, description]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [input, output]
+        label:
+          type: string
+        description:
+          type: string
