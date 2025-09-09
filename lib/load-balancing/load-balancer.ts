@@ -47,12 +47,12 @@ class LoadBalancer {
 
   private loadConfigFromEnv(): LoadBalancerConfig {
     return {
-      globalCostWeight: parseFloat(process.env.LOAD_BALANCER_COST_WEIGHT || '30') / 100,
-      globalLatencyWeight: parseFloat(process.env.LOAD_BALANCER_LATENCY_WEIGHT || '40') / 100,
-      globalReliabilityWeight: parseFloat(process.env.LOAD_BALANCER_RELIABILITY_WEIGHT || '30') / 100,
-      maxCostPerRequest: parseFloat(process.env.MAX_COST_PER_REQUEST || '0.10'),
-      maxLatencyMs: parseInt(process.env.MAX_LATENCY_MS || '10000'),
-      providerTimeoutMs: parseInt(process.env.PROVIDER_TIMEOUT_MS || '30000'),
+      globalCostWeight: Number.parseFloat(process.env.LOAD_BALANCER_COST_WEIGHT || '30') / 100,
+      globalLatencyWeight: Number.parseFloat(process.env.LOAD_BALANCER_LATENCY_WEIGHT || '40') / 100,
+      globalReliabilityWeight: Number.parseFloat(process.env.LOAD_BALANCER_RELIABILITY_WEIGHT || '30') / 100,
+      maxCostPerRequest: Number.parseFloat(process.env.MAX_COST_PER_REQUEST || '0.10'),
+      maxLatencyMs: Number.parseInt(process.env.MAX_LATENCY_MS || '10000'),
+      providerTimeoutMs: Number.parseInt(process.env.PROVIDER_TIMEOUT_MS || '30000'),
       providerPriorityOrder: (process.env.PROVIDER_PRIORITY_ORDER || 'xai,ollama,anthropic,openai,google').split(','),
     };
   }

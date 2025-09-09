@@ -409,7 +409,8 @@ export async function getSuggestionsByDocumentId({
 
 export async function getMessageById({ id }: { id: string }) {
   try {
-    return await db.select().from(message).where(eq(message.id, id));
+    const messages = await db.select().from(message).where(eq(message.id, id));
+    return messages[0] || null; // Return the first message or null if not found
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

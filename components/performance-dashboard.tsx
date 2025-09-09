@@ -121,13 +121,13 @@ export function PerformanceDashboard({
           {['skeleton-1', 'skeleton-2', 'skeleton-3', 'skeleton-4', 'skeleton-5'].map((key) => (
             <Card key={key} className="animate-pulse">
               <CardHeader>
-                <div className="h-6 bg-muted rounded"></div>
+                <div className="h-6 bg-muted rounded" />
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="h-4 bg-muted rounded"></div>
-                  <div className="h-4 bg-muted rounded"></div>
-                  <div className="h-4 bg-muted rounded"></div>
+                  <div className="h-4 bg-muted rounded" />
+                  <div className="h-4 bg-muted rounded" />
+                  <div className="h-4 bg-muted rounded" />
                 </div>
               </CardContent>
             </Card>

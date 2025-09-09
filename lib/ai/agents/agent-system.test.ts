@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { agentOrchestrator } from '../agents/agent-system';
 import { toolSystem } from '../tools/tool-system';
-import { AgentExecutionContext } from '../tools/types';
+import type { AgentExecutionContext } from '../tools/types';
 
 // Mock do load balancing service
 vi.mock('@/lib/services/load-balancing-service', () => ({

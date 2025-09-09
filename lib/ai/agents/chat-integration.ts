@@ -5,8 +5,8 @@
 
 import { agentOrchestrator } from './agent-system';
 import { toolSystem } from '../tools/tool-system';
-import { AgentExecutionContext, AgentResponse } from '../tools/types';
-import { ChatMessage } from '../../../apps/web/lib/chat/types';
+import type { AgentExecutionContext, AgentResponse } from '../tools/types';
+import type { ChatMessage } from '../../../apps/web/lib/chat/types';
 
 // Hook para usar agentes no chat
 export function useAgentIntegration() {

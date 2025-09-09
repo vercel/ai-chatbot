@@ -1,4 +1,4 @@
-import { getMessageById } from './lib/db/queries.js';
+import { getMessageById } from './lib/db/queries.ts';
 
 async function testGetMessageById() {
   try {

@@ -1,13 +1,6 @@
-/**
- * Sistema de Tools para LLMs - Function Calling e Tool Execution
- * Integração com sistema de load balancing para máxima performance
- */
 
-import { ToolExecutionResult, ToolExecutionContext, ToolDefinition, ToolCall, ToolParameter } from './types';
-import { LoadBalancingDecision } from '@/lib/load-balancing/load-balancer';
 
-import { ToolExecutionResult, ToolExecutionContext, ToolDefinition, ToolCall, ToolParameter } from './types';
-import { LoadBalancingDecision } from '@/lib/load-balancing/load-balancer';
+import type { ToolExecutionResult, ToolExecutionContext, ToolDefinition, ToolCall, } from './types';
 
 // Cache para resultados de tools
 class ToolCache {

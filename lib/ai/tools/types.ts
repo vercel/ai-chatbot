@@ -2,7 +2,7 @@
  * Tipos para o sistema de tools e agentes
  */
 
-import { LoadBalancingDecision } from '@/lib/load-balancing/load-balancer';
+import type { LoadBalancingDecision } from '@/lib/load-balancing/load-balancer';
 
 // Tipos base para tools
 export interface ToolParameter {

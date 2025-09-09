@@ -3,11 +3,11 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   loadBalancingService,
-  LoadBalancingOptions,
-  LoadBalancingResult,
-  PerformanceMetrics,
+  type LoadBalancingOptions,
+  type LoadBalancingResult,
+  type PerformanceMetrics,
 } from '@/lib/services/load-balancing-service';
-import { LoadBalancingDecision, ModelType } from '@/lib/load-balancing/load-balancer';
+import type { LoadBalancingDecision, ModelType } from '@/lib/load-balancing/load-balancer';
 
 export interface UseLoadBalancingReturn {
   selectedProvider: LoadBalancingDecision | null;
@@ -52,7 +52,7 @@ export function useLoadBalancing(): UseLoadBalancingReturn {
     }
   }, [service]);
 
-  const refreshMetrics = useCallback(async (hours: number = 24) => {
+  const refreshMetrics = useCallback(async (hours = 24) => {
     setMetricsLoading(true);
     setMetricsError(null);
 

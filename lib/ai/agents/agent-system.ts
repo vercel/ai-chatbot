@@ -3,7 +3,7 @@
  * Agentes inteligentes para diferentes domínios da aplicação YSH
  */
 
-import {
+import type {
   AgentCapability,
   AgentState,
   AgentMemory,
@@ -176,7 +176,7 @@ export class SolarCalculatorAgent {
     const billRegex = /(\d+)[,.]?(\d*)\s*(?:reais?|R\$)/i;
     const billMatch = billRegex.exec(userInput);
     if (billMatch) {
-      params.monthlyBill = parseFloat(`${billMatch[1]}.${billMatch[2] || '00'}`);
+      params.monthlyBill = Number.parseFloat(`${billMatch[1]}.${billMatch[2] || '00'}`);
     } else {
       params.monthlyBill = 300; // Default
     }
@@ -185,7 +185,7 @@ export class SolarCalculatorAgent {
     const areaRegex = /(\d+)[,.]?(\d*)\s*(?:m²|m2|metros)/i;
     const areaMatch = areaRegex.exec(userInput);
     if (areaMatch) {
-      params.roofArea = parseFloat(`${areaMatch[1]}.${areaMatch[2] || '00'}`);
+      params.roofArea = Number.parseFloat(`${areaMatch[1]}.${areaMatch[2] || '00'}`);
     } else {
       params.roofArea = 100; // Default
     }

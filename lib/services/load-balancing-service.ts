@@ -3,7 +3,7 @@
  * Fornece métodos para interagir com as APIs REST do load balancer
  */
 
-import { LoadBalancingDecision, ModelType } from '@/lib/load-balancing/load-balancer';
+import type { LoadBalancingDecision, ModelType } from '@/lib/load-balancing/load-balancer';
 
 export interface LoadBalancingOptions {
   modelType?: ModelType;
@@ -42,7 +42,7 @@ export interface PerformanceMetrics {
 class LoadBalancingService {
   private readonly baseUrl: string;
 
-  constructor(baseUrl: string = '') {
+  constructor(baseUrl = '') {
     this.baseUrl = baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001');
   }
 
@@ -99,7 +99,7 @@ class LoadBalancingService {
   /**
    * Obtém métricas de performance dos providers
    */
-  async getPerformanceMetrics(hours: number = 24): Promise<PerformanceMetrics> {
+  async getPerformanceMetrics(hours = 24): Promise<PerformanceMetrics> {
     try {
       const response = await fetch(`${this.baseUrl}/api/monitoring/performance?hours=${hours}`, {
         method: 'GET',
@@ -198,7 +198,7 @@ class LoadBalancingService {
    */
   async selectProviderWithFallback(
     options: LoadBalancingOptions = {},
-    fallbackProvider: string = 'ollama'
+    fallbackProvider = 'ollama'
   ): Promise<LoadBalancingDecision> {
     const result = await this.selectProvider(options);
 
