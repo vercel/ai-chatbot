@@ -201,6 +201,7 @@ export const PromptInputModelSelectTrigger = ({
     className={cn(
       'border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors',
       'hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground',
+      'h-auto px-2 py-1.5',
       className,
     )}
     {...props}
