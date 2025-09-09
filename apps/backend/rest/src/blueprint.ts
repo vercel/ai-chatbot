@@ -1,4 +1,13 @@
-import type { Phase } from './map';
+export type Phase =
+  | 'Investigation'
+  | 'Detection'
+  | 'Analysis'
+  | 'Dimensioning'
+  | 'Simulation'
+  | 'Installation'
+  | 'Monitoring'
+  | 'Recommendation'
+  | 'LeadMgmt';
 
 export interface Node {
   id: string;
