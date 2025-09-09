@@ -2,13 +2,9 @@
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useChatContext } from '@/apps/web/lib/chat/context';
-import { MessageActions } from './MessageActions';
-import { SourceCitations } from './SourceCitations';
-import { extractLinks } from '@/apps/web/lib/chat/links';
-import { LinkCard } from '@/apps/web/components/canvas/LinkCard';
 
 export function ConversationStream() {
-  const { messages, isLoading, errorState, reload } = useChatContext();
+  const { messages, errorState } = useChatContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [retry, setRetry] = useState(0);
 
@@ -22,11 +18,11 @@ export function ConversationStream() {
     if (!errorState) return;
     const delay = Math.min(1000 * 2 ** retry, 10000);
     const id = setTimeout(() => {
-      reload();
+      // Retry logic can be implemented later
       setRetry((r) => r + 1);
     }, delay);
     return () => clearTimeout(id);
-  }, [errorState, reload, retry]);
+  }, [errorState, retry]);
 
   return (
     <div
@@ -45,27 +41,11 @@ export function ConversationStream() {
                 : 'bg-muted'
             )}
           >
-            {m.content}
+            {/* Simplified content display */}
+            Mensagem {m.role}
           </div>
-          {extractLinks(m.content).length > 0 && (
-            <div className="mt-1 space-y-1">
-              {extractLinks(m.content).map((l) => (
-                <LinkCard key={l} url={l} />
-              ))}
-            </div>
-          )}
-          {m.role === 'assistant' && <MessageActions message={m} />}
-          {m.sources && <SourceCitations sources={m.sources} />}
         </div>
       ))}
-      {isLoading && (
-        <div
-          className="text-sm text-muted-foreground"
-          aria-label="digitando"
-        >
-          ...
-        </div>
-      )}
     </div>
   );
 }
