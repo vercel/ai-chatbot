@@ -54,7 +54,7 @@ function PureArtifactActions({
               variant="outline"
               className={cn('h-fit dark:hover:bg-zinc-700', {
                 'p-2': !action.label,
-                'py-1.5 px-2': action.label,
+                'px-2 py-1.5': action.label,
               })}
               onClick={async () => {
                 setIsLoading(true);

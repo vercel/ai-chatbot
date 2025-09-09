@@ -254,7 +254,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className="flex relative flex-col gap-4 w-full">
+    <div className="relative flex w-full flex-col gap-4">
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -262,7 +262,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="absolute -top-12 left-1/2 z-50 -translate-x-1/2"
+            className="-top-12 -translate-x-1/2 absolute left-1/2 z-50"
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -292,7 +292,7 @@ function PureMultimodalInput({
 
       <input
         type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+        className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
         ref={fileInputRef}
         multiple
         onChange={handleFileChange}
@@ -300,7 +300,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="rounded-xl border shadow-xs transition-all duration-200 bg-background border-border focus-within:border-border hover:border-muted-foreground/50"
+        className="rounded-xl border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -313,7 +313,7 @@ function PureMultimodalInput({
         {(attachments.length > 0 || uploadQueue.length > 0) && (
           <div
             data-testid="attachments-preview"
-            className="flex overflow-x-scroll flex-row gap-2 items-end px-3 py-2"
+            className="flex flex-row items-end gap-2 overflow-x-scroll px-3 py-2"
           >
             {attachments.map((attachment) => (
               <PreviewAttachment
@@ -353,11 +353,11 @@ function PureMultimodalInput({
           minHeight={44}
           maxHeight={200}
           disableAutoResize={true}
-          className="text-sm resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent border-0! border-none! outline-hidden ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-hidden placeholder:text-muted-foreground"
+          className="resize-none border-0! border-none! bg-transparent px-3 py-3 text-sm outline-hidden ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
           rows={1}
           autoFocus
         />
-        <PromptInputToolbar className="px-3 py-2 border-t-0! !border-top-0 shadow-none dark:border-transparent! dark:border-0">
+        <PromptInputToolbar className="!border-top-0 border-t-0! px-3 py-2 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-2">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -373,7 +373,7 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
-              className="p-2 rounded-full transition-colors duration-200 text-primary-foreground bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="rounded-full bg-primary p-2 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
             >
               <ArrowUpIcon size={16} />
             </PromptInputSubmit>
@@ -412,7 +412,7 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className="rounded-md p-1.5 h-fit hover:bg-muted transition-colors duration-200"
+      className="h-fit rounded-md p-1.5 transition-colors duration-200 hover:bg-muted"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -454,16 +454,16 @@ function PureModelSelectorCompact({
     >
       <PromptInputModelSelectTrigger
         type="button"
-        className="text-xs focus:outline-hidden focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
+        className="text-xs focus:outline-hidden focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=closed]:ring-0 data-[state=open]:ring-0"
       >
         {selectedModel?.name || 'Select model'}
       </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent>
         {chatModels.map((model) => (
           <SelectItem key={model.id} value={model.name}>
-            <div className="flex flex-col gap-1 items-start py-1">
+            <div className="flex flex-col items-start gap-1 py-1">
               <div className="font-medium">{model.name}</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 {model.description}
               </div>
             </div>
@@ -486,7 +486,7 @@ function PureStopButton({
   return (
     <Button
       data-testid="stop-button"
-      className="p-2 rounded-full border transition-colors duration-200 h-fit border-border hover:bg-muted"
+      className="h-fit rounded-full border border-border p-2 transition-colors duration-200 hover:bg-muted"
       onClick={(event) => {
         event.preventDefault();
         stop();
