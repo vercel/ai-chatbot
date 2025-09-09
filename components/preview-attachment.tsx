@@ -1,6 +1,6 @@
 import type { Attachment } from '@/lib/types';
 import { Loader } from './elements/loader';
-import { CrossSmallIcon, } from './icons';
+import { CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
 import Image from 'next/image';
 
@@ -44,13 +44,13 @@ export const PreviewAttachment = ({
           onClick={onRemove}
           size="sm"
           variant="destructive"
-          className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity size-4 p-0 rounded-full"
+          className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
         >
           <CrossSmallIcon size={8} />
         </Button>
       )}
 
-      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent text-white text-[10px] px-1 py-0.5 truncate">
+      <div className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/80 to-transparent text-white text-[10px] px-1 py-0.5 truncate">
         {name}
       </div>
     </div>
