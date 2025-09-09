@@ -46,9 +46,9 @@ class ToolCache {
 
 // Registry de tools
 export class ToolRegistry {
-  private tools = new Map<string, ToolDefinition>();
-  private executors = new Map<string, (params: any, context: ToolExecutionContext) => Promise<any>>();
-  private cache = new ToolCache();
+  private readonly tools = new Map<string, ToolDefinition>();
+  private readonly executors = new Map<string, (params: any, context: ToolExecutionContext) => Promise<any>>();
+  private readonly cache = new ToolCache();
 
   register(
     definition: ToolDefinition,
@@ -152,8 +152,8 @@ export class ToolRegistry {
 
 // Sistema principal de tools
 export class LLMToolSystem {
-  private registry = new ToolRegistry();
-  private activeCalls = new Map<string, ToolCall>();
+  private readonly registry = new ToolRegistry();
+  private readonly activeCalls = new Map<string, ToolCall>();
 
   constructor() {
     this.initializeBuiltInTools();
@@ -333,7 +333,14 @@ export class LLMToolSystem {
       factors.push({ factor: 'good_budget', score: 20 });
     }
 
-    const qualification = score >= 80 ? 'hot' : score >= 60 ? 'warm' : 'cold';
+    let qualification: string;
+    if (score >= 80) {
+      qualification = 'hot';
+    } else if (score >= 60) {
+      qualification = 'warm';
+    } else {
+      qualification = 'cold';
+    }
 
     return {
       leadId: leadData.id,
@@ -394,13 +401,22 @@ export class LLMToolSystem {
   }
 
   private async executeCommunicationTool(params: any, context: ToolExecutionContext): Promise<any> {
-    const { type, recipient, message, template } = params;
+    const { type, recipient, message } = params;
 
     // Simulação de envio de comunicação
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const messageId = `msg_${Date.now()}_${crypto.randomUUID()}`;
 
     // Em produção, integrar com serviços reais (SendGrid, Twilio, etc.)
     console.log(`[${type.toUpperCase()}] Sending message to ${recipient}: ${message}`);
+
+    let cost: number;
+    if (type === 'sms') {
+      cost = 0.01;
+    } else if (type === 'email') {
+      cost = 0.0001;
+    } else {
+      cost = 0;
+    }
 
     return {
       messageId,
@@ -408,7 +424,7 @@ export class LLMToolSystem {
       recipient,
       status: 'sent',
       timestamp: new Date().toISOString(),
-      cost: type === 'sms' ? 0.01 : type === 'email' ? 0.0001 : 0,
+      cost,
     };
   }
 
