@@ -21,6 +21,7 @@ components/
 ## 🎨 **1. COMPONENTES PRIMITIVOS (UI)**
 
 ### **Base & Layout**
+
 - **Button** (`ui/button.tsx`)
   - Variantes: `default`, `destructive`, `outline`, `secondary`, `ghost`, `link`
   - Variantes YSH: `solar`, `eco`, `calculator` (com gradientes temáticos)
@@ -39,6 +40,7 @@ components/
   - Uso: Side panels e drawers
 
 ### **Formulários & Entrada**
+
 - **Input** (`ui/input.tsx`)
   - Tipos: `text`, `email`, `password`, `number`, `tel`, `url`
   - Estados: `disabled`, `readonly`, `invalid`
@@ -59,6 +61,7 @@ components/
   - Uso: Toggle switches
 
 ### **Navegação & Menu**
+
 - **DropdownMenu** (`ui/dropdown-menu.tsx`)
   - Componentes: `DropdownMenu`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuTrigger`
   - Uso: Menus contextuais e ações
@@ -68,6 +71,7 @@ components/
   - Recursos: Collapsible, mobile-responsive, keyboard shortcuts
 
 ### **Feedback & Status**
+
 - **Alert** (`ui/alert.tsx`)
   - Variantes: `default`, `destructive`
   - Uso: Notificações e alertas
@@ -84,6 +88,7 @@ components/
   - Uso: Notificações temporárias
 
 ### **Layout & Utilitários**
+
 - **ScrollArea** (`ui/scroll-area.tsx`)
   - Recursos: Custom scrollbars, smooth scrolling
 
@@ -97,6 +102,7 @@ components/
   - Componentes: `HoverCard`, `HoverCardContent`, `HoverCardTrigger`
 
 ### **Componentes YSH Específicos**
+
 - **SolarCalculator** (`ui/solar-calculator.tsx`)
   - **Props**: `monthlyConsumption`, `electricityRate`, `roofArea`, `sunExposure`
   - **Features**: Cálculo de economia, payback period, impacto ambiental
@@ -115,6 +121,7 @@ components/
 ## 🤖 **2. COMPONENTES DE IA (AI-ELEMENTS)**
 
 ### **Conversa & Mensagens**
+
 - **Conversation** (`ai-elements/conversation.tsx`)
   - Componentes: `Conversation`, `ConversationContent`, `ConversationScrollButton`
   - Recursos: Virtualização, scroll automático, lazy loading
@@ -127,6 +134,7 @@ components/
   - Recursos: Streaming, formatação de texto, syntax highlighting
 
 ### **Input & Interação**
+
 - **PromptInput** (`ai-elements/prompt-input.tsx`)
   - Componentes: `PromptInput`, `PromptInputTextarea`, `PromptInputSubmit`, `PromptInputToolbar`
   - Recursos: Auto-resize, attachments, model selection, tools
@@ -136,6 +144,7 @@ components/
   - Recursos: Feedback do usuário, analytics
 
 ### **Recursos Avançados**
+
 - **Reasoning** (`ai-elements/reasoning.tsx`)
   - Componentes: `Reasoning`, `ReasoningContent`, `ReasoningTrigger`
   - Recursos: Chain-of-thought display, collapsible
@@ -148,6 +157,7 @@ components/
   - Estados: `submitting`, `streaming`, `error`
 
 ### **Ferramentas & Utilitários**
+
 - **CodeBlock** (`ai-elements/code-block.tsx`)
   - Recursos: Syntax highlighting, copy-to-clipboard, line numbers
 
@@ -162,6 +172,7 @@ components/
 ## 👥 **3. SISTEMA MULTI-AGENTE**
 
 ### **Fases do Agente**
+
 ```typescript
 export type AgentPhase =
   | 'investigation'    // 🔍 Investigação
@@ -172,6 +183,7 @@ export type AgentPhase =
 ```
 
 ### **Componentes Principais**
+
 - **PhaseMessage** (`multi-agent/phase-message.tsx`)
   - **Props**: `phase`, `children`, `isLoading`
   - **Features**: Visual indicators, loading states, phase transitions
@@ -181,6 +193,7 @@ export type AgentPhase =
   - **Features**: Icon mapping, color schemes, labels
 
 ### **Características**
+
 - **Visual Design**: Cada fase tem cor e ícone específicos
 - **State Management**: Loading states e transitions
 - **Accessibility**: ARIA labels e keyboard navigation
@@ -190,6 +203,7 @@ export type AgentPhase =
 ## 🎭 **4. COMPONENTES POR PERSONA**
 
 ### **Owner Persona Components**
+
 - **GuidedWizardOverlay** - Interface guiada passo-a-passo
 - **SavingsSlider** - Controle de metas de economia
 - **GoalPicker** - Seleção de objetivos financeiros
@@ -198,6 +212,7 @@ export type AgentPhase =
 - **ConsentManager** - Gestão de consentimentos
 
 ### **Integrator Persona Components**
+
 - Foco em produtividade e analytics avançados
 - Componentes específicos para gestão de leads
 - Interfaces para processamento em lote
@@ -207,6 +222,7 @@ export type AgentPhase =
 ## 🧩 **5. COMPONENTES PRINCIPAIS DA APLICAÇÃO**
 
 ### **Chat & Conversação**
+
 - **EnhancedChat** (`enhanced-chat.tsx`)
   - **Features**: Multi-modal input, streaming, error handling
   - **Integrations**: Data stream provider, SWR, toast notifications
@@ -215,6 +231,7 @@ export type AgentPhase =
   - **Features**: Model selector, visibility controls, navigation
 
 ### **Artefatos & Documentos**
+
 - **Artifact** (`artifact.tsx`)
   - **Features**: Document editing, version control, real-time sync
   - **Types**: `text`, `code`, `sheet`, `image`
@@ -223,6 +240,7 @@ export type AgentPhase =
   - **Features**: Preview, editing, collaboration
 
 ### **Navegação & Layout**
+
 - **AppSidebar** (`app-sidebar.tsx`)
   - **Features**: Chat history, user navigation, settings
 
@@ -230,6 +248,7 @@ export type AgentPhase =
   - **Features**: Phase navigation, progress tracking
 
 ### **Utilitários & Acessibilidade**
+
 - **AccessibilityButton** (`accessibility-button.tsx`)
 - **AccessibilityListener** (`accessibility-listener.tsx`)
 - **AccessibilitySettings** (`accessibility-settings.tsx`)
@@ -240,11 +259,13 @@ export type AgentPhase =
 ## 🎣 **6. HOOKS CUSTOMIZADOS**
 
 ### **Artefatos**
+
 - **useArtifact** (`hooks/use-artifact.ts`)
   - **Features**: State management, metadata handling, SWR integration
   - **Returns**: `artifact`, `setArtifact`, `metadata`, `setMetadata`
 
 ### **Chat & Mensagens**
+
 - **useAutoResume** (`hooks/use-auto-resume.ts`)
   - **Features**: Conversa resumption, state persistence
 
@@ -255,6 +276,7 @@ export type AgentPhase =
   - **Features**: Message state, pagination, caching
 
 ### **UI/UX**
+
 - **useMobile** (`hooks/use-mobile.tsx`)
   - **Features**: Responsive design helpers
 
@@ -266,6 +288,7 @@ export type AgentPhase =
 ## 🔧 **7. UTILITÁRIOS & HELPERS**
 
 ### **Core Utils** (`lib/utils.ts`)
+
 - **cn()**: Class name merging (clsx + tailwind-merge)
 - **fetcher()**: HTTP client with error handling
 - **fetchWithErrorHandlers()**: Enhanced fetch with offline detection
@@ -273,12 +296,14 @@ export type AgentPhase =
 - **sanitizeText()**: Text cleaning and formatting
 
 ### **Type Definitions** (`lib/types.ts`)
+
 - **ChatMessage**: Message structure with parts
 - **Attachment**: File attachment types
 - **VisibilityType**: Public/private chat settings
 - **CustomUIDataTypes**: Extended UI data types
 
 ### **Constants** (`lib/constants.ts`)
+
 - **Environment flags**: Development/production detection
 - **Regex patterns**: Guest user validation
 - **Dummy password**: Security utilities
@@ -288,6 +313,7 @@ export type AgentPhase =
 ## 🎯 **8. PADRÕES DE USO**
 
 ### **Padrão de Props**
+
 ```typescript
 interface ComponentProps {
   readonly className?: string;
@@ -299,6 +325,7 @@ interface ComponentProps {
 ```
 
 ### **Padrão de Variants**
+
 ```typescript
 const componentVariants = cva('base-classes', {
   variants: {
@@ -319,6 +346,7 @@ const componentVariants = cva('base-classes', {
 ```
 
 ### **Padrão de Hook**
+
 ```typescript
 export function useCustomHook<T>(initialValue: T) {
   const [state, setState] = useState<T>(initialValue);
@@ -337,6 +365,7 @@ export function useCustomHook<T>(initialValue: T) {
 ## 📊 **9. MÉTRICAS DE USO**
 
 ### **Componentes Mais Utilizados**
+
 1. **Button** - 95% de todas as interações
 2. **Card** - 85% dos containers de conteúdo
 3. **Input/Textarea** - 80% dos formulários
@@ -344,6 +373,7 @@ export function useCustomHook<T>(initialValue: T) {
 5. **Badge** - 60% dos status indicators
 
 ### **Performance**
+
 - **Bundle Size**: Otimizado com tree-shaking
 - **Re-renders**: Minimizados com memoization
 - **Accessibility**: 100% compliance com WCAG 2.1
@@ -354,18 +384,21 @@ export function useCustomHook<T>(initialValue: T) {
 ## 🚀 **10. ROADMAP DE MELHORIAS**
 
 ### **Curto Prazo**
+
 - [ ] Componentes com compound pattern
 - [ ] Theme system expansion
 - [ ] Animation library integration
 - [ ] Error boundary components
 
 ### **Médio Prazo**
+
 - [ ] Design tokens system
 - [ ] Component documentation auto-generation
 - [ ] Visual regression testing
 - [ ] Performance monitoring
 
 ### **Longo Prazo**
+
 - [ ] Component marketplace
 - [ ] AI-powered component generation
 - [ ] Cross-platform compatibility
