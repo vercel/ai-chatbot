@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { env } from '@/env';
+import { env } from './env';
 
 /* Use env.PORT by default and fallback to port 3000 */
 const PORT = env.PORT || 3000;

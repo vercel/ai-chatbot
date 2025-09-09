@@ -33,6 +33,19 @@ jobs:
 
       - name: Run Biome
         run: pnpm check
+  
+  knip:
+    name: Knip
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run Knip
+        run: pnpm knip
 
   spelling:
     name: Spelling
