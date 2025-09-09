@@ -1,16 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { env } from '@/env';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import { config } from 'dotenv';
-
-config({
-  path: '.env.local',
-});
-
 /* Use env.PORT by default and fallback to port 3000 */
 const PORT = env.PORT || 3000;
 

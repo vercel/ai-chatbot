@@ -49,6 +49,7 @@
       }
     },
     "postCreateCommand": {
-      "web": "pnpm install"
+      "web": "pnpm install",
+      "playwright": "pnpm exec playwright install-deps && pnpm exec playwright install"
     }
   }
