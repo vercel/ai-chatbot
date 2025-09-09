@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Papa from 'papaparse';
+import { parse } from 'papaparse';
 import { ConsumptionCard, type DataPoint } from '@/packages/ui-cards/ConsumptionCard';
 import { FinancialAnalysisCard, type Assumptions } from '@/packages/ui-cards/FinancialAnalysisCard';
 
@@ -34,7 +34,7 @@ const UploadBill: React.FC = () => {
   };
 
   const parseCSV = (file: File) => {
-    Papa.parse(file, {
+    parse(file, {
       header: true,
       chunk: (results) => {
         if (headers.length === 0) setHeaders(results.meta.fields || []);
@@ -52,8 +52,11 @@ const UploadBill: React.FC = () => {
 
   const parsePDF = async (file: File) => {
     const pdfjs = await import('pdfjs-dist');
+    // Configure worker for PDF.js
+    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+    
     const buf = await file.arrayBuffer();
-    const doc = await pdfjs.getDocument({ data: buf, disableWorker: true }).promise;
+    const doc = await pdfjs.getDocument({ data: buf }).promise;
     let text = '';
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
@@ -91,18 +94,30 @@ const UploadBill: React.FC = () => {
 
   return (
     <div className="space-y-4 p-4">
-      <input type="file" accept=".csv,.pdf" onChange={handleFile} />
+      <div>
+        <label htmlFor="file-upload" className="block text-sm font-medium mb-2">
+          Selecione um arquivo CSV ou PDF
+        </label>
+        <input 
+          id="file-upload"
+          type="file" 
+          accept=".csv,.pdf" 
+          onChange={handleFile}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+      </div>
       {progress > 0 && (
         <progress value={progress} max={100} className="w-full" />
       )}
       {headers.length > 0 && data.length === 0 && (
         <div className="flex items-end gap-2">
           <div className="flex flex-col">
-            <label className="text-sm">Data</label>
+            <label htmlFor="date-select" className="text-sm font-medium">Data</label>
             <select
+              id="date-select"
               value={mapping.date || ''}
               onChange={(e) => setMapping({ ...mapping, date: e.target.value })}
-              className="border p-1"
+              className="border p-1 rounded"
             >
               <option value="">Selecione</option>
               {headers.map((h) => (
@@ -113,11 +128,12 @@ const UploadBill: React.FC = () => {
             </select>
           </div>
           <div className="flex flex-col">
-            <label className="text-sm">Valor</label>
+            <label htmlFor="value-select" className="text-sm font-medium">Valor</label>
             <select
+              id="value-select"
               value={mapping.value || ''}
               onChange={(e) => setMapping({ ...mapping, value: e.target.value })}
-              className="border p-1"
+              className="border p-1 rounded"
             >
               <option value="">Selecione</option>
               {headers.map((h) => (
@@ -130,7 +146,7 @@ const UploadBill: React.FC = () => {
           <button
             type="button"
             onClick={applyMapping}
-            className="px-2 py-1 border rounded"
+            className="px-2 py-1 border rounded hover:bg-gray-50"
           >
             Aplicar
           </button>
@@ -149,7 +165,7 @@ const UploadBill: React.FC = () => {
           </thead>
           <tbody>
             {previewRows.map((row, i) => (
-              <tr key={i}>
+              <tr key={`row-${i}-${row[headers[0]] || i}`}>
                 {headers.map((h) => (
                   <td key={h} className="border px-1">
                     {row[h]}

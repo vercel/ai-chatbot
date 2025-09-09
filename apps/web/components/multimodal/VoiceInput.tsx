@@ -1,8 +1,53 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
+// Declare global types for Speech Recognition API
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+declare const SpeechRecognition: {
+  prototype: SpeechRecognition;
+  new(): SpeechRecognition;
+};
+
 interface VoiceInputProps {
-  onTranscript: (text: string) => void;
+  readonly onTranscript: (text: string) => void;
 }
 
 export function VoiceInput({ onTranscript }: VoiceInputProps) {
@@ -58,7 +103,7 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
       aria-label={
         listening ? 'Parar gravação de voz' : 'Iniciar gravação de voz'
       }
-      aria-pressed={listening}
+      aria-pressed={listening ? 'true' : 'false'}
       className="p-2"
     >
       {listening ? '🛑' : '🎙️'}

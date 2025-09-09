@@ -3,6 +3,12 @@
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 interface GoogleMapProps {
   center: { lat: number; lng: number };
   zoom?: number;
@@ -14,15 +20,15 @@ export function GoogleMap({ center, zoom = 20, showStreetView = false }: GoogleM
   const streetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!(window as any).google || !mapRef.current) return;
-    const map = new google.maps.Map(mapRef.current, {
+    if (!window.google || !mapRef.current) return;
+    const map = new window.google.maps.Map(mapRef.current, {
       center,
       zoom,
-      mapTypeId: google.maps.MapTypeId.SATELLITE,
+      mapTypeId: window.google.maps.MapTypeId.SATELLITE,
     });
 
     if (showStreetView && streetRef.current) {
-      new google.maps.StreetViewPanorama(streetRef.current, {
+      new window.google.maps.StreetViewPanorama(streetRef.current, {
         position: center,
         pov: { heading: 0, pitch: 0 },
       });

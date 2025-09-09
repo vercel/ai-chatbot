@@ -103,10 +103,10 @@ export function AppointmentScheduler() {
             key={day.toISOString()}
             type="button"
             role="gridcell"
-            aria-selected={isSameDay(day, selectedDate)}
+            aria-selected={selectedDate ? isSameDay(day, selectedDate) : false}
             onClick={() => setSelectedDate(day)}
             className={`p-2 rounded ${
-              isSameDay(day, selectedDate)
+              selectedDate && isSameDay(day, selectedDate)
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted'
             }`}
