@@ -5,7 +5,7 @@ import {
   motion,
   useMotionValue,
   useTransform,
-} from 'framer-motion';
+} from 'motion/react';
 import {
   type Dispatch,
   memo,
