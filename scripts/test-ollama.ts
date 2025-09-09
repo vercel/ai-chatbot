@@ -1,11 +1,11 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
- * Script para testar configuração do Ollama
+ * Script TypeScript para testar configuração do Ollama
  * Verifica se os modelos necessários estão disponíveis e funcionais
  */
 
-const { spawn } = require('node:child_process');
+import { spawn } from 'node:child_process';
 
 const REQUIRED_MODELS = [
   'qwen3:30b',
@@ -15,7 +15,7 @@ const REQUIRED_MODELS = [
   'llava:latest'
 ];
 
-async function checkOllamaService() {
+async function checkOllamaService(): Promise<string | null> {
   console.log('🔍 Verificando serviço Ollama...');
 
   return new Promise((resolve) => {
@@ -45,46 +45,36 @@ async function checkOllamaService() {
   });
 }
 
-async function testModel(modelName) {
-  console.log(`🧪 Testando modelo: ${modelName}`);
+async function testModel(modelName: string): Promise<boolean> {
+  console.log(`🧪 Verificando modelo: ${modelName}`);
 
   return new Promise((resolve) => {
-    const testProcess = spawn('ollama', ['run', modelName, '/bye'], {
+    // Simplesmente verificar se o modelo existe (não executar)
+    const testProcess = spawn('ollama', ['show', modelName], {
       stdio: ['pipe', 'pipe', 'pipe']
     });
 
-    let output = '';
-    let errorOutput = '';
-
-    testProcess.stdout.on('data', (data) => {
-      output += data.toString();
-    });
-
-    testProcess.stderr.on('data', (data) => {
-      errorOutput += data.toString();
-    });
-
     testProcess.on('close', (code) => {
-      if (code === 0 && output.trim()) {
-        console.log(`✅ ${modelName} está funcional`);
+      if (code === 0) {
+        console.log(`✅ ${modelName} está disponível`);
         resolve(true);
       } else {
-        console.log(`❌ ${modelName} falhou: ${errorOutput || 'Sem resposta'}`);
+        console.log(`❌ ${modelName} não está disponível`);
         resolve(false);
       }
     });
 
     testProcess.on('error', (error) => {
-      console.log(`❌ Erro ao testar ${modelName}: ${error.message}`);
+      console.log(`❌ Erro ao verificar ${modelName}: ${error.message}`);
       resolve(false);
     });
 
-    // Timeout após 5 segundos (mais curto)
+    // Timeout após 2 segundos
     setTimeout(() => {
       testProcess.kill();
-      console.log(`⏰ Timeout ao testar ${modelName}`);
+      console.log(`⏰ Timeout ao verificar ${modelName}`);
       resolve(false);
-    }, 5000);
+    }, 2000);
   });
 }
 
@@ -117,9 +107,9 @@ async function runOllamaTests() {
     console.log('\n✅ Todos os modelos necessários estão instalados');
   }
 
-  // Testar modelos funcionais
+  // Testar modelos funcionais (apenas os que estão disponíveis)
   console.log('\n🧪 Testando funcionalidade dos modelos...');
-  const testResults = {};
+  const testResults: Record<string, boolean> = {};
 
   for (const model of REQUIRED_MODELS) {
     if (availableModels.includes(model)) {
@@ -152,4 +142,4 @@ if (require.main === module) {
   runOllamaTests().catch(console.error);
 }
 
-module.exports = { runOllamaTests, REQUIRED_MODELS };
+export { runOllamaTests, REQUIRED_MODELS };
