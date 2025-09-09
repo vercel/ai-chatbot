@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { ToolUIPart } from 'ai';
+import type React from 'react';
 import {
   CheckCircleIcon,
   ChevronDownIcon,
@@ -23,15 +24,17 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
   <Collapsible
-    className={cn('not-prose mb-4 w-full rounded-md border', className)}
+    className={cn('not-prose mb-4 w-full min-w-0 rounded-md border overflow-hidden', className)}
     {...props}
   />
 );
 
 export type ToolHeaderProps = {
-  type: ToolUIPart['type'];
+  type: string;
   state: ToolUIPart['state'];
   className?: string;
+  label?: string;
+  icon?: React.ComponentType<{ size?: number; className?: string }>;
 };
 
 const getStatusBadge = (status: ToolUIPart['state']) => {
@@ -64,18 +67,24 @@ export const ToolHeader = ({
   className,
   type,
   state,
+  label,
+  icon: IconProp,
   ...props
 }: ToolHeaderProps) => (
   <CollapsibleTrigger
     className={cn(
-      'flex w-full items-center justify-between gap-2 p-3 min-w-0',
+      'flex w-full min-w-0 items-center justify-between gap-2 p-3',
       className,
     )}
     {...props}
   >
     <div className="flex items-center gap-2 min-w-0 flex-1">
-      <WrenchIcon className="size-4 text-muted-foreground shrink-0" />
-      <span className="font-medium text-sm truncate">{type}</span>
+      {IconProp ? (
+        <IconProp className="size-4 text-muted-foreground shrink-0" />
+      ) : (
+        <WrenchIcon className="size-4 text-muted-foreground shrink-0" />
+      )}
+      <span className="font-medium text-sm truncate">{label ?? type}</span>
     </div>
     <div className="flex items-center gap-2 shrink-0">
       {getStatusBadge(state)}
@@ -89,7 +98,7 @@ export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 export const ToolContent = ({ className, ...props }: ToolContentProps) => (
   <CollapsibleContent
     className={cn(
-      'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
+      'w-full min-w-0 overflow-hidden data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
       className,
     )}
     {...props}

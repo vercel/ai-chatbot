@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDownIcon, ChevronRightIcon } from './icons';
+import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from './elements/tool';
 
 export interface ToolConfig {
   icon: React.ComponentType<{ size?: number }>;
+  displayName: string;
   getAction: (toolType: string, state: 'input' | 'output') => string;
   formatParameters: (input: any, toolType: string) => string;
   getToolType: (toolCallId: string) => string;
@@ -28,8 +28,6 @@ export function UnifiedTool({
   isReadonly = false,
   config,
 }: UnifiedToolProps) {
-  const [showDetails, setShowDetails] = useState(false);
-
   const toolType = config.getToolType(toolCallId);
   const Icon = config.icon;
 
@@ -55,14 +53,6 @@ export function UnifiedTool({
 
   const error = state === 'output-available' ? getError() : null;
 
-  if (error) {
-    return (
-      <div className="text-red-500 p-1.5 border rounded text-xs">
-        Error: {error}
-      </div>
-    );
-  }
-
   const params = config.formatParameters(input, toolType);
   const actionText = config.getAction(
     toolType,
@@ -73,69 +63,29 @@ export function UnifiedTool({
       ? config.getResultSummary(output, input, toolType)
       : '';
 
-  const handleToggle = () => {
-    if (input || output) {
-      setShowDetails(!showDetails);
-    }
-  };
-
   return (
-    <div className="border-b border-muted/50 last:border-b-0">
-      <button
-        type="button"
-        className={`flex items-center justify-between w-full text-left px-1.5 py-2 rounded transition-colors ${input || output ? 'cursor-pointer hover:bg-muted/30' : 'cursor-default'}`}
-        onClick={handleToggle}
-        aria-label={showDetails ? 'Hide details' : 'Show details'}
-      >
-        <div className="text-sm flex items-center gap-1.5 text-muted-foreground">
-          <Icon size={14} />
-          <span className="font-medium">{actionText}</span>
-          {params && <span className="text-muted-foreground/70">{params}</span>}
-          {resultSummary && (
-            <span className="text-green-600 dark:text-green-400">
-              {resultSummary}
-            </span>
-          )}
-        </div>
+    <Tool defaultOpen={true}>
+      <ToolHeader type={toolType} state={state} label={config.displayName || toolType} icon={Icon} />
+      <ToolContent>
+        {input && <ToolInput input={input} />}
 
-        {(input || output) && (
-          <div className="text-muted-foreground/50">
-            {showDetails ? (
-              <ChevronDownIcon size={14} />
-            ) : (
-              <ChevronRightIcon size={14} />
-            )}
-          </div>
+        {state === 'output-available' && (
+          <ToolOutput
+            errorText={error ?? undefined}
+            output={
+              !error && output
+                ? (
+                    <pre className="p-1.5 text-xs overflow-auto max-h-40">
+                      {typeof output === 'string'
+                        ? output
+                        : JSON.stringify(output, null, 2)}
+                    </pre>
+                  )
+                : undefined
+            }
+          />
         )}
-      </button>
-
-      {showDetails && (
-        <div className="mt-2 space-y-2 text-xs">
-          {input && (
-            <div>
-              <div className="font-medium text-muted-foreground/70 mb-1 text-xs">
-                Parameters:
-              </div>
-              <pre className="bg-muted/50 p-1.5 rounded text-xs overflow-x-auto">
-                {JSON.stringify(input, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          {output && state === 'output-available' && (
-            <div>
-              <div className="font-medium text-muted-foreground/70 mb-1 text-xs">
-                Output:
-              </div>
-              <pre className="bg-muted/50 p-1.5 rounded text-xs overflow-auto max-h-32">
-                {typeof output === 'string'
-                  ? output
-                  : JSON.stringify(output, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      </ToolContent>
+    </Tool>
   );
 }

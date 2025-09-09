@@ -54,6 +54,8 @@ import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 
+export const maxDuration = 800; // This function can run for a maximum of 5 seconds
+
 let globalStreamContext: ResumableStreamContext | null = null;
 
 export function getStreamContext() {
@@ -298,7 +300,7 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(20),
+          stopWhen: stepCountIs(50),
           activeTools: Object.keys(tools),
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: tools,

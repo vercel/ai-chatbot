@@ -106,6 +106,28 @@ export function sanitizeText(text: string) {
   return sanitized.trim();
 }
 
+/**
+ * Extracts a leading reasoning title of the form `**Title**\n`.
+ * Returns the title (if present) and the remaining body text with the title line removed.
+ */
+export function extractReasoningTitleAndBody(text: string): {
+  title?: string;
+  body: string;
+} {
+  if (!text || typeof text !== 'string') return { body: '' };
+
+  // Normalize line endings for reliable matching
+  const normalized = text.replace(/\r\n?/g, '\n');
+  const match = normalized.match(/^\s*\*\*(.+?)\*\*\s*(?:\n|$)/);
+  if (!match) return { body: text };
+
+  const title = match[1]?.trim();
+  // Remove only the first matched header line
+  const body = normalized.slice(match[0].length).trimStart();
+
+  return { title: title || undefined, body: body.length ? body : '' };
+}
+
 export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
   return messages.map((message) => ({
     id: message.id,

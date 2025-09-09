@@ -9,6 +9,7 @@ import type { ToolConfig } from './unified-tool';
 
 export const gmailToolConfig: ToolConfig = {
   icon: GmailIcon,
+  displayName: 'Gmail',
 
   getToolType: (toolCallId: string) => {
     if (toolCallId.includes('listGmailMessages'))
@@ -62,6 +63,7 @@ export const gmailToolConfig: ToolConfig = {
 
 export const slackToolConfig: ToolConfig = {
   icon: SlackIcon,
+  displayName: 'Slack',
 
   getToolType: (toolCallId: string) => {
     if (toolCallId.includes('listAccessibleSlackChannels'))
@@ -113,6 +115,7 @@ export const slackToolConfig: ToolConfig = {
 
 export const transcriptToolConfig: ToolConfig = {
   icon: ZoomIcon,
+  displayName: 'Zoom',
 
   getToolType: (toolCallId: string) => {
     if (toolCallId.includes('searchTranscriptsByKeyword'))
@@ -189,6 +192,7 @@ export const transcriptToolConfig: ToolConfig = {
 
 export const calendarToolConfig: ToolConfig = {
   icon: CalendarIcon,
+  displayName: 'Google Calendar',
 
   getToolType: () => 'tool-listGoogleCalendarEvents',
 
@@ -213,6 +217,7 @@ export const calendarToolConfig: ToolConfig = {
 
 export const mem0ToolConfig: ToolConfig = {
   icon: MemoryIcon, // Using calendar icon for now, could add a specific Mem0 icon later
+  displayName: 'Mem0',
 
   getToolType: (toolCallId: string) => {
     if (toolCallId.includes('getMem0Projects')) return 'tool-getMem0Projects';

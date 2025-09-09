@@ -1,11 +1,11 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import {
   Reasoning,
   ReasoningTrigger,
   ReasoningContent,
 } from './elements/reasoning';
+import { extractReasoningTitleAndBody } from '@/lib/utils';
 
 interface MessageReasoningProps {
   isLoading: boolean;
@@ -18,14 +18,15 @@ export function MessageReasoning({
   reasoning,
   children,
 }: MessageReasoningProps) {
+  const { title, body } = extractReasoningTitleAndBody(reasoning);
   return (
     <Reasoning
       isStreaming={isLoading}
       defaultOpen={true}
       data-testid="message-reasoning"
     >
-      <ReasoningTrigger />
-      <ReasoningContent>{reasoning}</ReasoningContent>
+      <ReasoningTrigger title={title} />
+      <ReasoningContent>{body || reasoning}</ReasoningContent>
       {children}
     </Reasoning>
   );
