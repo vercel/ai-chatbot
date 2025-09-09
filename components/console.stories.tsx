@@ -146,13 +146,29 @@ export const WithFailedOutput: Story = {
 	},
 };
 
-export const WithInProgressOutput: Story = {
+export const WithMultipleOutputs: Story = {
 	args: {
 		consoleOutputs: [
 			{
+				id: "1",
+				status: "completed",
+				contents: [
+					{ type: "text", value: "✓ Dependencies installed" },
+					{ type: "text", value: "✓ TypeScript compilation successful" },
+				],
+			},
+			{
+				id: "2",
+				status: "completed",
+				contents: [
+					{ type: "text", value: "✓ ESLint checks passed" },
+					{ type: "text", value: "✓ Tests completed (42 passed, 0 failed)" },
+				],
+			},
+			{
 				id: "3",
 				status: "in_progress",
-				contents: [{ type: "text", value: "Installing dependencies..." }],
+				contents: [{ type: "text", value: "Building production bundle..." }],
 			},
 		],
 		setConsoleOutputs: () => {},
@@ -160,7 +176,92 @@ export const WithInProgressOutput: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "Console mostrando processo em andamento.",
+				story:
+					"Console com múltiplas saídas mostrando progresso de build completo.",
+			},
+		},
+	},
+};
+
+export const WithLoadingPackages: Story = {
+	args: {
+		consoleOutputs: [
+			{
+				id: "1",
+				status: "loading_packages",
+				contents: [
+					{ type: "text", value: "Installing react@18.2.0..." },
+					{ type: "text", value: "Installing next@14.0.0..." },
+					{ type: "text", value: "Installing typescript@5.0.0..." },
+				],
+			},
+		],
+		setConsoleOutputs: () => {},
+	},
+	parameters: {
+		docs: {
+			description: {
+				story: "Console mostrando instalação de pacotes em andamento.",
+			},
+		},
+	},
+};
+
+export const WithImageOutput: Story = {
+	args: {
+		consoleOutputs: [
+			{
+				id: "1",
+				status: "completed",
+				contents: [
+					{ type: "text", value: "Screenshot captured successfully" },
+					{
+						type: "image",
+						value:
+							"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+					},
+				],
+			},
+		],
+		setConsoleOutputs: () => {},
+	},
+	parameters: {
+		docs: {
+			description: {
+				story: "Console mostrando saída com imagem (screenshot).",
+			},
+		},
+	},
+};
+
+export const WithLongOutput: Story = {
+	args: {
+		consoleOutputs: [
+			{
+				id: "1",
+				status: "completed",
+				contents: [
+					{ type: "text", value: "Webpack Bundle Analyzer" },
+					{ type: "text", value: "=================================" },
+					{ type: "text", value: "File sizes after gzip:" },
+					{ type: "text", value: "" },
+					{ type: "text", value: "  dist/main.js    2.1 MB" },
+					{ type: "text", value: "  dist/vendor.js  1.8 MB" },
+					{ type: "text", value: "  dist/styles.css 245 KB" },
+					{ type: "text", value: "  dist/assets/     892 KB" },
+					{ type: "text", value: "" },
+					{ type: "text", value: "Total bundle size: 5.037 MB" },
+					{ type: "text", value: "Chunks: 12" },
+					{ type: "text", value: "Modules: 247" },
+				],
+			},
+		],
+		setConsoleOutputs: () => {},
+	},
+	parameters: {
+		docs: {
+			description: {
+				story: "Console com saída longa mostrando análise de bundle.",
 			},
 		},
 	},

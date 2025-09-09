@@ -101,7 +101,7 @@ export const LargeFontSize: Story = {
 	render: (args) => <SettingsWrapper {...args} />,
 };
 
-export const ReducedMotion: Story = {
+export const AllSettingsEnabled: Story = {
 	args: {
 		open: true,
 		onOpenChange: () => {},
@@ -110,7 +110,39 @@ export const ReducedMotion: Story = {
 		docs: {
 			description: {
 				story:
-					"Modal mostrando configurações com redução de movimento ativada.",
+					"Modal mostrando todas as configurações de acessibilidade ativadas simultaneamente.",
+			},
+		},
+	},
+	render: (args) => <SettingsWrapper {...args} />,
+};
+
+export const ExtraLargeFont: Story = {
+	args: {
+		open: true,
+		onOpenChange: () => {},
+	},
+	parameters: {
+		docs: {
+			description: {
+				story:
+					"Modal mostrando configurações com fonte extra grande para máxima legibilidade.",
+			},
+		},
+	},
+	render: (args) => <SettingsWrapper {...args} />,
+};
+
+export const MinimalSettings: Story = {
+	args: {
+		open: true,
+		onOpenChange: () => {},
+	},
+	parameters: {
+		docs: {
+			description: {
+				story:
+					"Modal mostrando configurações mínimas (normal) para usuários que não precisam de ajustes especiais.",
 			},
 		},
 	},

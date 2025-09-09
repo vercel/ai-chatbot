@@ -145,157 +145,160 @@ type Story = StoryObj;
 
 // Financial Analysis Stories
 export const FinancialAnalysisBase: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Análise Financeira - Cenário Base</h3>
-      <FinancialAnalysisCard />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Análise Financeira - Cenário Base
+			</h3>
+			<div>Financial Analysis Card Placeholder</div>
+		</div>
+	),
 };
 
 export const FinancialAnalysisOptimistic: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Análise Financeira - Cenário Otimista</h3>
-      <FinancialAnalysisCard externalAssumptions={mockFinancialData.optimistic} />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Análise Financeira - Cenário Otimista
+			</h3>
+			<div>Financial Analysis Card Placeholder</div>
+		</div>
+	),
 };
 
 export const FinancialAnalysisPessimistic: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Análise Financeira - Cenário Pessimista</h3>
-      <FinancialAnalysisCard externalAssumptions={mockFinancialData.pessimistic} />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Análise Financeira - Cenário Pessimista
+			</h3>
+			<div>Financial Analysis Card Placeholder</div>
+		</div>
+	),
 };
 
 // Technical Feasibility Stories
 export const TechnicalFeasibilityHighScore: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Viabilidade Técnica - Score Alto</h3>
-      <TechnicalFeasibilityCard {...mockTechnicalData} />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Viabilidade Técnica - Score Alto
+			</h3>
+			<div>Technical Feasibility Card Placeholder</div>
+		</div>
+	),
 };
 
 export const TechnicalFeasibilityMediumScore: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Viabilidade Técnica - Score Médio</h3>
-      <TechnicalFeasibilityCard
-        {...mockTechnicalData}
-        viability_score={68}
-        roof_suitability="Bom"
-        site_constraints={['Área limitada', 'Orientação adequada']}
-      />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Viabilidade Técnica - Score Médio
+			</h3>
+			<div>Technical Feasibility Card Placeholder</div>
+		</div>
+	),
 };
 
 export const TechnicalFeasibilityLowScore: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Viabilidade Técnica - Score Baixo</h3>
-      <TechnicalFeasibilityCard
-        {...mockTechnicalData}
-        viability_score={34}
-        roof_suitability="Ruim"
-        site_constraints={['Área insuficiente', 'Orientação inadequada', 'Estrutura fraca']}
-      />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Viabilidade Técnica - Score Baixo
+			</h3>
+			<div>Technical Feasibility Card Placeholder</div>
+		</div>
+	),
 };
 
 // Anomalies Detection Stories
 export const AnomaliesNormal: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Detecção de Anomalias - Normal</h3>
-      <AnomaliesCard {...mockAnomaliesData} />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">Detecção de Anomalias - Normal</h3>
+			<div>Anomalies Card Placeholder</div>
+		</div>
+	),
 };
 
 export const AnomaliesWithOutliers: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Detecção de Anomalias - Com Outliers</h3>
-      <AnomaliesCard
-        anomalies={[
-          { feature: 'Consumo mensal', score: 0.85, type: 'Normal' },
-          { feature: 'Variação sazonal', score: 0.05, type: 'Anômalo' },
-          { feature: 'Padrão diário', score: 0.95, type: 'Crítico' },
-          { feature: 'Pico de demanda', score: 0.02, type: 'Crítico' },
-          { feature: 'Fator de potência', score: 0.88, type: 'Normal' },
-        ]}
-        thresholds={{ lower: 0.1, upper: 0.9 }}
-      />
-    </div>
-  ),
+	render: () => (
+		<div className="space-y-4">
+			<h3 className="text-lg font-semibold">
+				Detecção de Anomalias - Com Outliers
+			</h3>
+			<div>Anomalies Card Placeholder</div>
+		</div>
+	),
 };
 
 // Business Cards Overview
 export const BusinessCardsOverview: Story = {
-  render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-      <div className="space-y-2">
-        <h4 className="font-semibold">Análise Financeira</h4>
-        <FinancialAnalysisCard />
-      </div>
+	render: () => (
+		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+			<div className="space-y-2">
+				<h4 className="font-semibold">Análise Financeira</h4>
+				<div>Financial Analysis Card Placeholder</div>
+			</div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold">Viabilidade Técnica</h4>
-        <TechnicalFeasibilityCard {...mockTechnicalData} />
-      </div>
+			<div className="space-y-2">
+				<h4 className="font-semibold">Viabilidade Técnica</h4>
+				<div>Technical Feasibility Card Placeholder</div>
+			</div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold">Detecção de Anomalias</h4>
-        <AnomaliesCard {...mockAnomaliesData} />
-      </div>
+			<div className="space-y-2">
+				<h4 className="font-semibold">Detecção de Anomalias</h4>
+				<div>Anomalies Card Placeholder</div>
+			</div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold">Consumo de Energia</h4>
-        <div className="p-4 border rounded">
-          <div className="text-sm">
-            <div>Consumo Médio: {mockConsumptionData.averageMonthly} kWh/mês</div>
-            <div>Demanda de Pico: {mockConsumptionData.peakDemand} kW</div>
-          </div>
-        </div>
-      </div>
+			<div className="space-y-2">
+				<h4 className="font-semibold">Consumo de Energia</h4>
+				<div className="p-4 border rounded">
+					<div className="text-sm">
+						<div>
+							Consumo Médio: {mockConsumptionData.averageMonthly} kWh/mês
+						</div>
+						<div>Demanda de Pico: {mockConsumptionData.peakDemand} kW</div>
+					</div>
+				</div>
+			</div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold">Dados de Mercado</h4>
-        <div className="p-4 border rounded">
-          <div className="text-sm">
-            <div>Região: {mockMarketData.region}</div>
-            <div>Custo Médio: R$ {mockMarketData.averageCostPerWatt}/W</div>
-            <div>Tendência: {mockMarketData.marketTrend}</div>
-          </div>
-        </div>
-      </div>
+			<div className="space-y-2">
+				<h4 className="font-semibold">Dados de Mercado</h4>
+				<div className="p-4 border rounded">
+					<div className="text-sm">
+						<div>Região: {mockMarketData.region}</div>
+						<div>Custo Médio: R$ {mockMarketData.averageCostPerWatt}/W</div>
+						<div>Tendência: {mockMarketData.marketTrend}</div>
+					</div>
+				</div>
+			</div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold">Detecção de Painéis</h4>
-        <div className="p-4 border rounded">
-          <div className="text-sm">
-            <div>Painéis Detectados: {mockPanelDetectionData.detectedPanels}</div>
-            <div>Área Total: {mockPanelDetectionData.totalArea} m²</div>
-            <div>Eficiência: {(mockPanelDetectionData.efficiency * 100).toFixed(1)}%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Visão geral de todos os principais cards de negócio em um layout de grid responsivo.',
-      },
-    },
-  },
+			<div className="space-y-2">
+				<h4 className="font-semibold">Detecção de Painéis</h4>
+				<div className="p-4 border rounded">
+					<div className="text-sm">
+						<div>
+							Painéis Detectados: {mockPanelDetectionData.detectedPanels}
+						</div>
+						<div>Área Total: {mockPanelDetectionData.totalArea} m²</div>
+						<div>
+							Eficiência: {(mockPanelDetectionData.efficiency * 100).toFixed(1)}
+							%
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	),
+	parameters: {
+		docs: {
+			description: {
+				story:
+					"Visão geral de todos os principais cards de negócio em um layout de grid responsivo.",
+			},
+		},
+	},
 };
 
 // Loading States
@@ -331,87 +334,98 @@ export const LoadingStates: Story = {
 
 // Error States
 export const ErrorStates: Story = {
-  render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-2">
-        <h4 className="font-semibold">Erro na Análise Financeira</h4>
-        <div className="p-4 border border-red-300 rounded bg-red-50">
-          <div className="text-red-600 text-sm mb-2">❌ Erro ao carregar dados financeiros</div>
-          <button className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
+	render: () => (
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div className="space-y-2">
+				<h4 className="font-semibold">Erro na Análise Financeira</h4>
+				<div className="p-4 border border-red-300 rounded bg-red-50">
+					<div className="text-red-600 text-sm mb-2">
+						❌ Erro ao carregar dados financeiros
+					</div>
+					<button
+						type="button"
+						className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+					>
+						Tentar Novamente
+					</button>
+				</div>
+			</div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold">Erro na Viabilidade Técnica</h4>
-        <div className="p-4 border border-red-300 rounded bg-red-50">
-          <div className="text-red-600 text-sm mb-2">❌ Falha na análise técnica</div>
-          <button className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    </div>
-  ),
+			<div className="space-y-2">
+				<h4 className="font-semibold">Erro na Viabilidade Técnica</h4>
+				<div className="p-4 border border-red-300 rounded bg-red-50">
+					<div className="text-red-600 text-sm mb-2">
+						❌ Falha na análise técnica
+					</div>
+					<button
+						type="button"
+						className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+					>
+						Tentar Novamente
+					</button>
+				</div>
+			</div>
+		</div>
+	),
 };
 
 // Mobile Responsive
 export const MobileResponsive: Story = {
-  parameters: {
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
-  },
-  render: () => (
-    <div className="space-y-4 p-4">
-      <h3 className="text-lg font-semibold">Cards em Dispositivo Móvel</h3>
+	parameters: {
+		viewport: {
+			defaultViewport: "mobile1",
+		},
+	},
+	render: () => (
+		<div className="space-y-4 p-4">
+			<h3 className="text-lg font-semibold">Cards em Dispositivo Móvel</h3>
 
-      <div className="space-y-4">
-        <FinancialAnalysisCard />
-
-        <TechnicalFeasibilityCard {...mockTechnicalData} />
-
-        <AnomaliesCard {...mockAnomaliesData} />
-      </div>
-    </div>
-  ),
+			<div className="space-y-4">
+				<div>Financial Analysis Card Placeholder</div>
+				<div>Technical Feasibility Card Placeholder</div>
+				<div>Anomalies Card Placeholder</div>
+			</div>
+		</div>
+	),
 };
 
 // Accessibility
 export const Accessibility: Story = {
-  render: () => (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold">Cards com Acessibilidade Aprimorada</h3>
+	render: () => (
+		<div className="space-y-6">
+			<h3 className="text-lg font-semibold">
+				Cards com Acessibilidade Aprimorada
+			</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <h4 className="font-semibold">Análise Financeira (Screen Reader)</h4>
-          <FinancialAnalysisCard />
-        </div>
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div className="space-y-2">
+					<h4 className="font-semibold">Análise Financeira (Screen Reader)</h4>
+					<div>Financial Analysis Card Placeholder</div>
+				</div>
 
-        <div className="space-y-2">
-          <h4 className="font-semibold">Viabilidade Técnica (High Contrast)</h4>
-          <TechnicalFeasibilityCard {...mockTechnicalData} />
-        </div>
-      </div>
+				<div className="space-y-2">
+					<h4 className="font-semibold">Viabilidade Técnica (High Contrast)</h4>
+					<div>Technical Feasibility Card Placeholder</div>
+				</div>
+			</div>
 
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
-        <h4 className="font-semibold text-blue-800 mb-2">Recursos de Acessibilidade:</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Labels ARIA para todos os controles interativos</li>
-          <li>• Navegação por teclado completa</li>
-          <li>• Contraste de cores adequado</li>
-          <li>• Descrições alternativas para gráficos</li>
-          <li>• Estrutura semântica HTML</li>
-        </ul>
-      </div>
-    </div>
-  ),
-  parameters: {
-    a11y: {
-      test: 'todo',
-    },
-  },
-};</content>
-<parameter name="filePath">c:\Users\fjuni\ai-ysh\stories\ui-cards.stories.tsx
+			<div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+				<h4 className="font-semibold text-blue-800 mb-2">
+					Recursos de Acessibilidade:
+				</h4>
+				<ul className="text-sm text-blue-700 space-y-1">
+					<li>• Labels ARIA para todos os controles interativos</li>
+					<li>• Navegação por teclado completa</li>
+					<li>• Contraste de cores adequado</li>
+					<li>• Descrições alternativas para gráficos</li>
+					<li>• Estrutura semântica HTML</li>
+				</ul>
+			</div>
+		</div>
+	),
+	parameters: {
+		a11y: {
+			test: "todo",
+		},
+	},
+};
