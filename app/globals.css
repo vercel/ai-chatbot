@@ -20,6 +20,23 @@
     .text-balance {
         text-wrap: balance;
     }
+    .bg-solar {
+        background-image: linear-gradient(
+            135deg,
+            var(--brand-grad-from),
+            var(--brand-grad-mid) 50%,
+            var(--brand-grad-to)
+        );
+    }
+    .text-solar {
+        background: linear-gradient(
+            135deg,
+            var(--brand-grad-from),
+            var(--brand-grad-to)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 }
 
 @layer base {
@@ -36,7 +53,6 @@
         --secondary-foreground: 240 5.9% 10%;
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
         --accent-foreground: 240 5.9% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
@@ -57,6 +73,20 @@
         --sidebar-accent-foreground: 240 5.9% 10%;
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --bg-primary: #09090B;
+        --bg-elevated: #111113;
+        --border-default: #27272A;
+        --border-hover: #3F3F46;
+        --border-active: #71717A;
+        --text-primary: #F4F4F5;
+        --text-secondary: #A1A1AA;
+        --text-muted: #52525B;
+        --brand-grad-from: #FFCE00;
+        --brand-grad-mid: #FF7D00;
+        --brand-grad-to: #FF0066;
+        --accent: #EAB308;
+        --error: #EF4444;
+        --success: #22C55E;
     }
     .dark {
         --background: 240 10% 3.9%;
@@ -71,8 +101,7 @@
         --secondary-foreground: 0 0% 98%;
         --muted: 240 3.7% 15.9%;
         --muted-foreground: 240 5% 64.9%;
-        --accent: 240 3.7% 15.9%;
-        --accent-foreground: 0 0% 98%;
+        --accent-foreground: 0 0% 10%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
         --border: 240 3.7% 15.9%;
@@ -91,6 +120,20 @@
         --sidebar-accent-foreground: 240 4.8% 95.9%;
         --sidebar-border: 240 3.7% 15.9%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --bg-primary: #09090B;
+        --bg-elevated: #111113;
+        --border-default: #27272A;
+        --border-hover: #3F3F46;
+        --border-active: #71717A;
+        --text-primary: #F4F4F5;
+        --text-secondary: #A1A1AA;
+        --text-muted: #52525B;
+        --brand-grad-from: #FFCE00;
+        --brand-grad-mid: #FF7D00;
+        --brand-grad-to: #FF0066;
+        --accent: #EAB308;
+        --error: #EF4444;
+        --success: #22C55E;
     }
 }
 
