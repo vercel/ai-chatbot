@@ -515,14 +515,15 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
+export const ArrowUpIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
       width={size}
-      style={{ color: 'currentcolor' }}
+      style={{ color: 'currentcolor', ...props.style }}
+      {...props}
     >
       <path
         fillRule="evenodd"
@@ -534,13 +535,14 @@ export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const StopIcon = ({ size = 16 }: { size?: number }) => {
+export const StopIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
       viewBox="0 0 16 16"
       width={size}
-      style={{ color: 'currentcolor' }}
+      style={{ color: 'currentcolor', ...props.style }}
+      {...props}
     >
       <path
         fillRule="evenodd"
@@ -552,15 +554,16 @@ export const StopIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
+export const PaperclipIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
       width={size}
-      style={{ color: 'currentcolor' }}
+      style={{ color: 'currentcolor', ...props.style }}
       className="-rotate-45"
+      {...props}
     >
       <path
         fillRule="evenodd"
