@@ -2,15 +2,17 @@ import Form from 'next/form';
 
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import type { Route } from 'next';
+
+type ServerAction = (formData: FormData) => void;
+type FormAction = Route | ServerAction;
 
 export function AuthForm({
   action,
   children,
   defaultEmail = '',
 }: {
-  action: NonNullable<
-    string | ((formData: FormData) => void | Promise<void>) | undefined
-  >;
+  action: FormAction;
   children: React.ReactNode;
   defaultEmail?: string;
 }) {
