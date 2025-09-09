@@ -18,10 +18,10 @@ function PureSuggestedActions({
   sendMessage,
 }: SuggestedActionsProps) {
   const suggestedActions = [
-    'I have a possible conflict of interest to report',
-    'What are common conflict of interest scenarios?',
-    'Is this chat confidential?',
-    'How do I disclose a financial interest?',
+    'I need to file a conflict of interest disclosure',
+    'I have a potential conflict involving a vendor relationship', 
+    'Help me complete a COI disclosure form',
+    'What should I disclose about outside business interests?',
   ];
 
   return (
