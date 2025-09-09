@@ -46,7 +46,7 @@ const config: Config = {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
+          DEFAULT: 'var(--accent)',
           foreground: 'hsl(var(--accent-foreground))',
         },
         destructive: {
@@ -73,6 +73,23 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        'bg-primary': 'var(--bg-primary)',
+        'bg-elevated': 'var(--bg-elevated)',
+        'border-default': 'var(--border-default)',
+        'border-hover': 'var(--border-hover)',
+        'border-active': 'var(--border-active)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        'brand-grad-from': 'var(--brand-grad-from)',
+        'brand-grad-mid': 'var(--brand-grad-mid)',
+        'brand-grad-to': 'var(--brand-grad-to)',
+        error: 'var(--error)',
+        success: 'var(--success)',
+      },
+      backgroundImage: {
+        solar:
+          'linear-gradient(135deg,var(--brand-grad-from),var(--brand-grad-mid) 50%,var(--brand-grad-to))',
       },
     },
   },
