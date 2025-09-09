@@ -21,12 +21,13 @@ export const env = createEnv({
     REDIS_URL: z.url(),
     // Playwright
     PLAYWRIGHT_TEST_BASE_URL: z.string().optional(),
-    PLAYWRIGHT: z.string().optional(),
-    CI_PLAYWRIGHT: z.string().optional(),
-    CI: z.string().optional(),
+    PLAYWRIGHT: z.string().optional().transform((s) => s !== "false" && s !== "0"),
+    CI_PLAYWRIGHT: z.string().transform((s) => s !== "false" && s !== "0"),
+    CI: z.string().optional().transform((s) => s !== "false" && s !== "0"),
     // Server
     PORT: z.string().optional(),
   },
   client: {},
   experimental__runtimeEnv: {},
+  skipValidation: !!process.env.CI,
 });

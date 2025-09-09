@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm with-env next dev --turbo",
-    "typegen": "next typegen",
+    "typegen": "cross-env CI=true next typegen",
     "build": "pnpm run db:migrate && pnpm with-env next build",
     "start": "pnpm with-env next start",
     "check": "biome check .",
@@ -24,7 +24,7 @@
     "db:pull": "pnpm with-env drizzle-kit pull",
     "db:check": "pnpm with-env drizzle-kit check",
     "db:up": "pnpm with-env drizzle-kit up",
-    "test": "cross-env PLAYWRIGHT=True pnpm with-env playwright test",
+    "test": "cross-env PLAYWRIGHT=true pnpm with-env playwright test",
     "with-env": "dotenv -e .env.local --"
   },
   "dependencies": {
