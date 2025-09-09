@@ -17,8 +17,8 @@ import {
   getMessagesByChatId,
   saveChat,
   saveMessages,
-} from '@/lib/db/queries';
-import { updateChatLastContextById } from '@/lib/db/queries';
+ updateChatLastContextById } from '@/lib/db/queries';
+
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../(chat)/actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
