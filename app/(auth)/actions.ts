@@ -1,84 +1,29 @@
 'use server';
+import 'server-only';
 
-import { z } from 'zod';
+import { actionClient, ActionError } from '@/lib/safe-action';
+import { SignInSchema } from '@/lib/validators';
+import { redirect } from 'next/navigation';
+import { Route } from 'next';
+import { signIn } from '@/app/(auth)/auth';
 
-import { createUser, getUser } from '@/lib/db/queries';
-
-import { signIn } from './auth';
-
-const authFormSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
-});
-
-export interface LoginActionState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';
-}
-
-export const login = async (
-  _: LoginActionState,
-  formData: FormData,
-): Promise<LoginActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
-
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
+export const login = actionClient
+  .schema(SignInSchema)
+  .action(async ({ parsedInput: { email } }) => {
+    const res = (await signIn('resend', {
+      email,
       redirect: false,
-    });
+    })) as Route;
 
-    return { status: 'success' };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: 'invalid_data' };
-    }
+    // if (res) redirect(res);
+    // throw new ActionError("Failed to sign in with magic link.");
+  });
 
-    return { status: 'failed' };
-  }
-};
+export const signInWithKeycloak = async () => {
+  const res = (await signIn('keycloak', {
+    redirect: false,
+  })) as Route;
 
-export interface RegisterActionState {
-  status:
-    | 'idle'
-    | 'in_progress'
-    | 'success'
-    | 'failed'
-    | 'user_exists'
-    | 'invalid_data';
-}
-
-export const register = async (
-  _: RegisterActionState,
-  formData: FormData,
-): Promise<RegisterActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
-
-    const [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
-    }
-    await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
-
-    return { status: 'success' };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: 'invalid_data' };
-    }
-
-    return { status: 'failed' };
-  }
+  if (res) redirect(res);
+  throw new ActionError('Failed to sign in with keycloak.');
 };
