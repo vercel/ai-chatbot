@@ -1,14 +1,6 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { user } from '@/lib/db/schema';
-import { ChatSDKError } from '@/lib/errors';
-
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+// We intentionally avoid DB writes here to keep upstream schema as source of truth.
 
 export class SlackError extends Error {
   public statusCode: number;
@@ -25,6 +17,10 @@ export class SlackError extends Error {
 // In-memory cache for membership checks (5-minute TTL)
 const membershipCache = new Map<string, { result: boolean; expiry: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// In-memory cache for email -> slackUserId (24-hour TTL)
+const emailToSlackIdCache = new Map<string, { id: string; expiry: number }>();
+const EMAIL_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 function getCacheKey(channelId: string, slackUserId: string): string {
   return `${channelId}:${slackUserId}`;
@@ -93,16 +89,9 @@ async function makeSlackRequest(
 
 export async function fetchSlackUserIdByEmail(email: string): Promise<string> {
   try {
-    // First check if we already have it cached in the database
-    const users = await db.select().from(user).where(eq(user.email, email));
-    const dbUser = users[0];
-
-    if (!dbUser) {
-      throw new ChatSDKError('not_found:database', 'User not found');
-    }
-
-    if (dbUser.slackUserId) {
-      return dbUser.slackUserId;
+    const cached = emailToSlackIdCache.get(email);
+    if (cached && cached.expiry > Date.now()) {
+      return cached.id;
     }
 
     // Look up the Slack user ID
@@ -113,12 +102,15 @@ export async function fetchSlackUserIdByEmail(email: string): Promise<string> {
       throw new SlackError('User not found in Slack workspace', 404);
     }
 
-    // Cache the result in the database
-    await db.update(user).set({ slackUserId }).where(eq(user.email, email));
+    // Cache in memory (best-effort)
+    emailToSlackIdCache.set(email, {
+      id: slackUserId,
+      expiry: Date.now() + EMAIL_CACHE_TTL,
+    });
 
     return slackUserId;
   } catch (error) {
-    if (error instanceof SlackError || error instanceof ChatSDKError) {
+    if (error instanceof SlackError) {
       throw error;
     }
     throw new SlackError(`Failed to fetch Slack user ID: ${error}`);

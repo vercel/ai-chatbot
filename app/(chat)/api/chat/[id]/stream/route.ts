@@ -47,7 +47,7 @@ export async function GET(
     return new ChatSDKError('unauthorized:chat', 'User not found').toResponse();
   }
 
-  let chat: Chat;
+  let chat: Chat | null;
 
   try {
     chat = await getChatById({ id: chatId });

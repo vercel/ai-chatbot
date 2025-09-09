@@ -330,10 +330,10 @@ export const ThinkingMessage = () => {
           <SparklesIcon size={14} />
         </div>
 
-        <div className="flex flex-col gap-4 w-full">
-          <MessageContent className="bg-transparent -ml-4">
-            <div className="text-muted-foreground">Hmm...</div>
-          </MessageContent>
+        <div className="flex flex-col gap-2 w-full md:gap-4">
+          <div className="p-0 text-sm text-muted-foreground">
+            <LoadingText>Thinking...</LoadingText>
+          </div>
         </div>
       </div>
     </motion.div>

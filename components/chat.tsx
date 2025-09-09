@@ -1,6 +1,6 @@
 'use client';
 
-import { DefaultChatTransport, type DataUIPart, LanguageModelUsage } from 'ai';
+import { DefaultChatTransport, type DataUIPart, type LanguageModelUsage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -30,6 +30,7 @@ export function Chat({
   isReadonly,
   user,
   autoResume,
+  initialLastContext,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -38,6 +39,7 @@ export function Chat({
   isReadonly: boolean;
   user: any;
   autoResume: boolean;
+  initialLastContext?: LanguageModelUsage;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -48,7 +50,9 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
-  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(undefined);
+  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(
+    initialLastContext,
+  );
 
   const {
     messages,

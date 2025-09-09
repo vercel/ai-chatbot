@@ -1,5 +1,5 @@
 {
-  "id": "5014793f-fd2f-4df6-b3cb-6d5e473a4a1f",
+  "id": "097660a7-976a-4b3e-8ebb-79312e3ece6f",
   "prevId": "443de550-b7e8-4bfb-b229-c12dc6c132f0",
   "version": "7",
   "dialect": "postgresql",
@@ -39,6 +39,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'private'"
+        },
+        "lastContext": {
+          "name": "lastContext",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -418,12 +424,6 @@
         "password": {
           "name": "password",
           "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "slackUserId": {
-          "name": "slackUserId",
-          "type": "varchar(32)",
           "primaryKey": false,
           "notNull": false
         }

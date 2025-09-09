@@ -33,6 +33,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import { LanguageModelV2Usage } from '@ai-sdk/provider';
 
 // Database queries for user management and WorkOS integration
 
@@ -273,6 +274,10 @@ export async function getChatsByUserId({
 export async function getChatById({ id }: { id: string }) {
   try {
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
+    if (!selectedChat) {
+      return null;
+    }
+
     return selectedChat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
@@ -540,10 +545,32 @@ export async function updateChatVisiblityById({
   }
 }
 
+export async function updateChatLastContextById({
+  chatId,
+  context,
+}: {
+  chatId: string;
+  // Store raw LanguageModelUsage to keep it simple
+  context: LanguageModelV2Usage;
+}) {
+  try {
+    return await db
+      .update(chat)
+      .set({ lastContext: context })
+      .where(eq(chat.id, chatId));
+  } catch (error) {
+    console.warn('Failed to update lastContext for chat', chatId, error);
+    return;
+  }
+}
+
 export async function getMessageCountByUserId({
   id,
   differenceInHours,
-}: { id: string; differenceInHours: number }) {
+}: {
+  id: string;
+  differenceInHours: number;
+}) {
   try {
     const twentyFourHoursAgo = new Date(
       Date.now() - differenceInHours * 60 * 60 * 1000,

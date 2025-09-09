@@ -53,14 +53,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
-
-  // Validate that the cookie value is a valid model ID
-  const isValidModel =
-    chatModelFromCookie &&
-    chatModels.some((model) => model.id === chatModelFromCookie.value);
-  const initialChatModel = isValidModel
-    ? chatModelFromCookie.value
-    : DEFAULT_CHAT_MODEL;
+  const cookieModelId = chatModelFromCookie?.value;
+  let initialChatModel = DEFAULT_CHAT_MODEL;
+  if (cookieModelId && chatModels.some((model) => model.id === cookieModelId)) {
+    initialChatModel = cookieModelId;
+  }
 
   return (
     <>
@@ -72,6 +69,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         isReadonly={!databaseUser || databaseUser.id !== chat.userId}
         user={user}
         autoResume={true}
+        initialLastContext={chat.lastContext ?? undefined}
       />
       <DataStreamHandler />
     </>

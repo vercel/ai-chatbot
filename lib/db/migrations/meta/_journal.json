@@ -54,22 +54,8 @@
     {
       "idx": 7,
       "version": "7",
-      "when": 1752857354511,
-      "tag": "0007_regular_maximus",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1752958251748,
-      "tag": "0008_wonderful_magdalene",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1752960135567,
-      "tag": "0009_opposite_rattler",
+      "when": 1757362773211,
+      "tag": "0007_flowery_ben_parker",
       "breakpoints": true
     }
   ]
