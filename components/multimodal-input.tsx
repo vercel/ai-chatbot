@@ -214,7 +214,6 @@ function PureMultimodalInput({
       usedTokens,
       usage,
       modelId: modelResolver.modelId,
-      showBreakdown: true as const,
     }),
     [contextMax, usedTokens, usage, modelResolver],
   );
@@ -343,21 +342,23 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-
-        <PromptInputTextarea
-          data-testid="multimodal-input"
-          ref={textareaRef}
-          placeholder="Send a message..."
-          value={input}
-          onChange={handleInput}
-          minHeight={44}
-          maxHeight={200}
-          disableAutoResize={true}
-          className="resize-none border-0! border-none! bg-transparent px-3 py-3 text-sm outline-hidden ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
-          rows={1}
-          autoFocus
-        />
-        <PromptInputToolbar className="!border-top-0 border-t-0! px-3 py-2 shadow-none dark:border-0 dark:border-transparent!">
+        <div className="flex flex-row gap-2 items-start">
+          <PromptInputTextarea
+            data-testid="multimodal-input"
+            ref={textareaRef}
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInput}
+            minHeight={44}
+            maxHeight={200}
+            disableAutoResize={true}
+            className="text-sm grow resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent border-0! border-none! outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
+            rows={1}
+            autoFocus
+          />{' '}
+          <Context {...contextProps} />
+        </div>
+        <PromptInputToolbar className="px-3 py-2 border-t-0! !border-top-0 shadow-none dark:border-transparent! dark:border-0">
           <PromptInputTools className="gap-2">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -365,8 +366,8 @@ function PureMultimodalInput({
               selectedModelId={selectedModelId}
             />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
-            <Context {...contextProps} />
           </PromptInputTools>
+
           {status === 'submitted' ? (
             <StopButton stop={stop} setMessages={setMessages} />
           ) : (
