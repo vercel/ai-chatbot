@@ -1,7 +1,5 @@
 'use client';
 
-import { useAction } from 'next-safe-action/hooks';
-
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -11,7 +9,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hooks';
 import { Input } from '@/components/ui/input';
 
 import { TriangleAlertIcon as IconWarning, LoaderIcon } from 'lucide-react';
@@ -20,26 +18,26 @@ import { Alert, AlertTitle } from '../ui/alert';
 
 import { SignUpSchema } from '@/lib/validators';
 import { register } from '@/app/(auth)/actions';
-import { SignUp } from '@/lib/validators/sign-up';
 
 export const RegisterForm = () => {
-  const form = useForm({
-    resolver: zodResolver(SignUpSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  const { form, action, handleSubmitWithAction, resetFormAndAction } =
+    useHookFormAction(register, zodResolver(SignUpSchema), {
+      formProps: {
+        mode: 'onChange',
+      },
+      actionProps: {
+        onSuccess: () => {
+          resetFormAndAction();
+        },
+      },
+    });
 
-  const { execute, result, status } = useAction(register);
-
-  const onSubmit = (values: SignUp) => {
-    execute(values);
-  };
+  const { status, result } = action;
+  const { isValid, errors } = form.formState;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmitWithAction} className="space-y-4">
         <div className="space-y-2">
           <FormField
             control={form.control}
@@ -75,7 +73,10 @@ export const RegisterForm = () => {
               </FormItem>
             )}
           />
+
         </div>
+
+        {errors.root && <FormMessage>{errors.root.message}</FormMessage>}
 
         {status === 'hasSucceeded' && (
           <Alert
@@ -84,10 +85,11 @@ export const RegisterForm = () => {
           >
             <IconCheckCircle size={16} />
             <AlertTitle className="mb-0 leading-normal">
-              Confirmation email has been sent!
+              Account created successfully!
             </AlertTitle>
           </Alert>
         )}
+
         {result.serverError && (
           <Alert
             className="bg-destructive/15 text-destructive dark:bg-destructive dark:text-destructive-foreground p-3 border-destructive/15 dark:border-destructive"
@@ -101,12 +103,12 @@ export const RegisterForm = () => {
         )}
 
         <Button
-          disabled={status === 'executing'}
+          disabled={status === 'executing' || !isValid}
           type="submit"
           className="w-full"
         >
           {status === 'executing' && (
-            <LoaderIcon className="mr-2 size-4 animate-spin" />
+            <LoaderIcon className="mr-1 size-4 animate-spin" />
           )}
           Register
         </Button>

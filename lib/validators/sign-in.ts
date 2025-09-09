@@ -1,9 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
+import { passwordSchema } from './password';
 
 export const SignInSchema = z.object({
   email: z.email(),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters",
-  }),
+  password: passwordSchema
 });
 export type SignIn = z.infer<typeof SignInSchema>;

@@ -1,7 +1,5 @@
 'use client';
 
-import { useAction } from 'next-safe-action/hooks';
-
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -11,35 +9,35 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hooks';
 import { Input } from '@/components/ui/input';
 
 import { TriangleAlertIcon as IconWarning, LoaderIcon } from 'lucide-react';
 import { CheckCircleFillIcon as IconCheckCircle } from '@/components/icons';
 import { Alert, AlertTitle } from '../ui/alert';
 
-import { SignInSchema, SignIn } from '@/lib/validators';
+import { SignInSchema } from '@/lib/validators';
 import { login } from '@/app/(auth)/actions';
 
-// made it two forms so it'd be easier to add more fields later
 export const LoginForm = () => {
-  const form = useForm({
-    resolver: zodResolver(SignInSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  const { form, action, handleSubmitWithAction, resetFormAndAction } =
+    useHookFormAction(login, zodResolver(SignInSchema), {
+      formProps: {
+        mode: 'onChange',
+      },
+      actionProps: {
+        onSuccess: () => {
+          resetFormAndAction();
+        },
+      },
+    });
 
-  const { execute, result, status } = useAction(login);
-
-  const onSubmit = (values: SignIn) => {
-    execute(values);
-  };
+  const { status, result } = action;
+  const { isValid, errors } = form.formState;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmitWithAction} className="space-y-4">
         <div className="space-y-2">
           <FormField
             control={form.control}
@@ -75,7 +73,10 @@ export const LoginForm = () => {
               </FormItem>
             )}
           />
+
         </div>
+
+        {errors.root && <FormMessage>{errors.root.message}</FormMessage>}
 
         {status === 'hasSucceeded' && (
           <Alert
@@ -84,10 +85,11 @@ export const LoginForm = () => {
           >
             <IconCheckCircle size={16} />
             <AlertTitle className="mb-0 leading-normal">
-              Confirmation email has been sent!
+              Logged in successfully!
             </AlertTitle>
           </Alert>
         )}
+
         {result.serverError && (
           <Alert
             className="bg-destructive/15 text-destructive dark:bg-destructive dark:text-destructive-foreground p-3 border-destructive/15 dark:border-destructive"
@@ -101,12 +103,12 @@ export const LoginForm = () => {
         )}
 
         <Button
-          disabled={status === 'executing'}
+          disabled={status === 'executing' || !isValid}
           type="submit"
           className="w-full"
         >
           {status === 'executing' && (
-            <LoaderIcon className="mr-2 size-4 animate-spin" />
+            <LoaderIcon className="mr-1 size-4 animate-spin" />
           )}
           Log In
         </Button>

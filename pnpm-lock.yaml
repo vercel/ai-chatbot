@@ -41,6 +41,9 @@ importers:
       '@icons-pack/react-simple-icons':
         specifier: ^13.7.0
         version: 13.7.0(react@19.1.1)
+      '@next-safe-action/adapter-react-hook-form':
+        specifier: ^2.0.0
+        version: 2.0.0(@hookform/resolvers@5.2.1(react-hook-form@7.62.0(react@19.1.1)))(next-safe-action@8.0.11(next@15.5.1-canary.35(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(next@15.5.1-canary.35(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react-hook-form@7.62.0(react@19.1.1))(react@19.1.1)
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -1365,6 +1368,16 @@ packages:
 
   '@neondatabase/serverless@0.9.5':
     resolution: {integrity: sha512-siFas6gItqv6wD/pZnvdu34wEqgG3nSE6zWZdq5j2DEsa+VvX8i/5HXJOo06qrw5axPXn+lGCxeR+NLaSPIXug==}
+
+  '@next-safe-action/adapter-react-hook-form@2.0.0':
+    resolution: {integrity: sha512-vp3KAd5NKnBBCF/3b8kDxEYj0+BUYVjlSZOWHikz/Y2O+yLheRmtj8Vcm379itlqGUKcLV5O2o/dwKHvH8pYog==}
+    peerDependencies:
+      '@hookform/resolvers': '>= 5.0.0'
+      next: '>= 14.0.0'
+      next-safe-action: '>= 8.0.0'
+      react: '>= 18.2.0'
+      react-dom: '>= 18.2.0'
+      react-hook-form: '>= 7.0.0'
 
   '@next/env@15.5.1-canary.35':
     resolution: {integrity: sha512-oMmTduC9jh3fGbtB5oPQ+IdnrKISkah01Stuof49cvrGZUvd87L9DE+NRlj8kK8FITJlOZU3FI2Qk5lOrcJFVQ==}
@@ -5082,6 +5095,15 @@ snapshots:
   '@neondatabase/serverless@0.9.5':
     dependencies:
       '@types/pg': 8.11.6
+
+  '@next-safe-action/adapter-react-hook-form@2.0.0(@hookform/resolvers@5.2.1(react-hook-form@7.62.0(react@19.1.1)))(next-safe-action@8.0.11(next@15.5.1-canary.35(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(next@15.5.1-canary.35(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react-hook-form@7.62.0(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@hookform/resolvers': 5.2.1(react-hook-form@7.62.0(react@19.1.1))
+      next: 15.5.1-canary.35(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      next-safe-action: 8.0.11(next@15.5.1-canary.35(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+      react-hook-form: 7.62.0(react@19.1.1)
 
   '@next/env@15.5.1-canary.35': {}
 
