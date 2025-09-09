@@ -1,13 +1,13 @@
-import { cookies } from 'next/headers';
+import { cookies , headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { convertToUIMessages } from '@/lib/utils';
-import { LanguageModelV2Usage } from '@ai-sdk/provider';
+
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -18,18 +18,18 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
     redirect('/api/auth/guest');
   }
 
   if (chat.visibility === 'private') {
-    if (!session.user) {
+    if (!session?.user) {
       return notFound();
     }
 
-    if (session.user.id !== chat.userId) {
+    if (session?.user.id !== chat.userId) {
       return notFound();
     }
   }
@@ -52,7 +52,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
-          session={session}
           autoResume={true}
           initialLastContext={chat.lastContext ?? undefined}
         />
@@ -69,7 +68,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialChatModel={chatModelFromCookie.value}
         initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}
-        session={session}
         autoResume={true}
         initialLastContext={chat.lastContext ?? undefined}
       />

@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/auth';
 import {
   getChatById,
   getMessagesByChatId,
@@ -10,6 +10,7 @@ import type { ChatMessage } from '@/lib/types';
 import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
 import { getStreamContext } from '../../route';
 import { differenceInSeconds } from 'date-fns';
+import { headers } from 'next/headers';
 
 export async function GET(
   _: Request,
@@ -28,7 +29,7 @@ export async function GET(
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
     return new ChatSDKError('unauthorized:chat').toResponse();

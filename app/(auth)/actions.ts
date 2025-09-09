@@ -1,18 +1,35 @@
 'use server';
 
 import { z } from 'zod';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 
-import { createUser, getUser } from '@/lib/db/queries';
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
-import { signIn } from './auth';
-
-const authFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+const registerSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password is too long'),
 });
 
 export interface LoginActionState {
   status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';
+}
+
+export interface RegisterActionState {
+  status:
+    | 'idle'
+    | 'in_progress'
+    | 'success'
+    | 'failed'
+    | 'invalid_data'
+    | 'user_exists';
 }
 
 export const login = async (
@@ -20,19 +37,23 @@ export const login = async (
   formData: FormData,
 ): Promise<LoginActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
+    const validatedData = loginSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
     });
 
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
+    await auth.api.signInEmail({
+      body: {
+        ...validatedData,
+        callbackURL: '/',
+        rememberMe: false,
+      },
     });
 
-    return { status: 'success' };
+    redirect('/');
   } catch (error) {
+    console.error('Login error:', error);
+
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
     }
@@ -41,42 +62,42 @@ export const login = async (
   }
 };
 
-export interface RegisterActionState {
-  status:
-    | 'idle'
-    | 'in_progress'
-    | 'success'
-    | 'failed'
-    | 'user_exists'
-    | 'invalid_data';
-}
-
 export const register = async (
   _: RegisterActionState,
   formData: FormData,
 ): Promise<RegisterActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
+    const validatedData = registerSchema.parse({
+      name: formData.get('name'),
       email: formData.get('email'),
       password: formData.get('password'),
     });
 
-    const [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
-    }
-    await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
+    // Create user account - Better Auth will handle auto-signin
+    await auth.api.signUpEmail({
+      body: {
+        ...validatedData,
+        callbackURL: '/login',
+      },
     });
 
     return { status: 'success' };
   } catch (error) {
+    console.error('Registration error:', error);
+
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
+    }
+
+    // Handle Better Auth specific errors
+    if (error instanceof Error) {
+      if (
+        error.message.includes('already exists') ||
+        error.message.includes('User already exists') ||
+        error.message.includes('duplicate')
+      ) {
+        return { status: 'user_exists' };
+      }
     }
 
     return { status: 'failed' };
