@@ -22,7 +22,7 @@ export const env = createEnv({
     // Playwright
     PLAYWRIGHT_TEST_BASE_URL: z.string().optional(),
     PLAYWRIGHT: z.string().optional().transform((s) => s !== "false" && s !== "0"),
-    CI_PLAYWRIGHT: z.string().transform((s) => s !== "false" && s !== "0"),
+    CI_PLAYWRIGHT: z.string().optional().transform((s) => s !== "false" && s !== "0"),
     CI: z.string().optional().transform((s) => s !== "false" && s !== "0"),
     // Server
     PORT: z.string().optional(),
