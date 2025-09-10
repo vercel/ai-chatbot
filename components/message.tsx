@@ -57,7 +57,10 @@ const PurePreviewMessage = ({
   return (
     <motion.div
       data-testid={`message-${message.role}`}
-      className="group/message w-full"
+      className={cn('group/message w-full', {
+        'is-user': message.role === 'user',
+        'is-assistant': message.role === 'assistant',
+      })}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       data-role={message.role}
@@ -134,6 +137,7 @@ const PurePreviewMessage = ({
                         'bg-transparent px-0 py-0 text-left':
                           message.role === 'assistant',
                       })}
+                      variant={'flat'}
                       style={
                         message.role === 'user'
                           ? { backgroundColor: '#006cff' }
