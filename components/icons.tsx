@@ -3,29 +3,29 @@ import {
   Bot,
   User,
   Globe,
-  Route as RouteBase,
-  Sparkles as SparklesBase,
-  Plus as PlusBase,
-  ThumbsUp as ThumbsUpBase,
-  ThumbsDown as ThumbsDownBase,
-  FileText as SummarizeBase,
-  Paperclip as AttachmentBase,
-  Triangle as VercelBase,
+  Route as RouteIconLuc,
+  Sparkles as SparklesIconLuc,
+  Plus as PlusIconLuc,
+  ThumbsUp as ThumbsUpIconLuc,
+  ThumbsDown as ThumbsDownIconLuc,
+  FileText as SummarizeIconLuc,
+  Paperclip as AttachmentIconLuc,
+  Triangle as VercelIconLuc,
   Github as GitIcon,
   Box,
   Home,
   MapPin as GPSBase,
-  Receipt as InvoiceBase,
-  Zap as LogoOpenAIBase,
-  TerminalSquare as TerminalWindowBase,
+  Receipt as InvoiceIconLuc,
+  Zap as LogoOpenAIIconLuc,
+  TerminalSquare as TerminalWindowIconLuc,
   Terminal,
   RotateCcw as ClockRewind,
-  List as LogsBase,
+  List as LogsIconLuc,
   Image,
-  Maximize as FullscreenBase,
+  Maximize as FullscreenIconLuc,
   Download,
-  BarChart3 as LineChartBase,
-  AlertTriangle as WarningBase,
+  BarChart3 as LineChartIconLuc,
+  AlertTriangle as WarningIconLuc,
   Bold,
   Italic,
   Underline,
@@ -35,16 +35,16 @@ import {
   Link,
   Palette,
   ChevronDown,
-  Triangle as DeltaBase,
+  Triangle as DeltaIconLuc,
   Play,
   Undo,
   Redo,
-  MessageSquare as MessageBase,
-  X as CrossBase,
-  X as CrossSmallBase,
+  MessageSquare as MessageIconLuc,
+  X as CrossIconLuc,
+  X as CrossSmallIconLuc,
   Loader,
   File,
-  Edit as PencilEditBase,
+  Edit as PencilEditIconLuc,
   ArrowUp,
   Paperclip,
   Stop,
@@ -56,6 +56,63 @@ import {
   SidebarLeft,
   CheckCircle,
 } from "lucide-react";
+
+export const BotIcon = Bot;
+export const UserIcon = User;
+export const GlobeIcon = Globe;
+export const RouteIcon = RouteIconLuc;
+export const SparklesIcon = SparklesIconLuc;
+export const PlusIcon = PlusIconLuc;
+export const ThumbUpIcon = ThumbsUpIconLuc;
+export const ThumbDownIcon = ThumbsDownIconLuc;
+export const SummarizeIcon = SummarizeIconLuc;
+export const AttachmentIcon = AttachmentIconLuc;
+export const VercelIcon = VercelIconLuc;
+export const GitIcon = GitIcon;
+export const BoxIcon = Box;
+export const HomeIcon = Home;
+export const GPSIcon = GPSBase;
+export const InvoiceIcon = InvoiceIconLuc;
+export const LogoOpenAI = LogoOpenAIIconLuc;
+export const TerminalWindowIcon = TerminalWindowIconLuc;
+export const TerminalIcon = Terminal;
+export const ClockRewind = ClockRewind;
+export const LogsIcon = LogsIconLuc;
+export const ImageIcon = Image;
+export const FullscreenIcon = FullscreenBase;
+export const DownloadIcon = Download;
+export const LineChartIcon = LineChartIconLuc;
+export const WarningIcon = WarningIconLuc;
+export const BoldIcon = Bold;
+export const ItalicIcon = Italic;
+export const UnderlineIcon = Underline;
+export const ListIcon = List;
+export const ListOrderedIcon = ListOrdered;
+export const QuoteIcon = Quote;
+export const CodeIcon = Code;
+export const LinkIcon = Link;
+export const PaletteIcon = Palette;
+export const ChevronDownIcon = ChevronDown;
+export const DeltaIcon = DeltaIconLuc;
+export const PlayIcon = Play;
+export const UndoIcon = Undo;
+export const RedoIcon = Redo;
+export const MessageIcon = MessageIconLuc;
+export const CrossIcon = CrossIconLuc;
+export const CrossSmallIcon = CrossSmallIconLuc;
+export const LoaderIcon = Loader;
+export const FileIcon = File;
+export const PencilEditIcon = PencilEditIconLuc;
+export const ArrowUpIcon = ArrowUp;
+export const PaperclipIcon = Paperclip;
+export const StopIcon = Stop;
+export const MoreHorizontalIcon = MoreHorizontal;
+export const ShareIcon = Share;
+export const LockIcon = Lock;
+export const TrashIcon = Trash;
+export const CopyIcon = Copy;
+export const SidebarLeftIcon = SidebarLeft;
+export const CheckCircleFillIcon = CheckCircle;
 
 /**
  * Mapeia os ícones do Lucide para os nomes usados no app.
@@ -78,118 +135,7 @@ export const ThumbDownIcon = ThumbsDownBase;
 // Lucide não tem "Summarize"; usamos um análogo semântico:
 export const SummarizeIcon = SummarizeBase;
 
-export const AttachmentIcon = AttachmentBase;
-export const VercelIcon = VercelBase;
-export const GitIcon = GitIcon;
-export const BoxIcon = Box;
-export const HomeIcon = Home;
-export const GPSIcon = GPSBase;
-export const InvoiceIcon = InvoiceBase;
-export const LogoOpenAI = LogoOpenAIBase;
-export const TerminalWindowIcon = TerminalWindowBase;
-export const TerminalIcon = Terminal;
-export const ClockRewind = ClockRewind;
-export const LogsIcon = LogsBase;
-export const ImageIcon = Image;
-export const FullscreenIcon = FullscreenBase;
-export const DownloadIcon = Download;
-export const LineChartIcon = LineChartBase;
-export const WarningIcon = WarningBase;
-export const BoldIcon = Bold;
-export const ItalicIcon = Italic;
-export const UnderlineIcon = Underline;
-export const ListIcon = List;
-export const ListOrderedIcon = ListOrdered;
-export const QuoteIcon = Quote;
-export const LinkIcon = Link;
-export const PaletteIcon = Palette;
-export const ChevronDownIcon = ChevronDown;
-export const DeltaIcon = DeltaBase;
-export const PlayIcon = Play;
-export const UndoIcon = Undo;
-export const RedoIcon = Redo;
-export const MessageIcon = MessageBase;
-export const CrossIcon = CrossBase;
-export const CrossSmallIcon = CrossSmallBase;
-export const LoaderIcon = Loader;
-export const FileIcon = File;
-export const PencilEditIcon = PencilEditBase;
-export const ArrowUpIcon = ArrowUp;
-export const PaperclipIcon = Paperclip;
-export const StopIcon = Stop;
-export const MoreHorizontalIcon = MoreHorizontal;
-export const ShareIcon = Share;
-export const LockIcon = Lock;
-export const TrashIcon = Trash;
-export const CopyIcon = Copy;
-export const SidebarLeftIcon = SidebarLeft;
-export const CheckCircleFillIcon = CheckCircle;
-
-export const VercelIcon = ({ size = 17 }) => {
-  return (
-    <svg
-      height={size}
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
-      width={size}
-      className="text-current"
-    >
-      <title>Vercel Icon</title>
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M8 1L16 15H0L8 1Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-};
-
-export const GitIcon = () => {
-  return (
-    <svg
-      height="16"
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
-      width="16"
-      className="text-current"
-    >
-      <title>Git Icon</title>
-      <g clipPath="url(#clip0_872_3147)">
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M8 0C3.58 0 0 3.57879 0 7.99729C0 11.5361 2.29 14.5251 5.47 15.5847C5.87 15.6547 6.02 15.4148 6.02 15.2049C6.02 15.0149 6.01 14.3851 6.01 13.7154C4 14.0852 3.48 13.2255 3.32 12.7757C3.23 12.5458 2.84 11.836 2.5 11.6461C2.22 11.4961 1.82 11.1262 2.49 11.1162C3.12 11.1062 3.57 11.696 3.72 11.936C4.44 13.1455 5.59 12.8057 6.05 12.5957C6.12 12.0759 6.33 11.726 6.56 11.5261C4.78 11.3262 2.92 10.6364 2.92 7.57743C2.92 6.70773 3.23 5.98797 3.74 5.42816C3.66 5.22823 3.38 4.40851 3.82 3.30888C3.82 3.30888 4.49 3.09895 6.02 4.1286C6.66 3.94866 7.34 3.85869 8.02 3.85869C8.7 3.85869 9.38 3.94866 10.02 4.1286C11.55 3.08895 12.22 3.30888 12.22 3.30888C12.66 4.40851 12.38 5.22823 12.3 5.42816C12.81 5.98797 13.12 6.69773 13.12 7.57743C13.12 10.6464 11.25 11.3262 9.47 11.5261C9.76 11.776 10.01 12.2558 10.01 13.0056C10.01 14.0752 10 14.9349 10 15.2049C10 15.4148 10.15 15.6647 10.55 15.5847C12.1381 15.0488 13.5182 14.0284 14.4958 12.6673C15.4735 11.3062 15.9996 9.67293 16 7.99729C16 3.57879 12.42 0 8 0Z"
-          fill="currentColor"
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0_872_3147">
-          <rect width="16" height="16" fill="white" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-};
-
-export const BoxIcon = ({ size = 16 }: { size: number }) => {
-  return (
-    <svg
-      height={size}
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
-      width={size}
-      className="text-current"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M8 0.154663L8.34601 0.334591L14.596 3.58459L15 3.79466V4.25V11.75V12.2053L14.596 12.4154L8.34601 15.6654L8 15.8453L7.65399 15.6654L1.40399 12.4154L1 12.2053V11.75V4.25V3.79466L1.40399 3.58459L7.65399 0.334591L8 0.154663ZM2.5 11.2947V5.44058L7.25 7.81559V13.7647L2.5 11.2947ZM8.75 13.7647L13.5 11.2947V5.44056L8.75 7.81556V13.7647ZM8 1.84534L12.5766 4.22519L7.99998 6.51352L3.42335 4.2252L8 1.84534Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-};
+export const GitIcon = Git;
 
 export const HomeIcon = ({ size = 16 }: { size: number }) => {
   return (
