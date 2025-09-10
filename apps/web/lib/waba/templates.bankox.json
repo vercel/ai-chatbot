@@ -1,0 +1,35 @@
+[
+  {
+    "name": "pix_parcelado_approved",
+    "category": "UTILITY",
+    "language": "pt_BR",
+    "components": [
+      { "type": "HEADER", "format": "TEXT", "text": "Pix Parcelado liberado! \uD83D\uDCA5" },
+      { "type": "BODY", "text": "Renata, seu limite \u00e9 de R$ {{1}} em at\u00e9 {{2}}x. Assina o termo e parte pro abra\u00e7o.", "example": { "body_text": [["2.000,00", "12"]] } },
+      { "type": "FOOTER", "text": "BankoX — cr\u00e9dito sem novela." },
+      { "type": "BUTTONS", "buttons": [ { "type": "URL", "text": "Assinar agora", "url": "https://bankox.com/termo/{{1}}" } ] }
+    ]
+  },
+  {
+    "name": "pix_parcelado_reminder",
+    "category": "MARKETING",
+    "language": "pt_BR",
+    "components": [
+      { "type": "HEADER", "format": "TEXT", "text": "Ei, vai parcelar ou n\u00e3o?" },
+      { "type": "BODY", "text": "Fatura fecha em {{1}} dias e voc\u00ea ainda n\u00e3o usou o Pix Parcelado. Primeira opera\u00e7\u00e3o sem tarifa. Bora?", "example": { "body_text": [["3"]] } },
+      { "type": "FOOTER", "text": "Cancelou? \u00c9 s\u00f3 responder SAIR." },
+      { "type": "BUTTONS", "buttons": [ { "type": "QUICK_REPLY", "text": "Usar agora" } ] }
+    ]
+  },
+  {
+    "name": "pix_parcelado_activation_nudge",
+    "category": "UTILITY",
+    "language": "pt_BR",
+    "components": [
+      { "type": "HEADER", "format": "TEXT", "text": "Ativa e vai. \u26A1\uFE0F" },
+      { "type": "BODY", "text": "Seu cadastro foi aprovado. Assina e ativa o Pix Parcelado em 1 minuto. Limite: R$ {{1}}.", "example": { "body_text": [["1.500,00"]] } },
+      { "type": "FOOTER", "text": "D\u00favidas? Responda aqui." },
+      { "type": "BUTTONS", "buttons": [ { "type": "URL", "text": "Ativar agora", "url": "https://bankox.com/ativar/{{1}}" } ] }
+    ]
+  }
+]
