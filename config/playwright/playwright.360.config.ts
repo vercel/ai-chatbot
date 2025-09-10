@@ -10,7 +10,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
 	// === DIRETÓRIOS E PADRÕES ===
-	testDir: "./tests",
+	testDir: "c:/Users/fjuni/ai-ysh/tests/e2e",
 	testMatch: ["360-*.test.ts", "360-*.spec.ts", "*.360.spec.ts"],
 
 	// === ESTRATÉGIA DE EXECUÇÃO ===

@@ -46,7 +46,7 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		const initialMemory = await captureMemory();
 		memorySnapshots.push(initialMemory);
 
-		console.log("Memória inicial: " + (initialMemory / 1024 / 1024).toFixed(2) + " MB");
+		console.log(`Memória inicial: ${(initialMemory / 1024 / 1024).toFixed(2)} MB`);
 
 		// Aguardar visualizador carregar
 		const viewerContainer = page
@@ -156,7 +156,7 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 	test("deve monitorar garbage collection durante uso intenso", async ({
 		page,
 	}) => {
-		let gcEvents = 0;
+		const gcEvents = 0;
 
 		// Monitorar eventos de GC (se disponível)
 		await page.evaluate(() => {
@@ -299,7 +299,6 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 
 		// Analisar fragmentação
 		if (heapSnapshots.length > 1) {
-			const first = heapSnapshots[0];
 			const last = heapSnapshots[heapSnapshots.length - 1];
 
 			const fragmentationRatio = last.total / last.limit;
@@ -374,13 +373,13 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 			setTimeout(() => {
 				console.log("Métricas de renderização:");
 				if (metrics.firstPaint) {
-					console.log("First Paint: " + metrics.firstPaint.toFixed(2) + "ms");
+					console.log(`First Paint: ${metrics.firstPaint.toFixed(2)}ms`);
 				}
 				if (metrics.firstContentfulPaint) {
-					console.log("First Contentful Paint: " + metrics.firstContentfulPaint.toFixed(2) + "ms");
+					console.log(`First Contentful Paint: ${metrics.firstContentfulPaint.toFixed(2)}ms`);
 				}
 				if (metrics.approximateFps) {
-					console.log("FPS aproximado: " + metrics.approximateFps);
+					console.log(`FPS aproximado: ${metrics.approximateFps}`);
 				}
 			}, 1100);
 
@@ -390,20 +389,22 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		// Verificar performance aceitável
 		expect(true).toBe(true); // Placeholder para validação de performance
 	});
+
+	test("deve analisar vazamentos de memória por event listeners", async ({
 		page,
 	}) => {
-		let eventListenerCount = 0;
+		const eventListenerCount = 0;
 
 		// Contar event listeners antes
 		const initialListeners = await page.evaluate(() => {
 			let count = 0;
 			const elements = document.querySelectorAll("*");
-			elements.forEach((el) => {
+			for (const el of elements) {
 				// @ts-ignore
 				if (el._events || getEventListeners) {
 					count++;
 				}
-			});
+			}
 			return count;
 		});
 
@@ -442,18 +443,18 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		const finalListeners = await page.evaluate(() => {
 			let count = 0;
 			const elements = document.querySelectorAll("*");
-			elements.forEach((el) => {
+			for (const el of elements) {
 				// @ts-ignore
 				if (el._events || getEventListeners) {
 					count++;
 				}
-			});
+			}
 			return count;
 		});
 
 		const listenerIncrease = finalListeners - initialListeners;
 
-		console.log(`Análise de event listeners:`);
+		console.log("Análise de event listeners:");
 		console.log(`Listeners iniciais: ${initialListeners}`);
 		console.log(`Listeners finais: ${finalListeners}`);
 		console.log(`Aumento: ${listenerIncrease}`);
@@ -475,7 +476,7 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 			};
 		});
 
-		console.log(`Informações do navegador:`);
+		console.log("Informações do navegador:");
 		console.log(`User Agent: ${browserInfo.userAgent}`);
 		console.log(`Platform: ${browserInfo.platform}`);
 		console.log(`Language: ${browserInfo.language}`);
@@ -500,7 +501,7 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		});
 
 		if (memoryInfo) {
-			console.log(`Informações de memória:`);
+			console.log("Informações de memória:");
 			console.log(`Usado: ${(memoryInfo.used / 1024 / 1024).toFixed(2)} MB`);
 			console.log(`Total: ${(memoryInfo.total / 1024 / 1024).toFixed(2)} MB`);
 			console.log(`Limite: ${(memoryInfo.limit / 1024 / 1024).toFixed(2)} MB`);
@@ -560,7 +561,7 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		const totalSize = networkRequests.reduce((sum, req) => sum + req.size, 0);
 		const totalRequests = networkRequests.length;
 
-		console.log(`Análise de performance de rede:`);
+		console.log("Análise de performance de rede:");
 		console.log(`Total de requisições: ${totalRequests}`);
 		console.log(`Tamanho total transferido: ${(totalSize / 1024).toFixed(2)} KB`);
 
@@ -571,9 +572,10 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		const cssRequests = networkRequests.filter((req) =>
 			req.url.includes(".css"),
 		);
-		const imageRequests = networkRequests.filter((req) =>
-			req.url.match(/\.(png|jpg|jpeg|gif|svg|webp)/),
-		);
+		const imageRequests = networkRequests.filter((req) => {
+			const match = /\.(png|jpg|jpeg|gif|svg|webp)/.exec(req.url);
+			return match !== null;
+		});
 
 		console.log(`Requisições JavaScript: ${jsRequests.length}`);
 		console.log(`Requisições CSS: ${cssRequests.length}`);
