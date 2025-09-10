@@ -15,11 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import {
-  ArrowUpIcon,
-  CpuIcon,
-  ChevronDownIcon,
-} from './icons';
+import { ArrowUpIcon, CpuIcon, ChevronDownIcon } from './icons';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';
 import {
@@ -43,7 +39,15 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown, ChevronUpIcon, ImageIcon, Loader2Icon, SquareIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
+import {
+  ArrowDown,
+  ChevronUpIcon,
+  ImageIcon,
+  Loader2Icon,
+  SquareIcon,
+  TriangleAlertIcon,
+  XIcon,
+} from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
@@ -51,7 +55,18 @@ import { chatModels } from '@/lib/ai/models';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
 import { getContextWindow, type ModelId, normalizeUsage } from 'tokenlens';
-import { Context } from './elements/context';
+import {
+  Context,
+  ContextContentFooter,
+  ContextCacheUsage,
+  ContextReasoningUsage,
+  ContextOutputUsage,
+  ContextInputUsage,
+  ContextContentBody,
+  ContextContentHeader,
+  ContextContent,
+  ContextTrigger,
+} from './elements/context';
 import { myProvider } from '@/lib/ai/providers';
 import { PreviewAttachment } from './preview-attachment';
 import { DropdownMenuItem } from './ui/dropdown-menu';
@@ -385,9 +400,19 @@ function PureMultimodalInput({
               rows={1}
               autoFocus
             />{' '}
-            <div className="mr-0.5 mt-1">
-              <Context {...contextProps} />
-            </div>
+            <Context {...contextProps}>
+              <ContextTrigger className="p-1" />
+              <ContextContent>
+                <ContextContentHeader />
+                <ContextContentBody>
+                  <ContextInputUsage />
+                  <ContextOutputUsage />
+                  <ContextReasoningUsage />
+                  <ContextCacheUsage />
+                </ContextContentBody>
+                <ContextContentFooter />
+              </ContextContent>
+            </Context>
           </div>
         </PromptInputBody>
         <PromptInputToolbar className="!border-top-0 border-t-0! px-2 py-2 shadow-none dark:border-0 dark:border-transparent!">
@@ -407,7 +432,9 @@ function PureMultimodalInput({
 
           <PromptInputSubmit
             status={status}
-            disabled={(!input.trim() && status === 'ready') || uploadQueue.length > 0}
+            disabled={
+              (!input.trim() && status === 'ready') || uploadQueue.length > 0
+            }
             className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
           >
             {status === 'submitted' ? (
