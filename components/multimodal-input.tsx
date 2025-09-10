@@ -17,9 +17,7 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import {
   ArrowUpIcon,
-  PaperclipIcon,
   CpuIcon,
-  StopIcon,
   ChevronDownIcon,
 } from './icons';
 import { Button } from './ui/button';
@@ -45,7 +43,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown, ImageIcon } from 'lucide-react';
+import { ArrowDown, ImageIcon, Loader2Icon, SquareIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
@@ -411,7 +409,17 @@ function PureMultimodalInput({
             status={status}
             disabled={(!input.trim() && !status) || uploadQueue.length > 0}
             className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-          />
+          >
+            {status === 'submitted' ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : status === 'streaming' ? (
+              <SquareIcon className="size-4 p-0.5 fill-primary-foreground" />
+            ) : status === 'error' ? (
+              <TriangleAlertIcon className="size-4" />
+            ) : (
+              <ArrowUpIcon className="size-4" />
+            )}
+          </PromptInputSubmit>
         </PromptInputToolbar>
       </PromptInput>
     </div>
