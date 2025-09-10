@@ -4,7 +4,6 @@ import { memo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
-import { PencilEditIcon, } from './icons';
 import { Response } from './elements/response';
 import { MessageContent } from './elements/message';
 import {
@@ -19,8 +18,6 @@ import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
@@ -201,43 +198,17 @@ const PurePreviewMessage = ({
                   if (type === 'text') {
                     if (mode === 'view') {
                       return (
-                        <div
-                          key={key}
-                          className="flex flex-row gap-2 items-start"
+                        <MessageContent
+                          data-testid="message-content"
+                          className={cn('justify-start items-start text-left', {
+                            'bg-primary text-primary-foreground':
+                              message.role === 'user',
+                            'bg-transparent -ml-4':
+                              message.role === 'assistant',
+                          })}
                         >
-                          {message.role === 'user' && !isReadonly && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  data-testid="message-edit-button"
-                                  variant="ghost"
-                                  className="px-2 rounded-full opacity-0 h-fit text-muted-foreground group-hover/message:opacity-100"
-                                  onClick={() => {
-                                    setMode('edit');
-                                  }}
-                                >
-                                  <PencilEditIcon />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit message</TooltipContent>
-                            </Tooltip>
-                          )}
-
-                          <MessageContent
-                            data-testid="message-content"
-                            className={cn(
-                              'justify-start items-start text-left',
-                              {
-                                'bg-primary text-primary-foreground':
-                                  message.role === 'user',
-                                'bg-transparent -ml-4':
-                                  message.role === 'assistant',
-                              },
-                            )}
-                          >
-                            <Response>{sanitizeText(part.text)}</Response>
-                          </MessageContent>
-                        </div>
+                          <Response>{sanitizeText(part.text)}</Response>
+                        </MessageContent>
                       );
                     }
 
