@@ -89,7 +89,31 @@ const config: Config = {
   			'brand-grad-mid': 'var(--brand-grad-mid)',
   			'brand-grad-to': 'var(--brand-grad-to)',
   			error: 'var(--error)',
-  			success: 'var(--success)'
+  			success: 'var(--success)',
+  			solar: {
+  				50: 'hsl(45 100% 97%)',
+  				100: 'hsl(45 100% 92%)',
+  				200: 'hsl(45 100% 82%)',
+  				300: 'hsl(45 100% 72%)',
+  				400: 'hsl(45 100% 62%)',
+  				500: 'hsl(27 100% 50%)',
+  				600: 'hsl(27 100% 40%)',
+  				700: 'hsl(27 100% 30%)',
+  				800: 'hsl(27 100% 20%)',
+  				900: 'hsl(27 100% 10%)',
+  			},
+  			eco: {
+  				50: 'hsl(142 76% 95%)',
+  				100: 'hsl(142 76% 88%)',
+  				200: 'hsl(142 76% 78%)',
+  				300: 'hsl(142 76% 68%)',
+  				400: 'hsl(142 76% 58%)',
+  				500: 'hsl(142 76% 48%)',
+  				600: 'hsl(142 76% 38%)',
+  				700: 'hsl(142 76% 28%)',
+  				800: 'hsl(142 76% 18%)',
+  				900: 'hsl(142 76% 8%)',
+  			},
   		},
   		backgroundImage: {
   			solar: 'linear-gradient(135deg,var(--brand-grad-from),var(--brand-grad-mid) 50%,var(--brand-grad-to))'

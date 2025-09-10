@@ -18,12 +18,16 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        solar: "bg-gradient-to-r from-[hsl(var(--brand))] to-[hsl(var(--brand-accent))] text-primary-foreground hover:opacity-90 shadow-lg hover:shadow-xl transition-all duration-200",
+        eco: "bg-green-600 text-white hover:bg-green-700 border border-green-500 shadow-md hover:shadow-lg transition-all duration-200",
+        calculator: "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        hero: "h-12 px-8 py-3 text-lg font-semibold rounded-lg",
       },
     },
     defaultVariants: {

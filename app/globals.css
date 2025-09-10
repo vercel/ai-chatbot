@@ -33,6 +33,14 @@
   --yello-grad: linear-gradient(135deg, var(--yello-1) 0%, var(--yello-2) 45%, var(--yello-3) 100%);
   --yello-shadow: 0 10px 30px hsl(27 100% 50% / 0.25);
 
+  /* Brand variables */
+  --brand: hsl(45 100% 62%);
+  --brand-accent: hsl(27 100% 50%);
+  --brand-secondary: hsl(342 100% 56%);
+  --brand-foreground: hsl(0 0% 100%);
+  --brand-muted: hsl(45 100% 62% / 0.1);
+  --brand-surface: hsl(45 100% 62% / 0.05);
+
   /* Glass & blur */
   --glass-bg: hsl(0 0% 100% / 0.08);
   --glass-bg-strong: hsl(0 0% 100% / 0.12);

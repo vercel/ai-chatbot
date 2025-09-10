@@ -3,7 +3,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'savings' | 'solar-panel' | 'highlight';
+  variant?: 'default' | 'savings' | 'solar-panel' | 'highlight' | 'energy-savings' | 'installation-progress' | 'eco-impact';
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
@@ -19,6 +19,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           'border-none bg-gradient-to-br from-[hsl(var(--brand))/10] to-[hsl(var(--brand-accent))/5] shadow-md',
         variant === 'highlight' &&
           'border-none shadow-md shadow-[hsl(var(--brand-accent))/15] bg-gradient-to-br from-[hsl(var(--brand))/5] to-background',
+        variant === 'energy-savings' &&
+          'border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 shadow-sm',
+        variant === 'installation-progress' &&
+          'border-l-4 border-l-[hsl(var(--brand))] bg-gradient-to-br from-[hsl(var(--brand))/5] to-background shadow-sm',
+        variant === 'eco-impact' &&
+          'border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950 shadow-sm',
         className,
       )}
       {...props}

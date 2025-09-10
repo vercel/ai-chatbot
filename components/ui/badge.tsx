@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
@@ -28,6 +27,16 @@ const badgeVariants = cva(
             'border-blue-400 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
           completed:
             'border-green-400 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+          'installation-pending':
+            'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-600',
+          'installation-progress':
+            'border-blue-400 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-600',
+          'installation-complete':
+            'border-green-400 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 dark:border-green-600',
+          'maintenance-due':
+            'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-600',
+          'warranty-active':
+            'border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-600',
         },
       },
     },
