@@ -57,6 +57,13 @@
       "when": 1757362773211,
       "tag": "0007_flowery_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757446797708,
+      "tag": "0008_smart_king_cobra",
+      "breakpoints": true
     }
   ]
 }

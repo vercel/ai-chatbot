@@ -33,7 +33,6 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import type { LanguageModelV2Usage } from '@ai-sdk/provider';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -471,25 +470,6 @@ export async function updateChatVisiblityById({
       'bad_request:database',
       'Failed to update chat visibility by id',
     );
-  }
-}
-
-export async function updateChatLastContextById({
-  chatId,
-  context,
-}: {
-  chatId: string;
-  // Store raw LanguageModelUsage to keep it simple
-  context: LanguageModelV2Usage;
-}) {
-  try {
-    return await db
-      .update(chat)
-      .set({ lastContext: context })
-      .where(eq(chat.id, chatId));
-  } catch (error) {
-    console.warn('Failed to update lastContext for chat', chatId, error);
-    return;
   }
 }
 
