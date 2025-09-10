@@ -411,7 +411,7 @@ function PureMultimodalInput({
             />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
           </PromptInputTools>
-          {status === 'submitted'&&!input.trim() ? (
+          {status === 'submitted' && !input.trim() ? (
             <StopButton stop={stop} setMessages={setMessages} />
           ) : (
             <PromptInputSubmit

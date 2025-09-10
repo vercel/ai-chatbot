@@ -34,10 +34,8 @@ function PureQueuePanel({ items, isOpen, onToggle, onRemove }: QueuePanelProps) 
           {items.map((parts, index) => {
             const summary = (() => {
               const textParts = parts.filter((p) => 'type' in p && p.type === 'text') as Array<{ type: 'text'; text: string }>;
-              const fileParts = parts.filter((p) => 'type' in p && p.type === 'file') as Array<{ type: 'file'; name?: string }>;
               const text = textParts.map((p) => p.text).join(' ').trim();
               if (text) return text;
-              if (fileParts.length > 0) return `${fileParts.length} attachment${fileParts.length > 1 ? 's' : ''}`;
               return '(queued message)';
             })();
 
