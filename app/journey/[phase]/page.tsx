@@ -6,6 +6,8 @@ import SolarPanelComponent, {
   type ISolarPanel,
 } from "@/lib/autoview/solar-panel-component";
 import Breadcrumbs from "@/components/nav/Breadcrumbs";
+import { NextCTA } from "@/components/ui/NextCTA";
+import { Button } from "@/components/ui/button";
 
 export default async function Page({
   params,
@@ -83,35 +85,21 @@ function PhaseView() {
         </div>
       )}
 
-      <div className="flex space-x-4">
-        <button
-          id="prev"
-          onClick={prev}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-        >
-          Previous
-        </button>
-        <button
-          id="next"
-          onClick={next}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-        >
-          Next
-        </button>
-        <button
+      <NextCTA
+        primary={{ label: "Next", onClick: next }}
+        secondary={{ label: "Previous", onClick: prev }}
+      />
+      <div className="flex gap-2 mt-2">
+        <Button
+          variant="outline"
           id="skip"
           onClick={() => skip("Recommendation")}
-          className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
         >
           Skip to Recommendation
-        </button>
-        <button
-          id="reset"
-          onClick={reset}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-        >
+        </Button>
+        <Button variant="outline" id="reset" onClick={reset}>
           Reset
-        </button>
+        </Button>
       </div>
     </div>
   );
