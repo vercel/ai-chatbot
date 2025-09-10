@@ -62,7 +62,10 @@ export function ModelSelector({
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[280px] max-w-[90vw] sm:min-w-[300px]">
+      <DropdownMenuContent
+        align="start"
+        className="min-w-[280px] max-w-[90vw] sm:min-w-[300px]"
+      >
         {availableChatModels.map((chatModel) => {
           const { id } = chatModel;
 
@@ -87,12 +90,12 @@ export function ModelSelector({
               >
                 <div className="flex flex-col items-start gap-1">
                   <div className="text-sm sm:text-base">{chatModel.name}</div>
-                  <div className='line-clamp-2 text-muted-foreground text-xs'>
+                  <div className="line-clamp-2 text-muted-foreground text-xs">
                     {chatModel.description}
                   </div>
                 </div>
 
-                <div className='shrink-0 text-foreground opacity-0 group-data-[active=true]/item:opacity-100 dark:text-foreground'>
+                <div className="shrink-0 text-foreground opacity-0 group-data-[active=true]/item:opacity-100 dark:text-foreground">
                   <CheckCircleFillIcon />
                 </div>
               </button>
