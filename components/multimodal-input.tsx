@@ -401,7 +401,7 @@ function PureMultimodalInput({
               autoFocus
             />{' '}
             <Context {...contextProps}>
-              <ContextTrigger className="p-1" />
+              <ContextTrigger className="!px-2 !py-1 -mt-2 rounded-tr-xl rounded-br-none rounded-bl-none rounded-tl-none" />
               <ContextContent>
                 <ContextContentHeader />
                 <ContextContentBody>
