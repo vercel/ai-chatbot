@@ -22,6 +22,23 @@ Este documento descreve os requisitos para garantir uma cobertura de testes end-
 - Timeouts configuráveis e launch args otimizados.
 - Suporte a sharding para distribuição de carga.
 - Registro de métricas de coverage, performance e flakiness.
+- Limpeza automática de dados de teste e logs centralizados.
+
+## Ferramentas e Configuração de Ambiente
+- Playwright com browsers empacotados e versões fixas.
+- Testes paralelos executados em containers isolados.
+- Uso de variáveis de ambiente para alternar endpoints e chaves de API.
+- Suporte a execução local via `pnpm test` e no CI via GitHub Actions.
+
+## Monitoramento e Observabilidade
+- Coleta de métricas de execução com `trace` e `video` por cenário crítico.
+- Relatórios enviados para painel central com histórico de builds.
+- Alertas de falha integrados ao Slack/Discord.
+
+## Governança de Qualidade
+- Pull requests bloqueados se a cobertura cair abaixo do limiar definido.
+- Revisão obrigatória de testes automatizados a cada nova feature.
+- Rotina semanal de análise de flakiness e limpeza de testes obsoletos.
 
 ## Métricas de Sucesso
 - Cobertura funcional ≥ 95%.
