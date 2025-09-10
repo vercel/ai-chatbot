@@ -35,10 +35,9 @@ import { getBulkSlackHistory } from '@/lib/ai/tools/get-bulk-slack-history';
 import { listGoogleCalendarEvents } from '@/lib/ai/tools/list-google-calendar-events';
 import { listGmailMessages } from '@/lib/ai/tools/list-gmail-messages';
 import { getGmailMessageDetails } from '@/lib/ai/tools/get-gmail-message-details';
-import { getMem0Projects } from '@/lib/ai/tools/get-mem0-projects';
-import { getMem0Memories } from '@/lib/ai/tools/get-mem0-memories';
-import { createMem0Project } from '@/lib/ai/tools/create-mem0-project';
-import { createMem0Memory } from '@/lib/ai/tools/create-mem0-memory';
+// Note: Mem0 tool definitions are intentionally not imported here to avoid
+// exposing them to the LLM tool registry. Definitions remain available under
+// `lib/ai/tools/*mem0*` and `lib/mem0/*` for future re‑enablement.
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -242,22 +241,6 @@ export async function POST(request: Request) {
             dataStream,
           }),
           getGmailMessageDetails: getGmailMessageDetails({
-            session: aiToolsSession,
-            dataStream,
-          }),
-          getMem0Projects: getMem0Projects({
-            session: aiToolsSession,
-            dataStream,
-          }),
-          getMem0Memories: getMem0Memories({
-            session: aiToolsSession,
-            dataStream,
-          }),
-          createMem0Project: createMem0Project({
-            session: aiToolsSession,
-            dataStream,
-          }),
-          createMem0Memory: createMem0Memory({
             session: aiToolsSession,
             dataStream,
           }),
