@@ -17,6 +17,7 @@ import type {
 } from '../tools/types';
 import { toolSystem } from '../tools/tool-system';
 import { loadBalancingService } from '@/lib/services/load-balancing-service';
+import { InvestigationAgent } from './investigation-agent';
 
 // Agente Calculadora Solar
 export class SolarCalculatorAgent {
@@ -587,7 +588,7 @@ ${combinedData.communications.length > 0 ? '📧 Comunicação enviada com suces
 
 // Sistema de Agentes Principal
 export class AgentOrchestrator {
-  private readonly agents = new Map<string, SolarCalculatorAgent | LeadQualificationAgent>();
+  private readonly agents = new Map<string, SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent>();
   private readonly rules: OrchestrationRule[] = [];
   private readonly activeContexts = new Map<string, OrchestrationContext>();
 
@@ -599,6 +600,7 @@ export class AgentOrchestrator {
   private initializeAgents(): void {
     this.agents.set('solar-calculator', new SolarCalculatorAgent());
     this.agents.set('lead-qualifier', new LeadQualificationAgent());
+    this.agents.set('investigation-agent', new InvestigationAgent());
   }
 
   private initializeRules(): void {
@@ -699,7 +701,7 @@ export class AgentOrchestrator {
     // Outros tipos de ação podem ser implementados aqui
   }
 
-  private selectAgent(context: AgentExecutionContext): SolarCalculatorAgent | LeadQualificationAgent | null {
+  private selectAgent(context: AgentExecutionContext): SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | null {
     const orchContext = this.activeContexts.get(context.sessionId);
 
     if (orchContext && orchContext.activeAgents.length > 0) {
@@ -710,22 +712,29 @@ export class AgentOrchestrator {
     // Seleção baseada no conteúdo da mensagem
     const input = context.conversationHistory[context.conversationHistory.length - 1]?.content || '';
 
-    if (input.toLowerCase().includes('solar') || input.toLowerCase().includes('painel')) {
+    const lower = input.toLowerCase();
+
+    if (context.currentPhase === 'investigation' ||
+      lower.includes('endereço') || lower.includes('conta') || lower.includes('telhado')) {
+      return this.agents.get('investigation-agent') || null;
+    }
+
+    if (lower.includes('solar') || lower.includes('painel')) {
       return this.agents.get('solar-calculator') || null;
     }
 
-    if (input.toLowerCase().includes('lead') || input.toLowerCase().includes('prospect')) {
+    if (lower.includes('lead') || lower.includes('prospect')) {
       return this.agents.get('lead-qualifier') || null;
     }
 
     return null;
   }
 
-  getAgent(agentId: string): SolarCalculatorAgent | LeadQualificationAgent | null {
+  getAgent(agentId: string): SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | null {
     return this.agents.get(agentId) || null;
   }
 
-  getAllAgents(): (SolarCalculatorAgent | LeadQualificationAgent)[] {
+  getAllAgents(): (SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent)[] {
     return Array.from(this.agents.values());
   }
 
