@@ -1,0 +1,365 @@
+
+> ai-chatbot@3.1.0 lint /workspace/ai-ysh
+> biome check . || eslint .
+
+Skipped 302 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --fix --unsafe
+
+The number of diagnostics exceeds the number allowed by Biome.
+Diagnostics not shown: 4422.
+Checked 1451 files in 789ms. No fixes applied.
+Found 4054 errors.
+
+/workspace/ai-ysh/app/journey/[phase]/page.tsx
+  8:8  warning  Using exported name 'Breadcrumbs' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/app/test-canvas/page.tsx
+  9:8  warning  Using exported name 'Breadcrumbs' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/app/upload-bill/page.tsx
+  6:8  warning  Using exported name 'Breadcrumbs' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/apps/web/app/(chat)/api/chat/[id]/stream/route.ts
+  2:8  warning  Using exported name 'OpenAI' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/apps/web/components/canvas/AdvancedEditor.tsx
+   35:7   warning  Classname 'focus:ring-opacity-50' should be replaced by an opacity suffix (eg. '/50')                  tailwindcss/migration-from-tailwind-2
+  199:20  warning  Classnames 'w-4, h-4' could be replaced by the 'size-4' shorthand!                                     tailwindcss/enforces-shorthand
+  217:20  error    'BoldIcon' is not defined                                                                              react/jsx-no-undef
+  222:20  error    'ItalicIcon' is not defined                                                                            react/jsx-no-undef
+  227:20  error    'UnderlineIcon' is not defined                                                                         react/jsx-no-undef
+  235:20  error    'ListIcon' is not defined                                                                              react/jsx-no-undef
+  240:20  error    'ListOrderedIcon' is not defined                                                                       react/jsx-no-undef
+  245:20  error    'QuoteIcon' is not defined                                                                             react/jsx-no-undef
+  253:20  error    'CodeIcon' is not defined                                                                              react/jsx-no-undef
+  258:20  error    'LinkIcon' is not defined                                                                              react/jsx-no-undef
+  267:22  error    'PaletteIcon' is not defined                                                                           react/jsx-no-undef
+  288:25  warning  Classnames 'w-8, h-8' could be replaced by the 'size-8' shorthand!                                     tailwindcss/enforces-shorthand
+  308:13  warning  Classname 'placeholder-gray-500' should be updated to 'placeholder:text-gray-500' in Tailwind CSS v3!  tailwindcss/migration-from-tailwind-2
+  333:15  warning  Classname 'focus:ring-opacity-50' should be replaced by an opacity suffix (eg. '/50')                  tailwindcss/migration-from-tailwind-2
+
+/workspace/ai-ysh/apps/web/components/canvas/CanvasBoard.tsx
+  82:7  warning  Classnames 'w-full, h-full' could be replaced by the 'size-full' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/apps/web/components/canvas/Card.tsx
+  37:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  37:41  warning  Classnames 'w-6, h-6' could be replaced by the 'size-6' shorthand!                                                                                                                                                                                              tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/apps/web/components/canvas/CollaborativeContext.tsx
+  364:1  error  Parsing error: Declaration or statement expected
+
+/workspace/ai-ysh/apps/web/components/canvas/ScenarioSwitcher.tsx
+  2:8  warning  Using exported name 'clsx' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/apps/web/components/canvas/VersionTimeline.tsx
+  76:6  warning  React Hook useEffect has a missing dependency: 'restore'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/workspace/ai-ysh/apps/web/components/canvas/VisualManipulationTools.tsx
+  9:40  error  Parsing error: Property or signature expected
+
+/workspace/ai-ysh/apps/web/components/canvas/actions/Annotate.tsx
+  85:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/ai-ysh/apps/web/components/chat/ConversationStream.tsx
+  3:8  warning  Using exported name 'clsx' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/apps/web/components/chat/TaskFeed.tsx
+  23:22  warning  Classnames 'h-4, w-4' could be replaced by the 'size-4' shorthand!  tailwindcss/enforces-shorthand
+  25:24  warning  Classnames 'h-4, w-4' could be replaced by the 'size-4' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/apps/web/components/multimodal/LinkEmbedder.tsx
+   4:8   warning  Using exported name 'DOMPurify' as identifier for default import                                                                                                                                                                                                import/no-named-as-default
+  60:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  63:13  warning  Classnames 'w-16, h-16' could be replaced by the 'size-16' shorthand!                                                                                                                                                                                           tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/apps/web/components/personas/integrator/BatchRunner.tsx
+  33:5   warning  Caution: `Papa` also has a named export `parse`. Check if you meant to write `import {parse} from 'papaparse'` instead      import/no-named-as-default-member
+  83:17  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/apps/web/components/personas/integrator/ConstraintsEditor.tsx
+  3:8  warning  Using exported name 'TechnicalFeasibilityCard' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/apps/web/components/personas/integrator/SpecLibrary.tsx
+    4:8   warning  Using exported name 'clsx' as identifier for default import         import/no-named-as-default
+  114:27  warning  Classnames 'h-4, w-4' could be replaced by the 'size-4' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/apps/web/components/personas/owner/FinancingPicker.tsx
+  2:8  warning  Using exported name 'FinancingCard' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/apps/web/lib/export/__tests__/ExportService.test.ts
+  2:8  warning  Using exported name 'ExportService' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/components/ai-elements/branch.tsx
+  85:9  warning  The 'childrenArray' conditional could make the dependencies of useEffect Hook (at line 92) change on every render. To fix this, wrap the initialization of 'childrenArray' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/workspace/ai-ysh/components/ai-elements/image.tsx
+  15:3  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/ai-ysh/components/chat.tsx
+  112:6  warning  React Hook useEffect has a missing dependency: 'sendMessage'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/workspace/ai-ysh/components/elements/branch.tsx
+  85:9  warning  The 'childrenArray' conditional could make the dependencies of useEffect Hook (at line 92) change on every render. To fix this, wrap the initialization of 'childrenArray' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/workspace/ai-ysh/components/elements/image.tsx
+  15:3  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/ai-ysh/components/elements/message.tsx
+  55:25  warning  Classnames 'mt-0, mb-0' could be replaced by the 'my-0' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/components/elements/source.tsx
+  35:26  warning  Classnames 'h-4, w-4' could be replaced by the 'size-4' shorthand!  tailwindcss/enforces-shorthand
+  69:19  warning  Classnames 'h-4, w-4' could be replaced by the 'size-4' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/components/elements/web-preview.tsx
+  110:11  warning  Classnames 'h-8, w-8' could be replaced by the 'size-8' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/components/enhanced-chat.tsx
+  154:23  warning  Classnames 'h-full, w-full' could be replaced by the 'size-full' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/components/icons.tsx
+    60:14  error  Multiple exports of name 'BotIcon'              import/export
+    61:14  error  Multiple exports of name 'UserIcon'             import/export
+    62:14  error  Multiple exports of name 'GlobeIcon'            import/export
+    63:14  error  Multiple exports of name 'RouteIcon'            import/export
+    64:14  error  Multiple exports of name 'SparklesIcon'         import/export
+    65:14  error  Multiple exports of name 'PlusIcon'             import/export
+    66:14  error  Multiple exports of name 'ThumbUpIcon'          import/export
+    67:14  error  Multiple exports of name 'ThumbDownIcon'        import/export
+    68:14  error  Multiple exports of name 'SummarizeIcon'        import/export
+    69:14  error  Multiple exports of name 'AttachmentIcon'       import/export
+    70:14  error  Multiple exports of name 'VercelIcon'           import/export
+    71:14  error  Multiple exports of name 'GitIcon'              import/export
+    72:14  error  Multiple exports of name 'BoxIcon'              import/export
+    73:14  error  Multiple exports of name 'HomeIcon'             import/export
+    74:14  error  Multiple exports of name 'GPSIcon'              import/export
+    75:14  error  Multiple exports of name 'InvoiceIcon'          import/export
+    76:14  error  Multiple exports of name 'LogoOpenAI'           import/export
+    77:14  error  Multiple exports of name 'TerminalWindowIcon'   import/export
+    78:14  error  Multiple exports of name 'TerminalIcon'         import/export
+    79:14  error  Multiple exports of name 'ClockRewind'          import/export
+    80:14  error  Multiple exports of name 'LogsIcon'             import/export
+    81:14  error  Multiple exports of name 'ImageIcon'            import/export
+    82:14  error  Multiple exports of name 'FullscreenIcon'       import/export
+    83:14  error  Multiple exports of name 'DownloadIcon'         import/export
+    84:14  error  Multiple exports of name 'LineChartIcon'        import/export
+    85:14  error  Multiple exports of name 'WarningIcon'          import/export
+    86:14  error  Multiple exports of name 'BoldIcon'             import/export
+    87:14  error  Multiple exports of name 'ItalicIcon'           import/export
+    88:14  error  Multiple exports of name 'UnderlineIcon'        import/export
+    89:14  error  Multiple exports of name 'ListIcon'             import/export
+    90:14  error  Multiple exports of name 'ListOrderedIcon'      import/export
+    91:14  error  Multiple exports of name 'QuoteIcon'            import/export
+    93:14  error  Multiple exports of name 'LinkIcon'             import/export
+    94:14  error  Multiple exports of name 'PaletteIcon'          import/export
+    95:14  error  Multiple exports of name 'ChevronDownIcon'      import/export
+    96:14  error  Multiple exports of name 'DeltaIcon'            import/export
+    97:14  error  Multiple exports of name 'PlayIcon'             import/export
+    98:14  error  Multiple exports of name 'UndoIcon'             import/export
+    99:14  error  Multiple exports of name 'RedoIcon'             import/export
+   100:14  error  Multiple exports of name 'MessageIcon'          import/export
+   101:14  error  Multiple exports of name 'CrossIcon'            import/export
+   102:14  error  Multiple exports of name 'CrossSmallIcon'       import/export
+   103:14  error  Multiple exports of name 'LoaderIcon'           import/export
+   104:14  error  Multiple exports of name 'FileIcon'             import/export
+   105:14  error  Multiple exports of name 'PencilEditIcon'       import/export
+   106:14  error  Multiple exports of name 'ArrowUpIcon'          import/export
+   107:14  error  Multiple exports of name 'PaperclipIcon'        import/export
+   108:14  error  Multiple exports of name 'StopIcon'             import/export
+   109:14  error  Multiple exports of name 'MoreHorizontalIcon'   import/export
+   110:14  error  Multiple exports of name 'ShareIcon'            import/export
+   111:14  error  Multiple exports of name 'LockIcon'             import/export
+   112:14  error  Multiple exports of name 'TrashIcon'            import/export
+   113:14  error  Multiple exports of name 'CopyIcon'             import/export
+   114:14  error  Multiple exports of name 'SidebarLeftIcon'      import/export
+   115:14  error  Multiple exports of name 'CheckCircleFillIcon'  import/export
+   123:14  error  Multiple exports of name 'BotIcon'              import/export
+   124:14  error  Multiple exports of name 'UserIcon'             import/export
+   126:14  error  Multiple exports of name 'GlobeIcon'            import/export
+   127:14  error  Multiple exports of name 'RouteIcon'            import/export
+   129:14  error  Multiple exports of name 'SparklesIcon'         import/export
+   130:14  error  Multiple exports of name 'PlusIcon'             import/export
+   132:14  error  Multiple exports of name 'ThumbUpIcon'          import/export
+   133:14  error  Multiple exports of name 'ThumbDownIcon'        import/export
+   136:14  error  Multiple exports of name 'SummarizeIcon'        import/export
+   138:14  error  Multiple exports of name 'GitIcon'              import/export
+   140:14  error  Multiple exports of name 'HomeIcon'             import/export
+   160:14  error  Multiple exports of name 'GPSIcon'              import/export
+   182:14  error  Multiple exports of name 'InvoiceIcon'          import/export
+   202:14  error  Multiple exports of name 'LogoOpenAI'           import/export
+   220:14  error  Multiple exports of name 'TerminalWindowIcon'   import/export
+   240:14  error  Multiple exports of name 'TerminalIcon'         import/export
+   260:14  error  Multiple exports of name 'ClockRewind'          import/export
+   280:14  error  Multiple exports of name 'LogsIcon'             import/export
+   300:14  error  Multiple exports of name 'ImageIcon'            import/export
+   320:14  error  Multiple exports of name 'FullscreenIcon'       import/export
+   338:14  error  Multiple exports of name 'DownloadIcon'         import/export
+   356:14  error  Multiple exports of name 'LineChartIcon'        import/export
+   374:14  error  Multiple exports of name 'WarningIcon'          import/export
+   394:14  error  Multiple exports of name 'BoldIcon'             import/export
+   412:14  error  Multiple exports of name 'ItalicIcon'           import/export
+   430:14  error  Multiple exports of name 'UnderlineIcon'        import/export
+   448:14  error  Multiple exports of name 'ListIcon'             import/export
+   466:14  error  Multiple exports of name 'ListOrderedIcon'      import/export
+   484:14  error  Multiple exports of name 'QuoteIcon'            import/export
+   502:14  error  Multiple exports of name 'LinkIcon'             import/export
+   520:14  error  Multiple exports of name 'PaletteIcon'          import/export
+   538:14  error  Multiple exports of name 'ChevronDownIcon'      import/export
+   556:14  error  Multiple exports of name 'DeltaIcon'            import/export
+   574:14  error  Multiple exports of name 'PlayIcon'             import/export
+   592:14  error  Multiple exports of name 'UndoIcon'             import/export
+   610:14  error  Multiple exports of name 'RedoIcon'             import/export
+   628:14  error  Multiple exports of name 'MessageIcon'          import/export
+   646:14  error  Multiple exports of name 'CrossIcon'            import/export
+   664:14  error  Multiple exports of name 'CrossSmallIcon'       import/export
+   682:14  error  Multiple exports of name 'LoaderIcon'           import/export
+   700:14  error  Multiple exports of name 'FileIcon'             import/export
+   718:14  error  Multiple exports of name 'PencilEditIcon'       import/export
+   736:14  error  Multiple exports of name 'PlusIcon'             import/export
+   753:14  error  Multiple exports of name 'ArrowUpIcon'          import/export
+   771:14  error  Multiple exports of name 'PaperclipIcon'        import/export
+   789:14  error  Multiple exports of name 'StopIcon'             import/export
+   807:14  error  Multiple exports of name 'MoreHorizontalIcon'   import/export
+   825:14  error  Multiple exports of name 'ShareIcon'            import/export
+   843:14  error  Multiple exports of name 'LockIcon'             import/export
+   861:14  error  Multiple exports of name 'TrashIcon'            import/export
+   879:14  error  Multiple exports of name 'CopyIcon'             import/export
+   897:14  error  Multiple exports of name 'SidebarLeftIcon'      import/export
+   915:14  error  Multiple exports of name 'CheckCircleFillIcon'  import/export
+   933:14  error  Multiple exports of name 'GlobeIcon'            import/export
+   951:14  error  Multiple exports of name 'PlusIcon'             import/export
+   969:14  error  Multiple exports of name 'SparklesIcon'         import/export
+   987:14  error  Multiple exports of name 'ThumbUpIcon'          import/export
+  1005:14  error  Multiple exports of name 'ThumbDownIcon'        import/export
+  1023:14  error  Multiple exports of name 'SummarizeIcon'        import/export
+  1041:14  error  Multiple exports of name 'UserIcon'             import/export
+  1062:14  error  Multiple exports of name 'AttachmentIcon'       import/export
+  1082:14  error  Multiple exports of name 'VercelIcon'           import/export
+  1102:14  error  Multiple exports of name 'GitIcon'              import/export
+  1129:14  error  Multiple exports of name 'BoxIcon'              import/export
+  1148:14  error  Multiple exports of name 'HomeIcon'             import/export
+  1168:14  error  Multiple exports of name 'GPSIcon'              import/export
+  1190:14  error  Multiple exports of name 'InvoiceIcon'          import/export
+  1210:14  error  Multiple exports of name 'LogoOpenAI'           import/export
+  1228:14  error  Multiple exports of name 'TerminalWindowIcon'   import/export
+  1248:14  error  Multiple exports of name 'TerminalIcon'         import/export
+  1268:14  error  Multiple exports of name 'ClockRewind'          import/export
+  1288:14  error  Multiple exports of name 'LogsIcon'             import/export
+  1308:14  error  Multiple exports of name 'ImageIcon'            import/export
+  1328:14  error  Multiple exports of name 'FullscreenIcon'       import/export
+  1346:14  error  Multiple exports of name 'DownloadIcon'         import/export
+  1364:14  error  Multiple exports of name 'LineChartIcon'        import/export
+  1382:14  error  Multiple exports of name 'WarningIcon'          import/export
+  1402:14  error  Multiple exports of name 'BoldIcon'             import/export
+  1420:14  error  Multiple exports of name 'ItalicIcon'           import/export
+  1438:14  error  Multiple exports of name 'UnderlineIcon'        import/export
+  1456:14  error  Multiple exports of name 'ListIcon'             import/export
+  1474:14  error  Multiple exports of name 'ListOrderedIcon'      import/export
+  1492:14  error  Multiple exports of name 'QuoteIcon'            import/export
+  1510:14  error  Multiple exports of name 'LinkIcon'             import/export
+  1528:14  error  Multiple exports of name 'PaletteIcon'          import/export
+  1546:14  error  Multiple exports of name 'ChevronDownIcon'      import/export
+  1564:14  error  Multiple exports of name 'DeltaIcon'            import/export
+  1582:14  error  Multiple exports of name 'PlayIcon'             import/export
+  1600:14  error  Multiple exports of name 'UndoIcon'             import/export
+  1618:14  error  Multiple exports of name 'RedoIcon'             import/export
+  1636:14  error  Multiple exports of name 'MessageIcon'          import/export
+  1654:14  error  Multiple exports of name 'CrossIcon'            import/export
+  1672:14  error  Multiple exports of name 'CrossSmallIcon'       import/export
+  1690:14  error  Multiple exports of name 'LoaderIcon'           import/export
+  1708:14  error  Multiple exports of name 'FileIcon'             import/export
+  1726:14  error  Multiple exports of name 'PencilEditIcon'       import/export
+  1744:14  error  Multiple exports of name 'GlobeIcon'            import/export
+  1762:14  error  Multiple exports of name 'ArrowUpIcon'          import/export
+  1780:14  error  Multiple exports of name 'PaperclipIcon'        import/export
+  1798:14  error  Multiple exports of name 'StopIcon'             import/export
+  1816:14  error  Multiple exports of name 'MoreHorizontalIcon'   import/export
+  1834:14  error  Multiple exports of name 'ShareIcon'            import/export
+  1852:14  error  Multiple exports of name 'LockIcon'             import/export
+  1870:14  error  Multiple exports of name 'TrashIcon'            import/export
+  1888:14  error  Multiple exports of name 'CopyIcon'             import/export
+  1906:14  error  Multiple exports of name 'SidebarLeftIcon'      import/export
+  1924:14  error  Multiple exports of name 'CheckCircleFillIcon'  import/export
+
+/workspace/ai-ysh/components/performance-dashboard.tsx
+  151:24  warning  Classnames 'h-4, w-4' could be replaced by the 'size-4' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/components/preview-attachment.tsx
+  22:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/ai-ysh/lib/autoview/user-agent.ts
+  3:8  warning  Using exported name 'OpenAI' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/lib/omni/log.ts
+  1:8  warning  Using exported name 'pino' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/packages/ui-cards/ConsumptionCard.tsx
+   50:5   warning  Caution: `Papa` also has a named export `parse`. Check if you meant to write `import {parse} from 'papaparse'` instead      import/no-named-as-default-member
+  108:17  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-cards/FinancialAnalysisCard.tsx
+  116:6   warning  React Hook useEffect has a missing dependency: 'assumptions.years'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+  139:17  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-cards/FinancingCard.test.tsx
+  4:8  warning  Using exported name 'FinancingCard' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/packages/ui-cards/FinancingCard.tsx
+  42:17  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-cards/RiskScoreCard.tsx
+  54:12  warning  Classnames 'w-32, h-32' could be replaced by the 'size-32' shorthand!  tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/packages/ui-charts/ChartKit.test.tsx
+  19:17  warning  Caution: `React` also has a named export `createRef`. Check if you meant to write `import {createRef} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-charts/ChartKit.tsx
+  22:18  error    Component definition is missing display name                                                                       react/display-name
+  77:16  warning  Caution: `React` also has a named export `memo`. Check if you meant to write `import {memo} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-charts/HeatmapChart.tsx
+  39:16  warning  Caution: `React` also has a named export `memo`. Check if you meant to write `import {memo} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-charts/HistogramChart.tsx
+  49:16  warning  Caution: `React` also has a named export `memo`. Check if you meant to write `import {memo} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-charts/LoadCurveChart.tsx
+  34:16  warning  Caution: `React` also has a named export `memo`. Check if you meant to write `import {memo} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-charts/RadarChart.tsx
+  28:16  warning  Caution: `React` also has a named export `memo`. Check if you meant to write `import {memo} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-charts/WaterfallChart.tsx
+  41:16  warning  Caution: `React` also has a named export `memo`. Check if you meant to write `import {memo} from 'react'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-editors/JSONCSVViewer.test.tsx
+  5:8  warning  Using exported name 'JSONCSVViewer' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/packages/ui-editors/JSONCSVViewer.tsx
+  22:37  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+  40:18  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+  51:22  warning  Caution: `Papa` also has a named export `parse`. Check if you meant to write `import {parse} from 'papaparse'` instead      import/no-named-as-default-member
+  71:21  warning  Caution: `Papa` also has a named export `unparse`. Check if you meant to write `import {unparse} from 'papaparse'` instead  import/no-named-as-default-member
+
+/workspace/ai-ysh/packages/ui-viewers/STACAssetViewer.tsx
+   99:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  102:21  warning  Classnames 'w-16, h-16' could be replaced by the 'size-16' shorthand!                                                                                                                                                                                           tailwindcss/enforces-shorthand
+
+/workspace/ai-ysh/scripts/generate-fixtures.ts
+  5:8  warning  Using exported name 'Ajv' as identifier for default import  import/no-named-as-default
+
+/workspace/ai-ysh/scripts/test-db.js
+  1:32  error  Unable to resolve path to module './lib/db/queries.ts'  import/no-unresolved
+
+/workspace/ai-ysh/stories/Page.tsx
+  11:27  warning  Caution: `React` also has a named export `useState`. Check if you meant to write `import {useState} from 'react'` instead  import/no-named-as-default-member
+  39:13  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                            react/no-unescaped-entities
+  39:18  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                            react/no-unescaped-entities
+
+/workspace/ai-ysh/typia.config.ts
+  1:34  error  Unable to resolve path to module '@typia/setup'  import/no-unresolved
+
+✖ 243 problems (178 errors, 65 warnings)
+  0 errors and 17 warnings potentially fixable with the `--fix` option.
+
+ ELIFECYCLE  Command failed with exit code 1.

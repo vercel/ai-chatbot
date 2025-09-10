@@ -1,0 +1,7 @@
+HTTP/1.1 307 Temporary Redirect
+location: /api/auth/guest?redirectUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fomni%2Finbox
+Date: Wed, 10 Sep 2025 18:40:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

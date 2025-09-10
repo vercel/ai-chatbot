@@ -1,0 +1,46 @@
+
+> ai-chatbot@3.1.0 dev /workspace/ai-ysh
+> next dev
+
+   ▲ Next.js 15.3.0-canary.31
+   - Local:        http://localhost:3000
+   - Network:      http://172.30.0.194:3000
+   - Experiments (use with caution):
+     ✓ ppr
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 1831ms (143 modules)
+ ✓ Ready in 5.6s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 2.5s (384 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (308kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (128kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ○ Compiling /api/auth/guest ...
+ ✓ Compiled /api/auth/guest in 7.4s (856 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/.pnpm/@auth+core@0.37.2/node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/.pnpm/@auth+core@0.37.2/node_modules/@auth/core/index.js:91:95)
+    at async signIn (webpack-internal:///(rsc)/./node_modules/.pnpm/next-auth@5.0.0-beta.25_next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9_3815e60a69625dd19a3ec71325e06af4/node_modules/next-auth/lib/actions.js:53:17)
+    at async AppRouteRouteModule.do (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/compiled/next-server/app-route-experimental.runtime.dev.js:26:34172)
+    at async AppRouteRouteModule.handle (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/compiled/next-server/app-route-experimental.runtime.dev.js:26:41056)
+    at async doRender (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/base-server.js:1514:42)
+    at async DevServer.renderToResponseWithComponentsImpl (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/base-server.js:1916:28)
+    at async DevServer.renderPageComponent (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/base-server.js:2394:24)
+    at async DevServer.renderToResponseImpl (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/base-server.js:2431:32)
+    at async DevServer.pipeImpl (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/base-server.js:1004:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/next-server.js:305:17)
+    at async DevServer.handleRequestImpl (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/base-server.js:896:17)
+    at async /workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/dev/next-dev-server.js:371:20
+    at async Span.traceAsyncFn (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/dev/next-dev-server.js:368:24)
+    at async invokeRender (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/lib/router-server.js:235:21)
+    at async handleRequest (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/lib/router-server.js:426:24)
+    at async requestHandlerImpl (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/lib/router-server.js:450:13)
+    at async Server.requestListener (/workspace/ai-ysh/node_modules/.pnpm/next@15.3.0-canary.31_@babel+core@7.28.4_@opentelemetry+api@1.9.0_@playwright+test@1.55_dfe0c5a351855e29aa021d9069e4d67c/node_modules/next/dist/server/lib/start-server.js:158:13)
+ GET /api/auth/guest?redirectUrl=http://localhost:3000 307 in 8186ms
