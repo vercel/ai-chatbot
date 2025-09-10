@@ -1,30 +1,32 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card } from '@/apps/web/components/canvas/Card';
+import { useState } from "react";
+import { Card } from "@/apps/web/components/canvas/Card";
 import {
   VersionTimeline,
   type Version,
-} from '@/apps/web/components/canvas/VersionTimeline';
+} from "@/apps/web/components/canvas/VersionTimeline";
+import Breadcrumbs from "@/components/nav/Breadcrumbs";
+import { NextCTA } from "@/components/ui/NextCTA";
 
 export default function Page() {
   const [versions, setVersions] = useState<Version[]>([
     {
-      id: 'v1',
+      id: "v1",
       timestamp: new Date().toISOString(),
-      author: 'tester',
-      note: 'v1',
+      author: "tester",
+      note: "v1",
       data: { value: 1 },
     },
   ]);
-  const [current, setCurrent] = useState('v1');
+  const [current, setCurrent] = useState("v1");
 
   const addVersion = () => {
     const id = `v${versions.length + 1}`;
     const v: Version = {
       id,
       timestamp: new Date().toISOString(),
-      author: 'tester',
+      author: "tester",
       note: id,
       data: { value: versions.length + 1 },
     };
@@ -41,7 +43,7 @@ export default function Page() {
     const branch: Version = {
       id,
       timestamp: new Date().toISOString(),
-      author: 'tester',
+      author: "tester",
       note: id,
       data: { ...v.data, branched: true },
     };
@@ -50,7 +52,10 @@ export default function Page() {
   };
 
   return (
-    <div className="p-4 space-y-2">
+    <div className="p-4 space-y-4">
+      <Breadcrumbs
+        items={[{ label: "Home", href: "/" }, { label: "Sandbox" }]}
+      />
       <button id="create-version" onClick={addVersion}>
         Create
       </button>
@@ -63,7 +68,13 @@ export default function Page() {
           onBranch={handleBranch}
         />
       </Card>
+      <NextCTA
+        primary={{ label: "Voltar ao início", href: "/" }}
+        secondary={{ label: "Abrir chat", href: "/chat" }}
+      />
+      <a href="/chat?open=help" className="text-sm underline">
+        Precisa de ajuda?
+      </a>
     </div>
   );
 }
-

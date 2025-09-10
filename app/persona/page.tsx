@@ -21,11 +21,16 @@ import {
   BatchRunner,
 } from "@/components/persona/integrator";
 import { usePersona } from "@/lib/persona/context";
+import { NextCTA } from "@/components/ui/NextCTA";
 
 export default function PersonaPage() {
   const { mode } = usePersona();
   return (
     <main className="p-4 space-y-4">
+      <h1 className="text-2xl font-bold">Selecione seu perfil</h1>
+      <p className="text-sm text-muted-foreground">
+        Escolha a opção que melhor representa você.
+      </p>
       <PersonaSwitcher />
       {mode === "owner" ? (
         <div className="space-y-3">
@@ -76,6 +81,7 @@ export default function PersonaPage() {
           </FeatureGate>
         </div>
       )}
+      <NextCTA primary={{ label: "Continuar", href: "/journey" }} />
     </main>
   );
 }

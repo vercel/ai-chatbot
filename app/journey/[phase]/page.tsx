@@ -1,10 +1,15 @@
-import { PhaseGuard } from '@/apps/web/lib/journey/guard';
-import { usePhase, useJourneyActions } from '@/apps/web/lib/journey/hooks';
-import type { Phase } from '@/apps/web/lib/journey/map';
-import { blueprint } from '@/apps/web/lib/journey/blueprint';
-import SolarPanelComponent, { type ISolarPanel } from '@/lib/autoview/solar-panel-component';
+import { PhaseGuard } from "@/apps/web/lib/journey/guard";
+import { usePhase, useJourneyActions } from "@/apps/web/lib/journey/hooks";
+import type { Phase } from "@/apps/web/lib/journey/map";
+import { blueprint } from "@/apps/web/lib/journey/blueprint";
+import SolarPanelComponent, {
+  type ISolarPanel,
+} from "@/lib/autoview/solar-panel-component";
+import Breadcrumbs from "@/components/nav/Breadcrumbs";
 
-export default async function Page({ params }: Readonly<{ params: Promise<{ phase: Phase }> }>) {
+export default async function Page({
+  params,
+}: Readonly<{ params: Promise<{ phase: Phase }> }>) {
   const { phase } = await params;
 
   return (
@@ -15,7 +20,7 @@ export default async function Page({ params }: Readonly<{ params: Promise<{ phas
 }
 
 function PhaseView() {
-  'use client';
+  "use client";
   const phase = usePhase();
   const { next, prev, skip, reset } = useJourneyActions();
   const nodes = blueprint[phase] ?? [];
@@ -27,23 +32,36 @@ function PhaseView() {
     manufacturer: "SolarTech",
     wattage: 400,
     efficiency: 0.22,
-    price: 250
+    price: 250,
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Jornada", href: "/journey" },
+          { label: phase },
+        ]}
+      />
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{phase}</h1>
 
       {nodes.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Journey Steps</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+            Journey Steps
+          </h2>
           <ul className="space-y-2">
             {nodes.map((n) => (
               <li key={n.id} className="flex items-start space-x-3">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  n.type === 'input' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                }`}>
-                  {n.type === 'input' ? 'Input' : 'Output'}
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    n.type === "input"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {n.type === "input" ? "Input" : "Output"}
                 </span>
                 <div>
                   <strong className="text-gray-900">{n.label}:</strong>
@@ -56,9 +74,11 @@ function PhaseView() {
       )}
 
       {/* Solar Panel Component for Dimensioning Phase */}
-      {phase === 'Dimensioning' && (
+      {phase === "Dimensioning" && (
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Recommended Solar Panel</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+            Recommended Solar Panel
+          </h2>
           <SolarPanelComponent panel={samplePanel} />
         </div>
       )}
@@ -80,7 +100,7 @@ function PhaseView() {
         </button>
         <button
           id="skip"
-          onClick={() => skip('Recommendation')}
+          onClick={() => skip("Recommendation")}
           className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
         >
           Skip to Recommendation
