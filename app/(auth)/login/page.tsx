@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "@/components/toast";
+import { track } from "@/apps/web/lib/analytics/events.pix";
 
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
@@ -32,10 +33,18 @@ export default function Page() {
         type: "error",
         description: "Invalid credentials!",
       });
+      track({
+        name: "ux.form_error",
+        payload: { field: "credentials", error_type: "invalid" },
+      });
     } else if (state.status === "invalid_data") {
       toast({
         type: "error",
         description: "Failed validating your submission!",
+      });
+      track({
+        name: "ux.form_error",
+        payload: { field: "form", error_type: "validation" },
       });
     } else if (state.status === "success") {
       setIsSuccessful(true);

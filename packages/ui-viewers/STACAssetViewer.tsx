@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { z } from 'zod';
+import { track } from '../../apps/web/lib/analytics/events.pix';
 
 // Schema for a STAC asset
 export const stacAssetSchema = z.object({
@@ -60,6 +61,7 @@ export const STACAssetViewer: React.FC<STACAssetViewerProps> = ({
   const copyHref = async (href: string) => {
     try {
       await navigator.clipboard.writeText(href);
+      track({ name: 'ux.copy_click', payload: { component_id: 'stac_asset_href' } });
     } catch {
       // ignore clipboard errors
     }

@@ -40,6 +40,11 @@ export async function POST(
     ],
   });
 
+  track({
+    name: 'pix_activation_success',
+    payload: { user_id: params.id, value: 1 },
+  });
+
   return response.toStreamResponse({
     onEvent(event) {
       if (event.type === 'tool' && event.name === 'track') {

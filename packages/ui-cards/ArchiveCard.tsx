@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { z } from 'zod';
+import { track } from '../../apps/web/lib/analytics/events.pix';
 
 // Schema validation for archive receipt data
 export const archiveReceiptSchema = z.object({
@@ -53,6 +54,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = (props) => {
 
   const copyChecksum = async () => {
     await navigator.clipboard.writeText(data.checksum);
+    track({ name: 'ux.copy_click', payload: { component_id: 'archive_checksum' } });
   };
 
   return (
