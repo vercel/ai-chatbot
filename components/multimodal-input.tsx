@@ -138,43 +138,46 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-  const submitForm = useCallback((message: PromptInputMessage) => {
-    window.history.replaceState({}, '', `/chat/${chatId}`);
+  const submitForm = useCallback(
+    (message: PromptInputMessage) => {
+      window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    sendMessage({
-      role: 'user',
-      parts: [
-        ...attachments.map((attachment) => ({
-          type: 'file' as const,
-          url: attachment.url,
-          name: attachment.name,
-          mediaType: attachment.contentType,
-        })),
-        {
-          type: 'text',
-          text: message.text ?? 'Files were attached',
-        },
-      ],
-    });
+      sendMessage({
+        role: 'user',
+        parts: [
+          ...attachments.map((attachment) => ({
+            type: 'file' as const,
+            url: attachment.url,
+            name: attachment.name,
+            mediaType: attachment.contentType,
+          })),
+          {
+            type: 'text',
+            text: message.text ?? 'Files were attached',
+          },
+        ],
+      });
 
-    setAttachments([]);
-    setLocalStorageInput('');
-    resetHeight();
-    setInput('');
+      setAttachments([]);
+      setLocalStorageInput('');
+      resetHeight();
+      setInput('');
 
-    if (width && width > 768) {
-      textareaRef.current?.focus();
-    }
-  }, [
-    input,
-    setInput,
-    attachments,
-    sendMessage,
-    setAttachments,
-    setLocalStorageInput,
-    width,
-    chatId,
-  ]);
+      if (width && width > 768) {
+        textareaRef.current?.focus();
+      }
+    },
+    [
+      input,
+      setInput,
+      attachments,
+      sendMessage,
+      setAttachments,
+      setLocalStorageInput,
+      width,
+      chatId,
+    ],
+  );
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -267,7 +270,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className='relative flex w-full flex-col gap-4'>
+    <div className="relative flex w-full flex-col gap-4">
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -275,7 +278,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className='-top-12 -translate-x-1/2 absolute left-1/2 z-50'
+            className="-top-12 -translate-x-1/2 absolute left-1/2 z-50"
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -331,39 +334,48 @@ function PureMultimodalInput({
         globalDrop
       >
         <PromptInputBody>
-        {(attachments.length > 0 || uploadQueue.length > 0) && (
-          <div
-            data-testid="attachments-preview"
-            className='flex flex-row items-end gap-2 overflow-x-scroll px-3 py-2'
-          >
-            {attachments.map((attachment) => (
-              <PreviewAttachment
-                key={attachment.url}
-                attachment={attachment}
-                onRemove={() => {
-                  setAttachments((currentAttachments) =>
-                    currentAttachments.filter((a) => a.url !== attachment.url),
-                  );
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                }}
-              />
-            ))}
+          <AnimatePresence initial={false}>
+            {(attachments.length > 0 || uploadQueue.length > 0) && (
+              <motion.div
+                data-testid="attachments-preview"
+                aria-live="polite"
+                className="overflow-hidden flex flex-wrap gap-2 p-3 pt-3"
+                initial={{ height: 0 }}
+                animate={{ height: 'auto' }}
+                exit={{ height: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                {attachments.map((attachment) => (
+                  <PreviewAttachment
+                    key={attachment.url}
+                    attachment={attachment}
+                    onRemove={() => {
+                      setAttachments((currentAttachments) =>
+                        currentAttachments.filter(
+                          (a) => a.url !== attachment.url,
+                        ),
+                      );
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}
+                  />
+                ))}
 
-            {uploadQueue.map((filename) => (
-              <PreviewAttachment
-                key={filename}
-                attachment={{
-                  url: '',
-                  name: filename,
-                  contentType: '',
-                }}
-                isUploading={true}
-              />
-            ))}
-          </div>
-        )}
+                {uploadQueue.map((filename) => (
+                  <PreviewAttachment
+                    key={filename}
+                    attachment={{
+                      url: '',
+                      name: filename,
+                      contentType: '',
+                    }}
+                    isUploading={true}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="flex flex-row items-start gap-1 sm:gap-2 pt-2">
             <PromptInputTextarea
               data-testid="multimodal-input"
@@ -375,7 +387,7 @@ function PureMultimodalInput({
               rows={1}
               autoFocus
             />{' '}
-            <div className="mr-0.5 mt-1"> 
+            <div className="mr-0.5 mt-1">
               <Context {...contextProps} />
             </div>
           </div>
@@ -385,18 +397,21 @@ function PureMultimodalInput({
             <PromptInputActionMenu>
               <PromptInputActionMenuTrigger />
               <PromptInputActionMenuContent>
-                <ActionAddAttachments fileInputRef={fileInputRef} status={status} selectedModelId={selectedModelId} />
+                <ActionAddAttachments
+                  fileInputRef={fileInputRef}
+                  status={status}
+                  selectedModelId={selectedModelId}
+                />
               </PromptInputActionMenuContent>
             </PromptInputActionMenu>
             <ModelSelectorCompact selectedModelId={selectedModelId} />
           </PromptInputTools>
 
-            <PromptInputSubmit
-              status={status}
-              disabled={!input.trim() && !status || uploadQueue.length > 0}
-              className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-            />
-      
+          <PromptInputSubmit
+            status={status}
+            disabled={(!input.trim() && !status) || uploadQueue.length > 0}
+            className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+          />
         </PromptInputToolbar>
       </PromptInput>
     </div>
@@ -430,7 +445,7 @@ function PureActionAddAttachments({
   const isReasoningModel = selectedModelId === 'chat-model-reasoning';
 
   return (
-    <DropdownMenuItem 
+    <DropdownMenuItem
       {...props}
       onSelect={(event) => {
         event.preventDefault();
@@ -439,7 +454,7 @@ function PureActionAddAttachments({
       disabled={status !== 'ready' || isReasoningModel}
     >
       <ImageIcon className="mr-2 size-4" /> Add photos or files
-      </DropdownMenuItem>
+    </DropdownMenuItem>
   );
 }
 
