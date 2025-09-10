@@ -16,15 +16,16 @@ export default defineConfig({
 	// === ESTRATÉGIA DE EXECUÇÃO ===
 	fullyParallel: false, // Sequencial para testes 360° complexos
 	workers: 1, // Single worker para evitar conflitos de estado
-	shard: process.env.SHARD ? {
-		current: parseInt(process.env.SHARD_CURRENT || "1"),
-		total: parseInt(process.env.SHARD_TOTAL || "1"),
-	} : undefined,
+	shard: process.env.SHARD
+		? {
+				current: Number.parseInt(process.env.SHARD_CURRENT || "1"),
+				total: Number.parseInt(process.env.SHARD_TOTAL || "1"),
+			}
+		: undefined,
 
 	// === CONFIGURAÇÕES DE RETRY ===
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 3 : 1, // Mais retries em CI
-	retryOnNetworkErrors: true,
 
 	// === TIMEOUTS OTIMIZADOS ===
 	timeout: 180 * 1000, // 3 minutos para testes complexos
@@ -33,28 +34,27 @@ export default defineConfig({
 	},
 
 	// === REPORTERS AVANÇADOS ===
-	reporter: [
-		["html", {
-			open: process.env.CI ? "never" : "on-failure",
-			outputFolder: "playwright-report-360",
-		}],
-		["json", {
-			outputFile: "test-results-360.json",
-		}],
-		["junit", {
-			outputFile: "test-results-360.xml",
-		}],
-		process.env.CI ? ["github"] : null,
-	].filter(Boolean),
+	reporter: process.env.CI
+		? [
+				["html", { open: "never", outputFolder: "playwright-report-360" }],
+				["json", { outputFile: "test-results-360.json" }],
+				["junit", { outputFile: "test-results-360.xml" }],
+				["github"],
+			]
+		: [
+				["html", { open: "on-failure", outputFolder: "playwright-report-360" }],
+				["json", { outputFile: "test-results-360.json" }],
+				["junit", { outputFile: "test-results-360.xml" }],
+			],
 
 	// === CONFIGURAÇÕES GLOBAIS ===
-	globalSetup: "./tests/setup/global-setup.ts",
-	globalTeardown: "./tests/setup/global-teardown.ts",
+	globalSetup: "../tests/setup/global-setup.ts",
+	globalTeardown: "../tests/setup/global-teardown.ts",
 
 	// === CONFIGURAÇÕES DE BROWSER ===
 	use: {
 		// Base URL
-		baseURL: process.env.BASE_URL || "http://localhost:3000",
+		baseURL: "http://localhost:3000",
 
 		// Tracing e debugging
 		trace: process.env.CI ? "retain-on-failure" : "on",
@@ -62,8 +62,6 @@ export default defineConfig({
 		video: process.env.CI ? "retain-on-failure" : "on",
 
 		// Performance e recursos
-		ignoreHTTPSErrors: true,
-		bypassCSP: true,
 		launchOptions: {
 			args: [
 				"--disable-web-security",
@@ -77,20 +75,18 @@ export default defineConfig({
 				"--disable-gpu",
 				"--memory-pressure-off",
 			],
-			slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0,
+			slowMo: process.env.SLOW_MO ? Number.parseInt(process.env.SLOW_MO) : 0,
 		},
 
 		// Context options
 		viewport: { width: 1280, height: 720 },
-		ignoreHTTPSErrors: true,
-		bypassCSP: true,
 		permissions: ["geolocation", "notifications"],
 		geolocation: { latitude: -23.5505, longitude: -46.6333 }, // São Paulo
 		locale: "pt-BR",
 		timezoneId: "America/Sao_Paulo",
 
 		// Storage state
-		storageState: "./tests/setup/storage-state.json",
+		storageState: "../tests/setup/storage-state.json",
 	},
 
 	// === PROJETOS DE BROWSER ===
@@ -130,10 +126,7 @@ export default defineConfig({
 			use: {
 				...devices["Pixel 5"],
 				launchOptions: {
-					args: [
-						"--disable-web-security",
-						"--memory-pressure-off",
-					],
+					args: ["--disable-web-security", "--memory-pressure-off"],
 				},
 			},
 		},
@@ -146,33 +139,28 @@ export default defineConfig({
 	],
 
 	// === WEBSERVER AVANÇADO ===
-	webServer: [
-		{
-			command: "pnpm dev",
-			url: "http://localhost:3000/ping",
-			timeout: 180 * 1000,
-			reuseExistingServer: !process.env.CI,
-			stdout: "pipe",
-			stderr: "pipe",
-			ignoreHTTPSErrors: true,
-		},
-		process.env.REDIS_URL ? {
-			command: "redis-server",
-			url: process.env.REDIS_URL,
-			timeout: 60 * 1000,
-			reuseExistingServer: true,
-		} : null,
-	].filter(Boolean),
+	webServer: {
+		command: "pnpm dev",
+		url: "http://localhost:3000",
+		timeout: 180 * 1000,
+		reuseExistingServer: !process.env.CI,
+		stdout: "pipe",
+		stderr: "pipe",
+		ignoreHTTPSErrors: true,
+	},
 
 	// === CONFIGURAÇÕES DE METADATA ===
 	metadata: {
 		"test-suite": "360-degree-e2e",
-		"environment": process.env.NODE_ENV || "development",
-		"branch": process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || "main",
-		"commit": process.env.GITHUB_SHA || "local",
-		"timestamp": new Date().toISOString(),
-		"ci": !!process.env.CI,
-		"shard": process.env.SHARD ? `${process.env.SHARD_CURRENT}/${process.env.SHARD_TOTAL}` : "1/1",
+		environment: process.env.NODE_ENV || "development",
+		branch:
+			process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || "main",
+		commit: process.env.GITHUB_SHA || "local",
+		timestamp: new Date().toISOString(),
+		ci: !!process.env.CI,
+		shard: process.env.SHARD
+			? `${process.env.SHARD_CURRENT}/${process.env.SHARD_TOTAL}`
+			: "1/1",
 	},
 
 	// === CONFIGURAÇÕES DE OUTPUT ===
@@ -181,7 +169,9 @@ export default defineConfig({
 
 	// === CONFIGURAÇÕES DE GREP ===
 	grep: process.env.GREP ? new RegExp(process.env.GREP) : undefined,
-	grepInvert: process.env.GREP_INVERT ? new RegExp(process.env.GREP_INVERT) : undefined,
+	grepInvert: process.env.GREP_INVERT
+		? new RegExp(process.env.GREP_INVERT)
+		: undefined,
 
 	// === CONFIGURAÇÕES DE TESTE ===
 	testIgnore: [
@@ -190,8 +180,4 @@ export default defineConfig({
 		"**/dist/**",
 		"**/build/**",
 	],
-
-	// === HOOKS GLOBAIS ===
-	setupFiles: ["./tests/setup/setup.ts"],
-	teardownFiles: ["./tests/setup/teardown.ts"],
 });

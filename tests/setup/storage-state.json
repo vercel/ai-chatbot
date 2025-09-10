@@ -1,0 +1,47 @@
+{
+      "cookies": [],
+      "origins": [
+            {
+                  "origin": "http://localhost:3000",
+                  "localStorage": [
+                        {
+                              "name": "test-mode",
+                              "value": "360-degree"
+                        },
+                        {
+                              "name": "environment",
+                              "value": "test"
+                        },
+                        {
+                              "name": "timestamp",
+                              "value": "2024-01-01T00:00:00.000Z"
+                        },
+                        {
+                              "name": "user-preferences",
+                              "value": "{\"theme\":\"light\",\"language\":\"pt-BR\",\"persona\":\"owner\"}"
+                        },
+                        {
+                              "name": "feature-flags",
+                              "value": "{\"multiAgent\":true,\"journey\":true,\"artifacts\":true,\"analytics\":false}"
+                        }
+                  ]
+            },
+            {
+                  "origin": "https://ysh-ai.vercel.app",
+                  "localStorage": [
+                        {
+                              "name": "test-mode",
+                              "value": "360-degree"
+                        },
+                        {
+                              "name": "environment",
+                              "value": "staging"
+                        },
+                        {
+                              "name": "timestamp",
+                              "value": "2024-01-01T00:00:00.000Z"
+                        }
+                  ]
+            }
+      ]
+}
