@@ -43,6 +43,8 @@ import { startTransition } from 'react';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
 import { myProvider } from '@/lib/ai/providers';
+import { QueuePanel } from './elements/queue';
+
 
 function PureMultimodalInput({
   chatId,
@@ -123,25 +125,37 @@ function PureMultimodalInput({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
+  const [messageQueue, setMessageQueue] = useState<Array<{
+    parts: ChatMessage['parts'];
+  }>>([]);
+  const isFlushingRef = useRef(false);
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const hasQueue = messageQueue.length > 0;
 
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    sendMessage({
-      role: 'user',
-      parts: [
-        ...attachments.map((attachment) => ({
-          type: 'file' as const,
-          url: attachment.url,
-          name: attachment.name,
-          mediaType: attachment.contentType,
-        })),
-        {
-          type: 'text',
-          text: input,
-        },
-      ],
-    });
+    const parts: ChatMessage['parts'] = [
+      ...attachments.map((attachment) => ({
+        type: 'file' as const,
+        url: attachment.url,
+        name: attachment.name,
+        mediaType: attachment.contentType,
+      })),
+      {
+        type: 'text' as const,
+        text: input,
+      },
+    ];
+
+    if (status === 'ready') {
+      sendMessage({
+        role: 'user',
+        parts,
+      });
+    } else {
+      setMessageQueue((q) => [...q, { parts }]);
+    }
 
     setAttachments([]);
     setLocalStorageInput('');
@@ -160,7 +174,32 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    status,
   ]);
+
+  const flushNextQueuedMessage = useCallback(() => {
+    if (isFlushingRef.current) return;
+    setMessageQueue((current) => {
+      if (current.length === 0) return current;
+      const [next, ...rest] = current;
+      isFlushingRef.current = true;
+      sendMessage({ role: 'user', parts: next.parts });
+      return rest;
+    });
+  }, [sendMessage]);
+
+  const removeQueuedAtIndex = useCallback((index: number) => {
+    setMessageQueue((current) => current.filter((_, i) => i !== index));
+  }, []);
+
+  useEffect(() => {
+    if (status === 'ready') {
+      isFlushingRef.current = false;
+      if (messageQueue.length > 0) {
+        flushNextQueuedMessage();
+      }
+    }
+  }, [status, messageQueue.length, flushNextQueuedMessage]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -253,7 +292,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className='relative flex w-full flex-col gap-4'>
+    <div className={`relative flex w-full flex-col ${hasQueue ? 'gap-0' : 'gap-4'}`}>
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -289,6 +328,15 @@ function PureMultimodalInput({
           />
         )}
 
+      {hasQueue && (
+        <QueuePanel
+          items={messageQueue.map((m) => m.parts)}
+          isOpen={isQueueOpen}
+          onToggle={() => setIsQueueOpen((v) => !v)}
+          onRemove={removeQueuedAtIndex}
+        />
+      )}
+
       <input
         type="file"
         className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
@@ -299,14 +347,10 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className='rounded-xl border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50'
+        className={`${hasQueue ? 'rounded-b-xl rounded-t-none border-t-0' : 'rounded-xl'} border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50`}
         onSubmit={(event) => {
           event.preventDefault();
-          if (status !== 'ready') {
-            toast.error('Please wait for the model to finish its response!');
-          } else {
-            submitForm();
-          }
+          submitForm();
         }}
       >
         {(attachments.length > 0 || uploadQueue.length > 0) && (
@@ -367,8 +411,7 @@ function PureMultimodalInput({
             />
             <ModelSelectorCompact selectedModelId={selectedModelId} />
           </PromptInputTools>
-
-          {status === 'submitted' ? (
+          {status === 'submitted'&&!input.trim() ? (
             <StopButton stop={stop} setMessages={setMessages} />
           ) : (
             <PromptInputSubmit
