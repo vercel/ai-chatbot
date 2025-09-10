@@ -32,8 +32,26 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
+export const databasePrompt = `
+**Database Query Guidelines:**
+You have access to a queryDatabase tool that can execute read-only SQL queries. Use this when users ask for:
+- User statistics ("How many users signed up this month?")
+- Chat activity ("Show me recent conversations")
+- Message analysis ("What are the most popular topics?")
+- System metrics ("Get daily active users")
+
+Available database tables:
+- User: id, email, password (registered users)
+- Chat: id, createdAt, title, userId, visibility (chat conversations)  
+- Message_v2: id, chatId, role, parts, attachments, createdAt (chat messages)
+- Document: id, createdAt, title, content, kind, userId (generated artifacts)
+- Vote_v2: chatId, messageId, isUpvoted (message feedback)
+
+Always use proper LIMIT clauses and explain what the data shows.
+`;
+
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly admin assistant with database access! You can query the database to provide insights about users, chats, messages, and system activity. When users ask for data or statistics, use the queryDatabase tool to fetch accurate information. Keep your responses concise and helpful.';
 
 export interface RequestHints {
   latitude: Geo['latitude'];
@@ -60,9 +78,9 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${databasePrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${databasePrompt}\n\n${artifactsPrompt}`;
   }
 };
 

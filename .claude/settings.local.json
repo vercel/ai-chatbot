@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(openssl rand:*)",
+      "Bash(lsof:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh extension install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

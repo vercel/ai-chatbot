@@ -13,5 +13,6 @@
   "eslint.workingDirectories": [
     { "pattern": "app/*" },
     { "pattern": "packages/*" }
-  ]
+  ],
+  "jira-plugin.workingProject": ""
 }
