@@ -71,6 +71,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
             content,
             kind,
             userId: session.user.id,
+            organizationId: session.user.organizationId,
           });
         }
       } else {

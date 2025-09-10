@@ -29,8 +29,8 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    // Allow access to login and register pages
-    if (['/login', '/register'].includes(pathname)) {
+    // Allow access to login, register, and invitation pages
+    if (['/login', '/register', '/accept-invitation', '/register-organization'].includes(pathname)) {
       return NextResponse.next();
     }
     

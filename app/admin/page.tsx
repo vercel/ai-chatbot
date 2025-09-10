@@ -7,22 +7,34 @@ import { db } from '@/lib/db';
 export default async function AdminDashboard() {
   const session = await auth();
 
+  if (!session?.user) {
+    return null; // This should not happen due to layout guard, but for TypeScript
+  }
+
   const stats = await Promise.all([
-    db.select({ count: count() }).from(conflictReport).where(eq(conflictReport.status, 'pending')),
-    db.select({ count: count() }).from(conflictReport).where(eq(conflictReport.status, 'under_review')),
-    db.select({ count: count() }).from(conflictReport).where(and(eq(conflictReport.priority, 'high'), eq(conflictReport.status, 'pending'))),
-    db.select({ count: count() }).from(conflictReport).where(and(eq(conflictReport.priority, 'urgent'), eq(conflictReport.status, 'pending'))),
+    db.select({ count: count() }).from(conflictReport).where(and(eq(conflictReport.status, 'pending'), eq(conflictReport.organizationId, session.user.organizationId))),
+    db.select({ count: count() }).from(conflictReport).where(and(eq(conflictReport.status, 'under_review'), eq(conflictReport.organizationId, session.user.organizationId))),
+    db.select({ count: count() }).from(conflictReport).where(and(eq(conflictReport.priority, 'high'), eq(conflictReport.status, 'pending'), eq(conflictReport.organizationId, session.user.organizationId))),
+    db.select({ count: count() }).from(conflictReport).where(and(eq(conflictReport.priority, 'urgent'), eq(conflictReport.status, 'pending'), eq(conflictReport.organizationId, session.user.organizationId))),
   ]);
 
   const [pendingReports, underReviewReports, highPriorityReports, urgentReports] = stats;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {session?.user?.email}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground">
+            Welcome back to {session?.user?.organizationName}
+          </p>
+        </div>
+        <Link
+          href="/admin/organization"
+          className="inline-flex items-center justify-center rounded-md bg-muted px-4 py-2 text-sm font-medium text-muted-foreground shadow transition-colors hover:bg-muted/90"
+        >
+          Organization Settings
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

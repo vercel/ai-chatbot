@@ -9,8 +9,10 @@ import { redirect } from 'next/navigation';
 
 export default async function Page() {
   const session = await auth();
+  console.log('HomePage server-side auth result:', session ? 'HAS SESSION' : 'NO SESSION');
 
   if (!session) {
+    console.log('HomePage redirecting to login - server auth returned null');
     redirect('/login');
   }
 

@@ -32,11 +32,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               onClick={() => {
                 setOpenMobile(false);
               }}
-              className="flex flex-row gap-3 items-center"
+              className="flex flex-col gap-1 items-start"
             >
               <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
+                Checky
               </span>
+              {user?.organizationName && (
+                <span className="text-xs text-muted-foreground px-2">
+                  {user.organizationName}
+                </span>
+              )}
             </Link>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -47,7 +52,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');
-                    router.refresh();
+                    // router.refresh(); // Temporarily disabled for debugging
                   }}
                 >
                   <PlusIcon />

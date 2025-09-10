@@ -114,6 +114,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         title,
         visibility: selectedVisibilityType,
+        organizationId: session.user.organizationId,
       });
     } else {
       if (chat.userId !== session.user.id) {

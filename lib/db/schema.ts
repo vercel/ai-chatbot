@@ -9,7 +9,18 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  unique,
 } from 'drizzle-orm/pg-core';
+
+export const organization = pgTable('Organization', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  settings: json('settings').default({}),
+});
+
+export type Organization = InferSelectModel<typeof organization>;
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -18,6 +29,9 @@ export const user = pgTable('User', {
   role: varchar('role', { enum: ['employee', 'compliance_officer', 'admin'] })
     .notNull()
     .default('employee'),
+  organizationId: uuid('organizationId')
+    .references(() => organization.id)
+    .notNull(),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -29,6 +43,9 @@ export const chat = pgTable('Chat', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
+  organizationId: uuid('organizationId')
+    .notNull()
+    .references(() => organization.id),
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
@@ -118,6 +135,9 @@ export const document = pgTable(
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
+    organizationId: uuid('organizationId')
+      .notNull()
+      .references(() => organization.id),
   },
   (table) => {
     return {
@@ -188,6 +208,9 @@ export const conflictReport = pgTable('ConflictReport', {
   submittedAt: timestamp('submittedAt').notNull(),
   reviewedAt: timestamp('reviewedAt'),
   reviewerId: uuid('reviewerId').references(() => user.id),
+  organizationId: uuid('organizationId')
+    .notNull()
+    .references(() => organization.id),
   emailThreadId: varchar('emailThreadId', { length: 255 }), // For tracking email conversations
 });
 
@@ -209,3 +232,26 @@ export const reviewResponse = pgTable('ReviewResponse', {
 });
 
 export type ReviewResponse = InferSelectModel<typeof reviewResponse>;
+
+export const organizationInvitation = pgTable('OrganizationInvitation', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  email: varchar('email', { length: 64 }).notNull(),
+  organizationId: uuid('organizationId')
+    .notNull()
+    .references(() => organization.id),
+  inviterId: uuid('inviterId')
+    .notNull()
+    .references(() => user.id),
+  role: varchar('role', { enum: ['employee', 'compliance_officer', 'admin'] })
+    .notNull()
+    .default('employee'),
+  status: varchar('status', { enum: ['pending', 'accepted', 'expired'] })
+    .notNull()
+    .default('pending'),
+  token: varchar('token', { length: 255 }).notNull().unique(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  acceptedAt: timestamp('acceptedAt'),
+});
+
+export type OrganizationInvitation = InferSelectModel<typeof organizationInvitation>;

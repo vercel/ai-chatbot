@@ -2,7 +2,7 @@ import { auth } from '@/app/(auth)/auth';
 import { conflictReport } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { sendReportSubmissionEmail } from '@/lib/email/service';
 import { db } from '@/lib/db';
 
@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       content,
       priority: priority || 'medium',
       submittedAt: new Date(),
+      organizationId: session.user.organizationId,
     }).returning();
 
     // Send initial confirmation email to the user
@@ -80,7 +81,10 @@ export async function GET(request: NextRequest) {
     const userReports = await db
       .select()
       .from(conflictReport)
-      .where(eq(conflictReport.userEmail, session.user.email))
+      .where(and(
+        eq(conflictReport.userEmail, session.user.email),
+        eq(conflictReport.organizationId, session.user.organizationId)
+      ))
       .orderBy(desc(conflictReport.submittedAt));
 
     return NextResponse.json(userReports);

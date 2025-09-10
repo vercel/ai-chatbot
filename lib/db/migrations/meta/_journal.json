@@ -64,6 +64,13 @@
       "when": 1757342612958,
       "tag": "0008_misty_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1757497581148,
+      "tag": "0009_true_frog_thor",
+      "breakpoints": true
     }
   ]
 }

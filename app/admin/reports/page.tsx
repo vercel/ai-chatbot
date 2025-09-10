@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { ReportFilters } from './filters';
 import { db } from '@/lib/db';
+import { auth } from '@/app/(auth)/auth';
 
 interface SearchParams {
   status?: string;
@@ -15,8 +16,11 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
+  const session = await auth();
   const params = await searchParams;
-  const conditions = [];
+  
+  // Organization filtering is always required
+  const conditions = [eq(conflictReport.organizationId, session!.user.organizationId)];
 
   if (params.status) {
     conditions.push(eq(conflictReport.status, params.status as any));
@@ -29,7 +33,7 @@ export default async function ReportsPage({
   const reports = await db
     .select()
     .from(conflictReport)
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .where(and(...conditions))
     .orderBy(
       desc(conflictReport.priority),
       desc(conflictReport.submittedAt)

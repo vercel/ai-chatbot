@@ -16,23 +16,25 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
 import {
-  user,
   chat,
-  type User,
+  type Chat,
+  type DBMessage,
   document,
+  message,
+  organization,
+  type Organization,
+  stream,
   type Suggestion,
   suggestion,
-  message,
+  user,
+  type User,
   vote,
-  type DBMessage,
-  type Chat,
-  stream,
 } from './schema';
-import type { ArtifactKind } from '@/components/artifact';
-import { generateUUID } from '../utils';
-import { generateHashedPassword } from './utils';
-import type { VisibilityType } from '@/components/visibility-selector';
-import { ChatSDKError } from '../errors';
+import type {ArtifactKind} from '@/components/artifact';
+import {generateUUID} from '../utils';
+import {generateHashedPassword} from './utils';
+import type {VisibilityType} from '@/components/visibility-selector';
+import {ChatSDKError} from '../errors';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -53,22 +55,88 @@ export async function getUser(email: string): Promise<Array<User>> {
   }
 }
 
-export async function createUser(email: string, password: string) {
+export async function getUserWithOrganization(email: string): Promise<Array<User & { organization: Organization }>> {
+  try {
+    // First check if user exists
+    const users = await getUser(email);
+    if (users.length === 0) {
+      return [];
+    }
+
+    const userData = users[0];
+
+    // If user doesn't have organizationId, assign them to default organization
+    if (!userData.organizationId) {
+      // Get or create default organization
+      let defaultOrg = await db
+        .select()
+        .from(organization)
+        .where(eq(organization.slug, 'default'))
+        .limit(1);
+
+      if (defaultOrg.length === 0) {
+        // Create default organization if it doesn't exist
+        defaultOrg = await db
+          .insert(organization)
+          .values({
+            name: 'Default Organization',
+            slug: 'default',
+          })
+          .returning();
+      }
+
+      // Assign user to default organization
+      await db
+        .update(user)
+        .set({ organizationId: defaultOrg[0].id })
+        .where(eq(user.id, userData.id));
+
+      // Return user with default organization
+      return [{
+        ...userData,
+        organizationId: defaultOrg[0].id,
+        organization: defaultOrg[0],
+      }];
+    }
+
+    // Normal case: user has organizationId
+    return await db
+      .select({
+        id: user.id,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        organizationId: user.organizationId,
+        organization: organization,
+      })
+      .from(user)
+      .innerJoin(organization, eq(user.organizationId, organization.id))
+      .where(eq(user.email, email));
+  } catch (error) {
+    console.error('getUserWithOrganization error:', error);
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get user with organization by email',
+    );
+  }
+}
+
+export async function createUser(email: string, password: string, organizationId: string) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await db.insert(user).values({ email, password: hashedPassword, organizationId });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
   }
 }
 
-export async function createGuestUser() {
+export async function createGuestUser(organizationId: string) {
   const email = `guest-${Date.now()}`;
   const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password }).returning({
+    return await db.insert(user).values({ email, password, organizationId }).returning({
       id: user.id,
       email: user.email,
     });
@@ -85,11 +153,13 @@ export async function saveChat({
   userId,
   title,
   visibility,
+  organizationId,
 }: {
   id: string;
   userId: string;
   title: string;
   visibility: VisibilityType;
+  organizationId: string;
 }) {
   try {
     return await db.insert(chat).values({
@@ -98,6 +168,7 @@ export async function saveChat({
       userId,
       title,
       visibility,
+      organizationId,
     });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save chat');
@@ -283,12 +354,14 @@ export async function saveDocument({
   kind,
   content,
   userId,
+  organizationId,
 }: {
   id: string;
   title: string;
   kind: ArtifactKind;
   content: string;
   userId: string;
+  organizationId: string;
 }) {
   try {
     return await db
@@ -299,6 +372,7 @@ export async function saveDocument({
         kind,
         content,
         userId,
+        organizationId,
         createdAt: new Date(),
       })
       .returning();
@@ -309,13 +383,11 @@ export async function saveDocument({
 
 export async function getDocumentsById({ id }: { id: string }) {
   try {
-    const documents = await db
-      .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt));
-
-    return documents;
+    return await db
+    .select()
+    .from(document)
+    .where(eq(document.id, id))
+    .orderBy(asc(document.createdAt));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

@@ -91,6 +91,7 @@ export function DocumentPreview({
           id: artifact.documentId,
           createdAt: new Date(),
           userId: 'noop',
+          organizationId: 'noop', // Temporary document for preview
         }
       : null;
 
