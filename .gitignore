@@ -24,19 +24,20 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
-.env*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # turbo
 .turbo
+
+.env
 .vercel
-.pnpm-store
+.env*.local
 
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/*
-
-# cspell
-.cspellcache
