@@ -18,6 +18,7 @@ import type {
 import { toolSystem } from '../tools/tool-system';
 import { loadBalancingService } from '@/lib/services/load-balancing-service';
 import { InvestigationAgent } from './investigation-agent';
+import { DetectionAgent } from './detection-agent';
 
 // Agente Calculadora Solar
 export class SolarCalculatorAgent {
@@ -588,7 +589,7 @@ ${combinedData.communications.length > 0 ? '📧 Comunicação enviada com suces
 
 // Sistema de Agentes Principal
 export class AgentOrchestrator {
-  private readonly agents = new Map<string, SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent>();
+  private readonly agents = new Map<string, SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | DetectionAgent>();
   private readonly rules: OrchestrationRule[] = [];
   private readonly activeContexts = new Map<string, OrchestrationContext>();
 
@@ -601,6 +602,7 @@ export class AgentOrchestrator {
     this.agents.set('solar-calculator', new SolarCalculatorAgent());
     this.agents.set('lead-qualifier', new LeadQualificationAgent());
     this.agents.set('investigation-agent', new InvestigationAgent());
+    this.agents.set('detection-agent', new DetectionAgent());
   }
 
   private initializeRules(): void {
@@ -701,7 +703,7 @@ export class AgentOrchestrator {
     // Outros tipos de ação podem ser implementados aqui
   }
 
-  private selectAgent(context: AgentExecutionContext): SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | null {
+  private selectAgent(context: AgentExecutionContext): SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | DetectionAgent | null {
     const orchContext = this.activeContexts.get(context.sessionId);
 
     if (orchContext && orchContext.activeAgents.length > 0) {
@@ -713,6 +715,10 @@ export class AgentOrchestrator {
     const input = context.conversationHistory[context.conversationHistory.length - 1]?.content || '';
 
     const lower = input.toLowerCase();
+
+    if (context.currentPhase === 'detection' || lower.includes('detecção') || lower.includes('imagem') || lower.includes('foto')) {
+      return this.agents.get('detection-agent') || null;
+    }
 
     if (context.currentPhase === 'investigation' ||
       lower.includes('endereço') || lower.includes('conta') || lower.includes('telhado')) {
@@ -730,11 +736,11 @@ export class AgentOrchestrator {
     return null;
   }
 
-  getAgent(agentId: string): SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | null {
+  getAgent(agentId: string): SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | DetectionAgent | null {
     return this.agents.get(agentId) || null;
   }
 
-  getAllAgents(): (SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent)[] {
+  getAllAgents(): (SolarCalculatorAgent | LeadQualificationAgent | InvestigationAgent | DetectionAgent)[] {
     return Array.from(this.agents.values());
   }
 

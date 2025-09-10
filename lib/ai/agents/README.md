@@ -22,6 +22,7 @@ O Sistema de Agentes Especializados é uma arquitetura avançada de IA que integ
 
 - **SolarCalculatorAgent**: Agente especializado em cálculos solares
 - **LeadQualificationAgent**: Agente para qualificação de prospects
+- **DetectionAgent**: Agente para detecção de potencial solar via imagens ou coordenadas
 - **AgentOrchestrator**: Orquestrador principal com regras de ativação
 - **Chat Integration**: Integração com sistema de chat existente
 
