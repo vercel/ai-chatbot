@@ -137,46 +137,43 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-  const submitForm = useCallback(
-    () => {
-      window.history.replaceState({}, '', `/chat/${chatId}`);
+  const submitForm = useCallback(() => {
+    window.history.replaceState({}, '', `/chat/${chatId}`);
 
-      sendMessage({
-        role: 'user',
-        parts: [
-          ...attachments.map((attachment) => ({
-            type: 'file' as const,
-            url: attachment.url,
-            name: attachment.name,
-            mediaType: attachment.contentType,
-          })),
-          {
-            type: 'text',
-            text: input ?? 'Files were attached',
-          },
-        ],
-      });
+    sendMessage({
+      role: 'user',
+      parts: [
+        ...attachments.map((attachment) => ({
+          type: 'file' as const,
+          url: attachment.url,
+          name: attachment.name,
+          mediaType: attachment.contentType,
+        })),
+        {
+          type: 'text',
+          text: input ?? 'Files were attached',
+        },
+      ],
+    });
 
-      setAttachments([]);
-      setLocalStorageInput('');
-      resetHeight();
-      setInput('');
+    setAttachments([]);
+    setLocalStorageInput('');
+    resetHeight();
+    setInput('');
 
-      if (width && width > 768) {
-        textareaRef.current?.focus();
-      }
-    },
-    [
-      input,
-      setInput,
-      attachments,
-      sendMessage,
-      setAttachments,
-      setLocalStorageInput,
-      width,
-      chatId,
-    ],
-  );
+    if (width && width > 768) {
+      textareaRef.current?.focus();
+    }
+  }, [
+    input,
+    setInput,
+    attachments,
+    sendMessage,
+    setAttachments,
+    setLocalStorageInput,
+    width,
+    chatId,
+  ]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -386,7 +383,7 @@ function PureMultimodalInput({
               autoFocus
             />{' '}
             <div className="-mt-1 mr-1">
-              <Context {...contextProps}  />
+              <Context {...contextProps} />
             </div>
           </div>
         </PromptInputBody>

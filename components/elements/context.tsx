@@ -288,11 +288,19 @@ export const Context = ({
           <ContextIcon percent={usedPercent} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" alignOffset={-5} sideOffset={5} side="top" className="w-fit p-3 rounded-xl">
+      <DropdownMenuContent
+        align="end"
+        alignOffset={-5}
+        sideOffset={5}
+        side="top"
+        className="w-fit p-3 rounded-xl"
+      >
         <div className="min-w-[240px] space-y-2">
           <div className="flex justify-between items-start text-sm">
             <span>{displayPct}</span>
-            <span className="text-muted-foreground">{used} / {total} tokens</span>
+            <span className="text-muted-foreground">
+              {used} / {total} tokens
+            </span>
           </div>
           <div className="space-y-2">
             <Progress className="h-2 bg-muted" value={usedPercent} />

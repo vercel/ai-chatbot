@@ -11,7 +11,13 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { ChatStatus } from 'ai';
-import { Loader2Icon, PlusIcon, SendIcon, SquareIcon, XIcon } from 'lucide-react';
+import {
+  Loader2Icon,
+  PlusIcon,
+  SendIcon,
+  SquareIcon,
+  XIcon,
+} from 'lucide-react';
 import type {
   ComponentProps,
   HTMLAttributes,
