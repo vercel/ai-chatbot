@@ -1,21 +1,22 @@
-import { Toaster } from 'sonner';
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from '@/components/theme-provider';
-import { AccessibilityProvider } from '@/lib/accessibility/context';
-import { AccessibilityListener } from '@/components/accessibility-listener';
-import { PersonaProvider } from '@/lib/persona/context';
-import { DataStreamProvider } from '@/components/data-stream-provider';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from "sonner";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AccessibilityProvider } from "@/lib/accessibility/context";
+import { AccessibilityListener } from "@/components/accessibility-listener";
+import { PersonaProvider } from "@/lib/persona/context";
+import { DataStreamProvider } from "@/components/data-stream-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import Link from "next/link";
 
-import './globals.css';
-import '../styles/accessibility.css';
-import { SessionProvider } from 'next-auth/react';
+import "./globals.css";
+import "../styles/accessibility.css";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  metadataBase: new URL("https://chat.vercel.ai"),
+  title: "Next.js Chatbot Template",
+  description: "Next.js chatbot template using the AI SDK.",
 };
 
 export const viewport = {
@@ -23,19 +24,19 @@ export const viewport = {
 };
 
 const geist = Geist({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-geist',
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist",
 });
 
 const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-geist-mono',
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist-mono",
 });
 
-const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
-const DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)';
+const LIGHT_THEME_COLOR = "hsl(0 0% 100%)";
+const DARK_THEME_COLOR = "hsl(240deg 10% 3.92%)";
 const THEME_COLOR_SCRIPT = `\
 (function() {
   var html = document.documentElement;
@@ -91,9 +92,19 @@ export default async function RootLayout({
           <TooltipProvider>
             <AccessibilityProvider>
               <PersonaProvider>
-                <SessionProvider basePath="/api/auth" baseUrl="http://localhost:3000">
+                <SessionProvider
+                  basePath="/api/auth"
+                  baseUrl="http://localhost:3000"
+                >
                   <DataStreamProvider>
-                    {children}
+                    <header className="border-b">
+                      <div className="container flex h-12 items-center">
+                        <Link href="/" className="font-bold">
+                          YSH
+                        </Link>
+                      </div>
+                    </header>
+                    <main className="container py-4">{children}</main>
                     <AccessibilityListener />
                   </DataStreamProvider>
                 </SessionProvider>
