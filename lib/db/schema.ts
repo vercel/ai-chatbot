@@ -1,4 +1,4 @@
-import type { InferSelectModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import {
   pgTable,
   varchar,
@@ -9,6 +9,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  serial,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -168,3 +170,46 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// ---------------------------------------------------------------------------
+// New schema for persisting chat messages with prefix-based part columns
+
+export const chats = pgTable('chats', {
+  id: serial('id').primaryKey(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  chatId: integer('chat_id')
+    .notNull()
+    .references(() => chats.id, { onDelete: 'cascade' }),
+  role: varchar('role', { length: 16 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const parts = pgTable('parts', {
+  id: serial('id').primaryKey(),
+  messageId: integer('message_id')
+    .notNull()
+    .references(() => messages.id, { onDelete: 'cascade' }),
+  order: integer('order').notNull(),
+  // Prefix-based columns for different part types
+  text_content: text('text_content'),
+  reasoning_content: text('reasoning_content'),
+  file_id: uuid('file_id'),
+  file_name: text('file_name'),
+  source_url_url: text('source_url_url'),
+  source_url_description: text('source_url_description'),
+  tool_name: varchar('tool_name', { length: 64 }),
+  tool_input: json('tool_input'),
+  tool_output: json('tool_output'),
+});
+
+export type ChatRecord = InferSelectModel<typeof chats>;
+export type MessageRecord = InferSelectModel<typeof messages>;
+export type PartRecord = InferSelectModel<typeof parts>;
+
+export type NewChat = InferInsertModel<typeof chats>;
+export type NewMessage = InferInsertModel<typeof messages>;
+export type NewPart = InferInsertModel<typeof parts>;
