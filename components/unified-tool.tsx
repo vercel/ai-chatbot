@@ -1,6 +1,12 @@
 'use client';
 
-import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from './elements/tool';
+import {
+  Tool,
+  ToolHeader,
+  ToolContent,
+  ToolInput,
+  ToolOutput,
+} from './elements/tool';
 
 export interface ToolConfig {
   icon: React.ComponentType<{ size?: number }>;
@@ -67,7 +73,12 @@ export function UnifiedTool({
 
   return (
     <Tool defaultOpen={defaultOpen}>
-      <ToolHeader type={toolType} state={state} label={config.displayName || toolType} icon={Icon} />
+      <ToolHeader
+        type={toolType}
+        state={state}
+        label={config.displayName || toolType}
+        icon={Icon}
+      />
       <ToolContent>
         {input && <ToolInput input={input} />}
 
@@ -75,15 +86,13 @@ export function UnifiedTool({
           <ToolOutput
             errorText={error ?? undefined}
             output={
-              !error && output
-                ? (
-                    <pre className="p-1.5 text-sm overflow-auto max-h-40">
-                      {typeof output === 'string'
-                        ? output
-                        : JSON.stringify(output, null, 2)}
-                    </pre>
-                  )
-                : undefined
+              !error && output ? (
+                <pre className="p-1.5 text-sm overflow-auto max-h-40">
+                  {typeof output === 'string'
+                    ? output
+                    : JSON.stringify(output, null, 2)}
+                </pre>
+              ) : undefined
             }
           />
         )}

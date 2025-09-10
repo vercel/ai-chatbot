@@ -42,6 +42,7 @@ import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
+import { cn } from '@/lib/utils';
 // Avoid importing server-only providers in client components.
 
 // (Removed Google Docs picker functionality)
@@ -264,7 +265,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className="flex relative flex-col gap-4 w-full">
+    <div className={cn('flex relative flex-col gap-4 w-full', className)}>
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div

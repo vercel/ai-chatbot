@@ -4,7 +4,6 @@ import {
   ChainOfThought,
   ChainOfThoughtHeader,
   ChainOfThoughtContent,
-  ChainOfThoughtStep,
 } from '@/components/ai-elements/chain-of-thought';
 import { LoadingText } from '@/components/elements/loading-text';
 

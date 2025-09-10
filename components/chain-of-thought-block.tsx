@@ -101,7 +101,11 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
     let title: string | undefined;
     for (let i = 0; i < cotParts.length; i++) {
       const p = cotParts[i] as any;
-      if (p?.type === 'reasoning' && typeof p.text === 'string' && p.text.trim()) {
+      if (
+        p?.type === 'reasoning' &&
+        typeof p.text === 'string' &&
+        p.text.trim()
+      ) {
         const parsed = extractReasoningTitleAndBody(p.text);
         if (parsed.title) title = parsed.title; // keep updating to get the latest
       }
@@ -126,7 +130,7 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                 ? extractReasoningTitleAndBody((part as any).text)
                 : { body: '' };
             // Skip empty reasoning parts (prelude placeholders)
-            if (!(parsed.title || (parsed.body && parsed.body.trim().length))) {
+            if (!(parsed.title || (parsed.body?.trim().length))) {
               return null;
             }
             return (
@@ -275,7 +279,9 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
               return (
                 <ChainOfThoughtStep
                   key={key}
-                  label={isInput ? 'Requesting suggestions' : 'Suggestions ready'}
+                  label={
+                    isInput ? 'Requesting suggestions' : 'Suggestions ready'
+                  }
                   status={isInput ? 'active' : 'complete'}
                 >
                   <Tool defaultOpen={false}>

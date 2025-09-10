@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SendIcon } from 'lucide-react';
@@ -8,7 +8,6 @@ import { generateUUID } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import type { Transcript } from './use-transcripts';
 import BlurEffect from 'react-progressive-blur';
-import { useAuth } from '@workos-inc/authkit-nextjs/components';
 
 interface TranscriptChatInputProps {
   selectedTranscripts: Transcript[];

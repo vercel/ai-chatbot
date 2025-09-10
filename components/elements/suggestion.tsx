@@ -22,7 +22,9 @@ export const Suggestions = ({
   >
     <div
       className={cn(
-        'flex w-max flex-nowrap items-center gap-2 pr-8',
+        // Use inline-flex so content defines its own width without forcing
+        // ancestor blocks to expand on some mobile browsers.
+        'inline-flex flex-nowrap items-center gap-2',
         className,
       )}
     >

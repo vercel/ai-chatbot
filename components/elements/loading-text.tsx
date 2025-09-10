@@ -24,4 +24,3 @@ export const LoadingText = ({ children }: { children: React.ReactNode }) => {
     </motion.span>
   );
 };
-
