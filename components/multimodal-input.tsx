@@ -441,6 +441,7 @@ function PureModelSelectorCompact({
 
   return (
     <PromptInputModelSelect
+    open={true}
       value={selectedModel?.name}
       onValueChange={(modelName) => {
         const model = chatModels.find((m) => m.name === modelName);
