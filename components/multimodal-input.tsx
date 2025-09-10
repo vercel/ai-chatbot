@@ -390,7 +390,7 @@ function PureMultimodalInput({
         <PromptInputToolbar className="!border-top-0 border-t-0! px-2 py-2 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <PromptInputActionMenu>
-              <PromptInputActionMenuTrigger />
+              <PromptInputActionMenuTrigger className='p-1 size-7' />
               <PromptInputActionMenuContent>
                 <ActionAddAttachments
                   fileInputRef={fileInputRef}
