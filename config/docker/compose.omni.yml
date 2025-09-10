@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  whatsapp-mcp:
+    image: ghcr.io/openai/whatsapp-mcp:latest
+    environment:
+      MCP_TOKEN: ${MCP_TOKEN}
+    ports:
+      - "8080:8080"
+
+  bridge:
+    image: node:20
+    working_dir: /app
+    command: ["npx", "tsx", "scripts/dev-bridge.ts"]
+    environment:
+      REDIS_URL: redis://redis:6379
+      MCP_WHATSAPP_URL: ws://whatsapp-mcp:8080
+      MCP_TOKEN: ${MCP_TOKEN}
+    depends_on:
+      - redis
+      - whatsapp-mcp
+    volumes:
+      - ../../:/app
+      - /app/node_modules
