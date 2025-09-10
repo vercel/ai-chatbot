@@ -44,6 +44,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   variant="ghost"
                   type="button"
                   className="h-8 p-1 md:h-fit md:p-2"
+                  size="icon"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');

@@ -56,6 +56,7 @@ function PureArtifactActions({
                 'p-2': !action.label,
                 'px-2 py-1.5': action.label,
               })}
+              size="icon"
               onClick={async () => {
                 setIsLoading(true);
 

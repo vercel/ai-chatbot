@@ -342,7 +342,7 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className='flex flex-row items-start gap-1 sm:gap-2'>
+        <div className='flex flex-row items-start gap-1 sm:gap-2 pt-2'>
           <PromptInputTextarea
             data-testid="multimodal-input"
             ref={textareaRef}
@@ -414,6 +414,7 @@ function PureAttachmentsButton({
     <Button
       data-testid="attachments-button"
       className='h-8 rounded-lg p-1 transition-colors hover:bg-accent'
+      size="icon"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();

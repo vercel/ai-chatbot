@@ -71,7 +71,8 @@ export function VisibilitySelector({
         <Button
           data-testid="visibility-selector"
           variant="outline"
-          className="hidden focus:outline-hidden focus:ring-0 md:flex md:h-fit md:px-2"
+          className="hidden focus:outline-hidden focus:ring-0 md:flex md:h-fit md:px-2 md:py-1.5"
+          size="sm"
         >
           {selectedVisibility?.icon}
           {selectedVisibility?.label}
