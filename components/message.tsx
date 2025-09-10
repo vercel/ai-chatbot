@@ -4,15 +4,15 @@ import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
 import { SparklesIcon } from './icons';
-import { Response } from './elements/response';
-import { MessageContent } from './elements/message';
+import { Response } from './ai-elements/response';
+import { MessageContent } from './ai-elements/message';
 import {
   Tool,
   ToolHeader,
   ToolContent,
   ToolInput,
   ToolOutput,
-} from './elements/tool';
+} from './ai-elements/tool';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
@@ -57,7 +57,7 @@ const PurePreviewMessage = ({
   return (
     <motion.div
       data-testid={`message-${message.role}`}
-      className="group/message w-full"
+      className="w-full group/message"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       data-role={message.role}
@@ -69,7 +69,7 @@ const PurePreviewMessage = ({
         })}
       >
         {message.role === 'assistant' && (
-          <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
+          <div className="flex justify-center items-center -mt-1 rounded-full ring-1 size-8 shrink-0 bg-background ring-border">
             <SparklesIcon size={14} />
           </div>
         )}
@@ -93,7 +93,7 @@ const PurePreviewMessage = ({
           {attachmentsFromMessage.length > 0 && (
             <div
               data-testid={`message-attachments`}
-              className="flex flex-row justify-end gap-2"
+              className="flex flex-row gap-2 justify-end"
             >
               {attachmentsFromMessage.map((attachment) => (
                 <PreviewAttachment
@@ -150,10 +150,10 @@ const PurePreviewMessage = ({
                 return (
                   <div
                     key={key}
-                    className="flex w-full flex-row items-start gap-3"
+                    className="flex flex-row gap-3 items-start w-full"
                   >
                     <div className="size-8" />
-                    <div className="min-w-0 flex-1">
+                    <div className="flex-1 min-w-0">
                       <MessageEditor
                         key={message.id}
                         message={message}
@@ -195,7 +195,7 @@ const PurePreviewMessage = ({
                 return (
                   <div
                     key={toolCallId}
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                    className="p-4 text-red-500 bg-red-50 rounded-lg border border-red-200 dark:bg-red-950/50"
                   >
                     Error creating document: {String(part.output.error)}
                   </div>
@@ -218,7 +218,7 @@ const PurePreviewMessage = ({
                 return (
                   <div
                     key={toolCallId}
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                    className="p-4 text-red-500 bg-red-50 rounded-lg border border-red-200 dark:bg-red-950/50"
                   >
                     Error updating document: {String(part.output.error)}
                   </div>
@@ -250,7 +250,7 @@ const PurePreviewMessage = ({
                       <ToolOutput
                         output={
                           'error' in part.output ? (
-                            <div className="rounded border p-2 text-red-500">
+                            <div className="p-2 text-red-500 rounded border">
                               Error: {String(part.output.error)}
                             </div>
                           ) : (
@@ -306,18 +306,18 @@ export const ThinkingMessage = () => {
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="group/message w-full"
+      className="w-full group/message"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       data-role={role}
     >
-      <div className="flex items-start justify-start gap-3">
-        <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
+      <div className="flex gap-3 justify-start items-start">
+        <div className="flex justify-center items-center -mt-1 rounded-full ring-1 size-8 shrink-0 bg-background ring-border">
           <SparklesIcon size={14} />
         </div>
 
-        <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">
+        <div className="flex flex-col gap-2 w-full md:gap-4">
+          <div className="p-0 text-sm text-muted-foreground">
             <LoadingText>Thinking...</LoadingText>
           </div>
         </div>

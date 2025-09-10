@@ -7,7 +7,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
-import { Conversation, ConversationContent } from './elements/conversation';
+import { Conversation, ConversationContent } from './ai-elements/conversation';
 import { ArrowDownIcon } from 'lucide-react';
 
 interface MessagesProps {
@@ -63,10 +63,10 @@ function PureMessages({
   return (
     <div
       ref={messagesContainerRef}
-      className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll"
+      className="overflow-y-scroll flex-1 overscroll-behavior-contain -webkit-overflow-scrolling-touch touch-pan-y"
       style={{ overflowAnchor: 'none' }}
     >
-      <Conversation className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 md:gap-6">
+      <Conversation className="flex flex-col gap-4 mx-auto min-w-0 max-w-4xl md:gap-6">
         <ConversationContent className="flex flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
           {messages.length === 0 && <Greeting />}
 
@@ -107,7 +107,7 @@ function PureMessages({
 
       {!isAtBottom && (
         <button
-          className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
+          className="absolute bottom-40 left-1/2 z-10 p-2 rounded-full border shadow-lg transition-colors -translate-x-1/2 bg-background hover:bg-muted"
           onClick={() => scrollToBottom('smooth')}
           type="button"
           aria-label="Scroll to bottom"

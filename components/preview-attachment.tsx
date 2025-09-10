@@ -1,5 +1,5 @@
 import type { Attachment } from '@/lib/types';
-import { Loader } from './elements/loader';
+import { Loader } from './ai-elements/loader';
 import { CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
 import Image from 'next/image';
@@ -20,24 +20,24 @@ export const PreviewAttachment = ({
   return (
     <div
       data-testid="input-attachment-preview"
-      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
+      className="overflow-hidden relative rounded-lg border group size-16 bg-muted"
     >
       {contentType?.startsWith('image') ? (
         <Image
           src={url}
           alt={name ?? 'An image attachment'}
-          className="size-full object-cover"
+          className="object-cover size-full"
           width={64}
           height={64}
         />
       ) : (
-        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+        <div className="flex justify-center items-center text-xs size-full text-muted-foreground">
           File
         </div>
       )}
 
       {isUploading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+        <div className="flex absolute inset-0 justify-center items-center bg-black/50">
           <Loader size={16} />
         </div>
       )}

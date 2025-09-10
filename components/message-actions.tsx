@@ -4,7 +4,7 @@ import { useCopyToClipboard } from 'usehooks-ts';
 import type { Vote } from '@/lib/db/schema';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon, PencilEditIcon } from './icons';
-import { Actions, Action } from './elements/actions';
+import { Actions, Action } from './ai-elements/actions';
 import { memo } from 'react';
 import equal from 'fast-deep-equal';
 import { toast } from 'sonner';
@@ -53,7 +53,7 @@ export function PureMessageActions({
             <Action
               tooltip="Edit"
               onClick={() => setMode('edit')}
-              className="-left-10 absolute top-0 opacity-0 transition-opacity group-hover/message:opacity-100"
+              className="absolute top-0 -left-10 opacity-0 transition-opacity group-hover/message:opacity-100"
             >
               <PencilEditIcon />
             </Action>

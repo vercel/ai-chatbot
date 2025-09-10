@@ -4,7 +4,7 @@ import {
   Reasoning,
   ReasoningTrigger,
   ReasoningContent,
-} from './elements/reasoning';
+} from './ai-elements/reasoning';
 
 interface MessageReasoningProps {
   isLoading: boolean;

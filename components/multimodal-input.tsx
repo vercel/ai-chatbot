@@ -27,7 +27,7 @@ import {
   PromptInputSubmit,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
-} from './elements/prompt-input';
+} from './ai-elements/prompt-input';
 import { SelectItem } from '@/components/ui/select';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
@@ -41,7 +41,7 @@ import { chatModels } from '@/lib/ai/models';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
-import { Context } from './elements/context';
+import { Context } from './ai-elements/context';
 import { myProvider } from '@/lib/ai/providers';
 
 function PureMultimodalInput({
