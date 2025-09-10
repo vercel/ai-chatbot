@@ -57,7 +57,10 @@ const PurePreviewMessage = ({
   return (
     <motion.div
       data-testid={`message-${message.role}`}
-      className="group/message w-full"
+      className={cn('group/message w-full', {
+        'is-user': message.role === 'user',
+        'is-assistant': message.role === 'assistant',
+      })}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       data-role={message.role}
@@ -129,7 +132,7 @@ const PurePreviewMessage = ({
                     <MessageContent
                       data-testid="message-content"
                       className={cn({
-                        'w-fit break-words rounded-2xl px-3 py-2 text-right text-white':
+                        'w-fit break-words rounded-xl px-4 py-3 text-right text-white border border-secondary/30':
                           message.role === 'user',
                         'bg-transparent px-0 py-0 text-left':
                           message.role === 'assistant',
@@ -278,6 +281,7 @@ const PurePreviewMessage = ({
               vote={vote}
               isLoading={isLoading}
               setMode={setMode}
+              mode={mode}
             />
           )}
         </div>

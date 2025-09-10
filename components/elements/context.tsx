@@ -288,7 +288,7 @@ export const Context = ({
           <ContextIcon percent={usedPercent} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="top" className="w-fit p-3">
+      <DropdownMenuContent align="end" alignOffset={-5} sideOffset={5} side="top" className="w-fit p-3 rounded-xl">
         <div className="min-w-[240px] space-y-2">
           <div className="flex justify-between items-start text-sm">
             <span>{displayPct}</span>

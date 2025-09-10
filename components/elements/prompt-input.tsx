@@ -11,13 +11,19 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { ChatStatus } from 'ai';
-import { Loader2Icon, SendIcon, SquareIcon, XIcon } from 'lucide-react';
+import { Loader2Icon, PlusIcon, SendIcon, SquareIcon, XIcon } from 'lucide-react';
 import type {
   ComponentProps,
   HTMLAttributes,
   KeyboardEventHandler,
 } from 'react';
 import { Children } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
 
@@ -29,6 +35,15 @@ export const PromptInput = ({ className, ...props }: PromptInputProps) => (
     )}
     {...props}
   />
+);
+
+export type PromptInputBodyProps = HTMLAttributes<HTMLDivElement>;
+
+export const PromptInputBody = ({
+  className,
+  ...props
+}: PromptInputBodyProps) => (
+  <div className={cn(className, 'flex flex-col')} {...props} />
 );
 
 export type PromptInputTextareaProps = ComponentProps<typeof Textarea> & {
@@ -148,6 +163,49 @@ export const PromptInputButton = ({
   );
 };
 
+export type PromptInputActionMenuProps = ComponentProps<typeof DropdownMenu>;
+export const PromptInputActionMenu = (props: PromptInputActionMenuProps) => (
+  <DropdownMenu {...props} />
+);
+
+export type PromptInputActionMenuTriggerProps = ComponentProps<
+  typeof Button
+> & {};
+export const PromptInputActionMenuTrigger = ({
+  className,
+  children,
+  ...props
+}: PromptInputActionMenuTriggerProps) => (
+  <DropdownMenuTrigger asChild>
+    <PromptInputButton className={className} {...props}>
+      {children ?? <PlusIcon className="size-4" />}
+    </PromptInputButton>
+  </DropdownMenuTrigger>
+);
+
+export type PromptInputActionMenuContentProps = ComponentProps<
+  typeof DropdownMenuContent
+>;
+export const PromptInputActionMenuContent = ({
+  className,
+  ...props
+}: PromptInputActionMenuContentProps) => (
+  <DropdownMenuContent align="start" className={cn(className)} {...props} />
+);
+
+export type PromptInputActionMenuItemProps = ComponentProps<
+  typeof DropdownMenuItem
+>;
+export const PromptInputActionMenuItem = ({
+  className,
+  ...props
+}: PromptInputActionMenuItemProps) => (
+  <DropdownMenuItem className={cn(className)} {...props} />
+);
+
+// Note: Actions that perform side-effects (like opening a file dialog)
+// are provided in opt-in modules (e.g., prompt-input-attachments).
+
 export type PromptInputSubmitProps = ComponentProps<typeof Button> & {
   status?: ChatStatus;
 };
@@ -200,7 +258,7 @@ export const PromptInputModelSelectTrigger = ({
   <SelectTrigger
     className={cn(
       'border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors',
-      'hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground',
+      'hover:bg-accent hover:text-foreground [&[aria-expanded="true"]]:bg-accent [&[aria-expanded="true"]]:text-foreground',
       'h-auto px-2 py-1.5',
       className,
     )}
