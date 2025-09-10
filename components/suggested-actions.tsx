@@ -5,7 +5,7 @@ import { memo } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
 import type { ChatMessage } from '@/lib/types';
-import { Suggestion } from './elements/suggestion';
+import { Suggestion, Suggestions } from './elements/suggestion';
 
 interface SuggestedActionsProps {
   chatId: string;
@@ -46,38 +46,74 @@ function PureSuggestedActions({
   ];
 
   return (
-    <div
-      data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
-    >
-      {suggestedActions.map((suggestedAction, index) => (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ delay: 0.05 * index }}
-          key={`suggested-action-${suggestedAction.title}-${index}`}
-        >
-          <Suggestion
-            suggestion={suggestedAction.action}
-            onClick={(suggestion) => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
-              sendMessage({
-                role: 'user',
-                parts: [{ type: 'text', text: suggestion }],
-              });
-            }}
-            className="text-left w-full h-auto whitespace-normal p-3"
+    <div data-testid="suggested-actions" className="w-full">
+      {/* Mobile: horizontal scrollable chips */}
+      <div className="sm:hidden">
+        <Suggestions className="py-1">
+          {suggestedActions.map((suggestedAction, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ delay: 0.05 * index }}
+              key={`suggested-action-mobile-${suggestedAction.title}-${index}`}
+              className="shrink-0"
+            >
+              <Suggestion
+                suggestion={suggestedAction.action}
+                onClick={(suggestion) => {
+                  window.history.replaceState({}, '', `/chat/${chatId}`);
+                  sendMessage({
+                    role: 'user',
+                    parts: [{ type: 'text', text: suggestion }],
+                  });
+                }}
+                className="shrink-0 text-left h-auto whitespace-normal p-3 min-w-[14rem]"
+              >
+                <div className="flex flex-col items-start text-left">
+                  <span className="font-medium">{suggestedAction.title}</span>
+                  <span className="text-muted-foreground">
+                    {suggestedAction.label}
+                  </span>
+                </div>
+              </Suggestion>
+            </motion.div>
+          ))}
+        </Suggestions>
+      </div>
+
+      {/* Desktop/tablet: simple card grid (no Suggestion component) */}
+      <div className="hidden sm:grid sm:grid-cols-2 gap-2 w-full">
+        {suggestedActions.map((suggestedAction, index) => (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ delay: 0.05 * index }}
+            key={`suggested-action-${suggestedAction.title}-${index}`}
           >
-            <div className="flex flex-col items-start text-left">
-              <span className="font-medium">{suggestedAction.title}</span>
-              <span className="text-muted-foreground">
-                {suggestedAction.label}
-              </span>
-            </div>
-          </Suggestion>
-        </motion.div>
-      ))}
+            <button
+              type="button"
+              aria-label={suggestedAction.title}
+              onClick={() => {
+                window.history.replaceState({}, '', `/chat/${chatId}`);
+                sendMessage({
+                  role: 'user',
+                  parts: [{ type: 'text', text: suggestedAction.action }],
+                });
+              }}
+              className="w-full text-left rounded-xl border border-border p-4 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex flex-col items-start text-left">
+                <span className="font-medium">{suggestedAction.title}</span>
+                <span className="text-muted-foreground whitespace-normal break-words">
+                  {suggestedAction.label}
+                </span>
+              </div>
+            </button>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
