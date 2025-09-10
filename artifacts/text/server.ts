@@ -1,7 +1,7 @@
 import { smoothStream, streamText } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
 import { createDocumentHandler } from '@/lib/artifacts/server';
-import { updateDocumentPrompt } from '@/lib/ai/prompts';
+import { updateDocumentPrompt, prompt } from '@/lib/ai/prompts';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
   kind: 'text',
@@ -10,8 +10,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
 
     const { fullStream } = streamText({
       model: myProvider.languageModel('artifact-model'),
-      system:
-        'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+      system: `${prompt}\n\nYou are now creating a document. Based on the conversation context above, generate the appropriate content. If this is a COI disclosure, use the template structure provided and fill it with real information from the conversation.`,
       experimental_transform: smoothStream({ chunking: 'word' }),
       prompt: title,
     });

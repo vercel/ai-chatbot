@@ -83,25 +83,4 @@ If yes, provide details: [Explain]
 I, [Employee Full Name], certify that the information provided above is true, complete, and accurate to the best of my knowledge. I understand that failure to disclose conflicts of interest may result in disciplinary action under company policy and applicable laws.
 
 **Signature:** ___________________________  
-**Date:** [YYYY-MM-DD]  
-
----
-
-# Compliance Officer Review (To Be Completed by Compliance Officer)
-
-**Reviewed By (Name):** [Full Name]  
-**Date of Review:** [YYYY-MM-DD]  
-**Findings:**  
-[Summary of findings, including confirmation of whether a conflict exists.]  
-
-**Required Actions:**  
-[List required mitigation or corrective actions.]  
-
-**Final Determination:**  
-- [ ] Conflict Exists – Mitigation Required  
-- [ ] Conflict Exists – No Mitigation Possible  
-- [ ] No Conflict Identified  
-
-**Compliance Officer Signature:** ___________________________  
-**Date:** [YYYY-MM-DD]  
-`;
+**Date:** [YYYY-MM-DD]`;

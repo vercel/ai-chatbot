@@ -16,12 +16,13 @@ interface CreateDocumentProps {
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({
     description:
-      'Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+      'Create a document for a writing or content creation activities. You can either provide pre-generated content or let the system generate content based on the title.',
     inputSchema: z.object({
       title: z.string(),
       kind: z.enum(artifactKinds),
+      content: z.string().optional().describe('Pre-generated content for the document. If provided, this content will be used directly instead of generating new content.'),
     }),
-    execute: async ({ title, kind }) => {
+    execute: async ({ title, kind, content }) => {
       const id = generateUUID();
 
       dataStream.write({
@@ -48,21 +49,48 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         transient: true,
       });
 
-      const documentHandler = documentHandlersByArtifactKind.find(
-        (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === kind,
-      );
+      if (content) {
+        // If content is provided, stream it directly without using document handler
+        const words = content.split(' ');
+        for (const word of words) {
+          dataStream.write({
+            type: 'data-textDelta',
+            data: word + ' ',
+            transient: true,
+          });
+          // Small delay to simulate streaming
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
 
-      if (!documentHandler) {
-        throw new Error(`No document handler found for kind: ${kind}`);
+        // Save the document directly
+        if (session?.user?.id) {
+          const { saveDocument } = await import('@/lib/db/queries');
+          await saveDocument({
+            id,
+            title,
+            content,
+            kind,
+            userId: session.user.id,
+          });
+        }
+      } else {
+        // Fallback to document handler for backward compatibility
+        const documentHandler = documentHandlersByArtifactKind.find(
+          (documentHandlerByArtifactKind) =>
+            documentHandlerByArtifactKind.kind === kind,
+        );
+
+        if (!documentHandler) {
+          throw new Error(`No document handler found for kind: ${kind}`);
+        }
+
+        await documentHandler.onCreateDocument({
+          id,
+          title,
+          dataStream,
+          session,
+        });
       }
-
-      await documentHandler.onCreateDocument({
-        id,
-        title,
-        dataStream,
-        session,
-      });
 
       dataStream.write({ type: 'data-finish', data: null, transient: true });
 
@@ -70,7 +98,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         id,
         title,
         kind,
-        content: 'A document was created and is now visible to the user.',
+        content: content || 'A document was created and is now visible to the user.',
       };
     },
   });
