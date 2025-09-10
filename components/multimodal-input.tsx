@@ -407,7 +407,7 @@ function PureMultimodalInput({
 
           <PromptInputSubmit
             status={status}
-            disabled={!input.trim() || !status || uploadQueue.length > 0}
+            disabled={(!input.trim() && status === 'ready') || uploadQueue.length > 0}
             className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
           >
             {status === 'submitted' ? (
