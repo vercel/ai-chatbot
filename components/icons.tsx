@@ -721,25 +721,23 @@ export const PencilEditIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const RouteIcon = ({ size = 16 }: { size?: number }) => (
-  <svg
-    height={size}
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
-    width={size}
-    className="text-current"
-  >
-    <title>Route Icon</title>
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M8 2C6.89543 2 6 2.89543 6 4C6 5.10457 6.89543 6 8 6C9.10457 6 10 5.10457 10 4C10 2.89543 9.10457 2 8 2ZM8 3.5C8.55228 3.5 9 3.94772 9 4.5C9 5.05228 8.55228 5.5 8 5.5C7.44772 5.5 7 5.05228 7 4.5C7 3.94772 7.44772 3.5 8 3.5ZM8 8C6.89543 8 6 8.89543 6 10C6 11.1046 6.89543 12 8 12C9.10457 12 10 11.1046 10 10C10 8.89543 9.10457 8 8 8ZM8 9.5C8.55228 9.5 9 9.94772 9 10.5C9 11.0523 8.55228 11.5 8 11.5C7.44772 11.5 7 11.0523 7 10.5C7 9.94772 7.44772 9.5 8 9.5ZM4 6.5C4 6.22386 4.22386 6 4.5 6H11.5C11.7761 6 12 6.22386 12 6.5C12 6.77614 11.7761 7 11.5 7H4.5C4.22386 7 4 6.77614 4 6.5Z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
-export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => (
+export const PlusIcon = ({ size = 16 }: { size?: number }) => (
+	<svg
+		height={size}
+		strokeLinejoin="round"
+		viewBox="0 0 16 16"
+		width={size}
+		className="text-current"
+	>
+		<title>Plus Icon</title>
+		<path
+			fillRule="evenodd"
+			clipRule="evenodd"
+			d="M8 2C8.55228 2 9 2.44772 9 3V7H13C13.5523 7 14 7.44772 14 8C14 8.55228 13.5523 9 13 9H9V13C9 13.5523 8.55228 14 8 14C7.44772 14 7 13.5523 7 13V9H3C2.44772 9 2 8.55228 2 8C2 7.44772 2.44772 7 3 7H7V3C7 2.44772 7.44772 2 8 2Z"
+			fill="currentColor"
+		/>
+	</svg>
+);export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
     strokeLinejoin="round"
