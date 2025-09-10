@@ -26,15 +26,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
     <Sidebar className="group-data-[side=left]:border-r-0">
       <SidebarHeader>
         <SidebarMenu>
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-row items-center justify-between">
             <Link
               href="/"
               onClick={() => {
                 setOpenMobile(false);
               }}
-              className="flex flex-row gap-3 items-center"
+              className="flex flex-row items-center gap-3"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
+              <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
                 Chatbot
               </span>
             </Link>
@@ -43,7 +43,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <Button
                   variant="ghost"
                   type="button"
-                  className="p-1 h-8 md:p-2 md:h-fit"
+                  className="h-8 p-1 md:h-fit md:p-2"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');
@@ -53,7 +53,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <PlusIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent align="end" className="hidden md:block">New Chat</TooltipContent>
+              <TooltipContent align="end" className="hidden md:block">
+                New Chat
+              </TooltipContent>
             </Tooltip>
           </div>
         </SidebarMenu>

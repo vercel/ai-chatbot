@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, CpuIcon, StopIcon, ChevronDownIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';
@@ -26,10 +26,10 @@ import {
   PromptInputTools,
   PromptInputSubmit,
   PromptInputModelSelect,
-  PromptInputModelSelectTrigger,
   PromptInputModelSelectContent,
 } from './elements/prompt-input';
-import { SelectItem, } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -253,7 +253,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className="flex relative flex-col gap-4 w-full">
+    <div className='relative flex w-full flex-col gap-4'>
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -261,7 +261,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="absolute -top-12 left-1/2 z-50 -translate-x-1/2"
+            className='-top-12 -translate-x-1/2 absolute left-1/2 z-50'
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -291,7 +291,7 @@ function PureMultimodalInput({
 
       <input
         type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+        className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
         ref={fileInputRef}
         multiple
         onChange={handleFileChange}
@@ -299,7 +299,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="rounded-xl border shadow-sm transition-all duration-200 bg-background border-border focus-within:border-border hover:border-muted-foreground/50"
+        className='rounded-xl border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50'
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -312,7 +312,7 @@ function PureMultimodalInput({
         {(attachments.length > 0 || uploadQueue.length > 0) && (
           <div
             data-testid="attachments-preview"
-            className="flex overflow-x-scroll flex-row gap-2 items-end px-3 py-2"
+            className='flex flex-row items-end gap-2 overflow-x-scroll px-3 py-2'
           >
             {attachments.map((attachment) => (
               <PreviewAttachment
@@ -342,7 +342,7 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className="flex flex-row gap-2 items-start">
+        <div className='flex flex-row items-start gap-1 sm:gap-2'>
           <PromptInputTextarea
             data-testid="multimodal-input"
             ref={textareaRef}
@@ -352,14 +352,14 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className="text-sm flex-grow resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
+            className='grow resize-none border-0! border-none! bg-transparent px-2 pt-1 pb-3 ml-1 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden'
             rows={1}
             autoFocus
           />{' '}
-          <Context {...contextProps} />
+          <Context {...contextProps} className="mr-0.5 mt-1" />
         </div>
-        <PromptInputToolbar className="px-3 py-2 !border-t-0 !border-top-0 shadow-none dark:!border-transparent dark:border-0">
-          <PromptInputTools className="gap-2">
+        <PromptInputToolbar className='!border-top-0 border-t-0! px-2 py-2 shadow-none dark:border-0 dark:border-transparent!'>
+          <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
               status={status}
@@ -374,9 +374,9 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
-              className="p-2 rounded-full transition-colors duration-200 text-primary-foreground bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground -mt-2"
             >
-              <ArrowUpIcon size={16} />
+              <ArrowUpIcon size={14} />
             </PromptInputSubmit>
           )}
         </PromptInputToolbar>
@@ -413,16 +413,15 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className="rounded-md p-1.5 h-fit hover:bg-muted transition-colors duration-200"
+      className='h-8 rounded-lg p-1 transition-colors hover:bg-accent'
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
       }}
       disabled={status !== 'ready' || isReasoningModel}
       variant="ghost"
-      size="sm"
     >
-      <PaperclipIcon size={14} />
+      <PaperclipIcon size={14} style={{ width: 14, height: 14 }} />
     </Button>
   );
 }
@@ -453,18 +452,22 @@ function PureModelSelectorCompact({
         }
       }}
     >
-      <PromptInputModelSelectTrigger
+      <SelectPrimitive.Trigger
         type="button"
-        className="text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
+        className='flex items-center gap-2 px-2 h-8 rounded-lg border-0 bg-background text-foreground hover:bg-accent transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none'
       >
-        {selectedModel?.name || 'Select model'}
-      </PromptInputModelSelectTrigger>
-      <PromptInputModelSelectContent>
+        <CpuIcon size={16} />
+        <span className="text-xs font-medium sm:block hidden">{selectedModel?.name}</span>
+        <ChevronDownIcon size={16} />
+      </SelectPrimitive.Trigger>
+      <PromptInputModelSelectContent className="min-w-[260px] p-0">
         {chatModels.map((model) => (
-          <SelectItem key={model.id} value={model.name}>
-            <div className="flex flex-col gap-1 items-start py-1">
-              <div className="font-medium">{model.name}</div>
-              <div className="text-xs text-muted-foreground">
+          <SelectItem key={model.id} value={model.name} className="px-3 py-2 text-xs">
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="font-medium truncate text-xs">
+                {model.name}
+              </div>
+              <div className="text-[10px] text-muted-foreground truncate leading-tight">
                 {model.description}
               </div>
             </div>
@@ -487,16 +490,14 @@ function PureStopButton({
   return (
     <Button
       data-testid="stop-button"
-      className="p-2 rounded-full border transition-colors duration-200 h-fit border-border hover:bg-muted"
+      className="size-7 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
       onClick={(event) => {
         event.preventDefault();
         stop();
         setMessages((messages) => messages);
       }}
-      variant="outline"
-      size="sm"
     >
-      <StopIcon size={16} />
+      <StopIcon size={14} />
     </Button>
   );
 }

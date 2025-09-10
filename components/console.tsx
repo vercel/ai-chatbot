@@ -80,7 +80,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   return consoleOutputs.length > 0 ? (
     <>
       <div
-        className="fixed z-50 w-full h-2 cursor-ns-resize"
+        className="fixed z-50 h-2 w-full cursor-ns-resize"
         onMouseDown={startResizing}
         style={{ bottom: height - 4 }}
         role="slider"
@@ -89,15 +89,15 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
 
       <div
         className={cn(
-          'flex overflow-x-hidden overflow-y-scroll fixed bottom-0 z-40 flex-col w-full border-t dark:bg-zinc-900 bg-zinc-50 dark:border-zinc-700 border-zinc-200',
+          'fixed bottom-0 z-40 flex w-full flex-col overflow-x-hidden overflow-y-scroll border-zinc-200 border-t bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900',
           {
             'select-none': isResizing,
           },
         )}
         style={{ height }}
       >
-        <div className="flex sticky top-0 z-50 flex-row justify-between items-center px-2 py-1 w-full border-b h-fit dark:border-zinc-700 border-zinc-200 bg-muted">
-          <div className="flex flex-row gap-3 items-center pl-2 text-sm dark:text-zinc-50 text-zinc-800">
+        <div className="sticky top-0 z-50 flex h-fit w-full flex-row items-center justify-between border-zinc-200 border-b bg-muted px-2 py-1 dark:border-zinc-700">
+          <div className="flex flex-row items-center gap-3 pl-2 text-sm text-zinc-800 dark:text-zinc-50">
             <div className="text-muted-foreground">
               <TerminalWindowIcon />
             </div>
@@ -105,7 +105,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
           </div>
           <Button
             variant="ghost"
-            className="p-1 size-fit hover:dark:bg-zinc-700 hover:bg-zinc-200"
+            className="size-fit p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             size="icon"
             onClick={() => setConsoleOutputs([])}
           >
@@ -117,7 +117,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
           {consoleOutputs.map((consoleOutput, index) => (
             <div
               key={consoleOutput.id}
-              className="flex flex-row px-4 py-2 font-mono text-sm border-b dark:border-zinc-700 border-zinc-200 dark:bg-zinc-900 bg-zinc-50"
+              className="flex flex-row border-zinc-200 border-b bg-zinc-50 px-4 py-2 font-mono text-sm dark:border-zinc-700 dark:bg-zinc-900"
             >
               <div
                 className={cn('w-12 shrink-0', {
@@ -135,7 +135,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                 consoleOutput.status,
               ) ? (
                 <div className="flex flex-row gap-2">
-                  <div className="size-fit self-center mb-auto mt-0.5">
+                  <div className="mt-0.5 mb-auto size-fit self-center">
                     <Loader size={16} />
                   </div>
                   <div className="text-muted-foreground">
@@ -149,14 +149,14 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   </div>
                 </div>
               ) : (
-                <div className="flex overflow-x-scroll flex-col gap-2 w-full dark:text-zinc-50 text-zinc-900">
+                <div className="flex w-full flex-col gap-2 overflow-x-scroll text-zinc-900 dark:text-zinc-50">
                   {consoleOutput.contents.map((content, index) =>
                     content.type === 'image' ? (
                       <picture key={`${consoleOutput.id}-${index}`}>
                         <img
                           src={content.value}
                           alt="output"
-                          className="w-full rounded-md max-w-screen-toast-mobile"
+                          className="w-full max-w-(--breakpoint-toast-mobile) rounded-md"
                         />
                       </picture>
                     ) : (

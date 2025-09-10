@@ -1,6 +1,10 @@
 'use client';
 
-import { Reasoning, ReasoningTrigger, ReasoningContent } from './elements/reasoning';
+import {
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+} from './elements/reasoning';
 
 interface MessageReasoningProps {
   isLoading: boolean;
@@ -12,8 +16,8 @@ export function MessageReasoning({
   reasoning,
 }: MessageReasoningProps) {
   return (
-    <Reasoning 
-      isStreaming={isLoading} 
+    <Reasoning
+      isStreaming={isLoading}
       defaultOpen={true}
       data-testid="message-reasoning"
     >

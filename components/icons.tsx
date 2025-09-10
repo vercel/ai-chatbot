@@ -515,14 +515,15 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
+export const ArrowUpIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
       width={size}
-      style={{ color: 'currentcolor' }}
+      style={{ color: 'currentcolor', ...props.style }}
+      {...props}
     >
       <path
         fillRule="evenodd"
@@ -534,13 +535,14 @@ export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const StopIcon = ({ size = 16 }: { size?: number }) => {
+export const StopIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
       viewBox="0 0 16 16"
       width={size}
-      style={{ color: 'currentcolor' }}
+      style={{ color: 'currentcolor', ...props.style }}
+      {...props}
     >
       <path
         fillRule="evenodd"
@@ -552,15 +554,16 @@ export const StopIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
+export const PaperclipIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
       strokeLinejoin="round"
       viewBox="0 0 16 16"
       width={size}
-      style={{ color: 'currentcolor' }}
+      style={{ color: 'currentcolor', ...props.style }}
       className="-rotate-45"
+      {...props}
     >
       <path
         fillRule="evenodd"
@@ -692,6 +695,30 @@ export const DeltaIcon = ({ size = 16 }: { size?: number }) => (
       d="M2.67705 15H1L1.75 13.5L6.16147 4.67705L6.15836 4.67082L6.16667 4.66667L7.16147 2.67705L8 1L8.83853 2.67705L14.25 13.5L15 15H13.3229H2.67705ZM7 6.3541L10.5729 13.5H3.42705L7 6.3541Z"
       fill="currentColor"
     />
+  </svg>
+);
+
+export const CpuIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    style={{ color: 'currentcolor' }}
+  >
+    <path d="M4 12C4 8.22876 4 6.34315 5.17157 5.17157C6.34315 4 8.22876 4 12 4C15.7712 4 17.6569 4 18.8284 5.17157C20 6.34315 20 8.22876 20 12C20 15.7712 20 17.6569 18.8284 18.8284C17.6569 20 15.7712 20 12 20C8.22876 20 6.34315 20 5.17157 18.8284C4 17.6569 4 15.7712 4 12Z" strokeLinejoin="round" />
+    <path d="M9.5 2V4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14.5 2V4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9.5 20V22" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14.5 20V22" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M13 9L9 13" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M15 13L13 15" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 14.5L20 14.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 9.5L2 9.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 14.5L2 14.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 9.5L20 9.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
