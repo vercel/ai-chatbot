@@ -515,7 +515,10 @@ export const InfoIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const ArrowUpIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
+export const ArrowUpIcon = ({
+  size = 16,
+  ...props
+}: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
@@ -535,7 +538,10 @@ export const ArrowUpIcon = ({ size = 16, ...props }: { size?: number } & React.S
   );
 };
 
-export const StopIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
+export const StopIcon = ({
+  size = 16,
+  ...props
+}: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}
@@ -554,7 +560,10 @@ export const StopIcon = ({ size = 16, ...props }: { size?: number } & React.SVGP
   );
 };
 
-export const PaperclipIcon = ({ size = 16, ...props }: { size?: number } & React.SVGProps<SVGSVGElement>) => {
+export const PaperclipIcon = ({
+  size = 16,
+  ...props
+}: { size?: number } & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       height={size}

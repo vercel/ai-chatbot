@@ -253,7 +253,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className='relative flex w-full flex-col gap-4'>
+    <div className="relative flex w-full flex-col gap-4">
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -261,7 +261,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className='-top-12 -translate-x-1/2 absolute left-1/2 z-50'
+            className="-top-12 -translate-x-1/2 absolute left-1/2 z-50"
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -299,7 +299,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className='rounded-xl border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50'
+        className="rounded-xl border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -312,7 +312,7 @@ function PureMultimodalInput({
         {(attachments.length > 0 || uploadQueue.length > 0) && (
           <div
             data-testid="attachments-preview"
-            className='flex flex-row items-end gap-2 overflow-x-scroll px-3 py-2'
+            className="flex flex-row items-end gap-2 overflow-x-scroll px-3 py-2"
           >
             {attachments.map((attachment) => (
               <PreviewAttachment
@@ -342,7 +342,7 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className='flex flex-row items-start gap-1 sm:gap-2'>
+        <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
             data-testid="multimodal-input"
             ref={textareaRef}
@@ -352,13 +352,13 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className='grow resize-none border-0! border-none! bg-transparent px-2 py-3 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:px-3 [&::-webkit-scrollbar]:hidden'
+            className="grow resize-none border-0! border-none! bg-transparent px-2 py-3 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:px-3 [&::-webkit-scrollbar]:hidden"
             rows={1}
             autoFocus
           />{' '}
           <Context {...contextProps} className="mr-1.5" />
         </div>
-        <PromptInputToolbar className='!border-top-0 border-t-0! px-2 py-2 shadow-none dark:border-0 dark:border-transparent!'>
+        <PromptInputToolbar className="!border-top-0 border-t-0! px-2 py-2 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-1 sm:gap-2">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -413,7 +413,7 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className='h-fit rounded-md p-1 transition-colors duration-200 hover:bg-muted'
+      className="h-fit rounded-md p-1 transition-colors duration-200 hover:bg-muted"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -454,16 +454,16 @@ function PureModelSelectorCompact({
     >
       <PromptInputModelSelectTrigger
         type="button"
-        className='max-w-[120px] truncate text-xs focus:outline-hidden focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=closed]:ring-0 data-[state=open]:ring-0 sm:max-w-none'
+        className="max-w-[120px] truncate text-xs focus:outline-hidden focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=closed]:ring-0 data-[state=open]:ring-0 sm:max-w-none"
       >
         {selectedModel?.name || 'Select model'}
       </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent className="max-w-[90vw] sm:max-w-[400px]">
         {chatModels.map((model) => (
           <SelectItem key={model.id} value={model.name}>
-            <div className='flex flex-col items-start gap-1 py-1'>
-              <div className='font-medium text-sm'>{model.name}</div>
-              <div className='line-clamp-2 text-muted-foreground text-xs'>
+            <div className="flex flex-col items-start gap-1 py-1">
+              <div className="font-medium text-sm">{model.name}</div>
+              <div className="line-clamp-2 text-muted-foreground text-xs">
                 {model.description}
               </div>
             </div>

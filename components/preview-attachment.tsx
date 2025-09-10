@@ -18,7 +18,10 @@ export const PreviewAttachment = ({
   const { name, url, contentType } = attachment;
 
   return (
-    <div data-testid="input-attachment-preview" className='group relative size-16 overflow-hidden rounded-lg border bg-muted'>
+    <div
+      data-testid="input-attachment-preview"
+      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
+    >
       {contentType?.startsWith('image') ? (
         <Image
           src={url}
@@ -28,7 +31,7 @@ export const PreviewAttachment = ({
           height={64}
         />
       ) : (
-        <div className='flex size-full items-center justify-center text-muted-foreground text-xs'>
+        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
           File
         </div>
       )}
@@ -50,7 +53,7 @@ export const PreviewAttachment = ({
         </Button>
       )}
 
-      <div className='absolute inset-x-0 bottom-0 truncate bg-linear-to-t from-black/80 to-transparent px-1 py-0.5 text-[10px] text-white'>
+      <div className="absolute inset-x-0 bottom-0 truncate bg-linear-to-t from-black/80 to-transparent px-1 py-0.5 text-[10px] text-white">
         {name}
       </div>
     </div>
