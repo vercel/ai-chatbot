@@ -68,7 +68,7 @@ function PureSuggestedActions({
                     parts: [{ type: 'text', text: suggestion }],
                   });
                 }}
-                className="shrink-0 !h-auto !justify-start !items-start !text-left !whitespace-normal break-words p-3 w-auto max-w-[90vw]"
+                className="shrink-0 !h-auto !justify-start !items-start !text-left !whitespace-normal break-words py-3 !px-5 w-auto max-w-[90vw]"
               >
                 <div className="flex flex-col items-start text-left">
                   <span className="font-medium">{suggestedAction.title}</span>

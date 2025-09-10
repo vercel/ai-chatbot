@@ -353,7 +353,7 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className="flex flex-row gap-2 items-start">
+        <div className="flex w-full min-w-0 flex-row gap-2 items-start">
           <PromptInputTextarea
             data-testid="multimodal-input"
             ref={textareaRef}
@@ -363,7 +363,7 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className="text-sm flex-grow resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
+            className="text-sm flex-1 min-w-0 resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
             rows={1}
             autoFocus
           />{' '}
