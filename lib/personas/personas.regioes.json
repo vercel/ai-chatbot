@@ -1,0 +1,597 @@
+{
+  "version": "1.0",
+  "context": "Personas YSH por classe consumidora + perfil energético + personalização regional (N, NE, CO, SE, S) — tom Marrento Certo",
+  "personas": [
+    {
+      "id": "B1-RS",
+      "class": "B1 Residencial",
+      "label": "Residencial padrão",
+      "energy_profile": {
+        "consumption_kWh_month_range": [300, 600],
+        "suggested_kWp_range": [2, 6],
+        "tiers": ["P"]
+      },
+      "regions": {
+        "N": {
+          "value_prop": "Autonomia com BESS pra rede instável. Obra sem drama.",
+          "whatsapp": {
+            "header": "Luz que não te deixa na mão. ⚡",
+            "body": "{{persona_nome}}, tua casa gasta {{consumo_kWh_mes}} kWh/mês. Com o {{kit_nome}} + bateria, tua conta cai ~{{economia_pct}}% e o payback fica em ~{{payback_anos}} anos. Partiu autonomia?",
+            "footer": "YSH — número na mesa.",
+            "cta": { "text": "Ver proposta", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Rede cai? Com {{kit_nome}} + BESS tu segue no brilho. Simular agora?", "keyboard": ["Simular", "Falar com humano"] },
+          "email": {
+            "subject": "Autonomia na veia — {{kit_nome}} pra tua casa",
+            "preheader": "Economia ~{{economia_pct}}% e payback ~{{payback_anos}} anos."
+          },
+          "sms": "Proposta com BESS: {{link_curto}}. Menos queda, mais luz. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "Sol de sobra, conta baixa. Proteção anticorrosão se for litoral.",
+          "whatsapp": {
+            "header": "Sol tem. A conta cai. ☀️",
+            "body": "{{persona_nome}}, com {{kit_nome}} tua economia gira em {{economia_pct}}% e payback ~{{payback_anos}} anos. Sem novela, só número.",
+            "footer": "YSH — direto ao ponto.",
+            "cta": { "text": "Simular agora", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Sol batendo forte por aí? Eu transformo em conta baixa. Bora simular?", "keyboard": ["R$150–250", "R$250–400", "R$400–600", "Outro"] },
+          "email": { "subject": "Teu ROI brilha no NE — {{kit_nome}}", "preheader": "Payback ~{{payback_anos}} anos. Sem letra miúda." },
+          "sms": "Economia ~{{economia_pct}}% c/ {{kit_nome}}. Detalhes: {{link_curto}}. SAIR p/ descad."
+        },
+        "CO": {
+          "value_prop": "Sazonalidade? A gente ajusta. Geração redonda o ano todo.",
+          "whatsapp": {
+            "header": "Gera bonito o ano todo. 💥",
+            "body": "Tua média é {{consumo_kWh_mes}} kWh/mês. O {{kit_nome}} te entrega economia de ~{{economia_pct}}% e payback ~{{payback_anos}} anos. Quer ver os números?",
+            "footer": "YSH — sem enrolar.",
+            "cta": { "text": "Ver números", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "CO pede projeto ajustado à sazonalidade. Topa ver teu gráfico?", "keyboard": ["Ver gráfico", "Falar com humano"] },
+          "email": { "subject": "Sazonalidade sob controle — {{kit_nome}}", "preheader": "Economia ~{{economia_pct}}% | Payback ~{{payback_anos}}." },
+          "sms": "Projeção pronta: {{link_curto}}. Conta mais leve. SAIR p/ descad."
+        },
+        "SE": {
+          "value_prop": "Sombra e homologação? Eu resolvo. ROI claro, obra limpa.",
+          "whatsapp": {
+            "header": "ROI sem novela. 📊",
+            "body": "Com {{kit_nome}} tua conta cai em ~{{economia_pct}}%. Payback ~{{payback_anos}} anos. Sombreamento? Já tratei.",
+            "footer": "YSH — projeto redondo.",
+            "cta": { "text": "Fechar simulação", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Telhado urbano? Eu desvio das sombras. Simula comigo.", "keyboard": ["Simular", "Falar com humano"] },
+          "email": { "subject": "Projeto limpo, ROI claro — {{kit_nome}}", "preheader": "Sem dor de cabeça com homologação." },
+          "sms": "Simulação pronta no SE: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Inverno não assusta: inclinação e módulos certos.",
+          "whatsapp": {
+            "header": "Inverno? Deixa comigo. ❄️☀️",
+            "body": "Teu {{kit_nome}} foi pensado pro ano inteiro. Economia ~{{economia_pct}}% e payback ~{{payback_anos}} anos. Bora ver o comparativo inverno×verão?",
+            "footer": "YSH — precisão no detalhe.",
+            "cta": { "text": "Ver comparativo", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Comparativo inverno×verão pronto. Quer abrir?", "keyboard": ["Abrir", "Falar com humano"] },
+          "email": { "subject": "Gera no frio também — {{kit_nome}}", "preheader": "Projeto otimizado pra Sul." },
+          "sms": "Comparativo pronto: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B2-SA",
+      "class": "B2 Rural/Agro",
+      "label": "Irrigação (pivô/poço)",
+      "energy_profile": {
+        "consumption_kWh_month_range": [3000, 8000],
+        "suggested_kWp_range": [40, 180],
+        "tiers": ["G", "GG"]
+      },
+      "regions": {
+        "N": {
+          "value_prop": "Menos diesel, mais margem. BESS pra pico noturno do pivô.",
+          "whatsapp": {
+            "header": "Pivô rodando redondo. 🌾⚡",
+            "body": "No teu ciclo, {{kit_nome}} + BESS derruba o custo em ~{{economia_pct}}%. Payback ~{{payback_anos}} anos. Mostra o horário do pivô que eu encaixo o pico.",
+            "footer": "YSH — agro sem susto.",
+            "cta": { "text": "Enviar horários", "url_template": "https://ysh.energy/irrigacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Me manda o horário do pivô que eu otimizo tua curva.", "keyboard": ["Enviar horários", "Falar com engenheiro"] },
+          "email": { "subject": "Pico noturno domado — irrigação com {{kit_nome}}", "preheader": "Menos diesel, mais margem." },
+          "sms": "Curva otimizada pronta: {{link_curto}}. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "Recurso solar favorável, curva casada com irrigação.",
+          "whatsapp": {
+            "header": "Sol ajuda — custo cai. ☀️",
+            "body": "{{kit_nome}} encaixa tua irrigação e corta ~{{economia_pct}}% do custo. Payback ~{{payback_anos}} anos. Vamos alinhar?",
+            "footer": "YSH — direto e simples.",
+            "cta": { "text": "Ver plano", "url_template": "https://ysh.energy/irrigacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Plano de irrigação + solar? Tá pronto pra revisar.", "keyboard": ["Ver plano", "Ajustar"] },
+          "email": { "subject": "Irrigação mais barata no NE", "preheader": "Payback ~{{payback_anos}} anos." },
+          "sms": "Plano pronto: {{link_curto}}. SAIR p/ descad."
+        },
+        "CO": {
+          "value_prop": "CO é agro: dimensionamento para safra e entressafra.",
+          "whatsapp": {
+            "header": "Safra/entressafra sob controle. 📈",
+            "body": "Te entrego {{economia_pct}}% de redução com {{kit_nome}}. Payback ~{{payback_anos}}. Ajusto curva pro teu calendário.",
+            "footer": "YSH — prático.",
+            "cta": { "text": "Ver calendário", "url_template": "https://ysh.energy/irrigacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Subo teu calendário e devolvo a curva ideal.", "keyboard": ["Enviar calendário", "Falar com humano"] },
+          "email": { "subject": "Agro sem susto — curva ajustada", "preheader": "Menos diesel, mais margem." },
+          "sms": "Calendário encaixado: {{link_curto}}. SAIR p/ descad."
+        },
+        "SE": {
+          "value_prop": "Conexão/homologação tratadas. Performance com SLA.",
+          "whatsapp": {
+            "header": "SLA e performance, na régua. ✅",
+            "body": "{{kit_nome}} fecha tua curva e respeita homologação. Economia ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — jogo limpo.",
+            "cta": { "text": "Fechar proposta", "url_template": "https://ysh.energy/irrigacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Homologação sem novela. Quer revisar?", "keyboard": ["Revisar", "Falar com engenheiro"] },
+          "email": { "subject": "Irrigação + homologação redonda", "preheader": "ROI claro, obra limpa." },
+          "sms": "Homologação ok. Proposta: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Inverno e geada? Ajuste de inclinação e potência.",
+          "whatsapp": {
+            "header": "Geada não manda aqui. ❄️",
+            "body": "Com {{kit_nome}} teu pico da irrigação fica barato. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}. Bora ver o gráfico?",
+            "footer": "YSH — precisão no agro.",
+            "cta": { "text": "Ver gráfico", "url_template": "https://ysh.energy/irrigacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Comparativo sazonal pronto. Abre aí.", "keyboard": ["Abrir", "Ajustar"] },
+          "email": { "subject": "Pico barato até no inverno", "preheader": "Inclinação e potência no ponto." },
+          "sms": "Comparativo sazonal: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B3-MO",
+      "class": "B3 Baixa Tensão",
+      "label": "Comércio/Serviços — Café diurno",
+      "energy_profile": {
+        "consumption_kWh_month_range": [1000, 1500],
+        "suggested_kWp_range": [8, 12],
+        "tiers": ["M"]
+      },
+      "regions": {
+        "N": {
+          "value_prop": "Operação diurna sem susto — queda de rede não te derruba.",
+          "whatsapp": {
+            "header": "Café aberto, conta baixa. ☕⚡",
+            "body": "Com {{kit_nome}} tua loja economiza ~{{economia_pct}}% e payback ~{{payback_anos}} anos. Instalação fora do expediente, sem travar o caixa.",
+            "footer": "YSH — prático e rápido.",
+            "cta": { "text": "Fechar pedido", "url_template": "https://ysh.energy/contrato/{{contrato_id}}" }
+          },
+          "telegram": { "text": "Quer obra sem fechar loja? Eu encaixo à noite.", "keyboard": ["Agendar", "Tirar dúvidas"] },
+          "email": { "subject": "Conta baixa sem fechar o caixa", "preheader": "Instala à noite, ROI no sol." },
+          "sms": "Proposta p/ tua loja: {{link_curto}}. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "Sol ajuda na diurna. Selo ESG na vitrine.",
+          "whatsapp": {
+            "header": "Conta baixa, vitrine ESG. 🌱",
+            "body": "Economia ~{{economia_pct}}%, payback ~{{payback_anos}}. Quer etiqueta ESG na porta? Eu mando junto.",
+            "footer": "YSH — sem enrolação.",
+            "cta": { "text": "Ver proposta", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Quer badge ESG? Coloco na vitrine.", "keyboard": ["Quero", "Depois"] },
+          "email": { "subject": "Café com ROI — {{kit_nome}}", "preheader": "ESG na vitrine." },
+          "sms": "ROI do teu café: {{link_curto}}. SAIR p/ descad."
+        },
+        "CO": {
+          "value_prop": "Pico controlado, climatização no ponto.",
+          "whatsapp": {
+            "header": "Clima ok, custo menor. ❄️☀️",
+            "body": "{{kit_nome}} derruba teu pico e segura climatização. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — direto.",
+            "cta": { "text": "Simular agora", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Simula teu pico comigo.", "keyboard": ["Simular", "Falar com humano"] },
+          "email": { "subject": "Pico domado no CO", "preheader": "Conforto pros clientes, custo menor." },
+          "sms": "Simulação do pico: {{link_curto}}. SAIR p/ descad."
+        },
+        "SE": {
+          "value_prop": "Microinversor pra sombra urbana, homologação sem novela.",
+          "whatsapp": {
+            "header": "Sombra? Eu desvio. 🌇",
+            "body": "Economia ~{{economia_pct}}%. Payback ~{{payback_anos}}. Instalo sem atrapalhar o fluxo da loja.",
+            "footer": "YSH — obra limpa.",
+            "cta": { "text": "Fechar proposta", "url_template": "https://ysh.energy/contrato/{{contrato_id}}" }
+          },
+          "telegram": { "text": "Obra limpa e homologação redonda. Bora?", "keyboard": ["Bora", "Depois"] },
+          "email": { "subject": "Sombra urbana sem drama", "preheader": "Microinversor e ROI claro." },
+          "sms": "Proposta limpa: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Sazonalidade e inverno tratados; foco no kWh/ano.",
+          "whatsapp": {
+            "header": "Inverno não assusta. ❄️",
+            "body": "Projeto fecha no anual. {{kit_nome}} entrega economia ~{{economia_pct}}% com payback ~{{payback_anos}}.",
+            "footer": "YSH — número sério.",
+            "cta": { "text": "Ver anual", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Comparativo anual pronto.", "keyboard": ["Abrir", "Ajustar"] },
+          "email": { "subject": "Anual redondo no Sul", "preheader": "ROI calculado no ciclo completo." },
+          "sms": "Comparativo anual: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B3-CONDO",
+      "class": "B3 Baixa Tensão",
+      "label": "Condomínio — áreas comuns",
+      "energy_profile": {
+        "consumption_kWh_month_range": [3000, 15000],
+        "suggested_kWp_range": [25, 150],
+        "tiers": ["G", "GG"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "Assembleia, homologação e obra limpa no cronograma.",
+          "whatsapp": {
+            "header": "Condo pagando menos. 🏢",
+            "body": "Economia nas áreas comuns ~{{economia_pct}}%. Payback ~{{payback_anos}} anos. Eu apresento pros condôminos sem enrolação.",
+            "footer": "YSH — síndico gosta.",
+            "cta": { "text": "Marcar apresentação", "url_template": "https://ysh.energy/condo/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Quer deck pronto pra assembleia?", "keyboard": ["Quero", "Depois"] },
+          "email": { "subject": "Assembleia ganha fácil com ROI claro", "preheader": "Obra limpa, cronograma na régua." },
+          "sms": "Deck p/ assembleia: {{link_curto}}. SAIR p/ descad."
+        },
+        "N": {
+          "value_prop": "BESS p/ áreas críticas e queda de rede.",
+          "whatsapp": {
+            "header": "Condo autônomo. 🔋",
+            "body": "Com {{kit_nome}} + BESS, elevador e bombas seguem firmes. Conta cai ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — sem susto.",
+            "cta": { "text": "Ver projeto", "url_template": "https://ysh.energy/condo/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Plano BESS p/ áreas comuns?", "keyboard": ["Abrir", "Ajustar"] },
+          "email": { "subject": "Elevador e bombas protegidos", "preheader": "Autonomia em queda de rede." },
+          "sms": "Projeto BESS: {{link_curto}}. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "Sol + carport: sombra nos carros e R$ baixo.",
+          "whatsapp": {
+            "header": "Carport que paga a conta. 🚗☀️",
+            "body": "Carport + {{kit_nome}} derruba custo ~{{economia_pct}}%. Payback ~{{payback_anos}}. Bora levar pra assembleia?",
+            "footer": "YSH — simples.",
+            "cta": { "text": "Ver carport", "url_template": "https://ysh.energy/condo/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Carport com ROI — quer ver?", "keyboard": ["Ver", "Depois"] },
+          "email": { "subject": "Carport com retorno real", "preheader": "Sombra + economia." },
+          "sms": "Carport ROI: {{link_curto}}. SAIR p/ descad."
+        },
+        "CO": {
+          "value_prop": "Curva de bombas/área comum ajustada à sazonalidade.",
+          "whatsapp": {
+            "header": "Curva certa, custo baixo. 📉",
+            "body": "Ajusto {{kit_nome}} pra tua curva. Economia ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — direto.",
+            "cta": { "text": "Ver curva", "url_template": "https://ysh.energy/condo/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Subo tua curva e devolvo o plano.", "keyboard": ["Enviar curva", "Falar com humano"] },
+          "email": { "subject": "Curva sob medida", "preheader": "Sazonalidade domada." },
+          "sms": "Plano sob medida: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Anual sazonal, inclinação otimizada pra inverno.",
+          "whatsapp": {
+            "header": "Sul a gente conhece. ❄️",
+            "body": "Inclinação certa e {{kit_nome}} fecham o anual. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — engenharia no detalhe.",
+            "cta": { "text": "Ver anual", "url_template": "https://ysh.energy/condo/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Anual pronto pro Sul.", "keyboard": ["Abrir", "Ajustar"] },
+          "email": { "subject": "Projeto certo pro inverno", "preheader": "ROI que não despenca." },
+          "sms": "Resumo anual: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "A4-RM",
+      "class": "A4 Alta Tensão",
+      "label": "Industrial — linha contínua",
+      "energy_profile": {
+        "consumption_kWh_month_range": [100000, 1000000],
+        "suggested_kWp_range": [300, 5000],
+        "tiers": ["GG", "XG", "XGG"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "SLA, homologação e segurança operacional — sem parar a linha.",
+          "whatsapp": {
+            "header": "Produção não para. 🏭",
+            "body": "Plano {{kit_nome}} com SLA. Economia alvo ~{{economia_pct}}%. Payback projetado ~{{payback_anos}}. Integro com tua manutenção.",
+            "footer": "YSH — industrial de verdade.",
+            "cta": { "text": "Agendar engenharia", "url_template": "https://ysh.energy/industrial/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Integra com PCM e segurança? Eu entrego.", "keyboard": ["Agendar", "Dúvidas"] },
+          "email": { "subject": "SLA e integração com manutenção", "preheader": "ROI sem intercalar a linha." },
+          "sms": "Agende engenharia: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Curva anual robusta, inverno tratado, layout rooftop/carport.",
+          "whatsapp": {
+            "header": "Inverno não derruba tua meta. ❄️📈",
+            "body": "Layout {{kit_nome}} otimiza kWh/ano. Meta de economia ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — previsível.",
+            "cta": { "text": "Ver layout", "url_template": "https://ysh.energy/industrial/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Layout pronto. Quer revisar?", "keyboard": ["Revisar", "Ajustar"] },
+          "email": { "subject": "Layout industrial pro Sul", "preheader": "Previsibilidade e ROI." },
+          "sms": "Layout pronto: {{link_curto}}. SAIR p/ descad."
+        },
+        "N": {
+          "value_prop": "BESS pra contingência, mitigando quedas de rede.",
+          "whatsapp": {
+            "header": "Linha segura com BESS. 🔋",
+            "body": "Com {{kit_nome}} + BESS, tua linha não sofre com microinterrupção. Economia ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — estabilidade.",
+            "cta": { "text": "Ver contingência", "url_template": "https://ysh.energy/industrial/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Quer contingência modelada?", "keyboard": ["Quero", "Depois"] },
+          "email": { "subject": "Contingência elétrica modelada", "preheader": "Microinterrupção não te pega." },
+          "sms": "Plano de BESS: {{link_curto}}. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "Capex otimizado com DC/AC bem casado e EPC anticorrosão.",
+          "whatsapp": {
+            "header": "Capex no ponto. ⚙️",
+            "body": "DC/AC na régua entrega economia ~{{economia_pct}}% e payback ~{{payback_anos}}. EPC anticorrosão se for costa.",
+            "footer": "YSH — engenharia séria.",
+            "cta": { "text": "Ver CAPEX/OPEX", "url_template": "https://ysh.energy/industrial/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Abre CAPEX/OPEX detalhado?", "keyboard": ["Abrir", "Depois"] },
+          "email": { "subject": "CAPEX certo, OPEX menor", "preheader": "Payback claro." },
+          "sms": "CAPEX/OPEX: {{link_curto}}. SAIR p/ descad."
+        },
+        "CO": {
+          "value_prop": "Pico tarifário domado e curva casada com turnos.",
+          "whatsapp": {
+            "header": "Pico tarifário não manda aqui. 💡",
+            "body": "Curva por turno + {{kit_nome}} reduz OPEX ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — sem susto.",
+            "cta": { "text": "Ver curva/turno", "url_template": "https://ysh.energy/industrial/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Subo teus turnos e cruzo com a curva.", "keyboard": ["Enviar turnos", "Falar com engenheiro"] },
+          "email": { "subject": "Pico domado por turno", "preheader": "OPEX cai, meta sobe." },
+          "sms": "Plano por turnos: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "A4-DC",
+      "class": "A4 Alta Tensão",
+      "label": "Data Center 24×7",
+      "energy_profile": {
+        "consumption_kWh_month_range": [50000, 200000],
+        "suggested_kWp_range": [150, 800],
+        "tiers": ["GG", "XG"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "Missão crítica: estabilidade, redundância e SLA duro.",
+          "whatsapp": {
+            "header": "Uptime é lei. 🖥️",
+            "body": "{{kit_nome}} com redundância e BESS opcional. Meta de economia ~{{economia_pct}}%, payback ~{{payback_anos}}. Integração com BMS.",
+            "footer": "YSH — missão crítica.",
+            "cta": { "text": "Agendar engenharia", "url_template": "https://ysh.energy/datacenter/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Integra com BMS/EMS? Claro.", "keyboard": ["Agendar", "Dúvidas"] },
+          "email": { "subject": "SLA e redundância no ponto", "preheader": "Energia estável, ROI controlado." },
+          "sms": "Agenda de engenharia: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Clima frio ajuda, dimensiono pro ano todo.",
+          "whatsapp": {
+            "header": "Clima a favor, custo contra. ❄️",
+            "body": "Dimensiono {{kit_nome}} pro anual, mantendo uptime. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — previsível.",
+            "cta": { "text": "Ver design", "url_template": "https://ysh.energy/datacenter/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Design anual pronto.", "keyboard": ["Ver", "Ajustar"] },
+          "email": { "subject": "Design anual estável", "preheader": "Uptime 24×7." },
+          "sms": "Design: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B4-IP",
+      "class": "B4 Iluminação Pública",
+      "label": "Iluminação municipal",
+      "energy_profile": {
+        "consumption_kWh_month_range": [20000, 100000],
+        "suggested_kWp_range": [150, 800],
+        "tiers": ["GG", "XG"]
+      },
+      "regions": {
+        "NE": {
+          "value_prop": "LED + solar: economia e segurança pública.",
+          "whatsapp": {
+            "header": "Cidade mais clara, conta menor. 🏙️",
+            "body": "Projeto {{kit_nome}} com LED. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}. Entrega por etapas.",
+            "footer": "YSH — gestão que aparece.",
+            "cta": { "text": "Ver plano por etapas", "url_template": "https://ysh.energy/iluminacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Plano faseado pra prefeitura. Quer revisar?", "keyboard": ["Revisar", "Depois"] },
+          "email": { "subject": "LED + solar — segurança e ROI", "preheader": "Faseado, sem susto." },
+          "sms": "Plano por etapas: {{link_curto}}. SAIR p/ descad."
+        },
+        "SE": {
+          "value_prop": "Homologação e licitação no trilho, execução faseada.",
+          "whatsapp": {
+            "header": "Licitação alinhada, obra andando. 📑",
+            "body": "Economia alvo ~{{economia_pct}}%, payback ~{{payback_anos}}. Cronograma e compliance em dia.",
+            "footer": "YSH — previsível.",
+            "cta": { "text": "Abrir cronograma", "url_template": "https://ysh.energy/iluminacao/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Cronograma e compliance? Tá aqui.", "keyboard": ["Abrir", "Dúvidas"] },
+          "email": { "subject": "Cronograma e compliance no ponto", "preheader": "Execução faseada." },
+          "sms": "Cronograma: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "A4-ACL",
+      "class": "A4 Livre/Especial",
+      "label": "Varejo multi-site (ACL)",
+      "energy_profile": {
+        "consumption_kWh_month_range": [50000, 250000],
+        "suggested_kWp_range": [200, 1000],
+        "tiers": ["GG", "XG"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "Hedge de energia + GC/ALOC + PPA. Previsibilidade de OPEX.",
+          "whatsapp": {
+            "header": "OPEX previsível, loja feliz. 🧾",
+            "body": "Com {{kit_nome}} + PPA, teu OPEX fica na linha. Economia target ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — varejo sério.",
+            "cta": { "text": "Ver pacote ACL", "url_template": "https://ysh.energy/acl/{{proposta_id}}" }
+          },
+          "telegram": { "text": "ACL com hedge? Te mostro agora.", "keyboard": ["Abrir", "Depois"] },
+          "email": { "subject": "Hedge e previsibilidade no ACL", "preheader": "Multi-site no trilho." },
+          "sms": "Pacote ACL: {{link_curto}}. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "GC distribuída próxima às lojas, perdas menores.",
+          "whatsapp": {
+            "header": "Energia perto da loja. 🏬",
+            "body": "GC próxima reduz perda e fecha economia ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — eficiente.",
+            "cta": { "text": "Ver GC próxima", "url_template": "https://ysh.energy/acl/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Quer mapa GC/lojas?", "keyboard": ["Ver mapa", "Depois"] },
+          "email": { "subject": "GC perto, perda menor", "preheader": "Mapa e cálculo pronto." },
+          "sms": "Mapa GC/lojas: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B3-HP",
+      "class": "B3 Baixa Tensão",
+      "label": "Saúde — Hospital 24×7",
+      "energy_profile": {
+        "consumption_kWh_month_range": [25000, 50000],
+        "suggested_kWp_range": [150, 800],
+        "tiers": ["GG", "XG"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "Energia crítica com redundância e priorização de cargas.",
+          "whatsapp": {
+            "header": "Energia pra salvar vidas. 🏥",
+            "body": "{{kit_nome}} prioriza UTI e essenciais. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}. BESS opcional.",
+            "footer": "YSH — missão crítica.",
+            "cta": { "text": "Agendar engenharia", "url_template": "https://ysh.energy/hospital/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Priorizar cargas? Eu mapeio contigo.", "keyboard": ["Agendar", "Dúvidas"] },
+          "email": { "subject": "Projeto hospitalar crítico", "preheader": "Redundância e prioridade." },
+          "sms": "Agenda disponível: {{link_curto}}. SAIR p/ descad."
+        },
+        "S": {
+          "value_prop": "Clima frio tratado, backup garantido.",
+          "whatsapp": {
+            "header": "Frio não atrapalha o plantão. ❄️",
+            "body": "Projeto anual com {{kit_nome}} e backup. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — confiável.",
+            "cta": { "text": "Ver plano", "url_template": "https://ysh.energy/hospital/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Plano anual hospitalar pronto.", "keyboard": ["Ver", "Ajustar"] },
+          "email": { "subject": "Plano anual hospitalar", "preheader": "Estabilidade primeiro." },
+          "sms": "Plano: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B3-MT",
+      "class": "B3 Baixa Tensão",
+      "label": "Frio alimentar — açougue/câmara fria 24×7",
+      "energy_profile": {
+        "consumption_kWh_month_range": [3000, 8000],
+        "suggested_kWp_range": [20, 60],
+        "tiers": ["G"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "Frio 24×7, pico domado, microinterrupção protegida.",
+          "whatsapp": {
+            "header": "Câmara fria sem susto. ❄️",
+            "body": "{{kit_nome}} derruba teu pico e protege o frio. Economia ~{{economia_pct}}%, payback ~{{payback_anos}}.",
+            "footer": "YSH — direto.",
+            "cta": { "text": "Fechar pedido", "url_template": "https://ysh.energy/proposta/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Quer domar o pico? Eu te mostro.", "keyboard": ["Simular", "Dúvidas"] },
+          "email": { "subject": "Pico domado, estoque seguro", "preheader": "ROI claro." },
+          "sms": "Simulação pronta: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "B3-UNI",
+      "class": "B3 Baixa Tensão",
+      "label": "Educação — Campus multi-edifícios",
+      "energy_profile": {
+        "consumption_kWh_month_range": [30000, 120000],
+        "suggested_kWp_range": [200, 900],
+        "tiers": ["GG", "XG"]
+      },
+      "regions": {
+        "SE": {
+          "value_prop": "Rooftop + carport distribuídos, homologação por bloco.",
+          "whatsapp": {
+            "header": "Campus no sol. 🎓",
+            "body": "Distribuo {{kit_nome}} por bloco e fecho economia ~{{economia_pct}}%. Payback ~{{payback_anos}}.",
+            "footer": "YSH — organizado.",
+            "cta": { "text": "Ver blocos", "url_template": "https://ysh.energy/campus/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Mapa por bloco tá pronto.", "keyboard": ["Abrir", "Ajustar"] },
+          "email": { "subject": "Mapa por bloco — campus", "preheader": "Homologação sem novela." },
+          "sms": "Mapa campus: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    },
+    {
+      "id": "XG-COOP",
+      "class": "GC/Cooperativa",
+      "label": "Comunidade/Cooperativa de energia",
+      "energy_profile": {
+        "consumption_kWh_month_range": [80000, 400000],
+        "suggested_kWp_range": [1000, 5000],
+        "tiers": ["XG", "XGG"]
+      },
+      "regions": {
+        "CO": {
+          "value_prop": "Divide geração entre membros. Perdas menores, escala maior.",
+          "whatsapp": {
+            "header": "Coop que paga. 🤝",
+            "body": "Com {{kit_nome}} a comunidade fecha economia ~{{economia_pct}}% e payback ~{{payback_anos}}. Quer ver a partilha?",
+            "footer": "YSH — justo é claro.",
+            "cta": { "text": "Ver partilha", "url_template": "https://ysh.energy/coop/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Planilha de partilha tá pronta.", "keyboard": ["Abrir", "Ajustar"] },
+          "email": { "subject": "Partilha e perdas sob controle", "preheader": "Escala que compensa." },
+          "sms": "Partilha: {{link_curto}}. SAIR p/ descad."
+        },
+        "NE": {
+          "value_prop": "GC com irradiação forte — retorno acelera.",
+          "whatsapp": {
+            "header": "Sol pra todo mundo. ☀️",
+            "body": "Economia da cooperativa ~{{economia_pct}}%, payback ~{{payback_anos}}. Bora abrir a conta?",
+            "footer": "YSH — transparente.",
+            "cta": { "text": "Abrir conta", "url_template": "https://ysh.energy/coop/{{proposta_id}}" }
+          },
+          "telegram": { "text": "Conta aberta de economia.", "keyboard": ["Ver", "Dúvidas"] },
+          "email": { "subject": "GC forte no NE", "preheader": "Retorno que acelera." },
+          "sms": "Resumo GC: {{link_curto}}. SAIR p/ descad."
+        }
+      }
+    }
+  ]
+}
