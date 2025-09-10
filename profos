@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profos - Mundo de Juegos</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1e1e2f;
+      color: white;
+    }
+
+    header {
+      background: #282c40;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.5em;
+    }
+
+    nav {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .game-card {
+      background: #333;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .game-card:hover {
+      background: #444;
+    }
+
+    .coins {
+      text-align: center;
+      margin: 20px 0;
+      font-size: 1.2em;
+      color: #ffdd57;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PROFOS</h1>
+    <p>¡Bienvenido al mundo de juegos con monedas gratis!</p>
+  </header>
+
+  <nav>
+    <a href="#">Inicio</a>
+    <a href="#">Juegos</a>
+    <a href="#">Tienda</a>
+    <a href="#">Perfil</a>
+  </nav>
+
+  <div class="coins" id="coins">
+    Monedas: <span id="coinCount">0</span>
+  </div>
+
+  <div class="content">
+    <div class="game-card" onclick="addCoins(10)">
+      <h3>Juego 1: Aventuras</h3>
+      <p>Haz clic para jugar y ganar 10 monedas</p>
+    </div>
+    <div class="game-card" onclick="addCoins(15)">
+      <h3>Juego 2: Carrera</h3>
+      <p>Haz clic para jugar y ganar 15 monedas</p>
+    </div>
+    <div class="game-card" onclick="addCoins(20)">
+      <h3>Juego 3: Batalla</h3>
+      <p>Haz clic para jugar y ganar 20 monedas</p>
+    </div>
+  </div>
+
+  <script>
+    let coins = 0;
+
+    function addCoins(amount) {
+      coins += amount;
+      document.getElementById('coinCount').innerText = coins;
+      alert(`¡Ganaste ${amount} monedas!`);
+    }
+  </script>
+</body>
+</html>
