@@ -882,3 +882,21 @@ export const CopyIcon = ({ size = 16 }: { size?: number }) => (
 		/>
 	</svg>
 );
+
+export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => (
+	<svg
+		height={size}
+		strokeLinejoin="round"
+		viewBox="0 0 16 16"
+		width={size}
+		className="text-current"
+	>
+		<title>Check Circle Fill Icon</title>
+		<path
+			fillRule="evenodd"
+			clipRule="evenodd"
+			d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM11.7071 6.29289C12.0976 6.68342 12.0976 7.31658 11.7071 7.70711L7.70711 11.7071C7.31658 12.0976 6.68342 12.0976 6.29289 11.7071L4.29289 9.70711C3.90237 9.31658 3.90237 8.68342 4.29289 8.29289C4.68342 7.90237 5.31658 7.90237 5.70711 8.29289L7 9.58579L10.2929 6.29289C10.6834 5.90237 11.3166 5.90237 11.7071 6.29289Z"
+			fill="currentColor"
+		/>
+	</svg>
+);
