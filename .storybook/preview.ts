@@ -1,5 +1,7 @@
 import type { Preview } from '@storybook/nextjs-vite'
 import { withThemeByClassName } from '@storybook/addon-themes'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 
 const preview: Preview = {
   parameters: {
@@ -31,6 +33,11 @@ const preview: Preview = {
   },
 
   decorators: [
+    (Story) => (
+      <div className={`${GeistSans.className} ${GeistMono.variable}`}>
+        <Story />
+      </div>
+    ),
     withThemeByClassName({
       themes: {
         light: 'light',

@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,6 +6,8 @@
 /* Tokens (Light / Dark) */
 /* ===================== */
 :root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New";
   color-scheme: light dark;
   accent-color: hsl(27 100% 50%);
 
@@ -95,6 +95,9 @@
   }
 }
 
+html { font-feature-settings: "liga" 1; }
+code, pre, kbd, samp { font-family: var(--font-geist-mono, var(--font-mono)); }
+
 /* ============ */
 /* Base Layer   */
 /* ============ */
@@ -114,7 +117,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Geist', sans-serif;
+    font-family: var(--font-geist-sans, var(--font-sans));
     /* fundo em camadas: neutro + radiais Yello discretas */
     background-image:
       radial-gradient(at top right, hsl(45 100% 62% / 0.14), transparent 60%),
@@ -216,7 +219,7 @@
   .ring-ring       { --tw-ring-color: hsl(var(--ring-hsl)); }
 
   /* Font utilities */
-  .font-geist { font-family: 'Geist', sans-serif; }
-  .font-geist-mono { font-family: 'Geist Mono', monospace; }
+  .font-geist { font-family: var(--font-geist-sans, var(--font-sans)); }
+  .font-geist-mono { font-family: var(--font-geist-mono, var(--font-mono)); }
 }
 
