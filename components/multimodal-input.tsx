@@ -39,14 +39,13 @@ import {
   PromptInputActionMenu,
   PromptInputActionMenuTrigger,
   PromptInputActionMenuContent,
-  PromptInputActionAddAttachments,
 } from './elements/prompt-input';
 import { SelectItem } from '@/components/ui/select';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, ImageIcon } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
@@ -56,6 +55,8 @@ import { startTransition } from 'react';
 import { getContextWindow, type ModelId, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
 import { myProvider } from '@/lib/ai/providers';
+import { PreviewAttachment } from './preview-attachment';
+import { DropdownMenuItem } from './ui/dropdown-menu';
 
 function PureMultimodalInput({
   chatId,
@@ -63,9 +64,12 @@ function PureMultimodalInput({
   setInput,
   status,
   stop,
+  attachments,
+  setAttachments,
   messages,
   setMessages,
   sendMessage,
+  className,
   selectedVisibilityType,
   selectedModelId,
   usage,
@@ -75,6 +79,8 @@ function PureMultimodalInput({
   setInput: Dispatch<SetStateAction<string>>;
   status: UseChatHelpers<ChatMessage>['status'];
   stop: () => void;
+  attachments: Array<Attachment>;
+  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
@@ -129,25 +135,46 @@ function PureMultimodalInput({
     setInput(event.target.value);
   };
 
-  const submitForm = useCallback(
-    (message: PromptInputMessage) => {
-      window.history.replaceState({}, '', `/chat/${chatId}`);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-      sendMessage({
-        text: message.text || 'Sent with attachments',
-        files: message.files || [],
-      });
+  const submitForm = useCallback((message: PromptInputMessage) => {
+    window.history.replaceState({}, '', `/chat/${chatId}`);
 
-      setLocalStorageInput('');
-      resetHeight();
-      setInput('');
+    sendMessage({
+      role: 'user',
+      parts: [
+        ...attachments.map((attachment) => ({
+          type: 'file' as const,
+          url: attachment.url,
+          name: attachment.name,
+          mediaType: attachment.contentType,
+        })),
+        {
+          type: 'text',
+          text: message.text ?? 'Files were attached',
+        },
+      ],
+    });
 
-      if (width && width > 768) {
-        textareaRef.current?.focus();
-      }
-    },
-    [input, setInput, sendMessage, setLocalStorageInput, width, chatId],
-  );
+    setAttachments([]);
+    setLocalStorageInput('');
+    resetHeight();
+    setInput('');
+
+    if (width && width > 768) {
+      textareaRef.current?.focus();
+    }
+  }, [
+    input,
+    setInput,
+    attachments,
+    sendMessage,
+    setAttachments,
+    setLocalStorageInput,
+    width,
+    chatId,
+  ]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -205,6 +232,32 @@ function PureMultimodalInput({
     [contextMax, usedTokens, usage, modelResolver],
   );
 
+  const handleFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files || []);
+
+      setUploadQueue(files.map((file) => file.name));
+
+      try {
+        const uploadPromises = files.map((file) => uploadFile(file));
+        const uploadedAttachments = await Promise.all(uploadPromises);
+        const successfullyUploadedAttachments = uploadedAttachments.filter(
+          (attachment) => attachment !== undefined,
+        );
+
+        setAttachments((currentAttachments) => [
+          ...currentAttachments,
+          ...successfullyUploadedAttachments,
+        ]);
+      } catch (error) {
+        console.error('Error uploading files!', error);
+      } finally {
+        setUploadQueue([]);
+      }
+    },
+    [setAttachments],
+  );
+
   const { isAtBottom, scrollToBottom } = useScrollToBottom();
 
   useEffect(() => {
@@ -214,7 +267,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className="relative flex w-full flex-col gap-4">
+    <div className='relative flex w-full flex-col gap-4'>
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -222,7 +275,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="-top-12 -translate-x-1/2 absolute left-1/2 z-50"
+            className='-top-12 -translate-x-1/2 absolute left-1/2 z-50'
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -240,19 +293,30 @@ function PureMultimodalInput({
         )}
       </AnimatePresence>
 
-      {messages.length === 0 && (
-        <SuggestedActions
-          sendMessage={sendMessage}
-          chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
-        />
-      )}
+      {messages.length === 0 &&
+        attachments.length === 0 &&
+        uploadQueue.length === 0 && (
+          <SuggestedActions
+            sendMessage={sendMessage}
+            chatId={chatId}
+            selectedVisibilityType={selectedVisibilityType}
+          />
+        )}
+
+      <input
+        type="file"
+        className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
+        ref={fileInputRef}
+        multiple
+        onChange={handleFileChange}
+        tabIndex={-1}
+      />
 
       <PromptInput
         className="rounded-xl border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(message: PromptInputMessage) => {
           const hasText = Boolean(message.text);
-          const hasAttachments = Boolean(message.files?.length);
+          const hasAttachments = Boolean(attachments.length);
 
           if (!(hasText || hasAttachments)) {
             return;
@@ -267,9 +331,39 @@ function PureMultimodalInput({
         globalDrop
       >
         <PromptInputBody>
-          <PromptInputAttachments>
-            {(attachment) => <PromptInputAttachment data={attachment} />}
-          </PromptInputAttachments>
+        {(attachments.length > 0 || uploadQueue.length > 0) && (
+          <div
+            data-testid="attachments-preview"
+            className='flex flex-row items-end gap-2 overflow-x-scroll px-3 py-2'
+          >
+            {attachments.map((attachment) => (
+              <PreviewAttachment
+                key={attachment.url}
+                attachment={attachment}
+                onRemove={() => {
+                  setAttachments((currentAttachments) =>
+                    currentAttachments.filter((a) => a.url !== attachment.url),
+                  );
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                  }
+                }}
+              />
+            ))}
+
+            {uploadQueue.map((filename) => (
+              <PreviewAttachment
+                key={filename}
+                attachment={{
+                  url: '',
+                  name: filename,
+                  contentType: '',
+                }}
+                isUploading={true}
+              />
+            ))}
+          </div>
+        )}
           <div className="flex flex-row items-start gap-1 sm:gap-2 pt-2">
             <PromptInputTextarea
               data-testid="multimodal-input"
@@ -291,23 +385,18 @@ function PureMultimodalInput({
             <PromptInputActionMenu>
               <PromptInputActionMenuTrigger />
               <PromptInputActionMenuContent>
-                <PromptInputActionAddAttachments />
+                <ActionAddAttachments fileInputRef={fileInputRef} status={status} selectedModelId={selectedModelId} />
               </PromptInputActionMenuContent>
             </PromptInputActionMenu>
             <ModelSelectorCompact selectedModelId={selectedModelId} />
           </PromptInputTools>
 
-          {status === 'submitted' ? (
-            <StopButton stop={stop} setMessages={setMessages} />
-          ) : (
             <PromptInputSubmit
               status={status}
-              disabled={!input.trim() && !status}
+              disabled={!input.trim() && !status || uploadQueue.length > 0}
               className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-            >
-              <ArrowUpIcon size={14} />
-            </PromptInputSubmit>
-          )}
+            />
+      
         </PromptInputToolbar>
       </PromptInput>
     </div>
@@ -319,6 +408,7 @@ export const MultimodalInput = memo(
   (prevProps, nextProps) => {
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.status !== nextProps.status) return false;
+    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
     if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
@@ -326,6 +416,34 @@ export const MultimodalInput = memo(
     return true;
   },
 );
+
+function PureActionAddAttachments({
+  fileInputRef,
+  status,
+  selectedModelId,
+  ...props
+}: {
+  fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
+  status: UseChatHelpers<ChatMessage>['status'];
+  selectedModelId: string;
+}) {
+  const isReasoningModel = selectedModelId === 'chat-model-reasoning';
+
+  return (
+    <DropdownMenuItem 
+      {...props}
+      onSelect={(event) => {
+        event.preventDefault();
+        fileInputRef.current?.click();
+      }}
+      disabled={status !== 'ready' || isReasoningModel}
+    >
+      <ImageIcon className="mr-2 size-4" /> Add photos or files
+      </DropdownMenuItem>
+  );
+}
+
+const ActionAddAttachments = memo(PureActionAddAttachments);
 
 function PureModelSelectorCompact({
   selectedModelId,
@@ -382,27 +500,3 @@ function PureModelSelectorCompact({
 }
 
 const ModelSelectorCompact = memo(PureModelSelectorCompact);
-
-function PureStopButton({
-  stop,
-  setMessages,
-}: {
-  stop: () => void;
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-}) {
-  return (
-    <Button
-      data-testid="stop-button"
-      className="size-7 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
-      onClick={(event) => {
-        event.preventDefault();
-        stop();
-        setMessages((messages) => messages);
-      }}
-    >
-      <StopIcon size={14} />
-    </Button>
-  );
-}
-
-const StopButton = memo(PureStopButton);
