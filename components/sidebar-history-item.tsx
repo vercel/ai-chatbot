@@ -25,6 +25,7 @@ import {
 } from './icons';
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { cn } from '@/lib/utils';
 
 const PureChatItem = ({
   chat,
@@ -44,7 +45,8 @@ const PureChatItem = ({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive}>
+      <SidebarMenuButton asChild isActive={isActive}         className={cn('h-fit py-2 px-3')}
+      >
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
           <span>{chat.title}</span>
         </Link>
@@ -53,7 +55,7 @@ const PureChatItem = ({
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
           <SidebarMenuAction
-            className="mr-0.5 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5 top-2!"
             showOnHover={!isActive}
           >
             <MoreHorizontalIcon />
