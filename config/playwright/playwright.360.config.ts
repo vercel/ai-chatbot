@@ -10,8 +10,8 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
 	// === DIRETÓRIOS E PADRÕES ===
-	testDir: "./tests/e2e",
-	testMatch: "360-*.test.ts",
+	testDir: "./tests",
+	testMatch: ["360-*.test.ts", "360-*.spec.ts", "*.360.spec.ts"],
 
 	// === ESTRATÉGIA DE EXECUÇÃO ===
 	fullyParallel: false, // Sequencial para testes 360° complexos
@@ -48,8 +48,8 @@ export default defineConfig({
 			],
 
 	// === CONFIGURAÇÕES GLOBAIS ===
-	globalSetup: "../tests/setup/global-setup.ts",
-	globalTeardown: "../tests/setup/global-teardown.ts",
+	globalSetup: "c:/Users/fjuni/ai-ysh/tests/setup/global-setup.ts",
+	globalTeardown: "c:/Users/fjuni/ai-ysh/tests/setup/global-teardown.ts",
 
 	// === CONFIGURAÇÕES DE BROWSER ===
 	use: {
@@ -86,7 +86,7 @@ export default defineConfig({
 		timezoneId: "America/Sao_Paulo",
 
 		// Storage state
-		storageState: "../tests/setup/storage-state.json",
+		storageState: "c:/Users/fjuni/ai-ysh/tests/setup/storage-state.json",
 	},
 
 	// === PROJETOS DE BROWSER ===
