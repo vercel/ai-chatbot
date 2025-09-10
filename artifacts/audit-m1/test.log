@@ -1,0 +1,39 @@
+
+> ai-chatbot@3.1.0 test /workspace/ai-ysh
+> vitest run
+
+
+ RUN  v3.2.4 /workspace/ai-ysh
+
+ ❯ lib/ai/agents/agent-system.test.ts (21 tests | 10 failed) 148ms
+   ✓ Agent System Tests > Solar Calculator Agent > should process solar calculation requests 50ms
+   × Agent System Tests > Solar Calculator Agent > should handle solar-related keywords 36ms
+     → expected 'text' to be 'solar_calculation' // Object.is equality
+   × Agent System Tests > Solar Calculator Agent > should extract parameters from user input 2ms
+     → expected undefined to be defined
+   ✓ Agent System Tests > Solar Calculator Agent > should handle invalid inputs gracefully 1ms
+   ✓ Agent System Tests > Lead Qualification Agent > should process lead qualification requests 3ms
+   × Agent System Tests > Lead Qualification Agent > should handle lead-related keywords 10ms
+     → expected 'text' to be 'lead_analysis' // Object.is equality
+   × Agent System Tests > Lead Qualification Agent > should score leads appropriately 2ms
+     → Cannot read properties of undefined (reading 'score')
+   × Agent System Tests > Investigation Agent > should collect address information 1ms
+     → Cannot read properties of undefined (reading 'lead')
+   × Agent System Tests > Investigation Agent > should request bill when address provided 1ms
+     → Cannot read properties of undefined (reading 'reply')
+   × Agent System Tests > Agent Orchestrator > should route requests to appropriate agents 4ms
+     → expected 'text' to be 'solar_calculation' // Object.is equality
+   × Agent System Tests > Agent Orchestrator > should handle multiple active contexts 6ms
+     → expected 'text' to be 'solar_calculation' // Object.is equality
+   ✓ Agent System Tests > Agent Orchestrator > should provide system health information 1ms
+   ✓ Agent System Tests > Tool Integration > should execute solar calculator tool 1ms
+   ✓ Agent System Tests > Tool Integration > should execute lead analyzer tool 1ms
+   ✓ Agent System Tests > Tool Integration > should handle tool execution errors gracefully 1ms
+   ✓ Agent System Tests > Performance and Caching > should cache tool results for performance 1ms
+   ✓ Agent System Tests > Performance and Caching > should track performance metrics 1ms
+   × Agent System Tests > Error Handling > should handle agent processing errors 1ms
+     → expected 0 to be greater than 0
+   × Agent System Tests > Error Handling > should handle invalid tool parameters 1ms
+     → expected 0 to be greater than 0
+   ✓ Agent System Tests > Multi-Agent Coordination > should coordinate between multiple agents 1ms
+   ✓ Agent System Tests > Multi-Agent Coordination > should maintain agent state across requests 5ms

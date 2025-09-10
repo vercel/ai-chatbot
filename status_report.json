@@ -1,0 +1,115 @@
+{
+  "milestone": "M1 — Omni Core & Infra",
+  "evaluated_at": "2025-09-10T18:40:49+00:00",
+  "commit": {
+    "hash": "8c44b2043560c5efbbd1d7673e635a7df70f7be7",
+    "branch": "work",
+    "dirty": false
+  },
+  "env": {
+    "REDIS_URL": "present",
+    "OMNI_STREAM_MESSAGES": "present",
+    "OMNI_STREAM_OUTBOX": "present",
+    "OMNI_GROUP": "present",
+    "OMNI_BLOCK_MS": "present",
+    "OMNI_DISPATCH_POLL_MS": "present",
+    "OMNI_DLQ_STREAM": "present",
+    "MCP_WHATSAPP_URL": "present",
+    "MCP_TOKEN": "present",
+    "WEB_BASE_URL": "present",
+    "COMMIT_SHA": "present"
+  },
+  "checks": [
+    {
+      "key": "schema_canonical",
+      "status": "fail",
+      "evidence": {
+        "zod_examples": {"inbound": "missing", "outbound": "missing"},
+        "lint": "4054 errors",
+        "typecheck": "OOM exit"
+      },
+      "next_actions": ["Add canonical schema files and examples", "Fix lint errors", "Resolve typecheck OOM"]
+    },
+    {
+      "key": "redis_bus",
+      "status": "pass",
+      "evidence": {
+        "xinfo": {"messages_len": 0, "outbox_len": 0},
+        "publish_read_ack": "ok"
+      },
+      "next_actions": ["Implement consumers"]
+    },
+    {
+      "key": "api_endpoints",
+      "status": "fail",
+      "evidence": {
+        "inbox_post": "redirect to /api/auth/guest",
+        "outbox_post": "not tested"
+      },
+      "next_actions": ["Provide auth bypass or token for testing"]
+    },
+    {
+      "key": "bridge_mcp",
+      "status": "fail",
+      "evidence": {"MCP_WHATSAPP_URL": "http://localhost:3001 (no response)"},
+      "next_actions": ["Start MCP service or simulate"]
+    },
+    {
+      "key": "dispatcher",
+      "status": "fail",
+      "evidence": {},
+      "next_actions": ["Run dispatcher worker and validate ACKs"]
+    },
+    {
+      "key": "agents",
+      "status": "fail",
+      "evidence": {"tool_send_message": "not executed", "router": "not executed"},
+      "next_actions": ["Implement and test send_message tool", "Run router triage"]
+    },
+    {
+      "key": "chat_web",
+      "status": "fail",
+      "evidence": {"ui": "not started"},
+      "next_actions": ["Start web chat and verify persistence"]
+    },
+    {
+      "key": "monitoring",
+      "status": "warn",
+      "evidence": {
+        "ping": "pong",
+        "performance": "auth redirect"
+      },
+      "next_actions": ["Expose metrics without auth"]
+    },
+    {
+      "key": "quality",
+      "status": "fail",
+      "evidence": {
+        "lint": "4054 errors",
+        "typecheck": "OOM",
+        "tests": "10 failed of 21"
+      },
+      "next_actions": ["Fix lint and tests", "Optimize typecheck"]
+    }
+  ],
+  "scoring": {
+    "by_area": {
+      "env": 1.0,
+      "schema": 0.0,
+      "bus": 1.0,
+      "api": 0.0,
+      "bridge": 0.0,
+      "dispatcher": 0.0,
+      "agents": 0.0,
+      "chat": 0.0,
+      "monitoring": 0.5
+    },
+    "total": 0.275,
+    "gate": "HOLD"
+  },
+  "risks": [
+    {"id": "R-auth", "severity": "high", "desc": "APIs require authentication", "mitigation": "provide guest token or disable auth for tests"},
+    {"id": "R-schema-missing", "severity": "high", "desc": "Canonical message schema missing", "mitigation": "add types and zod schemas"}
+  ],
+  "decision": "Blocked"
+}
