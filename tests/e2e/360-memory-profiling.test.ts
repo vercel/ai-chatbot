@@ -333,58 +333,62 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		await viewerContainer.waitFor({ state: "visible", timeout: 10000 });
 
 		// Medir tempo de renderização
-		const renderMetrics = await page.evaluate((): {
-			firstPaint?: number;
-			firstContentfulPaint?: number;
-			approximateFps?: number;
-		} => {
-			const metrics: {
+		await page.evaluate(
+			(): {
 				firstPaint?: number;
 				firstContentfulPaint?: number;
 				approximateFps?: number;
-			} = {};
+			} => {
+				const metrics: {
+					firstPaint?: number;
+					firstContentfulPaint?: number;
+					approximateFps?: number;
+				} = {};
 
-			// Medir paint timing
-			// @ts-ignore
-			const paintEntries = performance.getEntriesByType("paint");
-			if (paintEntries.length > 0) {
-				metrics.firstPaint = paintEntries[0].startTime;
-				if (paintEntries.length > 1) {
-					metrics.firstContentfulPaint = paintEntries[1].startTime;
+				// Medir paint timing
+				// @ts-ignore
+				const paintEntries = performance.getEntriesByType("paint");
+				if (paintEntries.length > 0) {
+					metrics.firstPaint = paintEntries[0].startTime;
+					if (paintEntries.length > 1) {
+						metrics.firstContentfulPaint = paintEntries[1].startTime;
+					}
 				}
-			}
 
-			// Medir frame rate aproximado
-			let frameCount = 0;
-			const startTime = performance.now();
+				// Medir frame rate aproximado
+				let frameCount = 0;
+				const startTime = performance.now();
 
-			const measureFrames = () => {
-				frameCount++;
-				if (performance.now() - startTime < 1000) {
-					requestAnimationFrame(measureFrames);
-				} else {
-					metrics.approximateFps = frameCount;
-				}
-			};
+				const measureFrames = () => {
+					frameCount++;
+					if (performance.now() - startTime < 1000) {
+						requestAnimationFrame(measureFrames);
+					} else {
+						metrics.approximateFps = frameCount;
+					}
+				};
 
-			measureFrames();
+				measureFrames();
 
-			// Aguardar medição completar
-			setTimeout(() => {
-				console.log("Métricas de renderização:");
-				if (metrics.firstPaint) {
-					console.log(`First Paint: ${metrics.firstPaint.toFixed(2)}ms`);
-				}
-				if (metrics.firstContentfulPaint) {
-					console.log(`First Contentful Paint: ${metrics.firstContentfulPaint.toFixed(2)}ms`);
-				}
-				if (metrics.approximateFps) {
-					console.log(`FPS aproximado: ${metrics.approximateFps}`);
-				}
-			}, 1100);
+				// Aguardar medição completar
+				setTimeout(() => {
+					console.log("Métricas de renderização:");
+					if (metrics.firstPaint) {
+						console.log(`First Paint: ${metrics.firstPaint.toFixed(2)}ms`);
+					}
+					if (metrics.firstContentfulPaint) {
+						console.log(
+							`First Contentful Paint: ${metrics.firstContentfulPaint.toFixed(2)}ms`,
+						);
+					}
+					if (metrics.approximateFps) {
+						console.log(`FPS aproximado: ${metrics.approximateFps}`);
+					}
+				}, 1100);
 
-			return metrics;
-		});
+				return metrics;
+			},
+		);
 
 		// Verificar performance aceitável
 		expect(true).toBe(true); // Placeholder para validação de performance
@@ -470,7 +474,7 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		const browserInfo = await page.evaluate(() => {
 			return {
 				userAgent: navigator.userAgent,
-				platform: navigator.platform,
+				platform: navigator.userAgent, // Usar userAgent como alternativa ao platform deprecated
 				language: navigator.language,
 				cookieEnabled: navigator.cookieEnabled,
 			};
@@ -529,7 +533,6 @@ test.describe("Cobertura 360 Graus - Profiling de Memória Avançado", () => {
 		page.on("response", async (response) => {
 			try {
 				const url = response.url();
-				const headers = response.headers();
 
 				// Calcular tamanho aproximado
 				let size = 0;
