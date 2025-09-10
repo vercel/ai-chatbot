@@ -31,7 +31,7 @@
     "test:e2e:canvas": "cross-env PLAYWRIGHT=True playwright test tests/e2e/story-canvas-interativo.spec.ts",
     "test:e2e:upload": "cross-env PLAYWRIGHT=True playwright test tests/e2e/story-upload-conta.spec.ts",
     "test:e2e:auth": "cross-env PLAYWRIGHT=True playwright test tests/e2e/story-autenticacao.spec.ts",
-    "test:360": "cross-env PLAYWRIGHT=True pnpm exec playwright test --config=config/playwright/playwright.360.config.ts",
+    "test:360": "cross-env PLAYWRIGHT=True pnpm exec playwright test tests/e2e/360-performance.test.ts tests/e2e/360-accessibility.test.ts tests/e2e/360-stress.test.ts tests/e2e/360-integration.test.ts tests/e2e/360-regression.test.ts tests/e2e/360-crossbrowser.test.ts tests/e2e/360-recovery.test.ts tests/e2e/360-visual-regression.test.ts tests/e2e/360-mobile.test.ts tests/e2e/360-load-distributed.test.ts tests/e2e/360-external-services.test.ts",
     "test:360:basic": "cross-env PLAYWRIGHT=True pnpm exec playwright test tests/e2e/360-basic.test.ts --config=config/playwright/playwright.360.config.ts",
     "test:360:coverage": "cross-env PLAYWRIGHT=True pnpm exec playwright test tests/e2e/360-coverage.test.ts --config=config/playwright/playwright.360.config.ts",
     "test:360:advanced": "cross-env PLAYWRIGHT=True pnpm exec playwright test tests/e2e/360-advanced.test.ts --config=config/playwright/playwright.360.config.ts",
