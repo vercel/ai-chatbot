@@ -1,5 +1,5 @@
 import { AutoViewAgent } from "@autoview/agent";
-import OpenAI from "openai";
+import typia from "typia";
 import {
   ISolarPanel,
   ISolarSystem,
@@ -13,13 +13,15 @@ import {
 export const solarPanelAutoViewAgent = new AutoViewAgent({
   model: "chatgpt",
   vendor: {
-    api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "********" }),
+    api: {
+      apiKey: process.env.OPENAI_API_KEY || "********",
+    },
     model: "o3-mini",
     isThinkingEnabled: true,
   },
   input: {
     type: "json-schema",
-    unit: typia.json.unit<ISolarPanel>(),
+    schema: typia.json.schema<ISolarPanel>(),
   },
   transformFunctionName: "transformSolarPanel",
   experimentalAllInOne: true,
@@ -29,13 +31,15 @@ export const solarPanelAutoViewAgent = new AutoViewAgent({
 export const solarSystemAutoViewAgent = new AutoViewAgent({
   model: "chatgpt",
   vendor: {
-    api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "********" }),
+    api: {
+      apiKey: process.env.OPENAI_API_KEY || "********",
+    },
     model: "o3-mini",
     isThinkingEnabled: true,
   },
   input: {
     type: "json-schema",
-    unit: typia.json.unit<ISolarSystem>(),
+    schema: typia.json.schema<ISolarSystem>(),
   },
   transformFunctionName: "transformSolarSystem",
   experimentalAllInOne: true,
@@ -45,13 +49,15 @@ export const solarSystemAutoViewAgent = new AutoViewAgent({
 export const leadAutoViewAgent = new AutoViewAgent({
   model: "chatgpt",
   vendor: {
-    api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "********" }),
+    api: {
+      apiKey: process.env.OPENAI_API_KEY || "********",
+    },
     model: "o3-mini",
     isThinkingEnabled: true,
   },
   input: {
     type: "json-schema",
-    unit: typia.json.unit<ILead>(),
+    schema: typia.json.schema<ILead>(),
   },
   transformFunctionName: "transformLead",
   experimentalAllInOne: true,
@@ -61,13 +67,15 @@ export const leadAutoViewAgent = new AutoViewAgent({
 export const financialAnalysisAutoViewAgent = new AutoViewAgent({
   model: "chatgpt",
   vendor: {
-    api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "********" }),
+    api: {
+      apiKey: process.env.OPENAI_API_KEY || "********",
+    },
     model: "o3-mini",
     isThinkingEnabled: true,
   },
   input: {
     type: "json-schema",
-    unit: typia.json.unit<IFinancialAnalysis>(),
+    schema: typia.json.schema<IFinancialAnalysis>(),
   },
   transformFunctionName: "transformFinancialAnalysis",
   experimentalAllInOne: true,
@@ -77,13 +85,15 @@ export const financialAnalysisAutoViewAgent = new AutoViewAgent({
 export const monitoringDataAutoViewAgent = new AutoViewAgent({
   model: "chatgpt",
   vendor: {
-    api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "********" }),
+    api: {
+      apiKey: process.env.OPENAI_API_KEY || "********",
+    },
     model: "o3-mini",
     isThinkingEnabled: true,
   },
   input: {
     type: "json-schema",
-    unit: typia.json.unit<IMonitoringData>(),
+    schema: typia.json.schema<IMonitoringData>(),
   },
   transformFunctionName: "transformMonitoringData",
   experimentalAllInOne: true,
@@ -93,13 +103,15 @@ export const monitoringDataAutoViewAgent = new AutoViewAgent({
 export const proposalAutoViewAgent = new AutoViewAgent({
   model: "chatgpt",
   vendor: {
-    api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "********" }),
+    api: {
+      apiKey: process.env.OPENAI_API_KEY || "********",
+    },
     model: "o3-mini",
     isThinkingEnabled: true,
   },
   input: {
     type: "json-schema",
-    unit: typia.json.unit<IProposal>(),
+    schema: typia.json.schema<IProposal>(),
   },
   transformFunctionName: "transformProposal",
   experimentalAllInOne: true,

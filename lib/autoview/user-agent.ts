@@ -19,7 +19,7 @@ export const userAutoViewAgent = new AutoViewAgent({
 	},
 	input: {
 		type: "json-schema",
-		unit: typia.json.unit<IUser>(),
+		schema: typia.json.schema<IUser>(),
 	},
 	transformFunctionName: "transformUser",
 	experimentalAllInOne: true,
