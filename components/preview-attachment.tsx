@@ -24,12 +24,11 @@ export const PreviewAttachment = ({
       className="group relative size-14 overflow-hidden rounded-md border bg-muted"
     >
       {contentType?.startsWith('image') ? (
-        <Image
+        <img
+          key={url}
           src={url}
           alt={name ?? 'An image attachment'}
-          className="size-full rounded-md object-cover"
-          width={64}
-          height={64}
+          className="rounded-md size-full object-cover"
         />
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
