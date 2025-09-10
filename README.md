@@ -12,6 +12,7 @@ Toda a documentação do projeto está organizada na pasta [`docs/`](./docs/):
 - [Load Balancing](./docs/LOAD_BALANCING_README.md) - Sistema de balanceamento de carga
 - [Personas Blueprint](./docs/PERSONAS_BLUEPRINT.md) - Sistema de personas do usuário
 - [UI Components](./docs/UI_COMPONENTS_MAPPING.md) - Mapeamento de componentes
+- [Environment Variables](./docs/env.md) - Configuração de variáveis de ambiente
 
 ## Estrutura do Projeto
 
