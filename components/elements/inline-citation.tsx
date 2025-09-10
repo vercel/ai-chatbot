@@ -3,9 +3,9 @@
 import { Badge } from '@/components/ui/badge';
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
-  type CarouselApi,
 } from '@/components/ui/carousel';
 import {
   HoverCard,
