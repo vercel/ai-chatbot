@@ -18,7 +18,7 @@ export const env = createEnv({
     POSTGRES_URL: z.url(),
     BLOB_READ_WRITE_TOKEN: z.string().startsWith('vercel_blob_'),
     // Redis
-    REDIS_URL: z.url(),
+    REDIS_URL: z.url().optional(),
     // Playwright
     PLAYWRIGHT_TEST_BASE_URL: z.string().optional(),
     PLAYWRIGHT: z.string().optional().transform((s) => s !== "false" && s !== "0"),
