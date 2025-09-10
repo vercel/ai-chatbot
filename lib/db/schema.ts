@@ -31,7 +31,6 @@ export const chat = pgTable('Chat', {
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
-  lastContext: jsonb('lastContext').$type<LanguageModelV2Usage | null>(),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
@@ -59,6 +58,7 @@ export const message = pgTable('Message_v2', {
   parts: json('parts').notNull(),
   attachments: json('attachments').notNull(),
   createdAt: timestamp('createdAt').notNull(),
+  lastContext: jsonb('lastContext').$type<LanguageModelV2Usage | null>(),
 });
 
 export type DBMessage = InferSelectModel<typeof message>;

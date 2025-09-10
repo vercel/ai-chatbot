@@ -6,6 +6,7 @@ import {
   type SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -254,6 +255,11 @@ function PureArtifact({
     }
   }, [artifact.documentId, artifactDefinition, setMetadata]);
 
+  const lastAssistantMessage = useMemo(
+    () => messages.findLast((message) => message.role === 'assistant'),
+    [messages],
+  );
+
   return (
     <AnimatePresence>
       {artifact.isVisible && (
@@ -339,6 +345,7 @@ function PureArtifact({
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
                     selectedModelId={selectedModelId}
+                    usage={lastAssistantMessage?.metadata?.usage}
                   />
                 </div>
               </div>

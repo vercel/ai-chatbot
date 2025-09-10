@@ -1,8 +1,8 @@
 'use client';
 
-import { DefaultChatTransport, type LanguageModelUsage } from 'ai';
+import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -31,7 +31,6 @@ export function Chat({
   isReadonly,
   session,
   autoResume,
-  initialLastContext,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -40,7 +39,6 @@ export function Chat({
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
-  initialLastContext?: LanguageModelUsage;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -51,9 +49,6 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
-  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(
-    initialLastContext,
-  );
 
   const {
     messages,
@@ -85,9 +80,6 @@ export function Chat({
     }),
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
-      if (dataPart.type === 'data-usage') {
-        setUsage(dataPart.data);
-      }
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -134,6 +126,11 @@ export function Chat({
     setMessages,
   });
 
+  const lastAssistantMessage = useMemo(
+    () => messages.findLast((message) => message.role === 'assistant'),
+    [messages],
+  );
+
   return (
     <>
       <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
@@ -171,7 +168,7 @@ export function Chat({
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
               selectedModelId={initialChatModel}
-              usage={usage}
+              usage={lastAssistantMessage?.metadata?.usage}
             />
           )}
         </div>

@@ -104,6 +104,7 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
     parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
     metadata: {
       createdAt: formatISO(message.createdAt),
+      usage: message.lastContext ?? undefined,
     },
   }));
 }

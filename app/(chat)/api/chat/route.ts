@@ -2,7 +2,6 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   JsonToSseTransformStream,
-  type LanguageModelUsage,
   smoothStream,
   stepCountIs,
   streamText,
@@ -18,7 +17,6 @@ import {
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import { updateChatLastContextById } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
@@ -143,6 +141,7 @@ export async function POST(request: Request) {
           role: 'user',
           parts: message.parts,
           attachments: [],
+          lastContext: null,
           createdAt: new Date(),
         },
       ],
@@ -150,8 +149,6 @@ export async function POST(request: Request) {
 
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
-
-    let finalUsage: LanguageModelUsage | undefined;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -183,16 +180,22 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          onFinish: ({ usage }) => {
-            finalUsage = usage;
-            dataStream.write({ type: 'data-usage', data: usage });
-          },
         });
 
         result.consumeStream();
 
         dataStream.merge(
           result.toUIMessageStream({
+            messageMetadata: ({ part }) => {
+              // send custom information to the client on start:
+              // when the message is finished, send additional information:
+              if (part.type === 'finish') {
+                return {
+                  createdAt: new Date().toISOString(),
+                  usage: part.totalUsage,
+                };
+              }
+            },
             sendReasoning: true,
           }),
         );
@@ -207,20 +210,11 @@ export async function POST(request: Request) {
             createdAt: new Date(),
             attachments: [],
             chatId: id,
+            lastContext: null,
           })),
         });
-
-        if (finalUsage) {
-          try {
-            await updateChatLastContextById({
-              chatId: id,
-              context: finalUsage,
-            });
-          } catch (err) {
-            console.warn('Unable to persist last usage for chat', id, err);
-          }
-        }
       },
+
       onError: () => {
         return 'Oops, an error occurred!';
       },
