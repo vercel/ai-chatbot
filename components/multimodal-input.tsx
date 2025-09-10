@@ -15,7 +15,13 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, CpuIcon, StopIcon, ChevronDownIcon } from './icons';
+import {
+  ArrowUpIcon,
+  PaperclipIcon,
+  CpuIcon,
+  StopIcon,
+  ChevronDownIcon,
+} from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';
@@ -27,6 +33,7 @@ import {
   PromptInputSubmit,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
+  PromptInputMessage,
 } from './ai-elements/prompt-input';
 import { SelectItem } from '@/components/ui/select';
 import * as SelectPrimitive from '@radix-ui/react-select';
@@ -41,7 +48,18 @@ import { chatModels } from '@/lib/ai/models';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
-import { Context } from './ai-elements/context';
+import {
+  Context,
+  ContextTrigger,
+  ContextContent,
+  ContextContentHeader,
+  ContextContentBody,
+  ContextContentFooter,
+  ContextInputUsage,
+  ContextOutputUsage,
+  ContextReasoningUsage,
+  ContextCacheUsage,
+} from '@/components/ai-elements/context';
 import { myProvider } from '@/lib/ai/providers';
 
 function PureMultimodalInput({
@@ -124,18 +142,13 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-  const submitForm = useCallback(() => {
+  const submitForm = useCallback((message: PromptInputMessage) => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
     sendMessage({
       role: 'user',
       parts: [
-        ...attachments.map((attachment) => ({
-          type: 'file' as const,
-          url: attachment.url,
-          name: attachment.name,
-          mediaType: attachment.contentType,
-        })),
+        ...(message.files || []),
         {
           type: 'text',
           text: input,
@@ -253,7 +266,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className='flex relative flex-col gap-4 w-full'>
+    <div className="flex relative flex-col gap-4 w-full">
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -261,7 +274,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className='absolute -top-12 left-1/2 z-50 -translate-x-1/2'
+            className="absolute -top-12 left-1/2 z-50 -translate-x-1/2"
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -299,20 +312,20 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className='p-3 rounded-xl border transition-all duration-200 border-border bg-background shadow-xs focus-within:border-border hover:border-muted-foreground/50'
-        onSubmit={(event) => {
+        className="p-3 rounded-xl border transition-all duration-200 border-border bg-background shadow-xs focus-within:border-border hover:border-muted-foreground/50"
+        onSubmit={(message, event) => {
           event.preventDefault();
           if (status !== 'ready') {
             toast.error('Please wait for the model to finish its response!');
           } else {
-            submitForm();
+            submitForm(message);
           }
         }}
       >
         {(attachments.length > 0 || uploadQueue.length > 0) && (
           <div
             data-testid="attachments-preview"
-            className='flex overflow-x-scroll flex-row gap-2 items-end'
+            className="flex overflow-x-scroll flex-row gap-2 items-end"
           >
             {attachments.map((attachment) => (
               <PreviewAttachment
@@ -342,23 +355,41 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className='flex flex-row gap-1 items-start sm:gap-2'>
+        <div className="flex flex-row gap-1 items-start sm:gap-2">
           <PromptInputTextarea
             data-testid="multimodal-input"
             ref={textareaRef}
             placeholder="Send a message..."
             value={input}
             onChange={handleInput}
-            minHeight={44}
-            maxHeight={200}
-            disableAutoResize={true}
-            className='grow resize-none border-0! p-2 border-none! bg-transparent text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden'
-            rows={1}
+            className="grow border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
             autoFocus
           />{' '}
-          <Context {...contextProps} />
+          <Context
+            maxTokens={contextProps.maxTokens}
+            usedTokens={contextProps.usedTokens}
+            usage={{
+              inputTokens: contextProps.usedTokens,
+              outputTokens: contextProps.usedTokens,
+              totalTokens: contextProps.usedTokens,
+              reasoningTokens: 0,
+            }}
+            modelId={contextProps.modelId.replace('/', ':') as never}
+          >
+            <ContextTrigger />
+            <ContextContent>
+              <ContextContentHeader />
+              <ContextContentBody>
+                <ContextInputUsage />
+                <ContextOutputUsage />
+                <ContextReasoningUsage />
+                <ContextCacheUsage />
+              </ContextContentBody>
+              <ContextContentFooter />
+            </ContextContent>
+          </Context>
         </div>
-        <PromptInputToolbar className='!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!'>
+        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
             <AttachmentsButton
               fileInputRef={fileInputRef}
@@ -413,7 +444,7 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className='p-1 h-8 rounded-lg transition-colors aspect-square hover:bg-accent'
+      className="p-1 h-8 rounded-lg transition-colors aspect-square hover:bg-accent"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -454,26 +485,30 @@ function PureModelSelectorCompact({
     >
       <SelectPrimitive.Trigger
         type="button"
-        className='flex gap-2 items-center px-2 h-8 rounded-lg border-0 shadow-none transition-colors bg-background text-foreground hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0'
+        className="flex gap-2 items-center px-2 h-8 rounded-lg border-0 shadow-none transition-colors bg-background text-foreground hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
       >
         <CpuIcon size={16} />
-        <span className="hidden text-xs font-medium sm:block">{selectedModel?.name}</span>
+        <span className="hidden text-xs font-medium sm:block">
+          {selectedModel?.name}
+        </span>
         <ChevronDownIcon size={16} />
       </SelectPrimitive.Trigger>
       <PromptInputModelSelectContent className="min-w-[260px] p-0">
         <div className="flex flex-col gap-px">
-        {chatModels.map((model) => (
-          <SelectItem key={model.id} value={model.name} className="px-3 py-2 text-xs">
-            <div className="flex flex-col flex-1 gap-1 min-w-0">
-              <div className="text-xs font-medium truncate">
-                {model.name}
+          {chatModels.map((model) => (
+            <SelectItem
+              key={model.id}
+              value={model.name}
+              className="px-3 py-2 text-xs"
+            >
+              <div className="flex flex-col flex-1 gap-1 min-w-0">
+                <div className="text-xs font-medium truncate">{model.name}</div>
+                <div className="truncate text-[10px] text-muted-foreground leading-tight">
+                  {model.description}
+                </div>
               </div>
-              <div className="text-[10px] text-muted-foreground truncate leading-tight">
-                {model.description}
-              </div>
-            </div>
-          </SelectItem>
-        ))}
+            </SelectItem>
+          ))}
         </div>
       </PromptInputModelSelectContent>
     </PromptInputModelSelect>

@@ -86,11 +86,11 @@ export function ModelSelector({
             >
               <button
                 type="button"
-                className="flex flex-row gap-2 justify-between items-center w-full group/item sm:gap-4"
+                className="group/item flex w-full flex-row items-center justify-between gap-2 sm:gap-4"
               >
-                <div className="flex flex-col gap-1 items-start">
+                <div className="flex flex-col items-start gap-1">
                   <div className="text-sm sm:text-base">{chatModel.name}</div>
-                  <div className="text-xs line-clamp-2 text-muted-foreground">
+                  <div className="line-clamp-2 text-muted-foreground text-xs">
                     {chatModel.description}
                   </div>
                 </div>

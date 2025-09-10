@@ -28,7 +28,7 @@ function PureSuggestedActions({
   return (
     <div
       data-testid="suggested-actions"
-      className="grid gap-2 w-full sm:grid-cols-2"
+      className="grid w-full gap-2 sm:grid-cols-2"
     >
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
@@ -47,7 +47,7 @@ function PureSuggestedActions({
                 parts: [{ type: 'text', text: suggestion }],
               });
             }}
-            className="p-3 w-full h-auto text-left whitespace-normal"
+            className="h-auto w-full whitespace-normal p-3 text-left"
           >
             {suggestedAction}
           </Suggestion>
