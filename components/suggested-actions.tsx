@@ -5,6 +5,7 @@ import { memo } from 'react';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
 import type { ChatMessage } from '@/lib/types';
+import { usePersona } from '@/lib/persona/context';
 import { Suggestion } from './elements/suggestion';
 
 interface SuggestedActionsProps {
@@ -18,12 +19,23 @@ function PureSuggestedActions({
   sendMessage,
   selectedVisibilityType,
 }: SuggestedActionsProps) {
-  const suggestedActions = [
-    'What are the advantages of using Next.js?',
-    'Write code to demonstrate Dijkstra\'s algorithm',
-    'Help me write an essay about Silicon Valley',
-    'What is the weather in San Francisco?',
+  const { mode } = usePersona();
+
+  const ownerActions = [
+    'Verifique se seu telhado é ideal para energia solar',
+    'Simule sua economia com painéis solares',
+    'Quanto custa instalar energia solar em casa?',
+    'Faça upload da sua conta de luz para análise',
   ];
+
+  const integratorActions = [
+    'Gerencie múltiplos projetos solares com eficiência',
+    'Execute análises avançadas de viabilidade fotovoltaica',
+    'Como integrar a API do Google Cloud para simulações?',
+    'Otimize o monitoramento de sistemas instalados',
+  ];
+
+  const suggestedActions = mode === 'integrator' ? integratorActions : ownerActions;
 
   return (
     <div data-testid="suggested-actions" className="grid sm:grid-cols-2 gap-2 w-full">
