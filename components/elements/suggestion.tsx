@@ -16,11 +16,16 @@ export const Suggestions = ({
   <div
     className={cn(
       // Native horizontal scroll with hidden scrollbar on mobile
-      'w-full overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]',
+      'w-full overflow-x-auto whitespace-nowrap touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]',
     )}
     {...props}
   >
-    <div className={cn('flex w-max flex-nowrap items-center gap-2 pr-4', className)}>
+    <div
+      className={cn(
+        'flex w-max flex-nowrap items-center gap-2 pr-8',
+        className,
+      )}
+    >
       {children}
     </div>
   </div>

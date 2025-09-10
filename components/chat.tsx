@@ -141,7 +141,7 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background touch-pan-y overscroll-behavior-contain">
+      <div className="flex flex-col min-w-0 h-dvh bg-background touch-auto overscroll-behavior-contain">
         <ChatHeader
           chatId={id}
           selectedVisibilityType={initialVisibilityType}
@@ -161,7 +161,7 @@ export function Chat({
           selectedModelId={initialChatModel}
         />
 
-        <div className="sticky bottom-0 flex gap-2 px-2 md:px-4 pb-3 md:pb-4 mx-auto w-full bg-background max-w-4xl z-[1] border-t-0">
+        <div className="sticky bottom-0 flex gap-2 px-2 md:px-4 pb-3 md:pb-4 mx-auto w-full min-w-0 bg-background max-w-4xl z-[1] border-t-0">
           {!isReadonly && (
             <MultimodalInput
               chatId={id}
