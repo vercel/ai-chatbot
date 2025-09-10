@@ -3,12 +3,14 @@ import { useCopyToClipboard } from 'usehooks-ts';
 
 import type { Vote } from '@/lib/db/schema';
 
-import { CopyIcon, ThumbDownIcon, ThumbUpIcon, PencilEditIcon } from './icons';
+import { ThumbDownIcon, ThumbUpIcon, PencilEditIcon } from './icons';
+import { Copy, Check } from 'lucide-react';
 import { Actions, Action } from './elements/actions';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import equal from 'fast-deep-equal';
 import { toast } from 'sonner';
 import type { ChatMessage } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 export function PureMessageActions({
   chatId,
@@ -16,15 +18,18 @@ export function PureMessageActions({
   vote,
   isLoading,
   setMode,
+  mode,
 }: {
   chatId: string;
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
   setMode?: (mode: 'view' | 'edit') => void;
+  mode: 'view' | 'edit';
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
+  const [copied, setCopied] = useState(false);
 
   if (isLoading) return null;
 
@@ -41,25 +46,40 @@ export function PureMessageActions({
     }
 
     await copyToClipboard(textFromParts);
+    setCopied(true);
     toast.success('Copied to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   // User messages get edit (on hover) and copy actions
   if (message.role === 'user') {
     return (
       <Actions className="-mr-0.5 justify-end">
-        <div className="relative">
+        <div
+          className={cn(
+            'opacity-100 md:opacity-0 transition-opacity group-hover/message:opacity-100 gap-1',
+            {
+              'md:opacity-100': mode === 'edit',
+            },
+          )}
+        >
           {setMode && (
-            <Action
-              tooltip="Edit"
-              onClick={() => setMode('edit')}
-              className="-left-10 absolute top-0 opacity-0 transition-opacity group-hover/message:opacity-100"
-            >
+            <Action tooltip="Edit" onClick={() => setMode('edit')}>
               <PencilEditIcon />
             </Action>
           )}
           <Action tooltip="Copy" onClick={handleCopy}>
-            <CopyIcon />
+            <span className="sr-only">{copied ? 'Copied' : 'Copy'}</span>
+            <Copy
+              className={`h-4 w-4 transition-all duration-300 ${
+                copied ? 'scale-0' : 'scale-100'
+              }`}
+            />
+            <Check
+              className={`absolute inset-0 m-auto h-4 w-4 transition-all duration-300 ${
+                copied ? 'scale-100' : 'scale-0'
+              }`}
+            />
           </Action>
         </div>
       </Actions>
@@ -69,7 +89,17 @@ export function PureMessageActions({
   return (
     <Actions className="-ml-0.5">
       <Action tooltip="Copy" onClick={handleCopy}>
-        <CopyIcon />
+        <span className="sr-only">{copied ? 'Copied' : 'Copy'}</span>
+        <Copy
+          className={`h-4 w-4 transition-all duration-300 ${
+            copied ? 'scale-0' : 'scale-100'
+          }`}
+        />
+        <Check
+          className={`absolute inset-0 m-auto h-4 w-4 transition-all duration-300 ${
+            copied ? 'scale-100' : 'scale-0'
+          }`}
+        />
       </Action>
 
       <Action
@@ -174,6 +204,7 @@ export const MessageActions = memo(
   (prevProps, nextProps) => {
     if (!equal(prevProps.vote, nextProps.vote)) return false;
     if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (prevProps.mode !== nextProps.mode) return false;
 
     return true;
   },

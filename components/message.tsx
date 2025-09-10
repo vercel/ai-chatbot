@@ -282,6 +282,7 @@ const PurePreviewMessage = ({
               vote={vote}
               isLoading={isLoading}
               setMode={setMode}
+              mode={mode}
             />
           )}
         </div>
