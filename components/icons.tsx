@@ -883,6 +883,24 @@ export const CopyIcon = ({ size = 16 }: { size?: number }) => (
 	</svg>
 );
 
+export const SidebarLeftIcon = ({ size = 16 }: { size?: number }) => (
+	<svg
+		height={size}
+		strokeLinejoin="round"
+		viewBox="0 0 16 16"
+		width={size}
+		className="text-current"
+	>
+		<title>Sidebar Left Icon</title>
+		<path
+			fillRule="evenodd"
+			clipRule="evenodd"
+			d="M2 4.5C2 4.22386 2.22386 4 2.5 4H13.5C13.7761 4 14 4.22386 14 4.5C14 4.77614 13.7761 5 13.5 5H2.5C2.22386 5 2 4.77614 2 4.5ZM2 8C2 7.72386 2.22386 7.5 2.5 7.5H13.5C13.7761 7.5 14 7.72386 14 8C14 8.27614 13.7761 8.5 13.5 8.5H2.5C2.22386 8.5 2 8.27614 2 8ZM2 11.5C2 11.2239 2.22386 11 2.5 11H9.5C9.77614 11 10 11.2239 10 11.5C10 11.7761 9.77614 12 9.5 12H2.5C2.22386 12 2 11.7761 2 11.5Z"
+			fill="currentColor"
+		/>
+	</svg>
+);
+
 export const CheckCircleFillIcon = ({ size = 16 }: { size?: number }) => (
 	<svg
 		height={size}

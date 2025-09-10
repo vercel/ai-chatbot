@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 
-import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { type SidebarTrigger, useSidebarSafe } from '@/components/ui/sidebar';
 import {
   Tooltip,
   TooltipContent,
@@ -9,16 +9,6 @@ import {
 
 import { SidebarLeftIcon } from './icons';
 import { Button } from './ui/button';
-
-// Custom hook to safely use sidebar
-function useSidebarSafe() {
-  try {
-    return useSidebar();
-  } catch {
-    // Return a mock object when SidebarProvider is not available
-    return { toggleSidebar: () => {} };
-  }
-}
 
 export function SidebarToggle({
   className,

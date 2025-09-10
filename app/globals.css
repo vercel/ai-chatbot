@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -104,6 +106,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: 'Geist', sans-serif;
     /* fundo em camadas: neutro + radiais Yello discretas */
     background-image:
       radial-gradient(at top right, hsl(45 100% 62% / 0.14), transparent 60%),
@@ -203,5 +206,9 @@
   .text-foreground { color: hsl(var(--foreground)); }
   .border-border   { border-color: hsl(var(--border-hsl)); }
   .ring-ring       { --tw-ring-color: hsl(var(--ring-hsl)); }
+
+  /* Font utilities */
+  .font-geist { font-family: 'Geist', sans-serif; }
+  .font-geist-mono { font-family: 'Geist Mono', monospace; }
 }
 
