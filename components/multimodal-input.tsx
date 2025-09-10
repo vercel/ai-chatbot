@@ -43,7 +43,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown, ImageIcon, Loader2Icon, SquareIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
+import { ArrowDown, ChevronUpIcon, ImageIcon, Loader2Icon, SquareIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
@@ -407,7 +407,7 @@ function PureMultimodalInput({
 
           <PromptInputSubmit
             status={status}
-            disabled={(!input.trim() && !status) || uploadQueue.length > 0}
+            disabled={!input.trim() || !status || uploadQueue.length > 0}
             className="size-7 rounded-full bg-primary p-1 text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
           >
             {status === 'submitted' ? (
@@ -500,14 +500,14 @@ function PureModelSelectorCompact({
         <span className="text-xs font-medium sm:block hidden">
           {selectedModel?.name}
         </span>
-        <ChevronDownIcon size={16} />
+        <ChevronUpIcon size={16} />
       </SelectPrimitive.Trigger>
       <PromptInputModelSelectContent className="min-w-[260px] p-0">
         {chatModels.map((model) => (
           <SelectItem
             key={model.id}
             value={model.name}
-            className="px-3 py-2 text-xs"
+            className="pl-3 pr-8 py-2 text-xs"
           >
             <div className="flex flex-col min-w-0 flex-1">
               <div className="font-medium truncate text-xs">{model.name}</div>
