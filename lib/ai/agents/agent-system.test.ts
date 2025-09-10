@@ -122,6 +122,27 @@ describe('Agent System Tests', () => {
     });
   });
 
+  describe('Investigation Agent', () => {
+    it('should collect address information', async () => {
+      mockContext.currentPhase = 'investigation';
+      mockContext.conversationHistory[0].content = 'Meu endereço é Rua das Flores, 123';
+
+      const response = await agentOrchestrator.processRequest(mockContext);
+
+      expect(response.response.data.lead.address.raw).toContain('Rua das Flores');
+      expect(response.response.data.stage).toBe('investigation');
+    });
+
+    it('should request bill when address provided', async () => {
+      mockContext.currentPhase = 'investigation';
+      mockContext.conversationHistory[0].content = 'Rua das Palmeiras, 55';
+
+      const response = await agentOrchestrator.processRequest(mockContext);
+
+      expect(response.response.data.reply).toMatch(/conta de luz/i);
+    });
+  });
+
   describe('Agent Orchestrator', () => {
     it('should route requests to appropriate agents', async () => {
       // Test solar routing
