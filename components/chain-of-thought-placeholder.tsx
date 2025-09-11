@@ -4,7 +4,7 @@ import {
   ChainOfThought,
   ChainOfThoughtHeader,
   ChainOfThoughtContent,
-} from '@/components/ai-elements/chain-of-thought';
+} from '@/components/elements/chain-of-thought';
 import { LoadingText } from '@/components/elements/loading-text';
 
 export function ChainOfThoughtPlaceholder() {

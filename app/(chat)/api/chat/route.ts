@@ -355,27 +355,22 @@ export async function POST(request: Request) {
           },
         });
 
-        console.log('🔥 STARTING STREAM CONSUMPTION');
         result.consumeStream();
-        console.log('🔥 STREAM CONSUMPTION STARTED');
-
-        console.log('🔥 MERGING UI MESSAGE STREAM');
         dataStream.merge(
           result.toUIMessageStream({
             sendReasoning: true,
             sendSources: true,
           }),
         );
-        console.log('🔥 UI MESSAGE STREAM MERGED');
       },
       generateId: generateUUID,
       onFinish: async ({ messages, responseMessage }) => {
         console.log('full response', responseMessage);
         await saveMessages({
-          messages: messages.map((message) => ({
-            id: message.id,
-            role: message.role,
-            parts: message.parts,
+          messages: messages.map((m) => ({
+            id: m.id,
+            role: m.role,
+            parts: m.parts,
             createdAt: new Date(),
             attachments: [],
             chatId: id,

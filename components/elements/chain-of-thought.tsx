@@ -10,11 +10,21 @@ import {
 import { cn } from '@/lib/utils';
 import { ChevronDownIcon, DotIcon, type LucideIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { createContext, memo, useContext } from 'react';
+import React, {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 type ChainOfThoughtContextValue = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  isWorking: boolean;
+  setIsWorking: (working: boolean) => void;
+  duration: number;
+  setDuration: (duration: number) => void;
 };
 
 const ChainOfThoughtContext = createContext<ChainOfThoughtContextValue | null>(
@@ -35,6 +45,19 @@ export type ChainOfThoughtProps = ComponentProps<'div'> & {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  isWorking?: boolean;
+  initialDuration?: number;
+};
+
+const formatDuration = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return remainingSeconds > 0
+    ? `${minutes}m ${remainingSeconds}s`
+    : `${minutes}m`;
 };
 
 export const ChainOfThought = memo(
@@ -43,6 +66,8 @@ export const ChainOfThought = memo(
     open,
     defaultOpen = false,
     onOpenChange,
+    isWorking = false,
+    initialDuration = 0,
     children,
     ...props
   }: ChainOfThoughtProps) => {
@@ -52,8 +77,32 @@ export const ChainOfThought = memo(
       onChange: onOpenChange,
     });
 
+    const [duration, setDuration] = useState(initialDuration);
+
+    useEffect(() => {
+      if (
+        typeof initialDuration === 'number' &&
+        initialDuration >= 0 &&
+        initialDuration !== duration
+      ) {
+        setDuration(initialDuration);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialDuration]);
+
+    const setIsWorking = (_working: boolean) => {};
+
     return (
-      <ChainOfThoughtContext.Provider value={{ isOpen, setIsOpen }}>
+      <ChainOfThoughtContext.Provider
+        value={{
+          isOpen,
+          setIsOpen,
+          isWorking,
+          setIsWorking,
+          duration,
+          setDuration,
+        }}
+      >
         <div
           className={cn('not-prose max-w-prose w-full min-w-0', className)}
           {...props}
@@ -67,11 +116,36 @@ export const ChainOfThought = memo(
 
 export type ChainOfThoughtHeaderProps = ComponentProps<
   typeof CollapsibleTrigger
->;
+> & {
+  showDuration?: boolean;
+};
 
 export const ChainOfThoughtHeader = memo(
-  ({ className, children, ...props }: ChainOfThoughtHeaderProps) => {
-    const { isOpen, setIsOpen } = useChainOfThought();
+  ({
+    className,
+    children,
+    showDuration = true,
+    ...props
+  }: ChainOfThoughtHeaderProps) => {
+    const { isOpen, setIsOpen, isWorking, duration } = useChainOfThought();
+
+    const displayText = React.useMemo(() => {
+      if (!showDuration) {
+        return children ?? 'Chain of Thought';
+      }
+
+      if (isWorking) {
+        return children ?? 'Working';
+      }
+
+      // If duration is 0 but showDuration is true, this is a completed chain from a refresh
+      // where we lost the timing data but still want to show completion
+      if (duration === 0) {
+        return children ?? 'Finished working';
+      }
+
+      return `Worked for ${formatDuration(duration)}`;
+    }, [children, showDuration, isWorking, duration]);
 
     return (
       <Collapsible onOpenChange={setIsOpen} open={isOpen}>
@@ -82,13 +156,7 @@ export const ChainOfThoughtHeader = memo(
           )}
           {...props}
         >
-          <span className="text-left">{children ?? 'Chain of Thought'}</span>
-          <ChevronDownIcon
-            className={cn(
-              'size-4 shrink-0 transition-transform',
-              isOpen ? 'rotate-180' : 'rotate-0',
-            )}
-          />
+          <span className="text-left">{displayText}</span>
         </CollapsibleTrigger>
       </Collapsible>
     );
