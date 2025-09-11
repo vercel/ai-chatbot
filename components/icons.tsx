@@ -111,7 +111,6 @@ export const LockIcon = LockIconLuc;
 export const TrashIcon = TrashIconLuc;
 export const CopyIcon = CopyIconLuc;
 export const CheckCircleFillIcon = CheckCircleFillIconLuc;
-export const CrossSmallIcon = CrossSmallIconLuc;
 export const LoaderIcon = LoaderIconLuc;
 export const FileIcon = FileIconLuc;
 export const PencilEditIcon = PencilEditIconLuc;
