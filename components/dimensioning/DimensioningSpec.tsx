@@ -71,7 +71,7 @@ export function DimensioningSpec({ result, className }: DimensioningSpecProps) {
             <tbody>
               {layout.sections.map((section) => (
                 <tr key={section.id}>
-                  <td className="border border-gray-300 p-2" scope="row">{section.id}</td>
+                  <td className="border border-gray-300 p-2">{section.id}</td>
                   <td className="border border-gray-300 p-2">{section.orientation}</td>
                   <td className="border border-gray-300 p-2">{section.panels_count}</td>
                   <td className="border border-gray-300 p-2">{section.panels_rows}</td>
@@ -88,7 +88,8 @@ export function DimensioningSpec({ result, className }: DimensioningSpecProps) {
       {/* Diagrama SVG */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Diagrama do Layout</h3>
-        <svg width="400" height="200" className="border">
+        <svg width="400" height="200" className="border" aria-label="Diagrama do layout das seções do telhado">
+          <title>Diagrama do layout das seções do telhado</title>
           {layout.sections.map((section, index) => {
             const x = 20 + index * 120;
             const y = 20;
@@ -141,18 +142,19 @@ export function DimensioningSpec({ result, className }: DimensioningSpecProps) {
           <div>
             <h4 className="font-medium">Proteções DC:</h4>
             <ul className="list-disc list-inside">
-              {bom.dc_protections.map((p, idx) => <li key={`dc-${idx}`}>{p}</li>)}
+              {bom.dc_protections.map((p) => <li key={p}>{p}</li>)}
             </ul>
           </div>
           <div>
             <h4 className="font-medium">Proteções AC:</h4>
             <ul className="list-disc list-inside">
-              {bom.ac_protections.map((p, idx) => <li key={idx}>{p}</li>)}
+              {bom.ac_protections.map((p) => <li key={p}>{p}</li>)}
             </ul>
           </div>
         </div>
         {result.inputs.persona === "integrator" && (
           <button
+            type="button"
             onClick={exportBOM}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded focus-yello"
           >
@@ -166,7 +168,7 @@ export function DimensioningSpec({ result, className }: DimensioningSpecProps) {
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">Observações</h3>
           <ul className="list-disc list-inside">
-            {notes.map((note, idx) => <li key={idx}>{note}</li>)}
+            {notes.map((note) => <li key={note}>{note}</li>)}
           </ul>
         </div>
       )}
@@ -174,13 +176,15 @@ export function DimensioningSpec({ result, className }: DimensioningSpecProps) {
       {/* CTAs */}
       <div className="flex gap-4">
         <button
-          onClick={() => window.location.href = "/journey/simulation"}
+          type="button"
+          onClick={() => { window.location.href = "/journey/simulation"; }}
           className="flex-1 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded focus-yello"
         >
           Prosseguir para Simulação
         </button>
         <button
-          onClick={() => window.location.href = "/journey"}
+          type="button"
+          onClick={() => { window.location.href = "/journey"; }}
           className="flex-1 py-3 bg-gray-500 text-white font-semibold rounded focus-yello"
         >
           Voltar para Jornada
