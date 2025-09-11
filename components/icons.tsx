@@ -998,7 +998,7 @@ export const SummarizeIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const UserIcon = () => {
+export const UserIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
       data-testid="geist-icon"
