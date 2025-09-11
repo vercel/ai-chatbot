@@ -40,7 +40,7 @@ function PureChatHeader({
             router.push('/');
             router.refresh();
           }}
-          size="icon"
+          size="sm"
         >
           <PlusIcon />
           <span className="md:sr-only">New Chat</span>

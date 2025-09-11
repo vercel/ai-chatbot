@@ -49,7 +49,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     router.push('/');
                     router.refresh();
                   }}
-                  size="icon"
+                  size="sm"
                 >
                   <PlusIcon />
                 </Button>
