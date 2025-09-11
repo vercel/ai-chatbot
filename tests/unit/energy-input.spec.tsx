@@ -45,13 +45,13 @@ describe("EnergyInputForm", () => {
 
   describe("Owner Persona", () => {
     beforeEach(() => {
-      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+      vi.mocked(personaContext.usePersona).mockReturnValue({
         mode: "owner",
         permissions: ["owner"],
         featureFlags: { wizard: true },
         setMode: vi.fn(),
         hasPermission: vi.fn(),
-        isEnabled: vi.fn()
+        isEnabled: vi.fn(),
       });
     });
 
@@ -73,13 +73,13 @@ describe("EnergyInputForm", () => {
 
   describe("Integrator Persona", () => {
     beforeEach(() => {
-      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+      vi.mocked(personaContext.usePersona).mockReturnValue({
         mode: "integrator",
         permissions: ["integrator"],
         featureFlags: { batch: true, advanced: true },
         setMode: vi.fn(),
         hasPermission: vi.fn(),
-        isEnabled: vi.fn()
+        isEnabled: vi.fn(),
       });
     });
 
@@ -103,13 +103,13 @@ describe("EnergyInputForm", () => {
 
   describe("Form Validation", () => {
     beforeEach(() => {
-      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+      vi.mocked(personaContext.usePersona).mockReturnValue({
         mode: "owner",
         permissions: ["owner"],
         featureFlags: { wizard: true },
         setMode: vi.fn(),
         hasPermission: vi.fn(),
-        isEnabled: vi.fn()
+        isEnabled: vi.fn(),
       });
     });
 
@@ -149,13 +149,13 @@ describe("EnergyInputForm", () => {
 
   describe("File Upload", () => {
     beforeEach(() => {
-      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+      vi.mocked(personaContext.usePersona).mockReturnValue({
         mode: "owner",
         permissions: ["owner"],
         featureFlags: { wizard: true },
         setMode: vi.fn(),
         hasPermission: vi.fn(),
-        isEnabled: vi.fn()
+        isEnabled: vi.fn(),
       });
     });
 
@@ -181,13 +181,13 @@ describe("EnergyInputForm", () => {
 
   describe("Loading State", () => {
     beforeEach(() => {
-      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+      vi.mocked(personaContext.usePersona).mockReturnValue({
         mode: "owner",
         permissions: ["owner"],
         featureFlags: { wizard: true },
         setMode: vi.fn(),
         hasPermission: vi.fn(),
-        isEnabled: vi.fn()
+        isEnabled: vi.fn(),
       });
     });
 
