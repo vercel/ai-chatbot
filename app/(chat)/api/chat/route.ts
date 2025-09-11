@@ -6,6 +6,7 @@ import {
   smoothStream,
   stepCountIs,
   streamText,
+  validateUIMessages,
 } from 'ai';
 import { withAuth } from '@workos-inc/authkit-nextjs';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
@@ -141,31 +142,6 @@ export async function POST(request: Request) {
     const messagesFromDb = await getMessagesByChatId({ id });
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
 
-    // Filter out UI-only parts before converting to model messages (AI SDK v5 expects
-    // only model-convertible content in history). Keep: text, file, reasoning, tool-call, tool-result.
-    const filteredUIMessages = uiMessages.map((msg) => {
-      const allowedTypes = new Set([
-        'text',
-        'file',
-        'reasoning',
-        'tool-call',
-        'tool-result',
-      ]);
-      return {
-        ...msg,
-        parts:
-          msg.parts?.filter((part: any) =>
-            allowedTypes.has(String(part?.type)),
-          ) || [],
-      };
-    });
-
-    // Debug: Log the message structure before conversion
-    console.log(
-      'Filtered UI Messages before convertToModelMessages:',
-      JSON.stringify(filteredUIMessages, null, 2),
-    );
-
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
@@ -217,7 +193,8 @@ export async function POST(request: Request) {
     let finalUsage: LanguageModelUsage | undefined;
 
     const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
+      execute: async ({ writer: dataStream }) => {
+        // Build your tool set (the same set you pass to streamText)
         const tools: Record<string, any> = {
           createDocument: createDocument({
             session: aiToolsSession,
@@ -296,13 +273,22 @@ export async function POST(request: Request) {
           );
         }
 
+        // 1) Validate the full UI history against your tool schemas
+        const validated = await validateUIMessages({
+          messages: uiMessages,
+          tools, // <= critical for typed tool parts like tool-web_search_preview
+        });
+
+        // 2) Convert to model messages with the same tool registry
+        const modelMessages = convertToModelMessages(validated, { tools });
+
         const result = streamText({
           model: myProvider.languageModel('chat-model'),
           system: systemPrompt({
             selectedChatModel: 'chat-model',
             requestHints,
           }),
-          messages: convertToModelMessages(filteredUIMessages),
+          messages: modelMessages, // <= not UI parts anymore
           stopWhen: stepCountIs(50),
           activeTools: Object.keys(tools),
           experimental_transform: smoothStream({ chunking: 'word' }),
