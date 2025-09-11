@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
 	if (pathname === "/") {
-		void trackEvent("app_open", {
+		trackEvent("app_open", {
 			device_id: request.headers.get("user-agent") ?? "unknown",
 			source: request.headers.get("referer") ?? "direct",
 			timestamp: new Date().toISOString(),

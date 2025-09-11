@@ -4,9 +4,8 @@ import IntentInput from "@/components/intent/IntentInput";
 import type { LeadValidationResult } from "@/lib/lead/types";
 
 // Mock the server action
-const mockValidateLeadAction = vi.fn();
 vi.mock("@/app/actions/validateLeadAction", () => ({
-  validateLeadAction: mockValidateLeadAction,
+  validateLeadAction: vi.fn(),
 }));
 
 // Mock fetch for API mode
@@ -18,7 +17,9 @@ describe("IntentInput", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockValidateLeadAction.mockResolvedValue({
+    // Import the mocked function
+    const { validateLeadAction } = require("@/app/actions/validateLeadAction");
+    validateLeadAction.mockResolvedValue({
       isValidLead: true,
       status: "approved",
       reasons: [],
@@ -85,7 +86,8 @@ describe("IntentInput", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockValidateLeadAction).toHaveBeenCalledWith(
+      const { validateLeadAction } = require("@/app/actions/validateLeadAction");
+      expect(validateLeadAction).toHaveBeenCalledWith(
         expect.objectContaining({ name: "João Silva" })
       );
     });
@@ -122,7 +124,8 @@ describe("IntentInput", () => {
   });
 
   it("shows loading state during submission", async () => {
-    mockValidateLeadAction.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    const { validateLeadAction } = require("@/app/actions/validateLeadAction");
+    validateLeadAction.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
     render(<IntentInput onValidated={mockOnValidated} />);
 
