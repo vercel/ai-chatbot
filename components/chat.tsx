@@ -59,12 +59,6 @@ export function Chat({
   const [browserPanelVisible, setBrowserPanelVisible] = useState<boolean>(false);
   const [browserSessionId, setBrowserSessionId] = useState<string>(id);
   const [benefitApplicationsChatMode, setBenefitApplicationsChatMode] = useState<boolean>(false);
-  const [browserConnected, setBrowserConnected] = useState<boolean>(false);
-  const [browserConnecting, setBrowserConnecting] = useState<boolean>(false);
-  const [browserError, setBrowserError] = useState<string | null>(null);
-  const [lastFrame, setLastFrame] = useState<string | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -211,7 +205,9 @@ export function Chat({
         // For benefit-applications-agent, use the split-screen layout (no artifact overlay)
         // The browser view is handled in the split-screen layout
         setBenefitApplicationsChatMode(true);
-        setBrowserPanelVisible(true);
+        if (!browserPanelVisible) {
+          setBrowserPanelVisible(true);
+        }
       } else {
         // For other models, use the old BrowserPanel
         if (!browserPanelVisible) {
@@ -293,108 +289,13 @@ export function Chat({
   useEffect(() => {
     if (initialChatModel === 'benefit-applications-agent' && messages.length === 0) {
       setBenefitApplicationsChatMode(false);
+      console.log('benefitApplicationsChatMode reset', benefitApplicationsChatMode);
+    }
+    if (browserPanelVisible) {
+      console.log('browserPanelVisible reset', browserPanelVisible);
+      setBrowserPanelVisible(false);
     }
   }, [initialChatModel, messages.length]);
-
-  // Browser WebSocket connection logic
-  const connectToBrowserStream = async () => {
-    try {
-      setBrowserConnecting(true);
-      setBrowserError(null);
-
-      const response = await fetch(`/api/browser-stream?sessionId=${browserSessionId}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const connectionInfo = await response.json();
-
-      if (connectionInfo.error) {
-        throw new Error(connectionInfo.error);
-      }
-
-      const ws = new WebSocket(connectionInfo.url);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        console.log('Connected to browser streaming service');
-        setBrowserConnected(true);
-        setBrowserConnecting(false);
-        
-        ws.send(JSON.stringify({
-          type: 'start-streaming',
-          sessionId: browserSessionId
-        }));
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'frame' && data.data) {
-            setLastFrame(data.data);
-            
-            // Update canvas with new frame
-            const canvas = canvasRef.current;
-            if (canvas) {
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                const img = new Image();
-                img.onload = () => {
-                  ctx.clearRect(0, 0, canvas.width, canvas.height);
-                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                };
-                img.src = `data:image/jpeg;base64,${data.data}`;
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
-
-      ws.onclose = () => {
-        console.log('Browser streaming connection closed');
-        setBrowserConnected(false);
-        setBrowserConnecting(false);
-      };
-
-      ws.onerror = (error) => {
-        console.error('Browser streaming WebSocket error:', error);
-        setBrowserError('Connection failed');
-        setBrowserConnecting(false);
-      };
-
-    } catch (error) {
-      console.error('Failed to connect to browser stream:', error);
-      setBrowserError(error instanceof Error ? error.message : 'Connection failed');
-      setBrowserConnecting(false);
-    }
-  };
-
-  const disconnectFromBrowserStream = () => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    setBrowserConnected(false);
-    setLastFrame(null);
-    setBrowserError(null);
-  };
-
-  // Auto-connect when in benefit applications chat mode
-  useEffect(() => {
-    if (benefitApplicationsChatMode && !browserConnected && !browserConnecting) {
-      connectToBrowserStream();
-    }
-  }, [benefitApplicationsChatMode, browserConnected, browserConnecting]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnectFromBrowserStream();
-    };
-  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -461,11 +362,15 @@ export function Chat({
     );
   }
 
-  // Special UI for benefit applications agent - full page chat (before website detection)
-  if (initialChatModel === 'benefit-applications-agent' && messages.length > 0 && !benefitApplicationsChatMode) {
-    return (
-      <>
-        <div className="flex h-dvh flex-col" style={{ backgroundColor: '#F4E4F0' }}>
+  // Unified layout for all models
+  return (
+    <>
+      <div 
+        className={`flex h-dvh ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}
+        style={{ backgroundColor: initialChatModel === 'benefit-applications-agent' ? '#F4E4F0' : undefined }}
+      >
+        {/* Chat Panel */}
+        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} ${initialChatModel === 'benefit-applications-agent' ? 'bg-white' : ''}`}>
           <ChatHeader
             chatId={id}
             selectedModelId={initialChatModel}
@@ -473,131 +378,14 @@ export function Chat({
             isReadonly={isReadonly}
             session={session}
           />
-
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <div className="max-w-4xl w-full text-left">
-              <Messages
-                chatId={id}
-                status={status}
-                votes={votes}
-                messages={messages}
-                setMessages={setMessages}
-                regenerate={regenerate}
-                isReadonly={isReadonly}
-                isArtifactVisible={isArtifactVisible}
-              />
-
-            </div>
-          </div>
-        </div>
-
-        <Artifact
-          chatId={id}
-          input={input}
-          setInput={setInput}
-          status={status}
-          stop={stop}
-          attachments={attachments}
-          setAttachments={setAttachments}
-          sendMessage={sendMessage}
-          messages={messages}
-          setMessages={setMessages}
-          regenerate={regenerate}
-          votes={votes}
-          isReadonly={isReadonly}
-          selectedVisibilityType={visibilityType}
-          initialChatModel={initialChatModel}
-          isCompactMode={false}
-          showInputOnly={true}
-        />
-      </>
-    );
-  }
-
-  // Special UI for benefit applications agent - compact chat with browser artifact
-  if (initialChatModel === 'benefit-applications-agent' && benefitApplicationsChatMode) {
-    return (
-      <>
-        <div className="flex h-dvh" style={{ backgroundColor: '#F4E4F0' }}>
-          {/* Left Panel - Chat (responsive width based on browser panel visibility) */}
-          <div className={`${browserPanelVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} flex flex-col bg-white`}>
+          {initialChatModel === 'benefit-applications-agent' && browserPanelVisible && (
             <SideChatHeader
               title="Apply for Benefits"
               status="online"
               artifactTitle={artifactTitle}
               sessionStartTime={sessionStartTime}
             />
-            
-            {/* Chat Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3" ref={messagesEndRef}>
-              <Messages
-                chatId={id}
-                status={status}
-                votes={votes}
-                messages={messages}
-                setMessages={setMessages}
-                regenerate={regenerate}
-                isReadonly={isReadonly}
-                isArtifactVisible={isArtifactVisible}
-              />
-            </div>
-
-          </div>
-
-          {/* Right Panel - Browser View (only show when browserPanelVisible is true) */}
-          {browserPanelVisible && (
-            <div className="w-[70%] flex flex-col">
-              <BrowserPanel
-                sessionId={browserSessionId}
-                isVisible={browserPanelVisible}
-                onToggle={setBrowserPanelVisible}
-              />
-            </div>
           )}
-        </div>
-
-        <Artifact
-          chatId={id}
-          input={input}
-          setInput={setInput}
-          status={status}
-          stop={stop}
-          attachments={attachments}
-          setAttachments={setAttachments}
-          sendMessage={sendMessage}
-          messages={messages}
-          setMessages={setMessages}
-          regenerate={regenerate}
-          votes={votes}
-          isReadonly={isReadonly}
-          selectedVisibilityType={visibilityType}
-          initialChatModel={initialChatModel}
-          isCompactMode={true}
-          showInputOnly={true}
-        />
-      </>
-    );
-  }
-
-  // Default layout for other models (not benefit applications agent)
-  if (initialChatModel === 'benefit-applications-agent') {
-    // This should never be reached due to the conditions above
-    return null;
-  }
-
-  // Default layout for other models (not benefit applications agent)
-  return (
-    <>
-      <div className={`flex h-dvh bg-background ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}>
-        {/* Chat Panel */}
-        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-1/2 border-r' : 'w-full'}`}>
-          <ChatHeader
-            chatId={id}
-            selectedModelId={initialChatModel}
-            selectedVisibilityType={initialVisibilityType}
-            isReadonly={isReadonly}
-            session={session}
-          />
 
           <Messages
             chatId={id}
@@ -633,7 +421,7 @@ export function Chat({
 
         {/* Browser Panel */}
         {browserPanelVisible && (
-          <div className="w-1/2 flex flex-col">
+          <div className="w-[70%] flex flex-col">
             <BrowserPanel
               sessionId={browserSessionId}
               isVisible={browserPanelVisible}
@@ -659,6 +447,8 @@ export function Chat({
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
         initialChatModel={initialChatModel}
+        isCompactMode={initialChatModel === 'benefit-applications-agent' && browserPanelVisible}
+        showInputOnly={initialChatModel === 'benefit-applications-agent'}
       />
     </>
   );
