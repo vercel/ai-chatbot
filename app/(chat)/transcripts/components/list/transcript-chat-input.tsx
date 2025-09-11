@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SendIcon } from 'lucide-react';
@@ -140,7 +140,7 @@ export function TranscriptChatInput({
             role: 'user',
             parts: messageParts,
           },
-          selectedChatModel: 'chat-model',
+          reasoningEffort: 'medium',
           selectedVisibilityType: 'private',
         }),
       });

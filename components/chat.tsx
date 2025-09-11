@@ -57,6 +57,9 @@ export function Chat({
   const [usage, setUsage] = useState<LanguageModelUsage | undefined>(
     initialLastContext,
   );
+  const [reasoningEffort, setReasoningEffort] = useState<
+    'low' | 'medium' | 'high'
+  >('medium');
 
   const {
     messages,
@@ -79,7 +82,7 @@ export function Chat({
           body: {
             id,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
+            reasoningEffort: reasoningEffort,
             selectedVisibilityType: visibilityType,
             ...body,
           },
@@ -158,7 +161,7 @@ export function Chat({
           regenerate={regenerate}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
-          selectedModelId={initialChatModel}
+          reasoningEffort={reasoningEffort}
         />
 
         <div className="sticky bottom-0 flex gap-2 px-2 md:px-4 pb-3 md:pb-4 mx-auto w-full min-w-0 bg-background max-w-4xl z-[1] border-t-0">
@@ -176,7 +179,8 @@ export function Chat({
               setMessages={setMessages}
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
-              selectedModelId={initialChatModel}
+              reasoningEffort={reasoningEffort}
+              setReasoningEffort={setReasoningEffort}
               usage={usage}
             />
           )}
@@ -198,7 +202,7 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
-        selectedModelId={initialChatModel}
+        reasoningEffort={reasoningEffort}
       />
     </>
   );

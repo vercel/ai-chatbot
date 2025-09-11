@@ -67,7 +67,7 @@ function PureArtifact({
   votes,
   isReadonly,
   selectedVisibilityType,
-  selectedModelId,
+  reasoningEffort,
 }: {
   chatId: string;
   input: string;
@@ -83,7 +83,7 @@ function PureArtifact({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
-  selectedModelId: string;
+  reasoningEffort: 'low' | 'medium' | 'high';
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -338,7 +338,8 @@ function PureArtifact({
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
-                    selectedModelId={selectedModelId}
+                    reasoningEffort={reasoningEffort}
+                    setReasoningEffort={() => {}} // No-op since artifact doesn't control reasoning
                   />
                 </div>
               </div>

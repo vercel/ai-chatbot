@@ -19,7 +19,7 @@ interface MessagesProps {
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
-  selectedModelId: string;
+  reasoningEffort: 'low' | 'medium' | 'high';
 }
 
 function PureMessages({
@@ -31,7 +31,7 @@ function PureMessages({
   regenerate,
   isReadonly,
   isArtifactVisible,
-  selectedModelId,
+  reasoningEffort,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,

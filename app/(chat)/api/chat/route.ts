@@ -17,8 +17,8 @@ import {
   getMessagesByChatId,
   saveChat,
   saveMessages,
+  updateChatLastContextById,
 } from '@/lib/db/queries';
-import { updateChatLastContextById } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
@@ -48,7 +48,6 @@ import {
 import { after } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
-import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { openai, type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 
@@ -90,12 +89,12 @@ export async function POST(request: Request) {
     const {
       id,
       message,
-      selectedChatModel,
+      reasoningEffort,
       selectedVisibilityType,
     }: {
       id: string;
       message: ChatMessage;
-      selectedChatModel: ChatModel['id'];
+      reasoningEffort: 'low' | 'medium' | 'high';
       selectedVisibilityType: VisibilityType;
     } = requestBody;
 
@@ -269,18 +268,16 @@ export async function POST(request: Request) {
             dataStream,
           }),
           // Add web search for the unified openai chat model
-          ...(selectedChatModel === 'chat-model' && {
-            web_search_preview: openai.tools.webSearchPreview({
-              searchContextSize: 'high',
-              userLocation:
-                requestHints.city && requestHints.country
-                  ? {
-                      type: 'approximate',
-                      city: requestHints.city,
-                      region: requestHints.country,
-                    }
-                  : undefined,
-            }),
+          web_search_preview: openai.tools.webSearchPreview({
+            searchContextSize: 'high',
+            userLocation:
+              requestHints.city && requestHints.country
+                ? {
+                    type: 'approximate',
+                    city: requestHints.city,
+                    region: requestHints.country,
+                  }
+                : undefined,
           }),
         };
 
@@ -300,8 +297,11 @@ export async function POST(request: Request) {
         }
 
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          model: myProvider.languageModel('chat-model'),
+          system: systemPrompt({
+            selectedChatModel: 'chat-model',
+            requestHints,
+          }),
           messages: convertToModelMessages(filteredUIMessages),
           stopWhen: stepCountIs(50),
           activeTools: Object.keys(tools),
@@ -313,7 +313,7 @@ export async function POST(request: Request) {
           },
           providerOptions: {
             openai: {
-              reasoningEffort: 'low',
+              reasoningEffort: reasoningEffort,
               reasoningSummary: 'auto',
             } satisfies OpenAIResponsesProviderOptions,
           },

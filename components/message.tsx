@@ -199,6 +199,7 @@ const PurePreviewMessage = ({
                     if (mode === 'view') {
                       return (
                         <MessageContent
+                          key={key}
                           data-testid="message-content"
                           className={cn('justify-start items-start text-left', {
                             'bg-primary text-primary-foreground':

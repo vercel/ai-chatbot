@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, StopIcon, MemoryIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';
@@ -33,13 +33,11 @@ import { SelectItem } from '@/components/ui/select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, BrainIcon } from 'lucide-react';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
-import { chatModels, resolveProviderModelId } from '@/lib/ai/models';
-import { saveChatModelAsCookie } from '@/app/(chat)/actions';
-import { startTransition } from 'react';
+import { resolveProviderModelId } from '@/lib/ai/models';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
 import { cn } from '@/lib/utils';
@@ -60,7 +58,8 @@ function PureMultimodalInput({
   sendMessage,
   className,
   selectedVisibilityType,
-  selectedModelId,
+  reasoningEffort,
+  setReasoningEffort,
   usage,
 }: {
   chatId: string;
@@ -75,7 +74,8 @@ function PureMultimodalInput({
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   className?: string;
   selectedVisibilityType: VisibilityType;
-  selectedModelId: string;
+  reasoningEffort: 'low' | 'medium' | 'high';
+  setReasoningEffort: Dispatch<SetStateAction<'low' | 'medium' | 'high'>>;
   usage?: LanguageModelUsage;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -201,8 +201,8 @@ function PureMultimodalInput({
   };
 
   const providerModelId = useMemo(() => {
-    return resolveProviderModelId(selectedModelId);
-  }, [selectedModelId]);
+    return resolveProviderModelId('chat-model');
+  }, []);
 
   const contextMax = useMemo(() => {
     // Resolve from selected model; stable across chunks.
@@ -364,7 +364,7 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className="text-sm flex-1 min-w-0 resize-none py-3 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
+            className="text-sm flex-1 min-w-0 resize-none p-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-transparent !border-0 !border-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none placeholder:text-muted-foreground"
             rows={1}
             autoFocus
           />{' '}
@@ -375,9 +375,12 @@ function PureMultimodalInput({
             <AttachmentsButton
               fileInputRef={fileInputRef}
               status={status}
-              selectedModelId={selectedModelId}
+              selectedModelId={'chat-model'}
             />
-            <ModelSelectorCompact selectedModelId={selectedModelId} />
+            <ReasoningSelectorCompact
+              reasoningEffort={reasoningEffort}
+              setReasoningEffort={setReasoningEffort}
+            />
           </PromptInputTools>
 
           {status === 'submitted' ? (
@@ -405,7 +408,7 @@ export const MultimodalInput = memo(
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
-    if (prevProps.selectedModelId !== nextProps.selectedModelId) return false;
+    if (prevProps.reasoningEffort !== nextProps.reasoningEffort) return false;
 
     return true;
   },
@@ -441,53 +444,83 @@ function PureAttachmentsButton({
 
 const AttachmentsButton = memo(PureAttachmentsButton);
 
-function PureModelSelectorCompact({
-  selectedModelId,
+function PureReasoningSelectorCompact({
+  reasoningEffort,
+  setReasoningEffort,
 }: {
-  selectedModelId: string;
+  reasoningEffort: 'low' | 'medium' | 'high';
+  setReasoningEffort: Dispatch<SetStateAction<'low' | 'medium' | 'high'>>;
 }) {
-  const [optimisticModelId, setOptimisticModelId] = useState(selectedModelId);
+  const reasoningOptions = [
+    {
+      value: 'low' as const,
+      label: 'Low',
+      description: 'Faster responses with basic reasoning',
+    },
+    {
+      value: 'medium' as const,
+      label: 'Medium',
+      description: 'Balanced speed and reasoning depth',
+    },
+    {
+      value: 'high' as const,
+      label: 'High',
+      description: 'Slower but more thorough reasoning',
+    },
+  ];
 
-  const selectedModel = chatModels.find(
-    (model) => model.id === optimisticModelId,
+  const selectedOption = reasoningOptions.find(
+    (option) => option.value === reasoningEffort,
   );
+
+  // Check if setReasoningEffort is a no-op function
+  const isDisabled =
+    setReasoningEffort.toString().includes('() => {}') ||
+    setReasoningEffort.toString().includes('function() {}');
 
   return (
     <PromptInputModelSelect
-      value={selectedModel?.name}
-      onValueChange={(modelName) => {
-        const model = chatModels.find((m) => m.name === modelName);
-        if (model) {
-          setOptimisticModelId(model.id);
-          startTransition(() => {
-            saveChatModelAsCookie(model.id);
-          });
+      value={selectedOption?.label}
+      onValueChange={(label) => {
+        if (!isDisabled) {
+          const option = reasoningOptions.find((o) => o.label === label);
+          if (option) {
+            setReasoningEffort(option.value);
+          }
         }
       }}
     >
       <PromptInputModelSelectTrigger
         type="button"
-        className="text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0"
+        className={`text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=closed]:ring-0 ${
+          isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+        disabled={isDisabled}
       >
-        {selectedModel?.name || 'Select model'}
+        <div className="flex items-center gap-1.5">
+          <BrainIcon size={14} />
+          <span>{selectedOption?.label || 'Select reasoning'}</span>
+        </div>
       </PromptInputModelSelectTrigger>
-      <PromptInputModelSelectContent>
-        {chatModels.map((model) => (
-          <SelectItem key={model.id} value={model.name}>
-            <div className="flex flex-col gap-1 items-start py-1">
-              <div className="font-medium">{model.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {model.description}
+      {!isDisabled && (
+        <PromptInputModelSelectContent>
+          {reasoningOptions.map((option) => (
+            <SelectItem key={option.value} value={option.label}>
+              <div className="flex flex-col gap-1 items-start py-1">
+                <div className="font-medium">{option.label}</div>
+                <div className="text-xs text-muted-foreground">
+                  {option.description}
+                </div>
               </div>
-            </div>
-          </SelectItem>
-        ))}
-      </PromptInputModelSelectContent>
+            </SelectItem>
+          ))}
+        </PromptInputModelSelectContent>
+      )}
     </PromptInputModelSelect>
   );
 }
 
-const ModelSelectorCompact = memo(PureModelSelectorCompact);
+const ReasoningSelectorCompact = memo(PureReasoningSelectorCompact);
 
 function PureStopButton({
   stop,
