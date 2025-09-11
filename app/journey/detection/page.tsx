@@ -22,18 +22,13 @@ export default function DetectionPage() {
 		try {
 			const formData = new FormData();
 			formData.append('persona', persona);
-			files.forEach(file => {
+			for (const file of files) {
 				// Converter blobUrl para File (assumir que é blob)
-				fetch(file.blobUrl)
-					.then(res => res.blob())
-					.then(blob => {
-						const fileObj = new File([blob], file.name, { type: file.type });
-						formData.append('files', fileObj);
-					});
-			});
-
-			// Aguardar um pouco para os fetches
-			await new Promise(resolve => setTimeout(resolve, 100));
+				const res = await fetch(file.blobUrl);
+				const blob = await res.blob();
+				const fileObj = new File([blob], file.name, { type: file.type });
+				formData.append('files', fileObj);
+			}
 
 			const response = await analyzeRoofAction(formData);
 
@@ -43,6 +38,7 @@ export default function DetectionPage() {
 				setError(response.error || 'Erro na análise');
 			}
 		} catch (err) {
+			console.error('Erro ao processar análise:', err);
 			setError('Erro ao processar análise');
 		} finally {
 			setIsAnalyzing(false);
