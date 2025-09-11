@@ -1,15 +1,15 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EnergyInputForm } from '@/components/analysis/EnergyInput';
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { EnergyInputForm } from "@/components/analysis/EnergyInput";
 
 // Mock the persona context
 const mockUsePersona = vi.fn();
-vi.mock('@/lib/persona/context', () => ({
+vi.mock("@/lib/persona/context", () => ({
   usePersona: mockUsePersona,
 }));
 
 // Mock React Hook Form
-vi.mock('react-hook-form', () => ({
+vi.mock("react-hook-form", () => ({
   useForm: () => ({
     register: vi.fn(),
     handleSubmit: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('react-hook-form', () => ({
   }),
 }));
 
-describe('EnergyInputForm', () => {
+describe("EnergyInputForm", () => {
   const mockOnSubmit = vi.fn();
   const defaultProps = {
     onSubmit: mockOnSubmit,
@@ -30,59 +30,59 @@ describe('EnergyInputForm', () => {
     vi.clearAllMocks();
   });
 
-  describe('Owner Persona', () => {
+  describe("Owner Persona", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: 'owner' });
+      mockUsePersona.mockReturnValue({ persona: "owner" });
     });
 
-    it('renders simplified form for owner persona', () => {
+    it("renders simplified form for owner persona", () => {
       render(<EnergyInputForm {...defaultProps} />);
 
-      expect(screen.getByText('Dados de Energia')).toBeInTheDocument();
+      expect(screen.getByText("Dados de Energia")).toBeInTheDocument();
       expect(screen.getByLabelText(/consumo mensal/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/tarifa de energia/i)).toBeInTheDocument();
-      expect(screen.getByText('Próximo')).toBeInTheDocument();
+      expect(screen.getByText("Próximo")).toBeInTheDocument();
     });
 
-    it('shows file upload option for owner', () => {
+    it("shows file upload option for owner", () => {
       render(<EnergyInputForm {...defaultProps} />);
 
       expect(screen.getByText(/upload da conta/i)).toBeInTheDocument();
     });
   });
 
-  describe('Integrator Persona', () => {
+  describe("Integrator Persona", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: 'integrator' });
+      mockUsePersona.mockReturnValue({ persona: "integrator" });
     });
 
-    it('renders technical form for integrator persona', () => {
+    it("renders technical form for integrator persona", () => {
       render(<EnergyInputForm {...defaultProps} />);
 
-      expect(screen.getByText('Dados Técnicos de Energia')).toBeInTheDocument();
+      expect(screen.getByText("Dados Técnicos de Energia")).toBeInTheDocument();
       expect(screen.getByLabelText(/consumo mensal/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/tarifa de energia/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/irradiância solar/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/fator de potência/i)).toBeInTheDocument();
-      expect(screen.getByText('Analisar Viabilidade')).toBeInTheDocument();
+      expect(screen.getByText("Analisar Viabilidade")).toBeInTheDocument();
     });
 
-    it('shows advanced options for integrator', () => {
+    it("shows advanced options for integrator", () => {
       render(<EnergyInputForm {...defaultProps} />);
 
       expect(screen.getByText(/opções avançadas/i)).toBeInTheDocument();
     });
   });
 
-  describe('Form Validation', () => {
+  describe("Form Validation", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: 'owner' });
+      mockUsePersona.mockReturnValue({ persona: "owner" });
     });
 
-    it('validates required fields', async () => {
+    it("validates required fields", async () => {
       render(<EnergyInputForm {...defaultProps} />);
 
-      const submitButton = screen.getByText('Próximo');
+      const submitButton = screen.getByText("Próximo");
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -90,16 +90,16 @@ describe('EnergyInputForm', () => {
       });
     });
 
-    it('accepts valid energy consumption', async () => {
+    it("accepts valid energy consumption", async () => {
       render(<EnergyInputForm {...defaultProps} />);
 
       const consumptionInput = screen.getByLabelText(/consumo mensal/i);
       const tariffInput = screen.getByLabelText(/tarifa de energia/i);
 
-      fireEvent.change(consumptionInput, { target: { value: '500' } });
-      fireEvent.change(tariffInput, { target: { value: '0.8' } });
+      fireEvent.change(consumptionInput, { target: { value: "500" } });
+      fireEvent.change(tariffInput, { target: { value: "0.8" } });
 
-      const submitButton = screen.getByText('Próximo');
+      const submitButton = screen.getByText("Próximo");
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -113,37 +113,41 @@ describe('EnergyInputForm', () => {
     });
   });
 
-  describe('File Upload', () => {
+  describe("File Upload", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: 'owner' });
+      mockUsePersona.mockReturnValue({ persona: "owner" });
     });
 
-    it('handles CSV file upload', async () => {
+    it("handles CSV file upload", async () => {
       render(<EnergyInputForm {...defaultProps} />);
 
       const fileInput = screen.getByLabelText(/upload da conta/i);
-      const file = new File(['Mês,Consumo kWh\nJan,450\nFev,480'], 'conta.csv', {
-        type: 'text/csv',
-      });
+      const file = new File(
+        ["Mês,Consumo kWh\nJan,450\nFev,480"],
+        "conta.csv",
+        {
+          type: "text/csv",
+        }
+      );
 
       fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('465')).toBeInTheDocument();
+        expect(screen.getByDisplayValue("465")).toBeInTheDocument();
       });
     });
   });
 
-  describe('Loading State', () => {
+  describe("Loading State", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: 'owner' });
+      mockUsePersona.mockReturnValue({ persona: "owner" });
     });
 
-    it('shows loading state during submission', () => {
+    it("shows loading state during submission", () => {
       render(<EnergyInputForm {...defaultProps} isLoading={true} />);
 
-      expect(screen.getByText('Analisando...')).toBeInTheDocument();
-      expect(screen.getByRole('button')).toBeDisabled();
+      expect(screen.getByText("Analisando...")).toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeDisabled();
     });
   });
 });
