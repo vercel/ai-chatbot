@@ -49,6 +49,8 @@ export const DetectionItemSchema = z.object({
 	notes: z.array(z.string()).optional(),
 });
 
+export type DetectionItem = z.infer<typeof DetectionItemSchema>;
+
 export const DetectionResultSchema = z.object({
 	stage: z.literal("detection"),
 	site: z

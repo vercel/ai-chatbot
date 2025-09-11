@@ -1,4 +1,4 @@
-import { DetectionResult, DetectionItem } from "./types";
+import type { DetectionResult, DetectionItem } from './types';
 
 // Mock determinístico baseado no nome do arquivo
 export async function mockRoofSegment(
@@ -20,7 +20,7 @@ export async function mockRoofSegment(
 	const confidence = 0.7 + (hash % 30) / 100; // 0.7-1.0
 
 	// Mock maskUrl: uma imagem base64 simples (quadrado branco)
-	const maskUrl = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
+	const maskUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
 	return {
 		maskUrl,
