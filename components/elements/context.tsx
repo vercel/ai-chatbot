@@ -156,7 +156,7 @@ function InfoRow({
   costText?: string;
 }) {
   return (
-    <div className="flex items-center justify-between text-xs">
+    <div className="flex justify-between items-center text-xs">
       <span className="text-muted-foreground">{label}</span>
       <TokensWithCost tokens={tokens} costText={costText} />
     </div>
@@ -275,14 +275,14 @@ export const Context = ({
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'inline-flex select-none items-center gap-1 rounded-md px-1.5 py-1 text-sm',
-            'bg-background text-foreground',
+            'inline-flex gap-1 items-center text-sm rounded-md select-none',
+            'cursor-pointer bg-background text-foreground',
             className,
           )}
           type="button"
           {...props}
         >
-          <span className="font-medium text-muted-foreground hidden">
+          <span className="hidden font-medium text-muted-foreground">
             {displayPct}
           </span>
           <ContextIcon percent={usedPercent} />
@@ -340,7 +340,7 @@ export const Context = ({
             {costText && (
               <>
                 <Separator className="mt-1" />
-                <div className="flex items-center justify-between pt-1 text-xs">
+                <div className="flex justify-between items-center pt-1 text-xs">
                   <span className="text-muted-foreground">Total cost</span>
                   <span>{costText}</span>
                 </div>
