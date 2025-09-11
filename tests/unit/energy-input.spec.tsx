@@ -1,11 +1,24 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EnergyInputForm } from "@/components/analysis/EnergyInput";
+import * as personaContext from "@/lib/persona/context";
 
 // Mock the persona context
-const mockUsePersona = vi.fn();
-vi.mock("@/lib/persona/context", () => ({
-  usePersona: mockUsePersona,
+vi.mock("@/lib/persona/context", () => {
+  return {
+    usePersona: vi.fn(),
+  };
+});
+
+// Mock React Hook Form
+vi.mock("react-hook-form", () => ({
+  useForm: () => ({
+    register: vi.fn(),
+    handleSubmit: vi.fn(),
+    formState: { errors: {} },
+    watch: vi.fn(),
+    setValue: vi.fn(),
+  }),
 }));
 
 // Mock React Hook Form
@@ -32,7 +45,14 @@ describe("EnergyInputForm", () => {
 
   describe("Owner Persona", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: "owner" });
+      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+        mode: "owner",
+        permissions: ["owner"],
+        featureFlags: { wizard: true },
+        setMode: vi.fn(),
+        hasPermission: vi.fn(),
+        isEnabled: vi.fn()
+      });
     });
 
     it("renders simplified form for owner persona", () => {
@@ -53,7 +73,14 @@ describe("EnergyInputForm", () => {
 
   describe("Integrator Persona", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: "integrator" });
+      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+        mode: "integrator",
+        permissions: ["integrator"],
+        featureFlags: { batch: true, advanced: true },
+        setMode: vi.fn(),
+        hasPermission: vi.fn(),
+        isEnabled: vi.fn()
+      });
     });
 
     it("renders technical form for integrator persona", () => {
@@ -76,7 +103,14 @@ describe("EnergyInputForm", () => {
 
   describe("Form Validation", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: "owner" });
+      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+        mode: "owner",
+        permissions: ["owner"],
+        featureFlags: { wizard: true },
+        setMode: vi.fn(),
+        hasPermission: vi.fn(),
+        isEnabled: vi.fn()
+      });
     });
 
     it("validates required fields", async () => {
@@ -115,7 +149,14 @@ describe("EnergyInputForm", () => {
 
   describe("File Upload", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: "owner" });
+      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+        mode: "owner",
+        permissions: ["owner"],
+        featureFlags: { wizard: true },
+        setMode: vi.fn(),
+        hasPermission: vi.fn(),
+        isEnabled: vi.fn()
+      });
     });
 
     it("handles CSV file upload", async () => {
@@ -140,7 +181,14 @@ describe("EnergyInputForm", () => {
 
   describe("Loading State", () => {
     beforeEach(() => {
-      mockUsePersona.mockReturnValue({ persona: "owner" });
+      vi.mocked(personaContext.usePersona).mockReturnValue({ 
+        mode: "owner",
+        permissions: ["owner"],
+        featureFlags: { wizard: true },
+        setMode: vi.fn(),
+        hasPermission: vi.fn(),
+        isEnabled: vi.fn()
+      });
     });
 
     it("shows loading state during submission", () => {

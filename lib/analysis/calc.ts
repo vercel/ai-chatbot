@@ -148,7 +148,7 @@ export function calculateViabilityFallback(
 		: (input.avg_kwh_month ?? 0);
 
 	// Usar tarifa fornecida ou fallback
-	const tariffRsKwh = input.tariff_rs_kwh || 0.8; // Fallback médio Brasil
+	const tariffRsKwh = input.tariff_rs_kwh ?? 0.8; // Fallback médio Brasil
 
 	// Calcular parâmetros base
 	const kwhPerKwpMonth = calculateKwhPerKwpMonth();

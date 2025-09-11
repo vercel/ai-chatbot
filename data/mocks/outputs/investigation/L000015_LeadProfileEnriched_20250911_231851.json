@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000015",
+  "geocode": {
+    "lat": -6.966887,
+    "lon": -42.977925,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "43",
+      "city": "3560110"
+    },
+    "city_name": "Caxias do Sul"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 4.702207503840327
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 32,
+      "azimuth": 216
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2025-02-04T13:38:44.048Z"
+}

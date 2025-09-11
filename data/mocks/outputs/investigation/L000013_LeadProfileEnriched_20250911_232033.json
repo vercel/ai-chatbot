@@ -1,0 +1,31 @@
+{
+  "lead_id": "L000013",
+  "geocode": {
+    "lat": -1.382451,
+    "lon": -39.254968,
+    "provider": "NASA_POWER"
+  },
+  "territorial": {
+    "ibge_ids": {
+      "state": "29",
+      "city": "3578725"
+    },
+    "city_name": "Vitória da Conquista"
+  },
+  "economics": {
+    "bcb_sgs": {
+      "inflation": 5.074503246694803
+    }
+  },
+  "irradiance": {
+    "provider": "NASA_POWER",
+    "meta": {
+      "tilt": 35,
+      "azimuth": 283
+    }
+  },
+  "provenance": [
+    "generated"
+  ],
+  "enriched_at": "2024-11-28T15:01:06.232Z"
+}
