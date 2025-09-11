@@ -56,6 +56,9 @@ importers:
       '@google-cloud/bigquery':
         specifier: ^8.1.1
         version: 8.1.1
+      '@hookform/resolvers':
+        specifier: ^5.2.1
+        version: 5.2.1(react-hook-form@7.62.0(react@19.0.0-rc-45804af1-20241021))
       '@icons-pack/react-simple-icons':
         specifier: ^13.7.0
         version: 13.7.0(react@19.0.0-rc-45804af1-20241021)
@@ -272,6 +275,9 @@ importers:
       react-dom:
         specifier: 19.0.0-rc-45804af1-20241021
         version: 19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021)
+      react-hook-form:
+        specifier: ^7.62.0
+        version: 7.62.0(react@19.0.0-rc-45804af1-20241021)
       react-image-annotation:
         specifier: ^0.9.10
         version: 0.9.10(prop-types@15.8.1)(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
@@ -1500,6 +1506,11 @@ packages:
     resolution: {integrity: sha512-rc1hOQtjIWGxcxpb9aHAfLpIctjEnsDehj0DAiVfBlmT84uvR0uUtN2hEi/ecvWVjXUGf5qPF4qEgiLOx1YIMQ==}
     engines: {node: '>=6'}
     hasBin: true
+
+  '@hookform/resolvers@5.2.1':
+    resolution: {integrity: sha512-u0+6X58gkjMcxur1wRWokA7XsiiBJ6aK17aPZxhkoYiK5J+HcTx0Vhu9ovXe6H+dVpO6cjrn2FkJTryXEMlryQ==}
+    peerDependencies:
+      react-hook-form: ^7.55.0
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -2930,6 +2941,9 @@ packages:
 
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
+
+  '@standard-schema/utils@0.3.0':
+    resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
   '@storybook/addon-a11y@9.1.5':
     resolution: {integrity: sha512-IMS325fT/3sAOwSl285Wl7gBKd4NK58ebsIUZytyzLJ7Bv6BgxUdRBZ2E0822WP6zofYTkOk7/PDmBfzEWgY2g==}
@@ -6657,6 +6671,12 @@ packages:
     peerDependencies:
       react: ^19.1.1
 
+  react-hook-form@7.62.0:
+    resolution: {integrity: sha512-7KWFejc98xqG/F4bAxpL41NB3o1nnvQO1RWZT3TqRZYL8RryQETGfEdVnJN2fy1crCiBLLjkRBVK05j24FxJGA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18 || ^19
+
   react-image-annotation@0.9.10:
     resolution: {integrity: sha512-+g8RXqGoaCXfZfhGPG1MeYSo4Bn5iTwgL8z+Gl4P+j1CFHH9yQGGV6WlgCy8v/FAC6JyQ2ThPwBoj65kSq7j2w==}
     peerDependencies:
@@ -8926,6 +8946,11 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
+  '@hookform/resolvers@5.2.1(react-hook-form@7.62.0(react@19.0.0-rc-45804af1-20241021))':
+    dependencies:
+      '@standard-schema/utils': 0.3.0
+      react-hook-form: 7.62.0(react@19.0.0-rc-45804af1-20241021)
+
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
@@ -10207,6 +10232,8 @@ snapshots:
   '@shikijs/vscode-textmate@10.0.2': {}
 
   '@standard-schema/spec@1.0.0': {}
+
+  '@standard-schema/utils@0.3.0': {}
 
   '@storybook/addon-a11y@9.1.5(storybook@9.1.5(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(vite@7.1.4(@types/node@22.13.10)(jiti@2.5.1)(terser@5.44.0)(tsx@4.19.3)(yaml@2.7.0)))':
     dependencies:
@@ -14598,6 +14625,10 @@ snapshots:
     dependencies:
       react: 19.1.1
       scheduler: 0.26.0
+
+  react-hook-form@7.62.0(react@19.0.0-rc-45804af1-20241021):
+    dependencies:
+      react: 19.0.0-rc-45804af1-20241021
 
   react-image-annotation@0.9.10(prop-types@15.8.1)(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021):
     dependencies:
