@@ -352,7 +352,7 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className='grow resize-none border-0! p-2 border-none! bg-transparent text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden'
+            className='grow resize-none border-0! p-2 border-none! bg-transparent text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden min-h-20'
             rows={1}
             autoFocus
           />{' '}
@@ -413,13 +413,14 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className='p-1 h-8 rounded-lg transition-colors aspect-square hover:bg-accent'
+      className='p-1 size-8 rounded-lg transition-colors aspect-square hover:bg-accent'
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
       }}
       disabled={status !== 'ready' || isReasoningModel}
       variant="ghost"
+      size="sm"
     >
       <PaperclipIcon size={14} style={{ width: 14, height: 14 }} />
     </Button>
