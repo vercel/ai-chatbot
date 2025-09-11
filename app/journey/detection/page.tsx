@@ -23,12 +23,12 @@ export default function DetectionPage() {
 			const formData = new FormData();
 			formData.append('persona', persona);
 			for (const file of files) {
-				// Converter blobUrl para File (assumir que é blob)
-				const res = await fetch(file.blobUrl);
-				const blob = await res.blob();
-				const fileObj = new File([blob], file.name, { type: file.type });
-				formData.append('files', fileObj);
-			}
+        // Converter blobUrl para File (assumir que é blob)
+        const res = await fetch(file.blobUrl);
+        const blob = await res.blob();
+        const fileObj = new File([blob], file.name, { type: file.type });
+        formData.append("files", fileObj);
+      }
 
 			const response = await analyzeRoofAction(formData);
 
