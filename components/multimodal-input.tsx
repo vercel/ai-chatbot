@@ -347,7 +347,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className={`${hasQueue ? 'rounded-b-xl rounded-t-none border-t-0' : 'rounded-xl'} border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50`}
+        className={`${hasQueue ? 'rounded-b-xl rounded-t-none border-t-0' : 'rounded-xl'} p-3 border border-border bg-background shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50`}
         onSubmit={(event) => {
           event.preventDefault();
           submitForm();
