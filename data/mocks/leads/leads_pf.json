@@ -3,540 +3,540 @@
     "lead_id": "L000001",
     "name": "Pessoa L000001",
     "email": "pessoal000001@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.487Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:14.818Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000002",
     "name": "Pessoa L000002",
     "email": "pessoal000002@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.536Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:14.941Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000003",
     "name": "Pessoa L000003",
     "email": "pessoal000003@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.545Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:14.960Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000004",
     "name": "Pessoa L000004",
     "email": "pessoal000004@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.551Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:14.976Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000005",
     "name": "Pessoa L000005",
     "email": "pessoal000005@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.557Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:14.995Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000006",
     "name": "Pessoa L000006",
     "email": "pessoal000006@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.563Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.010Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000007",
     "name": "Pessoa L000007",
     "email": "pessoal000007@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.569Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.021Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000008",
     "name": "Pessoa L000008",
     "email": "pessoal000008@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.574Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.037Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000009",
     "name": "Pessoa L000009",
     "email": "pessoal000009@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.579Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.050Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000010",
     "name": "Pessoa L000010",
     "email": "pessoal000010@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.584Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.062Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000011",
     "name": "Pessoa L000011",
     "email": "pessoal000011@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.589Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.075Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000012",
     "name": "Pessoa L000012",
     "email": "pessoal000012@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.593Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.086Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000013",
     "name": "Pessoa L000013",
     "email": "pessoal000013@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.598Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.095Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000014",
     "name": "Pessoa L000014",
     "email": "pessoal000014@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.602Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.107Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000015",
     "name": "Pessoa L000015",
     "email": "pessoal000015@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.606Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.123Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000016",
     "name": "Pessoa L000016",
     "email": "pessoal000016@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.610Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.133Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000017",
     "name": "Pessoa L000017",
     "email": "pessoal000017@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.614Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.142Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000018",
     "name": "Pessoa L000018",
     "email": "pessoal000018@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.619Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.155Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000019",
     "name": "Pessoa L000019",
     "email": "pessoal000019@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.623Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.164Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   },
   {
     "lead_id": "L000020",
     "name": "Pessoa L000020",
     "email": "pessoal000020@example.com",
-    "phone": "(51) 66666-6666",
+    "phone": "(31) 33333-3333",
     "address": {
-      "street": "Rua 602",
-      "number": "6011",
+      "street": "Rua 330",
+      "number": "3297",
       "complement": "",
-      "city": "RS City 31",
-      "state": "RS",
-      "cep": "66666-666"
+      "city": "MG City 17",
+      "state": "MG",
+      "cep": "33333-333"
     },
     "proposal": {
-      "system_size_kWp": 8.01,
-      "annual_production_kWh": 9213,
-      "coverage_pct": 58.1,
-      "payback_years": 7.8,
-      "estimated_cost_brl": 50055.19
+      "system_size_kWp": 5.3,
+      "annual_production_kWh": 5956,
+      "coverage_pct": 36.4,
+      "payback_years": 5.6,
+      "estimated_cost_brl": 36484.1
     },
-    "created_at": "2025-01-29T11:29:21.628Z",
-    "cpf": "666.666.666-66",
+    "created_at": "2025-05-14T15:17:15.172Z",
+    "cpf": "333.333.333-33",
     "coordinates": {
-      "lat": -6.966887,
-      "lon": -42.977925
+      "lat": -15.109539,
+      "lon": -48.406359
     }
   }
 ]
