@@ -1,64 +1,86 @@
 /**
- * Normalize a Brazilian phone number to E.164-like format.
- * Tries to coerce local formats like (11) 91234-5678 or 011912345678 to +5511912345678.
+ * Normalization utilities for lead data
  */
-export function normalizePhoneBR(raw?: string | null): string | undefined {
-  if (!raw) return undefined;
-  const digits = String(raw).replace(/\D+/g, "");
-  if (!digits) return undefined;
 
-  // Already includes country code 55
-  if (digits.startsWith("55")) {
-    const rest = digits.slice(2);
-    if (rest.length >= 10 && rest.length <= 11) {
-      return `+55${rest}`;
-    }
-    // If length unusual but starts with 55, still return as best effort
-    return `+55${rest}`;
-  }
+/**
+ * Normalizes Brazilian phone numbers to E.164 format
+ * @param phone Raw phone string
+ * @returns Normalized phone or undefined if invalid
+ */
+export function normalizePhoneBR(phone: string): string | undefined {
+  if (!phone) return undefined;
 
-  // Remove leading 0 (common for trunk prefix)
-  const noZero = digits.replace(/^0+/, "");
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, "");
 
-  // If looks like AA + local (10 or 11 digits)
-  if (noZero.length === 10 || noZero.length === 11) {
-    return `+55${noZero}`;
-  }
+  // Must have 10 or 11 digits (area code + number)
+  if (digits.length < 10 || digits.length > 11) return undefined;
 
-  // If user typed with leading +55 already (but removed by non-digit filter above)
-  if (String(raw).trim().startsWith("+55")) {
-    const rest = digits.replace(/^55/, "");
-    return `+55${rest}`;
-  }
+  // Brazilian mobile numbers start with 9 (11 digits total)
+  if (digits.length === 11 && !digits.startsWith("9")) return undefined;
 
-  // Fallback: if we at least have 10+ digits, assume Brazil and prefix 55
-  if (noZero.length >= 10) {
-    return `+55${noZero}`;
+  // Add country code if missing
+  const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
+
+  // Format as +55 XX XXXXX-XXXX or +55 XX XXXX-XXXX
+  if (withCountry.length === 13) {
+    return `+${withCountry.slice(0, 2)} ${withCountry.slice(2, 4)} ${withCountry.slice(4, 9)}-${withCountry.slice(9)}`;
   }
 
   return undefined;
 }
 
-/** Lowercase and trim email. */
-export function normalizeEmail(raw?: string | null): string | undefined {
-  if (!raw) return undefined;
-  const s = String(raw).trim().toLowerCase();
-  return s || undefined;
+/**
+ * Normalizes email addresses (lowercase, trim)
+ * @param email Raw email string
+ * @returns Normalized email or undefined if invalid
+ */
+export function normalizeEmail(email: string): string | undefined {
+  if (!email) return undefined;
+
+  const normalized = email.toLowerCase().trim();
+
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(normalized) ? normalized : undefined;
 }
 
-/** Extract Brazilian UF (state) from an address string, if present. */
-export function extractUF(address?: string | null): string | undefined {
+/**
+ * Extracts UF (state) from Brazilian address
+ * @param address Raw address string
+ * @returns UF code or undefined
+ */
+export function extractUF(address: string): string | undefined {
   if (!address) return undefined;
-  const text = String(address).toUpperCase();
-  const UFs = [
-    "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+
+  // Supported states for solar energy focus
+  const supportedStates = ["SP", "RJ", "MG", "PR", "SC", "RS"];
+
+  // Look for UF patterns in address
+  const ufPatterns = [
+    /\b(SP|RJ|MG|PR|SC|RS)\b/gi, // State codes
+    /(são paulo|rio de janeiro|minas gerais|paraná|santa catarina|rio grande do sul)/gi, // Full names
   ];
-  // Match whole word UF, considering separators and boundaries
-  const match = text.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/);
-  if (match) {
-    const uf = match[1] as string;
-    if (UFs.includes(uf)) return uf;
+
+  for (const pattern of ufPatterns) {
+    const match = pattern.exec(address);
+    if (match) {
+      const found = match[0].toUpperCase();
+      // Convert full names to codes
+      const stateMap: Record<string, string> = {
+        "SÃO PAULO": "SP",
+        "RIO DE JANEIRO": "RJ",
+        "MINAS GERAIS": "MG",
+        "PARANÁ": "PR",
+        "SANTA CATARINA": "SC",
+        "RIO GRANDE DO SUL": "RS",
+      };
+
+      const code = stateMap[found] || found;
+      return supportedStates.includes(code) ? code : undefined;
+    }
   }
+
   return undefined;
 }
 

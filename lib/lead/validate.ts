@@ -1,101 +1,83 @@
 import { IntentData, LeadValidationResult } from "./types";
-import { extractUF, normalizeEmail, normalizePhoneBR } from "./normalize";
+import { normalizePhoneBR, normalizeEmail, extractUF } from "./normalize";
 
-const SUPPORTED_UF = new Set(["SP", "RJ", "MG", "PR", "SC", "RS"]);
+function calculateConfidence(hasName: boolean, hasContact: boolean, hasAddress: boolean, hasSupportedRegion: boolean, bothContacts: boolean): number {
+  let confidence = 0;
+  if (hasName) confidence += 0.3;
+  if (hasContact) {
+    confidence += 0.3;
+    if (bothContacts) confidence += 0.1;
+  }
+  if (hasAddress) confidence += 0.2;
+  if (hasSupportedRegion) confidence += 0.2;
+  return Math.min(confidence, 1);
+}
 
-/** Basic email regex for deterministic validation (business-level). */
-const SIMPLE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+function getValidationReasons(hasName: boolean, hasContact: boolean, hasAddress: boolean, hasSupportedRegion: boolean): string[] {
+  const reasons: string[] = [];
+  if (!hasName) reasons.push("Nome é obrigatório");
+  if (!hasContact) reasons.push("Telefone ou e-mail é obrigatório");
+  if (!hasAddress) reasons.push("Endereço detalhado é necessário para análise de viabilidade");
+  if (!hasSupportedRegion) reasons.push("Atualmente atendemos apenas SP, RJ, MG, PR, SC e RS");
+  return reasons;
+}
 
-/** Compute a simple completeness-based confidence score (0..1). */
-function computeConfidence(data: IntentData, normalized: { phone?: string; email?: string; address?: string }): number {
-  let score = 0;
-  let total = 6; // name, persona, goal, email, phone, address
-  if (data.name && data.name.trim().length >= 2) score += 1;
-  if (data.persona) score += 1;
-  if (data.goal) score += 1;
-  if (normalized.email) score += 1;
-  if (normalized.phone) score += 1;
-  if (normalized.address) score += 1;
-  return Math.max(0, Math.min(1, score / total));
+function getNextActions(status: "approved" | "incomplete" | "unsupported_region") {
+  const primaryCta = status === "approved"
+    ? { label: "Iniciar Análise de Viabilidade", href: "/journey/investigation" }
+    : { label: "Completar Cadastro", href: "#contact-form" };
+
+  const secondaryCta = status === "approved"
+    ? { label: "Ver Planos Disponíveis", href: "/plans" }
+    : undefined;
+
+  return { primaryCta, secondaryCta };
 }
 
 /**
- * Deterministic lead validation.
- * - Normalizes phone and email.
- * - Validates email format (simple regex) and phone feasibility.
- * - Extracts UF from address and checks supported region.
- * - Enforces minimal rule: address present OR (email + phone) present.
+ * Validates lead data and returns structured result
+ * @param data Intent data from user
+ * @returns Validation result with status and recommendations
  */
 export function validateLead(data: IntentData): LeadValidationResult {
-  const reasons: string[] = [];
+  // Normalize data
+  const normalizedPhone = normalizePhoneBR(data.phone || "");
+  const normalizedEmail = normalizeEmail(data.email || "");
+  const extractedUF = extractUF(data.address || "");
 
-  const normalizedEmail = normalizeEmail(data.email);
-  const normalizedPhone = normalizePhoneBR(data.phone);
-  const trimmedAddress = data.address?.trim() || undefined;
-  const uf = extractUF(trimmedAddress);
+  // Check completeness
+  const hasName = Boolean(data.name && data.name.length >= 2);
+  const hasContact = Boolean(normalizedPhone || normalizedEmail);
+  const hasAddress = Boolean(data.address && data.address.length > 10);
+  const hasSupportedRegion = extractedUF !== undefined;
+  const bothContacts = Boolean(normalizedPhone && normalizedEmail);
 
-  // Email validation (if provided)
-  if (data.email && (!normalizedEmail || !SIMPLE_EMAIL_RE.test(normalizedEmail))) {
-    reasons.push("E-mail inválido");
-  }
+  // Build reasons and confidence
+  const reasons = getValidationReasons(hasName, hasContact, hasAddress, hasSupportedRegion);
+  const confidence = calculateConfidence(hasName, hasContact, hasAddress, hasSupportedRegion, bothContacts);
 
-  // Phone validation (if provided)
-  if (data.phone && !normalizedPhone) {
-    reasons.push("Telefone inválido ou não reconhecido");
-  }
-
-  // Minimal rule: address present OR (email + phone) present
-  const hasAddress = Boolean(trimmedAddress);
-  const hasEmailAndPhone = Boolean(normalizedEmail && normalizedPhone);
-  if (!hasAddress && !hasEmailAndPhone) {
-    reasons.push("Informe endereço ou e-mail e telefone");
-  }
-
-  // Region support check
-  let status: LeadValidationResult["status"] = "approved";
-  if (uf && !SUPPORTED_UF.has(uf)) {
+  // Determine status
+  let status: "approved" | "incomplete" | "unsupported_region" = "incomplete";
+  if (!hasSupportedRegion) {
     status = "unsupported_region";
-    reasons.push(`Região não suportada: ${uf}`);
-  } else if (reasons.length > 0) {
-    status = "incomplete";
+  } else if (hasName && hasContact && hasAddress) {
+    status = "approved";
   }
 
-  const normalized = {
-    phone: normalizedPhone,
-    email: normalizedEmail,
-    address: trimmedAddress,
-    uf,
-  };
-
-  const confidence = computeConfidence(data, normalized);
-
-  const isValidLead = status === "approved";
-
-  const next =
-    status === "approved"
-      ? {
-          primaryCta: { label: "Prosseguir para Análise", href: "/journey/analysis" },
-          secondaryCta: { label: "Voltar para Jornada", href: "/journey" },
-        }
-      : status === "unsupported_region"
-      ? {
-          primaryCta: { label: "Falar com Atendimento", href: "/support" },
-          secondaryCta: { label: "Voltar para Jornada", href: "/journey" },
-        }
-      : {
-          primaryCta: { label: "Corrigir informações", href: "#intent-form" },
-          secondaryCta: { label: "Voltar para Jornada", href: "/journey" },
-        };
+  const next = getNextActions(status);
 
   return {
-    isValidLead,
+    isValidLead: status === "approved",
     status,
     reasons,
-    normalized,
+    normalized: {
+      phone: normalizedPhone,
+      email: normalizedEmail,
+      address: data.address,
+      uf: extractedUF,
+    },
     next,
     confidence,
   };
 }
-
-export default validateLead;
 
