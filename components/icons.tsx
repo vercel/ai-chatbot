@@ -1,8 +1,6 @@
 // components/icons.tsx
 import {
-  Bot,
-  User,
-  Globe,
+  Bot, User, Globe,
   Route as RouteIconLuc,
   Sparkles as SparklesIconLuc,
   Plus as PlusIconLuc,
@@ -11,50 +9,51 @@ import {
   FileText as SummarizeIconLuc,
   Paperclip as AttachmentIconLuc,
   Triangle as VercelIconLuc,
-  Github as GitIcon,
-  Box,
-  Home,
-  MapPin as GPSBase,
+  Github as GitIconLuc,
+  Box as BoxIconLuc,
+  Home as HomeIconLuc,
+  MapPin as GPSIconLuc,
   Receipt as InvoiceIconLuc,
   Zap as LogoOpenAIIconLuc,
   TerminalSquare as TerminalWindowIconLuc,
-  Terminal,
-  RotateCcw as ClockRewind,
+  Terminal as TerminalIconLuc,
+  RotateCcw as ClockRewindIconLuc,
   List as LogsIconLuc,
-  Image,
+  Image as ImageIconLuc,
   Maximize as FullscreenIconLuc,
-  Download,
+  Download as DownloadIconLuc,
   BarChart3 as LineChartIconLuc,
   AlertTriangle as WarningIconLuc,
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Quote,
-  Link,
-  Palette,
-  ChevronDown,
+  Bold as BoldIconLuc,
+  Italic as ItalicIconLuc,
+  Underline as UnderlineIconLuc,
+  List as ListIconLuc,
+  ListOrdered as ListOrderedIconLuc,
+  Quote as QuoteIconLuc,
+  Code as CodeIconLuc,
+  Link as LinkIconLuc,
+  Palette as PaletteIconLuc,
+  ChevronDown as ChevronDownIconLuc,
   Triangle as DeltaIconLuc,
-  Play,
-  Undo,
-  Redo,
+  Play as PlayIconLuc,
+  Undo as UndoIconLuc,
+  Redo as RedoIconLuc,
   MessageSquare as MessageIconLuc,
   X as CrossIconLuc,
   X as CrossSmallIconLuc,
-  Loader,
-  File,
+  Loader as LoaderIconLuc,
+  File as FileIconLuc,
   Edit as PencilEditIconLuc,
-  ArrowUp,
-  Paperclip,
-  Stop,
-  MoreHorizontal,
-  Share,
-  Lock,
-  Trash,
-  Copy,
-  SidebarLeft,
-  CheckCircle,
+  ArrowUp as ArrowUpIconLuc,
+  Paperclip as PaperclipIconLuc,
+  CircleStop as StopIconLuc,
+  MoreHorizontal as MoreHorizontalIconLuc,
+  Share as ShareIconLuc,
+  Lock as LockIconLuc,
+  Trash as TrashIconLuc,
+  Copy as CopyIconLuc,
+  PanelLeft as SidebarLeftIconLuc,
+  CheckCircle as CheckCircleFillIconLuc,
 } from "lucide-react";
 
 export const BotIcon = Bot;
@@ -68,37 +67,51 @@ export const ThumbDownIcon = ThumbsDownIconLuc;
 export const SummarizeIcon = SummarizeIconLuc;
 export const AttachmentIcon = AttachmentIconLuc;
 export const VercelIcon = VercelIconLuc;
-export const GitIcon = GitIcon;
-export const BoxIcon = Box;
-export const HomeIcon = Home;
-export const GPSIcon = GPSBase;
+export const GitIcon = GitIconLuc;
+export const BoxIcon = BoxIconLuc;
+export const HomeIcon = HomeIconLuc;
+export const GPSIcon = GPSIconLuc;
 export const InvoiceIcon = InvoiceIconLuc;
 export const LogoOpenAI = LogoOpenAIIconLuc;
 export const TerminalWindowIcon = TerminalWindowIconLuc;
-export const TerminalIcon = Terminal;
-export const ClockRewind = ClockRewind;
+export const TerminalIcon = TerminalIconLuc;
+export const ClockRewind = ClockRewindIconLuc;
 export const LogsIcon = LogsIconLuc;
-export const ImageIcon = Image;
+export const ImageIcon = ImageIconLuc;
 export const FullscreenIcon = FullscreenIconLuc;
-export const DownloadIcon = Download;
+export const DownloadIcon = DownloadIconLuc;
 export const LineChartIcon = LineChartIconLuc;
 export const WarningIcon = WarningIconLuc;
-export const BoldIcon = Bold;
-export const ItalicIcon = Italic;
-export const UnderlineIcon = Underline;
-export const ListIcon = List;
-export const ListOrderedIcon = ListOrdered;
-export const QuoteIcon = Quote;
-export const CodeIcon = Code;
-export const LinkIcon = Link;
-export const PaletteIcon = Palette;
-export const ChevronDownIcon = ChevronDown;
+export const BoldIcon = BoldIconLuc;
+export const ItalicIcon = ItalicIconLuc;
+export const UnderlineIcon = UnderlineIconLuc;
+export const ListIcon = ListIconLuc;
+export const ListOrderedIcon = ListOrderedIconLuc;
+export const QuoteIcon = QuoteIconLuc;
+export const CodeIcon = CodeIconLuc;
+export const LinkIcon = LinkIconLuc;
+export const PaletteIcon = PaletteIconLuc;
+export const ChevronDownIcon = ChevronDownIconLuc;
 export const DeltaIcon = DeltaIconLuc;
-export const PlayIcon = Play;
-export const UndoIcon = Undo;
-export const RedoIcon = Redo;
+export const PlayIcon = PlayIconLuc;
+export const UndoIcon = UndoIconLuc;
+export const RedoIcon = RedoIconLuc;
 export const MessageIcon = MessageIconLuc;
 export const CrossIcon = CrossIconLuc;
+export const CrossSmallIcon = CrossSmallIconLuc;
+export const LoaderIcon = LoaderIconLuc;
+export const FileIcon = FileIconLuc;
+export const PencilEditIcon = PencilEditIconLuc;
+export const ArrowUpIcon = ArrowUpIconLuc;
+export const PaperclipIcon = PaperclipIconLuc;
+export const StopIcon = StopIconLuc;
+export const MoreHorizontalIcon = MoreHorizontalIconLuc;
+export const ShareIcon = ShareIconLuc;
+export const LockIcon = LockIconLuc;
+export const TrashIcon = TrashIconLuc;
+export const CopyIcon = CopyIconLuc;
+export const SidebarLeftIcon = SidebarLeftIconLuc;
+export const CheckCircleFillIcon = CheckCircleFillIconLuc;
 export const CrossSmallIcon = CrossSmallIconLuc;
 export const LoaderIcon = Loader;
 export const FileIcon = File;
