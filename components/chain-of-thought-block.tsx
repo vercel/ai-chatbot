@@ -130,7 +130,7 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                 ? extractReasoningTitleAndBody((part as any).text)
                 : { body: '' };
             // Skip empty reasoning parts (prelude placeholders)
-            if (!(parsed.title || (parsed.body?.trim().length))) {
+            if (!(parsed.title || parsed.body?.trim().length)) {
               return null;
             }
             return (
@@ -153,6 +153,20 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
           if (type.startsWith('tool-')) {
             const toolPart = getToolPart(part);
             const state = (toolPart.state ?? 'input-available') as ToolState;
+
+            // Handle web search as a discrete step
+            if (type === 'tool-web_search_preview') {
+              const isInput = state === 'input-available';
+              return (
+                <ChainOfThoughtStep
+                  key={key}
+                  label={
+                    isInput ? 'Searching for information' : 'Search completed'
+                  }
+                  status={isInput ? 'active' : 'complete'}
+                />
+              );
+            }
 
             // Map of known tool types to configs
             const TOOL_CONFIG_MAP = {

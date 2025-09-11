@@ -143,8 +143,6 @@ export const transcriptToolConfig: ToolConfig = {
         if (input.meeting_type) params.push(`type: ${input.meeting_type}`);
         break;
       case 'tool-searchTranscriptsByUser':
-        if (input.participant_name)
-          params.push(`participant: "${input.participant_name}"`);
         if (input.host_email) params.push(`host: "${input.host_email}"`);
         if (input.verified_participant_email)
           params.push(`verified: "${input.verified_participant_email}"`);

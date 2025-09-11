@@ -24,7 +24,6 @@ import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
 import { searchTranscriptsByKeyword } from '@/lib/ai/tools/search-transcripts-by-keyword';
 import { searchTranscriptsByUser } from '@/lib/ai/tools/search-transcripts-by-user';
 import { getTranscriptDetails } from '@/lib/ai/tools/get-transcript-details';
@@ -143,6 +142,31 @@ export async function POST(request: Request) {
     const messagesFromDb = await getMessagesByChatId({ id });
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
 
+    // Filter out UI-only parts before converting to model messages (AI SDK v5 expects
+    // only model-convertible content in history). Keep: text, file, reasoning, tool-call, tool-result.
+    const filteredUIMessages = uiMessages.map((msg) => {
+      const allowedTypes = new Set([
+        'text',
+        'file',
+        'reasoning',
+        'tool-call',
+        'tool-result',
+      ]);
+      return {
+        ...msg,
+        parts:
+          msg.parts?.filter((part: any) =>
+            allowedTypes.has(String(part?.type)),
+          ) || [],
+      };
+    });
+
+    // Debug: Log the message structure before conversion
+    console.log(
+      'Filtered UI Messages before convertToModelMessages:',
+      JSON.stringify(filteredUIMessages, null, 2),
+    );
+
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
@@ -260,10 +284,6 @@ export async function POST(request: Request) {
           }),
         };
 
-        if (session.permissions?.includes('access:weather:any')) {
-          tools.getWeather = getWeather;
-        }
-
         // Add transcript details tool only for elevated roles (not members)
         if (!isMemberRole) {
           console.log(
@@ -282,7 +302,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
+          messages: convertToModelMessages(filteredUIMessages),
           stopWhen: stepCountIs(50),
           activeTools: Object.keys(tools),
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -293,7 +313,7 @@ export async function POST(request: Request) {
           },
           providerOptions: {
             openai: {
-              reasoningEffort: 'medium',
+              reasoningEffort: 'low',
               reasoningSummary: 'auto',
             } satisfies OpenAIResponsesProviderOptions,
           },
@@ -308,6 +328,7 @@ export async function POST(request: Request) {
         dataStream.merge(
           result.toUIMessageStream({
             sendReasoning: true,
+            sendSources: true,
           }),
         );
       },
@@ -336,7 +357,8 @@ export async function POST(request: Request) {
           }
         }
       },
-      onError: () => {
+      onError: (error) => {
+        console.error('Error in chat API:', error);
         return 'Oops, an error occurred!';
       },
     });

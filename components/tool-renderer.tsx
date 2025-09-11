@@ -58,7 +58,6 @@ export function ToolRenderer({
   const config = TOOL_CONFIG_MAP[type as keyof typeof TOOL_CONFIG_MAP];
 
   if (!config) {
-    // Fallback for unknown tool types
     console.warn(`Unknown tool type: ${type}`);
     return null;
   }

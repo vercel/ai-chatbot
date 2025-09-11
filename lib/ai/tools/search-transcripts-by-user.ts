@@ -14,14 +14,8 @@ export const searchTranscriptsByUser = ({
 }: SearchTranscriptsByUserProps) =>
   tool({
     description:
-      'Searches meeting transcripts by participant name, host email, or verified participant email, with optional filters for date range and meeting type. Uses flexible participant name matching by default (e.g. "John" will find "John Doe"). Do not guess an email - make sure you clarify with the user what the email is unless obvious.',
+      'Searches meeting transcripts by host email or verified participant email, with optional filters for date range and meeting type. For name lookups, prefer the keyword search tool instead of this user filter.',
     inputSchema: z.object({
-      participant_name: z
-        .string()
-        .optional()
-        .describe(
-          'The name of a participant to search for. Uses flexible matching - partial names work (e.g. "John" will match "John Doe").',
-        ),
       host_email: z
         .string()
         .optional()
@@ -55,7 +49,6 @@ export const searchTranscriptsByUser = ({
         .describe('The number of transcripts to return.'),
     }),
     execute: async ({
-      participant_name,
       host_email,
       verified_participant_email,
       start_date,
@@ -94,14 +87,8 @@ export const searchTranscriptsByUser = ({
       }
       if (meeting_type) query = query.eq('meeting_type', meeting_type);
 
-      // Handle participant name search with flexible matching (always enabled)
-      if (participant_name) {
-        // Use ILIKE for case-insensitive partial matching within the JSON array
-        query = query.ilike(
-          'extracted_participants::text',
-          `%${participant_name}%`,
-        );
-      }
+      // Note: participant name matching is intentionally not handled here.
+      // Use the keyword search tool for name-based discovery across transcript content/summary.
 
       if (host_email) query = query.eq('host_email', host_email);
       if (verified_participant_email)
