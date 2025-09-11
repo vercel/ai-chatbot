@@ -110,7 +110,6 @@ export const ShareIcon = ShareIconLuc;
 export const LockIcon = LockIconLuc;
 export const TrashIcon = TrashIconLuc;
 export const CopyIcon = CopyIconLuc;
-export const SidebarLeftIcon = SidebarLeftIconLuc;
 export const CheckCircleFillIcon = CheckCircleFillIconLuc;
 export const CrossSmallIcon = CrossSmallIconLuc;
 export const LoaderIcon = Loader;
