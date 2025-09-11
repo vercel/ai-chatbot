@@ -49,6 +49,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     router.push('/');
                     router.refresh();
                   }}
+                  size="icon"
                 >
                   <PlusIcon />
                 </Button>

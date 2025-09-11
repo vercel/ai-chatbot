@@ -74,6 +74,7 @@ function PureArtifactActions({
                     ? action.isDisabled(actionContext)
                     : false
               }
+              size="icon"
             >
               {action.icon}
               {action.label}
