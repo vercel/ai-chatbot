@@ -98,10 +98,7 @@ export function SiteInput({
     setSections(updated);
   };
 
-  const onSubmit = async (data: Record<string, unknown>) => {
-    setLoading(true);
-    setErrors({});
-
+  const prepareFormData = (data: Record<string, unknown>) => {
     const formData = new FormData();
     for (const [key, value] of Object.entries(data)) {
       if (key === "roof" && sections.length > 0) {
@@ -112,24 +109,44 @@ export function SiteInput({
         formData.append(key, String(value));
       }
     }
+    return formData;
+  };
+
+  const calculateViaAPI = async (data: Record<string, unknown>) => {
+    const response = await fetch("/api/dimensioning/calc", {
+      method: "POST",
+      body: JSON.stringify({
+        ...data,
+        roof: data.roof ? { ...data.roof, sections } : { sections },
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error("API error");
+    return await response.json();
+  };
+
+  const calculateViaAction = async (formData: FormData) => {
+    const actionResult = await dimensionSystemAction(formData);
+    if (!actionResult.success) {
+      setErrors(actionResult.errors || {});
+      return null;
+    }
+    return actionResult.data as DimensioningResult;
+  };
+
+  const onSubmit = async (data: Record<string, unknown>) => {
+    setLoading(true);
+    setErrors({});
 
     try {
       let result: DimensioningResult;
       if (submitMode === "api") {
-        const response = await fetch("/api/dimensioning/calc", {
-          method: "POST",
-          body: JSON.stringify({ ...data, roof: { ...data.roof, sections } }),
-          headers: { "Content-Type": "application/json" }
-        });
-        if (!response.ok) throw new Error("API error");
-        result = await response.json();
+        result = await calculateViaAPI(data);
       } else {
-        const actionResult = await dimensionSystemAction(formData);
-        if (!actionResult.success) {
-          setErrors(actionResult.errors || {});
-          return;
-        }
-        result = actionResult.data as DimensioningResult;
+        const formData = prepareFormData(data);
+        const actionResult = await calculateViaAction(formData);
+        if (!actionResult) return;
+        result = actionResult;
       }
 
       onCalculated?.(result);
@@ -148,10 +165,14 @@ export function SiteInput({
       {/* Área Total ou Seções */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="total-area"
+            className="block text-sm font-medium mb-2"
+          >
             Área útil total do telhado (m²)
           </label>
           <input
+            id="total-area"
             type="number"
             {...register("roof.total_area_m2", { valueAsNumber: true })}
             className="w-full p-2 border rounded focus-yello"
@@ -160,14 +181,21 @@ export function SiteInput({
             max="5000"
           />
           {errors["roof.total_area_m2"] && (
-            <p className="text-red-500 text-sm mt-1">{errors["roof.total_area_m2"][0]}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors["roof.total_area_m2"][0]}
+            </p>
           )}
         </div>
 
         {persona === "integrator" && (
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium">Seções do telhado</label>
+              <label
+                htmlFor="sections-header"
+                className="block text-sm font-medium"
+              >
+                Seções do telhado
+              </label>
               <button
                 type="button"
                 onClick={addSection}
@@ -184,28 +212,52 @@ export function SiteInput({
                     type="number"
                     placeholder="Comprimento (m)"
                     value={section.length_m}
-                    onChange={(e) => updateSection(index, "length_m", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      updateSection(
+                        index,
+                        "length_m",
+                        Number.parseFloat(e.target.value)
+                      )
+                    }
                     className="p-2 border rounded"
                   />
                   <input
                     type="number"
                     placeholder="Largura (m)"
                     value={section.width_m}
-                    onChange={(e) => updateSection(index, "width_m", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      updateSection(
+                        index,
+                        "width_m",
+                        Number.parseFloat(e.target.value)
+                      )
+                    }
                     className="p-2 border rounded"
                   />
                   <input
                     type="number"
                     placeholder="Inclinação (°)"
                     value={section.tilt_deg}
-                    onChange={(e) => updateSection(index, "tilt_deg", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      updateSection(
+                        index,
+                        "tilt_deg",
+                        Number.parseFloat(e.target.value)
+                      )
+                    }
                     className="p-2 border rounded"
                   />
                   <input
                     type="number"
                     placeholder="Azimute (°)"
                     value={section.azimuth}
-                    onChange={(e) => updateSection(index, "azimuth", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      updateSection(
+                        index,
+                        "azimuth",
+                        Number.parseFloat(e.target.value)
+                      )
+                    }
                     className="p-2 border rounded"
                   />
                 </div>
@@ -225,8 +277,17 @@ export function SiteInput({
       {/* Preferências */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium mb-2">Módulo preferido</label>
-          <select {...register("module.preferred")} className="w-full p-2 border rounded focus-yello">
+          <label
+            htmlFor="module-preferred"
+            className="block text-sm font-medium mb-2"
+          >
+            Módulo preferido
+          </label>
+          <select
+            id="module-preferred"
+            {...register("module.preferred")}
+            className="w-full p-2 border rounded focus-yello"
+          >
             <option value="MOD_550">MOD_550 (550 Wp)</option>
             <option value="MOD_450">MOD_450 (450 Wp)</option>
           </select>
@@ -235,8 +296,17 @@ export function SiteInput({
         {persona === "integrator" && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-2">Inversor preferido</label>
-              <select {...register("inverter.preferred")} className="w-full p-2 border rounded focus-yello">
+              <label
+                htmlFor="inverter-preferred"
+                className="block text-sm font-medium mb-2"
+              >
+                Inversor preferido
+              </label>
+              <select
+                id="inverter-preferred"
+                {...register("inverter.preferred")}
+                className="w-full p-2 border rounded focus-yello"
+              >
                 <option value="">Automático</option>
                 <option value="INV_5K">INV_5K (5 kW)</option>
                 <option value="INV_8K">INV_8K (8 kW)</option>
@@ -245,10 +315,14 @@ export function SiteInput({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label
+                htmlFor="dcac-ratio"
+                className="block text-sm font-medium mb-2"
+              >
                 DC/AC ratio alvo ({watch("inverter.target_dcac")})
               </label>
               <input
+                id="dcac-ratio"
                 type="range"
                 min="1.05"
                 max="1.5"

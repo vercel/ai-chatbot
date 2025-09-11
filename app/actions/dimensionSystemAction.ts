@@ -32,43 +32,54 @@ const DimensioningInputSchema = z.object({
   message: "Informe área total ou ao menos uma seção."
 });
 
+function parseFormData(formData: FormData): Record<string, unknown> {
+	const rawData: Record<string, unknown> = {};
+	for (const [key, value] of formData.entries()) {
+		if (typeof value === "string") {
+			try {
+				rawData[key] = JSON.parse(value);
+			} catch {
+				rawData[key] = value;
+			}
+		} else {
+			rawData[key] = value;
+		}
+	}
+	return rawData;
+}
+
+function handleZodError(error: z.ZodError): Record<string, string[]> {
+	const errors: Record<string, string[]> = {};
+	for (const err of error.errors) {
+		const path = err.path.join(".");
+		if (!errors[path]) errors[path] = [];
+		errors[path].push(err.message);
+	}
+	return errors;
+}
+
 export async function dimensionSystemAction(formData: FormData): Promise<{
-  success: boolean;
-  data?: unknown;
-  errors?: Record<string, string[]>;
+	success: boolean;
+	data?: unknown;
+	errors?: Record<string, string[]>;
 }> {
-  try {
-    const rawData: Record<string, unknown> = {};
-    for (const [key, value] of formData.entries()) {
-      if (typeof value === "string") {
-        try {
-          rawData[key] = JSON.parse(value);
-        } catch {
-          rawData[key] = value;
-        }
-      } else {
-        rawData[key] = value;
-      }
-    }
+	try {
+		const rawData = parseFormData(formData);
+		const input = DimensioningInputSchema.parse(rawData);
+		const result = await dimensionSystem(input);
 
-    const input = DimensioningInputSchema.parse(rawData);
-    const result = await dimensionSystem(input);
+		revalidatePath("/journey/dimensioning");
 
-    revalidatePath("/journey/dimensioning");
+		return { success: true, data: result };
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			return { success: false, errors: handleZodError(error) };
+		}
 
-    return { success: true, data: result };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errors: Record<string, string[]> = {};
-      for (const err of error.errors) {
-        const path = err.path.join(".");
-        if (!errors[path]) errors[path] = [];
-        errors[path].push(err.message);
-      }
-      return { success: false, errors };
-    }
-
-    console.error("Dimensioning action error:", error);
-    return { success: false, errors: { general: ["Erro interno no servidor"] } };
-  }
+		console.error("Dimensioning action error:", error);
+		return {
+			success: false,
+			errors: { general: ["Erro interno no servidor"] },
+		};
+	}
 }

@@ -167,20 +167,32 @@ export function calculateDimensioning(input: DimensioningInput): DimensioningRes
   if (total_panels < 10) notes.push("Sistema pequeno; verifique viabilidade econômica.");
 
   return {
-    stage: "dimensioning",
-    inputs: input,
-    selection: { module: modKey, inverter: invKey, dc_kwp, ac_kw, dcac_ratio },
-    layout: { total_sections: sections.length, sections },
-    strings,
-    bom,
-    notes,
-    summary: {
-      headline: `Sistema de ${dc_kwp.toFixed(1)} kWp com ${total_panels} painéis`,
-      bullets: [
-        `${ac_kw} kW de inversor ${invKey}`,
-        `${sections.length} seção(ões) com densidade média ${(total_panels * MODULE_CATALOG[modKey].wp / total_used_area).toFixed(0)} Wp/m²`,
-        `DC/AC ratio: ${dcac_ratio.toFixed(2)}`,
-      ],
-    },
-  };
+			stage: "dimensioning",
+			inputs: input,
+			selection: {
+				module: modKey,
+				inverter: invKey,
+				dc_kwp,
+				ac_kw,
+				dcac_ratio,
+			},
+			layout: {
+				total_sections: sections.length,
+				sections: sections.map((s) => ({
+					...s,
+					orientation: s.orientation as "portrait" | "landscape",
+				})),
+			},
+			strings,
+			bom,
+			notes,
+			summary: {
+				headline: `Sistema de ${dc_kwp.toFixed(1)} kWp com ${total_panels} painéis`,
+				bullets: [
+					`${ac_kw} kW de inversor ${invKey}`,
+					`${sections.length} seção(ões) com densidade média ${((total_panels * MODULE_CATALOG[modKey].wp) / total_used_area).toFixed(0)} Wp/m²`,
+					`DC/AC ratio: ${dcac_ratio.toFixed(2)}`,
+				],
+			},
+		};
 }

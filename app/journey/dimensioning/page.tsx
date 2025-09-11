@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { SiteInput } from "@/components/dimensioning/SiteInput";
-import { DimensioningSpec } from "@/components/dimensioning/DimensioningSpec";
+import { SiteInput } from "../../../components/dimensioning/SiteInput";
+import { DimensioningSpec } from "../../../components/dimensioning/DimensioningSpec";
 import type { DimensioningResult } from "@/lib/dimensioning/types";
 
 export default function DimensioningPage() {
