@@ -41,10 +41,10 @@ interface EnergyInputProps {
 }
 
 /**
- * Componente EnergyInput - Formulário para entrada de dados de energia
+ * Componente EnergyInputForm - Formulário para entrada de dados de energia
  * Persona-aware com campos específicos para owner vs integrator
  */
-export function EnergyInput({
+export function EnergyInputForm({
   onSubmit,
   onCancel,
   initialData,
