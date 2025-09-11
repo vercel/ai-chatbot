@@ -1,6 +1,6 @@
 'use client';
 
-import { DefaultChatTransport, type LanguageModelUsage } from 'ai';
+import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -20,8 +20,9 @@ import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
-import type { Attachment, ChatMessage } from '@/lib/types';
+import type { AppUsage, Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import type { AppUsage as AppUsageType } from '@/lib/usage';
 
 export function Chat({
   id,
@@ -40,7 +41,7 @@ export function Chat({
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
-  initialLastContext?: LanguageModelUsage;
+  initialLastContext?: AppUsage;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -51,9 +52,7 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
-  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(
-    initialLastContext,
-  );
+  const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
 
   const {
     messages,
@@ -85,9 +84,7 @@ export function Chat({
     }),
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
-      if (dataPart.type === 'data-usage') {
-        setUsage(dataPart.data);
-      }
+      if (dataPart.type === 'data-usage') setUsage(dataPart.data);
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));

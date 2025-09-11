@@ -33,7 +33,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import type { LanguageModelV2Usage } from '@ai-sdk/provider';
+import type { AppUsage } from '../usage';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -479,8 +479,8 @@ export async function updateChatLastContextById({
   context,
 }: {
   chatId: string;
-  // Store raw LanguageModelUsage to keep it simple
-  context: LanguageModelV2Usage;
+  // Store merged server-enriched usage object
+  context: AppUsage;
 }) {
   try {
     return await db
