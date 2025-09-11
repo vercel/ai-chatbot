@@ -78,11 +78,12 @@ function TokensWithCost({
   tokens?: number;
   costText?: string;
 }) {
+  const hasCost = costText !== undefined && costText !== null;
   return (
     <span>
       {tokens === undefined ? '—' : tokens}
-      {costText ? (
-        <span className="ml-2 text-muted-foreground">• {costText}</span>
+      {hasCost ? (
+        <span className="ml-2 text-muted-foreground">• ${costText}</span>
       ) : null}
     </span>
   );
@@ -177,12 +178,12 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
               }
               costText={usage?.costUSD?.reasoningUSD?.toString()}
             />
-            {usage?.costUSD?.totalUSD && (
+            {usage?.costUSD?.totalUSD !== undefined && (
               <>
                 <Separator className="mt-1" />
                 <div className="flex justify-between items-center pt-1 text-xs">
                   <span className="text-muted-foreground">Total cost</span>
-                  <span>{usage?.costUSD?.totalUSD?.toString()}</span>
+                  <span>${usage?.costUSD?.totalUSD?.toString()}</span>
                 </div>
               </>
             )}
