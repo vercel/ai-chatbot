@@ -6,7 +6,10 @@ const fallbackHost =
 
 const fallbackProto = fallbackHost.includes('localhost') ? 'http' : 'https';
 const computedRedirectUri = `${fallbackProto}://${fallbackHost}/callback`;
-const REDIRECT_URI = process.env.WORKOS_REDIRECT_URI || computedRedirectUri;
+const REDIRECT_URI =
+  process.env.WORKOS_REDIRECT_URI ||
+  process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI ||
+  computedRedirectUri;
 
 export default authkitMiddleware({
   redirectUri: REDIRECT_URI,
