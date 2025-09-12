@@ -24,7 +24,7 @@ const createAgentSchema = z.object({
     .optional(),
   agentPrompt: z
     .string()
-    .max(10000, 'Agent prompt must be less than 10000 characters')
+    .max(100000, 'Agent prompt must be less than 100000 characters')
     .optional(),
   isPublic: z.boolean().default(true),
 });
