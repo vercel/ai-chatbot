@@ -69,6 +69,9 @@ function PureArtifact({
   votes,
   isReadonly,
   selectedVisibilityType,
+  initialChatModel,
+  isCompactMode,
+  showInputOnly,
 }: {
   chatId: string;
   input: string;
@@ -84,6 +87,9 @@ function PureArtifact({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
+  initialChatModel: string;
+  isCompactMode?: boolean;
+  showInputOnly?: boolean;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -254,6 +260,61 @@ function PureArtifact({
     }
   }, [artifact.documentId, artifactDefinition, setMetadata]);
 
+  // Special rendering for input-only mode (benefit-applications-agent)
+  if (showInputOnly) {
+    if (isCompactMode) {
+      // Compact mode: show input in the left panel area
+      return (
+        <div className="fixed bottom-0 left-0 w-[30%] z-50">
+          <div className="border-t border-gray-200" style={{ backgroundColor: '#EFD9E9', padding: '18px' }}>
+            <form className="flex gap-2 w-full">
+              <MultimodalInput
+                chatId={chatId}
+                input={input}
+                setInput={setInput}
+                status={status}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                sendMessage={sendMessage}
+                setMessages={setMessages}
+                selectedVisibilityType={selectedVisibilityType}
+                initialChatModel={initialChatModel}
+                isCompactMode={isCompactMode}
+              />
+            </form>
+          </div>
+        </div>
+      );
+    } else {
+      // Full page mode: show input at bottom
+      return (
+        <div className="fixed bottom-0 left-0 right-0 z-50">
+          <div className="bg-background border-t border-gray-200 p-4">
+            <form className="flex gap-2 w-full max-w-4xl mx-auto">
+              <MultimodalInput
+                chatId={chatId}
+                input={input}
+                setInput={setInput}
+                status={status}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                sendMessage={sendMessage}
+                setMessages={setMessages}
+                selectedVisibilityType={selectedVisibilityType}
+                initialChatModel={initialChatModel}
+                isCompactMode={isCompactMode}
+              />
+            </form>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <AnimatePresence>
       {artifact.isVisible && (
@@ -338,6 +399,8 @@ function PureArtifact({
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
+                    initialChatModel={initialChatModel}
+                    isCompactMode={isCompactMode}
                   />
                 </form>
               </div>
