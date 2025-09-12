@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+// router not needed for quick view sheet navigation
+import { AgentQuickView } from './agent-quick-view';
 import { Button } from '@/components/ui/button';
 import {
   Pagination,
@@ -25,6 +27,8 @@ const AGENTS_PER_PAGE = 12;
 export function AgentsList({ agents }: AgentsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   const filteredAgents = useMemo(() => {
     if (!searchTerm) return agents;
@@ -53,8 +57,8 @@ export function AgentsList({ agents }: AgentsListProps) {
   };
 
   const handleSelectAgent = (agent: Agent) => {
-    // For now, just navigate to the agent
-    window.location.href = `/agents/${agent.slug}`;
+    setSelectedAgent(agent);
+    setQuickViewOpen(true);
   };
 
   if (!agents.length) {
@@ -217,6 +221,12 @@ export function AgentsList({ agents }: AgentsListProps) {
           )}
         </>
       )}
+
+      <AgentQuickView
+        agent={selectedAgent}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </div>
   );
 }

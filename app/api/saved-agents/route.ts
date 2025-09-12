@@ -5,6 +5,7 @@ import {
   getDatabaseUserFromWorkOS,
   getSavedAgentsByUserId,
   saveAgentForUser,
+  unsaveAgentForUser,
 } from '@/lib/db/queries';
 
 const postBodySchema = z.object({
@@ -82,6 +83,42 @@ export async function POST(request: NextRequest) {
     console.error('API /saved-agents POST error:', error);
     return NextResponse.json(
       { error: 'Failed to save agent' },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await withAuth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const databaseUser = await getDatabaseUserFromWorkOS({
+      id: session.user.id,
+      email: session.user.email,
+      firstName: session.user.firstName ?? undefined,
+      lastName: session.user.lastName ?? undefined,
+    });
+
+    if (!databaseUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 401 });
+    }
+
+    const json = await request.json();
+    const body = postBodySchema.parse(json);
+
+    await unsaveAgentForUser({
+      userId: databaseUser.id,
+      agentId: body.agentId,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('API /saved-agents DELETE error:', error);
+    return NextResponse.json(
+      { error: 'Failed to unsave agent' },
       { status: 500 },
     );
   }

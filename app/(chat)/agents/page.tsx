@@ -10,10 +10,10 @@ export default async function AgentsPage() {
   const { data } = await getPublicAgents({ limit: 1000, offset: 0 });
 
   return (
-    <div className="container mx-auto px-12 py-8">
+    <div className="container mx-auto px-4 md:px-12 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">AI Agents</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl md:text-3xl font-bold">AI Agents</h1>
+        <p className="text-muted-foreground mt-2 text-base md:text-lg">
           Discover and use AI agents created by the community
         </p>
       </div>

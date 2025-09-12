@@ -781,6 +781,26 @@ export async function saveAgentForUser({
   }
 }
 
+export async function unsaveAgentForUser({
+  agentId,
+  userId,
+}: {
+  agentId: string;
+  userId: string;
+}) {
+  try {
+    return await db
+      .delete(userAgent)
+      .where(and(eq(userAgent.userId, userId), eq(userAgent.agentId, agentId)))
+      .execute();
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to unsave agent for user',
+    );
+  }
+}
+
 export async function getSavedAgentsByUserId({
   userId,
   limit = 50,
