@@ -1,18 +1,21 @@
-import { jsPDF } from "jspdf";
 import { tool } from 'ai';
 import { z } from 'zod';
 
 export const createPdf = tool({
-  description: 'Get the current weather at a location',
+  description: 'Generate a pdf file with the given list of products and filename',
   inputSchema: z.object({
-    title: z.string(),
+    filename: z.string(),
+    products: z.array(z.object({
+      ordinalNumber: z.number(),
+      name: z.string(),
+      characteristics: z.string(),
+      quantity: z.number(),
+      price: z.number(),
+    }))
   }),
-  execute: async ({ title }) => {
-    const doc = new jsPDF();
-
-    doc.text("Hello world!", 10, 10);
-    doc.save(`${title}.pdf`);
-  },
+  execute: async ({ filename, products }) => {
+    return { filename, products };
+  }
 });
 
 // Default export is a4 paper, portrait, using millimeters for units
