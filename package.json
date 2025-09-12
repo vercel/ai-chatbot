@@ -22,7 +22,7 @@
     "test:providers": "tsx scripts/test-providers.ts",
     "test:ollama": "tsx scripts/test-ollama.ts",
     "test:load-balancing": "tsx scripts/test-load-balancing.ts",
-    "test": "vitest run",
+    "test": "vitest --run",
     "test:e2e": "cross-env PLAYWRIGHT=True playwright test tests/e2e/story-chat-basico.spec.ts tests/e2e/story-journey-completa.spec.ts tests/e2e/story-persona-switching.spec.ts tests/e2e/story-canvas-interativo.spec.ts tests/e2e/story-upload-conta.spec.ts tests/e2e/story-autenticacao.spec.ts",
     "test:e2e:ui": "cross-env PLAYWRIGHT=True playwright test tests/e2e/story-*.spec.ts --ui",
     "test:e2e:debug": "cross-env PLAYWRIGHT=True playwright test tests/e2e/story-*.spec.ts --headed --debug",
@@ -51,7 +51,8 @@
     "test:360:report": "export PLAYWRIGHT=True && pnpm exec playwright show-report",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "prepare": "ts-patch install"
+    "prepare": "ts-patch install",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
@@ -69,6 +70,7 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
     "@codesandbox/sandpack-react": "^2.20.0",
+    "@codesandbox/sandpack-themes": "^2.0.21",
     "@google-cloud/aiplatform": "^5.6.0",
     "@google-cloud/bigquery": "^8.1.1",
     "@hookform/resolvers": "^5.2.1",
@@ -173,6 +175,7 @@
     "@storybook/addon-vitest": "9.1.5",
     "@storybook/nextjs-vite": "^9.1.5",
     "@tailwindcss/typography": "^0.5.15",
+    "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/d3-scale": "^4.0.8",
