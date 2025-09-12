@@ -1,6 +1,32 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@workos-inc/authkit-nextjs';
 import { getPublicAgents } from '@/lib/db/queries';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { agent, type Agent } from '@/lib/db/schema';
+import { z } from 'zod';
+import { eq } from 'drizzle-orm';
+import * as schema from '@/lib/db/schema';
+
+// biome-ignore lint: Forbidden non-null assertion.
+const client = postgres(process.env.POSTGRES_URL!);
+const db = drizzle(client, { schema });
+
+const createAgentSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be less than 100 characters'),
+  description: z
+    .string()
+    .max(500, 'Description must be less than 500 characters')
+    .optional(),
+  agentPrompt: z
+    .string()
+    .max(10000, 'Agent prompt must be less than 10000 characters')
+    .optional(),
+  isPublic: z.boolean().default(true),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,3 +61,65 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function POST(request: NextRequest) {
+  try {
+    const { user } = await withAuth({ ensureSignedIn: true });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const validatedData = createAgentSchema.parse(body);
+
+    // Auto-generate slug from name
+    const baseSlug = validatedData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    // Ensure slug is unique by adding a suffix if needed
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (true) {
+      const existingAgent = await db.query.agent.findFirst({
+        where: eq(agent.slug, slug),
+      });
+
+      if (!existingAgent) break;
+
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    // Create the agent
+    const [newAgent] = await db
+      .insert(agent)
+      .values({
+        name: validatedData.name,
+        slug,
+        description: validatedData.description || null,
+        agentPrompt: validatedData.agentPrompt || null,
+        modelId: null,
+        isPublic: validatedData.isPublic,
+      })
+      .returning();
+
+    return NextResponse.json(newAgent, { status: 201 });
+  } catch (error) {
+    console.error('Error creating agent:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.issues[0].message },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
+  }
+}

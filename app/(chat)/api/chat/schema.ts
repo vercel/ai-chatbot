@@ -23,6 +23,14 @@ export const postRequestBodySchema = z.object({
   }),
   reasoningEffort: z.enum(['low', 'medium', 'high']),
   selectedVisibilityType: z.enum(['public', 'private']),
+  agentSlug: z.string().optional(),
+  agentContext: z
+    .object({
+      agentName: z.string().min(1),
+      agentDescription: z.string().optional(),
+      agentPrompt: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

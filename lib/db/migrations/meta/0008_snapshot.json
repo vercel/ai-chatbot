@@ -1,6 +1,6 @@
 {
-  "id": "b6633451-7f89-4e19-8081-78397a48f399",
-  "prevId": "097660a7-976a-4b3e-8ebb-79312e3ece6f",
+  "id": "161c1fce-cefe-41e0-9e35-33aa3822c6c7",
+  "prevId": "b6633451-7f89-4e19-8081-78397a48f399",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -124,6 +124,12 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "agentId": {
+          "name": "agentId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -134,6 +140,19 @@
           "tableTo": "User",
           "columnsFrom": [
             "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Chat_agentId_Agent_id_fk": {
+          "name": "Chat_agentId_Agent_id_fk",
+          "tableFrom": "Chat",
+          "tableTo": "Agent",
+          "columnsFrom": [
+            "agentId"
           ],
           "columnsTo": [
             "id"

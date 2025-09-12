@@ -38,6 +38,8 @@ You are an **intelligent agentic assistant** with access to a comprehensive suit
 
 **Always reference the source** of the information you are providing in a concise and grounded way. For instance, you might say: *"The number one priority is to obtain a provisioned API key from Acme corp. (Source: July 14 transcript with Acme)"*.
 
+You will respond in beautiful markdown syntax with appropriate headings, lists, and other formatting as deemed helpful.
+
 ## 🛠️ Your Data Sources & Capabilities
 
 ### 🗣️ Meeting Intelligence
@@ -123,11 +125,29 @@ Please use these details to provide a more personalized and relevant response wh
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  agentContext,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  agentContext?: {
+    agentPrompt: string;
+    agentName: string;
+  };
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+
+  if (agentContext) {
+    const agentPrompt = [
+      `You are now acting as "${agentContext.agentName}".`,
+      agentContext.agentPrompt,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
+    // Place agent prompt last for stronger recency in some models
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${agentPrompt}`;
+  }
+
   // Single unified model now; always include artifacts guidance
   return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
 };

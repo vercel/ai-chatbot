@@ -47,6 +47,7 @@ export const chat = pgTable('Chat', {
     .notNull()
     .default('private'),
   lastContext: jsonb('lastContext').$type<LanguageModelV2Usage | null>(),
+  agentId: uuid('agentId').references(() => agent.id),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
@@ -57,7 +58,7 @@ export const agent = pgTable('Agent', {
   slug: varchar('slug', { length: 64 }).notNull().unique(),
   name: text('name').notNull(),
   description: text('description'),
-  basePrompt: text('basePrompt'),
+  agentPrompt: text('agentPrompt'),
   modelId: varchar('modelId', { length: 64 }),
   isPublic: boolean('isPublic').notNull().default(true),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
@@ -75,7 +76,6 @@ export const userAgent = pgTable(
     agentId: uuid('agentId')
       .notNull()
       .references(() => agent.id, { onDelete: 'cascade' }),
-    customPrompt: text('customPrompt'),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
     updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   },

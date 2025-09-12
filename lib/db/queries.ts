@@ -162,11 +162,13 @@ export async function saveChat({
   userId,
   title,
   visibility,
+  agentId,
 }: {
   id: string;
   userId: string;
   title: string;
   visibility: VisibilityType;
+  agentId?: string;
 }) {
   try {
     return await db.insert(chat).values({
@@ -175,6 +177,7 @@ export async function saveChat({
       userId,
       title,
       visibility,
+      agentId,
     });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save chat');
@@ -292,6 +295,27 @@ export async function getChatById({ id }: { id: string }) {
     return selectedChat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
+  }
+}
+
+export async function getChatWithAgent(chatId: string, userId: string) {
+  try {
+    const result = await db
+      .select({
+        chat: chat,
+        agent: agent,
+      })
+      .from(chat)
+      .leftJoin(agent, eq(chat.agentId, agent.id))
+      .where(and(eq(chat.id, chatId), eq(chat.userId, userId)))
+      .limit(1);
+
+    return result[0] || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get chat with agent',
+    );
   }
 }
 
@@ -656,8 +680,7 @@ export async function getPublicAgents({
   q?: string | null;
   limit?: number;
   offset?: number;
-}): Promise<{ data: Array<Agent>; total: number }>
-{
+}): Promise<{ data: Array<Agent>; total: number }> {
   try {
     const whereBase = eq(agent.isPublic, true);
     const where = q
@@ -710,7 +733,6 @@ export async function getAgentWithUserState({
     const rows = await db
       .select({
         agent,
-        customPrompt: userAgent.customPrompt,
         savedUserId: userAgent.userId,
       })
       .from(agent)
@@ -726,7 +748,6 @@ export async function getAgentWithUserState({
     return {
       agent: row.agent as Agent,
       saved: Boolean(row.savedUserId),
-      customPrompt: row.customPrompt ?? null,
     };
   } catch (error) {
     throw new ChatSDKError(
@@ -739,47 +760,23 @@ export async function getAgentWithUserState({
 export async function saveAgentForUser({
   agentId,
   userId,
-  customPrompt,
 }: {
   agentId: string;
   userId: string;
-  customPrompt?: string | null;
 }) {
   try {
     // Upsert to be idempotent
     return await db
       .insert(userAgent)
-      .values({ userId, agentId, customPrompt: customPrompt ?? null, createdAt: new Date(), updatedAt: new Date() })
+      .values({ userId, agentId, createdAt: new Date(), updatedAt: new Date() })
       .onConflictDoUpdate({
         target: [userAgent.userId, userAgent.agentId],
-        set: { customPrompt: customPrompt ?? null, updatedAt: new Date() },
+        set: { updatedAt: new Date() },
       });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to save agent for user',
-    );
-  }
-}
-
-export async function updateUserAgentPrompt({
-  agentId,
-  userId,
-  customPrompt,
-}: {
-  agentId: string;
-  userId: string;
-  customPrompt: string;
-}) {
-  try {
-    return await db
-      .update(userAgent)
-      .set({ customPrompt, updatedAt: new Date() })
-      .where(and(eq(userAgent.agentId, agentId), eq(userAgent.userId, userId)));
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to update custom prompt for agent',
     );
   }
 }
@@ -795,7 +792,7 @@ export async function getSavedAgentsByUserId({
 }) {
   try {
     const rows = await db
-      .select({ agent, customPrompt: userAgent.customPrompt })
+      .select({ agent })
       .from(userAgent)
       .innerJoin(agent, eq(agent.id, userAgent.agentId))
       .where(eq(userAgent.userId, userId))
@@ -803,7 +800,7 @@ export async function getSavedAgentsByUserId({
       .limit(limit)
       .offset(offset);
 
-    return rows.map((r) => ({ agent: r.agent as Agent, customPrompt: r.customPrompt ?? null }));
+    return rows.map((r) => ({ agent: r.agent as Agent }));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

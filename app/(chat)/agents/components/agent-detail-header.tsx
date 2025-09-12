@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BotIcon, UsersIcon, ArrowLeftIcon, StarIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { generateUUID } from '@/lib/utils';
 
 interface AgentDetailHeaderProps {
   agent: {
@@ -13,13 +15,20 @@ interface AgentDetailHeaderProps {
     slug: string;
     createdAt: Date;
     updatedAt: Date;
-    basePrompt: string | null;
+    agentPrompt: string | null;
     modelId: string | null;
     isPublic: boolean;
   };
 }
 
 export function AgentDetailHeader({ agent }: AgentDetailHeaderProps) {
+  const router = useRouter();
+  
+  const handleStartChat = () => {
+    const chatId = generateUUID();
+    router.push(`/chat/${chatId}?agent=${agent.slug}`);
+  };
+
   return (
     <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-12 py-6">
@@ -69,7 +78,7 @@ export function AgentDetailHeader({ agent }: AgentDetailHeaderProps) {
                       <StarIcon className="size-4 mr-2" />
                       Save
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleStartChat}>
                       Start Chat
                     </Button>
                   </div>

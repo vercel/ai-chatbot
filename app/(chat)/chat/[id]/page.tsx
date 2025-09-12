@@ -14,18 +14,22 @@ import { convertToUIMessages } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
+export default async function Page(props: { 
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ agent?: string }>;
+}) {
   const params = await props.params;
+  const searchParams = await props.searchParams;
   const { id } = params;
+  const { agent } = searchParams;
   const chat = await getChatById({ id });
 
-  if (!chat) {
-    notFound();
-  }
+  // If chat doesn't exist, we'll create a new one (similar to home page behavior)
+  const isNewChat = !chat;
 
   const { user } = await withAuth({ ensureSignedIn: true });
 
-  // Get the database user from the WorkOS user for proper ID comparisons
+  // Get the database user from the WorkOS user for proper ID comparisons  
   const databaseUser = user
     ? await getDatabaseUserFromWorkOS({
         id: user.id,
@@ -35,20 +39,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       })
     : null;
 
-  if (chat.visibility === 'private') {
-    if (!user || !databaseUser) {
-      return notFound();
-    }
+  if (!isNewChat) {
+    // Existing chat - check permissions
+    if (chat.visibility === 'private') {
+      if (!user || !databaseUser) {
+        return notFound();
+      }
 
-    if (databaseUser.id !== chat.userId) {
-      return notFound();
+      if (databaseUser.id !== chat.userId) {
+        return notFound();
+      }
     }
   }
 
-  const messagesFromDb = await getMessagesByChatId({
-    id,
-  });
-
+  const messagesFromDb = isNewChat ? [] : await getMessagesByChatId({ id });
   const uiMessages = convertToUIMessages(messagesFromDb);
 
   const cookieStore = await cookies();
@@ -62,14 +66,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   return (
     <>
       <Chat
-        id={chat.id}
+        id={id}
         initialMessages={uiMessages}
         initialChatModel={initialChatModel}
-        initialVisibilityType={chat.visibility}
-        isReadonly={!databaseUser || databaseUser.id !== chat.userId}
+        initialVisibilityType={isNewChat ? 'private' : chat.visibility}
+        isReadonly={isNewChat ? false : (!databaseUser || databaseUser.id !== chat.userId)}
         user={user}
-        autoResume={true}
-        initialLastContext={chat.lastContext ?? undefined}
+        autoResume={!isNewChat}
+        initialLastContext={isNewChat ? undefined : (chat.lastContext ?? undefined)}
       />
       <DataStreamHandler />
     </>

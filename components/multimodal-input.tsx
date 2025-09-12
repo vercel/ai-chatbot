@@ -61,6 +61,7 @@ function PureMultimodalInput({
   reasoningEffort,
   setReasoningEffort,
   usage,
+  hideSuggestions,
 }: {
   chatId: string;
   input: string;
@@ -77,6 +78,7 @@ function PureMultimodalInput({
   reasoningEffort: 'low' | 'medium' | 'high';
   setReasoningEffort: Dispatch<SetStateAction<'low' | 'medium' | 'high'>>;
   usage?: LanguageModelUsage;
+  hideSuggestions?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -291,7 +293,8 @@ function PureMultimodalInput({
         )}
       </AnimatePresence>
 
-      {messages.length === 0 &&
+      {!hideSuggestions &&
+        messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
           <SuggestedActions

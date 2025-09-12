@@ -1,10 +1,13 @@
 import { withAuth } from '@workos-inc/authkit-nextjs';
-import { getAgentWithUserState, getDatabaseUserFromWorkOS } from '@/lib/db/queries';
+import {
+  getAgentWithUserState,
+  getDatabaseUserFromWorkOS,
+} from '@/lib/db/queries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AgentPromptEditor } from '@/components/agent-prompt-editor';
 import { AgentDetailHeader } from '../components/agent-detail-header';
-import { FileTextIcon, SettingsIcon } from 'lucide-react';
+import { FileTextIcon } from 'lucide-react';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,67 +43,45 @@ export default async function AgentDetailPage({
           </div>
           <h3 className="text-lg font-medium mb-2">Agent not found</h3>
           <p className="text-muted-foreground mb-6">
-            The agent you're looking for doesn't exist or has been removed.
+            The agent you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Button asChild>
-            <a href="/agents">Browse Agents</a>
+            <Link href="/agents">Browse Agents</Link>
           </Button>
         </div>
       </div>
     );
   }
 
-  const { agent, saved, customPrompt } = res;
+  const { agent, saved } = res;
 
   return (
     <div className="min-h-screen bg-background">
       <AgentDetailHeader agent={agent} />
-      
+
       <div className="container mx-auto px-12 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Base Prompt Section */}
-          {agent.basePrompt && (
+          {/* Agent Prompt Section */}
+          {agent.agentPrompt && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileTextIcon className="size-5" />
-                  Base Prompt
+                  Agent Prompt
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="prose prose-sm max-w-none">
                   <div className="p-4 bg-muted/50 rounded-lg font-mono text-sm whitespace-pre-wrap">
-                    {agent.basePrompt}
+                    {agent.agentPrompt}
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
-
-          {/* Custom Prompt Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <SettingsIcon className="size-5" />
-                Custom Prompt
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Customize this agent with your own prompt additions. This will be combined with the base prompt when chatting.
-                </p>
-                <AgentPromptEditor
-                  agentId={agent.id}
-                  initialSaved={saved}
-                  initialCustomPrompt={customPrompt ?? ''}
-                />
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
   );
 }
-

@@ -9,6 +9,7 @@ import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
+import { AgentChatHeader } from '@/components/agent-chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
@@ -35,6 +36,7 @@ export function Chat({
   user,
   autoResume,
   initialLastContext,
+  initialAgentContext,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -44,7 +46,15 @@ export function Chat({
   user: any;
   autoResume: boolean;
   initialLastContext?: LanguageModelUsage;
+  initialAgentContext?: {
+    agentName: string;
+    agentDescription?: string;
+    agentPrompt?: string;
+  } | null;
 }) {
+  const params = useSearchParams();
+  const agentSlug = params.get('agent');
+
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
@@ -60,6 +70,11 @@ export function Chat({
   const [reasoningEffort, setReasoningEffort] = useState<
     'low' | 'medium' | 'high'
   >('medium');
+  const [agentContext, setAgentContext] = useState<{
+    agentName: string;
+    agentDescription?: string;
+    agentPrompt?: string;
+  } | null>(initialAgentContext || null);
 
   const {
     messages,
@@ -84,6 +99,7 @@ export function Chat({
             message: messages.at(-1),
             reasoningEffort: reasoningEffort,
             selectedVisibilityType: visibilityType,
+            ...(agentSlug && { agentSlug }),
             ...body,
           },
         };
@@ -127,6 +143,25 @@ export function Chat({
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
 
+  // Fetch agent context if this is an agent chat
+  useEffect(() => {
+    const fetchAgentContext = async () => {
+      try {
+        const response = await fetch(`/api/chat/${id}/agent`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            setAgentContext(data);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to fetch agent context:', error);
+      }
+    };
+
+    fetchAgentContext();
+  }, [id]);
+
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher,
@@ -151,6 +186,8 @@ export function Chat({
           isReadonly={isReadonly}
           session={user}
         />
+
+        {agentContext && <AgentChatHeader agentContext={agentContext} />}
 
         <Messages
           chatId={id}

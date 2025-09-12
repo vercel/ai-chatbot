@@ -19,6 +19,7 @@ import {
   saveChat,
   saveMessages,
   updateChatLastContextById,
+  getAgentWithUserState,
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -92,11 +93,19 @@ export async function POST(request: Request) {
       message,
       reasoningEffort,
       selectedVisibilityType,
+      agentSlug,
+      agentContext: previewAgentContext,
     }: {
       id: string;
       message: ChatMessage;
       reasoningEffort: 'low' | 'medium' | 'high';
       selectedVisibilityType: VisibilityType;
+      agentSlug?: string;
+      agentContext?: {
+        agentName: string;
+        agentDescription?: string;
+        agentPrompt?: string;
+      };
     } = requestBody;
 
     const session = await withAuth();
@@ -120,7 +129,27 @@ export async function POST(request: Request) {
       ).toResponse();
     }
 
+    // Fetch agent data if agentSlug provided; otherwise allow preview agent context passthrough
+    let agentContext = null as
+      | (Awaited<ReturnType<typeof getAgentWithUserState>> | null)
+      | null;
+    if (agentSlug) {
+      const agentData = await getAgentWithUserState({
+        slug: agentSlug,
+        userId: databaseUser.id,
+      });
+      agentContext = agentData;
+    }
+
     const chat = await getChatById({ id });
+
+    // Debug: confirm preview agent context is received
+    if (!agentSlug && previewAgentContext) {
+      console.log('🧪 Preview agentContext received:', {
+        hasName: !!previewAgentContext.agentName,
+        hasPrompt: !!previewAgentContext.agentPrompt,
+      });
+    }
 
     if (!chat) {
       const title = await generateTitleFromUserMessage({
@@ -132,6 +161,7 @@ export async function POST(request: Request) {
         userId: databaseUser.id,
         title,
         visibility: selectedVisibilityType,
+        agentId: agentContext?.agent?.id,
       });
     } else {
       if (chat.userId !== databaseUser.id) {
@@ -287,6 +317,19 @@ export async function POST(request: Request) {
           system: systemPrompt({
             selectedChatModel: 'chat-model',
             requestHints,
+            agentContext: agentSlug
+              ? agentContext
+                ? {
+                    agentPrompt: agentContext.agent.agentPrompt || '',
+                    agentName: agentContext.agent.name,
+                  }
+                : undefined
+              : previewAgentContext
+                ? {
+                    agentPrompt: previewAgentContext.agentPrompt || '',
+                    agentName: previewAgentContext.agentName || 'Preview Agent',
+                  }
+                : undefined,
           }),
           messages: modelMessages, // <= not UI parts anymore
           stopWhen: stepCountIs(50),
