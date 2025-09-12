@@ -51,6 +51,41 @@ export const chat = pgTable('Chat', {
 
 export type Chat = InferSelectModel<typeof chat>;
 
+// Agents: public presets users can save and customize with a prompt
+export const agent = pgTable('Agent', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  slug: varchar('slug', { length: 64 }).notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  basePrompt: text('basePrompt'),
+  modelId: varchar('modelId', { length: 64 }),
+  isPublic: boolean('isPublic').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Agent = InferSelectModel<typeof agent>;
+
+export const userAgent = pgTable(
+  'UserAgent',
+  {
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    agentId: uuid('agentId')
+      .notNull()
+      .references(() => agent.id, { onDelete: 'cascade' }),
+    customPrompt: text('customPrompt'),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.userId, table.agentId] }),
+  }),
+);
+
+export type UserAgent = InferSelectModel<typeof userAgent>;
+
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
 export const messageDeprecated = pgTable('Message', {

@@ -14,6 +14,7 @@
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
+    "db:seed:agents": "tsx lib/db/seed-agents.ts",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
@@ -68,7 +69,7 @@
     "date-fns": "^4.1.0",
     "diff-match-patch": "^1.0.5",
     "dotenv": "^16.6.1",
-    "drizzle-orm": "^0.34.1",
+    "drizzle-orm": "^0.44.5",
     "embla-carousel-react": "^8.6.0",
     "fast-deep-equal": "^3.1.3",
     "framer-motion": "^11.18.2",
@@ -108,19 +109,17 @@
     "shiki": "^3.12.2",
     "sonner": "^2.0.7",
     "streamdown": "^1.2.0",
-    "tokenlens": "^1.1.2",
-    "use-stick-to-bottom": "^1.1.1",
     "swr": "^2.3.6",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "tokenlens": "^1.1.2",
+    "use-stick-to-bottom": "^1.1.1",
     "usehooks-ts": "^3.1.1",
     "zod": "^4.1.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@playwright/test": "^1.54.2",
-    "msw": "^2.7.0",
-    "vitest": "^2.1.8",
     "@tailwindcss/typography": "^0.5.16",
     "@types/d3-scale": "^4.0.9",
     "@types/node": "^22.17.2",
@@ -137,10 +136,12 @@
     "eslint-config-prettier": "^9.1.2",
     "eslint-import-resolver-typescript": "^3.10.1",
     "eslint-plugin-tailwindcss": "^3.18.2",
+    "msw": "^2.7.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.4",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.8"
   },
   "packageManager": "pnpm@9.12.3",
   "pnpm": {

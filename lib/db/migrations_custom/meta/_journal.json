@@ -57,6 +57,13 @@
       "when": 1757362773211,
       "tag": "0007_flowery_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757634383926,
+      "tag": "0008_exotic_the_order",
+      "breakpoints": true
     }
   ]
 }

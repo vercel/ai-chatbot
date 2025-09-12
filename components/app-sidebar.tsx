@@ -81,6 +81,18 @@ export function AppSidebar({ user }: { user: any | undefined }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link
+                    href="/agents"
+                    onClick={() => setOpenMobile(false)}
+                    className="flex items-center gap-3"
+                  >
+                    <FileIcon />
+                    <span>Agents</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

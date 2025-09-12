@@ -10,6 +10,8 @@ import {
   gte,
   inArray,
   lt,
+  or,
+  ilike,
   type SQL,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -27,6 +29,9 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  agent,
+  userAgent,
+  type Agent,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -637,6 +642,172 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+// Agents
+
+export async function getPublicAgents({
+  q,
+  limit = 20,
+  offset = 0,
+}: {
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+}): Promise<{ data: Array<Agent>; total: number }>
+{
+  try {
+    const whereBase = eq(agent.isPublic, true);
+    const where = q
+      ? and(
+          whereBase,
+          or(
+            ilike(agent.name, `%${q}%`),
+            ilike(agent.description, `%${q}%`),
+            ilike(agent.slug, `%${q}%`),
+          ),
+        )
+      : whereBase;
+
+    const [countRow] = await db
+      .select({ count: count(agent.id) })
+      .from(agent)
+      .where(where);
+
+    const rows = await db
+      .select()
+      .from(agent)
+      .where(where)
+      .orderBy(desc(agent.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { data: rows, total: countRow?.count ?? 0 };
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to list agents');
+  }
+}
+
+export async function getAgentBySlug({ slug }: { slug: string }) {
+  try {
+    const [row] = await db.select().from(agent).where(eq(agent.slug, slug));
+    return row ?? null;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get agent');
+  }
+}
+
+export async function getAgentWithUserState({
+  slug,
+  userId,
+}: {
+  slug: string;
+  userId: string;
+}) {
+  try {
+    const rows = await db
+      .select({
+        agent,
+        customPrompt: userAgent.customPrompt,
+        savedUserId: userAgent.userId,
+      })
+      .from(agent)
+      .leftJoin(
+        userAgent,
+        and(eq(userAgent.agentId, agent.id), eq(userAgent.userId, userId)),
+      )
+      .where(eq(agent.slug, slug))
+      .limit(1);
+
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return {
+      agent: row.agent as Agent,
+      saved: Boolean(row.savedUserId),
+      customPrompt: row.customPrompt ?? null,
+    };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get agent with user state',
+    );
+  }
+}
+
+export async function saveAgentForUser({
+  agentId,
+  userId,
+  customPrompt,
+}: {
+  agentId: string;
+  userId: string;
+  customPrompt?: string | null;
+}) {
+  try {
+    // Upsert to be idempotent
+    return await db
+      .insert(userAgent)
+      .values({ userId, agentId, customPrompt: customPrompt ?? null, createdAt: new Date(), updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: [userAgent.userId, userAgent.agentId],
+        set: { customPrompt: customPrompt ?? null, updatedAt: new Date() },
+      });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save agent for user',
+    );
+  }
+}
+
+export async function updateUserAgentPrompt({
+  agentId,
+  userId,
+  customPrompt,
+}: {
+  agentId: string;
+  userId: string;
+  customPrompt: string;
+}) {
+  try {
+    return await db
+      .update(userAgent)
+      .set({ customPrompt, updatedAt: new Date() })
+      .where(and(eq(userAgent.agentId, agentId), eq(userAgent.userId, userId)));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update custom prompt for agent',
+    );
+  }
+}
+
+export async function getSavedAgentsByUserId({
+  userId,
+  limit = 50,
+  offset = 0,
+}: {
+  userId: string;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    const rows = await db
+      .select({ agent, customPrompt: userAgent.customPrompt })
+      .from(userAgent)
+      .innerJoin(agent, eq(agent.id, userAgent.agentId))
+      .where(eq(userAgent.userId, userId))
+      .orderBy(desc(userAgent.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return rows.map((r) => ({ agent: r.agent as Agent, customPrompt: r.customPrompt ?? null }));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to list saved agents',
     );
   }
 }
