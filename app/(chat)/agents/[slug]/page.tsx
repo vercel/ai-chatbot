@@ -98,43 +98,6 @@ export default async function AgentDetailPage({
               </div>
             </CardContent>
           </Card>
-
-          {/* Agent Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Agent Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-muted-foreground">Agent ID:</span>
-                  <span className="ml-2 font-mono">{agent.id}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Slug:</span>
-                  <span className="ml-2 font-mono">{agent.slug}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Visibility:</span>
-                  <span className="ml-2">{agent.isPublic ? 'Public' : 'Private'}</span>
-                </div>
-                {agent.modelId && (
-                  <div>
-                    <span className="font-medium text-muted-foreground">Model:</span>
-                    <span className="ml-2">{agent.modelId}</span>
-                  </div>
-                )}
-                <div>
-                  <span className="font-medium text-muted-foreground">Created:</span>
-                  <span className="ml-2">{new Date(agent.createdAt).toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Updated:</span>
-                  <span className="ml-2">{new Date(agent.updatedAt).toLocaleString()}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
