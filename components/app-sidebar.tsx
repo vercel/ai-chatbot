@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { PlusIcon, FileIcon } from '@/components/icons';
+import { PlusIcon, FileIcon, BotIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,7 @@ export function AppSidebar({ user }: { user: any | undefined }) {
                     onClick={() => setOpenMobile(false)}
                     className="flex items-center gap-3"
                   >
-                    <FileIcon />
+                    <BotIcon />
                     <span>Agents</span>
                   </Link>
                 </SidebarMenuButton>
