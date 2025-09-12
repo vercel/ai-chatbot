@@ -4,22 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BotIcon, UsersIcon, StarIcon } from 'lucide-react';
 import Link from 'next/link';
+import type { Agent } from '@/lib/db/schema';
 
 interface AgentCardProps {
-  agent: {
-    id: string;
-    name: string;
-    description: string | null;
-    slug: string;
-    createdAt: Date;
-    updatedAt: Date;
-    basePrompt: string | null;
-    modelId: string | null;
-    isPublic: boolean;
-  };
+  agent: Agent;
   isSelected: boolean;
   isSelectionMode: boolean;
-  onSelect: (agent: any) => void;
+  onSelect: (agent: Agent) => void;
 }
 
 export function AgentCard({

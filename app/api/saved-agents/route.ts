@@ -9,7 +9,6 @@ import {
 
 const postBodySchema = z.object({
   agentId: z.string().uuid(),
-  customPrompt: z.string().max(16384).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -76,7 +75,6 @@ export async function POST(request: NextRequest) {
     await saveAgentForUser({
       userId: databaseUser.id,
       agentId: body.agentId,
-      customPrompt: body.customPrompt ?? null,
     });
 
     return NextResponse.json({ ok: true });

@@ -808,25 +808,3 @@ export async function getSavedAgentsByUserId({
     );
   }
 }
-
-export async function updateUserAgentPrompt({
-  agentId,
-  userId,
-  customPrompt,
-}: {
-  agentId: string;
-  userId: string;
-  customPrompt: string;
-}) {
-  try {
-    return await db
-      .update(userAgent)
-      .set({ customPrompt, updatedAt: new Date() })
-      .where(and(eq(userAgent.agentId, agentId), eq(userAgent.userId, userId)));
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to update user agent prompt',
-    );
-  }
-}

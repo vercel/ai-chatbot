@@ -4,9 +4,10 @@ import { getAgentWithUserState, getDatabaseUserFromWorkOS } from '@/lib/db/queri
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
+    const { slug } = await params;
     const session = await withAuth();
 
     if (!session?.user) {
@@ -25,7 +26,7 @@ export async function GET(
     }
 
     const result = await getAgentWithUserState({
-      slug: params.slug,
+      slug,
       userId: databaseUser.id,
     });
 

@@ -14,18 +14,7 @@ import {
 } from '@/components/ui/pagination';
 import { AgentsHeader } from './agents-header';
 import { AgentCard } from './agent-card';
-
-interface Agent {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  createdAt: Date;
-  updatedAt: Date;
-  basePrompt: string | null;
-  modelId: string | null;
-  isPublic: boolean;
-}
+import type { Agent } from '@/lib/db/schema';
 
 interface AgentsListProps {
   agents: Agent[];
