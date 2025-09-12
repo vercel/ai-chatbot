@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DefaultChatTransport } from 'ai';
 import { generateUUID, fetchWithErrorHandlers } from '@/lib/utils';
 import { Messages } from '@/components/messages';
@@ -26,6 +26,16 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
     'low' | 'medium' | 'high'
   >('medium');
 
+  // Keep latest values in refs to avoid stale closure in transport
+  const formDataRef = useRef(formData);
+  const reasoningRef = useRef(reasoningEffort);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+  useEffect(() => {
+    reasoningRef.current = reasoningEffort;
+  }, [reasoningEffort]);
+
   const { messages, setMessages, sendMessage, status, stop, regenerate } =
     useChat<ChatMessage>({
       id: previewChatId,
@@ -37,15 +47,22 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
         prepareSendMessagesRequest({ messages, id, body }) {
           // Keep latest values via refs to avoid stale closures
           // Build the agent context from the most recent form values
-          const agentCtx = formData.name
+          const fd = formDataRef.current;
+          const hasAnyAgentInput = Boolean(
+            (fd.name && fd.name.trim().length > 0) ||
+              (fd.agentPrompt && fd.agentPrompt.trim().length > 0) ||
+              (fd.description && fd.description.trim().length > 0),
+          );
+
+          const agentCtx = hasAnyAgentInput
             ? {
-                agentName: formData.name || 'Preview Agent',
-                agentDescription: formData.description || 'Agent preview',
-                agentPrompt: formData.agentPrompt || undefined,
+                agentName: fd.name?.trim() || 'Preview Agent',
+                agentDescription: fd.description?.trim() || 'Agent preview',
+                agentPrompt: fd.agentPrompt?.trim() || undefined,
               }
             : undefined;
 
-          const currentReasoning = reasoningEffort;
+          const currentReasoning = reasoningRef.current;
 
           if (typeof window !== 'undefined') {
             // Lightweight debug aid in preview mode
@@ -58,12 +75,13 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
 
           return {
             body: {
+              // Spread the transport-provided body first, then override with latest values
+              ...(body ?? {}),
               id,
               message: messages.at(-1),
               reasoningEffort: currentReasoning,
               selectedVisibilityType: 'private',
-              agentContext: agentCtx,
-              ...body,
+              ...(agentCtx ? { agentContext: agentCtx } : {}),
             },
           };
         },
@@ -104,6 +122,7 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
           setReasoningEffort={setReasoningEffort}
           usage={undefined}
           hideSuggestions={true}
+          disableHistoryUpdate={true}
         />
       </div>
     </div>

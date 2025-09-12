@@ -11,7 +11,7 @@ const starters = [
     name: 'Research Analyst',
     description:
       'Investigates across transcripts, email, and Slack; synthesizes sources with citations and next steps.',
-    basePrompt:
+    agentPrompt:
       'Act as a research analyst. Prioritize grounded answers with clear citations to transcripts, emails, and Slack messages. Summarize findings, highlight risks, and propose next steps.',
     modelId: 'chat-model',
   },
@@ -20,7 +20,7 @@ const starters = [
     name: 'Meeting Summarizer',
     description:
       'Summarizes meetings from transcripts with decisions, owners, and deadlines.',
-    basePrompt:
+    agentPrompt:
       'You summarize meetings crisply. Output sections: Context, Decisions, Action Items (owner, due date), Open Questions. Keep to bullet points and cite transcript timestamps when available.',
     modelId: 'chat-model',
   },
@@ -29,7 +29,7 @@ const starters = [
     name: 'Email Drafter',
     description:
       'Drafts clear, concise emails; adapts tone and suggests subject lines.',
-    basePrompt:
+    agentPrompt:
       'Draft concise emails with a helpful subject line and 2–3 tone options. Prefer short paragraphs, active voice, and clear calls to action. Offer variants when appropriate.',
     modelId: 'chat-model',
   },
@@ -49,7 +49,7 @@ async function main() {
         slug: a.slug,
         name: a.name,
         description: a.description,
-        basePrompt: a.basePrompt,
+        agentPrompt: a.agentPrompt,
         modelId: a.modelId,
         isPublic: true,
         createdAt: new Date(),
@@ -68,4 +68,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-

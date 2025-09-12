@@ -1,5 +1,4 @@
--- Custom migration: Agents v1
--- Keep custom migrations separate from upstream canonical set.
+-- Custom migration: Agents v1 (consolidated)
 
 CREATE TABLE IF NOT EXISTS "Agent" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

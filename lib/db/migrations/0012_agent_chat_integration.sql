@@ -1,4 +1,4 @@
--- Custom migration: Agent-Chat Integration
+-- Custom migration: Agent-Chat Integration (consolidated)
 -- Add agentId column to Chat table for agent-chat linking
 
 DO $$ BEGIN
@@ -16,3 +16,4 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
   CREATE INDEX "Chat_agentId_idx" ON "Chat"("agentId");
 EXCEPTION WHEN duplicate_table THEN NULL; END $$;
+

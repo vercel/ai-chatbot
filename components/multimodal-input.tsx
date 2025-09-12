@@ -62,6 +62,7 @@ function PureMultimodalInput({
   setReasoningEffort,
   usage,
   hideSuggestions,
+  disableHistoryUpdate,
 }: {
   chatId: string;
   input: string;
@@ -79,6 +80,11 @@ function PureMultimodalInput({
   setReasoningEffort: Dispatch<SetStateAction<'low' | 'medium' | 'high'>>;
   usage?: LanguageModelUsage;
   hideSuggestions?: boolean;
+  /**
+   * When true, prevent URL changes like /chat/{id} during input submits.
+   * Useful for embedded/preview contexts (e.g. agent creation preview).
+   */
+  disableHistoryUpdate?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -133,7 +139,9 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/chat/${chatId}`);
+    if (!disableHistoryUpdate) {
+      window.history.replaceState({}, '', `/chat/${chatId}`);
+    }
 
     // Prepare the text content
     const textContent = input;
@@ -172,6 +180,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    disableHistoryUpdate,
     // (Removed selectedDocument dependency)
   ]);
 
@@ -301,6 +310,7 @@ function PureMultimodalInput({
             sendMessage={sendMessage}
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
+            disableHistoryUpdate={disableHistoryUpdate}
           />
         )}
 
@@ -412,6 +422,9 @@ export const MultimodalInput = memo(
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
     if (prevProps.reasoningEffort !== nextProps.reasoningEffort) return false;
+    if (prevProps.hideSuggestions !== nextProps.hideSuggestions) return false;
+    if (prevProps.disableHistoryUpdate !== nextProps.disableHistoryUpdate)
+      return false;
 
     return true;
   },

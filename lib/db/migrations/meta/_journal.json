@@ -57,6 +57,48 @@
       "when": 1757362773211,
       "tag": "0007_flowery_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757692800001,
+      "tag": "0008_regular_maximus",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1757692800002,
+      "tag": "0009_wonderful_magdalene",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1757692800003,
+      "tag": "0010_opposite_rattler",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1757692800004,
+      "tag": "0011_agents",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1757692800005,
+      "tag": "0012_agent_chat_integration",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1757692800006,
+      "tag": "0013_simplify_agent_prompt",
+      "breakpoints": true
     }
   ]
 }

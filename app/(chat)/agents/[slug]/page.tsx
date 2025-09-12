@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 export default async function AgentDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   const session = await withAuth({ ensureSignedIn: true });
 
@@ -30,7 +30,7 @@ export default async function AgentDetailPage({
   }
 
   const res = await getAgentWithUserState({
-    slug: params.slug,
+    slug: (await params).slug,
     userId: databaseUser.id,
   });
 

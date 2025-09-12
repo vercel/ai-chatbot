@@ -11,12 +11,15 @@ interface SuggestedActionsProps {
   chatId: string;
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   selectedVisibilityType: VisibilityType;
+  /** When true, prevent URL changes during suggestion send. */
+  disableHistoryUpdate?: boolean;
 }
 
 function PureSuggestedActions({
   chatId,
   sendMessage,
   selectedVisibilityType,
+  disableHistoryUpdate,
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
@@ -62,7 +65,9 @@ function PureSuggestedActions({
               <Suggestion
                 suggestion={suggestedAction.action}
                 onClick={(suggestion) => {
-                  window.history.replaceState({}, '', `/chat/${chatId}`);
+                  if (!disableHistoryUpdate) {
+                    window.history.replaceState({}, '', `/chat/${chatId}`);
+                  }
                   sendMessage({
                     role: 'user',
                     parts: [{ type: 'text', text: suggestion }],
@@ -96,7 +101,9 @@ function PureSuggestedActions({
               type="button"
               aria-label={suggestedAction.title}
               onClick={() => {
-                window.history.replaceState({}, '', `/chat/${chatId}`);
+                if (!disableHistoryUpdate) {
+                  window.history.replaceState({}, '', `/chat/${chatId}`);
+                }
                 sendMessage({
                   role: 'user',
                   parts: [{ type: 'text', text: suggestedAction.action }],
@@ -123,6 +130,8 @@ export const SuggestedActions = memo(
   (prevProps, nextProps) => {
     if (prevProps.chatId !== nextProps.chatId) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
+      return false;
+    if (prevProps.disableHistoryUpdate !== nextProps.disableHistoryUpdate)
       return false;
 
     return true;
