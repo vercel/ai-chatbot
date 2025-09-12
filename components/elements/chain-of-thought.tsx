@@ -15,6 +15,7 @@ import React, {
   memo,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
@@ -129,7 +130,7 @@ export const ChainOfThoughtHeader = memo(
   }: ChainOfThoughtHeaderProps) => {
     const { isOpen, setIsOpen, isWorking, duration } = useChainOfThought();
 
-    const displayText = React.useMemo(() => {
+    const displayText = useMemo(() => {
       if (!showDuration) {
         return children ?? 'Chain of Thought';
       }

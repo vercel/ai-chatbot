@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   Pagination,
@@ -96,7 +97,7 @@ export function AgentsList({ agents }: AgentsListProps) {
             Get started by creating your first AI agent.
           </p>
           <Button asChild>
-            <a href="/agents/new">Create Agent</a>
+            <Link href="/agents/new">Create Agent</Link>
           </Button>
         </div>
       </div>
