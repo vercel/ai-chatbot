@@ -672,6 +672,40 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 
 // Agents
 
+export async function getUserOwnedAgents({
+  userId,
+  limit = 20,
+  offset = 0,
+}: {
+  userId: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ data: Array<Agent>; total: number }> {
+  try {
+    const where = eq(agent.userId, userId);
+
+    const [countRow] = await db
+      .select({ count: count(agent.id) })
+      .from(agent)
+      .where(where);
+
+    const rows = await db
+      .select()
+      .from(agent)
+      .where(where)
+      .orderBy(desc(agent.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { data: rows, total: countRow?.count ?? 0 };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to list user owned agents',
+    );
+  }
+}
+
 export async function getPublicAgents({
   q,
   limit = 20,

@@ -6,6 +6,7 @@ import postgres from 'postgres';
 import { agent, type Agent } from '@/lib/db/schema';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
+import { getDatabaseUserFromWorkOS } from '@/lib/db/queries';
 import * as schema from '@/lib/db/schema';
 
 // biome-ignore lint: Forbidden non-null assertion.
@@ -93,12 +94,25 @@ export async function POST(request: NextRequest) {
       counter++;
     }
 
+    // Get or create the database user via WorkOS mapping
+    const dbUser = await getDatabaseUserFromWorkOS({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // Create the agent
     const [newAgent] = await db
       .insert(agent)
       .values({
         name: validatedData.name,
         slug,
+        userId: dbUser.id,
         description: validatedData.description || null,
         agentPrompt: validatedData.agentPrompt || null,
         modelId: null,

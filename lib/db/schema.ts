@@ -56,6 +56,7 @@ export type Chat = InferSelectModel<typeof chat>;
 export const agent = pgTable('Agent', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   slug: varchar('slug', { length: 64 }).notNull().unique(),
+  userId: uuid('userId').references(() => user.id),
   name: text('name').notNull(),
   description: text('description'),
   agentPrompt: text('agentPrompt'),

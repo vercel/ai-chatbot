@@ -99,6 +99,13 @@
       "when": 1757692800006,
       "tag": "0013_simplify_agent_prompt",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1757710162021,
+      "tag": "0014_whole_carlie_cooper",
+      "breakpoints": true
     }
   ]
 }
