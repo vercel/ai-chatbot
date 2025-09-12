@@ -1,14 +1,15 @@
 import { authkitMiddleware } from '@workos-inc/authkit-nextjs';
 
-// Compute redirect URI for preview deployments
-const host =
+// Prefer explicit redirect URI; fall back to preview deployment URL
+const fallbackHost =
   process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL || 'localhost:3000';
 
-const proto = host.includes('localhost') ? 'http' : 'https';
-const REDIRECT_URI = `${proto}://${host}/callback`;
+const fallbackProto = fallbackHost.includes('localhost') ? 'http' : 'https';
+const computedRedirectUri = `${fallbackProto}://${fallbackHost}/callback`;
+const REDIRECT_URI = process.env.WORKOS_REDIRECT_URI || computedRedirectUri;
 
 export default authkitMiddleware({
-  redirectUri: REDIRECT_URI, // overrides any WORKOS_REDIRECT_URI env var
+  redirectUri: REDIRECT_URI,
   middlewareAuth: {
     enabled: true,
     unauthenticatedPaths: [
