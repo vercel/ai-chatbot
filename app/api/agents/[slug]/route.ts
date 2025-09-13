@@ -1,11 +1,19 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@workos-inc/authkit-nextjs';
-import { getAgentWithUserState, getDatabaseUserFromWorkOS } from '@/lib/db/queries';
+import { getDatabaseUserFromWorkOS } from '@/lib/db/queries';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { agent, chat } from '@/lib/db/schema';
 import * as schema from '@/lib/db/schema';
+import { z } from 'zod';
+
+const updateAgentSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  agentPrompt: z.string().optional(),
+  isPublic: z.boolean(),
+});
 
 export async function GET(
   request: NextRequest,
@@ -30,10 +38,15 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 401 });
     }
 
-    const result = await getAgentWithUserState({
-      slug,
-      userId: databaseUser.id,
+    // biome-ignore lint: Forbidden non-null assertion.
+    const client = postgres(process.env.POSTGRES_URL!);
+    const db = drizzle(client, { schema });
+
+    const result = await db.query.agent.findFirst({
+      where: eq(agent.slug, slug),
     });
+
+    await client.end();
 
     if (!result) {
       return NextResponse.json(
@@ -42,11 +55,96 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(result);
+    // Check if user owns this agent (for edit access)
+    if (result.userId !== databaseUser.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    return NextResponse.json({ agent: result });
   } catch (error) {
-    console.error('API /agents/[slug] error:', error);
+    console.error('API /agents/[slug] GET error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch agent' },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  try {
+    const { slug } = await params;
+    const { user } = await withAuth({ ensureSignedIn: true });
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const validatedData = updateAgentSchema.parse(body);
+
+    // biome-ignore lint: Forbidden non-null assertion.
+    const client = postgres(process.env.POSTGRES_URL!);
+    const db = drizzle(client, { schema });
+
+    // Get database user
+    const dbUser = await getDatabaseUserFromWorkOS({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+    });
+
+    if (!dbUser) {
+      await client.end();
+      return NextResponse.json({ error: 'User not found' }, { status: 401 });
+    }
+
+    // Find the agent
+    const existingAgent = await db.query.agent.findFirst({
+      where: eq(agent.slug, slug),
+    });
+
+    if (!existingAgent) {
+      await client.end();
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+    }
+
+    // Check ownership
+    if (existingAgent.userId !== dbUser.id) {
+      await client.end();
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Update the agent
+    const [updatedAgent] = await db
+      .update(agent)
+      .set({
+        name: validatedData.name,
+        description: validatedData.description || null,
+        agentPrompt: validatedData.agentPrompt || null,
+        isPublic: validatedData.isPublic,
+        updatedAt: new Date(),
+      })
+      .where(eq(agent.id, existingAgent.id))
+      .returning();
+
+    await client.end();
+    return NextResponse.json(updatedAgent);
+  } catch (error) {
+    console.error('API /agents/[slug] PATCH error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.issues[0].message },
+        { status: 400 },
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to update agent' },
       { status: 500 },
     );
   }

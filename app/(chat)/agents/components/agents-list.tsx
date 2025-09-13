@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
 // router not needed for quick view sheet navigation
 import { AgentQuickView } from './agent-quick-view';
-import { Button } from '@/components/ui/button';
 import {
   Pagination,
   PaginationContent,
@@ -16,27 +14,34 @@ import {
 } from '@/components/ui/pagination';
 import { AgentsHeader } from './agents-header';
 import { AgentCard } from './agent-card';
-import type { Agent } from '@/lib/db/schema';
+import type { Agent, User } from '@/lib/db/schema';
 
 interface AgentsListProps {
-  agents: Agent[];
+  agents: Array<{ agent: Agent; user: User | null }>;
+  currentUserId?: string;
 }
 
 const AGENTS_PER_PAGE = 12;
 
-export function AgentsList({ agents }: AgentsListProps) {
+export function AgentsList({ agents, currentUserId }: AgentsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<{
+    agent: Agent;
+    user: User | null;
+  } | null>(null);
 
   const filteredAgents = useMemo(() => {
     if (!searchTerm) return agents;
-    
-    return agents.filter((agent) =>
-      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
+    return agents.filter((item) => {
+      if (!item.agent) return false;
+      return (
+        item.agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.agent.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
   }, [agents, searchTerm]);
 
   const paginatedAgents = useMemo(() => {
@@ -56,8 +61,8 @@ export function AgentsList({ agents }: AgentsListProps) {
     setCurrentPage(1);
   };
 
-  const handleSelectAgent = (agent: Agent) => {
-    setSelectedAgent(agent);
+  const handleSelectAgent = (item: { agent: Agent; user: User | null }) => {
+    setSelectedAgent(item);
     setQuickViewOpen(true);
   };
 
@@ -86,12 +91,9 @@ export function AgentsList({ agents }: AgentsListProps) {
             </svg>
           </div>
           <h3 className="text-lg font-medium mb-2">No agents available</h3>
-          <p className="text-muted-foreground mb-6">
-            Get started by creating your first AI agent.
+          <p className="text-muted-foreground">
+            Get started by creating your first AI agent using the button above.
           </p>
-          <Button asChild>
-            <Link href="/agents/new">Create Agent</Link>
-          </Button>
         </div>
       </div>
     );
@@ -114,13 +116,14 @@ export function AgentsList({ agents }: AgentsListProps) {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {paginatedAgents.map((agent) => (
+            {paginatedAgents.map((item) => (
               <AgentCard
-                key={agent.id}
-                agent={agent}
+                key={item.agent.id}
+                agent={item.agent}
+                user={item.user}
                 isSelected={false}
                 isSelectionMode={false}
-                onSelect={handleSelectAgent}
+                onSelect={() => handleSelectAgent(item)}
               />
             ))}
           </div>
@@ -223,9 +226,10 @@ export function AgentsList({ agents }: AgentsListProps) {
       )}
 
       <AgentQuickView
-        agent={selectedAgent}
+        agent={selectedAgent?.agent ?? null}
         open={quickViewOpen}
         onOpenChange={setQuickViewOpen}
+        currentUserId={currentUserId}
       />
     </div>
   );

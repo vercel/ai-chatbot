@@ -7,13 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import type { Agent } from '@/lib/db/schema';
 
-export interface CreateAgentFormHandle {
+export interface EditAgentFormHandle {
   submit: () => void;
   isSubmitting: boolean;
 }
 
-interface CreateAgentFormProps {
+interface EditAgentFormProps {
+  agent: Agent;
   formData: {
     name: string;
     description: string;
@@ -28,10 +30,10 @@ interface CreateAgentFormProps {
   }) => void;
 }
 
-export const CreateAgentForm = forwardRef<
-  CreateAgentFormHandle,
-  CreateAgentFormProps
->(({ formData, onFormDataChange }, ref) => {
+export const EditAgentForm = forwardRef<
+  EditAgentFormHandle,
+  EditAgentFormProps
+>(({ agent, formData, onFormDataChange }, ref) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,8 +55,8 @@ export const CreateAgentForm = forwardRef<
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/agents', {
-        method: 'POST',
+      const response = await fetch(`/api/agents/${agent.slug}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -63,16 +65,15 @@ export const CreateAgentForm = forwardRef<
 
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to create agent');
+        throw new Error(error || 'Failed to update agent');
       }
 
-      const agent = await response.json();
-      toast.success('Agent created successfully!');
+      toast.success('Agent updated successfully!');
       router.push('/agents');
     } catch (error) {
-      console.error('Error creating agent:', error);
+      console.error('Error updating agent:', error);
       toast.error(
-        error instanceof Error ? error.message : 'Failed to create agent',
+        error instanceof Error ? error.message : 'Failed to update agent',
       );
     } finally {
       setIsSubmitting(false);
@@ -89,7 +90,7 @@ export const CreateAgentForm = forwardRef<
       <div>
         <h2 className="text-lg font-semibold mb-1">Agent Configuration</h2>
         <p className="text-sm text-muted-foreground">
-          Configure your agent&apos;s behavior and settings
+          Update your agent&apos;s behavior and settings
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -144,4 +145,4 @@ export const CreateAgentForm = forwardRef<
   );
 });
 
-CreateAgentForm.displayName = 'CreateAgentForm';
+EditAgentForm.displayName = 'EditAgentForm';
