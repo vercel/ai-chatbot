@@ -242,6 +242,16 @@ export async function POST(request: Request) {
       return error.toResponse();
     }
 
+    // Check for Vercel AI Gateway credit card error
+    if (
+      error instanceof Error &&
+      error.message?.includes(
+        'AI Gateway requires a valid credit card on file to service requests',
+      )
+    ) {
+      return new ChatSDKError('bad_request:activate_gateway').toResponse();
+    }
+
     console.error('Unhandled error in chat API:', error);
     return new ChatSDKError('offline:chat').toResponse();
   }
