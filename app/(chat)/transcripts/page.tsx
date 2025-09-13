@@ -1,5 +1,6 @@
 import { withAuth } from '@workos-inc/authkit-nextjs';
 import { TranscriptsList } from './components/transcripts-list';
+import { SidebarPageHeader } from '@/components/sidebar-page-header';
 
 export default async function TranscriptsPage() {
   const session = await withAuth({ ensureSignedIn: true });
@@ -12,7 +13,9 @@ export default async function TranscriptsPage() {
   );
 
   return (
-    <div className="container mx-auto px-12 py-8">
+    <>
+      <SidebarPageHeader />
+      <div className="container mx-auto px-12 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Meeting Transcripts</h1>
         <p className="text-muted-foreground mt-2">
@@ -22,5 +25,6 @@ export default async function TranscriptsPage() {
 
       <TranscriptsList isMember={isMemberRole} />
     </div>
+    </>
   );
 }

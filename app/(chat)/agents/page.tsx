@@ -4,6 +4,7 @@ import { AgentsList } from './components/agents-list';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import Link from 'next/link';
+import { SidebarPageHeader } from '@/components/sidebar-page-header';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,9 @@ export default async function AgentsPage() {
   const publicAgents = await getPublicAgents({ limit: 1000, offset: 0 });
 
   return (
-    <div className="container mx-auto px-4 md:px-12 py-8">
+    <>
+      <SidebarPageHeader />
+      <div className="container mx-auto px-4 md:px-12 py-8">
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -63,7 +66,7 @@ export default async function AgentsPage() {
         </p>
         <AgentsList agents={publicAgents.data} currentUserId={dbUser?.id} />
       </div>
-    </div>
+      </div>
+    </>
   );
 }
-
