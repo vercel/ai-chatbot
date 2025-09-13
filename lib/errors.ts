@@ -16,7 +16,7 @@ export type Surface =
   | 'vote'
   | 'document'
   | 'suggestions'
-  | 'add_card';
+  | 'activate_gateway';
 
 export type ErrorCode = `${ErrorType}:${Surface}`;
 
@@ -32,7 +32,7 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   vote: 'response',
   document: 'response',
   suggestions: 'response',
-  add_card: 'response',
+  activate_gateway: 'response',
 };
 
 export class ChatSDKError extends Error {
@@ -84,7 +84,7 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
     case 'bad_request:api':
       return "The request couldn't be processed. Please check your input and try again.";
 
-    case 'bad_request:add_card':
+    case 'bad_request:activate_gateway':
       return 'AI Gateway requires a valid credit card on file to service requests. Please visit https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card to add a card and unlock your free credits.';
 
     case 'unauthorized:auth':
