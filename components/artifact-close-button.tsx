@@ -21,6 +21,7 @@ function PureArtifactCloseButton() {
             : { ...initialArtifactData, status: 'idle' },
         );
       }}
+      size="icon"
     >
       <CrossIcon size={18} />
     </Button>
