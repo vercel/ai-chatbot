@@ -56,7 +56,8 @@
     "test:watch": "vitest",
     "sim:mcp": "tsx scripts/mcp-sim.ts",
     "dev:redis:up": "docker compose -f config/docker/redis.compose.yml up -d",
-    "dev:redis:down": "docker compose -f config/docker/redis.compose.yml down"
+    "dev:redis:down": "docker compose -f config/docker/redis.compose.yml down",
+    "dev:all": "concurrently -n web,worker -c green,cyan \"pnpm dev\" \"pnpm worker:inbound\""
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
@@ -212,7 +213,8 @@
     "ts-patch": "^3.3.0",
     "tsx": "^4.19.1",
     "typescript": "^5.9.2",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "concurrently": "^9.0.0"
   },
   "packageManager": "pnpm@10.15.1"
 }

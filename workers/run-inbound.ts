@@ -14,6 +14,14 @@ async function main() {
   await consumer.init();
   log.info({ stream: process.env.OMNI_STREAM_MESSAGES || 'omni.messages' }, 'inbound_consumer_started');
 
+  // Heartbeat
+  const hbKey = 'omni.worker.inbound';
+  setInterval(async () => {
+    try {
+      await (client as any).hSet(hbKey, { status: 'up', ts: String(Date.now()) });
+    } catch {}
+  }, 5000);
+
   // Simple loop
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -30,4 +38,3 @@ main().catch((err) => {
   log.fatal({ err }, 'inbound_consumer_fatal');
   process.exit(1);
 });
-

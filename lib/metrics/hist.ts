@@ -3,6 +3,13 @@ type Sample = number;
 interface Stats { count: number; min: number; max: number; avg: number; p50: number; p90: number; p99: number }
 
 const MAX_SAMPLES = 5000;
+let otel: undefined | ((name: string, ms: number) => void);
+try {
+  // Lazy require to avoid import cycles if OTel not configured
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const mod = require('@/lib/metrics/otel');
+  otel = mod?.otelRecordHistogram as (name: string, ms: number) => void;
+} catch {}
 const store = new Map<string, Sample[]>();
 
 function compute(samples: Sample[]): Stats {
@@ -21,6 +28,7 @@ export function recordDuration(name: string, ms: number) {
   arr.push(ms);
   if (arr.length > MAX_SAMPLES) arr.splice(0, arr.length - MAX_SAMPLES);
   store.set(name, arr);
+  try { otel?.(name, ms); } catch {}
 }
 
 export function getHist(name: string): Stats {
@@ -32,4 +40,3 @@ export function getAllHists(): Record<string, Stats> {
   for (const [k, v] of store.entries()) obj[k] = compute(v);
   return obj;
 }
-

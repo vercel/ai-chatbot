@@ -4,6 +4,7 @@ import { incrementError, incrementMessage } from '@/lib/metrics/counters';
 import { publishWithRetry } from '@/lib/omni/bus';
 import { logger } from '@/lib/omni/log';
 import { recordDuration } from '@/lib/metrics/hist';
+import { send_message } from '@/agents/tools/send_message';
 
 interface RedisLike {
   xGroupCreate: (
@@ -89,9 +90,13 @@ export class InboundConsumer {
     const { handleIncoming } = await import('@/agents/router');
     const outs = await handleIncoming(inbound);
 
-    // Publish all outbounds
-    const id = await publishWithRetry(this.outbox, outs[0].message);
-    logger.info({ id, conv: inbound.message.conversationId, channel: inbound.message.channel }, 'inbound_processed');
+    // Publish all outbounds via send_message (centraliza dedupe/idempotência)
+    let lastId: string | undefined;
+    for (const o of outs) {
+      const res = await send_message(o as any);
+      lastId = res.id;
+    }
+    logger.info({ id: lastId, count: outs.length, conv: inbound.message.conversationId, channel: inbound.message.channel }, 'inbound_processed');
     await this.client.hSet(`status:${msg.id}`, { status: 'processed' });
     await this.client.xAck(this.stream, this.group, msg.id);
     incrementMessage();
