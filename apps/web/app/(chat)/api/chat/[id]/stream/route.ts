@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { track } from '@/apps/web/lib/analytics/events.pix';
 import { withModel } from '@/lib/load-balancing/load-balancer';
+import { checkRateLimit, keyFromParts } from '@/lib/security/rate-limit';
+import { sanitizePayload } from '@/lib/security/sanitize';
 
 export const runtime = 'edge';
 
@@ -129,7 +131,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const hbMs = Number(process.env.CHAT_HEARTBEAT_MS || 15000);
   let messages: unknown[] = [];
   try {
-    messages = await req.json();
+    const raw = await req.json();
+    messages = sanitizePayload(raw);
   } catch {
     // ignore, malformed
   }
@@ -142,6 +145,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   // Log request start
   try { console.log('[chat-stream:start]', { requestId: reqId, backend, len: Array.isArray(messages) ? messages.length : 0 }); } catch {}
+
+  // Rate limit (IP + userId)
+  try {
+    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim() || 'unknown';
+    const key = keyFromParts(['chat', params.id, ip]);
+    const rl = await checkRateLimit(key, 1);
+    if (!rl.ok) {
+      const body = { error: 'rate_limited', retryAfter: rl.retryAfterSec, requestId: reqId };
+      return new Response(JSON.stringify(body), { status: 429, headers: { 'content-type': 'application/json', 'x-request-id': reqId } });
+    }
+  } catch {}
 
   try {
     const providers: string[] = backend === 'openai'
