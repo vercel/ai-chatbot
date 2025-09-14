@@ -57,7 +57,8 @@
     "sim:mcp": "tsx scripts/mcp-sim.ts",
     "dev:redis:up": "docker compose -f config/docker/redis.compose.yml up -d",
     "dev:redis:down": "docker compose -f config/docker/redis.compose.yml down",
-    "dev:all": "concurrently -n web,worker -c green,cyan \"pnpm dev\" \"pnpm worker:inbound\""
+    "dev:all": "concurrently -n web,inbound,dispatch -c green,cyan,magenta \"pnpm dev\" \"pnpm worker:inbound\" \"pnpm worker:dispatcher\"",
+    "worker:dispatcher": "tsx workers/run-dispatcher.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
