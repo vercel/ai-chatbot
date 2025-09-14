@@ -1,9 +1,7 @@
-import { createClient, type RedisClientType } from 'redis';
-
 type Bucket = { tokens: number; updatedAt: number };
 
 const memoryBuckets = new Map<string, Bucket>();
-let redisClient: RedisClientType | null = null;
+let redisClient: any | null = null;
 
 function cfg() {
   const rps = Number.parseInt(process.env.RATE_LIMIT_RPS || '5', 10);
@@ -11,15 +9,23 @@ function cfg() {
   return { rps: Math.max(1, rps), burst: Math.max(1, burst) };
 }
 
-async function getRedis(): Promise<RedisClientType | null> {
+async function getRedis(): Promise<any | null> {
   const url = process.env.REDIS_URL;
   if (!url) return null;
   if (process.env.NEXT_RUNTIME === 'edge') return null;
   if (redisClient) return redisClient;
+  let createClient: any;
+  try {
+    // Lazy import to avoid bundling in Edge runtime
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    ({ createClient } = require('redis'));
+  } catch {
+    return null;
+  }
   const client = createClient({ url });
   try {
     await client.connect();
-    redisClient = client as RedisClientType;
+    redisClient = client;
     return redisClient;
   } catch {
     try { await client.quit(); } catch {}
@@ -105,4 +111,3 @@ export async function checkRateLimit(key: string, cost = 1): Promise<{ ok: boole
 export function keyFromParts(parts: Array<string | undefined | null>): string {
   return parts.filter(Boolean).join('|');
 }
-
