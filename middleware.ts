@@ -1,7 +1,38 @@
 import { getToken } from "next-auth/jwt";
 import { type NextRequest, NextResponse } from "next/server";
 import { trackEvent } from "./lib/analytics/events";
-import { guestRegex, isDevelopmentEnvironment, isTestEnvironment } from "./lib/constants";
+import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
+
+// Simple pattern matcher supporting exact and prefix patterns ending with /*
+function matchPattern(pattern: string, pathname: string): boolean {
+  const p = pattern.trim();
+  if (!p) return false;
+  if (p.endsWith("/*")) {
+    const base = p.slice(0, -2);
+    return pathname === base || pathname.startsWith(base + "/");
+  }
+  return pathname === p || pathname.startsWith(p + "/");
+}
+
+function getAllowlistFromEnv(): string[] {
+  const v = process.env.AUTH_ALLOWLIST || "";
+  return v.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+export function isAllowedPath(pathname: string): boolean {
+  const env = (process.env.NODE_ENV || "development").toLowerCase();
+  // Built-in allow for CI/test
+  if ((env === "test" || env === "ci") && (
+    pathname.startsWith("/api/monitoring/") ||
+    pathname.startsWith("/api/omni/") ||
+    pathname.startsWith("/ping")
+  )) {
+    return true;
+  }
+  // Allowlist via env in any env (careful in prod)
+  const allow = getAllowlistFromEnv();
+  return allow.some((pat) => matchPattern(pat, pathname));
+}
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
@@ -26,17 +57,9 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// CI/Test bypass for selected endpoints
-	const bypassAuth = isTestEnvironment || process.env.AUTH_BYPASS_TEST === 'true';
-	if (bypassAuth) {
-		if (
-			pathname.startsWith('/api/monitoring') ||
-			pathname.startsWith('/api/omni') ||
-			pathname.startsWith('/api/load-balancing') ||
-			pathname.startsWith('/ping')
-		) {
-			return NextResponse.next();
-		}
+	// Bypass when allowed by env or test/ci mode
+	if (isAllowedPath(pathname)) {
+		return NextResponse.next();
 	}
 
 	const token = await getToken({
