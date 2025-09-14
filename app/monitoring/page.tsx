@@ -11,6 +11,9 @@ import { Activity, TrendingUp, Users, Zap } from 'lucide-react';
 export default function MonitoringPage() {
   return (
     <div className="container mx-auto p-6 space-y-8">
+      {/* Preload monitoring API data to warm cache */}
+      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+      <link rel="preload" href="/api/monitoring/performance" as="fetch" crossOrigin="anonymous" />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { parse } from 'papaparse';
-import { ConsumptionCard, type DataPoint } from '@/packages/ui-cards/ConsumptionCard';
-import { FinancialAnalysisCard, type Assumptions } from '@/packages/ui-cards/FinancialAnalysisCard';
+import dynamic from 'next/dynamic';
+import type { DataPoint } from '@/packages/ui-cards/ConsumptionCard';
+import type { Assumptions } from '@/packages/ui-cards/FinancialAnalysisCard';
+const ConsumptionCard = dynamic(() => import('@/packages/ui-cards/ConsumptionCard').then(m => m.ConsumptionCard), { ssr: false, loading: () => <div className="h-40 w-full animate-pulse bg-muted rounded" /> });
+const FinancialAnalysisCard = dynamic(() => import('@/packages/ui-cards/FinancialAnalysisCard').then(m => m.FinancialAnalysisCard), { ssr: false, loading: () => <div className="h-40 w-full animate-pulse bg-muted rounded" /> });
 
 const UploadBill: React.FC = () => {
   const [progress, setProgress] = useState(0);
