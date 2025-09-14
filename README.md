@@ -14,6 +14,9 @@ Toda a documentação do projeto está organizada na pasta [`docs/`](./docs/):
 - [UI Components](./docs/UI_COMPONENTS_MAPPING.md) - Mapeamento de componentes
 - [Microcopy Library](./docs/MICROCOPY_LIBRARY.md) - Biblioteca de microcopies reutilizáveis
 - [Environment Variables](./docs/env.md) - Configuração de variáveis de ambiente
+- [Esquema Canônico](./docs/SCHEMA_CANONICO.md) - Contratos Zod e exemplos JSON
+- [Fluxos E2E Omni](./docs/OMNI_E2E.md) - Sequência bus→workers→agents→dispatcher
+- [Playbooks Operacionais](./docs/PLAYBOOKS.md) - Operar, depurar e recuperar
 
 ## Estrutura do Projeto
 
