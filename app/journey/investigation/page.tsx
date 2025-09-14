@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import IntentInput from "@/components/intent/IntentInput";
+import ProgressiveLeadForm from "@/components/intent/ProgressiveLeadForm";
 import LeadValidationCard from "@/components/lead/LeadValidationCard";
 import type { LeadValidationResult } from "@/lib/lead/types";
 
@@ -30,9 +30,9 @@ export default function InvestigationPage() {
 
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Intent Input */}
+            {/* Progressive Lead Form */}
             <div>
-              <IntentInput onValidated={handleIntentValidated} layout="wide" />
+              <ProgressiveLeadForm onValidated={handleIntentValidated} />
             </div>
 
             {/* Validation Result */}

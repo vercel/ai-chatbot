@@ -37,6 +37,9 @@ export function isAllowedPath(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
+  // Simple A/B flag for greeting & CTA
+  const abCookie = request.cookies.get('ab_greeting')?.value;
+  let response: NextResponse | undefined;
 
 	if (pathname === "/") {
 		trackEvent("app_open", {
@@ -55,12 +58,12 @@ export async function middleware(request: NextRequest) {
 	}
 
 	if (pathname.startsWith("/api/auth")) {
-		return NextResponse.next();
+		response = NextResponse.next();
 	}
 
 	// Bypass when allowed by env or test/ci mode
-	if (isAllowedPath(pathname)) {
-		return NextResponse.next();
+	if (!response && isAllowedPath(pathname)) {
+		response = NextResponse.next();
 	}
 
 	const token = await getToken({
@@ -72,7 +75,7 @@ export async function middleware(request: NextRequest) {
 	if (!token) {
 		const redirectUrl = encodeURIComponent(request.url);
 
-		return NextResponse.redirect(
+		response = NextResponse.redirect(
 			new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
 		);
 	}
@@ -80,10 +83,18 @@ export async function middleware(request: NextRequest) {
 	const isGuest = guestRegex.test(token?.email ?? "");
 
 	if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
-		return NextResponse.redirect(new URL("/", request.url));
+		response = NextResponse.redirect(new URL("/", request.url));
 	}
 
-	return NextResponse.next();
+	response = response || NextResponse.next();
+
+  // Set A/B cookie if missing
+  if (!abCookie) {
+    const variant = Math.random() < 0.5 ? 'A' : 'B';
+    response.cookies.set('ab_greeting', variant, { path: '/', maxAge: 60 * 60 * 24 * 30 });
+  }
+
+	return response;
 }
 
 export const config = {

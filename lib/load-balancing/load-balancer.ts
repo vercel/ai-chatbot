@@ -429,6 +429,7 @@ export async function trackAIRequest<T>(
       const res = await fn({ provider: cand.provider, model: cand.model, signal: controller.signal });
       const dur = Date.now() - started;
       observeHistogram('ai_latency_ms', dur, { provider: String(cand.provider), model: cand.model });
+      try { (await import('../monitoring/alerts')).recordAiLatency({ provider: String(cand.provider), model: cand.model }, dur); } catch {}
       incrementCounter('ai_requests_total', { provider: String(cand.provider), model: cand.model, phase: 'ok' });
       // Estimate cost and enforce budget if provided
       const cost = opts.costEstimator ? opts.costEstimator(res) : undefined;
@@ -441,6 +442,7 @@ export async function trackAIRequest<T>(
       lastErr = err;
       const dur = Date.now() - started;
       observeHistogram('ai_latency_ms', dur, { provider: String(cand.provider), model: cand.model });
+      try { (await import('../monitoring/alerts')).recordAiLatency({ provider: String(cand.provider), model: cand.model }, dur); } catch {}
       let code = (err as any)?.code || (err as any)?.status || (err as any)?.name;
       if ((err as Error).name === 'AbortError') code = 'timeout';
       incrementCounter('ai_requests_total', { provider: String(cand.provider), model: cand.model, phase: String(code || 'error') });

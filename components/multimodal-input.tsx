@@ -39,6 +39,8 @@ import type { Attachment, ChatMessage } from '@/lib/types';
 import { chatModels } from '@/lib/ai/models';
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { startTransition } from 'react';
+import { FollowUpChips } from './follow-up-chips';
+import { compressIfNeeded } from '@/apps/web/components/upload';
 
 function PureMultimodalInput({
   chatId,
@@ -190,7 +192,22 @@ function PureMultimodalInput({
       setUploadQueue(files.map((file) => file.name));
 
       try {
-        const uploadPromises = files.map((file) => uploadFile(file));
+        const maxBytes = Number(process.env.NEXT_PUBLIC_UPLOAD_MAX_BYTES || 2_000_000);
+        const maybeCompressed = await Promise.all(
+          files.map(async (f) => {
+            try {
+              return await compressIfNeeded(f);
+            } catch {
+              return f;
+            }
+          })
+        );
+        const acceptable = maybeCompressed.filter((f) => f.size <= maxBytes);
+        const rejected = maybeCompressed.filter((f) => f.size > maxBytes);
+        if (rejected.length > 0) {
+          toast.error('Arquivo muito grande após compressão. Limite excedido.');
+        }
+        const uploadPromises = acceptable.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
           (attachment) => attachment !== undefined,
@@ -252,6 +269,13 @@ function PureMultimodalInput({
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
           />
+        )}
+
+      {messages.length > 0 &&
+        status === 'ready' &&
+        attachments.length === 0 &&
+        uploadQueue.length === 0 && (
+          <FollowUpChips chatId={chatId} messages={messages as any} sendMessage={sendMessage} />
         )}
 
       <input

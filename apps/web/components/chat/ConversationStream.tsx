@@ -2,9 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useChatContext } from '@/apps/web/lib/chat/context';
+import { MessageSkeleton, TypingDots } from './Skeletons';
 
 export function ConversationStream() {
-  const { messages, errorState } = useChatContext();
+  const { messages, errorState, status } = useChatContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [retry, setRetry] = useState(0);
 
@@ -46,6 +47,14 @@ export function ConversationStream() {
           </div>
         </div>
       ))}
+
+      {/* Skeleton while streaming */}
+      {status !== 'ready' && (
+        <div className="flex gap-2 items-center">
+          <MessageSkeleton role="assistant" />
+          <TypingDots />
+        </div>
+      )}
     </div>
   );
 }
