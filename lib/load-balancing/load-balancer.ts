@@ -1,4 +1,7 @@
 import { performanceMonitor } from '../monitoring/performance';
+import { observeHistogram, incrementCounter } from '@/lib/monitoring/metrics';
+
+export type ProviderName = 'openai' | 'anthropic' | 'google' | 'xai' | 'ollama' | 'gateway' | 'mock' | string;
 
 export type ModelType = 'chat' | 'vision' | 'reasoning' | 'artifact';
 
@@ -366,4 +369,100 @@ export async function selectOptimalProvider(
     modelType,
     userPreferences,
   );
+}
+
+export interface RequestPolicy {
+  modelType?: ModelType;
+  preferredProvider?: ProviderName;
+  maxCost?: number; // USD
+  maxLatencyMs?: number;
+  providers?: ProviderName[]; // optional override provider pool/order
+  requestId?: string;
+}
+
+/**
+ * trackAIRequest wraps a provider call, applying timeout/metrics and returning result.
+ * It integrates with monitoring metrics (per provider) and falls back across candidates.
+ */
+export async function trackAIRequest<T>(
+  policy: RequestPolicy,
+  fn: (ctx: { provider: ProviderName; model: string; signal: AbortSignal }) => Promise<T>,
+  opts: { timeoutMs?: number; costEstimator?: (res: T) => number | undefined } = {},
+): Promise<T> {
+  const timeoutMs = opts.timeoutMs ?? Number.parseInt(process.env.PROVIDER_TIMEOUT_MS || '30000', 10);
+  const modelType = policy.modelType || 'chat';
+  const available = Array.isArray(policy.providers) && policy.providers.length > 0
+    ? policy.providers
+    : (loadBalancer.getConfig().providerPriorityOrder as ProviderName[]);
+
+  // Determine order: preferred first, then LB best + alternatives, then remainder
+  let candidates: { provider: ProviderName; model: string }[] = [];
+  try {
+    const decision = await loadBalancer.selectProvider(available as string[], modelType, {
+      preferredProvider: policy.preferredProvider,
+      maxCost: policy.maxCost,
+      maxLatency: policy.maxLatencyMs,
+    });
+    candidates.push({ provider: decision.provider, model: decision.model });
+    for (const alt of decision.alternatives) {
+      candidates.push({ provider: alt.provider, model: alt.model });
+    }
+    // add any remaining providers in config order
+    for (const p of available) {
+      if (!candidates.find((c) => c.provider === p)) {
+        candidates.push({ provider: p, model: loadBalancer['getModelForProvider'](p as string, modelType) });
+      }
+    }
+  } catch {
+    // fallback to config order if selection fails
+    candidates = available.map((p) => ({ provider: p, model: loadBalancer['getModelForProvider'](p as string, modelType) }));
+  }
+
+  const requestId = policy.requestId || (typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : Math.random().toString(36).slice(2));
+  let lastErr: unknown;
+  for (const cand of candidates) {
+    const started = Date.now();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      incrementCounter('ai_requests_total', { provider: String(cand.provider), model: cand.model, phase: 'start' });
+      const res = await fn({ provider: cand.provider, model: cand.model, signal: controller.signal });
+      const dur = Date.now() - started;
+      observeHistogram('ai_latency_ms', dur, { provider: String(cand.provider), model: cand.model });
+      incrementCounter('ai_requests_total', { provider: String(cand.provider), model: cand.model, phase: 'ok' });
+      // Estimate cost and enforce budget if provided
+      const cost = opts.costEstimator ? opts.costEstimator(res) : undefined;
+      if (policy.maxCost && typeof cost === 'number' && cost > policy.maxCost) {
+        incrementCounter('ai_cost_exceeded_total', { provider: String(cand.provider), model: cand.model });
+        throw Object.assign(new Error('cost_exceeded'), { code: 'cost_exceeded', cost });
+      }
+      return res;
+    } catch (err) {
+      lastErr = err;
+      const dur = Date.now() - started;
+      observeHistogram('ai_latency_ms', dur, { provider: String(cand.provider), model: cand.model });
+      let code = (err as any)?.code || (err as any)?.status || (err as any)?.name;
+      if ((err as Error).name === 'AbortError') code = 'timeout';
+      incrementCounter('ai_requests_total', { provider: String(cand.provider), model: cand.model, phase: String(code || 'error') });
+      // Retry on specific errors / fallback to next provider
+      const retryable = code === 429 || code === '429' || code === 'timeout' || code === 'ECONNRESET' || code === 'fetch_failed' || code === 'cost_exceeded';
+      if (!retryable) break;
+      continue;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastErr ?? new Error('ai_request_failed');
+}
+
+/**
+ * withModel: Suporte ergonômico: recebe preferências de modelo e executa fn
+ * com fallback em cascata (usando trackAIRequest por baixo dos panos).
+ */
+export async function withModel<T>(
+  prefs: RequestPolicy,
+  fn: (ctx: { provider: ProviderName; model: string; signal: AbortSignal }) => Promise<T>,
+  opts?: { timeoutMs?: number; costEstimator?: (res: T) => number | undefined },
+): Promise<T> {
+  return trackAIRequest(prefs, fn, opts);
 }

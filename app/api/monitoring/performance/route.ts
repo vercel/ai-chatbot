@@ -19,7 +19,7 @@ export async function GET() {
           const i = p.indexOf('=');
           if (i > 0) map[p.slice(0, i)] = p.slice(i + 1);
         }
-        const key = map.channel || lk || 'all';
+        const key = map.channel || map.provider || lk || 'all';
         out[metric][key] = v;
       }
     }
@@ -29,4 +29,3 @@ export async function GET() {
   const data = { counters: flatten(counters), p95: flatten(p95), ts: Date.now() };
   return NextResponse.json(data);
 }
-

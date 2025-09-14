@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { track } from '@/apps/web/lib/analytics/events.pix';
+import { withModel } from '@/lib/load-balancing/load-balancer';
 
 export const runtime = 'edge';
 
@@ -137,46 +138,38 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   try { track({ name: 'pix_activation_start', payload: { user_id: params.id, channel: 'web' } } as any); } catch {}
 
   const backend = selectBackend();
-  const controller = new AbortController();
   let upstream: Response | undefined;
 
   // Log request start
   try { console.log('[chat-stream:start]', { requestId: reqId, backend, len: Array.isArray(messages) ? messages.length : 0 }); } catch {}
 
   try {
-    if (backend === 'openai') {
-      upstream = await withTimeout(fetchOpenAISSE(messages, controller.signal), timeoutMs, controller);
-    } else if (backend === 'gateway') {
-      upstream = await withTimeout(fetchGatewaySSE(messages, controller.signal), timeoutMs, controller);
-    } else {
-      // Mock
-      const body = mockSSE(reqId, hbMs);
-      try { track({ name: 'pix_activation_success', payload: { user_id: params.id, value: 1 } } as any); } catch {}
-      return new Response(body, {
-        status: 200,
-        headers: {
-          'content-type': 'text/event-stream; charset=utf-8',
-          'cache-control': 'no-cache, no-transform',
-          connection: 'keep-alive',
-          'x-request-id': reqId,
-        },
-      });
-    }
+    const providers: string[] = backend === 'openai'
+      ? ['openai', process.env.AI_GATEWAY_API_URL ? 'gateway' : '', 'mock'].filter(Boolean)
+      : backend === 'gateway'
+        ? ['gateway', 'mock']
+        : ['mock'];
+    upstream = await withModel(
+      {
+        modelType: 'chat',
+        preferredProvider: backend as any,
+        maxLatencyMs: timeoutMs,
+        providers: providers as any,
+        requestId: reqId,
+      },
+      async ({ provider, signal }) => {
+        if (provider === 'openai') return fetchOpenAISSE(messages, signal);
+        if (provider === 'gateway') return fetchGatewaySSE(messages, signal);
+        // mock
+        return new Response(mockSSE(reqId, hbMs), { headers: { 'content-type': 'text/event-stream; charset=utf-8' } });
+      },
+      { timeoutMs },
+    );
   } catch (err) {
-    // Fallback from openai→gateway or gateway→mock
-    if (backend === 'openai' && process.env.AI_GATEWAY_API_URL) {
-      try {
-        upstream = await withTimeout(fetchGatewaySSE(messages, controller.signal), timeoutMs, controller);
-      } catch {
-        const body = mockSSE(reqId, hbMs);
-        try { track({ name: 'pix_activation_success', payload: { user_id: params.id, value: 1 } } as any); } catch {}
-        return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache, no-transform', connection: 'keep-alive', 'x-request-id': reqId } });
-      }
-    } else {
-      const body = mockSSE(reqId, hbMs);
-      try { track({ name: 'pix_activation_success', payload: { user_id: params.id, value: 1 } } as any); } catch {}
-      return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache, no-transform', connection: 'keep-alive', 'x-request-id': reqId } });
-    }
+    // On total failure, fallback to mock SSE
+    const body = mockSSE(reqId, hbMs);
+    try { track({ name: 'pix_activation_success', payload: { user_id: params.id, value: 1 } } as any); } catch {}
+    return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache, no-transform', connection: 'keep-alive', 'x-request-id': reqId } });
   }
 
   // If upstream acquired but not ok, still stream what we got; else map error event
