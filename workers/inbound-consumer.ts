@@ -85,30 +85,12 @@ export class InboundConsumer {
     // Normalize inbound
     const inbound = coerceInbound({ message: payload });
 
-    // Route via agents/router.ts (simple adapter)
-    // Import lazily to avoid circular deps at module load time
-    const { routeInbound } = await import('@/agents/router');
-    const result = await routeInbound({
-      text: inbound.message.text || '',
-      channel: inbound.message.channel,
-      fromId: inbound.message.from.id,
-      toId: inbound.message.to.id,
-      conversationId: inbound.message.conversationId,
-    });
+    // Route via agents/router.ts
+    const { handleIncoming } = await import('@/agents/router');
+    const outs = await handleIncoming(inbound);
 
-    // Compose outbound and publish to outbox
-    const outbound = coerceOutbound({
-      channel: inbound.message.channel,
-      direction: 'out',
-      conversationId: inbound.message.conversationId,
-      from: inbound.message.to,
-      to: inbound.message.from,
-      timestamp: Date.now(),
-      text: result.reply,
-      metadata: { in_id: inbound.message.id },
-    });
-
-    const id = await publishWithRetry(this.outbox, outbound.message);
+    // Publish all outbounds
+    const id = await publishWithRetry(this.outbox, outs[0].message);
     logger.info({ id, conv: inbound.message.conversationId, channel: inbound.message.channel }, 'inbound_processed');
     await this.client.hSet(`status:${msg.id}`, { status: 'processed' });
     await this.client.xAck(this.stream, this.group, msg.id);

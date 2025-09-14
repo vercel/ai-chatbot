@@ -1,43 +1,57 @@
-import { coerceOutbound, type OutboundEnvelope, Channel } from '@/lib/omni/schema';
+import { z } from 'zod';
+import { coerceOutbound, type OutboundEnvelope, Channel, ChannelSchema, ContactRefSchema } from '@/lib/omni/schema';
 import { publishWithRetry } from '@/lib/omni/bus';
 
-export interface OutboundMessage {
-  channel: string;
-  text: string;
-  toId?: string;
-  fromId?: string;
-  conversationId?: string;
-}
+const ParamsSchema = z.object({
+  channel: ChannelSchema,
+  to: ContactRefSchema,
+  text: z.string().min(1),
+  conversationId: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type SendParams = z.infer<typeof ParamsSchema>;
 
 /**
- * send_message validates and (optionally) publishes to omni.outbox.
- * - Backwards compatible with legacy { channel, text } signature used in tests.
+ * send_message valida os parâmetros e publica imediatamente no outbox.
+ * Compatível com chamadas legadas { channel, text } (usa destinatário padrão).
  */
-export async function send_message(msg: OutboundMessage | OutboundEnvelope): Promise<OutboundMessage> {
-  // If caller already provides envelope, validate and (optionally) publish
+export async function send_message(input: OutboundEnvelope | Partial<SendParams> & { text: string; channel: string }): Promise<{ id: string; channel: Channel; text: string }>{
+  // Envelope direto
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const asAny = msg as any;
+  const asAny = input as any;
   if (asAny?.message) {
     const env = coerceOutbound(asAny);
-    if (process.env.OMNI_PUBLISH_OUTBOX === 'true') {
-      await publishWithRetry(process.env.OMNI_STREAM_OUTBOX || 'omni.outbox', env.message);
-    }
-    return { channel: env.message.channel, text: env.message.text || '' };
+    const id = await publishWithRetry(process.env.OMNI_STREAM_OUTBOX || 'omni.outbox', env.message);
+    return { id, channel: env.message.channel, text: env.message.text || '' };
   }
 
-  // Legacy path: construct a minimal envelope from { channel, text, ... }
+  // Parâmetros (com fallback de compatibilidade)
+  let params: SendParams;
+  if ((input as any).to) {
+    params = ParamsSchema.parse(input);
+  } else {
+    // Compat: destinatário padrão quando não fornecido
+    params = ParamsSchema.parse({
+      channel: (input.channel as Channel) || 'web',
+      to: { id: 'user:unknown' },
+      text: input.text,
+      conversationId: (input as any).conversationId,
+      metadata: (input as any).metadata,
+    });
+  }
+
   const envelope = coerceOutbound({
-    channel: (msg.channel as Channel) || 'web',
-    to: { id: msg.toId || 'user:unknown' },
-    from: { id: msg.fromId || 'agent:system' },
-    conversationId: msg.conversationId || 'conv:ad-hoc',
+    channel: params.channel,
+    direction: 'out',
+    conversationId: params.conversationId || 'conv:ad-hoc',
+    from: { id: 'agent:system' },
+    to: params.to,
     timestamp: Date.now(),
-    text: msg.text,
+    text: params.text,
+    metadata: params.metadata,
   });
 
-  if (process.env.OMNI_PUBLISH_OUTBOX === 'true') {
-    await publishWithRetry(process.env.OMNI_STREAM_OUTBOX || 'omni.outbox', envelope.message);
-  }
-
-  return { channel: envelope.message.channel, text: envelope.message.text || '' };
+  const id = await publishWithRetry(process.env.OMNI_STREAM_OUTBOX || 'omni.outbox', envelope.message);
+  return { id, channel: envelope.message.channel, text: envelope.message.text || '' };
 }
