@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Playwright E2E
 on:
   push:
     branches: [main, master]
@@ -7,13 +7,25 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 30
+    timeout-minutes: 45
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
-      REDIS_URL: ${{ secrets.REDIS_URL }}
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'test-secret' }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL || '' }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN || '' }}
+      REDIS_URL: redis://localhost:6379
+      MCP_TOKEN: dev-token
+      MCP_WHATSAPP_URL: http://localhost:4000
 
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +34,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 20
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -43,10 +55,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - uses: actions/setup-node@v4
+      - name: Enable pnpm cache in setup-node
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
-          cache: "pnpm"
+          node-version: 20
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -62,12 +75,45 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: pnpm test
+      - name: Start MCP simulator
+        run: |
+          nohup pnpm tsx scripts/mcp-sim.ts >/tmp/mcp-sim.log 2>&1 &
+          for i in {1..30}; do
+            if nc -z localhost 4000; then echo "MCP ready"; break; fi; sleep 1; done
 
-      - uses: actions/upload-artifact@v4
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint (junit)
+        run: pnpm lint -f junit -o reports/eslint.xml || true
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+      - name: Run e2e tests
+        env:
+          PLAYWRIGHT: 'true'
+        run: pnpm test:e2e
+
+      - name: Run 360 tests
+        env:
+          PLAYWRIGHT: 'true'
+        run: pnpm test:360
+
+      - name: Upload Playwright report
         if: always() && !cancelled()
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            config/playwright/playwright-report-360/
+          retention-days: 7
+
+      - name: Upload additional reports
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports/**
           retention-days: 7
