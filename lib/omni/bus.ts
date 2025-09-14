@@ -1,84 +1,46 @@
-import { redis } from "./redis";
-import type { MessageCanonical } from "./message";
-import { MessageCanonicalSchema } from "./message";
-import { DEDUP_TTL } from "./constants";
+import { createClient } from 'redis';
+import { OmniBusError } from './errors';
 
-export async function publish(
+export interface PublishOpts {
+  retries?: number;
+  backoffMs?: number;
+}
+
+/**
+ * Publish a payload to a Redis Stream with basic retry/backoff.
+ * Serializes as { data: JSON.stringify(payload) } to keep historical compatibility.
+ */
+export async function publishWithRetry(
   stream: string,
-  message: MessageCanonical,
-  maxlen?: number,
-): Promise<string | null> {
-  const parsed = MessageCanonicalSchema.parse(message);
-  if (parsed.trace?.trace_id) {
-    const key = `omni:trace:${parsed.trace.trace_id}`;
-    const res = await redis.sendCommand([
-      "SET",
-      key,
-      "1",
-      "PX",
-      String(DEDUP_TTL),
-      "NX",
-    ]);
-    if (res === null) return null;
-  }
+  payload: unknown,
+  opts: PublishOpts = {},
+): Promise<string> {
+  const retries = opts.retries ?? 1;
+  const backoffMs = opts.backoffMs ?? 200;
+  let lastErr: unknown;
 
-  const payload = JSON.stringify(parsed);
-  const args = ["XADD", stream];
-  if (maxlen) {
-    args.push("MAXLEN", "~", String(maxlen));
-  }
-  args.push("*", "data", payload);
-  const id = (await redis.sendCommand(args)) as string;
-  return id;
-}
-
-interface ReadOptions {
-  stream: string;
-  group: string;
-  consumer: string;
-  blockMs?: number;
-  count?: number;
-}
-
-interface StreamMessage {
-  id: string;
-  message: MessageCanonical;
-  ack: () => Promise<unknown>;
-}
-
-export async function read(options: ReadOptions): Promise<StreamMessage[]> {
-  const { stream, group, consumer, blockMs = 0, count = 1 } = options;
-  const args = [
-    "XREADGROUP",
-    "GROUP",
-    group,
-    consumer,
-    "COUNT",
-    String(count),
-  ];
-  if (blockMs) {
-    args.push("BLOCK", String(blockMs));
-  }
-  args.push("STREAMS", stream, ">");
-  type XReadGroupResult = [string, [string, string[]][]][];
-  const res = (await redis.sendCommand(args)) as XReadGroupResult | null;
-  if (!res) return [];
-
-  const messages: StreamMessage[] = [];
-  for (const [, entries] of res) {
-    for (const [id, fields] of entries) {
-      const dataIndex = fields.findIndex(
-        (v: string, i: number) => i % 2 === 0 && v === "data",
-      );
-      const raw = fields[dataIndex + 1];
-      const parsed = MessageCanonicalSchema.parse(JSON.parse(raw));
-      messages.push({
-        id,
-        message: parsed,
-        ack: () =>
-          redis.sendCommand(["XACK", stream, group, id]) as Promise<unknown>,
-      });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const client = createClient({ url: process.env.REDIS_URL });
+    try {
+      await client.connect();
+      const id = (await client.xAdd(stream, '*', {
+        data: JSON.stringify(payload),
+      })) as string;
+      await client.quit();
+      return id;
+    } catch (err) {
+      lastErr = err;
+      try {
+        await client.quit();
+      } catch {
+        // no-op
+      }
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, backoffMs));
+        continue;
+      }
     }
   }
-  return messages;
+  throw new OmniBusError('redis_publish_error', lastErr);
 }
+
