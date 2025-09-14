@@ -53,7 +53,10 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "prepare": "ts-patch install",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sim:mcp": "tsx scripts/mcp-sim.ts",
+    "dev:redis:up": "docker compose -f config/docker/redis.compose.yml up -d",
+    "dev:redis:down": "docker compose -f config/docker/redis.compose.yml down"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",

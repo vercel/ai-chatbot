@@ -1,4 +1,5 @@
-import { sendWhatsappMCP, type WhatsAppMessage } from "../../adapters/whatsapp/sender";
+import { sendWhatsApp, sendWhatsappMCP, type WhatsAppMessage } from "../../adapters/whatsapp/sender";
+import type { MessageCanonical } from "@/lib/omni/schema";
 
 export interface OutboxMessage {
   to: { kind: string; contact: string; route?: { adapter?: string } };
@@ -7,8 +8,25 @@ export interface OutboxMessage {
   templateId?: string;
 }
 
-/** Route outgoing messages to the proper adapter */
-export async function dispatch(msg: OutboxMessage) {
+function isCanonical(m: unknown): m is MessageCanonical {
+  // minimal detection
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const x = m as any;
+  return x && typeof x === 'object' && x.channel && x.direction && x.from && x.to;
+}
+
+/** Route outgoing messages to the proper adapter; accepts canonical or legacy */
+export async function dispatch(msg: OutboxMessage | MessageCanonical) {
+  // Canonical path
+  if (isCanonical(msg)) {
+    if (msg.channel === 'whatsapp') {
+      await sendWhatsApp(msg);
+      return;
+    }
+    throw new Error(`no adapter for channel ${msg.channel}`);
+  }
+
+  // Legacy path
   if (msg.to.kind === "whatsapp") {
     const wa: WhatsAppMessage = {
       to: { contact: msg.to.contact },
