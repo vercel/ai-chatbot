@@ -40,3 +40,8 @@ export function getAllHists(): Record<string, Stats> {
   for (const [k, v] of store.entries()) obj[k] = compute(v);
   return obj;
 }
+
+export function getSamples(name: string): number[] {
+  const arr = store.get(name) ?? [];
+  return arr.slice();
+}

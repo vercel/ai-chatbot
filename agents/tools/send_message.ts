@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { coerceOutbound, type OutboundEnvelope, Channel, ChannelSchema, ContactRefSchema } from '@/lib/omni/schema';
 import { publishWithRetry } from '@/lib/omni/bus';
+import { createClient } from 'redis';
 
 const ParamsSchema = z.object({
   channel: ChannelSchema,
@@ -22,7 +23,7 @@ export async function send_message(input: OutboundEnvelope | Partial<SendParams>
   const asAny = input as any;
   if (asAny?.message) {
     const env = coerceOutbound(asAny);
-    const id = await publishWithRetry(process.env.OMNI_STREAM_OUTBOX || 'omni.outbox', env.message);
+    const id = await dedupAndPublish(env.message.id, env);
     return { id, channel: env.message.channel, text: env.message.text || '' };
   }
 
@@ -52,6 +53,35 @@ export async function send_message(input: OutboundEnvelope | Partial<SendParams>
     metadata: params.metadata,
   });
 
-  const id = await publishWithRetry(process.env.OMNI_STREAM_OUTBOX || 'omni.outbox', envelope.message);
+  const id = await dedupAndPublish(envelope.message.id, envelope);
   return { id, channel: envelope.message.channel, text: envelope.message.text || '' };
+}
+
+async function dedupAndPublish(messageId: string, env: OutboundEnvelope): Promise<string> {
+  const stream = process.env.OMNI_STREAM_OUTBOX || 'omni.outbox';
+  const enable = process.env.OMNI_OUTBOX_DEDUPE !== 'false';
+  if (!enable) return publishWithRetry(stream, env.message);
+
+  const ttl = Number.parseInt(process.env.OMNI_OUTBOX_DEDUPE_TTL || '600', 10);
+  const key = `omni:outbox:dedupe:${messageId}`;
+  const url = process.env.REDIS_URL;
+  if (!url) return publishWithRetry(stream, env.message);
+  const client = createClient({ url });
+  try {
+    await client.connect();
+    // Prefer SET with NX for atomicity
+    // @ts-ignore node-redis types allow options
+    const res = await (client as any).set(key, '1', { NX: true, EX: ttl });
+    if (res === null) {
+      // already published
+      await client.quit();
+      return messageId;
+    }
+    await client.quit();
+    return publishWithRetry(stream, env.message);
+  } catch {
+    try { await client.quit(); } catch {}
+    // Fallback: publish even if dedupe failed
+    return publishWithRetry(stream, env.message);
+  }
 }
