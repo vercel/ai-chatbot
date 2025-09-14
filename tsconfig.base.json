@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] },
+    "plugins": [
+      { "name": "next" },
+      { "transform": "typia/lib/transform" }
+    ]
+  }
+}
+

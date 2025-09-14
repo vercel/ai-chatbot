@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "composite": true },
+  "include": [
+    "next-env.d.ts",
+    "app/**/*",
+    "apps/web/**/*",
+    "apps/backend/**/*",
+    "components/**/*",
+    "agents/**/*",
+    "adapters/**/*",
+    "lib/**/*",
+    "types/**/*",
+    "scripts/**/*"
+  ],
+  "exclude": ["**/node_modules/**", "**/.next/**", "**/dist/**"]
+}
+
