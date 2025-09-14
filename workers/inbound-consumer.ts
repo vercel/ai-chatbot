@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { coerceInbound, coerceOutbound } from '@/lib/omni/schema';
 import { incrementError, incrementMessage } from '@/lib/metrics/counters';
+import { publishWithRetry } from '@/lib/omni/bus';
+import { logger } from '@/lib/omni/log';
 
 interface RedisLike {
   xGroupCreate: (
@@ -66,6 +68,7 @@ export class InboundConsumer {
   }
 
   private async processMessage(msg: { id: string; message: Record<string, string> }) {
+    const start = Date.now();
     const fields = msg.message;
     let payload: unknown;
     try {
@@ -104,10 +107,14 @@ export class InboundConsumer {
       metadata: { in_id: inbound.message.id },
     });
 
-    await this.client.xAdd(this.outbox, '*', { payload: JSON.stringify(outbound.message) });
+    const id = await publishWithRetry(this.outbox, outbound.message);
+    logger.info({ id, conv: inbound.message.conversationId, channel: inbound.message.channel }, 'inbound_processed');
     await this.client.hSet(`status:${msg.id}`, { status: 'processed' });
     await this.client.xAck(this.stream, this.group, msg.id);
     incrementMessage();
+    const dur = Date.now() - start;
+    // lightweight timing log; full histogram fica para próxima etapa
+    logger.debug({ duration_ms: dur }, 'inbound_duration');
   }
 
   async runOnce() {

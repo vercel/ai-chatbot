@@ -25,6 +25,7 @@ export function isAllowedPath(pathname: string): boolean {
   if ((env === "test" || env === "ci") && (
     pathname.startsWith("/api/monitoring/") ||
     pathname.startsWith("/api/omni/") ||
+    pathname.startsWith("/api/load-balancing/") ||
     pathname.startsWith("/ping")
   )) {
     return true;

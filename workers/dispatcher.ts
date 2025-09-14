@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { dispatch, type OutboxMessage } from "../lib/omni/dispatch";
+import { incrementError, incrementMessage } from "@/lib/metrics/counters";
+import { logger } from "@/lib/omni/log";
 
 interface RedisLike {
   xGroupCreate: (
@@ -65,6 +67,7 @@ export class Dispatcher {
   }
 
   private async processMessage(msg: { id: string; message: Record<string, string> }) {
+    const started = Date.now();
     const fields = msg.message;
     let payload: unknown;
     try {
@@ -73,7 +76,8 @@ export class Dispatcher {
       await this.client.xAdd(this.dlq, "*", fields);
       await this.client.xAck(this.stream, this.group, msg.id);
       await this.client.hSet(`status:${msg.id}`, { status: "failed" });
-      console.error("malformed", err);
+      logger.error({ err }, "dispatcher_malformed");
+      incrementError();
       return;
     }
 
@@ -81,10 +85,13 @@ export class Dispatcher {
       await dispatch(payload as OutboxMessage);
       await this.client.xAck(this.stream, this.group, msg.id);
       await this.client.hSet(`status:${msg.id}`, { status: "sent" });
-      console.log("sent", msg.id);
+      const dur = Date.now() - started;
+      incrementMessage();
+      logger.info({ id: msg.id, duration_ms: dur }, "dispatcher_sent");
     } catch (err) {
       await this.client.hSet(`status:${msg.id}`, { status: "failed" });
-      console.error("dispatch_error", err);
+      logger.error({ err }, "dispatch_error");
+      incrementError();
     }
   }
 

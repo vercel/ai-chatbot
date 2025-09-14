@@ -49,6 +49,7 @@
     "test:360:mobile": "cross-env PLAYWRIGHT=True pnpm exec playwright test --config=config/playwright/playwright.mobile.config.ts tests/e2e/360-basic.test.ts",
     "test:360:integration": "cross-env PLAYWRIGHT=True pnpm exec playwright test --config=config/playwright/playwright.integration.config.ts tests/e2e/360-coverage.test.ts",
     "test:360:report": "export PLAYWRIGHT=True && pnpm exec playwright show-report",
+    "worker:inbound": "tsx workers/run-inbound.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "prepare": "ts-patch install",
