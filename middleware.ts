@@ -1,7 +1,7 @@
 import { getToken } from "next-auth/jwt";
 import { type NextRequest, NextResponse } from "next/server";
 import { trackEvent } from "./lib/analytics/events";
-import { guestRegex, isDevelopmentEnvironment } from "./lib/constants";
+import { guestRegex, isDevelopmentEnvironment, isTestEnvironment } from "./lib/constants";
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
@@ -24,6 +24,19 @@ export async function middleware(request: NextRequest) {
 
 	if (pathname.startsWith("/api/auth")) {
 		return NextResponse.next();
+	}
+
+	// CI/Test bypass for selected endpoints
+	const bypassAuth = isTestEnvironment || process.env.AUTH_BYPASS_TEST === 'true';
+	if (bypassAuth) {
+		if (
+			pathname.startsWith('/api/monitoring') ||
+			pathname.startsWith('/api/omni') ||
+			pathname.startsWith('/api/load-balancing') ||
+			pathname.startsWith('/ping')
+		) {
+			return NextResponse.next();
+		}
 	}
 
 	const token = await getToken({

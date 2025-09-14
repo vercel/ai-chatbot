@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import { OmniBusError } from './errors';
+import { incrementMessage, incrementError } from '@/lib/metrics/counters';
 
 export interface PublishOpts {
   retries?: number;
@@ -24,11 +25,13 @@ export async function publishWithRetry(
     try {
       await client.connect();
       const id = (await client.xAdd(stream, '*', {
-        data: JSON.stringify(payload),
+        payload: JSON.stringify(payload),
       })) as string;
       await client.quit();
+      try { incrementMessage(); } catch {}
       return id;
     } catch (err) {
+      try { incrementError(); } catch {}
       lastErr = err;
       try {
         await client.quit();
@@ -43,4 +46,3 @@ export async function publishWithRetry(
   }
   throw new OmniBusError('redis_publish_error', lastErr);
 }
-
