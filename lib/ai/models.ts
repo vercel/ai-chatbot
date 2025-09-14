@@ -1,4 +1,10 @@
-export const DEFAULT_CHAT_MODEL: string = 'chat-model';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+
+export const DEFAULT_CHAT_MODEL: string = 'google/gemini-flash-1.5';
+
+export const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 export interface ChatModel {
   id: string;
@@ -8,14 +14,20 @@ export interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'chat-model',
-    name: 'Grok Vision',
-    description: 'Advanced multimodal model with vision and text capabilities',
+    id: 'google/gemini-flash-1.5',
+    name: 'Gemini 1.5 Flash',
+    description: 'Fast and versatile multimodal model from Google',
   },
   {
-    id: 'chat-model-reasoning',
-    name: 'Grok Reasoning',
-    description:
-      'Uses advanced chain-of-thought reasoning for complex problems',
+    id: 'meta-llama/llama-3.1-8b-instruct',
+    name: 'Llama 3.1 8B',
+    description: 'The latest small, fast, and capable model from Meta',
+  },
+  {
+    id: 'mistralai/mistral-large-latest',
+    name: 'Mistral Large',
+    description: 'Flagship model from Mistral AI with top-tier reasoning',
   },
 ];
+
+export const getStaticModels = (): ChatModel[] => chatModels;

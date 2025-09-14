@@ -53,7 +53,6 @@ function PureChatHeader({
           className="order-1 md:order-2"
         />
       )}
-// Removed deploy to vercel button
     </header>
   );
 }
