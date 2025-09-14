@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { dispatch, type OutboxMessage } from "../lib/omni/dispatch";
 import { incrementError, incrementMessage } from "@/lib/metrics/counters";
 import { logger } from "@/lib/omni/log";
-import { recordDuration } from "@/lib/metrics/hist";
+import { recordDuration, recordDurationL } from "@/lib/metrics/hist";
 
 interface RedisLike {
   xGroupCreate: (
@@ -89,6 +89,10 @@ export class Dispatcher {
       const dur = Date.now() - started;
       incrementMessage();
       recordDuration('dispatch_ms', dur);
+      try {
+        const ch = (payload as any)?.channel || (payload as any)?.to?.kind || 'unknown';
+        recordDurationL('dispatch_ms', { channel: String(ch) }, dur);
+      } catch {}
       logger.info({ id: msg.id, duration_ms: dur }, "dispatcher_sent");
     } catch (err) {
       await this.client.hSet(`status:${msg.id}`, { status: "failed" });

@@ -3,7 +3,7 @@ import { coerceInbound, coerceOutbound } from '@/lib/omni/schema';
 import { incrementError, incrementMessage } from '@/lib/metrics/counters';
 import { publishWithRetry } from '@/lib/omni/bus';
 import { logger } from '@/lib/omni/log';
-import { recordDuration } from '@/lib/metrics/hist';
+import { recordDuration, recordDurationL } from '@/lib/metrics/hist';
 import { send_message } from '@/agents/tools/send_message';
 
 interface RedisLike {
@@ -102,6 +102,10 @@ export class InboundConsumer {
     incrementMessage();
     const dur = Date.now() - start;
     recordDuration('inbound_ms', dur);
+    try {
+      const ch = inbound.message.channel || 'unknown';
+      recordDurationL('inbound_ms', { channel: ch }, dur);
+    } catch {}
     logger.debug({ duration_ms: dur }, 'inbound_duration');
   }
 
