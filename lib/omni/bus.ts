@@ -1,6 +1,7 @@
 import { createClient } from 'redis';
 import { OmniBusError } from './errors';
 import { incrementMessage, incrementError } from '@/lib/metrics/counters';
+import { incrementCounter } from '@/lib/monitoring/metrics';
 
 export interface PublishOpts {
   retries?: number;
@@ -47,6 +48,12 @@ export async function publishWithRetry(
       })) as string;
       await client.quit();
       try { incrementMessage(); } catch {}
+      try {
+        const ch = (payload as Record<string, unknown> | null) && typeof payload === 'object'
+          ? (payload as Record<string, unknown>)['channel']
+          : undefined;
+        if (typeof ch === 'string' && ch) incrementCounter('outbound_total', { channel: ch });
+      } catch {}
       return id;
     } catch (err) {
       try { incrementError(); } catch {}

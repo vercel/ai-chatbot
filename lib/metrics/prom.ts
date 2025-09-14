@@ -4,7 +4,8 @@
  * - Exposes labelled histograms for durations with per-channel buckets (ms)
  */
 import { errorsPerHour, lastFiveMinutes, msgsPerHour } from '@/lib/metrics/collectors';
-import { getAllLabelledSamples, stableLabelKey } from '@/lib/metrics/hist';
+import { getAllLabelledSamples } from '@/lib/metrics/hist';
+import { getAllCounters } from '@/lib/monitoring/metrics';
 
 /** Default latency buckets in milliseconds */
 const BUCKETS_MS = [50, 100, 250, 500, 1000, 2000, 5000, 10000];
@@ -91,6 +92,18 @@ export function renderPromMetrics(): string {
     }
   }
 
+  // Labelled counters (e.g., inbound_total, outbound_total, dispatcher_total)
+  const counters = getAllCounters();
+  for (const [metric, byLabel] of Object.entries(counters)) {
+    if (!byLabel || Object.keys(byLabel).length === 0) continue;
+    lines.push(`# TYPE ${metric} counter`);
+    for (const [labelKey, value] of Object.entries(byLabel)) {
+      const labels = parseLabelKey(labelKey);
+      const kv = Object.entries(labels).map(([k, v]) => `${k}="${escLabelValue(String(v))}"`).join(',');
+      lines.push(`${metric}{${kv}} ${value}`);
+    }
+  }
+
   return lines.join('\n') + '\n';
 }
 
@@ -112,4 +125,3 @@ export function getMonitoringSnapshot() {
   }
   return { recent5m: recent, lastHour: hour, hists };
 }
-

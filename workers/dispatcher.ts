@@ -3,6 +3,7 @@ import { dispatch, type OutboxMessage } from "../lib/omni/dispatch";
 import { incrementError, incrementMessage } from "@/lib/metrics/counters";
 import { logger } from "@/lib/omni/log";
 import { recordDuration, recordDurationL } from "@/lib/metrics/hist";
+import { incrementCounter } from "@/lib/monitoring/metrics";
 
 interface RedisLike {
   xGroupCreate: (
@@ -92,6 +93,7 @@ export class Dispatcher {
       try {
         const ch = (payload as any)?.channel || (payload as any)?.to?.kind || 'unknown';
         recordDurationL('dispatch_ms', { channel: String(ch) }, dur);
+        try { incrementCounter('dispatcher_total', { channel: String(ch) }); } catch {}
       } catch {}
       logger.info({ id: msg.id, duration_ms: dur }, "dispatcher_sent");
     } catch (err) {

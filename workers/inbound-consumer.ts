@@ -4,6 +4,7 @@ import { incrementError, incrementMessage } from '@/lib/metrics/counters';
 import { publishWithRetry } from '@/lib/omni/bus';
 import { logger } from '@/lib/omni/log';
 import { recordDuration, recordDurationL } from '@/lib/metrics/hist';
+import { incrementCounter } from '@/lib/monitoring/metrics';
 import { send_message } from '@/agents/tools/send_message';
 
 interface RedisLike {
@@ -97,6 +98,7 @@ export class InboundConsumer {
       lastId = res.id;
     }
     logger.info({ id: lastId, count: outs.length, conv: inbound.message.conversationId, channel: inbound.message.channel }, 'inbound_processed');
+    try { incrementCounter('inbound_total', { channel: inbound.message.channel }); } catch {}
     await this.client.hSet(`status:${msg.id}`, { status: 'processed' });
     await this.client.xAck(this.stream, this.group, msg.id);
     incrementMessage();
