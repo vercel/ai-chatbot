@@ -36,6 +36,11 @@ yarn-error.log*
 .vercel
 .env*.local
 
+# Local AI assistant directories
+.claude/
+.kilocode/
+.roo/
+
 # Playwright
 /test-results/
 /playwright-report/
