@@ -26,6 +26,7 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage, CustomUIDataTypes } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
 
 export function Chat({
   id,
@@ -125,6 +126,12 @@ export function Chat({
       }
     },
   });
+
+  // Reset artifact UI state on chat mount and when switching chats
+  const { setArtifact } = useArtifact();
+  useEffect(() => {
+    setArtifact({ ...initialArtifactData });
+  }, [id, setArtifact]);
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
