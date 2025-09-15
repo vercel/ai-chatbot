@@ -20,9 +20,9 @@ import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
-import type { AppUsage, Attachment, ChatMessage } from '@/lib/types';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import type { AppUsage } from '@/lib/usage';
 import { useDataStream } from './data-stream-provider';
-import type { AppUsage as AppUsageType } from '@/lib/usage';
 
 export function Chat({
   id,

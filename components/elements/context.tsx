@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import type { ComponentProps } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
-import type { AppUsage } from '@/lib/types';
+import type { AppUsage } from '@/lib/usage';
 
 export type ContextProps = ComponentProps<'button'> & {
   /** Optional full usage payload to enable breakdown view */
@@ -151,14 +151,13 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                 costText={usage?.costUSD?.cacheReadUSD?.toString()}
               />
             )}
-            {usage?.cacheCreationInputTokens &&
-              usage.cacheCreationInputTokens > 0 && (
-                <InfoRow
-                  label="Cache Writes"
-                  tokens={usage?.cacheCreationInputTokens}
-                  costText={usage?.costUSD?.cacheWriteUSD?.toString()}
-                />
-              )}
+            {usage?.cachedInputTokens && usage.cachedInputTokens > 0 && (
+              <InfoRow
+                label="Cache Writes"
+                tokens={usage?.cachedInputTokens}
+                costText={usage?.costUSD?.cacheWriteUSD?.toString()}
+              />
+            )}
             <InfoRow
               label="Input"
               tokens={usage?.inputTokens}

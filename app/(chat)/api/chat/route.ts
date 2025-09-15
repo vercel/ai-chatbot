@@ -39,8 +39,10 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { unstable_cache as cache } from 'next/cache';
-import { fetchModels, getUsage, type ModelCatalog } from 'tokenlens';
-import { AppUsage } from '@/lib/usage';
+import { fetchModels } from 'tokenlens/fetch';
+import { getUsage } from 'tokenlens/helpers';
+import type { ModelCatalog } from 'tokenlens/core';
+import type { AppUsage } from '@/lib/usage';
 
 export const maxDuration = 60;
 
@@ -207,6 +209,8 @@ export async function POST(request: Request) {
               const modelId =
                 myProvider.languageModel(selectedChatModel).modelId;
               if (!modelId) return;
+
+              if (!providers) return;
 
               const summary = getUsage({ modelId, usage, providers });
               finalMergedUsage = { ...usage, ...summary, modelId } as AppUsage;
