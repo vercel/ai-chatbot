@@ -1,5 +1,5 @@
 import { customProvider } from 'ai';
-import { gateway } from '@ai-sdk/gateway';
+import { openai } from '@ai-sdk/openai';
 import { isTestEnvironment } from '../constants';
 
 export const myProvider = isTestEnvironment
@@ -16,8 +16,8 @@ export const myProvider = isTestEnvironment
   : customProvider({
       languageModels: {
         // Use gateway with your chosen OpenAI models
-        'chat-model': gateway.languageModel('openai/gpt-5'),
-        'title-model': gateway.languageModel('openai/gpt-4.1-nano'),
-        'artifact-model': gateway.languageModel('openai/gpt-4.1'),
+        'chat-model': openai.languageModel('gpt-5'),
+        'title-model': openai.languageModel('gpt-4.1-nano'),
+        'artifact-model': openai.languageModel('gpt-4.1'),
       },
     });

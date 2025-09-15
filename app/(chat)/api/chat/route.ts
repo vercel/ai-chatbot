@@ -1,6 +1,7 @@
 import {
   convertToModelMessages,
   createUIMessageStream,
+  generateId,
   JsonToSseTransformStream,
   type LanguageModelUsage,
   smoothStream,
@@ -350,52 +351,6 @@ export async function POST(request: Request) {
             finalUsage = usage;
             dataStream.write({ type: 'data-usage', data: usage });
           },
-          onStepFinish: (stepResult) => {
-            // First log the raw structure to understand what we're working with
-            console.log(
-              '🔥 STEP FINISH - RAW:',
-              JSON.stringify(stepResult, null, 2),
-            );
-
-            // Log basic step info safely
-            console.log('🔥 STEP FINISH:', {
-              finishReason: stepResult.finishReason,
-              usage: stepResult.usage ? JSON.stringify(stepResult.usage) : null,
-              keys: Object.keys(stepResult),
-            });
-
-            // Check for tool calls using type guards
-            if ('toolCalls' in stepResult && stepResult.toolCalls) {
-              console.log(
-                '🔥 TOOL CALLS FOUND:',
-                stepResult.toolCalls.map((tc) => ({
-                  toolName: tc.toolName,
-                  properties: Object.keys(tc),
-                  tc: tc,
-                })),
-              );
-            }
-
-            // Check for tool results using type guards
-            if ('toolResults' in stepResult && stepResult.toolResults) {
-              console.log(
-                '🔥 TOOL RESULTS FOUND:',
-                stepResult.toolResults.map((tr) => ({
-                  toolName: tr.toolName,
-                  properties: Object.keys(tr),
-                  tr: tr,
-                })),
-              );
-            }
-
-            // Check for text using type guards
-            if ('text' in stepResult && stepResult.text) {
-              console.log(
-                '🔥 TEXT FOUND:',
-                `${stepResult.text.substring(0, 100)}...`,
-              );
-            }
-          },
         });
 
         result.consumeStream();
@@ -408,7 +363,7 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages, responseMessage }) => {
-        console.log('full response', responseMessage);
+
         await saveMessages({
           messages: messages.map((m) => ({
             id: m.id,
