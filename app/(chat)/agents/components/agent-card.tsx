@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { BotIcon, UsersIcon, } from 'lucide-react';
+import { BotIcon, UsersIcon } from 'lucide-react';
 import type { Agent, User } from '@/lib/db/schema';
 
 interface AgentCardProps {

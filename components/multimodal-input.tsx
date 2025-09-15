@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon, } from './icons';
+import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';
@@ -571,8 +571,7 @@ function PureActiveToolsDropdown({
 }) {
   const activeCount = activeTools.length;
   const totalToolCount = TOOL_OPTIONS.length;
-  const hasCustomSelection =
-    activeCount > 0 && activeCount < totalToolCount;
+  const hasCustomSelection = activeCount > 0 && activeCount < totalToolCount;
 
   const handleSelectAll = useCallback(() => {
     setActiveTools([...DEFAULT_ACTIVE_TOOL_IDS]);
@@ -590,7 +589,8 @@ function PureActiveToolsDropdown({
       setActiveTools((current) => {
         const normalized = sortActiveTools(current);
         const groupToolIds = group.options.map((option) => option.id);
-        const shouldEnable = nextState === true || nextState === 'indeterminate';
+        const shouldEnable =
+          nextState === true || nextState === 'indeterminate';
 
         if (shouldEnable) {
           const withGroup = [...normalized];

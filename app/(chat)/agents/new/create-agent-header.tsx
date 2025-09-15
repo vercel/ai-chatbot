@@ -8,7 +8,10 @@ interface CreateAgentHeaderProps {
   isSubmitting?: boolean;
 }
 
-export function CreateAgentHeader({ onSubmit, isSubmitting }: CreateAgentHeaderProps) {
+export function CreateAgentHeader({
+  onSubmit,
+  isSubmitting,
+}: CreateAgentHeaderProps) {
   const router = useRouter();
 
   return (
@@ -28,10 +31,7 @@ export function CreateAgentHeader({ onSubmit, isSubmitting }: CreateAgentHeaderP
         >
           Cancel
         </Button>
-        <Button
-          onClick={onSubmit}
-          disabled={isSubmitting}
-        >
+        <Button onClick={onSubmit} disabled={isSubmitting}>
           {isSubmitting ? 'Creating...' : 'Create Agent'}
         </Button>
       </div>

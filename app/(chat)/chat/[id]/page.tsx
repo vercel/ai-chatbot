@@ -15,7 +15,7 @@ import { convertToUIMessages } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page(props: { 
+export default async function Page(props: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ agent?: string }>;
 }) {
@@ -30,7 +30,7 @@ export default async function Page(props: {
 
   const { user } = await withAuth({ ensureSignedIn: true });
 
-  // Get the database user from the WorkOS user for proper ID comparisons  
+  // Get the database user from the WorkOS user for proper ID comparisons
   const databaseUser = user
     ? await getDatabaseUserFromWorkOS({
         id: user.id,
@@ -75,7 +75,9 @@ export default async function Page(props: {
       // Only show if user owns the agent or it's public
       const canUseAgent =
         (agentRow as any).isPublic === true ||
-        (!!(agentRow as any).userId && databaseUser && (agentRow as any).userId === databaseUser.id);
+        (!!(agentRow as any).userId &&
+          databaseUser &&
+          (agentRow as any).userId === databaseUser.id);
 
       if (!canUseAgent) return null;
 
@@ -96,10 +98,14 @@ export default async function Page(props: {
         initialMessages={uiMessages}
         initialChatModel={initialChatModel}
         initialVisibilityType={isNewChat ? 'private' : chat.visibility}
-        isReadonly={isNewChat ? false : (!databaseUser || databaseUser.id !== chat.userId)}
+        isReadonly={
+          isNewChat ? false : !databaseUser || databaseUser.id !== chat.userId
+        }
         user={user}
         autoResume={!isNewChat}
-        initialLastContext={isNewChat ? undefined : (chat.lastContext ?? undefined)}
+        initialLastContext={
+          isNewChat ? undefined : (chat.lastContext ?? undefined)
+        }
         initialAgentContext={await initialAgentContext}
       />
       <DataStreamHandler />

@@ -214,7 +214,9 @@ export function AgentsList({ agents, currentUserId }: AgentsListProps) {
                         }
                       }}
                       className={
-                        currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''
+                        currentPage >= totalPages
+                          ? 'pointer-events-none opacity-50'
+                          : ''
                       }
                     />
                   </PaginationItem>

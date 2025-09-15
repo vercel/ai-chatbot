@@ -29,9 +29,9 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
   const [reasoningEffort, setReasoningEffort] = useState<
     'low' | 'medium' | 'high'
   >('medium');
-  const [activeTools, setActiveTools] = useState<Array<string>>(
-    () => [...DEFAULT_ACTIVE_TOOL_IDS],
-  );
+  const [activeTools, setActiveTools] = useState<Array<string>>(() => [
+    ...DEFAULT_ACTIVE_TOOL_IDS,
+  ]);
 
   const updateActiveTools = useCallback(
     (next: Array<string> | ((current: Array<string>) => Array<string>)) => {

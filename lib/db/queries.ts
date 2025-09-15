@@ -680,7 +680,10 @@ export async function getUserOwnedAgents({
   userId: string;
   limit?: number;
   offset?: number;
-}): Promise<{ data: Array<{ agent: Agent; user: User | null }>; total: number }> {
+}): Promise<{
+  data: Array<{ agent: Agent; user: User | null }>;
+  total: number;
+}> {
   try {
     const where = eq(agent.userId, userId);
 
@@ -715,7 +718,10 @@ export async function getPublicAgents({
   q?: string | null;
   limit?: number;
   offset?: number;
-}): Promise<{ data: Array<{ agent: Agent; user: User | null }>; total: number }> {
+}): Promise<{
+  data: Array<{ agent: Agent; user: User | null }>;
+  total: number;
+}> {
   try {
     const whereBase = eq(agent.isPublic, true);
     const where = q

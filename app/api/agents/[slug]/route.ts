@@ -49,10 +49,7 @@ export async function GET(
     await client.end();
 
     if (!result) {
-      return NextResponse.json(
-        { error: 'Agent not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
     }
 
     // Check if user owns this agent (for edit access)
@@ -77,7 +74,7 @@ export async function PATCH(
   try {
     const { slug } = await params;
     const { user } = await withAuth({ ensureSignedIn: true });
-    
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -135,14 +132,14 @@ export async function PATCH(
     return NextResponse.json(updatedAgent);
   } catch (error) {
     console.error('API /agents/[slug] PATCH error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.issues[0].message },
         { status: 400 },
       );
     }
-    
+
     return NextResponse.json(
       { error: 'Failed to update agent' },
       { status: 500 },
@@ -214,4 +211,3 @@ export async function DELETE(
     );
   }
 }
-

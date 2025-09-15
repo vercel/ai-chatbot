@@ -372,7 +372,6 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages, responseMessage }) => {
-
         await saveMessages({
           messages: messages.map((m) => ({
             id: m.id,

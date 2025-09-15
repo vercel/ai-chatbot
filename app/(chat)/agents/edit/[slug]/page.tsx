@@ -29,7 +29,7 @@ export default function EditAgentPage({ params }: EditAgentPageProps) {
       try {
         const { slug } = await params;
         const response = await fetch(`/api/agents/${slug}`);
-        
+
         if (!response.ok) {
           if (response.status === 404 || response.status === 403) {
             notFound();
@@ -59,7 +59,9 @@ export default function EditAgentPage({ params }: EditAgentPageProps) {
   }, [params, loading]);
 
   if (loading || isLoadingAgent) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">Loading...</div>
+    );
   }
 
   if (!agent) {
