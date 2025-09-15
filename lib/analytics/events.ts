@@ -5,33 +5,40 @@ export function emitTemplateRendered(p: Record<string, unknown>) {
 	console.log(JSON.stringify({ evt: "template_rendered", ...p }));
 }
 export function emitComplianceFailed(p: Record<string, unknown>) {
-	console.log(JSON.stringify({ evt: "compliance_failed", ...p }));
+        console.log(JSON.stringify({ evt: "compliance_failed", ...p }));
 }
 
 const ENDPOINT = process.env.NEXT_PUBLIC_ANALYTICS_API || "/api/analytics";
 
-/**
- * Edge-safe tracker: usa fetch; evita Node-only APIs (fs, path, process.env secretos, etc.)
- * Pode ser chamado no middleware. Em falha, vira no-op.
- */
-export async function trackEvent(
-	eventName: string,
-	data: Record<string, unknown>,
-): Promise<void> {
-	try {
-		// No middleware, nunca bloqueie a resposta: fire-and-forget
-		fetch(ENDPOINT, {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({
-				name: eventName,
-				...data,
-				ts: Date.now(),
-				ua: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
-			}),
-			// Em Edge, não use keepalive true universalmente; mantém padrão.
-		}).catch(() => {});
-	} catch {
-		// no-op
-	}
+export type EventName =
+        | "app_open"
+        | "journey_phase_view"
+        | "journey_cta_click"
+        | "upload_bill_submitted"
+        | "analysis_ready_view"
+        | "persona_switch"
+        | "guest_limit_banner_view"
+        | "guest_upgrade_click";
+
+export function trackEvent(name: EventName, data: Record<string, unknown> = {}): void {
+        try {
+                (globalThis as any).__analytics?.track?.(name, data);
+        } catch {
+                // no-op
+        }
+
+        try {
+                fetch(ENDPOINT, {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                                name,
+                                ...data,
+                                ts: data.ts ?? Date.now(),
+                                ua: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+                        }),
+                }).catch(() => {});
+        } catch {
+                // no-op
+        }
 }

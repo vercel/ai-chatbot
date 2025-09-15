@@ -5,7 +5,7 @@ import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { generateUUID } from "@/lib/utils";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import type { Session } from "next-auth";
-import Link from "next/link";
+import { GuestLimitBanner } from "@/components/GuestLimitBanner";
 
 // Criando uma sessão mock com o tipo correto
 const mockSession: Session = {
@@ -26,15 +26,11 @@ export default async function Page() {
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
+  const guestMessages = Number(cookieStore.get("guest-message-count")?.value ?? "0");
 
   const banner =
     session.user.type === "guest" ? (
-      <div className="bg-yellow-100 text-yellow-800 p-4 text-sm flex justify-between">
-        <span>Limite diário de 20 mensagens atingido.</span>
-        <Link href="/register" className="underline font-medium">
-          Criar conta
-        </Link>
-      </div>
+      <GuestLimitBanner used={guestMessages} max={20} />
     ) : null;
 
   if (!modelIdFromCookie) {

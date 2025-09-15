@@ -1,6 +1,7 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { phases, journeyMap, type Phase } from './map';
+import { phases, journeyMap, type Phase, getPhaseRoute } from './map';
 
 interface Telemetry {
   start: number;
@@ -27,6 +28,7 @@ export function JourneyProvider({
   children: React.ReactNode;
 }) {
   const [phase, setPhase] = useState<Phase>(phases[0]);
+  const router = useRouter();
 
   const createInitialTelemetry = (): Record<Phase, Telemetry> => {
     const initial: Record<Phase, Telemetry> = {} as Record<Phase, Telemetry>;
@@ -39,17 +41,32 @@ export function JourneyProvider({
   const telemetryRef = useRef<Record<Phase, Telemetry>>(createInitialTelemetry());
 
   const preloadPhase = async (p: Phase) => {
-  const { cards, viewers } = journeyMap[p];
-  for (const asset of [...cards, ...viewers]) {
-    try {
-      // dynamic import using data URL to simulate preloading
-      // @ts-ignore
-      await import(`data:text/javascript,export default "${asset}"`);
-    } catch (e) {
-      telemetryRef.current[p].errors.push(String(e));
+    const { cards, viewers } = journeyMap[p];
+    for (const asset of [...cards, ...viewers]) {
+      try {
+        // dynamic import using data URL to simulate preloading
+        // @ts-ignore
+        await import(`data:text/javascript,export default "${asset}"`);
+      } catch (e) {
+        telemetryRef.current[p].errors.push(String(e));
+      }
     }
-  }
-};
+  };
+
+  const navigateToPhase = useCallback(
+    (target: Phase) => {
+      const href = getPhaseRoute(target);
+      if (!href) return;
+      if (typeof window !== 'undefined') {
+        if (window.location.pathname !== href) {
+          router.push(href);
+        }
+      } else {
+        router.push(href);
+      }
+    },
+    [router],
+  );
 
   useEffect(() => {
     const t = telemetryRef.current;
@@ -61,13 +78,17 @@ export function JourneyProvider({
     window.__journey = { phase, telemetry: t };
   }, [phase]);
 
-  const transition = useCallback((target: Phase) => {
-    const t = telemetryRef.current;
-    const now = Date.now();
-    t[phase].end = now;
-    if (!t[target].start) t[target].start = now;
-    setPhase(target);
-  }, [phase]);
+  const transition = useCallback(
+    (target: Phase) => {
+      const t = telemetryRef.current;
+      const now = Date.now();
+      t[phase].end = now;
+      if (!t[target].start) t[target].start = now;
+      setPhase(target);
+      navigateToPhase(target);
+    },
+    [phase, navigateToPhase],
+  );
 
   const next = useCallback(() => {
     const nextPhase = journeyMap[phase].next;
@@ -86,7 +107,8 @@ export function JourneyProvider({
   const reset = useCallback(() => {
     telemetryRef.current = createInitialTelemetry();
     setPhase(phases[0]);
-  }, []);
+    navigateToPhase(phases[0]);
+  }, [navigateToPhase]);
 
   const contextValue = useMemo(
     () => ({ phase, telemetry: telemetryRef.current, next, prev, skip, reset }),

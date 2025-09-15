@@ -42,22 +42,18 @@ export default meta;
 type Story = StoryObj<typeof DetectionReport>;
 
 export const OwnerWithPanels: Story = {
-	args: {
-		result: mockResult,
-		persona: 'owner',
-		onProceed: () => console.log('Proceed'),
-		onBack: () => console.log('Back'),
-	},
+        args: {
+                result: mockResult,
+                persona: 'owner',
+        },
 };
 
 export const IntegratorWithPanels: Story = {
-	args: {
-		result: mockResult,
-		persona: 'integrator',
-		onProceed: () => console.log('Proceed'),
-		onBack: () => console.log('Back'),
-		onExport: () => console.log('Export'),
-	},
+        args: {
+                result: mockResult,
+                persona: 'integrator',
+                onExport: () => console.log('Export'),
+        },
 };
 
 export const NoPanels: Story = {
@@ -70,11 +66,9 @@ export const NoPanels: Story = {
 					overlays: { bboxes: [] },
 					metrics: { ...mockResult.items[0].metrics, panel_count: 0 },
 				},
-			],
-			summary: { ...mockResult.summary, detected_panels: 0 },
-		},
-		persona: 'owner',
-		onProceed: () => console.log('Proceed'),
-		onBack: () => console.log('Back'),
-	},
+                        ],
+                        summary: { ...mockResult.summary, detected_panels: 0 },
+                },
+                persona: 'owner',
+        },
 };

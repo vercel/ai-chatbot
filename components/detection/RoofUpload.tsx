@@ -11,19 +11,18 @@ interface FilePreview {
 }
 
 interface RoofUploadProps {
-	readonly onAnalyze: (files: FilePreview[]) => void;
-	readonly isAnalyzing?: boolean;
+        readonly persona: 'owner' | 'integrator';
+        readonly onAnalyze: (files: FilePreview[]) => void;
+        readonly isAnalyzing?: boolean;
 }
 
-export function RoofUpload({ onAnalyze, isAnalyzing = false }: RoofUploadProps) {
-	// Assumir persona hardcoded por enquanto, ajustar conforme contexto
-	const persona: 'owner' | 'integrator' = 'owner';
+export function RoofUpload({ persona, onAnalyze, isAnalyzing = false }: RoofUploadProps) {
 	const [files, setFiles] = useState<FilePreview[]>([]);
 	const [dragOver, setDragOver] = useState(false);
 	const [error, setError] = useState<string>('');
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const maxFiles = persona === 'integrator' ? 10 : 3;
+        const maxFiles = persona === 'integrator' ? 10 : 3;
 	const maxFileSize = 8 * 1024 * 1024; // 8MB
 	const maxTotalSize = persona === 'integrator' ? 80 * 1024 * 1024 : 24 * 1024 * 1024; // 80MB / 24MB
 

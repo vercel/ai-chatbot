@@ -26,53 +26,31 @@ const mockResult: DetectionResult = {
 };
 
 describe('DetectionReport', () => {
-	const mockOnProceed = vi.fn();
-	const mockOnBack = vi.fn();
-	const mockOnExport = vi.fn();
+        const mockOnExport = vi.fn();
 
-	it('renders report with metrics', () => {
-		render(
-			<DetectionReport
-				result={mockResult}
-				persona="owner"
-				onProceed={mockOnProceed}
-				onBack={mockOnBack}
-				onExport={mockOnExport}
-			/>
-		);
+        it('renders report with metrics', () => {
+                render(
+                        <DetectionReport
+                                result={mockResult}
+                                persona="owner"
+                                onExport={mockOnExport}
+                        />
+                );
 
-		expect(screen.getByText('Relatório de Detecção')).toBeInTheDocument();
-		expect(screen.getByText('100.0 m²')).toBeInTheDocument();
-		expect(screen.getByText('5')).toBeInTheDocument();
-	});
+                expect(screen.getByText('Relatório de Detecção')).toBeInTheDocument();
+                expect(screen.getByText('100.0 m²')).toBeInTheDocument();
+                expect(screen.getByText('5')).toBeInTheDocument();
+        });
 
-	it('shows export button for integrator', () => {
-		render(
-			<DetectionReport
-				result={mockResult}
-				persona="integrator"
-				onProceed={mockOnProceed}
-				onBack={mockOnBack}
-				onExport={mockOnExport}
-			/>
-		);
+        it('shows export button for integrator', () => {
+                render(
+                        <DetectionReport
+                                result={mockResult}
+                                persona="integrator"
+                                onExport={mockOnExport}
+                        />
+                );
 
-		expect(screen.getByText('Exportar CSV')).toBeInTheDocument();
-	});
-
-	it('calls onProceed when button clicked', () => {
-		render(
-			<DetectionReport
-				result={mockResult}
-				persona="owner"
-				onProceed={mockOnProceed}
-				onBack={mockOnBack}
-			/>
-		);
-
-		const button = screen.getByText('Prosseguir para Análise');
-		fireEvent.click(button);
-
-		expect(mockOnProceed).toHaveBeenCalled();
-	});
+                expect(screen.getByText('Exportar CSV')).toBeInTheDocument();
+        });
 });

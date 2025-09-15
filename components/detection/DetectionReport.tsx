@@ -5,14 +5,12 @@ import Image from 'next/image';
 import type { DetectionResult } from '@/lib/detection/types';
 
 interface DetectionReportProps {
-	readonly result: DetectionResult;
-	readonly persona: 'owner' | 'integrator';
-	readonly onProceed: () => void;
-	readonly onBack: () => void;
-	readonly onExport?: () => void;
+        readonly result: DetectionResult;
+        readonly persona: 'owner' | 'integrator';
+        readonly onExport?: () => void;
 }
 
-export function DetectionReport({ result, persona, onProceed, onBack, onExport }: DetectionReportProps) {
+export function DetectionReport({ result, persona, onExport }: DetectionReportProps) {
 	const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
 	useEffect(() => {
@@ -117,33 +115,17 @@ export function DetectionReport({ result, persona, onProceed, onBack, onExport }
 			</div>
 
 			{/* CTAs */}
-			<div className="flex justify-between">
-				<button
-					type="button"
-					onClick={onBack}
-					className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 focus-yello"
-				>
-					Voltar para jornada
-				</button>
-				<div className="space-x-4">
-					{persona === 'integrator' && onExport && (
-						<button
-							type="button"
-							onClick={onExport}
-							className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus-yello"
-						>
-							Exportar CSV
-						</button>
-					)}
-					<button
-						type="button"
-						onClick={onProceed}
-						className="px-6 py-2 bg-yello-600 text-white rounded hover:bg-yello-700 focus-yello"
-					>
-						Prosseguir para Análise
-					</button>
-				</div>
-			</div>
-		</div>
-	);
+                        {persona === 'integrator' && onExport && (
+                                <div className="flex justify-end">
+                                        <button
+                                                type="button"
+                                                onClick={onExport}
+                                                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus-yello"
+                                        >
+                                                Exportar CSV
+                                        </button>
+                                </div>
+                        )}
+                </div>
+        );
 }

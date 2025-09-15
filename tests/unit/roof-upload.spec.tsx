@@ -9,13 +9,13 @@ describe('RoofUpload', () => {
 		mockOnAnalyze.mockClear();
 	});
 
-	it('renders upload area', () => {
-		render(<RoofUpload onAnalyze={mockOnAnalyze} />);
+        it('renders upload area', () => {
+                render(<RoofUpload persona="owner" onAnalyze={mockOnAnalyze} />);
 		expect(screen.getByText(/Arraste imagens aqui/)).toBeInTheDocument();
 	});
 
-	it('validates file type', () => {
-		render(<RoofUpload onAnalyze={mockOnAnalyze} />);
+        it('validates file type', () => {
+                render(<RoofUpload persona="owner" onAnalyze={mockOnAnalyze} />);
 		const input = screen.getByLabelText(/Selecionar imagens/);
 
 		const invalidFile = new File([''], 'test.txt', { type: 'text/plain' });
@@ -24,8 +24,8 @@ describe('RoofUpload', () => {
 		expect(screen.getByText('Apenas imagens são permitidas')).toBeInTheDocument();
 	});
 
-	it('validates file size', () => {
-		render(<RoofUpload onAnalyze={mockOnAnalyze} />);
+        it('validates file size', () => {
+                render(<RoofUpload persona="owner" onAnalyze={mockOnAnalyze} />);
 		const input = screen.getByLabelText(/Selecionar imagens/);
 
 		const largeFile = new File(['x'.repeat(9 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' });
@@ -34,8 +34,8 @@ describe('RoofUpload', () => {
 		expect(screen.getByText('Arquivo muito grande (máx. 8MB)')).toBeInTheDocument();
 	});
 
-	it('calls onAnalyze with valid files', () => {
-		render(<RoofUpload onAnalyze={mockOnAnalyze} />);
+        it('calls onAnalyze with valid files', () => {
+                render(<RoofUpload persona="owner" onAnalyze={mockOnAnalyze} />);
 		const input = screen.getByLabelText(/Selecionar imagens/);
 
 		const validFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
