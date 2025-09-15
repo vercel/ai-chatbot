@@ -2,7 +2,6 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   JsonToSseTransformStream,
-  type LanguageModelUsage,
   smoothStream,
   stepCountIs,
   streamText,
@@ -39,10 +38,31 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
+import { unstable_cache as cache } from 'next/cache';
+import { fetchModels } from 'tokenlens/fetch';
+import { getUsage } from 'tokenlens/helpers';
+import type { ModelCatalog } from 'tokenlens/core';
+import type { AppUsage } from '@/lib/usage';
 
 export const maxDuration = 60;
 
 let globalStreamContext: ResumableStreamContext | null = null;
+
+const getTokenlensCatalog = cache(
+  async (): Promise<ModelCatalog | undefined> => {
+    try {
+      return await fetchModels();
+    } catch (err) {
+      console.warn(
+        'TokenLens: catalog fetch failed, using default catalog',
+        err,
+      );
+      return undefined; // tokenlens helpers will fall back to defaultCatalog
+    }
+  },
+  ['tokenlens-catalog'],
+  { revalidate: 24 * 60 * 60 }, // 24 hours
+);
 
 export function getStreamContext() {
   if (!globalStreamContext) {
@@ -151,7 +171,7 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    let finalUsage: LanguageModelUsage | undefined;
+    let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -183,9 +203,31 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
           },
-          onFinish: ({ usage }) => {
-            finalUsage = usage;
-            dataStream.write({ type: 'data-usage', data: usage });
+          onFinish: async ({ usage }) => {
+            try {
+              const providers = await getTokenlensCatalog();
+              const modelId =
+                myProvider.languageModel(selectedChatModel).modelId;
+              if (!modelId) {
+                finalMergedUsage = usage;
+                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                return;
+              }
+
+              if (!providers) {
+                finalMergedUsage = usage;
+                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                return;
+              }
+
+              const summary = getUsage({ modelId, usage, providers });
+              finalMergedUsage = { ...usage, ...summary, modelId } as AppUsage;
+              dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+            } catch (err) {
+              console.warn('TokenLens enrichment failed', err);
+              finalMergedUsage = usage;
+              dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+            }
           },
         });
 
@@ -210,11 +252,11 @@ export async function POST(request: Request) {
           })),
         });
 
-        if (finalUsage) {
+        if (finalMergedUsage) {
           try {
             await updateChatLastContextById({
               chatId: id,
-              context: finalUsage,
+              context: finalMergedUsage,
             });
           } catch (err) {
             console.warn('Unable to persist last usage for chat', id, err);

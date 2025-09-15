@@ -96,7 +96,7 @@
     "swr": "^2.2.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "tokenlens": "^1.1.2",
+    "tokenlens": "1.3.0-canary.5",
     "use-stick-to-bottom": "^1.1.1",
     "usehooks-ts": "^3.1.0",
     "zod": "^3.25.76"
