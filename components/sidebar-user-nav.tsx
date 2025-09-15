@@ -4,6 +4,7 @@ import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 import {
   DropdownMenu,
@@ -22,21 +23,28 @@ import { LoaderIcon } from './icons';
 export function SidebarUserNav() {
   const { user, isLoaded } = useUser();
   const { setTheme, resolvedTheme } = useTheme();
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  if (!isLoaded) {
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // During SSR and initial hydration, render a consistent placeholder
+  if (!isHydrated || !isLoaded) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton className="h-10 justify-between bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+          <SidebarMenuButton
+            data-testid="user-nav-button"
+            className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          >
             <div className="flex flex-row gap-2">
               <div className="size-6 animate-pulse rounded-full bg-zinc-500/30" />
               <span className="animate-pulse rounded-md bg-zinc-500/30 text-transparent">
                 Loading user...
               </span>
             </div>
-            <div className="animate-spin text-zinc-500">
-              <LoaderIcon />
-            </div>
+            <ChevronUp className="ml-auto" />
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

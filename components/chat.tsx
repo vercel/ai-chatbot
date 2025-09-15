@@ -110,6 +110,7 @@ export function Chat({
   useEffect(() => {
     if (query && !hasAppendedQuery) {
       sendMessage({
+        id: generateUUID(),
         role: 'user' as const,
         parts: [{ type: 'text', text: query }],
       });

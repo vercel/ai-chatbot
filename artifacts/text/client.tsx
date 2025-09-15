@@ -13,6 +13,7 @@ import {
 import type { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
+import { generateUUID } from '@/lib/utils';
 
 interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;
@@ -152,6 +153,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       description: 'Add final polish',
       onClick: ({ sendMessage }) => {
         sendMessage({
+          id: generateUUID(),
           role: 'user',
           parts: [
             {
@@ -167,6 +169,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       description: 'Request suggestions',
       onClick: ({ sendMessage }) => {
         sendMessage({
+          id: generateUUID(),
           role: 'user',
           parts: [
             {

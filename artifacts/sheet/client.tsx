@@ -9,6 +9,7 @@ import {
 import { SpreadsheetEditor } from '@/components/sheet-editor';
 import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
+import { generateUUID } from '@/lib/utils';
 
 type Metadata = any;
 
@@ -95,6 +96,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
       icon: <SparklesIcon />,
       onClick: ({ sendMessage }) => {
         sendMessage({
+          id: generateUUID(),
           role: 'user',
           parts: [
             { type: 'text', text: 'Can you please format and clean the data?' },
@@ -107,6 +109,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
       icon: <LineChartIcon />,
       onClick: ({ sendMessage }) => {
         sendMessage({
+          id: generateUUID(),
           role: 'user',
           parts: [
             {

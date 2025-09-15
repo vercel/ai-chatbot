@@ -1,6 +1,6 @@
 import Form from 'next/form';
 
-import { signOut } from '@/app/(auth)/auth';
+import { signOut } from '@clerk/nextjs/server';
 
 export const SignOutForm = () => {
   return (

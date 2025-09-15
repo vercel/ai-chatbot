@@ -1,14 +1,13 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: true,
-  },
+//  experimental: {
+//    ppr: true,
+//  },
   images: {
     remotePatterns: [
-      {
-        hostname: 'avatar.vercel.sh',
-      },
+      { protocol: "https", hostname: "img.clerk.com" },
+      { hostname: 'avatar.vercel.sh' },
     ],
   },
   async headers() {
@@ -26,3 +25,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

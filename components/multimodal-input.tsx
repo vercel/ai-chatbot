@@ -43,6 +43,7 @@ import { startTransition } from 'react';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
 import { myProvider } from '@/lib/ai/providers';
+import { generateUUID } from '@/lib/utils';
 
 function PureMultimodalInput({
   chatId,
@@ -128,6 +129,7 @@ function PureMultimodalInput({
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
     sendMessage({
+      id: generateUUID(),
       role: 'user',
       parts: [
         ...attachments.map((attachment) => ({

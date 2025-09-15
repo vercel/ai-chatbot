@@ -6,6 +6,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
 import type { ChatMessage } from '@/lib/types';
 import { Suggestion } from './elements/suggestion';
+import { generateUUID } from '@/lib/utils';
 
 interface SuggestedActionsProps {
   chatId: string;
@@ -43,6 +44,7 @@ function PureSuggestedActions({
             onClick={(suggestion) => {
               window.history.replaceState({}, '', `/chat/${chatId}`);
               sendMessage({
+                id: generateUUID(),
                 role: 'user',
                 parts: [{ type: 'text', text: suggestion }],
               });

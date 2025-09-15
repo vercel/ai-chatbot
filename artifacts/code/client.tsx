@@ -251,6 +251,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       description: 'Add comments',
       onClick: ({ sendMessage }) => {
         sendMessage({
+          id: generateUUID(),
           role: 'user',
           parts: [
             {
@@ -266,6 +267,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       description: 'Add logs',
       onClick: ({ sendMessage }) => {
         sendMessage({
+          id: generateUUID(),
           role: 'user',
           parts: [
             {
