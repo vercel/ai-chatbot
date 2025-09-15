@@ -2,7 +2,7 @@
 
 import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -64,6 +64,12 @@ export function Chat({
   const [input, setInput] = useState<string>('');
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
+  const [currentModelId, setCurrentModelId] = useState(initialChatModel);
+  const currentModelIdRef = useRef(currentModelId);
+  
+  useEffect(() => {
+    currentModelIdRef.current = currentModelId;
+  }, [currentModelId]);
 
   const {
     messages,
@@ -86,7 +92,7 @@ export function Chat({
           body: {
             id,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
+            selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
             ...body,
           },
@@ -185,7 +191,8 @@ export function Chat({
               setMessages={setMessages}
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
-              selectedModelId={initialChatModel}
+              selectedModelId={currentModelId}
+              onModelChange={setCurrentModelId}
               usage={usage}
             />
           )}
@@ -207,7 +214,7 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
-        selectedModelId={initialChatModel}
+        selectedModelId={currentModelId}
       />
 
       <AlertDialog
