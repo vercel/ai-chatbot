@@ -164,6 +164,10 @@ export async function POST(request: Request) {
       try {
         const stream = await webAutomationAgent.streamVNext(mastraMessages, {
           format: 'aisdk', // Enable AI SDK v5 compatibility
+          memory: {
+            thread: id, // Use the chat ID as the thread ID
+            resource: session.user.id, // Use the user ID as the resource ID
+          },
           onStepFinish: (step: any) => {
             // Log step details to help debug tool call visibility
             console.log('Step finished:', JSON.stringify(step, null, 2));
