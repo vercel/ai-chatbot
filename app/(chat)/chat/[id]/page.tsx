@@ -7,6 +7,7 @@ import {
   getChatById,
   getDatabaseUserFromWorkOS,
   getMessagesByChatId,
+  getAgentBySlug,
 } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL, chatModels } from '@/lib/ai/models';
@@ -63,6 +64,31 @@ export default async function Page(props: {
     initialChatModel = cookieModelId;
   }
 
+  // If an agent slug is present in the URL, hydrate an initial agent context
+  // so the banner renders immediately even before any message is sent.
+  const initialAgentContext = (async () => {
+    if (!agent) return null;
+    try {
+      const agentRow = await getAgentBySlug({ slug: agent });
+      if (!agentRow) return null;
+
+      // Only show if user owns the agent or it's public
+      const canUseAgent =
+        (agentRow as any).isPublic === true ||
+        (!!(agentRow as any).userId && databaseUser && (agentRow as any).userId === databaseUser.id);
+
+      if (!canUseAgent) return null;
+
+      return {
+        agentName: agentRow.name,
+        agentDescription: agentRow.description ?? undefined,
+        agentPrompt: agentRow.agentPrompt ?? undefined,
+      };
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return (
     <>
       <Chat
@@ -74,6 +100,7 @@ export default async function Page(props: {
         user={user}
         autoResume={!isNewChat}
         initialLastContext={isNewChat ? undefined : (chat.lastContext ?? undefined)}
+        initialAgentContext={await initialAgentContext}
       />
       <DataStreamHandler />
     </>
