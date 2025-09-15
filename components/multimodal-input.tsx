@@ -41,6 +41,21 @@ import { resolveProviderModelId } from '@/lib/ai/models';
 import { getContextWindow, normalizeUsage } from 'tokenlens';
 import { Context } from './elements/context';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  DEFAULT_ACTIVE_TOOL_IDS,
+  TOOL_OPTIONS,
+  TOOL_GROUPS,
+  sortActiveTools,
+} from '@/lib/ai/tools/active-tools';
 // Avoid importing server-only providers in client components.
 
 // (Removed Google Docs picker functionality)
@@ -63,6 +78,8 @@ function PureMultimodalInput({
   usage,
   hideSuggestions,
   disableHistoryUpdate,
+  activeTools,
+  setActiveTools,
 }: {
   chatId: string;
   input: string;
@@ -85,6 +102,8 @@ function PureMultimodalInput({
    * Useful for embedded/preview contexts (e.g. agent creation preview).
    */
   disableHistoryUpdate?: boolean;
+  activeTools: Array<string>;
+  setActiveTools: Dispatch<SetStateAction<Array<string>>>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -394,6 +413,10 @@ function PureMultimodalInput({
               reasoningEffort={reasoningEffort}
               setReasoningEffort={setReasoningEffort}
             />
+            <ActiveToolsDropdown
+              activeTools={activeTools}
+              setActiveTools={setActiveTools}
+            />
           </PromptInputTools>
 
           {status === 'submitted' ? (
@@ -425,6 +448,7 @@ export const MultimodalInput = memo(
     if (prevProps.hideSuggestions !== nextProps.hideSuggestions) return false;
     if (prevProps.disableHistoryUpdate !== nextProps.disableHistoryUpdate)
       return false;
+    if (!equal(prevProps.activeTools, nextProps.activeTools)) return false;
 
     return true;
   },
@@ -537,6 +561,134 @@ function PureReasoningSelectorCompact({
 }
 
 const ReasoningSelectorCompact = memo(PureReasoningSelectorCompact);
+
+function PureActiveToolsDropdown({
+  activeTools,
+  setActiveTools,
+}: {
+  activeTools: Array<string>;
+  setActiveTools: Dispatch<SetStateAction<Array<string>>>;
+}) {
+  const activeCount = activeTools.length;
+  const totalToolCount = TOOL_OPTIONS.length;
+  const hasCustomSelection =
+    activeCount > 0 && activeCount < totalToolCount;
+
+  const handleSelectAll = useCallback(() => {
+    setActiveTools([...DEFAULT_ACTIVE_TOOL_IDS]);
+  }, [setActiveTools]);
+
+  const handleClearAll = useCallback(() => {
+    setActiveTools([]);
+  }, [setActiveTools]);
+
+  const toggleGroup = useCallback(
+    (groupId: string, nextState: boolean | 'indeterminate') => {
+      const group = TOOL_GROUPS.find((g) => g.id === groupId);
+      if (!group) return;
+
+      setActiveTools((current) => {
+        const normalized = sortActiveTools(current);
+        const groupToolIds = group.options.map((option) => option.id);
+        const shouldEnable = nextState === true || nextState === 'indeterminate';
+
+        if (shouldEnable) {
+          const withGroup = [...normalized];
+          for (const toolId of groupToolIds) {
+            if (!withGroup.includes(toolId)) {
+              withGroup.push(toolId);
+            }
+          }
+          return sortActiveTools(withGroup);
+        }
+
+        return normalized.filter((toolId) => !groupToolIds.includes(toolId));
+      });
+    },
+    [setActiveTools],
+  );
+
+  const displayLabel = (() => {
+    if (activeCount === 0) return 'Off';
+    if (activeCount === totalToolCount) return 'All';
+    return `${activeCount}/${totalToolCount}`;
+  })();
+
+  const buttonStyles = cn(
+    'rounded-md p-1.5 h-fit hover:bg-muted transition-colors duration-200 text-xs',
+    hasCustomSelection && 'text-primary',
+    activeCount === 0 && 'text-muted-foreground',
+  );
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className={cn(buttonStyles, 'gap-1.5')}
+          aria-label="Select active tools"
+          data-testid="active-tools-dropdown"
+        >
+          <MemoryIcon size={14} />
+          <span className="hidden sm:inline">Tools</span>
+          <span>({displayLabel})</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-64" align="start" sideOffset={6}>
+        <DropdownMenuLabel>Active tools</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {TOOL_GROUPS.map((group) => {
+          const groupToolIds = group.options.map((option) => option.id);
+          const selectedCount = groupToolIds.filter((toolId) =>
+            activeTools.includes(toolId),
+          ).length;
+          const isAllSelected = selectedCount === groupToolIds.length;
+          const isSomeSelected = selectedCount > 0 && !isAllSelected;
+
+          const checkedState = isAllSelected
+            ? true
+            : isSomeSelected
+              ? 'indeterminate'
+              : false;
+
+          return (
+            <DropdownMenuCheckboxItem
+              key={group.id}
+              checked={checkedState}
+              onCheckedChange={(checked) => toggleGroup(group.id, checked)}
+              className="text-sm"
+            >
+              <span>{group.label}</span>
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            handleSelectAll();
+          }}
+          className="text-sm"
+        >
+          Enable all
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            handleClearAll();
+          }}
+          className="text-sm"
+        >
+          Disable all
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+const ActiveToolsDropdown = memo(PureActiveToolsDropdown);
 
 function PureStopButton({
   stop,

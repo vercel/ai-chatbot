@@ -68,6 +68,8 @@ function PureArtifact({
   isReadonly,
   selectedVisibilityType,
   reasoningEffort,
+  activeTools,
+  setActiveTools,
 }: {
   chatId: string;
   input: string;
@@ -84,6 +86,8 @@ function PureArtifact({
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   reasoningEffort: 'low' | 'medium' | 'high';
+  activeTools: Array<string>;
+  setActiveTools: Dispatch<SetStateAction<Array<string>>>;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -340,6 +344,8 @@ function PureArtifact({
                     selectedVisibilityType={selectedVisibilityType}
                     reasoningEffort={reasoningEffort}
                     setReasoningEffort={() => {}} // No-op since artifact doesn't control reasoning
+                    activeTools={activeTools}
+                    setActiveTools={setActiveTools}
                   />
                 </div>
               </div>
@@ -510,6 +516,7 @@ export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
   if (!equal(prevProps.messages, nextProps.messages.length)) return false;
   if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
     return false;
+  if (!equal(prevProps.activeTools, nextProps.activeTools)) return false;
 
   return true;
 });
