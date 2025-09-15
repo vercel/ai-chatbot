@@ -90,7 +90,10 @@ export function Chat({
   >('active-tools', DEFAULT_ACTIVE_TOOL_IDS);
 
   const activeTools = useMemo(
-    () => sortActiveTools(Array.isArray(storedActiveTools) ? storedActiveTools : []),
+    () =>
+      sortActiveTools(
+        Array.isArray(storedActiveTools) ? storedActiveTools : [],
+      ),
     [storedActiveTools],
   );
 
