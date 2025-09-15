@@ -31,6 +31,7 @@ export const postRequestBodySchema = z.object({
       agentPrompt: z.string().optional(),
     })
     .optional(),
+  activeTools: z.array(z.string()).optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

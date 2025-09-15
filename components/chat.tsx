@@ -6,7 +6,7 @@ import {
   type LanguageModelUsage,
 } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import { AgentChatHeader } from '@/components/agent-chat-header';
@@ -26,6 +26,11 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage, CustomUIDataTypes } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { useLocalStorage } from 'usehooks-ts';
+import {
+  DEFAULT_ACTIVE_TOOL_IDS,
+  sortActiveTools,
+} from '@/lib/ai/tools/active-tools';
 
 export function Chat({
   id,
@@ -75,6 +80,48 @@ export function Chat({
     agentDescription?: string;
     agentPrompt?: string;
   } | null>(initialAgentContext || null);
+
+  const [storedActiveTools, setStoredActiveTools] = useLocalStorage<
+    Array<string>
+  >('active-tools', DEFAULT_ACTIVE_TOOL_IDS);
+
+  const activeTools = useMemo(
+    () => sortActiveTools(Array.isArray(storedActiveTools) ? storedActiveTools : []),
+    [storedActiveTools],
+  );
+
+  const setActiveTools = useCallback(
+    (next: Array<string> | ((current: Array<string>) => Array<string>)) => {
+      setStoredActiveTools((current) => {
+        const base = Array.isArray(current)
+          ? sortActiveTools(current)
+          : [...DEFAULT_ACTIVE_TOOL_IDS];
+        const updated =
+          typeof next === 'function'
+            ? (next as (value: Array<string>) => Array<string>)(base)
+            : next;
+        return sortActiveTools(updated);
+      });
+    },
+    [setStoredActiveTools],
+  );
+
+  useEffect(() => {
+    if (!Array.isArray(storedActiveTools)) {
+      setStoredActiveTools([...DEFAULT_ACTIVE_TOOL_IDS]);
+      return;
+    }
+
+    const normalized = sortActiveTools(storedActiveTools);
+    const isSameLength = normalized.length === storedActiveTools.length;
+    const hasSameOrder = normalized.every(
+      (id, index) => storedActiveTools[index] === id,
+    );
+
+    if (!isSameLength || !hasSameOrder) {
+      setStoredActiveTools(normalized);
+    }
+  }, [storedActiveTools, setStoredActiveTools]);
 
   const {
     messages,
@@ -126,6 +173,17 @@ export function Chat({
     },
   });
 
+  const sendMessageWithActiveTools = useCallback(
+    (
+      message?: Parameters<typeof sendMessage>[0],
+      options?: Parameters<typeof sendMessage>[1],
+    ) => {
+      const mergedBody = { ...(options?.body ?? {}), activeTools };
+      return sendMessage(message, { ...options, body: mergedBody });
+    },
+    [sendMessage, activeTools],
+  );
+
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
 
@@ -133,7 +191,7 @@ export function Chat({
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
-      sendMessage({
+      sendMessageWithActiveTools({
         role: 'user' as const,
         parts: [{ type: 'text', text: query }],
       });
@@ -141,7 +199,7 @@ export function Chat({
       setHasAppendedQuery(true);
       window.history.replaceState({}, '', `/chat/${id}`);
     }
-  }, [query, sendMessage, hasAppendedQuery, id]);
+  }, [query, sendMessageWithActiveTools, hasAppendedQuery, id]);
 
   // Fetch agent context if this is an agent chat
   useEffect(() => {
@@ -214,11 +272,13 @@ export function Chat({
               setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
-              sendMessage={sendMessage}
+              sendMessage={sendMessageWithActiveTools}
               selectedVisibilityType={visibilityType}
               reasoningEffort={reasoningEffort}
               setReasoningEffort={setReasoningEffort}
               usage={usage}
+              activeTools={activeTools}
+              setActiveTools={setActiveTools}
             />
           )}
         </div>
@@ -232,7 +292,7 @@ export function Chat({
         stop={stop}
         attachments={attachments}
         setAttachments={setAttachments}
-        sendMessage={sendMessage}
+        sendMessage={sendMessageWithActiveTools}
         messages={messages}
         setMessages={setMessages}
         regenerate={regenerate}
@@ -240,6 +300,8 @@ export function Chat({
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
         reasoningEffort={reasoningEffort}
+        activeTools={activeTools}
+        setActiveTools={setActiveTools}
       />
     </>
   );

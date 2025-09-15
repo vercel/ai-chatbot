@@ -95,6 +95,7 @@ export async function POST(request: Request) {
       selectedVisibilityType,
       agentSlug,
       agentContext: previewAgentContext,
+      activeTools: requestedActiveTools,
     }: {
       id: string;
       message: ChatMessage;
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
         agentDescription?: string;
         agentPrompt?: string;
       };
+      activeTools?: Array<string>;
     } = requestBody;
 
     const session = await withAuth();
@@ -304,6 +306,14 @@ export async function POST(request: Request) {
         }
 
         // 1) Validate the full UI history against your tool schemas
+        const availableToolIds = Object.keys(tools);
+        const activeToolsForRun =
+          requestedActiveTools !== undefined
+            ? availableToolIds.filter((toolId) =>
+                requestedActiveTools.includes(toolId),
+              )
+            : availableToolIds;
+
         const validated = await validateUIMessages({
           messages: uiMessages,
           tools, // <= critical for typed tool parts like tool-web_search_preview
@@ -333,7 +343,7 @@ export async function POST(request: Request) {
           }),
           messages: modelMessages, // <= not UI parts anymore
           stopWhen: stepCountIs(50),
-          activeTools: Object.keys(tools),
+          activeTools: activeToolsForRun,
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: tools,
           experimental_telemetry: {

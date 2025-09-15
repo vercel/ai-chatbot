@@ -1,12 +1,16 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DefaultChatTransport } from 'ai';
 import { generateUUID, fetchWithErrorHandlers } from '@/lib/utils';
 import { Messages } from '@/components/messages';
 import { MultimodalInput } from '@/components/multimodal-input';
 import type { Attachment, ChatMessage } from '@/lib/types';
+import {
+  DEFAULT_ACTIVE_TOOL_IDS,
+  sortActiveTools,
+} from '@/lib/ai/tools/active-tools';
 
 interface PreviewChatCoreProps {
   formData: {
@@ -25,6 +29,23 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
   const [reasoningEffort, setReasoningEffort] = useState<
     'low' | 'medium' | 'high'
   >('medium');
+  const [activeTools, setActiveTools] = useState<Array<string>>(
+    () => [...DEFAULT_ACTIVE_TOOL_IDS],
+  );
+
+  const updateActiveTools = useCallback(
+    (next: Array<string> | ((current: Array<string>) => Array<string>)) => {
+      setActiveTools((current) => {
+        const base = sortActiveTools(current);
+        const updated =
+          typeof next === 'function'
+            ? (next as (value: Array<string>) => Array<string>)(base)
+            : next;
+        return sortActiveTools(updated);
+      });
+    },
+    [],
+  );
 
   // Keep latest values in refs to avoid stale closure in transport
   const formDataRef = useRef(formData);
@@ -89,6 +110,17 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
       onFinish: () => {},
     });
 
+  const sendMessageWithActiveTools = useCallback(
+    (
+      message?: Parameters<typeof sendMessage>[0],
+      options?: Parameters<typeof sendMessage>[1],
+    ) => {
+      const mergedBody = { ...(options?.body ?? {}), activeTools };
+      return sendMessage(message, { ...options, body: mergedBody });
+    },
+    [sendMessage, activeTools],
+  );
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
@@ -116,13 +148,15 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
           setAttachments={setAttachments}
           messages={messages}
           setMessages={setMessages}
-          sendMessage={sendMessage}
+          sendMessage={sendMessageWithActiveTools}
           selectedVisibilityType="private"
           reasoningEffort={reasoningEffort}
           setReasoningEffort={setReasoningEffort}
           usage={undefined}
           hideSuggestions={true}
           disableHistoryUpdate={true}
+          activeTools={activeTools}
+          setActiveTools={updateActiveTools}
         />
       </div>
     </div>
