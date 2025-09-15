@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon, MemoryIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, StopIcon, } from './icons';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
 import { SuggestedActions } from './suggested-actions';

@@ -26,11 +26,6 @@ import { generateUUID } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface AgentQuickViewProps {
   agent: Agent | null;
@@ -39,7 +34,12 @@ interface AgentQuickViewProps {
   currentUserId?: string;
 }
 
-export function AgentQuickView({ agent, open, onOpenChange, currentUserId }: AgentQuickViewProps) {
+export function AgentQuickView({
+  agent,
+  open,
+  onOpenChange,
+  currentUserId,
+}: AgentQuickViewProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -71,7 +71,7 @@ export function AgentQuickView({ agent, open, onOpenChange, currentUserId }: Age
 
   const handleDelete = async () => {
     if (!agent) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/agents/${agent.slug}`, {
@@ -85,7 +85,7 @@ export function AgentQuickView({ agent, open, onOpenChange, currentUserId }: Age
       toast.success('Agent deleted successfully');
       setShowDeleteDialog(false);
       onOpenChange(false);
-      
+
       // Refresh the page to update the agent list
       router.refresh();
     } catch (error) {
@@ -168,7 +168,8 @@ export function AgentQuickView({ agent, open, onOpenChange, currentUserId }: Age
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Agent</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{agent?.name}"? This action cannot be undone and will remove the agent permanently.
+              Are you sure you want to delete &ldquo;{agent?.name}&rdquo;? This
+              action cannot be undone and will remove the agent permanently.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -186,5 +187,3 @@ export function AgentQuickView({ agent, open, onOpenChange, currentUserId }: Age
     </>
   );
 }
-
-

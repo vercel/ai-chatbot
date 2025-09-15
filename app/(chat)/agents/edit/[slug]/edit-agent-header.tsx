@@ -10,7 +10,11 @@ interface EditAgentHeaderProps {
   isSubmitting?: boolean;
 }
 
-export function EditAgentHeader({ agent, onSubmit, isSubmitting }: EditAgentHeaderProps) {
+export function EditAgentHeader({
+  agent,
+  onSubmit,
+  isSubmitting,
+}: EditAgentHeaderProps) {
   const router = useRouter();
 
   return (
@@ -18,7 +22,7 @@ export function EditAgentHeader({ agent, onSubmit, isSubmitting }: EditAgentHead
       <div>
         <h1 className="text-xl font-semibold">Edit Agent</h1>
         <p className="text-sm text-muted-foreground">
-          Update "{agent.name}" configuration and settings
+          Update &ldquo;{agent.name}&rdquo; configuration and settings
         </p>
       </div>
       <div className="flex gap-4">
@@ -30,10 +34,7 @@ export function EditAgentHeader({ agent, onSubmit, isSubmitting }: EditAgentHead
         >
           Cancel
         </Button>
-        <Button
-          onClick={onSubmit}
-          disabled={isSubmitting}
-        >
+        <Button onClick={onSubmit} disabled={isSubmitting}>
           {isSubmitting ? 'Updating...' : 'Update Agent'}
         </Button>
       </div>

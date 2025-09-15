@@ -1,17 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { 
-  ChevronDownIcon,
-  ChevronUpIcon
-} from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useState } from 'react';
-
 
 interface AgentPromptPreviewProps {
   agentPrompt: string;
 }
-
 
 export function AgentPromptPreview({ agentPrompt }: AgentPromptPreviewProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -19,7 +14,7 @@ export function AgentPromptPreview({ agentPrompt }: AgentPromptPreviewProps) {
   const isLong = agentPrompt.length > charLimit;
   const displayText =
     !isExpanded && isLong
-      ? agentPrompt.slice(0, charLimit) + '...'
+      ? `${agentPrompt.slice(0, charLimit)}...`
       : agentPrompt;
 
   return (
@@ -28,7 +23,7 @@ export function AgentPromptPreview({ agentPrompt }: AgentPromptPreviewProps) {
         {displayText}
       </pre>
       {!isExpanded && isLong && (
-        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-lg pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-lg pointer-events-none" />
       )}
       {isLong && (
         <Button

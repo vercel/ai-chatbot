@@ -1,12 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@workos-inc/authkit-nextjs';
-import { getPublicAgents } from '@/lib/db/queries';
+import { getPublicAgents, getDatabaseUserFromWorkOS } from '@/lib/db/queries';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { agent, type Agent } from '@/lib/db/schema';
+import { agent } from '@/lib/db/schema';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { getDatabaseUserFromWorkOS } from '@/lib/db/queries';
 import * as schema from '@/lib/db/schema';
 
 // biome-ignore lint: Forbidden non-null assertion.
