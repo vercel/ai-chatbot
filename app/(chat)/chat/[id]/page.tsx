@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
-import { auth } from '@/app/(auth)/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
@@ -18,17 +18,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   const session = await auth();
+  const user = await currentUser();
 
-  if (!session) {
-    redirect('/api/auth/guest');
+  // Clerk middleware handles authentication, so this check is redundant
+  // but kept for explicitness
+  if (!session.userId) {
+    redirect('/login');
   }
 
   if (chat.visibility === 'private') {
-    if (!session.user) {
+    if (!user) {
       return notFound();
     }
 
-    if (session.user.id !== chat.userId) {
+    if (user.id !== chat.userId) {
       return notFound();
     }
   }
@@ -50,7 +53,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialMessages={uiMessages}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
+          isReadonly={user?.id !== chat.userId}
           session={session}
           autoResume={true}
           initialLastContext={chat.lastContext ?? undefined}
@@ -67,7 +70,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={uiMessages}
         initialChatModel={chatModelFromCookie.value}
         initialVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
+        isReadonly={user?.id !== chat.userId}
         session={session}
         autoResume={true}
         initialLastContext={chat.lastContext ?? undefined}

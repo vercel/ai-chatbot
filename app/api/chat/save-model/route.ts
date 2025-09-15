@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { saveChatModelAsCookie } from '../../../(chat)/actions';
 
 export async function POST(request: NextRequest) {

@@ -1,9 +1,6 @@
 import {
   customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
 } from 'ai';
-import { gateway } from '@ai-sdk/gateway';
 import { openrouter } from './models';
 import { isTestEnvironment } from '../constants';
 

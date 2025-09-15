@@ -17,7 +17,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { toast } from './toast';
 import { LoaderIcon } from './icons';
 
 export function SidebarUserNav() {

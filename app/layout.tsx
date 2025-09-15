@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ClerkProvider } from '@clerk/nextjs';
+import { checkEnvironmentVariables } from '@/lib/utils';
 
 import './globals.css';
 
@@ -53,6 +54,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Debug: Check environment variables on startup
+  checkEnvironmentVariables();
+
   return (
     <ClerkProvider>
       <html

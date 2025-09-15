@@ -114,3 +114,34 @@ export function getTextFromMessage(message: ChatMessage): string {
     .map((part) => part.text)
     .join('');
 }
+
+// Debug utility to check environment variables
+export function checkEnvironmentVariables() {
+  const requiredVars = [
+    'OPENROUTER_API_KEY',
+    'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
+    'CLERK_SECRET_KEY',
+    'AUTH_SECRET',
+    'POSTGRES_URL',
+    'BLOB_READ_WRITE_TOKEN',
+  ];
+
+  const optionalVars = [
+    'OPENROUTER_BASE_URL',
+    'NEXT_PUBLIC_APP_URL',
+    'AI_GATEWAY_API_KEY',
+  ];
+
+  console.log('Environment Variables Check:');
+  console.log('Required variables:');
+  requiredVars.forEach(varName => {
+    const value = process.env[varName];
+    console.log(`  ${varName}: ${value ? '✓ present' : '✗ missing'}`);
+  });
+
+  console.log('Optional variables:');
+  optionalVars.forEach(varName => {
+    const value = process.env[varName];
+    console.log(`  ${varName}: ${value ? '✓ present' : '✗ missing'}`);
+  });
+}

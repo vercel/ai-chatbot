@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     }
 
     // For Clerk, all authenticated users are regular users
-    const userType: 'regular' = 'regular';
+    const userType = 'regular' as const;
 
     const messageCount = await getMessageCountByUserId({
       id: userId,

@@ -1,5 +1,5 @@
  import { openrouter } from './models';
- import { LanguageModel } from 'ai';
+ import type { LanguageModel } from 'ai';
  
  export function getModel(modelId?: string): LanguageModel {
    const selectedModel = modelId || process.env.OPENROUTER_MODEL || 'google/gemini-flash-1.5';
