@@ -64,7 +64,6 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 ```bash
 pnpm install
-pnpm drizzle-kit migrate
 pnpm dev
 ```
 

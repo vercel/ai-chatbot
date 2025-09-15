@@ -8,8 +8,8 @@ import type { AppUsage } from './usage';
 
 import type { ArtifactKind } from '@/components/artifact';
 import type { Suggestion } from './db/schema';
-import { scrapeSite } from './ai/tools/scrape-site';
-import { searchWeb } from './ai/tools/web-search';
+import type { scrapeSite } from './ai/tools/scrape-site';
+import type { searchWeb } from './ai/tools/web-search';
 
 export type DataPart = { type: 'append-message'; message: string };
 

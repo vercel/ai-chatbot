@@ -197,7 +197,7 @@ const PurePreviewMessage = ({
                   {state === 'input-available' && <ToolInput input={part.input} />}
                   {state === 'output-available' && (
                     <ToolOutput 
-                    output={"Searched the web!"}
+                    output={<pre className="whitespace-pre-wrap text-sm">{JSON.stringify(part.output, null, 2)}</pre>}
                     errorText={undefined}
                 />
                 )}
