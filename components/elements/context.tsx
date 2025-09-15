@@ -71,23 +71,6 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   );
 };
 
-function TokensWithCost({
-  tokens,
-  costText,
-}: {
-  tokens?: number;
-  costText?: string;
-}) {
-  const hasCost = costText !== undefined && costText !== null;
-  return (
-    <span>
-      {tokens === undefined ? '—' : tokens}
-      {hasCost ? (
-        <span className="ml-2 text-muted-foreground">• ${costText}</span>
-      ) : null}
-    </span>
-  );
-}
 
 function InfoRow({
   label,
@@ -101,7 +84,16 @@ function InfoRow({
   return (
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
-      <TokensWithCost tokens={tokens} costText={costText} />
+      <div className="flex items-center gap-2 font-mono">
+        <span className="text-right min-w-[4ch]">
+          {tokens === undefined ? '—' : tokens.toLocaleString()}
+        </span>
+        {costText !== undefined && costText !== null && (
+          <span className="text-muted-foreground">
+            ${parseFloat(costText).toFixed(6)}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -182,7 +174,10 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                 <Separator className="mt-1" />
                 <div className="flex justify-between items-center pt-1 text-xs">
                   <span className="text-muted-foreground">Total cost</span>
-                  <span>${usage?.costUSD?.totalUSD?.toString()}</span>
+                  <div className="flex items-center gap-2 font-mono">
+                    <span className="text-right min-w-[4ch]"></span>
+                    <span>${parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}</span>
+                  </div>
                 </div>
               </>
             )}
