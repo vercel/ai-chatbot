@@ -143,13 +143,6 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                 costText={usage?.costUSD?.cacheReadUSD?.toString()}
               />
             )}
-            {usage?.cachedInputTokens && usage.cachedInputTokens > 0 && (
-              <InfoRow
-                label="Cache Writes"
-                tokens={usage?.cachedInputTokens}
-                costText={usage?.costUSD?.cacheWriteUSD?.toString()}
-              />
-            )}
             <InfoRow
               label="Input"
               tokens={usage?.inputTokens}

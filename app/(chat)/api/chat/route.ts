@@ -208,9 +208,17 @@ export async function POST(request: Request) {
               const providers = await getTokenlensCatalog();
               const modelId =
                 myProvider.languageModel(selectedChatModel).modelId;
-              if (!modelId) return;
+              if (!modelId) {
+                finalMergedUsage = usage;
+                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                return;
+              }
 
-              if (!providers) return;
+              if (!providers) {
+                finalMergedUsage = usage;
+                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                return;
+              }
 
               const summary = getUsage({ modelId, usage, providers });
               finalMergedUsage = { ...usage, ...summary, modelId } as AppUsage;
