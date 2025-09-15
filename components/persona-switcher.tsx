@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePersona, type PersonaMode } from "@/lib/persona/context";
+import { trackEvent } from "@/lib/analytics/events";
 
 export function PersonaSwitcher() {
   const { mode, setMode } = usePersona();
@@ -17,7 +18,14 @@ export function PersonaSwitcher() {
       <Label htmlFor="persona-mode">Persona Mode</Label>
       <Select
         value={mode}
-        onValueChange={(val) => setMode(val as PersonaMode)}
+        onValueChange={(val) => {
+          const nextMode = val as PersonaMode;
+          setMode(nextMode);
+          trackEvent("persona_switch", {
+            persona: nextMode,
+            ts: new Date().toISOString(),
+          });
+        }}
       >
         <SelectTrigger id="persona-mode">
           <SelectValue />

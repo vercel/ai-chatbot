@@ -22,11 +22,32 @@ import {
 } from "@/components/persona/integrator";
 import { usePersona } from "@/lib/persona/context";
 import { NextCTA } from "@/components/ui/NextCTA";
+import Breadcrumbs from "@/components/nav/Breadcrumbs";
+import { trackEvent } from "@/lib/analytics/events";
+import { useRouter } from "next/navigation";
 
 export default function PersonaPage() {
+  const router = useRouter();
   const { mode } = usePersona();
+
+  const handleContinue = () => {
+    trackEvent("journey_cta_click", {
+      persona: mode,
+      phase: "persona",
+      ctaLabel: "Continuar",
+      to: "/journey",
+    });
+    router.push("/journey");
+  };
+
   return (
     <main className="p-4 space-y-4">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Perfil" },
+        ]}
+      />
       <h1 className="text-2xl font-bold">Selecione seu perfil</h1>
       <p className="text-sm text-muted-foreground">
         Escolha a opção que melhor representa você.
@@ -81,7 +102,7 @@ export default function PersonaPage() {
           </FeatureGate>
         </div>
       )}
-      <NextCTA primary={{ label: "Continuar", href: "/journey" }} />
+      <NextCTA primary={{ label: "Continuar", onClick: handleContinue }} />
     </main>
   );
 }

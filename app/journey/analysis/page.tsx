@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,11 @@ import { ViabilityReport } from "@/components/analysis/ViabilityReport";
 import { analyzeViabilityAction, exportAnalysisResultAction } from "@/app/actions/analyzeViabilityAction";
 import type { EnergyInput, ViabilityResult } from "@/lib/analysis/types";
 import { usePersona } from "@/lib/persona/context";
+import Breadcrumbs from "@/components/nav/Breadcrumbs";
+import { NextCTA } from "@/components/ui/NextCTA";
+import { useJourneyActions, usePhase } from "@/apps/web/lib/journey/hooks";
+import { getPhaseRoute } from "@/apps/web/lib/journey/map";
+import { trackEvent } from "@/lib/analytics/events";
 
 /**
  * Página de demonstração do módulo de análise de viabilidade
@@ -19,14 +24,39 @@ import { usePersona } from "@/lib/persona/context";
 export default function AnalysisPage() {
   const router = useRouter();
   const { mode } = usePersona();
+  const journeyPhase = usePhase();
+  const { skip } = useJourneyActions();
   const [isPending, startTransition] = useTransition();
 
-  // Estados do componente
   const [currentStep, setCurrentStep] = useState<"input" | "result">("input");
   const [analysisResult, setAnalysisResult] = useState<ViabilityResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Handler para submissão dos dados de energia
+  useEffect(() => {
+    if (journeyPhase !== "Analysis") {
+      skip("Analysis");
+    }
+  }, [journeyPhase, skip]);
+
+  useEffect(() => {
+    trackEvent("journey_phase_view", {
+      persona: mode,
+      phase: "Analysis",
+      route: getPhaseRoute("Analysis"),
+      ts: new Date().toISOString(),
+    });
+  }, [mode]);
+
+  useEffect(() => {
+    if (analysisResult) {
+      trackEvent("analysis_ready_view", {
+        persona: mode,
+        route: getPhaseRoute("Analysis"),
+        ts: new Date().toISOString(),
+      });
+    }
+  }, [analysisResult, mode]);
+
   const handleEnergyInputSubmit = async (data: EnergyInput) => {
     setError(null);
 
@@ -47,14 +77,18 @@ export default function AnalysisPage() {
     });
   };
 
-  // Handler para nova análise
-  const handleNewAnalysis = () => {
+  const handleNewAnalysis = useCallback(() => {
+    trackEvent("journey_cta_click", {
+      persona: mode,
+      phase: "Analysis",
+      ctaLabel: "Editar dados",
+      to: getPhaseRoute("Analysis"),
+    });
     setCurrentStep("input");
     setAnalysisResult(null);
     setError(null);
-  };
+  }, [mode]);
 
-  // Handler para exportar resultado
   const handleExport = async () => {
     if (!analysisResult) return;
 
@@ -62,7 +96,6 @@ export default function AnalysisPage() {
       const result = await exportAnalysisResultAction(analysisResult, "json");
 
       if (result.success && result.data && result.filename) {
-        // Criar blob e download
         const blob = new Blob([result.data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -78,11 +111,9 @@ export default function AnalysisPage() {
     }
   };
 
-  // Handler para compartilhar
   const handleShare = () => {
     if (!analysisResult) return;
 
-    // Implementação simplificada de compartilhamento
     const shareData = {
       title: "Análise de Viabilidade - Sistema Fotovoltaico",
       text: analysisResult.summary.headline,
@@ -92,15 +123,12 @@ export default function AnalysisPage() {
     if (navigator.share) {
       navigator.share(shareData);
     } else {
-      // Fallback: copiar para clipboard
       navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
       alert("Link copiado para a área de transferência!");
     }
   };
 
-  // Handler para contato
   const handleContact = () => {
-    // Implementação simplificada de contato
     const phone = mode === "owner" ? "0800-123-4567" : "comercial@empresa.com";
     const subject = "Análise de Viabilidade - Sistema Fotovoltaico";
     const body = `Olá, gostaria de mais informações sobre a análise de viabilidade realizada.\n\n${analysisResult?.summary.headline}`;
@@ -112,10 +140,27 @@ export default function AnalysisPage() {
     }
   };
 
+  const handleProceed = useCallback(() => {
+    trackEvent("journey_cta_click", {
+      persona: mode,
+      phase: "Analysis",
+      ctaLabel: "Ir para Dimensionamento",
+      to: getPhaseRoute("Dimensioning"),
+    });
+    skip("Dimensioning");
+  }, [mode, skip]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Cabeçalho */}
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Jornada", href: "/journey" },
+            { label: "Análise" },
+          ]}
+        />
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -134,8 +179,7 @@ export default function AnalysisPage() {
               <p className="text-gray-600">
                 {mode === "owner"
                   ? "Descubra se um sistema fotovoltaico é viável para você"
-                  : "Análise técnica completa para seu cliente"
-                }
+                  : "Análise técnica completa para seu cliente"}
               </p>
             </div>
           </div>
@@ -164,20 +208,6 @@ export default function AnalysisPage() {
           )}
         </div>
 
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-500">
-          <span>Jornada</span>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">Análise</span>
-          {currentStep === "result" && (
-            <>
-              <span>/</span>
-              <span className="text-blue-600 font-medium">Resultado</span>
-            </>
-          )}
-        </nav>
-
-        {/* Conteúdo principal */}
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -186,26 +216,22 @@ export default function AnalysisPage() {
 
         {currentStep === "input" ? (
           <div className="space-y-6">
-            {/* Card de introdução */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calculator className="size-5" />
                   {mode === "owner"
                     ? "Vamos analisar sua viabilidade"
-                    : "Análise técnica do projeto"
-                  }
+                    : "Análise técnica do projeto"}
                 </CardTitle>
                 <CardDescription>
                   {mode === "owner"
                     ? "Preencha os dados abaixo para descobrir se um sistema fotovoltaico é uma boa opção para você."
-                    : "Forneça os dados técnicos do cliente para uma análise completa de viabilidade."
-                  }
+                    : "Forneça os dados técnicos do cliente para uma análise completa de viabilidade."}
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            {/* Formulário de entrada */}
             <EnergyInputForm
               onSubmit={handleEnergyInputSubmit}
               isLoading={isPending}
@@ -213,7 +239,6 @@ export default function AnalysisPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Resultado da análise */}
             {analysisResult && (
               <ViabilityReport
                 result={analysisResult}
@@ -224,61 +249,16 @@ export default function AnalysisPage() {
               />
             )}
 
-            {/* Ações rápidas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximos passos</CardTitle>
-                <CardDescription>
-                  {mode === "owner"
-                    ? "Baseado na análise, aqui estão suas opções:"
-                    : "Ações recomendadas para este projeto:"
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button
-                    onClick={handleContact}
-                    className="flex items-center gap-2 h-auto p-4"
-                    variant="default"
-                  >
-                    <Phone className="size-5" />
-                    <div className="text-left">
-                      <div className="font-medium">Falar com especialista</div>
-                      <div className="text-sm opacity-90">
-                        {mode === "owner" ? "Tirar dúvidas" : "Enviar proposta"}
-                      </div>
-                    </div>
-                  </Button>
-
-                  <Button
-                    onClick={handleNewAnalysis}
-                    className="flex items-center gap-2 h-auto p-4"
-                    variant="outline"
-                  >
-                    <Calculator className="size-5" />
-                    <div className="text-left">
-                      <div className="font-medium">Nova análise</div>
-                      <div className="text-sm opacity-90">Testar outros cenários</div>
-                    </div>
-                  </Button>
-
-                  <Button
-                    onClick={handleExport}
-                    className="flex items-center gap-2 h-auto p-4"
-                    variant="outline"
-                  >
-                    <Download className="size-5" />
-                    <div className="text-left">
-                      <div className="font-medium">Exportar relatório</div>
-                      <div className="text-sm opacity-90">Salvar para referência</div>
-                    </div>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <NextCTA
+              primary={{ label: "Ir para Dimensionamento", onClick: handleProceed }}
+              secondary={{ label: "Editar dados", onClick: handleNewAnalysis }}
+            />
           </div>
         )}
+
+        <a href="/chat?open=help" className="text-sm underline">
+          Precisa de ajuda?
+        </a>
       </div>
     </div>
   );

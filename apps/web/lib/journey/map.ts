@@ -82,3 +82,51 @@ export const phases: Phase[] = [
   'Recommendation',
   'LeadMgmt',
 ];
+
+export const phaseLabels: Record<Phase, string> = {
+  Investigation: 'Investigação',
+  Detection: 'Detecção',
+  Analysis: 'Análise',
+  Dimensioning: 'Dimensionamento',
+  Simulation: 'Simulação',
+  Installation: 'Instalação',
+  Monitoring: 'Monitoramento',
+  Recommendation: 'Recomendação',
+  LeadMgmt: 'Gestão de Leads',
+};
+
+export const phaseRoutes: Record<Phase, string> = {
+  Investigation: '/journey/investigation',
+  Detection: '/journey/detection',
+  Analysis: '/journey/analysis',
+  Dimensioning: '/journey/dimensioning',
+  Simulation: '/journey/simulation',
+  Installation: '/journey/installation',
+  Monitoring: '/journey/monitoring',
+  Recommendation: '/journey/recommendation',
+  LeadMgmt: '/journey/leadmgmt',
+};
+
+const slugToPhaseMap: Record<string, Phase> = {
+  investigation: 'Investigation',
+  detection: 'Detection',
+  analysis: 'Analysis',
+  dimensioning: 'Dimensioning',
+  simulation: 'Simulation',
+  installation: 'Installation',
+  monitoring: 'Monitoring',
+  recommendation: 'Recommendation',
+  leadmgmt: 'LeadMgmt',
+};
+
+export function phaseFromSlug(slug: string): Phase | undefined {
+  return slugToPhaseMap[slug.toLowerCase()];
+}
+
+export function getPhaseRoute(phase: Phase): string {
+  return phaseRoutes[phase];
+}
+
+export function getPhaseLabel(phase: Phase): string {
+  return phaseLabels[phase];
+}
