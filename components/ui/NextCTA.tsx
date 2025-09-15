@@ -14,7 +14,7 @@ interface NextCTAProps {
 
 export function NextCTA({ primary, secondary }: NextCTAProps) {
   const PrimaryComponent = primary.href ? (
-    <Button asChild>
+    <Button asChild onClick={primary.onClick}>
       <Link href={primary.href}>{primary.label}</Link>
     </Button>
   ) : (
@@ -23,7 +23,7 @@ export function NextCTA({ primary, secondary }: NextCTAProps) {
 
   const SecondaryComponent = secondary ? (
     secondary.href ? (
-      <Button variant="outline" asChild>
+      <Button variant="outline" asChild onClick={secondary.onClick}>
         <Link href={secondary.href}>{secondary.label}</Link>
       </Button>
     ) : (

@@ -1,0 +1,74 @@
+{
+  "graph_overview": {
+    "nodes": 17,
+    "edges": 16,
+    "isolated_nodes": ["/test-chat", "/test-canvas"],
+    "orphan_edges": []
+  },
+  "dead_ends": [],
+  "confusing_ux": [
+    {
+      "route": "/journey/detection",
+      "issue": "resultado-dependente",
+      "evidence": "A CTA principal só aparece depois da análise e o estado vazio não orienta sobre formatos de arquivo suportados.",
+      "suggestion": "Adicionar mensagem de instrução abaixo do upload com exemplos de arquivos aceitos."
+    }
+  ],
+  "persona_gate_gaps": [
+    {
+      "route": "/monitoring",
+      "persona": "owner",
+      "missing_alternative": "Indicador de que painel completo é exclusivo para integradores",
+      "suggestion": "Encapsular em FeatureGate e mostrar callout de upgrade para owners."
+    }
+  ],
+  "states_matrix": [
+    { "route": "/journey/detection", "hasLoading": true, "hasEmpty": true, "hasError": true, "hasSuccess": true },
+    { "route": "/journey/analysis", "hasLoading": true, "hasEmpty": true, "hasError": true, "hasSuccess": true },
+    { "route": "/upload-bill", "hasLoading": true, "hasEmpty": true, "hasError": true, "hasSuccess": true }
+  ],
+  "cta_matrix": [
+    { "route": "/journey/investigation", "primary": "Ir para Detecção", "to": "/journey/detection", "secondary": "Voltar para início", "to2": "/" },
+    { "route": "/journey/detection", "primary": "Ir para Análise", "to": "/journey/analysis", "secondary": "Reenviar imagens", "to2": "/journey/detection" },
+    { "route": "/journey/analysis", "primary": "Ir para Dimensionamento", "to": "/journey/dimensioning", "secondary": "Editar dados", "to2": "/journey/analysis" },
+    { "route": "/journey/dimensioning", "primary": "Ir para Simulação", "to": "/journey/simulation", "secondary": "Ajustar dimensionamento", "to2": "/journey/dimensioning" },
+    { "route": "/journey/simulation", "primary": "Ir para Recomendação", "to": "/journey/recommendation", "secondary": "Refinar parâmetros", "to2": "/journey/dimensioning" }
+  ],
+  "a11y_findings": [
+    {
+      "route": "/journey/[phase]",
+      "issue": "links-sem-descrição",
+      "fix": "Adicionar aria-label contextual nos botões rápidos de avanço para leitores de tela."
+    }
+  ],
+  "i18n_findings": [
+    {
+      "route": "/persona",
+      "issue": "componentes-em-inglês",
+      "fix": "Traduzir rótulos dos módulos avançados (ex.: Pricing Rules, Run Batch) para PT-BR."
+    }
+  ],
+  "metrics_plan": {
+    "events": [
+      "journey_phase_view",
+      "journey_cta_click",
+      "upload_bill_submitted",
+      "analysis_ready_view",
+      "persona_switch",
+      "guest_limit_banner_view",
+      "guest_upgrade_click"
+    ],
+    "schema": { "userId": "hash", "persona": "owner|integrator|guest", "phase": "string", "route": "string", "ts": "ISO" }
+  },
+  "quick_patches": [
+    { "title": "CTA dinâmica nas fases", "file": "app/journey/[phase]/page.tsx", "snippet": "<NextCTA primary={{ label: ... onClick: handleNavigate }} />" },
+    { "title": "Redirect pós upload", "file": "app/upload-bill/page.tsx", "snippet": "trackEvent(\"upload_bill_submitted\", {...}); router.push('/journey/analysis');" },
+    { "title": "Banner guest limit", "file": "components/GuestLimitBanner.tsx", "snippet": "<Link href=\"/register?from=guest-limit\" onClick={handleUpgradeClick}>Criar conta</Link>" }
+  ],
+  "next_best_actions": [
+    "Adicionar instruções de tamanho/formatos no upload de detecção",
+    "Exibir resumo de cálculo antes do CTA em dimensionamento",
+    "Gatear /monitoring para integradores com mensagem de upgrade"
+  ],
+  "summary": "Breadcrumbs e CTAs foram alinhados ao fluxo Owner/Integrator, com métricas e banner de limite para guests; restam ajustes de i18n e instruções auxiliares nas fases automáticas."
+}

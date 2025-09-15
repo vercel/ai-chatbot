@@ -13,29 +13,33 @@ export default meta;
 type Story = StoryObj<typeof RoofUpload>;
 
 export const Empty: Story = {
-	args: {
-		onAnalyze: (files) => console.log('Analyzing', files),
-		isAnalyzing: false,
-	},
+        args: {
+                persona: 'owner',
+                onAnalyze: (files) => console.log('Analyzing', files),
+                isAnalyzing: false,
+        },
 };
 
 export const WithFiles: Story = {
-	args: {
-		onAnalyze: (files) => console.log('Analyzing', files),
-		isAnalyzing: false,
-	},
+        args: {
+                persona: 'owner',
+                onAnalyze: (files) => console.log('Analyzing', files),
+                isAnalyzing: false,
+        },
 };
 
 export const Analyzing: Story = {
-	args: {
-		onAnalyze: (files) => console.log('Analyzing', files),
-		isAnalyzing: true,
-	},
+        args: {
+                persona: 'owner',
+                onAnalyze: (files) => console.log('Analyzing', files),
+                isAnalyzing: true,
+        },
 };
 
 export const ErrorState: Story = {
-	args: {
-		onAnalyze: (files) => console.log('Analyzing', files),
-		isAnalyzing: false,
-	},
+        args: {
+                persona: 'owner',
+                onAnalyze: (files) => console.log('Analyzing', files),
+                isAnalyzing: false,
+        },
 };
