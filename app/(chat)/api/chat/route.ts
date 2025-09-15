@@ -43,6 +43,8 @@ import { fetchModels } from 'tokenlens/fetch';
 import { getUsage } from 'tokenlens/helpers';
 import type { ModelCatalog } from 'tokenlens/core';
 import type { AppUsage } from '@/lib/usage';
+import { searchWeb } from '@/lib/ai/tools/web-search';
+import { scrapeSite } from '@/lib/ai/tools/scrape-site';
 
 export const maxDuration = 60;
 
@@ -185,6 +187,8 @@ export async function POST(request: Request) {
               ? []
               : [
                   'getWeather',
+                  'searchWeb',
+                  'scrapeSite',
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
@@ -192,6 +196,8 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
             getWeather,
+            searchWeb,
+            scrapeSite,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({

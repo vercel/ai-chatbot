@@ -85,12 +85,12 @@ function InfoRow({
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2 font-mono">
-        <span className="text-right min-w-[4ch]">
+        <span className='min-w-[4ch] text-right'>
           {tokens === undefined ? '—' : tokens.toLocaleString()}
         </span>
-        {costText !== undefined && costText !== null && !isNaN(parseFloat(costText)) && (
+        {costText !== undefined && costText !== null && !Number.isNaN(Number.parseFloat(costText)) && (
           <span className="text-muted-foreground">
-            ${parseFloat(costText).toFixed(6)}
+            ${Number.parseFloat(costText).toFixed(6)}
           </span>
         )}
       </div>
@@ -111,7 +111,7 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'inline-flex items-center gap-1 select-none rounded-md text-sm',
+            'inline-flex select-none items-center gap-1 rounded-md text-sm',
             'cursor-pointer bg-background text-foreground',
             className,
           )}
@@ -165,13 +165,13 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
             {usage?.costUSD?.totalUSD !== undefined && (
               <>
                 <Separator className="mt-1" />
-                <div className="flex justify-between items-center pt-1 text-xs">
+                <div className='flex items-center justify-between pt-1 text-xs'>
                   <span className="text-muted-foreground">Total cost</span>
                   <div className="flex items-center gap-2 font-mono">
-                    <span className="text-right min-w-[4ch]"></span>
+                    <span className='min-w-[4ch] text-right' />
                     <span>
-                      {!isNaN(parseFloat(usage.costUSD.totalUSD.toString())) 
-                        ? `$${parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
+                      {!Number.isNaN(Number.parseFloat(usage.costUSD.totalUSD.toString())) 
+                        ? `$${Number.parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
                         : '—'
                       }
                     </span>
