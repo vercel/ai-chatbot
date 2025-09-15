@@ -1,8 +1,8 @@
 'use client';
 
-import { DefaultChatTransport, type LanguageModelUsage } from 'ai';
+import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -21,7 +21,18 @@ import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
+import type { AppUsage } from '@/lib/usage';
 import { useDataStream } from './data-stream-provider';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function Chat({
   id,
@@ -40,7 +51,7 @@ export function Chat({
   isReadonly: boolean;
   session: Session;
   autoResume: boolean;
-  initialLastContext?: LanguageModelUsage;
+  initialLastContext?: AppUsage;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -51,9 +62,14 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
-  const [usage, setUsage] = useState<LanguageModelUsage | undefined>(
-    initialLastContext,
-  );
+  const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
+  const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
+  const [currentModelId, setCurrentModelId] = useState(initialChatModel);
+  const currentModelIdRef = useRef(currentModelId);
+  
+  useEffect(() => {
+    currentModelIdRef.current = currentModelId;
+  }, [currentModelId]);
 
   const {
     messages,
@@ -76,7 +92,7 @@ export function Chat({
           body: {
             id,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
+            selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
             ...body,
           },
@@ -85,19 +101,24 @@ export function Chat({
     }),
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
-      if (dataPart.type === 'data-usage') {
-        setUsage(dataPart.data);
-      }
+      if (dataPart.type === 'data-usage') setUsage(dataPart.data);
     },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
       if (error instanceof ChatSDKError) {
-        toast({
-          type: 'error',
-          description: error.message,
-        });
+        // Check if it's a credit card error
+        if (
+          error.message?.includes('AI Gateway requires a valid credit card')
+        ) {
+          setShowCreditCardAlert(true);
+        } else {
+          toast({
+            type: 'error',
+            description: error.message,
+          });
+        }
       }
     },
   });
@@ -170,7 +191,8 @@ export function Chat({
               setMessages={setMessages}
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
-              selectedModelId={initialChatModel}
+              selectedModelId={currentModelId}
+              onModelChange={setCurrentModelId}
               usage={usage}
             />
           )}
@@ -192,8 +214,38 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
-        selectedModelId={initialChatModel}
+        selectedModelId={currentModelId}
       />
+
+      <AlertDialog
+        open={showCreditCardAlert}
+        onOpenChange={setShowCreditCardAlert}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Activate AI Gateway</AlertDialogTitle>
+            <AlertDialogDescription>
+              This application requires{' '}
+              {process.env.NODE_ENV === 'production' ? 'the owner' : 'you'} to
+              activate Vercel AI Gateway.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.open(
+                  'https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card',
+                  '_blank',
+                );
+                window.location.href = '/';
+              }}
+            >
+              Activate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
