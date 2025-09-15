@@ -23,8 +23,6 @@ import {
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { searchTranscriptsByKeyword } from '@/lib/ai/tools/search-transcripts-by-keyword';
 import { searchTranscriptsByUser } from '@/lib/ai/tools/search-transcripts-by-user';
@@ -228,14 +226,7 @@ export async function POST(request: Request) {
       execute: async ({ writer: dataStream }) => {
         // Build your tool set (the same set you pass to streamText)
         const tools: Record<string, any> = {
-          createDocument: createDocument({
-            session: aiToolsSession,
-            dataStream,
-          }),
-          updateDocument: updateDocument({
-            session: aiToolsSession,
-            dataStream,
-          }),
+
           requestSuggestions: requestSuggestions({
             session: aiToolsSession,
             dataStream,

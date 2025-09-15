@@ -42,34 +42,6 @@ export const TEST_PROMPTS: Record<string, ModelMessage> = {
       },
     ],
   },
-  CREATE_DOCUMENT_TEXT_CALL: {
-    role: 'user',
-    content: [
-      {
-        type: 'text',
-        text: 'Essay about Silicon Valley',
-      },
-    ],
-  },
-  CREATE_DOCUMENT_TEXT_RESULT: {
-    role: 'tool',
-    content: [
-      {
-        type: 'tool-result',
-        toolCallId: 'call_123',
-        toolName: 'createDocument',
-        output: {
-          type: 'json',
-          value: {
-            id: '3ca386a4-40c6-4630-8ed1-84cbd46cc7eb',
-            title: 'Essay about Silicon Valley',
-            kind: 'text',
-            content: 'A document was created and is now visible to the user.',
-          },
-        },
-      },
-    ],
-  },
   GET_WEATHER_CALL: {
     role: 'user',
     content: [

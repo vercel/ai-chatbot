@@ -28,22 +28,6 @@ export const TOOL_GROUPS: Array<ToolGroup> = [
     ],
   },
   {
-    id: 'documents',
-    label: 'Documents',
-    options: [
-      {
-        id: 'createDocument',
-        label: 'Create documents',
-        description: 'Draft new workspace documents from responses.',
-      },
-      {
-        id: 'updateDocument',
-        label: 'Update documents',
-        description: 'Modify existing workspace documents.',
-      },
-    ],
-  },
-  {
     id: 'transcripts',
     label: 'Transcripts',
     options: [

@@ -1,6 +1,5 @@
 import { z } from 'zod/v4';
 import type { getWeather } from './ai/tools/get-weather';
-import type { createDocument } from './ai/tools/create-document';
 import type { updateDocument } from './ai/tools/update-document';
 import type { requestSuggestions } from './ai/tools/request-suggestions';
 import type { searchTranscriptsByKeyword } from './ai/tools/search-transcripts-by-keyword';
@@ -44,7 +43,6 @@ export interface Session {
 }
 
 type weatherTool = InferUITool<typeof getWeather>;
-type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
 type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
 type requestSuggestionsTool = InferUITool<
   ReturnType<typeof requestSuggestions>
@@ -84,7 +82,6 @@ type createMem0MemoryTool = InferUITool<ReturnType<typeof createMem0Memory>>;
 
 export type ChatTools = {
   getWeather: weatherTool;
-  createDocument: createDocumentTool;
   updateDocument: updateDocumentTool;
   requestSuggestions: requestSuggestionsTool;
   searchTranscriptsByKeyword: searchTranscriptsByKeywordTool;
