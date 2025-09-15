@@ -42,8 +42,6 @@ function PureMultimodalInput({
   sendMessage,
   className,
   selectedVisibilityType,
-  initialChatModel,
-  isCompactMode,
 }: {
   chatId: string;
   input: string;
@@ -57,8 +55,6 @@ function PureMultimodalInput({
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   className?: string;
   selectedVisibilityType: VisibilityType;
-  initialChatModel?: string;
-  isCompactMode?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -294,19 +290,9 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          initialChatModel === 'benefit-applications-agent' 
-            ? isCompactMode
-              ? 'min-h-[80px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-lg !text-sm bg-background border border-gray-300 pb-10 pr-12 pl-3 py-3 focus:outline-none'
-              : 'min-h-[96px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-lg !text-lg bg-background border-2 border-purple-300 pb-10 pr-14 pl-3 py-3 focus:outline-none'
-            : 'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
           className,
         )}
-        style={initialChatModel === 'benefit-applications-agent' ? {
-          borderColor: '#D1D5DB',
-          '--tw-ring-color': '#814092'
-        } as React.CSSProperties : undefined}
-        onFocus={initialChatModel === 'benefit-applications-agent' ? (e) => e.target.style.borderColor = '#814092' : undefined}
-        onBlur={initialChatModel === 'benefit-applications-agent' ? (e) => e.target.style.borderColor = '#D1D5DB' : undefined}
         rows={2}
         autoFocus
         onKeyDown={(event) => {
@@ -338,8 +324,6 @@ function PureMultimodalInput({
             input={input}
             submitForm={submitForm}
             uploadQueue={uploadQueue}
-            initialChatModel={initialChatModel}
-            isCompactMode={isCompactMode}
           />
         )}
       </div>
@@ -355,8 +339,6 @@ export const MultimodalInput = memo(
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
-    if (prevProps.initialChatModel !== nextProps.initialChatModel) return false;
-    if (prevProps.isCompactMode !== nextProps.isCompactMode) return false;
 
     return true;
   },
@@ -415,36 +397,22 @@ function PureSendButton({
   submitForm,
   input,
   uploadQueue,
-  initialChatModel,
-  isCompactMode,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
-  initialChatModel?: string;
-  isCompactMode?: boolean;
 }) {
   return (
     <Button
       data-testid="send-button"
-      className={cx(
-        "rounded-full border text-white",
-        initialChatModel === 'benefit-applications-agent' 
-          ? isCompactMode
-            ? "p-2 h-8 w-8 border-gray-300"
-            : "p-0 h-10 w-10 border-gray-300"
-          : "p-1.5 h-fit dark:border-zinc-600"
-      )}
-      style={initialChatModel === 'benefit-applications-agent' ? {
-        backgroundColor: '#814092'
-      } as React.CSSProperties : undefined}
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         submitForm();
       }}
       disabled={input.length === 0 || uploadQueue.length > 0}
     >
-      <ArrowUpIcon size={initialChatModel === 'benefit-applications-agent' && !isCompactMode ? 24 : 14} />
+      <ArrowUpIcon size={14} />
     </Button>
   );
 }
@@ -453,7 +421,5 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false;
   if (prevProps.input !== nextProps.input) return false;
-  if (prevProps.initialChatModel !== nextProps.initialChatModel) return false;
-  if (prevProps.isCompactMode !== nextProps.isCompactMode) return false;
   return true;
 });

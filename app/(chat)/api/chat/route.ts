@@ -151,8 +151,8 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    // Handle web automation model and benefit applications agent with Mastra agent
-    if (selectedChatModel === 'web-automation-model' || selectedChatModel === 'benefit-applications-agent') {
+    // Handle web automation model with Mastra agent
+    if (selectedChatModel === 'web-automation-model') {
       const webAutomationAgent = mastra.getAgent('webAutomationAgent');
       
       // Convert UI messages to Mastra format
