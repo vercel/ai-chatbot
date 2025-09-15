@@ -80,7 +80,7 @@
     "jose": "^6.0.12",
     "lucide-react": "^0.446.0",
     "mcp-handler": "^1.0.1",
-    "mem0ai": "^2.1.37",
+    "mem0ai": "^2.1.38",
     "nanoid": "^5.1.5",
     "next": "15.5.2",
     "next-auth": "5.0.0-beta.25",
