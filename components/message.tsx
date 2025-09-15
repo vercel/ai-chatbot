@@ -187,6 +187,24 @@ const PurePreviewMessage = ({
                 </Tool>
               );
             }
+            
+            if (type === 'tool-searchWeb' || type === 'tool-scrapeSite') {
+              const { toolCallId, state } = part;
+              return (
+              <Tool key={toolCallId} defaultOpen={true}>
+                <ToolHeader type={type} state={state} />
+                <ToolContent>
+                  {state === 'input-available' && <ToolInput input={part.input} />}
+                  {state === 'output-available' && (
+                    <ToolOutput 
+                    output={"Searched the web!"}
+                    errorText={undefined}
+                />
+                )}
+              </ToolContent>
+            </Tool>
+            );
+          }
 
             if (type === 'tool-createDocument') {
               const { toolCallId } = part;

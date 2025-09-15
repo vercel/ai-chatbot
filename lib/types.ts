@@ -8,6 +8,8 @@ import type { AppUsage } from './usage';
 
 import type { ArtifactKind } from '@/components/artifact';
 import type { Suggestion } from './db/schema';
+import { scrapeSite } from './ai/tools/scrape-site';
+import { searchWeb } from './ai/tools/web-search';
 
 export type DataPart = { type: 'append-message'; message: string };
 
@@ -18,6 +20,8 @@ export const messageMetadataSchema = z.object({
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
 type weatherTool = InferUITool<typeof getWeather>;
+type scrapeSiteTool = InferUITool<typeof scrapeSite>;
+type searchWebTool = InferUITool<typeof searchWeb>
 type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
 type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
 type requestSuggestionsTool = InferUITool<
@@ -26,6 +30,8 @@ type requestSuggestionsTool = InferUITool<
 
 export type ChatTools = {
   getWeather: weatherTool;
+  searchWeb: searchWebTool;
+  scrapeSite: scrapeSiteTool;
   createDocument: createDocumentTool;
   updateDocument: updateDocumentTool;
   requestSuggestions: requestSuggestionsTool;
