@@ -8,6 +8,7 @@ import RobotoBold from "@/public/fonts/Roboto-Bold";
 import { z } from 'zod';
 import { PDFSchema } from '@/lib/ai/tools/create-pdf';
 import RemmarkPDFTemplate from '../pdf-templates/remmark-template';
+import EmonaevPDFTemplate from '../pdf-templates/emonaev-template';
 
 interface Props {
   content: z.infer<typeof PDFSchema>
@@ -42,7 +43,7 @@ const Test = ({ content }: Props) => {
   return (
     <>
       <Button onClick={savePdf}>Скачать PDF</Button>
-      <RemmarkPDFTemplate content={content} ref={ref} sum={sum} />
+      <EmonaevPDFTemplate content={content} ref={ref} sum={sum} />
     </>
   )
 }
