@@ -11,21 +11,22 @@ export const dynamic = 'force-dynamic';
 export default async function AgentsPage() {
   const { user } = await withAuth({ ensureSignedIn: true });
 
-  // Get the database user
-  const dbUser = await getDatabaseUserFromWorkOS({
-    id: user.id,
-    email: user.email,
-    firstName: user.firstName || undefined,
-    lastName: user.lastName || undefined,
-  });
+  // Fetch DB user and public agents in parallel to reduce TTFB.
+  const [dbUser, publicAgents] = await Promise.all([
+    getDatabaseUserFromWorkOS({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName || undefined,
+      lastName: user.lastName || undefined,
+    }),
+    // Smaller initial page for faster first paint; client list paginates locally.
+    getPublicAgents({ limit: 36, offset: 0 }),
+  ]);
 
-  // Get user's own agents (both public and private)
-  const myAgents = dbUser 
-    ? await getUserOwnedAgents({ userId: dbUser.id, limit: 1000, offset: 0 })
+  // Fetch user's agents after DB user is known; keep the initial page small.
+  const myAgents = dbUser
+    ? await getUserOwnedAgents({ userId: dbUser.id, limit: 36, offset: 0 })
     : { data: [], total: 0 };
-
-  // Get all public agents
-  const publicAgents = await getPublicAgents({ limit: 1000, offset: 0 });
 
   return (
     <>

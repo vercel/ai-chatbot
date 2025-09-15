@@ -1,7 +1,6 @@
 import {
   convertToModelMessages,
   createUIMessageStream,
-  generateId,
   JsonToSseTransformStream,
   type LanguageModelUsage,
   smoothStream,

@@ -16,7 +16,6 @@ import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
@@ -26,7 +25,11 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage, CustomUIDataTypes } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
-import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
+import {
+  initialArtifactData,
+  useArtifact,
+  useArtifactSelector,
+} from '@/hooks/use-artifact';
 
 export function Chat({
   id,
