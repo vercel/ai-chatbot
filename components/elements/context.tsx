@@ -88,7 +88,7 @@ function InfoRow({
         <span className="text-right min-w-[4ch]">
           {tokens === undefined ? '—' : tokens.toLocaleString()}
         </span>
-        {costText !== undefined && costText !== null && (
+        {costText !== undefined && costText !== null && !isNaN(parseFloat(costText)) && (
           <span className="text-muted-foreground">
             ${parseFloat(costText).toFixed(6)}
           </span>
@@ -169,7 +169,12 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                   <span className="text-muted-foreground">Total cost</span>
                   <div className="flex items-center gap-2 font-mono">
                     <span className="text-right min-w-[4ch]"></span>
-                    <span>${parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}</span>
+                    <span>
+                      {!isNaN(parseFloat(usage.costUSD.totalUSD.toString())) 
+                        ? `$${parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
+                        : '—'
+                      }
+                    </span>
                   </div>
                 </div>
               </>
