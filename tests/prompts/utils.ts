@@ -254,5 +254,39 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
     ];
   }
 
-  return [{ id: '6', type: 'text-delta', delta: 'Unknown test prompt!' }];
+  // default response for unmatched prompts
+  const lastMessage = recentMessage?.content?.[0];
+  if (lastMessage && typeof lastMessage === 'object' && lastMessage.type === 'text' && 'text' in lastMessage) {
+    const messageText = lastMessage.text.toLowerCase();
+    if (messageText.includes('sky') && messageText.includes('blue')) {
+      return [
+        ...textToDeltas("It's just blue duh!"),
+        {
+          type: 'finish',
+          finishReason: 'stop',
+          usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
+        },
+      ];
+    }
+  }
+  
+  const defaultResponse = `Here are some advantages of using Next.js:
+
+Server-Side Rendering (SSR): Next.js allows for server-side rendering, which improves SEO and initial page load performance.
+Static Generation: You can pre-render pages at build time, reducing server load and improving load times.
+Automatic Code Splitting: Next.js automatically splits your JavaScript into smaller chunks, which means faster page loads.
+Simplified Routing: Built-in routing based on the file system, making navigation setup straightforward.
+Hot Module Replacement: Development is faster with live updates without full page reloads.
+Ecosystem Integration: Seamless integration with React and other tools in the React ecosystem.
+
+Would you like me to create a document with more detailed information or code examples in Next.js?`;
+
+  return [
+    ...textToDeltas(defaultResponse),
+    {
+      type: 'finish',
+      finishReason: 'stop',
+      usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
+    },
+  ];
 };

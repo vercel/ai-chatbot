@@ -327,6 +327,7 @@ function PureMultimodalInput({
             <StopButton stop={stop} setMessages={setMessages} />
           ) : (
             <PromptInputSubmit
+              data-testid="send-button"
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
               className="rounded-full transition-colors duration-200 size-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
@@ -416,6 +417,7 @@ function PureModelSelectorCompact({
     >
       <SelectPrimitive.Trigger
         type="button"
+        data-testid="model-selector"
         className="flex gap-2 items-center px-2 h-8 rounded-lg border-0 shadow-none transition-colors bg-background text-foreground hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
       >
         <CpuIcon size={16} />
@@ -430,6 +432,7 @@ function PureModelSelectorCompact({
             <SelectItem
               key={model.id}
               value={model.name}
+              data-testid={`model-selector-item-${model.id}`}
               className="px-3 py-2 text-xs"
             >
               <div className="flex flex-col flex-1 gap-1 min-w-0">

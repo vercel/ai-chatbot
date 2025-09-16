@@ -118,6 +118,7 @@ export const ReasoningTrigger = memo(
 
     return (
       <CollapsibleTrigger
+        data-testid="message-reasoning-toggle"
         className={cn(
           'flex items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground',
           className,
