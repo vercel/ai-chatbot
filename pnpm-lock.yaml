@@ -196,7 +196,7 @@ importers:
         version: 1.0.2(@modelcontextprotocol/sdk@1.17.5)(next@15.5.2(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       mem0ai:
         specifier: ^2.1.38
-        version: 2.1.38(@anthropic-ai/sdk@0.40.1(encoding@0.1.13))(@cloudflare/workers-types@4.20250910.0)(@google/genai@1.19.0(@modelcontextprotocol/sdk@1.17.5)(bufferutil@4.0.9)(encoding@0.1.13))(@langchain/core@0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)))(@mistralai/mistralai@1.10.0)(@qdrant/js-client-rest@1.13.0(typescript@5.9.2))(@supabase/supabase-js@2.57.4(bufferutil@4.0.9))(@types/jest@29.5.14)(@types/pg@8.11.6)(@types/sqlite3@3.1.11)(cloudflare@4.5.0(encoding@0.1.13))(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.1)(ollama@0.5.17)(pg@8.11.3)(redis@5.8.2)(sqlite3@5.1.7)(ws@8.18.3(bufferutil@4.0.9))
+        version: 2.1.38(@anthropic-ai/sdk@0.40.1(encoding@0.1.13))(@cloudflare/workers-types@4.20250910.0)(@google/genai@1.19.0(@modelcontextprotocol/sdk@1.17.5)(bufferutil@4.0.9)(encoding@0.1.13))(@langchain/core@0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)))(@mistralai/mistralai@1.10.0)(@qdrant/js-client-rest@1.13.0(typescript@5.9.2))(@supabase/supabase-js@2.57.4(bufferutil@4.0.9))(@types/jest@29.5.14)(@types/pg@8.11.6)(@types/sqlite3@3.1.11)(cloudflare@4.5.0(encoding@0.1.13))(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.1)(ollama@0.5.17)(pg@8.11.3)(redis@5.8.2)(sqlite3@5.1.7)(ws@8.18.3(bufferutil@4.0.9))
       nanoid:
         specifier: ^5.1.5
         version: 5.1.5
@@ -209,6 +209,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      openai:
+        specifier: ^5.20.3
+        version: 5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)
       orderedmap:
         specifier: ^2.1.1
         version: 2.1.1
@@ -251,6 +254,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
+      react-dropzone:
+        specifier: ^14.3.8
+        version: 14.3.8(react@19.1.1)
       react-markdown:
         specifier: ^9.1.0
         version: 9.1.0(@types/react@18.3.24)(react@19.1.1)
@@ -2646,6 +2652,10 @@ packages:
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
 
+  attr-accept@2.2.5:
+    resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
+    engines: {node: '>=4'}
+
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
@@ -3690,6 +3700,10 @@ packages:
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
+
+  file-selector@2.1.2:
+    resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
+    engines: {node: '>= 12'}
 
   file-uri-to-path@1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
@@ -5035,6 +5049,18 @@ packages:
       zod:
         optional: true
 
+  openai@5.20.3:
+    resolution: {integrity: sha512-8V0KgAcPFppDIP8uMBOkhRrhDBuxNQYQxb9IovP4NN4VyaYGISAzYexyYYuAwVul2HB75Wpib0xDboYJqRMNow==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -5482,6 +5508,12 @@ packages:
     resolution: {integrity: sha512-Dlq/5LAZgF0Gaz6yiqZCf6VCcZs1ghAJyrsu84Q/GT0gV+mCxbfmKNoGRKBYMJ8IEdGPqu49YWXD02GCknEDkw==}
     peerDependencies:
       react: ^19.1.1
+
+  react-dropzone@14.3.8:
+    resolution: {integrity: sha512-sBgODnq+lcA4P296DY4wacOZz3JFpD99fp+hb//iBO2HHnyeZU3FwWyXJ6salNpqQdsZrgMrotuko/BdJMV8Ug==}
+    engines: {node: '>= 10.13'}
+    peerDependencies:
+      react: '>= 16.8 || 18.0.0'
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -7091,14 +7123,14 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@langchain/core@0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5))':
+  '@langchain/core@0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.21
-      langsmith: 0.3.67(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5))
+      langsmith: 0.3.67(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5))
       mustache: 4.2.0
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -8780,6 +8812,8 @@ snapshots:
 
   asynckit@0.4.0: {}
 
+  attr-accept@2.2.5: {}
+
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
@@ -9950,6 +9984,10 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
+  file-selector@2.1.2:
+    dependencies:
+      tslib: 2.8.1
+
   file-uri-to-path@1.0.0: {}
 
   fill-range@7.1.1:
@@ -10814,7 +10852,7 @@ snapshots:
       vscode-languageserver-textdocument: 1.0.12
       vscode-uri: 3.0.8
 
-  langsmith@0.3.67(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)):
+  langsmith@0.3.67(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)):
     dependencies:
       '@types/uuid': 10.0.0
       chalk: 4.1.2
@@ -10826,7 +10864,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
-      openai: 4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)
+      openai: 5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)
 
   language-subtag-registry@0.3.23: {}
 
@@ -11129,12 +11167,12 @@ snapshots:
 
   media-typer@1.1.0: {}
 
-  mem0ai@2.1.38(@anthropic-ai/sdk@0.40.1(encoding@0.1.13))(@cloudflare/workers-types@4.20250910.0)(@google/genai@1.19.0(@modelcontextprotocol/sdk@1.17.5)(bufferutil@4.0.9)(encoding@0.1.13))(@langchain/core@0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)))(@mistralai/mistralai@1.10.0)(@qdrant/js-client-rest@1.13.0(typescript@5.9.2))(@supabase/supabase-js@2.57.4(bufferutil@4.0.9))(@types/jest@29.5.14)(@types/pg@8.11.6)(@types/sqlite3@3.1.11)(cloudflare@4.5.0(encoding@0.1.13))(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.1)(ollama@0.5.17)(pg@8.11.3)(redis@5.8.2)(sqlite3@5.1.7)(ws@8.18.3(bufferutil@4.0.9)):
+  mem0ai@2.1.38(@anthropic-ai/sdk@0.40.1(encoding@0.1.13))(@cloudflare/workers-types@4.20250910.0)(@google/genai@1.19.0(@modelcontextprotocol/sdk@1.17.5)(bufferutil@4.0.9)(encoding@0.1.13))(@langchain/core@0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5)))(@mistralai/mistralai@1.10.0)(@qdrant/js-client-rest@1.13.0(typescript@5.9.2))(@supabase/supabase-js@2.57.4(bufferutil@4.0.9))(@types/jest@29.5.14)(@types/pg@8.11.6)(@types/sqlite3@3.1.11)(cloudflare@4.5.0(encoding@0.1.13))(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.1)(ollama@0.5.17)(pg@8.11.3)(redis@5.8.2)(sqlite3@5.1.7)(ws@8.18.3(bufferutil@4.0.9)):
     dependencies:
       '@anthropic-ai/sdk': 0.40.1(encoding@0.1.13)
       '@cloudflare/workers-types': 4.20250910.0
       '@google/genai': 1.19.0(@modelcontextprotocol/sdk@1.17.5)(bufferutil@4.0.9)(encoding@0.1.13)
-      '@langchain/core': 0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5))
+      '@langchain/core': 0.3.75(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5))
       '@mistralai/mistralai': 1.10.0
       '@qdrant/js-client-rest': 1.13.0(typescript@5.9.2)
       '@supabase/supabase-js': 2.57.4(bufferutil@4.0.9)
@@ -11717,21 +11755,10 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  openai@4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5):
-    dependencies:
-      '@types/node': 18.19.124
-      '@types/node-fetch': 2.6.13
-      abort-controller: 3.0.0
-      agentkeepalive: 4.6.0
-      form-data-encoder: 1.7.2
-      formdata-node: 4.4.1
-      node-fetch: 2.7.0(encoding@0.1.13)
+  openai@5.20.3(ws@8.18.3(bufferutil@4.0.9))(zod@4.1.5):
     optionalDependencies:
       ws: 8.18.3(bufferutil@4.0.9)
       zod: 4.1.5
-    transitivePeerDependencies:
-      - encoding
-    optional: true
 
   optionator@0.9.4:
     dependencies:
@@ -12212,6 +12239,13 @@ snapshots:
     dependencies:
       react: 19.1.1
       scheduler: 0.26.0
+
+  react-dropzone@14.3.8(react@19.1.1):
+    dependencies:
+      attr-accept: 2.2.5
+      file-selector: 2.1.2
+      prop-types: 15.8.1
+      react: 19.1.1
 
   react-is@16.13.1: {}
 

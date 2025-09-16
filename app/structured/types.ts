@@ -4,6 +4,7 @@ export interface SchemaProperty {
   name: string;
   type: SchemaPrimitive;
   description?: string;
+  id?: string;
 }
 
 export type SchemaOutputKind = 'object' | 'array';

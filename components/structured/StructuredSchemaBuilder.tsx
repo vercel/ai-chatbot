@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,10 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type {
-  SchemaDefinition,
-  SchemaProperty,
-} from '@/app/structured/types';
+import type { SchemaDefinition, SchemaProperty } from '@/app/structured/types';
 
 interface SchemaBuilderProps {
   value: SchemaDefinition;
@@ -40,17 +38,35 @@ export function StructuredSchemaBuilder({
 }: SchemaBuilderProps) {
   const properties = value.properties ?? [];
 
+  const generateId = () =>
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // Ensure all existing properties have stable IDs
+  useEffect(() => {
+    if (!properties.length) return;
+    const missing = properties.some((prop) => !prop.id);
+    if (missing) {
+      const withIds = properties.map((prop) =>
+        prop.id ? prop : { ...prop, id: generateId() },
+      );
+      onChange({ ...value, properties: withIds });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties]);
+
   const addProperty = () => {
     onChange({
       ...value,
-      properties: [...properties, { name: '', type: 'string' }],
+      properties: [
+        ...properties,
+        { id: generateId(), name: '', type: 'string' },
+      ],
     });
   };
 
-  const updateProperty = (
-    index: number,
-    updates: Partial<SchemaProperty>,
-  ) => {
+  const updateProperty = (index: number, updates: Partial<SchemaProperty>) => {
     const next = [...properties];
     next[index] = { ...next[index], ...updates };
     onChange({ ...value, properties: next });
@@ -84,7 +100,7 @@ export function StructuredSchemaBuilder({
         <div className="space-y-4">
           {properties.map((property, index) => (
             <div
-              key={index}
+              key={property.id ?? property.name}
               className="rounded-md border p-3 shadow-sm"
             >
               <div className="flex flex-wrap gap-3">
