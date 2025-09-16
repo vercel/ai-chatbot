@@ -66,7 +66,7 @@ export function Chat({
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
-  
+
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);

@@ -71,7 +71,6 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   );
 };
 
-
 function InfoRow({
   label,
   tokens,
@@ -85,14 +84,16 @@ function InfoRow({
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2 font-mono">
-        <span className='min-w-[4ch] text-right'>
+        <span className="min-w-[4ch] text-right">
           {tokens === undefined ? '—' : tokens.toLocaleString()}
         </span>
-        {costText !== undefined && costText !== null && !Number.isNaN(Number.parseFloat(costText)) && (
-          <span className="text-muted-foreground">
-            ${Number.parseFloat(costText).toFixed(6)}
-          </span>
-        )}
+        {costText !== undefined &&
+          costText !== null &&
+          !Number.isNaN(Number.parseFloat(costText)) && (
+            <span className="text-muted-foreground">
+              ${Number.parseFloat(costText).toFixed(6)}
+            </span>
+          )}
       </div>
     </div>
   );
@@ -165,15 +166,16 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
             {usage?.costUSD?.totalUSD !== undefined && (
               <>
                 <Separator className="mt-1" />
-                <div className='flex items-center justify-between pt-1 text-xs'>
+                <div className="flex items-center justify-between pt-1 text-xs">
                   <span className="text-muted-foreground">Total cost</span>
                   <div className="flex items-center gap-2 font-mono">
-                    <span className='min-w-[4ch] text-right' />
+                    <span className="min-w-[4ch] text-right" />
                     <span>
-                      {!Number.isNaN(Number.parseFloat(usage.costUSD.totalUSD.toString())) 
+                      {!Number.isNaN(
+                        Number.parseFloat(usage.costUSD.totalUSD.toString()),
+                      )
                         ? `$${Number.parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
-                        : '—'
-                      }
+                        : '—'}
                     </span>
                   </div>
                 </div>

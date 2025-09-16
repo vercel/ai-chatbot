@@ -17,13 +17,13 @@ export function useScrollToBottom() {
 
     // Check if we are within 100px of the bottom (like v0 does)
     setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 100);
-    }, []);
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const container = containerRef.current;
-    
+
     const resizeObserver = new ResizeObserver(() => {
       requestAnimationFrame(() => {
         handleScroll();
@@ -43,7 +43,7 @@ export function useScrollToBottom() {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['style', 'class', 'data-state']
+      attributeFilter: ['style', 'class', 'data-state'],
     });
 
     handleScroll();

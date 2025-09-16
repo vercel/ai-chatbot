@@ -29,9 +29,15 @@ export class ChatPage {
   async createNewChat() {
     await this.page.goto('/');
     await this.page.waitForLoadState('domcontentloaded');
-    
-    await this.page.waitForSelector('[data-testid="multimodal-input"]', { state: 'visible', timeout: 30000 });
-    await this.page.waitForSelector('[data-testid="send-button"]', { state: 'visible', timeout: 30000 });
+
+    await this.page.waitForSelector('[data-testid="multimodal-input"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
+    await this.page.waitForSelector('[data-testid="send-button"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
   }
 
   public getCurrentURL(): string {
@@ -58,7 +64,7 @@ export class ChatPage {
   async isVoteComplete() {
     const response = await this.page.waitForResponse(
       (response) => response.url().includes('/api/vote'),
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
 
     try {
@@ -122,9 +128,13 @@ export class ChatPage {
       throw new Error(`Model with id ${chatModelId} not found`);
     }
 
-    await this.page.getByTestId('model-selector').waitFor({ state: 'visible', timeout: 10000 });
+    await this.page
+      .getByTestId('model-selector')
+      .waitFor({ state: 'visible', timeout: 10000 });
     await this.page.getByTestId('model-selector').click();
-    await this.page.getByTestId(`model-selector-item-${chatModelId}`).waitFor({ state: 'visible' });
+    await this.page
+      .getByTestId(`model-selector-item-${chatModelId}`)
+      .waitFor({ state: 'visible' });
     await this.page.getByTestId(`model-selector-item-${chatModelId}`).click();
     expect(await this.getSelectedModel()).toBe(chatModel.name);
   }

@@ -53,10 +53,12 @@ export async function createAuthenticatedContext({
 
   const chatPage = new ChatPage(page);
   await chatPage.createNewChat();
-  
+
   if (chatModel === 'chat-model-reasoning') {
     await chatPage.chooseModelFromSelector(chatModel);
-    await expect(chatPage.getSelectedModel()).resolves.toEqual('Grok Reasoning');
+    await expect(chatPage.getSelectedModel()).resolves.toEqual(
+      'Grok Reasoning',
+    );
   }
 
   await page.waitForTimeout(1000);

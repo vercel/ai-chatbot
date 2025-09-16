@@ -256,7 +256,12 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
 
   // default response for unmatched prompts
   const lastMessage = recentMessage?.content?.[0];
-  if (lastMessage && typeof lastMessage === 'object' && lastMessage.type === 'text' && 'text' in lastMessage) {
+  if (
+    lastMessage &&
+    typeof lastMessage === 'object' &&
+    lastMessage.type === 'text' &&
+    'text' in lastMessage
+  ) {
     const messageText = lastMessage.text.toLowerCase();
     if (messageText.includes('sky') && messageText.includes('blue')) {
       return [
@@ -269,7 +274,7 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       ];
     }
   }
-  
+
   const defaultResponse = `Here are some advantages of using Next.js:
 
 Server-Side Rendering (SSR): Next.js allows for server-side rendering, which improves SEO and initial page load performance.

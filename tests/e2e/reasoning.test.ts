@@ -30,7 +30,9 @@ test.describe('chat activity with reasoning', () => {
       assistantMessage.element.getByTestId('message-reasoning');
     await expect(reasoningElement).toBeVisible();
 
-    await assistantMessage.element.getByTestId('message-reasoning-toggle').waitFor({ state: 'visible' });
+    await assistantMessage.element
+      .getByTestId('message-reasoning-toggle')
+      .waitFor({ state: 'visible' });
     await assistantMessage.toggleReasoningVisibility();
     await expect(reasoningElement).toHaveAttribute('data-state', 'closed');
 

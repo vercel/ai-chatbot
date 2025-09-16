@@ -80,9 +80,14 @@ test.describe('Chat activity', () => {
     await chatPage.isElementNotVisible('suggested-actions');
   });
 
-  test.skip('Upload file and send image attachment with message', async ({ page }) => {
+  test.skip('Upload file and send image attachment with message', async ({
+    page,
+  }) => {
     // skipping this test as it has timing issues with file uploads in CI
-    await page.waitForSelector('[data-testid="multimodal-input"]', { state: 'visible', timeout: 30000 });
+    await page.waitForSelector('[data-testid="multimodal-input"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
 
     await chatPage.multimodalInput.fill('Who painted this?');
     await chatPage.addImageAttachment();
