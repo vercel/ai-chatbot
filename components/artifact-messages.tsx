@@ -1,12 +1,13 @@
 import { PreviewMessage, ThinkingMessage } from './message';
-import type { Vote } from '@/lib/db/schema';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
+
+import type { ChatMessage } from '@/lib/types';
 import type { UIArtifact } from './artifact';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { Vote } from '@/lib/db/schema';
+import equal from 'fast-deep-equal';
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
-import type { ChatMessage } from '@/lib/types';
 
 interface ArtifactMessagesProps {
   chatId: string;
@@ -43,7 +44,7 @@ function PureArtifactMessages({
   return (
     <div
       ref={messagesContainerRef}
-      className="flex flex-col gap-4 h-full items-center overflow-y-scroll pl-4 pr-16 pt-20"
+      className="flex flex-col gap-4 h-full items-center overflow-y-scroll pl-4 pr-16 pt-4"
     >
       {messages.map((message, index) => (
         <PreviewMessage

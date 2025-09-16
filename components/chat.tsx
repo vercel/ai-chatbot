@@ -58,7 +58,7 @@ export function Chat({
   const [input, setInput] = useState<string>('');
   const [browserPanelVisible, setBrowserPanelVisible] = useState<boolean>(false);
   const [browserSessionId, setBrowserSessionId] = useState<string>(id);
-  const [benefitApplicationsChatMode, setBenefitApplicationsChatMode] = useState<boolean>(false);
+  const [newWebAutomationChat, setNewWebAutomationChat] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -185,7 +185,8 @@ export function Chat({
           const userMessage = messages.find(msg => msg.role === 'user');
           const messageText = userMessage?.parts.find(part => part.type === 'text')?.text || 'Web Automation';
           const title = `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
-          
+
+          setNewWebAutomationChat(true);
           setArtifact({
             documentId: generateUUID(),
             content: `# ${title}\n\nBrowser automation session starting...`,
@@ -201,13 +202,6 @@ export function Chat({
             },
           });
         }
-      } else if (initialChatModel === 'benefit-applications-agent') {
-        // For benefit-applications-agent, use the split-screen layout (no artifact overlay)
-        // The browser view is handled in the split-screen layout
-        setBenefitApplicationsChatMode(true);
-        if (!browserPanelVisible) {
-          setBrowserPanelVisible(true);
-        }
       } else {
         // For other models, use the old BrowserPanel
         if (!browserPanelVisible) {
@@ -215,7 +209,7 @@ export function Chat({
         }
       }
     }
-  }, [messages, browserPanelVisible, initialChatModel, isArtifactVisible, setArtifact, browserArtifactDismissed]);
+  }, [messages, browserPanelVisible, initialChatModel, isArtifactVisible, setArtifact, browserArtifactDismissed, setNewWebAutomationChat]);
 
   // Track when user manually closes the browser artifact (only for web-automation-model)
   useEffect(() => {
@@ -251,52 +245,6 @@ export function Chat({
     }
   }, [messages.length, browserArtifactDismissed, initialChatModel]);
 
-  // Handle benefit applications agent UI transitions
-  useEffect(() => {
-    if (initialChatModel === 'benefit-applications-agent' && messages.length > 0) {
-      // Check if agent has found a website to navigate to (has browser tool calls)
-      const hasBrowserToolCall = messages.some(message => 
-        message.parts?.some(part => {
-          const partType = (part as any).type;
-          const toolName = (part as any).toolName;
-          
-          // Check for tool-call type with playwright toolName
-          if (partType === 'tool-call' && 
-              (toolName?.startsWith('playwright_browser') || 
-               toolName?.startsWith('mcp_playwright_browser'))) {
-            return true;
-          }
-          
-          // Check for tool- prefixed types (how tools appear in message parts)
-          if (partType?.startsWith('tool-playwright_browser') ||
-              partType?.startsWith('tool-mcp_playwright_browser')) {
-            return true;
-          }
-          
-          return false;
-        })
-      );
-      
-      // Only switch to split-screen mode when browser tools are detected
-      if (hasBrowserToolCall) {
-        setBenefitApplicationsChatMode(true);
-        setBrowserPanelVisible(true);
-      }
-    }
-  }, [initialChatModel, messages]);
-
-  // Reset benefitApplicationsChatMode when starting a new chat
-  useEffect(() => {
-    if (initialChatModel === 'benefit-applications-agent' && messages.length === 0) {
-      setBenefitApplicationsChatMode(false);
-      console.log('benefitApplicationsChatMode reset', benefitApplicationsChatMode);
-    }
-    if (browserPanelVisible) {
-      console.log('browserPanelVisible reset', browserPanelVisible);
-      setBrowserPanelVisible(false);
-    }
-  }, [initialChatModel, messages.length]);
-
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -320,7 +268,7 @@ export function Chat({
   };
 
   // Special UI for benefit applications agent - show landing page initially
-  if (initialChatModel === 'benefit-applications-agent' && messages.length === 0) {
+  if (initialChatModel === 'web-automation-model' && messages.length === 0) {
     // Show landing page with header
     return (
       <>
@@ -356,7 +304,6 @@ export function Chat({
           isReadonly={isReadonly}
           selectedVisibilityType={visibilityType}
           initialChatModel={initialChatModel}
-          isCompactMode={false}
         />
       </>
     );
@@ -366,19 +313,19 @@ export function Chat({
   return (
     <>
       <div 
-        className={`flex h-dvh ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}
-        style={{ backgroundColor: initialChatModel === 'benefit-applications-agent' ? '#F4E4F0' : undefined }}
+        className={`flex h-dvh ${isArtifactVisible ? 'flex-row' : 'flex-col'}`}
+        style={{ backgroundColor: initialChatModel === 'web-automation-model' ? '#F4E4F0' : undefined }}
       >
         {/* Chat Panel */}
-        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} ${initialChatModel === 'benefit-applications-agent' ? 'bg-white' : ''}`}>
-          <ChatHeader
-            chatId={id}
-            selectedModelId={initialChatModel}
-            selectedVisibilityType={initialVisibilityType}
-            isReadonly={isReadonly}
-            session={session}
-          />
-          {initialChatModel === 'benefit-applications-agent' && browserPanelVisible && (
+        <div className={`flex flex-col min-w-0 h-full ${isArtifactVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} ${initialChatModel === 'web-automation-model' ? 'bg-white' : ''}`}>
+            <ChatHeader
+              chatId={id}
+              selectedModelId={initialChatModel}
+              selectedVisibilityType={initialVisibilityType}
+              isReadonly={isReadonly}
+              session={session}
+            />
+          {isArtifactVisible && (
             <SideChatHeader
               title="Apply for Benefits"
               status="online"
@@ -447,8 +394,6 @@ export function Chat({
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
         initialChatModel={initialChatModel}
-        isCompactMode={initialChatModel === 'benefit-applications-agent' && browserPanelVisible}
-        showInputOnly={initialChatModel === 'benefit-applications-agent'}
       />
     </>
   );

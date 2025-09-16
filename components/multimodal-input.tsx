@@ -43,7 +43,6 @@ function PureMultimodalInput({
   className,
   selectedVisibilityType,
   initialChatModel,
-  isCompactMode,
 }: {
   chatId: string;
   input: string;
@@ -294,19 +293,10 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          initialChatModel === 'benefit-applications-agent' 
-            ? isCompactMode
-              ? 'min-h-[80px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-lg !text-sm bg-background border border-gray-300 pb-10 pr-12 pl-3 py-3 focus:outline-none'
-              : 'min-h-[96px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-lg !text-lg bg-background border-2 border-purple-300 pb-10 pr-14 pl-3 py-3 focus:outline-none'
-            : 'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
-          className,
+          initialChatModel === 'web-automation-model' ?
+            'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700' :
+            className,
         )}
-        style={initialChatModel === 'benefit-applications-agent' ? {
-          borderColor: '#D1D5DB',
-          '--tw-ring-color': '#814092'
-        } as React.CSSProperties : undefined}
-        onFocus={initialChatModel === 'benefit-applications-agent' ? (e) => e.target.style.borderColor = '#814092' : undefined}
-        onBlur={initialChatModel === 'benefit-applications-agent' ? (e) => e.target.style.borderColor = '#D1D5DB' : undefined}
         rows={2}
         autoFocus
         onKeyDown={(event) => {
@@ -339,7 +329,6 @@ function PureMultimodalInput({
             submitForm={submitForm}
             uploadQueue={uploadQueue}
             initialChatModel={initialChatModel}
-            isCompactMode={isCompactMode}
           />
         )}
       </div>
