@@ -22,9 +22,4 @@ export const chatModels: Array<ChatModel> = [
     name: 'Web Automation Agent',
     description: 'AI agent for web navigation and automation tasks',
   },
-  {
-    id: 'benefit-applications-agent',
-    name: 'Benefit Applications Agent',
-    description: 'Specialized agent for benefit application assistance with enhanced UI',
-  },
 ];

@@ -1,11 +1,10 @@
-import './globals.css';
-
-import { Geist, Geist_Mono, IBM_Plex_Mono } from 'next/font/google';
-
-import type { Metadata } from 'next';
-import { SessionProvider } from 'next-auth/react';
-import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
+
+import './globals.css';
+import { SessionProvider } from 'next-auth/react';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
@@ -27,13 +26,6 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-geist-mono',
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: '400',
-  display: 'swap',
-  variable: '--font-ibm-plex-mono',
 });
 
 const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
@@ -69,7 +61,7 @@ export default async function RootLayout({
       // prop is necessary to avoid the React hydration mismatch warning.
       // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
       suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable} ${ibmPlexMono.variable}`}
+      className={`${geist.variable} ${geistMono.variable}`}
     >
       <head>
         <script

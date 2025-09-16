@@ -1,34 +1,28 @@
 'use client';
 
-import { ArrowLeft, LogOut } from 'lucide-react';
-import type { Attachment, ChatMessage } from '@/lib/types';
-import { fetchWithErrorHandlers, fetcher, generateUUID } from '@/lib/utils';
-import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact';
-import { useEffect, useRef, useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
-
-import { Artifact } from './artifact';
-import { BenefitApplicationsLanding } from './benefit-applications-landing';
-import { BrowserPanel } from './browser-panel';
-import { Button } from '@/components/ui/button';
-import { ChatHeader } from '@/components/chat-header';
-import { ChatSDKError } from '@/lib/errors';
 import { DefaultChatTransport } from 'ai';
-import { Input } from '@/components/ui/input';
-import { Messages } from './messages';
-import { MultimodalInput } from './multimodal-input';
-import type { Session } from 'next-auth';
-import { SideChatHeader } from '@/components/side-chat-header';
-import type { VisibilityType } from './visibility-selector';
+import { useChat } from '@ai-sdk/react';
+import { useEffect, useState } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
+import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { Artifact } from './artifact';
+import { MultimodalInput } from './multimodal-input';
+import { Messages } from './messages';
+import type { VisibilityType } from './visibility-selector';
+import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
+import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
-import { unstable_serialize } from 'swr/infinite';
-import { useAutoResume } from '@/hooks/use-auto-resume';
-import { useChat } from '@ai-sdk/react';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { useDataStream } from './data-stream-provider';
+import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { useAutoResume } from '@/hooks/use-auto-resume';
+import { ChatSDKError } from '@/lib/errors';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import { useDataStream } from './data-stream-provider';
+import { BrowserPanel } from './browser-panel';
 
 export function Chat({
   id,
@@ -58,8 +52,6 @@ export function Chat({
   const [input, setInput] = useState<string>('');
   const [browserPanelVisible, setBrowserPanelVisible] = useState<boolean>(false);
   const [browserSessionId, setBrowserSessionId] = useState<string>(id);
-  const [newWebAutomationChat, setNewWebAutomationChat] = useState<boolean>(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
     messages,
@@ -129,30 +121,8 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  const { setArtifact, artifact } = useArtifact();
+  const { setArtifact } = useArtifact();
   const [browserArtifactDismissed, setBrowserArtifactDismissed] = useState(false);
-
-  // Get artifact title
-  const getArtifactTitle = () => {
-    // If we have an artifact with a title, use it
-    if (artifact?.title) {
-      return artifact.title;
-    }
-    
-    // Otherwise, create a title from the first user message
-    const userMessage = messages.find(msg => msg.role === 'user');
-    if (userMessage) {
-      const messageText = userMessage.parts?.find(part => part.type === 'text')?.text || 'Browser session';
-      return `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
-    }
-    
-    return 'Browser:';
-  };
-  
-  const artifactTitle = getArtifactTitle();
-  
-  // Simple session start time
-  const sessionStartTime = 'Session started';
 
   // Monitor messages for browser tool usage
   useEffect(() => {
@@ -186,7 +156,6 @@ export function Chat({
           const messageText = userMessage?.parts.find(part => part.type === 'text')?.text || 'Web Automation';
           const title = `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
 
-          setNewWebAutomationChat(true);
           setArtifact({
             documentId: generateUUID(),
             content: `# ${title}\n\nBrowser automation session starting...`,
@@ -211,10 +180,10 @@ export function Chat({
     }
   }, [messages, browserPanelVisible, initialChatModel, isArtifactVisible, setArtifact, browserArtifactDismissed, setNewWebAutomationChat]);
 
-  // Track when user manually closes the browser artifact (only for web-automation-model)
+  // Track when user manually closes the browser artifact
   useEffect(() => {
     // If artifact was visible and now it's not, and we have browser tool calls, user dismissed it
-    if (!isArtifactVisible && !browserArtifactDismissed && initialChatModel === 'web-automation-model') {
+    if (!isArtifactVisible && !browserArtifactDismissed) {
       const hasBrowserToolCall = messages.some(message => 
         message.parts?.some(part => {
           const partType = (part as any).type;
@@ -228,7 +197,7 @@ export function Chat({
         })
       );
       
-      if (hasBrowserToolCall) {
+      if (hasBrowserToolCall && initialChatModel === 'web-automation-model') {
         setBrowserArtifactDismissed(true);
       }
     }
@@ -236,21 +205,14 @@ export function Chat({
 
   // Reset dismissed state when messages change significantly (new automation request)
   useEffect(() => {
-    // If we have new messages and the last message is from user, reset dismissed state (only for web-automation-model)
-    if (messages.length > 0 && initialChatModel === 'web-automation-model') {
+    // If we have new messages and the last message is from user, reset dismissed state
+    if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'user' && browserArtifactDismissed) {
         setBrowserArtifactDismissed(false);
       }
     }
-  }, [messages.length, browserArtifactDismissed, initialChatModel]);
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-    }
-  }, [messages]);
+  }, [messages.length, browserArtifactDismissed]);
 
   useAutoResume({
     autoResume,
@@ -259,15 +221,7 @@ export function Chat({
     setMessages,
   });
 
-  // Handler for benefit applications landing page
-  const handleBenefitApplicationsMessage = (messageText: string) => {
-    sendMessage({
-      role: 'user' as const,
-      parts: [{ type: 'text', text: messageText }],
-    });
-  };
-
-  // Special UI for benefit applications agent - show landing page initially
+  // Special UI for web automation agent - show landing page initially
   if (initialChatModel === 'web-automation-model' && messages.length === 0) {
     // Show landing page with header
     return (
@@ -368,7 +322,7 @@ export function Chat({
 
         {/* Browser Panel */}
         {browserPanelVisible && (
-          <div className="w-[70%] flex flex-col">
+          <div className="w-1/2 flex flex-col">
             <BrowserPanel
               sessionId={browserSessionId}
               isVisible={browserPanelVisible}
