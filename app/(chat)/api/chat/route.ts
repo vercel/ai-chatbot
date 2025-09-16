@@ -22,6 +22,7 @@ import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
+import { tireSearch } from '@/lib/ai/tools/tires-catalog';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
@@ -164,6 +165,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'tireSearch',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
@@ -174,6 +176,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            tireSearch: tireSearch({ dataStream }),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
