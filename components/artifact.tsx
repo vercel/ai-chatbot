@@ -69,8 +69,7 @@ function PureArtifact({
   regenerate,
   votes,
   isReadonly,
-  selectedVisibilityType,
-  initialChatModel
+  selectedVisibilityType
 }: {
   chatId: string;
   input: string;
@@ -336,7 +335,6 @@ function PureArtifact({
                     regenerate={regenerate}
                     isReadonly={isReadonly}
                     artifactStatus={artifact.status}
-                    selectedVisibilityType={selectedVisibilityType}
                   />
                 </div>
                 <div className="border-t border-gray-200 bg-[#EFD9E9] p-[18px]">
@@ -353,9 +351,8 @@ function PureArtifact({
                       sendMessage={sendMessage}
                       setMessages={setMessages}
                       selectedVisibilityType={selectedVisibilityType}
-                      initialChatModel={initialChatModel}
                     />
-                    
+
                   </form>
                 </div>
               </div>

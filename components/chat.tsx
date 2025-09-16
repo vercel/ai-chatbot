@@ -1,28 +1,31 @@
 'use client';
 
-import { DefaultChatTransport } from 'ai';
-import { useChat } from '@ai-sdk/react';
+import type { Attachment, ChatMessage } from '@/lib/types';
+import { fetchWithErrorHandlers, fetcher, generateUUID } from '@/lib/utils';
+import { useArtifact, useArtifactSelector } from '@/hooks/use-artifact';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+
 import { Artifact } from './artifact';
-import { MultimodalInput } from './multimodal-input';
+import { BenefitApplicationsLanding } from './benefit-applications-landing';
+import { BrowserPanel } from './browser-panel';
+import { ChatHeader } from '@/components/chat-header';
+import { ChatSDKError } from '@/lib/errors';
+import { DefaultChatTransport } from 'ai';
 import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
+import type { Session } from 'next-auth';
+import { SideChatHeader } from './side-chat-header';
 import type { VisibilityType } from './visibility-selector';
-import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
-import { unstable_serialize } from 'swr/infinite';
+import type { Vote } from '@/lib/db/schema';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
-import type { Session } from 'next-auth';
-import { useSearchParams } from 'next/navigation';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { unstable_serialize } from 'swr/infinite';
 import { useAutoResume } from '@/hooks/use-auto-resume';
-import { ChatSDKError } from '@/lib/errors';
-import type { Attachment, ChatMessage } from '@/lib/types';
+import { useChat } from '@ai-sdk/react';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useDataStream } from './data-stream-provider';
-import { BrowserPanel } from './browser-panel';
+import { useSearchParams } from 'next/navigation';
 
 export function Chat({
   id,
@@ -52,6 +55,7 @@ export function Chat({
   const [input, setInput] = useState<string>('');
   const [browserPanelVisible, setBrowserPanelVisible] = useState<boolean>(false);
   const [browserSessionId, setBrowserSessionId] = useState<string>(id);
+  
 
   const {
     messages,
@@ -121,8 +125,29 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  const { setArtifact } = useArtifact();
+  const { setArtifact, artifact } = useArtifact();
   const [browserArtifactDismissed, setBrowserArtifactDismissed] = useState(false);
+
+  const getArtifactTitle = () => {
+    // If we have an artifact with a title, use it
+    if (artifact?.title) {
+      return artifact.title;
+    }
+
+    // Otherwise, create a title from the first user message
+    const userMessage = messages.find(msg => msg.role === 'user');
+    if (userMessage) {
+      const messageText = userMessage.parts?.find(part => part.type === 'text')?.text || 'Browser session';
+      return `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
+    }
+
+    return 'Browser:';
+  };
+
+  const artifactTitle = getArtifactTitle();
+
+  // Simple session start time
+  const sessionStartTime = 'Session started';
 
   // Monitor messages for browser tool usage
   useEffect(() => {
@@ -178,7 +203,7 @@ export function Chat({
         }
       }
     }
-  }, [messages, browserPanelVisible, initialChatModel, isArtifactVisible, setArtifact, browserArtifactDismissed, setNewWebAutomationChat]);
+  }, [messages, browserPanelVisible, initialChatModel, isArtifactVisible, setArtifact, browserArtifactDismissed]);
 
   // Track when user manually closes the browser artifact
   useEffect(() => {
@@ -220,6 +245,13 @@ export function Chat({
     resumeStream,
     setMessages,
   });
+   // Handler for benefit applications landing page
+   const handleBenefitApplicationsMessage = (messageText: string) => {
+    sendMessage({
+      role: 'user' as const,
+      parts: [{ type: 'text', text: messageText }],
+    });
+  };
 
   // Special UI for web automation agent - show landing page initially
   if (initialChatModel === 'web-automation-model' && messages.length === 0) {
@@ -267,11 +299,11 @@ export function Chat({
   return (
     <>
       <div 
-        className={`flex h-dvh ${isArtifactVisible ? 'flex-row' : 'flex-col'}`}
+        className={`flex h-dvh ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}
         style={{ backgroundColor: initialChatModel === 'web-automation-model' ? '#F4E4F0' : undefined }}
       >
         {/* Chat Panel */}
-        <div className={`flex flex-col min-w-0 h-full ${isArtifactVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} ${initialChatModel === 'web-automation-model' ? 'bg-white' : ''}`}>
+        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} ${initialChatModel === 'web-automation-model' ? 'bg-white' : ''}`}>
             <ChatHeader
               chatId={id}
               selectedModelId={initialChatModel}
@@ -279,14 +311,6 @@ export function Chat({
               isReadonly={isReadonly}
               session={session}
             />
-          {isArtifactVisible && (
-            <SideChatHeader
-              title="Apply for Benefits"
-              status="online"
-              artifactTitle={artifactTitle}
-              sessionStartTime={sessionStartTime}
-            />
-          )}
 
           <Messages
             chatId={id}

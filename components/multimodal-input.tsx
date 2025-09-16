@@ -42,7 +42,6 @@ function PureMultimodalInput({
   sendMessage,
   className,
   selectedVisibilityType,
-  initialChatModel,
 }: {
   chatId: string;
   input: string;
@@ -325,7 +324,6 @@ function PureMultimodalInput({
             input={input}
             submitForm={submitForm}
             uploadQueue={uploadQueue}
-            initialChatModel={initialChatModel}
           />
         )}
       </div>

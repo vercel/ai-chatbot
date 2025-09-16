@@ -1,33 +1,31 @@
 'use client';
-import cx from 'classnames';
+
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { cn, sanitizeText } from '@/lib/utils';
+import { memo, useState } from 'react';
+
+import { Button } from './ui/button';
+import type { ChatMessage } from '@/lib/types';
+import { CollapsibleWrapper } from './ui/collapsible-wrapper';
+import { DocumentPreview } from './document-preview';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
-import equal from 'fast-deep-equal';
-import { cn, sanitizeText } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
+import { PreviewAttachment } from './preview-attachment';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage } from '@/lib/types';
+import type { Vote } from '@/lib/db/schema';
+import { Weather } from './weather';
+import cx from 'classnames';
+import equal from 'fast-deep-equal';
 import { useDataStream } from './data-stream-provider';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from './ui/collapsible';
-import { ChevronDown } from 'lucide-react';
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
+
 
 // Mapping function for tool names to user-friendly descriptions
 const getToolDisplayName = (toolName: string, input?: any): string => {
@@ -365,27 +363,7 @@ const PurePreviewMessage = ({
                   const displayName = getToolDisplayName(type, input);
                   
                   return (
-                    <Collapsible key={toolCallId} defaultOpen={false} className="border rounded-md">
-                      <div className="flex items-center justify-between p-3">
-                        <div className="text-sm font-medium">
-                          {displayName}
-                        </div>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-1 h-auto">
-                            <ChevronDown className="h-4 w-4" />
-                            <span className="sr-only">Toggle details</span>
-                          </Button>
-                        </CollapsibleTrigger>
-                      </div>
-                      <CollapsibleContent className="px-3 pb-3">
-                        <div className="border-t pt-3">
-                          <div className="text-xs text-muted-foreground mb-2">Input:</div>
-                          <pre className="text-[10px] bg-gray-50 dark:bg-gray-900 p-1 rounded whitespace-pre-wrap break-words overflow-x-auto">
-                            {input ? JSON.stringify(input, null, 1) : 'No input data'}
-                          </pre>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                    <CollapsibleWrapper key={toolCallId} displayName={displayName} input={input} />
                   );
                 }
 
@@ -395,60 +373,23 @@ const PurePreviewMessage = ({
 
                   if (output && 'error' in output) {
                     return (
-                      <Collapsible hidden={true} key={toolCallId} defaultOpen={false} className="border border-red-200 rounded-md">
-                        <div className="flex items-center justify-between p-3">
-                          <div className="text-sm font-medium text-red-600">
-                            {displayName} (Error)
-                          </div>
-                          <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="sm" className="p-1 h-auto">
-                              <ChevronDown className="h-4 w-4" />
-                              <span className="sr-only">Toggle details</span>
-                            </Button>
-                          </CollapsibleTrigger>
-                        </div>
-                        <CollapsibleContent className="px-3 pb-3">
-                          <div className="border-t pt-3">
-                            <div className="text-xs text-muted-foreground mb-2">Error:</div>
-                            <div className="text-xs text-red-600 bg-red-50 dark:bg-red-950 p-2 rounded">
-                              {String(output.error)}
-                            </div>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
+                      <CollapsibleWrapper 
+                        key={toolCallId} 
+                        displayName={displayName} 
+                        input={input} 
+                        output={output} 
+                        isError={true} 
+                      />
                     );
                   }
 
                   return (
-                    <Collapsible key={toolCallId} defaultOpen={false} className="border rounded-md">
-                      <div className="flex items-center justify-between p-3">
-                        <div className="text-sm font-medium">
-                          {displayName}
-                        </div>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-1 h-auto">
-                            <ChevronDown className="h-4 w-4" />
-                            <span className="sr-only">Toggle details</span>
-                          </Button>
-                        </CollapsibleTrigger>
-                      </div>
-                      <CollapsibleContent className="px-3 pb-3">
-                        <div className="border-t pt-3">
-                          {input && (
-                            <>
-                              <div className="text-xs text-muted-foreground mb-2">Input:</div>
-                              <pre className="text-[10px] bg-gray-50 dark:bg-gray-900 p-1 rounded whitespace-pre-wrap break-words overflow-x-auto mb-3">
-                                {JSON.stringify(input, null, 1)}
-                              </pre>
-                            </>
-                          )}
-                          <div className="text-xs text-muted-foreground mb-2">Result:</div>
-                          <pre className="text-[10px] bg-gray-50 dark:bg-gray-900 p-1 rounded whitespace-pre-wrap break-words overflow-x-auto">
-                            {JSON.stringify(output, null, 1)}
-                          </pre>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                    <CollapsibleWrapper 
+                      key={toolCallId} 
+                      displayName={displayName} 
+                      input={input} 
+                      output={output} 
+                    />
                   );
                 }
               }
