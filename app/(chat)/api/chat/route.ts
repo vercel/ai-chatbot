@@ -1,6 +1,7 @@
 import {
   convertToModelMessages,
   createUIMessageStream,
+  experimental_createMCPClient,
   JsonToSseTransformStream,
   smoothStream,
   stepCountIs,
@@ -37,7 +38,8 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { createPdf } from '@/lib/ai/tools/create-pdf';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+// import { createPdf } from '@/lib/ai/tools/create-pdf';
 
 export const maxDuration = 60;
 
@@ -150,6 +152,14 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    const httpTransport = new StreamableHTTPClientTransport(new URL('http://146.103.97.69:8765/mcp'));
+    const httpClient = await experimental_createMCPClient({
+      transport: httpTransport,
+    })
+
+    const mcpTools = await httpClient.tools();
+    console.log(mcpTools);
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -161,22 +171,23 @@ export async function POST(request: Request) {
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : [
-                  'getWeather',
+                  // 'getWeather',
                   'createPdf',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
+                  // 'createDocument',
+                  // 'updateDocument',
+                  // 'requestSuggestions',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
-            getWeather,
-            createPdf,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+            // getWeather,
+            // createPdf,
+            // createDocument: createDocument({ session, dataStream }),
+            // updateDocument: updateDocument({ session, dataStream }),
+            // requestSuggestions: requestSuggestions({
+              // session,
+              // dataStream,
+            // }),
+            ...mcpTools,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
