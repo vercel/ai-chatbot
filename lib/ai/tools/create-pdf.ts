@@ -2,22 +2,23 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 export const ProductSchema = z.object({
-      name: z.string().describe('Name of the product'),
-      characteristics: z.string().describe('Characteristics of the product').optional(),
-      quantity: z.number(),
-      price: z.number(),
+  name: z.string().describe('Name of the product'),
+  characteristics: z.string().describe('Characteristics of the product').optional(),
+  quantity: z.number(),
+  price: z.number(),
 })
 
 export const PDFSchema = z.object({
+  templateName: z.enum(["emonaev", "remmark", "sdk"]).describe('Организация, от лица которой мы выставляем коммерческое предложение'),
   filename: z.string(),
   products: z.array(ProductSchema),
 })
 
 export const createPdf = tool({
-  description: 'Generate a pdf file with the given list of products and filename',
+  description: 'Создает коммерческое предложение в виде pdf файла',
   inputSchema: PDFSchema,
-  execute: async ({ filename, products }) => {
-    return { filename, products };
+  execute: async ({ filename, products, templateName = 'remmark' }) => {
+    return { filename, products, templateName };
   }
 });
 

@@ -2,6 +2,7 @@ import { PDFSchema } from '@/lib/ai/tools/create-pdf'
 import { formatNumber } from '@/lib/utils'
 import React, { ForwardedRef } from 'react'
 import { z } from 'zod'
+import TemplateTable from './template-table'
 
 interface Props {
   ref: ForwardedRef<HTMLDivElement>
@@ -39,57 +40,10 @@ const RemmarkPDFTemplate = ({ content, ref, sum }: Props) => {
         <div>Кому: МКУ какое-то такое-то привет пока</div>
       </div>
       <h1 className='text-center text-base'>Коммерческое предложение</h1>
-      <table className="min-w-full border border-black bg-white">
-        <thead>
-          <tr>
-            <th
-              rowSpan={2}
-              className="border border-black px-2 py-1 align-middle font-medium text-gray-900"
-            >
-              № п/п
-            </th>
-            <th
-              rowSpan={2}
-              className="border border-black px-2 py-1 align-middle font-medium text-gray-900"
-            >
-              Наименование товара
-            </th>
-            <th
-              rowSpan={2}
-              className="border border-black px-2 py-1 align-middle font-medium text-gray-900"
-            >
-              Функциональные и качественные характеристики товара (неизменяемые показатели)
-            </th>
-            <th
-              rowSpan={2}
-              className="border border-black px-2 py-1 align-middle font-medium text-gray-900"
-            >
-              Кол-во
-            </th>
-            <th
-              rowSpan={2}
-              className="border border-black px-2 py-1 align-middle font-medium text-gray-900"
-            >
-              Ед.
-            </th>
-            <th className="border border-black px-2 py-1 font-medium text-gray-900">Цена с НДС (руб.)</th>
-            <th className="border border-black px-2 py-1 font-medium text-gray-900">Сумма с НДС (руб.)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {content.products.map((product, index) => (
-            <tr key={product.name}>
-              <td className="border border-black px-2 py-1 text-center">{index + 1}</td>
-              <td className="border border-black px-2 py-1">{product.name}</td>
-              <td className="border border-black px-2 py-1">{product.characteristics}</td>
-              <td className="border border-black px-2 py-1 text-center">{product.quantity}</td>
-              <td className="border border-black px-2 py-1 text-center">шт</td>
-              <td className="border border-black px-2 py-1 text-right">{formatNumber(product.price)}</td>
-              <td className="border border-black px-2 py-1 text-right">{formatNumber(product.price * product.quantity)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      { /* Table */ }
+      <TemplateTable products={content.products} />
+
       <div className='flex justify-end'>
         <div className='grid grid-cols-2 gap-x-6'>
           <div className="text-right font-medium">Итого:</div>

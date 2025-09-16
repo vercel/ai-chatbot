@@ -2,6 +2,7 @@ import { PDFSchema } from '@/lib/ai/tools/create-pdf'
 import { formatNumber } from '@/lib/utils'
 import React, { ForwardedRef } from 'react'
 import { z } from 'zod'
+import TemplateTable from './template-table'
 
 interface Props {
   ref: ForwardedRef<HTMLDivElement>
@@ -20,74 +21,36 @@ const EmonaevPDFTemplate = ({ content, ref, sum }: Props) => {
       className="w-[850px] text-xs bg-white p-10 tracking-wide relative"
     >
       {/* Header */}
-      <div className="font-bold uppercase">
+      <div className="font-bold text-center italic text-xl">
         Индивидуальный предприниматель
         <br />
+        <span className="uppercase">
         Емонаев Виталий Сергеевич
+        </span>
+        <br />
+        ИНН 860239103291 ОГРНИП 315861700013774
+        <br />
+        628426, Россия, Ханты-Мансийский Автономный округ – Югра,
+        <br />
+        г. Сургут, проспект Мира, д. 44, кв. 79
       </div>
 
-      <div className="flex justify-between items-start mt-1">
-        <div>
-          628426, Россия, Ханты-Мансийский Автономный округ – Югра,
-          <br />
-          г. Сургут, проспект Мира, д. 44, кв. 79
-        </div>
-        <div className="text-right">
-          ИНН 860239103291
-          <br />
-          ОГРНИП 315861700013774
-        </div>
-      </div>
+      <hr className="mt-4 border-t border-black" />
 
-      <hr className="mt-4 border-t-2 border-black" />
-
-      <div className="flex justify-between items-start">
-        <div className="whitespace-pre-wrap">
-          Директору МКУ «УИТС г. Сургута»
-          <br />
-          П.М. Зыкову
-        </div>
-        <div className="text-right">
-          В ответ на Ваш запрос от 27.08.2025 № 11-11-1215/5
+      <div className='flex justify-end mt-4'>
+        <div className="whitespace-pre-wrap text-right max-w-[160px]">
+          Директору МКУ «УИТС г. Сургута» П.М. Зыкову
         </div>
       </div>
 
-      <h1 className="text-center text-base mt-2">Коммерческое предложение</h1>
-      <p className="mt-2">Уважаемый Павел Михайлович!</p>
+      <p className="mt-4 text-center">Уважаемый Павел Михайлович!</p>
+
+      <div className="text-left mt-4">
+        В ответ на Ваш запрос от 27.08.2025 № 11-11-1215/5.
+      </div>
 
       {/* Table */}
-      <table className="min-w-full border border-black bg-white mt-3">
-        <thead>
-          <tr>
-            <th className="border border-black px-2 py-1 align-middle font-medium text-gray-900">№ п/п</th>
-            <th className="border border-black px-2 py-1 align-middle font-medium text-gray-900">
-              Наименование товара
-            </th>
-            <th className="border border-black px-2 py-1 align-middle font-medium text-gray-900">
-              Функциональные и качественные характеристики товара (неизменяемые показатели)
-            </th>
-            <th className="border border-black px-2 py-1 align-middle font-medium text-gray-900">Кол-во</th>
-            <th className="border border-black px-2 py-1 align-middle font-medium text-gray-900">Ед.</th>
-            <th className="border border-black px-2 py-1 font-medium text-gray-900">Цена с НДС (руб.)</th>
-            <th className="border border-black px-2 py-1 font-medium text-gray-900">Сумма с НДС (руб.)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {content.products.map((product, index) => (
-            <tr key={`${product.name}-${index}`}>
-              <td className="border border-black px-2 py-1 text-center">{index + 1}</td>
-              <td className="border border-black px-2 py-1">{product.name}</td>
-              <td className="border border-black px-2 py-1">{product.characteristics}</td>
-              <td className="border border-black px-2 py-1 text-center">{product.quantity}</td>
-              <td className="border border-black px-2 py-1 text-center">шт</td>
-              <td className="border border-black px-2 py-1 text-right">{formatNumber(product.price)}</td>
-              <td className="border border-black px-2 py-1 text-right">
-                {formatNumber(product.price * product.quantity)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TemplateTable products={content.products} />
 
       {/* Totals */}
       <div className="flex justify-end mt-3">
@@ -124,9 +87,10 @@ const EmonaevPDFTemplate = ({ content, ref, sum }: Props) => {
       </div>
 
       {/* Signature */}
-      <div className="mt-8 flex justify-between">
+      <div className="mt-8 flex gap-4 relative">
         <span>ИП Емонаев В.С.</span>
-        <span className="text-right">действует без печати</span>
+        <div className='w-32 border-t border-black absolute top-4 left-[100px]' />
+        <span className="text-right relative top-4">действует без печати</span>
       </div>
     </div>
   )
