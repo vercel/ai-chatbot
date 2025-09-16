@@ -23,7 +23,6 @@ export const myProvider = isTestEnvironment
         'title-model': titleModel,
         'artifact-model': artifactModel,
         'web-automation-model': chatModel, // Use same test model for web automation
-        'benefit-applications-agent': chatModel, // Use same test model for benefit applications
       },
     })
   : customProvider({
@@ -36,7 +35,6 @@ export const myProvider = isTestEnvironment
         'title-model': openai('gpt-4o-mini'),
         'artifact-model': openai('gpt-4o'),
         // 'web-automation-model' is handled by Mastra agent, not this provider
-        // 'benefit-applications-agent' is handled by Mastra agent, not this provider
       },
       imageModels: {
         'small-model': openai.image('dall-e-3'),
