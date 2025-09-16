@@ -1,10 +1,9 @@
 'use client';
-import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon, LoaderIcon } from './icons';
+import { PencilEditIcon, SparklesIcon } from './icons';
 import { Response } from './elements/response';
 import { MessageContent } from './elements/message';
 import {
@@ -177,6 +176,42 @@ const PurePreviewMessage = ({
                     </div>
                   );
                 }
+              }
+              if (type === 'tool-tireSearch') {
+                const { toolCallId, state, output } = part;
+
+                return (
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-tireSearch" state={state} />
+                    <ToolContent>
+                      {state === 'input-available' && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === 'output-available' && (
+                        <ToolOutput
+                          output={
+                            output && 'error' in output ? (
+                              <div className="p-2 text-red-500 rounded border">
+                                Error: {String(output.error)}
+                              </div>
+                            ) : output &&
+                              Array.isArray(output.hits) &&
+                              output.hits.length > 0 ? (
+                              <ul>
+                                {output.hits.map((tire: any) => (
+                                  <li key={tire.id}>{tire.name}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              'No tires found.'
+                            )
+                          }
+                          errorText={undefined}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
               }
 
               if (type === 'tool-getWeather') {

@@ -17,20 +17,20 @@ export const messageMetadataSchema = z.object({
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
-type weatherTool = InferUITool<typeof getWeather>;
-type TireTool = InferUITool<ReturnType<typeof tireSearch>>;
-type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
-type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
-type requestSuggestionsTool = InferUITool<
+type WeatherTool = InferUITool<typeof getWeather>;
+type TireTool = InferUITool<typeof tireSearch>;
+type CreateDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
+type UpdateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
+type RequestSuggestionsTool = InferUITool<
   ReturnType<typeof requestSuggestions>
 >;
 
 export type ChatTools = {
-  getWeather: weatherTool;
+  getWeather: WeatherTool;
   tireSearch: TireTool;
-  createDocument: createDocumentTool;
-  updateDocument: updateDocumentTool;
-  requestSuggestions: requestSuggestionsTool;
+  createDocument: CreateDocumentTool;
+  updateDocument: UpdateDocumentTool;
+  requestSuggestions: RequestSuggestionsTool;
 };
 
 export type CustomUIDataTypes = {

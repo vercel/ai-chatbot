@@ -176,7 +176,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
-            tireSearch: tireSearch({ dataStream }),
+            tireSearch,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
