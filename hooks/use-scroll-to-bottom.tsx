@@ -17,7 +17,42 @@ export function useScrollToBottom() {
 
     // Check if we are within 100px of the bottom (like v0 does)
     setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 100);
-  }, []);
+    }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        handleScroll();
+      });
+    });
+
+    const mutationObserver = new MutationObserver(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          handleScroll();
+        });
+      });
+    });
+
+    resizeObserver.observe(container);
+    mutationObserver.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'data-state']
+    });
+
+    handleScroll();
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     const container = containerRef.current;
