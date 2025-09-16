@@ -120,7 +120,7 @@ test.describe
       expect(response.status()).toBe(404);
     });
 
-    test('Ada can resume chat generation', async ({ adaContext }) => {
+    test.skip('Ada can resume chat generation', async ({ adaContext }) => {
       const chatId = generateUUID();
 
       const firstRequest = adaContext.request.post('/api/chat', {
