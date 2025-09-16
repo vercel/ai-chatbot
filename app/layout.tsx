@@ -1,18 +1,18 @@
-import { Toaster } from "sonner";
-import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import type { Metadata, Viewport } from "next";
+import Link from "next/link";
+import { SessionProvider } from "next-auth/react";
+import { Geist, Geist_Mono } from "geist/font";
+
 import { ThemeProvider } from "@/components/theme-provider";
 import { AccessibilityProvider } from "@/lib/accessibility/context";
-import { AccessibilityListener } from "@/components/accessibility-listener";
 import { PersonaProvider } from "@/lib/persona/context";
+import { AccessibilityListener } from "@/components/accessibility-listener";
 import { DataStreamProvider } from "@/components/data-stream-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Link from "next/link";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 import "../styles/accessibility.css";
-import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -20,10 +20,9 @@ export const metadata: Metadata = {
   description: "Next.js chatbot template using the AI SDK.",
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
-
 
 const LIGHT_THEME_COLOR = "hsl(0 0% 100%)";
 const DARK_THEME_COLOR = "hsl(240deg 10% 3.92%)";
@@ -45,39 +44,27 @@ const THEME_COLOR_SCRIPT = `\
   updateThemeColor();
 })();`;
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="pt-BR"
-      // `next-themes` injects an extra classname to the body element to avoid
-      // visual flicker before hydration. Hence the `suppressHydrationWarning`
-      // prop is necessary to avoid the React hydration mismatch warning.
-      // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
       suppressHydrationWarning
-      className={`${GeistSans.className} ${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${Geist.className} ${Geist_Mono.variable}`}
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: THEME_COLOR_SCRIPT,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: THEME_COLOR_SCRIPT }} />
         <meta
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
         />
       </head>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        {/* ThemeProvider custom — SEM props do next-themes */}
+        <ThemeProvider>
           <Toaster position="top-center" />
           <TooltipProvider>
             <AccessibilityProvider>

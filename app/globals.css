@@ -6,8 +6,10 @@
 /* Tokens (Light / Dark) */
 /* ===================== */
 :root {
+  /* Font stacks (usam variáveis do Geist, se presentes via layout) */
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New";
+
   color-scheme: light dark;
   accent-color: hsl(27 100% 50%);
 
@@ -18,7 +20,7 @@
   --border-hsl: 240 6% 84%;
   --ring-hsl: 240 5% 65%;
 
-  /* Seus aliases (funcionais) */
+  /* Aliases funcionais */
   --bg: hsl(0 0% 100%);
   --fg: hsl(240 5% 10%);
   --muted: hsl(240 5% 96%);
@@ -33,7 +35,7 @@
   --yello-grad: linear-gradient(135deg, var(--yello-1) 0%, var(--yello-2) 45%, var(--yello-3) 100%);
   --yello-shadow: 0 10px 30px hsl(27 100% 50% / 0.25);
 
-  /* Brand variables */
+  /* Brand */
   --brand: hsl(45 100% 62%);
   --brand-accent: hsl(27 100% 50%);
   --brand-secondary: hsl(342 100% 56%);
@@ -49,19 +51,19 @@
   --glass-border-dark: hsl(240 10% 30% / 0.45);
   --blur: 12px;
 
-  /* Radius token para componentes */
+  /* Radius token */
   --radius: 12px;
 }
 
 .dark {
-  /* shadcn aliases (HSL components) */
+  /* shadcn aliases (HSL) */
   --background: 240 10% 4%;
   --foreground: 0 0% 98%;
   --muted-hsl: 240 7% 11%;
   --border-hsl: 240 5% 26%;
   --ring-hsl: 240 5% 54%;
 
-  /* seus aliases funcionais */
+  /* funcionais */
   --bg: hsl(240 10% 4%);
   --fg: hsl(0 0% 98%);
   --muted: hsl(240 7% 11%);
@@ -103,7 +105,7 @@ code, pre, kbd, samp { font-family: var(--font-geist-mono, var(--font-mono)); }
 /* ============ */
 @layer base {
   :root {
-    /* mapeia tokens shadcn → tailwind classes (bg-background etc.) */
+    /* mapeia tokens shadcn → tailwind classes (bg-background, text-foreground, etc.) */
     --muted: hsl(var(--muted-hsl));
   }
 
@@ -117,8 +119,9 @@ code, pre, kbd, samp { font-family: var(--font-geist-mono, var(--font-mono)); }
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    /* usa variáveis do Geist definidas no layout; fallback seguro */
     font-family: var(--font-geist-sans, var(--font-sans));
-    /* fundo em camadas: neutro + radiais Yello discretas */
+    /* fundo em camadas com Yello discreto */
     background-image:
       radial-gradient(at top right, hsl(45 100% 62% / 0.14), transparent 60%),
       radial-gradient(at bottom left, hsl(342 100% 56% / 0.12), transparent 60%);
@@ -127,8 +130,8 @@ code, pre, kbd, samp { font-family: var(--font-geist-mono, var(--font-mono)); }
     min-height: 100vh;
   }
 
-  /* ::selection: gradientes não são garantidos; use cor sólida acessível */
   ::selection {
+    /* cor sólida acessível (gradientes não são garantidos em selection) */
     background-color: hsl(27 100% 50% / 0.28);
     color: white;
   }
@@ -184,7 +187,7 @@ code, pre, kbd, samp { font-family: var(--font-geist-mono, var(--font-mono)); }
       0 0 0 6px var(--yello-2);
   }
 
-  /* Glass effects com fallback */
+  /* Glass effects com fallback e respeito a prefers-reduced-transparency */
   .glass,
   .glass-strong,
   .glass-panel {
@@ -218,8 +221,7 @@ code, pre, kbd, samp { font-family: var(--font-geist-mono, var(--font-mono)); }
   .border-border   { border-color: hsl(var(--border-hsl)); }
   .ring-ring       { --tw-ring-color: hsl(var(--ring-hsl)); }
 
-  /* Font utilities */
+  /* Font utilities (com fallback seguro) */
   .font-geist { font-family: var(--font-geist-sans, var(--font-sans)); }
   .font-geist-mono { font-family: var(--font-geist-mono, var(--font-mono)); }
 }
-
