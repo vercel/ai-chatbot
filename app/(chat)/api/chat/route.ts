@@ -2,6 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   experimental_createMCPClient,
+  hasToolCall,
   JsonToSseTransformStream,
   smoothStream,
   stepCountIs,
@@ -39,7 +40,8 @@ import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-// import { createPdf } from '@/lib/ai/tools/create-pdf';
+import { createPdf } from '@/lib/ai/tools/create-pdf';
+import { openai } from '@ai-sdk/openai';
 
 export const maxDuration = 60;
 
@@ -152,13 +154,12 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    const httpTransport = new StreamableHTTPClientTransport(new URL('http://146.103.97.69:8765/mcp'));
-    const httpClient = await experimental_createMCPClient({
-      transport: httpTransport,
-    })
-
-    const mcpTools = await httpClient.tools();
-    console.log(mcpTools);
+    // const httpTransport = new StreamableHTTPClientTransport(new URL('http://146.103.97.69:8765/mcp'));
+    // const httpClient = await experimental_createMCPClient({
+    //   transport: httpTransport,
+    // })
+    //
+    // const mcpTools = await httpClient.tools();
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -166,12 +167,13 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
+          stopWhen: [stepCountIs(5), hasToolCall("web_search")],
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : [
                   // 'getWeather',
+                  'web_search',
                   'createPdf',
                   // 'createDocument',
                   // 'updateDocument',
@@ -179,15 +181,24 @@ export async function POST(request: Request) {
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
+            web_search: openai.tools.webSearchPreview({
+              searchContextSize: "high",
+              userLocation: {
+                type: "approximate",
+                city: "Surgut",
+                region: "Khanty-Mansy Autonomous Region",
+                country: "RU",
+              }
+            }),
             // getWeather,
-            // createPdf,
+            createPdf,
             // createDocument: createDocument({ session, dataStream }),
             // updateDocument: updateDocument({ session, dataStream }),
             // requestSuggestions: requestSuggestions({
               // session,
               // dataStream,
             // }),
-            ...mcpTools,
+            // ...mcpTools,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,

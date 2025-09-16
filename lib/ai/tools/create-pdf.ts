@@ -15,7 +15,7 @@ export const PDFSchema = z.object({
 })
 
 export const createPdf = tool({
-  description: 'Создает коммерческое предложение в виде pdf файла',
+  description: 'Создает коммерческое предложение в виде pdf файла. Вызывать только если пользователь конкретно попросит дать ему коммерческое предложение.',
   inputSchema: PDFSchema,
   execute: async ({ filename, products, templateName = 'remmark' }) => {
     return { filename, products, templateName };
