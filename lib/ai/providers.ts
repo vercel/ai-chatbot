@@ -1,19 +1,18 @@
 import {
+  customProvider,
+  extractReasoningMiddleware,
+  wrapLanguageModel,
+} from 'ai';
+import { xai } from '@ai-sdk/xai';
+import { openai } from '@ai-sdk/openai';
+import { gateway } from '@ai-sdk/gateway'
+import {
   artifactModel,
   chatModel,
   reasoningModel,
   titleModel,
 } from './models.test';
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from 'ai';
-
-import { gateway } from '@ai-sdk/gateway'
 import { isTestEnvironment } from '../constants';
-import { openai } from '@ai-sdk/openai';
-import { xai } from '@ai-sdk/xai';
 
 export const myProvider = isTestEnvironment
   ? customProvider({

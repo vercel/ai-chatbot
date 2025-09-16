@@ -1,10 +1,9 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Monitor, MonitorX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Monitor, MonitorX, Loader2 } from 'lucide-react';
 
 interface BrowserFrame {
   type: 'frame';
@@ -275,7 +274,7 @@ export function BrowserPanel({ sessionId = 'default', isVisible, onToggle }: Bro
         
         {isConnected && (
           <div className="mt-2 text-xs text-gray-500 flex justify-between">
-            {/* <span>Session: {sessionId}</span> */}
+            <span>Session: {sessionId}</span>
             <span className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               Live

@@ -1,10 +1,9 @@
-import { Bot, Camera, Hand, Loader2, Monitor, MonitorX, RefreshCwIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect, useRef, useState } from 'react';
-
 import { Artifact } from '@/components/create-artifact';
+import { useEffect, useRef, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { MonitorX, Loader2, RefreshCwIcon, Monitor, Camera, Hand, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BrowserFrame {
@@ -436,6 +435,7 @@ export const browserArtifact = new Artifact<'browser', BrowserArtifactMetadata>(
                 <Switch
                   checked={metadata.controlMode === 'user'}
                   onCheckedChange={(checked) => switchControlMode(checked ? 'user' : 'agent')}
+                  className="data-[state=checked]:bg-blue-600"
                 />
               </div>
             </div>
@@ -522,7 +522,7 @@ export const browserArtifact = new Artifact<'browser', BrowserArtifactMetadata>(
           {/* Status footer */}
           {metadata.isConnected && (
             <div className="px-4 pb-4 text-xs text-gray-500 flex justify-between">
-              {/* <span>Session: {metadata.sessionId}</span> */}
+              <span>Session: {metadata.sessionId}</span>
               <span className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Live

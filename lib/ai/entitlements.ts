@@ -1,5 +1,5 @@
-import type { ChatModel } from './models';
 import type { UserType } from '@/app/(auth)/auth';
+import type { ChatModel } from './models';
 
 interface Entitlements {
   maxMessagesPerDay: number;

@@ -336,6 +336,7 @@ function PureArtifact({
                     regenerate={regenerate}
                     isReadonly={isReadonly}
                     artifactStatus={artifact.status}
+                    selectedVisibilityType={selectedVisibilityType}
                   />
                 </div>
                 <div className="border-t border-gray-200 bg-[#EFD9E9] p-[18px]">
