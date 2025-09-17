@@ -1,33 +1,33 @@
-'use client';
-import cx from 'classnames';
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
-import { DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon, LoaderIcon } from './icons';
-import { Response } from './elements/response';
-import { MessageContent } from './elements/message';
+"use client";
+import cx from "classnames";
+import { AnimatePresence, motion } from "framer-motion";
+import { memo, useState } from "react";
+import type { Vote } from "@/lib/db/schema";
+import { DocumentToolResult } from "./document";
+import { PencilEditIcon, SparklesIcon, LoaderIcon } from "./icons";
+import { Response } from "./elements/response";
+import { MessageContent } from "./elements/message";
 import {
   Tool,
   ToolHeader,
   ToolContent,
   ToolInput,
   ToolOutput,
-} from './elements/tool';
-import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
-import equal from 'fast-deep-equal';
-import { cn, sanitizeText } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
-import { MessageReasoning } from './message-reasoning';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage } from '@/lib/types';
-import { useDataStream } from './data-stream-provider';
-import Test from './elements/test';
+} from "./elements/tool";
+import { MessageActions } from "./message-actions";
+import { PreviewAttachment } from "./preview-attachment";
+import { Weather } from "./weather";
+import equal from "fast-deep-equal";
+import { cn, sanitizeText } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { MessageEditor } from "./message-editor";
+import { DocumentPreview } from "./document-preview";
+import { MessageReasoning } from "./message-reasoning";
+import type { UseChatHelpers } from "@ai-sdk/react";
+import type { ChatMessage } from "@/lib/types";
+import { useDataStream } from "./data-stream-provider";
+import CreatePDFToolResult from "./create-pdf-tool-result";
 
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
@@ -47,16 +47,16 @@ const PurePreviewMessage = ({
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  regenerate: UseChatHelpers<ChatMessage>['regenerate'];
+  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
+  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   isArtifactVisible: boolean;
 }) => {
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<"view" | "edit">("view");
 
   const attachmentsFromMessage = message.parts.filter(
-    (part) => part.type === 'file',
+    (part) => part.type === "file",
   );
 
   useDataStream();
@@ -71,24 +71,24 @@ const PurePreviewMessage = ({
         data-role={message.role}
       >
         <div
-          className={cn('flex items-start gap-3', {
-            'w-full': mode === 'edit',
-            'max-w-xl ml-auto justify-end mr-6':
-              message.role === 'user' && mode !== 'edit',
-            'justify-start -ml-3': message.role === 'assistant',
+          className={cn("flex items-start gap-3", {
+            "w-full": mode === "edit",
+            "max-w-xl ml-auto justify-end mr-6":
+              message.role === "user" && mode !== "edit",
+            "justify-start -ml-3": message.role === "assistant",
           })}
         >
-          {message.role === 'assistant' && (
+          {message.role === "assistant" && (
             <div className="flex justify-center items-center mt-1 rounded-full ring-1 size-8 shrink-0 ring-border bg-background">
               <SparklesIcon size={14} />
             </div>
           )}
 
           <div
-            className={cn('flex flex-col gap-4', {
-              'min-h-96': message.role === 'assistant' && requiresScrollPadding,
-              'w-full': message.role === 'assistant',
-              'w-fit': message.role === 'user',
+            className={cn("flex flex-col gap-4", {
+              "min-h-96": message.role === "assistant" && requiresScrollPadding,
+              "w-full": message.role === "assistant",
+              "w-fit": message.role === "user",
             })}
           >
             {attachmentsFromMessage.length > 0 && (
@@ -100,7 +100,7 @@ const PurePreviewMessage = ({
                   <PreviewAttachment
                     key={attachment.url}
                     attachment={{
-                      name: attachment.filename ?? 'file',
+                      name: attachment.filename ?? "file",
                       contentType: attachment.mediaType,
                       url: attachment.url,
                     }}
@@ -113,7 +113,7 @@ const PurePreviewMessage = ({
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
 
-              if (type === 'reasoning' && part.text?.trim().length > 0) {
+              if (type === "reasoning" && part.text?.trim().length > 0) {
                 return (
                   <MessageReasoning
                     key={key}
@@ -123,11 +123,11 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === 'text') {
-                if (mode === 'view') {
+              if (type === "text") {
+                if (mode === "view") {
                   return (
                     <div key={key} className="flex flex-row gap-2 items-start">
-                      {message.role === 'user' && !isReadonly && (
+                      {message.role === "user" && !isReadonly && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -135,7 +135,7 @@ const PurePreviewMessage = ({
                               variant="ghost"
                               className="px-2 rounded-full opacity-0 h-fit text-muted-foreground group-hover/message:opacity-100"
                               onClick={() => {
-                                setMode('edit');
+                                setMode("edit");
                               }}
                             >
                               <PencilEditIcon />
@@ -147,10 +147,10 @@ const PurePreviewMessage = ({
 
                       <MessageContent
                         data-testid="message-content"
-                        className={cn('justify-start items-start text-left', {
-                          'bg-primary text-primary-foreground':
-                            message.role === 'user',
-                          'bg-transparent -ml-4': message.role === 'assistant',
+                        className={cn("justify-start items-start text-left", {
+                          "bg-primary text-primary-foreground":
+                            message.role === "user",
+                          "bg-transparent -ml-4": message.role === "assistant",
                         })}
                       >
                         <Response>{sanitizeText(part.text)}</Response>
@@ -159,7 +159,7 @@ const PurePreviewMessage = ({
                   );
                 }
 
-                if (mode === 'edit') {
+                if (mode === "edit") {
                   return (
                     <div
                       key={key}
@@ -180,17 +180,17 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === 'tool-getWeather') {
+              if (type === "tool-getWeather") {
                 const { toolCallId, state } = part;
 
                 return (
                   <Tool key={toolCallId} defaultOpen={true}>
                     <ToolHeader type="tool-getWeather" state={state} />
                     <ToolContent>
-                      {state === 'input-available' && (
+                      {state === "input-available" && (
                         <ToolInput input={part.input} />
                       )}
-                      {state === 'output-available' && (
+                      {state === "output-available" && (
                         <ToolOutput
                           output={<Weather weatherAtLocation={part.output} />}
                           errorText={undefined}
@@ -201,19 +201,19 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === 'tool-createPdf') {
+              if (type === "tool-createPdf") {
                 const { toolCallId, state } = part;
 
                 return (
                   <Tool key={toolCallId} defaultOpen={true}>
                     <ToolHeader type="tool-createPdf" state={state} />
                     <ToolContent>
-                      {state === 'input-available' && (
+                      {state === "input-available" && (
                         <ToolInput input={part.input} />
                       )}
-                      {state === 'output-available' && (
+                      {state === "output-available" && (
                         <ToolOutput
-                          output={<Test content={part.output} />}
+                          output={<CreatePDFToolResult content={part.output} />}
                           errorText={undefined}
                         />
                       )}
@@ -222,10 +222,10 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === 'tool-createDocument') {
+              if (type === "tool-createDocument") {
                 const { toolCallId } = part;
 
-                if (part.output && 'error' in part.output) {
+                if (part.output && "error" in part.output) {
                   return (
                     <div
                       key={toolCallId}
@@ -245,10 +245,10 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === 'tool-updateDocument') {
+              if (type === "tool-updateDocument") {
                 const { toolCallId } = part;
 
-                if (part.output && 'error' in part.output) {
+                if (part.output && "error" in part.output) {
                   return (
                     <div
                       key={toolCallId}
@@ -270,20 +270,20 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === 'tool-requestSuggestions') {
+              if (type === "tool-requestSuggestions") {
                 const { toolCallId, state } = part;
 
                 return (
                   <Tool key={toolCallId} defaultOpen={true}>
                     <ToolHeader type="tool-requestSuggestions" state={state} />
                     <ToolContent>
-                      {state === 'input-available' && (
+                      {state === "input-available" && (
                         <ToolInput input={part.input} />
                       )}
-                      {state === 'output-available' && (
+                      {state === "output-available" && (
                         <ToolOutput
                           output={
-                            'error' in part.output ? (
+                            "error" in part.output ? (
                               <div className="p-2 text-red-500 rounded border">
                                 Error: {String(part.output.error)}
                               </div>
@@ -335,7 +335,7 @@ export const PreviewMessage = memo(
 );
 
 export const ThinkingMessage = () => {
-  const role = 'assistant';
+  const role = "assistant";
 
   return (
     <motion.div
