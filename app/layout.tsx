@@ -1,11 +1,10 @@
-import './globals.css';
-
-import { Geist, Geist_Mono, IBM_Plex_Mono } from 'next/font/google';
-
-import type { Metadata } from 'next';
-import { SessionProvider } from 'next-auth/react';
-import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono, IBM_Plex_Mono } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
+
+import './globals.css';
+import { SessionProvider } from 'next-auth/react';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),

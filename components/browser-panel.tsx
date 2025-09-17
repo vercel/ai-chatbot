@@ -1,10 +1,9 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Monitor, MonitorX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Monitor, MonitorX, Loader2 } from 'lucide-react';
 
 interface BrowserFrame {
   type: 'frame';

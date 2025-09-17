@@ -1,10 +1,9 @@
-import { Bot, Camera, Hand, Loader2, Monitor, MonitorX, RefreshCwIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect, useRef, useState } from 'react';
-
 import { Artifact } from '@/components/create-artifact';
+import { useEffect, useRef, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { MonitorX, Loader2, RefreshCwIcon, Monitor, Camera, Hand, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BrowserFrame {
