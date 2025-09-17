@@ -18,6 +18,7 @@ import { VersionFooter } from './version-footer';
 import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
+import { SideChatHeader } from './side-chat-header';
 import { useSidebar } from './ui/sidebar';
 import { useArtifact } from '@/hooks/use-artifact';
 import { browserArtifact } from '@/artifacts/browser/client';
@@ -68,7 +69,7 @@ function PureArtifact({
   regenerate,
   votes,
   isReadonly,
-  selectedVisibilityType,
+  selectedVisibilityType
 }: {
   chatId: string;
   input: string;
@@ -84,6 +85,7 @@ function PureArtifact({
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
+  initialChatModel: string;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -281,7 +283,7 @@ function PureArtifact({
 
           {!isMobile && (
             <motion.div
-              className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
+              className="relative w-[30%] bg-muted dark:bg-background h-dvh shrink-0"
               initial={{ opacity: 0, x: 10, scale: 1 }}
               animate={{
                 opacity: 1,
@@ -312,34 +314,47 @@ function PureArtifact({
                 )}
               </AnimatePresence>
 
-              <div className="flex flex-col h-full justify-between items-center">
-                <ArtifactMessages
-                  chatId={chatId}
-                  status={status}
-                  votes={votes}
-                  messages={messages}
-                  setMessages={setMessages}
-                  regenerate={regenerate}
-                  isReadonly={isReadonly}
-                  artifactStatus={artifact.status}
+              <div className="flex flex-col h-full">
+                <SideChatHeader
+                  title="Chat"
+                  status="online"
+                  artifactTitle={artifact.title}
+                  sessionStartTime={document ? formatDistance(
+                    new Date(document.createdAt),
+                    new Date(),
+                    { addSuffix: true }
+                  ) : undefined}
                 />
-
-                <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
-                  <MultimodalInput
+                <div className="flex-1 overflow-hidden">
+                  <ArtifactMessages
                     chatId={chatId}
-                    input={input}
-                    setInput={setInput}
                     status={status}
-                    stop={stop}
-                    attachments={attachments}
-                    setAttachments={setAttachments}
+                    votes={votes}
                     messages={messages}
-                    sendMessage={sendMessage}
-                    className="bg-background dark:bg-muted"
                     setMessages={setMessages}
-                    selectedVisibilityType={selectedVisibilityType}
+                    regenerate={regenerate}
+                    isReadonly={isReadonly}
+                    artifactStatus={artifact.status}
                   />
-                </form>
+                </div>
+                <div className="border-t border-gray-200 bg-[#EFD9E9] p-[18px]">
+                  <form className="flex gap-2 w-full">
+                    <MultimodalInput
+                      chatId={chatId}
+                      input={input}
+                      setInput={setInput}
+                      status={status}
+                      stop={stop}
+                      attachments={attachments}
+                      setAttachments={setAttachments}
+                      messages={messages}
+                      sendMessage={sendMessage}
+                      setMessages={setMessages}
+                      selectedVisibilityType={selectedVisibilityType}
+                    />
+
+                  </form>
+                </div>
               </div>
             </motion.div>
           )}
@@ -384,12 +399,12 @@ function PureArtifact({
                   }
                 : {
                     opacity: 1,
-                    x: 400,
+                    x: windowWidth * 0.3,
                     y: 0,
                     height: windowHeight,
                     width: windowWidth
-                      ? windowWidth - 400
-                      : 'calc(100dvw-400px)',
+                      ? windowWidth * 0.7
+                      : 'calc(70dvw)',
                     borderRadius: 0,
                     transition: {
                       delay: 0,

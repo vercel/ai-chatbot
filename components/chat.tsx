@@ -23,6 +23,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { BrowserPanel } from './browser-panel';
+import { BenefitApplicationsLanding } from './benefit-applications-landing';
 
 export function Chat({
   id,
@@ -52,6 +53,7 @@ export function Chat({
   const [input, setInput] = useState<string>('');
   const [browserPanelVisible, setBrowserPanelVisible] = useState<boolean>(false);
   const [browserSessionId, setBrowserSessionId] = useState<string>(id);
+  
 
   const {
     messages,
@@ -121,8 +123,29 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  const { setArtifact } = useArtifact();
+  const { setArtifact, artifact } = useArtifact();
   const [browserArtifactDismissed, setBrowserArtifactDismissed] = useState(false);
+
+  const getArtifactTitle = () => {
+    // If we have an artifact with a title, use it
+    if (artifact?.title) {
+      return artifact.title;
+    }
+
+    // Otherwise, create a title from the first user message
+    const userMessage = messages.find(msg => msg.role === 'user');
+    if (userMessage) {
+      const messageText = userMessage.parts?.find(part => part.type === 'text')?.text || 'Browser session';
+      return `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
+    }
+
+    return 'Browser:';
+  };
+
+  const artifactTitle = getArtifactTitle();
+
+  // Simple session start time
+  const sessionStartTime = 'Session started';
 
   // Monitor messages for browser tool usage
   useEffect(() => {
@@ -155,7 +178,7 @@ export function Chat({
           const userMessage = messages.find(msg => msg.role === 'user');
           const messageText = userMessage?.parts.find(part => part.type === 'text')?.text || 'Web Automation';
           const title = `Browser: ${messageText.slice(0, 40)}${messageText.length > 40 ? '...' : ''}`;
-          
+
           setArtifact({
             documentId: generateUUID(),
             content: `# ${title}\n\nBrowser automation session starting...`,
@@ -220,12 +243,20 @@ export function Chat({
     resumeStream,
     setMessages,
   });
+   // Handler for benefit applications landing page
+   const handleBenefitApplicationsMessage = (messageText: string) => {
+    sendMessage({
+      role: 'user' as const,
+      parts: [{ type: 'text', text: messageText }],
+    });
+  };
 
-  return (
-    <>
-      <div className={`flex h-dvh bg-background ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}>
-        {/* Chat Panel */}
-        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-1/2 border-r' : 'w-full'}`}>
+  // Special UI for web automation agent - show landing page initially
+  if (initialChatModel === 'web-automation-model' && messages.length === 0) {
+    // Show landing page with header
+    return (
+      <>
+        <div className="flex h-dvh bg-background flex-col">
           <ChatHeader
             chatId={id}
             selectedModelId={initialChatModel}
@@ -233,6 +264,51 @@ export function Chat({
             isReadonly={isReadonly}
             session={session}
           />
+          <BenefitApplicationsLanding
+            onSendMessage={handleBenefitApplicationsMessage}
+            isReadonly={isReadonly}
+            chatId={id}
+            sendMessage={sendMessage}
+            selectedVisibilityType={visibilityType}
+          />
+        </div>
+        <Artifact
+          chatId={id}
+          input={input}
+          setInput={setInput}
+          status={status}
+          stop={stop}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          sendMessage={sendMessage}
+          messages={messages}
+          setMessages={setMessages}
+          regenerate={regenerate}
+          votes={votes}
+          isReadonly={isReadonly}
+          selectedVisibilityType={visibilityType}
+          initialChatModel={initialChatModel}
+        />
+      </>
+    );
+  }
+
+  // Unified layout for all models
+  return (
+    <>
+      <div 
+        className={`flex h-dvh ${browserPanelVisible ? 'flex-row' : 'flex-col'}`}
+        style={{ backgroundColor: initialChatModel === 'web-automation-model' ? '#F4E4F0' : undefined }}
+      >
+        {/* Chat Panel */}
+        <div className={`flex flex-col min-w-0 h-full ${browserPanelVisible ? 'w-[30%] border-r border-gray-200' : 'w-full'} ${initialChatModel === 'web-automation-model' ? 'bg-white' : ''}`}>
+            <ChatHeader
+              chatId={id}
+              selectedModelId={initialChatModel}
+              selectedVisibilityType={initialVisibilityType}
+              isReadonly={isReadonly}
+              session={session}
+            />
 
           <Messages
             chatId={id}
@@ -293,6 +369,7 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
+        initialChatModel={initialChatModel}
       />
     </>
   );

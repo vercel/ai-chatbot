@@ -435,7 +435,6 @@ export const browserArtifact = new Artifact<'browser', BrowserArtifactMetadata>(
                 <Switch
                   checked={metadata.controlMode === 'user'}
                   onCheckedChange={(checked) => switchControlMode(checked ? 'user' : 'agent')}
-                  className="data-[state=checked]:bg-blue-600"
                 />
               </div>
             </div>
@@ -478,43 +477,45 @@ export const browserArtifact = new Artifact<'browser', BrowserArtifactMetadata>(
                 </div>
               </div>
             ) : (
-              <div 
-                className="absolute inset-6 rounded-md overflow-hidden shadow-lg ring-1 ring-black/5"
-                tabIndex={metadata.controlMode === 'user' ? 0 : -1}
-                onKeyDown={metadata.controlMode === 'user' ? handleKeyboardInput : undefined}
-                onKeyUp={metadata.controlMode === 'user' ? handleKeyboardInput : undefined}
-                onClick={() => {
-                  if (metadata.controlMode === 'user' && !metadata.isFocused) {
-                    setMetadata(prev => ({ ...prev, isFocused: true }));
-                    toast.info('Browser view is now active. You can type and click.');
-                  }
-                }}
-              >
-                {metadata.controlMode === 'user' && !metadata.isFocused && (
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white z-10 pointer-events-none">
-                    <p className="text-lg font-semibold">Click to activate browser control</p>
-                  </div>
-                )}
-                <canvas
-                  ref={canvasRef}
-                  id="browser-artifact-canvas"
-                  width={1920}
-                  height={1080}
-                  className="w-full h-full object-contain"
-                  style={{ 
-                    imageRendering: 'auto',
-                    background: '#ffffff',
-                    cursor: metadata.controlMode === 'user' ? 'pointer' : 'default'
-                  }}
-                  onClick={handleCanvasInteraction}
-                  onMouseMove={handleCanvasInteraction}
-                  onWheel={handleCanvasInteraction}
-                  onContextMenu={(e) => {
-                    if (metadata.controlMode === 'user') {
-                      e.preventDefault(); // Allow right-click handling
+              <div className="absolute inset-0 flex items-center justify-center p-6">
+                <div 
+                  className="relative rounded-md overflow-hidden shadow-lg ring-1 ring-black/5 bg-white w-11/12 h-11/12 max-w-6xl max-h-5xl"
+                  tabIndex={metadata.controlMode === 'user' ? 0 : -1}
+                  onKeyDown={metadata.controlMode === 'user' ? handleKeyboardInput : undefined}
+                  onKeyUp={metadata.controlMode === 'user' ? handleKeyboardInput : undefined}
+                  onClick={() => {
+                    if (metadata.controlMode === 'user' && !metadata.isFocused) {
+                      setMetadata(prev => ({ ...prev, isFocused: true }));
+                      toast.info('Browser view is now active. You can type and click.');
                     }
                   }}
-                />
+                >
+                  {metadata.controlMode === 'user' && !metadata.isFocused && (
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white z-10 pointer-events-none">
+                      <p className="text-lg font-semibold">Click to activate browser control</p>
+                    </div>
+                  )}
+                  <canvas
+                    ref={canvasRef}
+                    id="browser-artifact-canvas"
+                    width={1920}
+                    height={1080}
+                    className="w-full h-full object-contain"
+                    style={{ 
+                      imageRendering: 'auto',
+                      background: '#ffffff',
+                      cursor: metadata.controlMode === 'user' ? 'pointer' : 'default'
+                    }}
+                    onClick={handleCanvasInteraction}
+                    onMouseMove={handleCanvasInteraction}
+                    onWheel={handleCanvasInteraction}
+                    onContextMenu={(e) => {
+                      if (metadata.controlMode === 'user') {
+                        e.preventDefault(); // Allow right-click handling
+                      }
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -522,7 +523,7 @@ export const browserArtifact = new Artifact<'browser', BrowserArtifactMetadata>(
           {/* Status footer */}
           {metadata.isConnected && (
             <div className="px-4 pb-4 text-xs text-gray-500 flex justify-between">
-              <span>Session: {metadata.sessionId}</span>
+              {/* <span>Session: {metadata.sessionId}</span> */}
               <span className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Live
