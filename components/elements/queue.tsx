@@ -15,6 +15,8 @@ export interface QueuePanelProps {
 function PureQueuePanel({ items, isOpen, onToggle, onRemove }: QueuePanelProps) {
   if (items.length === 0) return null;
 
+  // trigger commit to repo
+
   return (
     <div className='rounded-t-xl border border-border border-b-0 bg-background px-3 pt-2 pb-2 shadow-xs'>
       <button
