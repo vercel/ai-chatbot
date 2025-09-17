@@ -3,13 +3,14 @@
     "next/core-web-vitals",
     "plugin:import/recommended",
     "plugin:import/typescript",
-    "prettier",
+    "plugin:prettier/recommended",
     "plugin:tailwindcss/recommended"
   ],
-  "plugins": ["tailwindcss"],
+  "plugins": ["tailwindcss", "prettier"],
   "rules": {
     "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "off"
+    "tailwindcss/classnames-order": "off",
+    "prettier/prettier": "error"
   },
   "settings": {
     "import/resolver": {
