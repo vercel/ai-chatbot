@@ -167,7 +167,7 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: [stepCountIs(5), hasToolCall("web_search")],
+          stopWhen: stepCountIs(5),
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
-            web_search: openai.tools.webSearchPreview({
+            web_search: openai.tools.webSearch({
               searchContextSize: "high",
               userLocation: {
                 type: "approximate",

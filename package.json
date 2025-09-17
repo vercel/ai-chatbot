@@ -21,7 +21,7 @@
   "dependencies": {
     "@ai-sdk/deepseek": "^1.0.15",
     "@ai-sdk/gateway": "^1.0.15",
-    "@ai-sdk/openai": "^2.0.25",
+    "@ai-sdk/openai": "^2.0.30",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.26",
     "@ai-sdk/xai": "2.0.13",
@@ -54,7 +54,7 @@
     "@vercel/functions": "^2.0.0",
     "@vercel/otel": "^1.12.0",
     "@vercel/postgres": "^0.10.0",
-    "ai": "5.0.26",
+    "ai": "5.0.44",
     "bcrypt-ts": "^5.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",

@@ -30,5 +30,6 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': openai('gpt-4o-mini'),
         'artifact-model': openai('gpt-4o-mini'),
+        'chat-model-advanced': openai('gpt-4o'),
       },
     });
