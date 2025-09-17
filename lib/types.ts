@@ -7,7 +7,7 @@ import type { InferUITool, UIMessage } from 'ai';
 import type { AppUsage } from './usage';
 
 import type { ArtifactKind } from '@/components/artifact';
-import type { Suggestion } from './db/schema';
+import type { Suggestion } from './db/types';
 
 export type DataPart = { type: 'append-message'; message: string };
 

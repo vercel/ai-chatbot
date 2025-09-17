@@ -1,7 +1,7 @@
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import type { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/types';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon, PencilEditIcon } from './icons';
 import { Actions, Action } from './elements/actions';
@@ -104,6 +104,7 @@ export function PureMessageActions({
                       chatId,
                       messageId: message.id,
                       isUpvoted: true,
+                      createdAt: new Date(),
                     },
                   ];
                 },
@@ -151,6 +152,7 @@ export function PureMessageActions({
                       chatId,
                       messageId: message.id,
                       isUpvoted: false,
+                      createdAt: new Date(),
                     },
                   ];
                 },
