@@ -38,9 +38,6 @@ import { SelectItem } from '@/components/ui/select';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
-import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import type { AppUsage } from '@/lib/usage';
@@ -272,14 +269,6 @@ function PureMultimodalInput({
     },
     [setAttachments],
   );
-
-  const { isAtBottom, scrollToBottom } = useScrollToBottom();
-
-  useEffect(() => {
-    if (status === 'submitted') {
-      scrollToBottom();
-    }
-  }, [status, scrollToBottom]);
 
   return (
     <div className={`flex relative flex-col w-full ${hasQueue ? 'gap-0' : 'gap-4'}`}>
