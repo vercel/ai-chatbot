@@ -1,56 +1,128 @@
 import 'server-only';
 
 import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  gte,
-  inArray,
-  lt,
-  type SQL,
-} from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+  ArtifactKind,
+  ChatVisibility,
+  Prisma,
+  type Chat as PrismaChat,
+  type Document as PrismaDocument,
+  type Message as PrismaMessage,
+  type Suggestion as PrismaSuggestion,
+  type Vote as PrismaVote,
+} from '@prisma/client';
 
-import {
-  user,
-  chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
-  message,
-  vote,
-  type DBMessage,
-  type Chat,
-  stream,
-} from './schema';
-import type { ArtifactKind } from '@/components/artifact';
+import type { VisibilityType } from '@/components/visibility-selector';
+import type { AppUsage } from '@/lib/usage';
+import { prisma } from './client';
+import { ChatSDKError } from '../errors';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
-import type { VisibilityType } from '@/components/visibility-selector';
-import { ChatSDKError } from '../errors';
-import type { AppUsage } from '../usage';
+import type {
+  DBChat,
+  DBDocument,
+  DBMessage,
+  DBSuggestion,
+  DBVote,
+  DocumentKind,
+} from './types';
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
+function toVisibilityEnum(visibility: VisibilityType): ChatVisibility {
+  return visibility === 'public' ? ChatVisibility.PUBLIC : ChatVisibility.PRIVATE;
+}
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+function fromVisibilityEnum(visibility: ChatVisibility): VisibilityType {
+  return visibility === ChatVisibility.PUBLIC ? 'public' : 'private';
+}
 
-export async function getUser(email: string): Promise<Array<User>> {
+function toArtifactKindEnum(kind: string): ArtifactKind {
+  switch (kind) {
+    case 'code':
+      return ArtifactKind.CODE;
+    case 'image':
+      return ArtifactKind.IMAGE;
+    case 'sheet':
+      return ArtifactKind.SHEET;
+    case 'text':
+    default:
+      return ArtifactKind.TEXT;
+  }
+}
+
+function fromArtifactKindEnum(kind: ArtifactKind): DocumentKind {
+  switch (kind) {
+    case ArtifactKind.CODE:
+      return 'code';
+    case ArtifactKind.IMAGE:
+      return 'image';
+    case ArtifactKind.SHEET:
+      return 'sheet';
+    case ArtifactKind.TEXT:
+    default:
+      return 'text';
+  }
+}
+
+function mapChat(chat: PrismaChat): DBChat {
+  return {
+    id: chat.id,
+    createdAt: chat.createdAt,
+    title: chat.title,
+    userId: chat.userId,
+    visibility: fromVisibilityEnum(chat.visibility),
+    lastContext: (chat.lastContext as AppUsage | null) ?? null,
+  };
+}
+
+function mapMessage(message: PrismaMessage): DBMessage {
+  return {
+    id: message.id,
+    chatId: message.chatId,
+    role: message.role,
+    parts: message.parts as unknown,
+    attachments: message.attachments as unknown,
+    createdAt: message.createdAt,
+  };
+}
+
+function mapDocument(document: PrismaDocument): DBDocument {
+  return {
+    id: document.id,
+    createdAt: document.createdAt,
+    title: document.title,
+    content: document.content,
+    kind: fromArtifactKindEnum(document.kind),
+    userId: document.userId,
+  };
+}
+
+function mapSuggestion(suggestion: PrismaSuggestion): DBSuggestion {
+  return {
+    id: suggestion.id,
+    documentId: suggestion.documentId,
+    documentCreatedAt: suggestion.documentCreatedAt,
+    originalText: suggestion.originalText,
+    suggestedText: suggestion.suggestedText,
+    description: suggestion.description,
+    isResolved: suggestion.isResolved,
+    userId: suggestion.userId,
+    createdAt: suggestion.createdAt,
+  };
+}
+
+function mapVote(vote: PrismaVote): DBVote {
+  return {
+    chatId: vote.chatId,
+    messageId: vote.messageId,
+    isUpvoted: vote.isUpvoted,
+    createdAt: vote.createdAt,
+  };
+}
+
+export async function getUser(email: string) {
   try {
-    return await db.select().from(user).where(eq(user.email, email));
+    return await prisma.user.findMany({ where: { email } });
   } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to get user by email',
-    );
+    throw new ChatSDKError('bad_request:database', 'Failed to get user by email');
   }
 }
 
@@ -58,7 +130,13 @@ export async function createUser(email: string, password: string) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        userType: 'REGULAR',
+      },
+    });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
   }
@@ -69,10 +147,19 @@ export async function createGuestUser() {
   const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password }).returning({
-      id: user.id,
-      email: user.email,
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password,
+        userType: 'GUEST',
+      },
+      select: {
+        id: true,
+        email: true,
+      },
     });
+
+    return [user];
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -93,13 +180,16 @@ export async function saveChat({
   visibility: VisibilityType;
 }) {
   try {
-    return await db.insert(chat).values({
-      id,
-      createdAt: new Date(),
-      userId,
-      title,
-      visibility,
+    const chat = await prisma.chat.create({
+      data: {
+        id,
+        userId,
+        title,
+        visibility: toVisibilityEnum(visibility),
+      },
     });
+
+    return mapChat(chat);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save chat');
   }
@@ -107,15 +197,8 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    await db.delete(vote).where(eq(vote.chatId, id));
-    await db.delete(message).where(eq(message.chatId, id));
-    await db.delete(stream).where(eq(stream.chatId, id));
-
-    const [chatsDeleted] = await db
-      .delete(chat)
-      .where(eq(chat.id, id))
-      .returning();
-    return chatsDeleted;
+    const chat = await prisma.chat.delete({ where: { id } });
+    return mapChat(chat);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -138,61 +221,58 @@ export async function getChatsByUserId({
   try {
     const extendedLimit = limit + 1;
 
-    const query = (whereCondition?: SQL<any>) =>
-      db
-        .select()
-        .from(chat)
-        .where(
-          whereCondition
-            ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id),
-        )
-        .orderBy(desc(chat.createdAt))
-        .limit(extendedLimit);
+    const buildQuery = (createdAtFilter?: Prisma.DateTimeFilter) =>
+      prisma.chat.findMany({
+        where: {
+          userId: id,
+          ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+        },
+        orderBy: { createdAt: 'desc' },
+        take: extendedLimit,
+      });
 
-    let filteredChats: Array<Chat> = [];
+    let filteredChats: PrismaChat[];
 
     if (startingAfter) {
-      const [selectedChat] = await db
-        .select()
-        .from(chat)
-        .where(eq(chat.id, startingAfter))
-        .limit(1);
+      const anchor = await prisma.chat.findUnique({ where: { id: startingAfter } });
 
-      if (!selectedChat) {
+      if (!anchor) {
         throw new ChatSDKError(
           'not_found:database',
           `Chat with id ${startingAfter} not found`,
         );
       }
 
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await buildQuery({ gt: anchor.createdAt });
     } else if (endingBefore) {
-      const [selectedChat] = await db
-        .select()
-        .from(chat)
-        .where(eq(chat.id, endingBefore))
-        .limit(1);
+      const anchor = await prisma.chat.findUnique({ where: { id: endingBefore } });
 
-      if (!selectedChat) {
+      if (!anchor) {
         throw new ChatSDKError(
           'not_found:database',
           `Chat with id ${endingBefore} not found`,
         );
       }
 
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      filteredChats = await buildQuery({ lt: anchor.createdAt });
     } else {
-      filteredChats = await query();
+      filteredChats = await buildQuery();
     }
 
     const hasMore = filteredChats.length > limit;
+    const chats = filteredChats
+      .slice(0, hasMore ? limit : filteredChats.length)
+      .map(mapChat);
 
     return {
-      chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
+      chats,
       hasMore,
     };
   } catch (error) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get chats by user id',
@@ -202,12 +282,8 @@ export async function getChatsByUserId({
 
 export async function getChatById({ id }: { id: string }) {
   try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
-    if (!selectedChat) {
-      return null;
-    }
-
-    return selectedChat;
+    const chat = await prisma.chat.findUnique({ where: { id } });
+    return chat ? mapChat(chat) : null;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
   }
@@ -219,7 +295,16 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }) {
   try {
-    return await db.insert(message).values(messages);
+    return await prisma.message.createMany({
+      data: messages.map((message) => ({
+        id: message.id,
+        chatId: message.chatId,
+        role: message.role,
+        parts: message.parts as Prisma.InputJsonValue,
+        attachments: message.attachments as Prisma.InputJsonValue,
+        createdAt: message.createdAt,
+      })),
+    });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save messages');
   }
@@ -227,11 +312,12 @@ export async function saveMessages({
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
-    return await db
-      .select()
-      .from(message)
-      .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt));
+    const messages = await prisma.message.findMany({
+      where: { chatId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return messages.map(mapMessage);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -250,22 +336,19 @@ export async function voteMessage({
   type: 'up' | 'down';
 }) {
   try {
-    const [existingVote] = await db
-      .select()
-      .from(vote)
-      .where(and(eq(vote.messageId, messageId)));
-
-    if (existingVote) {
-      return await db
-        .update(vote)
-        .set({ isUpvoted: type === 'up' })
-        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
-    }
-    return await db.insert(vote).values({
-      chatId,
-      messageId,
-      isUpvoted: type === 'up',
+    const vote = await prisma.vote.upsert({
+      where: {
+        chatId_messageId: { chatId, messageId },
+      },
+      update: { isUpvoted: type === 'up' },
+      create: {
+        chatId,
+        messageId,
+        isUpvoted: type === 'up',
+      },
     });
+
+    return mapVote(vote);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to vote message');
   }
@@ -273,7 +356,8 @@ export async function voteMessage({
 
 export async function getVotesByChatId({ id }: { id: string }) {
   try {
-    return await db.select().from(vote).where(eq(vote.chatId, id));
+    const votes = await prisma.vote.findMany({ where: { chatId: id } });
+    return votes.map(mapVote);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -291,22 +375,22 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: ArtifactKind;
+  kind: DocumentKind;
   content: string;
   userId: string;
 }) {
   try {
-    return await db
-      .insert(document)
-      .values({
+    const document = await prisma.document.create({
+      data: {
         id,
         title,
-        kind,
+        kind: toArtifactKindEnum(kind),
         content,
         userId,
-        createdAt: new Date(),
-      })
-      .returning();
+      },
+    });
+
+    return mapDocument(document);
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save document');
   }
@@ -314,13 +398,12 @@ export async function saveDocument({
 
 export async function getDocumentsById({ id }: { id: string }) {
   try {
-    const documents = await db
-      .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(asc(document.createdAt));
+    const documents = await prisma.document.findMany({
+      where: { id },
+      orderBy: { createdAt: 'asc' },
+    });
 
-    return documents;
+    return documents.map(mapDocument);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -331,13 +414,12 @@ export async function getDocumentsById({ id }: { id: string }) {
 
 export async function getDocumentById({ id }: { id: string }) {
   try {
-    const [selectedDocument] = await db
-      .select()
-      .from(document)
-      .where(eq(document.id, id))
-      .orderBy(desc(document.createdAt));
+    const document = await prisma.document.findFirst({
+      where: { id },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    return selectedDocument;
+    return document ? mapDocument(document) : null;
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -354,19 +436,19 @@ export async function deleteDocumentsByIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
-    await db
-      .delete(suggestion)
-      .where(
-        and(
-          eq(suggestion.documentId, id),
-          gt(suggestion.documentCreatedAt, timestamp),
-        ),
-      );
+    await prisma.suggestion.deleteMany({
+      where: {
+        documentId: id,
+        documentCreatedAt: { gt: timestamp },
+      },
+    });
 
-    return await db
-      .delete(document)
-      .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
-      .returning();
+    return await prisma.document.deleteMany({
+      where: {
+        id,
+        createdAt: { gt: timestamp },
+      },
+    });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -378,10 +460,12 @@ export async function deleteDocumentsByIdAfterTimestamp({
 export async function saveSuggestions({
   suggestions,
 }: {
-  suggestions: Array<Suggestion>;
+  suggestions: Array<DBSuggestion>;
 }) {
   try {
-    return await db.insert(suggestion).values(suggestions);
+    return await prisma.suggestion.createMany({
+      data: suggestions,
+    });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -396,10 +480,11 @@ export async function getSuggestionsByDocumentId({
   documentId: string;
 }) {
   try {
-    return await db
-      .select()
-      .from(suggestion)
-      .where(and(eq(suggestion.documentId, documentId)));
+    const suggestions = await prisma.suggestion.findMany({
+      where: { documentId },
+    });
+
+    return suggestions.map(mapSuggestion);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -410,7 +495,8 @@ export async function getSuggestionsByDocumentId({
 
 export async function getMessageById({ id }: { id: string }) {
   try {
-    return await db.select().from(message).where(eq(message.id, id));
+    const messages = await prisma.message.findMany({ where: { id } });
+    return messages.map(mapMessage);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -427,28 +513,12 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
-    const messagesToDelete = await db
-      .select({ id: message.id })
-      .from(message)
-      .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
-      );
-
-    const messageIds = messagesToDelete.map((message) => message.id);
-
-    if (messageIds.length > 0) {
-      await db
-        .delete(vote)
-        .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
-        );
-
-      return await db
-        .delete(message)
-        .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
-        );
-    }
+    return await prisma.message.deleteMany({
+      where: {
+        chatId,
+        createdAt: { gte: timestamp },
+      },
+    });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -465,7 +535,14 @@ export async function updateChatVisiblityById({
   visibility: 'private' | 'public';
 }) {
   try {
-    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+    const chat = await prisma.chat.update({
+      where: { id: chatId },
+      data: {
+        visibility: toVisibilityEnum(visibility),
+      },
+    });
+
+    return mapChat(chat);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -479,17 +556,18 @@ export async function updateChatLastContextById({
   context,
 }: {
   chatId: string;
-  // Store merged server-enriched usage object
   context: AppUsage;
 }) {
   try {
-    return await db
-      .update(chat)
-      .set({ lastContext: context })
-      .where(eq(chat.id, chatId));
+    const chat = await prisma.chat.update({
+      where: { id: chatId },
+      data: { lastContext: context as Prisma.InputJsonValue },
+    });
+
+    return mapChat(chat);
   } catch (error) {
     console.warn('Failed to update lastContext for chat', chatId, error);
-    return;
+    return null;
   }
 }
 
@@ -501,24 +579,15 @@ export async function getMessageCountByUserId({
   differenceInHours: number;
 }) {
   try {
-    const twentyFourHoursAgo = new Date(
-      Date.now() - differenceInHours * 60 * 60 * 1000,
-    );
+    const since = new Date(Date.now() - differenceInHours * 60 * 60 * 1000);
 
-    const [stats] = await db
-      .select({ count: count(message.id) })
-      .from(message)
-      .innerJoin(chat, eq(message.chatId, chat.id))
-      .where(
-        and(
-          eq(chat.userId, id),
-          gte(message.createdAt, twentyFourHoursAgo),
-          eq(message.role, 'user'),
-        ),
-      )
-      .execute();
-
-    return stats?.count ?? 0;
+    return await prisma.message.count({
+      where: {
+        chat: { userId: id },
+        createdAt: { gte: since },
+        role: 'user',
+      },
+    });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -535,9 +604,9 @@ export async function createStreamId({
   chatId: string;
 }) {
   try {
-    await db
-      .insert(stream)
-      .values({ id: streamId, chatId, createdAt: new Date() });
+    await prisma.stream.create({
+      data: { id: streamId, chatId },
+    });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -548,12 +617,11 @@ export async function createStreamId({
 
 export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   try {
-    const streamIds = await db
-      .select({ id: stream.id })
-      .from(stream)
-      .where(eq(stream.chatId, chatId))
-      .orderBy(asc(stream.createdAt))
-      .execute();
+    const streamIds = await prisma.stream.findMany({
+      where: { chatId },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
 
     return streamIds.map(({ id }) => id);
   } catch (error) {

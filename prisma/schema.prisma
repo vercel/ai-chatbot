@@ -1,0 +1,170 @@
+// Prisma schema replacing Drizzle with Prisma ORM and Supabase Postgres
+// See docs/ADR-0001-supabase-prisma-nextauth.md for rationale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  GUEST
+  REGULAR
+}
+
+enum ChatVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ArtifactKind {
+  TEXT
+  CODE
+  IMAGE
+  SHEET
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String?
+  name      String?
+  image     String?
+  userType  UserType  @default(REGULAR)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  chats     Chat[]
+  documents Document[]
+  suggestions Suggestion[]
+  accounts  Account[]
+  sessions  Session[]
+
+  @@map("users")
+}
+
+model Chat {
+  id          String         @id @default(uuid())
+  createdAt   DateTime       @default(now())
+  title       String
+  visibility  ChatVisibility @default(PRIVATE)
+  lastContext Json?
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    Message[]
+  votes       Vote[]
+  streams     Stream[]
+
+  @@map("chats")
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  chatId      String
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  role        String
+  parts       Json
+  attachments Json
+  createdAt   DateTime @default(now())
+  votes       Vote[]
+
+  @@map("messages")
+  @@index([chatId, createdAt])
+}
+
+model Vote {
+  chatId    String
+  messageId String
+  isUpvoted Boolean
+  createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("votes")
+  @@id([chatId, messageId])
+}
+
+model Document {
+  id        String
+  createdAt DateTime      @default(now())
+  title     String
+  content   String?
+  kind      ArtifactKind  @default(TEXT)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  suggestions Suggestion[]
+
+  @@map("documents")
+  @@id([id, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Suggestion {
+  id                 String   @id @default(uuid())
+  documentId         String
+  documentCreatedAt  DateTime
+  originalText       String
+  suggestedText      String
+  description        String?
+  isResolved         Boolean  @default(false)
+  userId             String
+  createdAt          DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document           Document @relation(fields: [documentId, documentCreatedAt], references: [id, createdAt], onDelete: Cascade)
+
+  @@map("suggestions")
+  @@index([documentId, documentCreatedAt])
+}
+
+model Stream {
+  id        String   @id @default(uuid())
+  chatId    String
+  createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("streams")
+  @@index([chatId, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  oauth_token_secret String? @db.Text
+  oauth_token       String? @db.Text
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@map("verification_tokens")
+  @@unique([identifier, token])
+}

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import type { Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/db/types';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
 
 import { LoaderIcon } from './icons';
@@ -55,20 +55,22 @@ export const VersionFooter = ({
           onClick={async () => {
             setIsMutating(true);
 
-            mutate(
+            await fetch(
+              `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
+                documents,
+                currentVersionIndex,
+              )}`,
+              {
+                method: 'DELETE',
+              },
+            );
+
+            mutate<any>(
               `/api/document?id=${artifact.documentId}`,
-              await fetch(
-                `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
-                  documents,
-                  currentVersionIndex,
-                )}`,
-                {
-                  method: 'DELETE',
-                },
-              ),
+              undefined,
               {
                 optimisticData: documents
-                  ? [
+                  ? ([
                       ...documents.filter((document) =>
                         isAfter(
                           new Date(document.createdAt),
@@ -80,8 +82,9 @@ export const VersionFooter = ({
                           ),
                         ),
                       ),
-                    ]
+                    ] as any)
                   : [],
+                revalidate: true,
               },
             );
           }}

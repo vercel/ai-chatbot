@@ -28,11 +28,11 @@
 - [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
+- Data Persistence & Auth
+  - [Supabase Postgres](https://supabase.com) managed database orchestrated via Prisma ORM
+  - Prisma migrations + typed client for all database access
+  - [NextAuth.js](https://next-auth.js.org) v5 with Prisma adapter storing sessions/accounts in Postgres
   - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
 
 ## Model Providers
 
@@ -64,7 +64,34 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 ```bash
 pnpm install
+
+# Provision schema & Prisma client
+pnpm prisma:generate
+pnpm prisma:migrate
+
+# Optional demo data
+pnpm db:seed
+
+# Start the Next.js dev server
 pnpm dev
 ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
+Your app should now be running on [localhost:3000](http://localhost:3000).
+
+> Need to migrate an existing Neon database? Follow the step-by-step guide in [MIGRATION.md](./MIGRATION.md).
+
+## Testing & Quality
+
+```bash
+# Lint & format
+pnpm lint
+
+# Type-check via Prisma and TypeScript
+pnpm prisma:generate
+pnpm typecheck
+
+# Playwright integration suite
+pnpm test
+```
+
+See [docs/DATABASE.md](./docs/DATABASE.md) for the normalized schema and indexing strategy.

@@ -1,4 +1,4 @@
-import type { Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/db/types';
 import { generateUUID } from '@/lib/utils';
 import { expect, test } from '../fixtures';
 import { getMessageByErrorCode } from '@/lib/errors';
@@ -68,7 +68,7 @@ test.describe
       expect(retrievedDocuments).toHaveLength(1);
 
       const [retrievedDocument] = retrievedDocuments;
-      expect(retrievedDocument).toMatchObject(document);
+      expect(retrievedDocument).toMatchObject({ ...document });
     });
 
     test('Ada can save a new version of the document', async ({
@@ -111,8 +111,8 @@ test.describe
 
       const [firstRetrievedDocument, secondRetrievedDocument] =
         retrievedDocuments;
-      expect(firstRetrievedDocument).toMatchObject(firstDocument);
-      expect(secondRetrievedDocument).toMatchObject(secondDocument);
+      expect(firstRetrievedDocument).toMatchObject({ ...firstDocument });
+      expect(secondRetrievedDocument).toMatchObject({ ...secondDocument });
     });
 
     test('Ada cannot delete a document without specifying an id', async ({
@@ -155,7 +155,7 @@ test.describe
       expect(deletedDocuments).toHaveLength(1);
 
       const [deletedDocument] = deletedDocuments;
-      expect(deletedDocument).toMatchObject(secondDocument);
+      expect(deletedDocument).toMatchObject({ ...secondDocument });
     });
 
     test('Ada can retrieve documents without deleted versions', async ({
@@ -172,7 +172,7 @@ test.describe
       expect(retrievedDocuments).toHaveLength(1);
 
       const [firstRetrievedDocument] = retrievedDocuments;
-      expect(firstRetrievedDocument).toMatchObject(firstDocument);
+      expect(firstRetrievedDocument).toMatchObject({ ...firstDocument });
     });
 
     test("Babbage cannot update Ada's document", async ({ babbageContext }) => {

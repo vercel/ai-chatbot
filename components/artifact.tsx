@@ -10,7 +10,9 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-import type { Document, Vote } from '@/lib/db/schema';
+import type { ArtifactKind, Document, Vote } from '@/lib/db/types';
+
+export type { ArtifactKind };
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
@@ -35,7 +37,6 @@ export const artifactDefinitions = [
   imageArtifact,
   sheetArtifact,
 ];
-export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
 export interface UIArtifact {
   title: string;
