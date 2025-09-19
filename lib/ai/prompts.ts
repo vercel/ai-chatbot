@@ -111,14 +111,35 @@ export const systemPrompt = ({
   agentContext?: {
     agentPrompt: string;
     agentName: string;
+    knowledgeFiles?: Array<{
+      id: string;
+      name: string;
+      sizeBytes?: number | null;
+    }>;
   };
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (agentContext) {
+    const knowledgeSection =
+      agentContext.knowledgeFiles && agentContext.knowledgeFiles.length > 0
+        ? [
+            '## 📁 Knowledge Base Files',
+            ...agentContext.knowledgeFiles.map((file) => {
+              const sizeLabel =
+                typeof file.sizeBytes === 'number'
+                  ? ` — ${(file.sizeBytes / 1024).toFixed(1)} KB`
+                  : '';
+              return `- ${file.name} (id: ${file.id}${sizeLabel})`;
+            }),
+            'Use the get_file_contents tool with the relevant file id when you need the complete document. Use file_search for targeted passages across files.',
+          ].join('\n')
+        : '';
+
     const agentPrompt = [
       `You are now acting as "${agentContext.agentName}".`,
       agentContext.agentPrompt,
+      knowledgeSection,
     ]
       .filter(Boolean)
       .join('\n\n');

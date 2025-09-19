@@ -29,6 +29,7 @@ export function EditAgentPageClient({ agent, user }: EditAgentPageClientProps) {
     description: agent.description ?? '',
     agentPrompt: agent.agentPrompt ?? '',
     isPublic: agent.isPublic,
+    vectorStoreId: agent.vectorStoreId ?? undefined,
   }));
 
   return (

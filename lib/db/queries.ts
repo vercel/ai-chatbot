@@ -32,6 +32,8 @@ import {
   agent,
   userAgent,
   type Agent,
+  agentVectorStoreFile,
+  type AgentVectorStoreFile,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -795,6 +797,90 @@ export async function getAgentWithUserState({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get agent with user state',
+    );
+  }
+}
+
+export async function getVectorStoreFilesByUser({
+  userId,
+  vectorStoreId,
+}: {
+  userId: string;
+  vectorStoreId: string;
+}): Promise<Array<AgentVectorStoreFile>> {
+  try {
+    return await db
+      .select()
+      .from(agentVectorStoreFile)
+      .where(
+        and(
+          eq(agentVectorStoreFile.userId, userId),
+          eq(agentVectorStoreFile.vectorStoreId, vectorStoreId),
+        ),
+      )
+      .orderBy(asc(agentVectorStoreFile.fileName));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to load vector store files',
+    );
+  }
+}
+
+export async function getVectorStoreFileForUser({
+  userId,
+  vectorStoreId,
+  vectorStoreFileId,
+}: {
+  userId: string;
+  vectorStoreId: string;
+  vectorStoreFileId: string;
+}): Promise<AgentVectorStoreFile | null> {
+  try {
+    const rows = await db
+      .select()
+      .from(agentVectorStoreFile)
+      .where(
+        and(
+          eq(agentVectorStoreFile.userId, userId),
+          eq(agentVectorStoreFile.vectorStoreId, vectorStoreId),
+          eq(agentVectorStoreFile.vectorStoreFileId, vectorStoreFileId),
+        ),
+      )
+      .limit(1);
+
+    return rows[0] ?? null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to load vector store file metadata',
+    );
+  }
+}
+
+export async function assignAgentVectorStoreFiles({
+  userId,
+  agentId,
+  vectorStoreId,
+}: {
+  userId: string;
+  agentId: string;
+  vectorStoreId: string;
+}) {
+  try {
+    await db
+      .update(agentVectorStoreFile)
+      .set({ agentId, updatedAt: new Date() })
+      .where(
+        and(
+          eq(agentVectorStoreFile.userId, userId),
+          eq(agentVectorStoreFile.vectorStoreId, vectorStoreId),
+        ),
+      );
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to link vector store files to agent',
     );
   }
 }

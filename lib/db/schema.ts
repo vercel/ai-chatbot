@@ -10,6 +10,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  bigint,
+  index,
 } from 'drizzle-orm/pg-core';
 import type { LanguageModelV2Usage } from '@ai-sdk/provider';
 
@@ -61,12 +63,44 @@ export const agent = pgTable('Agent', {
   description: text('description'),
   agentPrompt: text('agentPrompt'),
   modelId: varchar('modelId', { length: 64 }),
+  vectorStoreId: varchar('vectorStoreId', { length: 128 }),
   isPublic: boolean('isPublic').notNull().default(true),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });
 
 export type Agent = InferSelectModel<typeof agent>;
+
+export const agentVectorStoreFile = pgTable(
+  'AgentVectorStoreFile',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    agentId: uuid('agentId').references(() => agent.id, {
+      onDelete: 'set null',
+    }),
+    vectorStoreId: varchar('vectorStoreId', { length: 128 }).notNull(),
+    vectorStoreFileId: varchar('vectorStoreFileId', { length: 128 })
+      .notNull()
+      .unique(),
+    openAiFileId: varchar('openAiFileId', { length: 128 }).notNull(),
+    fileName: text('fileName').notNull(),
+    fileSizeBytes: bigint('fileSizeBytes', { mode: 'number' }),
+    attributes: jsonb('attributes').$type<Record<string, unknown> | null>(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  },
+  (table) => ({
+    vectorStoreIdIdx: index('AgentVectorStoreFile_vectorStoreId_idx').on(
+      table.vectorStoreId,
+    ),
+    userIdIdx: index('AgentVectorStoreFile_userId_idx').on(table.userId),
+  }),
+);
+
+export type AgentVectorStoreFile = InferSelectModel<typeof agentVectorStoreFile>;
 
 export const userAgent = pgTable(
   'UserAgent',

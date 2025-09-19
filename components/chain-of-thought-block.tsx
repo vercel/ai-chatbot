@@ -118,6 +118,16 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
         if (type === 'tool-web_search_preview') {
           const isInput = state === 'input-available';
           title = isInput ? 'Searching for information' : 'Search completed';
+        } else if (type === 'tool-file_search') {
+          const isInput = state === 'input-available';
+          title = isInput
+            ? 'Searching uploaded knowledge'
+            : 'Knowledge search complete';
+        } else if (type === 'tool-get_file_contents') {
+          const isInput = state === 'input-available';
+          title = isInput
+            ? 'Retrieving file contents'
+            : 'File contents retrieved';
         } else if (type === 'tool-getWeather') {
           const isInput = state === 'input-available';
           title = isInput ? 'Checking weather' : 'Weather';
@@ -213,6 +223,36 @@ export function ChainOfThoughtBlock({ message, isLoading, isReadonly }: Props) {
                   key={key}
                   label={
                     isInput ? 'Searching for information' : 'Search completed'
+                  }
+                  status={isInput ? 'active' : 'complete'}
+                />
+              );
+            }
+
+            if (type === 'tool-file_search') {
+              const isInput = state === 'input-available';
+              return (
+                <ChainOfThoughtStep
+                  key={key}
+                  label={
+                    isInput
+                      ? 'Searching uploaded knowledge'
+                      : 'Knowledge search complete'
+                  }
+                  status={isInput ? 'active' : 'complete'}
+                />
+              );
+            }
+
+            if (type === 'tool-get_file_contents') {
+              const isInput = state === 'input-available';
+              return (
+                <ChainOfThoughtStep
+                  key={key}
+                  label={
+                    isInput
+                      ? 'Retrieving file contents'
+                      : 'File contents retrieved'
                   }
                   status={isInput ? 'active' : 'complete'}
                 />

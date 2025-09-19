@@ -79,6 +79,14 @@ type getMem0ProjectsTool = InferUITool<ReturnType<typeof getMem0Projects>>;
 type getMem0MemoriesTool = InferUITool<ReturnType<typeof getMem0Memories>>;
 type createMem0ProjectTool = InferUITool<ReturnType<typeof createMem0Project>>;
 type createMem0MemoryTool = InferUITool<ReturnType<typeof createMem0Memory>>;
+type fileSearchTool = {
+  input: { query: string };
+  output: unknown;
+};
+type getFileContentsTool = {
+  input: { file_id: string };
+  output: unknown;
+};
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -98,6 +106,8 @@ export type ChatTools = {
   getMem0Memories: getMem0MemoriesTool;
   createMem0Project: createMem0ProjectTool;
   createMem0Memory: createMem0MemoryTool;
+  file_search: fileSearchTool;
+  get_file_contents: getFileContentsTool;
 };
 
 export type CustomUIDataTypes = {

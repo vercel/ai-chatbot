@@ -20,6 +20,7 @@ import {
   saveMessages,
   updateChatLastContextById,
   getAgentWithUserState,
+  getVectorStoreFilesByUser,
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -34,6 +35,7 @@ import { getBulkSlackHistory } from '@/lib/ai/tools/get-bulk-slack-history';
 import { listGoogleCalendarEvents } from '@/lib/ai/tools/list-google-calendar-events';
 import { listGmailMessages } from '@/lib/ai/tools/list-gmail-messages';
 import { getGmailMessageDetails } from '@/lib/ai/tools/get-gmail-message-details';
+import { getFileContents } from '@/lib/ai/tools/get-file-contents';
 // Note: Mem0 tool definitions are intentionally not imported here to avoid
 // exposing them to the LLM tool registry. Definitions remain available under
 // `lib/ai/tools/*mem0*` and `lib/mem0/*` for future re‑enablement.
@@ -94,6 +96,7 @@ export async function POST(request: Request) {
       agentSlug,
       agentContext: previewAgentContext,
       activeTools: requestedActiveTools,
+      agentVectorStoreId,
     }: {
       id: string;
       message: ChatMessage;
@@ -106,6 +109,7 @@ export async function POST(request: Request) {
         agentPrompt?: string;
       };
       activeTools?: Array<string>;
+      agentVectorStoreId?: string;
     } = requestBody;
 
     const session = await withAuth();
@@ -222,6 +226,23 @@ export async function POST(request: Request) {
 
     let finalUsage: LanguageModelUsage | undefined;
 
+    const resolvedVectorStoreId = agentSlug
+      ? agentContext?.agent?.vectorStoreId ?? undefined
+      : agentVectorStoreId ?? undefined;
+
+    const knowledgeFileMetadata = resolvedVectorStoreId
+      ? await getVectorStoreFilesByUser({
+          userId: databaseUser.id,
+          vectorStoreId: resolvedVectorStoreId,
+        })
+      : [];
+
+    const knowledgeFileSummaries = knowledgeFileMetadata.map((file) => ({
+      id: file.vectorStoreFileId,
+      name: file.fileName,
+      sizeBytes: file.fileSizeBytes ?? null,
+    }));
+
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         // Build your tool set (the same set you pass to streamText)
@@ -281,6 +302,24 @@ export async function POST(request: Request) {
           }),
         };
 
+        const nonConfigurableToolIds = new Set<string>();
+
+        if (resolvedVectorStoreId) {
+          console.log(
+            `🗂️ Enabling file_search tool for vector store ${resolvedVectorStoreId}`,
+          );
+          tools.file_search = openai.tools.fileSearch({
+            vectorStoreIds: [resolvedVectorStoreId],
+          });
+          nonConfigurableToolIds.add('file_search');
+          tools.get_file_contents = getFileContents({
+            session: aiToolsSession,
+            userId: databaseUser.id,
+            vectorStoreId: resolvedVectorStoreId,
+          });
+          nonConfigurableToolIds.add('get_file_contents');
+        }
+
         // Add transcript details tool only for elevated roles (not members)
         if (!isMemberRole) {
           console.log(
@@ -298,12 +337,17 @@ export async function POST(request: Request) {
 
         // 1) Validate the full UI history against your tool schemas
         const availableToolIds = Object.keys(tools);
-        const activeToolsForRun =
+        const requestedToolSet = new Set(
           requestedActiveTools !== undefined
-            ? availableToolIds.filter((toolId) =>
-                requestedActiveTools.includes(toolId),
-              )
-            : availableToolIds;
+            ? requestedActiveTools
+            : availableToolIds,
+        );
+
+        const activeToolsForRun = availableToolIds.filter(
+          (toolId) =>
+            requestedToolSet.has(toolId) ||
+            nonConfigurableToolIds.has(toolId),
+        );
 
         const validated = await validateUIMessages({
           messages: uiMessages,
@@ -313,24 +357,58 @@ export async function POST(request: Request) {
         // 2) Convert to model messages with the same tool registry
         const modelMessages = convertToModelMessages(validated, { tools });
 
+        const openAIOptions: OpenAIResponsesProviderOptions = {
+          reasoningEffort: reasoningEffort,
+          reasoningSummary: 'auto',
+        };
+
+        const includeSettings: Array<
+          NonNullable<OpenAIResponsesProviderOptions['include']>[number]
+        > = ['reasoning.encrypted_content'];
+
+        if ('file_search' in tools) {
+          includeSettings.push('file_search_call.results');
+        }
+
+        openAIOptions.include = Array.from(new Set(includeSettings));
+
+        const promptAgentContext = agentSlug
+          ? agentContext
+            ? {
+                agentPrompt: agentContext.agent.agentPrompt || '',
+                agentName: agentContext.agent.name,
+                knowledgeFiles: knowledgeFileSummaries,
+              }
+            : knowledgeFileSummaries.length > 0
+              ? {
+                  agentPrompt:
+                    'Leverage the knowledge base files listed below to assist the user.',
+                  agentName: 'Agent',
+                  knowledgeFiles: knowledgeFileSummaries,
+                }
+              : undefined
+          : previewAgentContext
+            ? {
+                agentPrompt: previewAgentContext.agentPrompt || '',
+                agentName:
+                  previewAgentContext.agentName || 'Preview Agent',
+                knowledgeFiles: knowledgeFileSummaries,
+              }
+            : knowledgeFileSummaries.length > 0
+              ? {
+                  agentPrompt:
+                    'Leverage the knowledge base files listed below to assist the user.',
+                  agentName: 'Preview Agent',
+                  knowledgeFiles: knowledgeFileSummaries,
+                }
+              : undefined;
+
         const result = streamText({
           model: myProvider.languageModel('chat-model'),
           system: systemPrompt({
             selectedChatModel: 'chat-model',
             requestHints,
-            agentContext: agentSlug
-              ? agentContext
-                ? {
-                    agentPrompt: agentContext.agent.agentPrompt || '',
-                    agentName: agentContext.agent.name,
-                  }
-                : undefined
-              : previewAgentContext
-                ? {
-                    agentPrompt: previewAgentContext.agentPrompt || '',
-                    agentName: previewAgentContext.agentName || 'Preview Agent',
-                  }
-                : undefined,
+            agentContext: promptAgentContext,
           }),
           messages: modelMessages, // <= not UI parts anymore
           stopWhen: stepCountIs(50),
@@ -342,10 +420,7 @@ export async function POST(request: Request) {
             functionId: 'stream-text',
           },
           providerOptions: {
-            openai: {
-              reasoningEffort: reasoningEffort,
-              reasoningSummary: 'auto',
-            } satisfies OpenAIResponsesProviderOptions,
+            openai: openAIOptions,
           },
           onFinish: ({ usage }) => {
             finalUsage = usage;

@@ -8,6 +8,7 @@ interface AgentPreviewProps {
     description: string;
     agentPrompt: string;
     isPublic: boolean;
+    vectorStoreId?: string;
   };
   user: any;
 }

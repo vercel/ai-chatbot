@@ -17,6 +17,7 @@ export default function NewAgentPage() {
     description: '',
     agentPrompt: '',
     isPublic: true,
+    vectorStoreId: undefined as string | undefined,
   });
 
   if (loading) {

@@ -18,6 +18,7 @@ interface PreviewChatCoreProps {
     description: string;
     agentPrompt: string;
     isPublic: boolean;
+    vectorStoreId?: string;
   };
   user: any;
 }
@@ -103,6 +104,9 @@ export function PreviewChatCore({ formData, user }: PreviewChatCoreProps) {
               reasoningEffort: currentReasoning,
               selectedVisibilityType: 'private',
               ...(agentCtx ? { agentContext: agentCtx } : {}),
+              ...(fd.vectorStoreId
+                ? { agentVectorStoreId: fd.vectorStoreId }
+                : {}),
             },
           };
         },

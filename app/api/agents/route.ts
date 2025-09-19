@@ -5,7 +5,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { agent } from '@/lib/db/schema';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
 
 // biome-ignore lint: Forbidden non-null assertion.
@@ -26,6 +26,10 @@ const createAgentSchema = z.object({
     .max(100000, 'Agent prompt must be less than 100000 characters')
     .optional(),
   isPublic: z.boolean().default(true),
+  vectorStoreId: z
+    .string()
+    .max(128, 'Vector store ID must be less than 128 characters')
+    .optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -116,8 +120,21 @@ export async function POST(request: NextRequest) {
         agentPrompt: validatedData.agentPrompt || null,
         modelId: null,
         isPublic: validatedData.isPublic,
+        vectorStoreId: validatedData.vectorStoreId || null,
       })
       .returning();
+
+    if (validatedData.vectorStoreId) {
+      await db
+        .update(schema.agentVectorStoreFile)
+        .set({ agentId: newAgent.id, updatedAt: new Date() })
+        .where(
+          and(
+            eq(schema.agentVectorStoreFile.vectorStoreId, validatedData.vectorStoreId),
+            eq(schema.agentVectorStoreFile.userId, dbUser.id),
+          ),
+        );
+    }
 
     return NextResponse.json(newAgent, { status: 201 });
   } catch (error) {

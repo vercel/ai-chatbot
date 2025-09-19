@@ -32,6 +32,7 @@ export const postRequestBodySchema = z.object({
     })
     .optional(),
   activeTools: z.array(z.string()).optional(),
+  agentVectorStoreId: z.string().min(1).optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;
