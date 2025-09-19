@@ -1,4 +1,4 @@
-import type { Document } from '@/lib/db/schema';
+import type { Document } from '@/lib/supabase/schema-types';
 import { generateUUID } from '@/lib/utils';
 import { expect, test } from '../fixtures';
 import { getMessageByErrorCode } from '@/lib/errors';

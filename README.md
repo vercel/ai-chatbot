@@ -36,15 +36,24 @@
 
 ## Model Providers
 
-This template uses the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models through a unified interface. The default configuration includes [xAI](https://x.ai) models (`grok-2-vision-1212`, `grok-3-mini`) routed through the gateway.
+This application uses [Azure OpenAI](https://azure.microsoft.com/products/ai-services/openai-service) to access AI models directly through the Azure platform. The default configuration includes GPT-4o and GPT-4o-mini models.
 
-### AI Gateway Authentication
+### Azure OpenAI Authentication
 
-**For Vercel deployments**: Authentication is handled automatically via OIDC tokens.
+To use Azure OpenAI, you need to:
 
-**For non-Vercel deployments**: You need to provide an AI Gateway API key by setting the `AI_GATEWAY_API_KEY` environment variable in your `.env.local` file.
+1. Create an Azure OpenAI resource in the Azure portal
+2. Deploy the necessary models (GPT-4o and GPT-4o-mini)
+3. Set up environment variables in your `.env.local` file:
 
-With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to direct LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
+```
+AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com
+AZURE_OPENAI_API_KEY=your-azure-openai-api-key
+```
+
+For detailed setup instructions, see [AZURE_SETUP.md](./AZURE_SETUP.md).
+
+With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to other LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
 
 ## Deploy Your Own
 

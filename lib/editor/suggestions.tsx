@@ -8,7 +8,7 @@ import {
 import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
-import type { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/supabase/schema-types';
 import type { ArtifactKind } from '@/components/artifact';
 
 export interface UISuggestion extends Suggestion {

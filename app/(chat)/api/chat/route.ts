@@ -16,8 +16,8 @@ import {
   getMessagesByChatId,
   saveChat,
   saveMessages,
-} from '@/lib/db/queries';
-import { updateChatLastContextById } from '@/lib/db/queries';
+  updateChatLastContextById
+} from '@/lib/supabase/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
@@ -284,14 +284,13 @@ export async function POST(request: Request) {
       return error.toResponse();
     }
 
-    // Check for Vercel AI Gateway credit card error
+    // Check for Azure OpenAI specific errors
     if (
       error instanceof Error &&
-      error.message?.includes(
-        'AI Gateway requires a valid credit card on file to service requests',
-      )
+      error.message?.includes('Azure OpenAI')
     ) {
-      return new ChatSDKError('bad_request:activate_gateway').toResponse();
+      console.error('Azure OpenAI error:', error);
+      return new ChatSDKError('offline:chat', 'Azure OpenAI service error').toResponse();
     }
 
     console.error('Unhandled error in chat API:', error);

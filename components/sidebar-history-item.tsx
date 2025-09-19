@@ -1,4 +1,4 @@
-import type { Chat } from '@/lib/db/schema';
+import type { Chat } from '@/lib/supabase/schema-types';
 import {
   SidebarMenuAction,
   SidebarMenuButton,

@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/supabase/schema-types';
 import { DocumentToolResult } from './document';
 import { SparklesIcon } from './icons';
 import { Response } from './elements/response';
