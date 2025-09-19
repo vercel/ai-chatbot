@@ -98,6 +98,8 @@ with:
 'artifact-model': azure('gpt-4o'),
 ```
 
+For reference, the original implementation has been preserved in `lib/ai/providers.original.ts`.
+
 ## Troubleshooting
 
 If you encounter issues:
