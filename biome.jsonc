@@ -21,7 +21,6 @@
       },
       "style": {
         "noMagicNumbers": "off",
-        "noUnusedTemplateLiteral": "off",
         "useConsistentObjectDefinitions": "off",
         "useCollapsedElseIf": "off",
         "noNestedTernary": "off",

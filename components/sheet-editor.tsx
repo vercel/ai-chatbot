@@ -62,10 +62,10 @@ const PureSpreadsheetEditor = ({
       name: String.fromCharCode(65 + i),
       renderEditCell: textEditor,
       width: 120,
-      cellClass: cn(`border-t dark:bg-zinc-950 dark:text-zinc-50`, {
+      cellClass: cn("border-t dark:bg-zinc-950 dark:text-zinc-50", {
         'border-l': i !== 0,
       }),
-      headerCellClass: cn(`border-t dark:bg-zinc-900 dark:text-zinc-50`, {
+      headerCellClass: cn("border-t dark:bg-zinc-900 dark:text-zinc-50", {
         'border-l': i !== 0,
       }),
     }));

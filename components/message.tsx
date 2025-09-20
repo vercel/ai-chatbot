@@ -93,7 +93,7 @@ const PurePreviewMessage = ({
           {attachmentsFromMessage.length > 0 && (
             <div
               className="flex flex-row justify-end gap-2"
-              data-testid={`message-attachments`}
+              data-testid={"message-attachments"}
             >
               {attachmentsFromMessage.map((attachment) => (
                 <PreviewAttachment
