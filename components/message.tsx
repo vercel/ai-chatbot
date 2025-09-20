@@ -268,6 +268,8 @@ const PurePreviewMessage = ({
                 </Tool>
               );
             }
+
+            return null;
           })}
 
           {!isReadonly && (

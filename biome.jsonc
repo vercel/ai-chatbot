@@ -13,7 +13,6 @@
         "noUnknownAtRules": "off",
 
         "noConsole": "off",
-        "useIterableCallbackReturn": "off",
         "noEvolvingTypes": "off",
         "noBitwiseOperators": "off",
         "noDocumentCookie": "off",
