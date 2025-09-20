@@ -11,11 +11,11 @@ import { getDocumentTimestampByIndex } from '@/lib/utils';
 import { LoaderIcon } from './icons';
 import { Button } from './ui/button';
 
-interface VersionFooterProps {
+type VersionFooterProps = {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   documents: Document[] | undefined;
   currentVersionIndex: number;
-}
+};
 
 export const VersionFooter = ({
   handleVersionChange,

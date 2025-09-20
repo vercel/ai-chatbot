@@ -10,7 +10,7 @@ import { Conversation, ConversationContent } from './elements/conversation';
 import { Greeting } from './greeting';
 import { PreviewMessage, ThinkingMessage } from './message';
 
-interface MessagesProps {
+type MessagesProps = {
   chatId: string;
   status: UseChatHelpers<ChatMessage>['status'];
   votes: Vote[] | undefined;
@@ -20,7 +20,7 @@ interface MessagesProps {
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedModelId: string;
-}
+};
 
 function PureMessages({
   chatId,

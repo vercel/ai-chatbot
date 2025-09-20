@@ -22,11 +22,11 @@ import { ImageEditor } from './image-editor';
 import { SpreadsheetEditor } from './sheet-editor';
 import { Editor } from './text-editor';
 
-interface DocumentPreviewProps {
+type DocumentPreviewProps = {
   isReadonly: boolean;
   result?: any;
   args?: any;
-}
+};
 
 export function DocumentPreview({
   isReadonly,

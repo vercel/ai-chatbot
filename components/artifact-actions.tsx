@@ -6,7 +6,7 @@ import type { ArtifactActionContext } from './create-artifact';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
-interface ArtifactActionsProps {
+type ArtifactActionsProps = {
   artifact: UIArtifact;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
@@ -14,7 +14,7 @@ interface ArtifactActionsProps {
   mode: 'edit' | 'diff';
   metadata: any;
   setMetadata: Dispatch<SetStateAction<any>>;
-}
+};
 
 function PureArtifactActions({
   artifact,

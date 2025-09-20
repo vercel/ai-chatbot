@@ -5,12 +5,12 @@ import type React from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { CustomUIDataTypes } from '@/lib/types';
 
-interface DataStreamContextValue {
+type DataStreamContextValue = {
   dataStream: DataUIPart<CustomUIDataTypes>[];
   setDataStream: React.Dispatch<
     React.SetStateAction<DataUIPart<CustomUIDataTypes>[]>
   >;
-}
+};
 
 const DataStreamContext = createContext<DataStreamContextValue | null>(null);
 

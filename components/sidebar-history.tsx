@@ -36,10 +36,10 @@ type GroupedChats = {
   older: Chat[];
 };
 
-export interface ChatHistory {
+export type ChatHistory = {
   chats: Chat[];
   hasMore: boolean;
-}
+};
 
 const PAGE_SIZE = 20;
 

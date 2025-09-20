@@ -7,11 +7,11 @@ import type { ChatMessage } from '@/lib/types';
 import { Suggestion } from './elements/suggestion';
 import type { VisibilityType } from './visibility-selector';
 
-interface SuggestedActionsProps {
+type SuggestedActionsProps = {
   chatId: string;
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   selectedVisibilityType: VisibilityType;
-}
+};
 
 function PureSuggestedActions({
   chatId,

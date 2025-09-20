@@ -1,14 +1,14 @@
 import cn from 'classnames';
 import { LoaderIcon } from './icons';
 
-interface ImageEditorProps {
+type ImageEditorProps = {
   title: string;
   content: string;
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   status: string;
   isInline: boolean;
-}
+};
 
 export function ImageEditor({
   title,

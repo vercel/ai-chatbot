@@ -15,10 +15,10 @@ export interface UISuggestion extends Suggestion {
   selectionEnd: number;
 }
 
-interface Position {
+type Position = {
   start: number;
   end: number;
-}
+};
 
 function findPositionsInDoc(doc: Node, searchText: string): Position | null {
   let positions: { start: number; end: number } | null = null;

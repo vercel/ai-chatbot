@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { format, isWithinInterval } from 'date-fns';
 import { useEffect, useState } from 'react';
 
-interface WeatherAtLocation {
+type WeatherAtLocation = {
   latitude: number;
   longitude: number;
   generationtime_ms: number;
@@ -40,7 +40,7 @@ interface WeatherAtLocation {
     sunrise: string[];
     sunset: string[];
   };
-}
+};
 
 const SAMPLE = {
   latitude: 37.763_283,

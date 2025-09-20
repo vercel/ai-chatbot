@@ -35,12 +35,12 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
-export interface RequestHints {
+export type RequestHints = {
   latitude: Geo['latitude'];
   longitude: Geo['longitude'];
   city: Geo['city'];
   country: Geo['country'];
-}
+};
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 About the origin of user's request:

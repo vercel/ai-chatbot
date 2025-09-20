@@ -12,21 +12,21 @@ import { Loader } from './elements/loader';
 import { CrossSmallIcon, TerminalWindowIcon } from './icons';
 import { Button } from './ui/button';
 
-export interface ConsoleOutputContent {
+export type ConsoleOutputContent = {
   type: 'text' | 'image';
   value: string;
-}
+};
 
-export interface ConsoleOutput {
+export type ConsoleOutput = {
   id: string;
   status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
   contents: ConsoleOutputContent[];
-}
+};
 
-interface ConsoleProps {
+type ConsoleProps = {
   consoleOutputs: ConsoleOutput[];
   setConsoleOutputs: Dispatch<SetStateAction<ConsoleOutput[]>>;
-}
+};
 
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);

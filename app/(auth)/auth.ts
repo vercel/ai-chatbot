@@ -16,11 +16,11 @@ declare module 'next-auth' {
     } & DefaultSession['user'];
   }
 
-  interface User {
+  type User = {
     id?: string;
     email?: string | null;
     type: UserType;
-  }
+  };
 }
 
 declare module 'next-auth/jwt' {

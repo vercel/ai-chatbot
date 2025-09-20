@@ -5,10 +5,10 @@ import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
 import { getDocumentById } from '@/lib/db/queries';
 import type { ChatMessage } from '@/lib/types';
 
-interface UpdateDocumentProps {
+type UpdateDocumentProps = {
   session: Session;
   dataStream: UIMessageStreamWriter<ChatMessage>;
-}
+};
 
 export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
   tool({

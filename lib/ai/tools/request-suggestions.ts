@@ -7,10 +7,10 @@ import type { ChatMessage } from '@/lib/types';
 import { generateUUID } from '@/lib/utils';
 import { myProvider } from '../providers';
 
-interface RequestSuggestionsProps {
+type RequestSuggestionsProps = {
   session: Session;
   dataStream: UIMessageStreamWriter<ChatMessage>;
-}
+};
 
 export const requestSuggestions = ({
   session,

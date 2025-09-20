@@ -14,9 +14,9 @@ import { Editor } from '@/components/text-editor';
 import type { Suggestion } from '@/lib/db/schema';
 import { getSuggestions } from '../actions';
 
-interface TextArtifactMetadata {
+type TextArtifactMetadata = {
   suggestions: Suggestion[];
-}
+};
 
 export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
   kind: 'text',

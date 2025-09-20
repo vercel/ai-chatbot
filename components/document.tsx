@@ -22,11 +22,11 @@ const getActionText = (
   }
 };
 
-interface DocumentToolResultProps {
+type DocumentToolResultProps = {
   type: 'create' | 'update' | 'request-suggestions';
   result: { id: string; title: string; kind: ArtifactKind };
   isReadonly: boolean;
-}
+};
 
 function PureDocumentToolResult({
   type,
@@ -85,14 +85,14 @@ function PureDocumentToolResult({
 
 export const DocumentToolResult = memo(PureDocumentToolResult, () => true);
 
-interface DocumentToolCallProps {
+type DocumentToolCallProps = {
   type: 'create' | 'update' | 'request-suggestions';
   args:
     | { title: string; kind: ArtifactKind } // for create
     | { id: string; description: string } // for update
     | { documentId: string }; // for request-suggestions
   isReadonly: boolean;
-}
+};
 
 function PureDocumentToolCall({
   type,

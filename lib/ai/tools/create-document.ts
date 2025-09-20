@@ -8,10 +8,10 @@ import {
 import type { ChatMessage } from '@/lib/types';
 import { generateUUID } from '@/lib/utils';
 
-interface CreateDocumentProps {
+type CreateDocumentProps = {
   session: Session;
   dataStream: UIMessageStreamWriter<ChatMessage>;
-}
+};
 
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({

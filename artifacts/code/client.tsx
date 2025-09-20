@@ -62,9 +62,9 @@ function detectRequiredHandlers(code: string): string[] {
   return handlers;
 }
 
-interface Metadata {
+type Metadata = {
   outputs: ConsoleOutput[];
-}
+};
 
 export const codeArtifact = new Artifact<'code', Metadata>({
   kind: 'code',

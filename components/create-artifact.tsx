@@ -33,7 +33,7 @@ export type ArtifactToolbarItem = {
   onClick: (context: ArtifactToolbarContext) => void;
 };
 
-interface ArtifactContent<M = any> {
+type ArtifactContent<M = any> = {
   title: string;
   content: string;
   mode: 'edit' | 'diff';
@@ -47,12 +47,12 @@ interface ArtifactContent<M = any> {
   isLoading: boolean;
   metadata: M;
   setMetadata: Dispatch<SetStateAction<M>>;
-}
+};
 
-interface InitializeParameters<M = any> {
+type InitializeParameters<M = any> = {
   documentId: string;
   setMetadata: Dispatch<SetStateAction<M>>;
-}
+};
 
 type ArtifactConfig<T extends string, M = any> = {
   kind: T;

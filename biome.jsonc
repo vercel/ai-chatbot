@@ -35,7 +35,6 @@
         "noNestedTernary": "off"
       },
       "nursery": {
-        "useConsistentTypeDefinitions": "off",
         "noShadow": "off",
         "noUselessUndefined": "off",
         "noUnnecessaryConditions": "off",

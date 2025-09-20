@@ -8,33 +8,33 @@ import { saveDocument } from '../db/queries';
 import type { Document } from '../db/schema';
 import type { ChatMessage } from '../types';
 
-export interface SaveDocumentProps {
+export type SaveDocumentProps = {
   id: string;
   title: string;
   kind: ArtifactKind;
   content: string;
   userId: string;
-}
+};
 
-export interface CreateDocumentCallbackProps {
+export type CreateDocumentCallbackProps = {
   id: string;
   title: string;
   dataStream: UIMessageStreamWriter<ChatMessage>;
   session: Session;
-}
+};
 
-export interface UpdateDocumentCallbackProps {
+export type UpdateDocumentCallbackProps = {
   document: Document;
   description: string;
   dataStream: UIMessageStreamWriter<ChatMessage>;
   session: Session;
-}
+};
 
-export interface DocumentHandler<T = ArtifactKind> {
+export type DocumentHandler<T = ArtifactKind> = {
   kind: T;
   onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<void>;
   onUpdateDocument: (args: UpdateDocumentCallbackProps) => Promise<void>;
-}
+};
 
 export function createDocumentHandler<T extends ArtifactKind>(config: {
   kind: T;

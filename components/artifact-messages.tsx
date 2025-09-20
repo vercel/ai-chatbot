@@ -8,7 +8,7 @@ import type { ChatMessage } from '@/lib/types';
 import type { UIArtifact } from './artifact';
 import { PreviewMessage, ThinkingMessage } from './message';
 
-interface ArtifactMessagesProps {
+type ArtifactMessagesProps = {
   chatId: string;
   status: UseChatHelpers<ChatMessage>['status'];
   votes: Vote[] | undefined;
@@ -17,7 +17,7 @@ interface ArtifactMessagesProps {
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
-}
+};
 
 function PureArtifactMessages({
   chatId,

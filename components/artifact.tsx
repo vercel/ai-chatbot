@@ -37,7 +37,7 @@ export const artifactDefinitions = [
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
-export interface UIArtifact {
+export type UIArtifact = {
   title: string;
   documentId: string;
   kind: ArtifactKind;
@@ -50,7 +50,7 @@ export interface UIArtifact {
     width: number;
     height: number;
   };
-}
+};
 
 function PureArtifact({
   chatId,
