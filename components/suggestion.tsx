@@ -24,20 +24,7 @@ export const Suggestion = ({
 
   return (
     <AnimatePresence>
-      {!isExpanded ? (
-        <motion.div
-          className={cn('cursor-pointer p-1 text-muted-foreground', {
-            '-right-8 absolute': artifactKind === 'text',
-            'sticky top-0 right-4': artifactKind === 'code',
-          })}
-          onClick={() => {
-            setIsExpanded(true);
-          }}
-          whileHover={{ scale: 1.1 }}
-        >
-          <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
-        </motion.div>
-      ) : (
+      {isExpanded ? (
         <motion.div
           animate={{ opacity: 1, y: -20 }}
           className="-right-12 md:-right-16 absolute z-50 flex w-56 flex-col gap-3 rounded-2xl border bg-background p-3 font-sans text-sm shadow-xl"
@@ -70,6 +57,19 @@ export const Suggestion = ({
           >
             Apply
           </Button>
+        </motion.div>
+      ) : (
+        <motion.div
+          className={cn('cursor-pointer p-1 text-muted-foreground', {
+            '-right-8 absolute': artifactKind === 'text',
+            'sticky top-0 right-4': artifactKind === 'code',
+          })}
+          onClick={() => {
+            setIsExpanded(true);
+          }}
+          whileHover={{ scale: 1.1 }}
+        >
+          <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
         </motion.div>
       )}
     </AnimatePresence>

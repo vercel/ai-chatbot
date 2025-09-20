@@ -125,7 +125,11 @@ export async function POST(request: Request) {
 
     const chat = await getChatById({ id });
 
-    if (!chat) {
+    if (chat) {
+      if (chat.userId !== session.user.id) {
+        return new ChatSDKError('forbidden:chat').toResponse();
+      }
+    } else {
       const title = await generateTitleFromUserMessage({
         message,
       });
@@ -136,10 +140,6 @@ export async function POST(request: Request) {
         title,
         visibility: selectedVisibilityType,
       });
-    } else {
-      if (chat.userId !== session.user.id) {
-        return new ChatSDKError('forbidden:chat').toResponse();
-      }
     }
 
     const messagesFromDb = await getMessagesByChatId({ id });

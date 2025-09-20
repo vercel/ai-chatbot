@@ -23,7 +23,6 @@
         "noMagicNumbers": "off",
         "noUnusedTemplateLiteral": "off",
         "useConsistentObjectDefinitions": "off",
-        "noNegationElse": "off",
         "useCollapsedElseIf": "off",
         "useNumericSeparators": "off",
         "noNestedTernary": "off",
