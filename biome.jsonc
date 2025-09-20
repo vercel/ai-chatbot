@@ -44,7 +44,6 @@
         "noNamespaceImport": "off"
       },
       "complexity": {
-        "noUselessEmptyExport": "off",
         "noExcessiveCognitiveComplexity": "off",
         "noUselessFragments": "off",
         "noBannedTypes": "off",
