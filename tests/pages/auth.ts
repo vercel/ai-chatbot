@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect } from '../fixtures';
 
 export class AuthPage {
-  private page: Page;
+  private readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;

@@ -34,7 +34,6 @@
         /* Needs more work to fix */
         "noNestedTernary": "off",
 
-        "useReadonlyClassProperties": "off",
         "useConsistentBuiltinInstantiation": "off"
       },
       "nursery": {

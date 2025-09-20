@@ -4,7 +4,7 @@ import { expect, type Page } from '@playwright/test';
 import { chatModels } from '@/lib/ai/models';
 
 export class ChatPage {
-  private page: Page;
+  private readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;
