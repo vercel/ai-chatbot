@@ -4,6 +4,14 @@
   "formatter": {
     "enabled": false
   },
+  "files": {
+    "includes": [
+      "**/*",
+      "!components/ui",
+      "!lib/utils.ts",
+      "!hooks/use-mobile.ts"
+    ]
+  },
   "linter": {
     "rules": {
       "suspicious": {
