@@ -7,6 +7,9 @@ import {
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 
+/**
+ * Get documents by ID
+ */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -39,6 +42,9 @@ export async function GET(request: Request) {
   return Response.json(documents, { status: 200 });
 }
 
+/**
+ * Save or update a document
+ */
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -60,8 +66,7 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-  }: { content: string; title: string; kind: ArtifactKind } =
-    await request.json();
+  }: { content: string; title: string; kind: ArtifactKind } = await request.json();
 
   const documents = await getDocumentsById({ id });
 
@@ -84,6 +89,9 @@ export async function POST(request: Request) {
   return Response.json(document, { status: 200 });
 }
 
+/**
+ * Delete document by ID after a given timestamp
+ */
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -110,7 +118,6 @@ export async function DELETE(request: Request) {
   }
 
   const documents = await getDocumentsById({ id });
-
   const [document] = documents;
 
   if (document.userId !== session.user.id) {
@@ -123,4 +130,42 @@ export async function DELETE(request: Request) {
   });
 
   return Response.json(documentsDeleted, { status: 200 });
+}
+
+/**
+ * Spreadsheet type & fetcher
+ */
+export type SpreadsheetRow = {
+  AREA: string;
+  'MAIN-ITEM NO': string;
+  'SUB-ITEM NO': string;
+  'SUB-ITEM DESCRIPTION': string;
+  'EQUIPTMENT CATEGORY': string;
+  'EQUIPMENT TYPE': string;
+  UNIT: string;
+  SYSTEM: string;
+  'SUB-SYS': string;
+  'WORK ORDER': string;
+  'SCOPE 1': string;
+  EXTERNAL: string;
+  'VISUAL EXTERNAL': string;
+  'EXTERNAL DATE': string;
+};
+
+export async function getSpreadsheetData(): Promise<SpreadsheetRow[]> {
+  try {
+    const response = await fetch(
+      'https://script.google.com/macros/s/AKfycbw-LqcuJxof3kxdCUcBsMlB13uWbBDvL262TDWWwKnm/dev'
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data. Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data as SpreadsheetRow[];
+  } catch (error) {
+    console.error('Error fetching spreadsheet data:', error);
+    return [];
+  }
 }
