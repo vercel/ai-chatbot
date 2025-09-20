@@ -28,6 +28,8 @@
         "noNestedTernary": "off",
         "useAtIndex": "off",
         "noParameterProperties": "off",
+
+        /* This one has false positives. It's a bit... iffy 😉 */
         "useCollapsedIf": "off",
         "useConsistentMemberAccessibility": "off",
         "useReadonlyClassProperties": "off",
