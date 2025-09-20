@@ -1,6 +1,93 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": [
-    "ultracite"
-  ]
+  "extends": ["ultracite"],
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "useAwait": "off",
+        "noExplicitAny": "off",
+        "noEmptyBlockStatements": "off",
+        "noUnknownAtRules": "off",
+        "noConsole": "off",
+        "noGlobalIsNan": "off",
+        "useIterableCallbackReturn": "off",
+        "noEvolvingTypes": "off",
+        "noBitwiseOperators": "off",
+        "noDocumentCookie": "off",
+        "noTsIgnore": "off"
+      },
+      "style": {
+        "noMagicNumbers": "off",
+        "noParameterAssign": "off",
+        "useBlockStatements": "off",
+        "useConsistentArrayType": "off",
+        "noUnusedTemplateLiteral": "off",
+        "useConsistentObjectDefinitions": "off",
+        "noNegationElse": "off",
+        "useCollapsedElseIf": "off",
+        "noUselessElse": "off",
+        "useNumericSeparators": "off",
+        "noNestedTernary": "off",
+        "useAtIndex": "off",
+        "useImportType": "off",
+        "noParameterProperties": "off",
+        "useCollapsedIf": "off",
+        "useConsistentMemberAccessibility": "off",
+        "useReadonlyClassProperties": "off",
+        "useNumberNamespace": "off",
+        "useSelfClosingElements": "off",
+        "useConsistentBuiltinInstantiation": "off"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": "off",
+        "noShadow": "off",
+        "noUselessUndefined": "off",
+        "useSortedClasses": "off",
+        "noUnnecessaryConditions": "off",
+        "useImageSize": "off"
+      },
+      "performance": {
+        "noBarrelFile": "off",
+        "useTopLevelRegex": "off",
+        "noImgElement": "off",
+        "noNamespaceImport": "off"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noUselessEmptyExport": "off",
+        "noExcessiveCognitiveComplexity": "off",
+        "useSimplifiedLogicExpression": "off",
+        "noUselessFragments": "off",
+        "noBannedTypes": "off",
+        "noStaticOnlyClass": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off",
+        "noUnusedVariables": "off",
+        "useParseIntRadix": "off",
+        "noUnusedFunctionParameters": "off",
+        "noUnusedImports": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "a11y": {
+        "useFocusableInteractive": "off",
+        "noSvgWithoutTitle": "off",
+        "useSemanticElements": "off"
+      }
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "off",
+        "useSortedAttributes": "off"
+      }
+    }
+  }
 }
