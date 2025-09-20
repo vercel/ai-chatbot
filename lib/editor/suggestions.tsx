@@ -115,9 +115,9 @@ export function createSuggestionWidget(
 
   root.render(
     <PreviewSuggestion
-      suggestion={suggestion}
-      onApply={onApply}
       artifactKind={artifactKind}
+      onApply={onApply}
+      suggestion={suggestion}
     />,
   );
 

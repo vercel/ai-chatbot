@@ -124,7 +124,7 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
           <ContextIcon percent={usedPercent} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="top" className="w-fit p-3">
+      <DropdownMenuContent align="end" className="w-fit p-3" side="top">
         <div className="min-w-[240px] space-y-2">
           <div className="flex items-start justify-between text-sm">
             <span>{usedPercent.toFixed(1)}%</span>
@@ -138,29 +138,29 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
           <div className="mt-1 space-y-1">
             {usage?.cachedInputTokens && usage.cachedInputTokens > 0 && (
               <InfoRow
+                costText={usage?.costUSD?.cacheReadUSD?.toString()}
                 label="Cache Hits"
                 tokens={usage?.cachedInputTokens}
-                costText={usage?.costUSD?.cacheReadUSD?.toString()}
               />
             )}
             <InfoRow
+              costText={usage?.costUSD?.inputUSD?.toString()}
               label="Input"
               tokens={usage?.inputTokens}
-              costText={usage?.costUSD?.inputUSD?.toString()}
             />
             <InfoRow
+              costText={usage?.costUSD?.outputUSD?.toString()}
               label="Output"
               tokens={usage?.outputTokens}
-              costText={usage?.costUSD?.outputUSD?.toString()}
             />
             <InfoRow
+              costText={usage?.costUSD?.reasoningUSD?.toString()}
               label="Reasoning"
               tokens={
                 usage?.reasoningTokens && usage.reasoningTokens > 0
                   ? usage.reasoningTokens
                   : undefined
               }
-              costText={usage?.costUSD?.reasoningUSD?.toString()}
             />
             {usage?.costUSD?.totalUSD !== undefined && (
               <>

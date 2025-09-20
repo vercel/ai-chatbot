@@ -41,27 +41,27 @@ function PureArtifactMessages({
 
   return (
     <div
-      ref={messagesContainerRef}
       className="flex h-full flex-col items-center gap-4 overflow-y-scroll px-4 pt-20"
+      ref={messagesContainerRef}
     >
       {messages.map((message, index) => (
         <PreviewMessage
           chatId={chatId}
+          isArtifactVisible={true}
+          isLoading={status === 'streaming' && index === messages.length - 1}
+          isReadonly={isReadonly}
           key={message.id}
           message={message}
-          isLoading={status === 'streaming' && index === messages.length - 1}
+          regenerate={regenerate}
+          requiresScrollPadding={
+            hasSentMessage && index === messages.length - 1
+          }
+          setMessages={setMessages}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }
-          setMessages={setMessages}
-          regenerate={regenerate}
-          isReadonly={isReadonly}
-          requiresScrollPadding={
-            hasSentMessage && index === messages.length - 1
-          }
-          isArtifactVisible={true}
         />
       ))}
 
@@ -70,10 +70,10 @@ function PureArtifactMessages({
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
       <motion.div
-        ref={messagesEndRef}
         className="min-h-[24px] min-w-[24px] shrink-0"
-        onViewportLeave={onViewportLeave}
         onViewportEnter={onViewportEnter}
+        onViewportLeave={onViewportLeave}
+        ref={messagesEndRef}
       />
     </div>
   );

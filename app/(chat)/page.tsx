@@ -23,14 +23,14 @@ export default async function Page() {
     return (
       <>
         <Chat
-          key={id}
+          autoResume={false}
           id={id}
-          initialMessages={[]}
           initialChatModel={DEFAULT_CHAT_MODEL}
+          initialMessages={[]}
           initialVisibilityType="private"
           isReadonly={false}
+          key={id}
           session={session}
-          autoResume={false}
         />
         <DataStreamHandler />
       </>
@@ -40,14 +40,14 @@ export default async function Page() {
   return (
     <>
       <Chat
-        key={id}
+        autoResume={false}
         id={id}
-        initialMessages={[]}
         initialChatModel={modelIdFromCookie.value}
+        initialMessages={[]}
         initialVisibilityType="private"
         isReadonly={false}
+        key={id}
         session={session}
-        autoResume={false}
       />
       <DataStreamHandler />
     </>

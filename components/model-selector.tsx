@@ -45,7 +45,7 @@ export function ModelSelector({
   );
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger
         asChild
         className={cn(
@@ -54,9 +54,9 @@ export function ModelSelector({
         )}
       >
         <Button
+          className="md:h-[34px] md:px-2"
           data-testid="model-selector"
           variant="outline"
-          className="md:h-[34px] md:px-2"
         >
           {selectedChatModel?.name}
           <ChevronDownIcon />
@@ -71,6 +71,8 @@ export function ModelSelector({
 
           return (
             <DropdownMenuItem
+              asChild
+              data-active={id === optimisticModelId}
               data-testid={`model-selector-item-${id}`}
               key={id}
               onSelect={() => {
@@ -81,12 +83,10 @@ export function ModelSelector({
                   saveChatModelAsCookie(id);
                 });
               }}
-              data-active={id === optimisticModelId}
-              asChild
             >
               <button
-                type="button"
                 className="flex flex-row gap-2 justify-between items-center w-full group/item sm:gap-4"
+                type="button"
               >
                 <div className="flex flex-col gap-1 items-start">
                   <div className="text-sm sm:text-base">{chatModel.name}</div>

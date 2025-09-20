@@ -51,11 +51,17 @@ function PureArtifactActions({
         <Tooltip key={action.description}>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
               className={cn('h-fit dark:hover:bg-zinc-700', {
                 'p-2': !action.label,
                 'px-2 py-1.5': action.label,
               })}
+              disabled={
+                isLoading || artifact.status === 'streaming'
+                  ? true
+                  : action.isDisabled
+                    ? action.isDisabled(actionContext)
+                    : false
+              }
               onClick={async () => {
                 setIsLoading(true);
 
@@ -67,13 +73,7 @@ function PureArtifactActions({
                   setIsLoading(false);
                 }
               }}
-              disabled={
-                isLoading || artifact.status === 'streaming'
-                  ? true
-                  : action.isDisabled
-                    ? action.isDisabled(actionContext)
-                    : false
-              }
+              variant="outline"
             >
               {action.icon}
               {action.label}

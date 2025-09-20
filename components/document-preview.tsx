@@ -62,9 +62,9 @@ export function DocumentPreview({
     if (result) {
       return (
         <DocumentToolResult
-          type="create"
-          result={{ id: result.id, title: result.title, kind: result.kind }}
           isReadonly={isReadonly}
+          result={{ id: result.id, title: result.title, kind: result.kind }}
+          type="create"
         />
       );
     }
@@ -72,9 +72,9 @@ export function DocumentPreview({
     if (args) {
       return (
         <DocumentToolCall
-          type="create"
           args={{ title: args.title, kind: args.kind }}
           isReadonly={isReadonly}
+          type="create"
         />
       );
     }
@@ -107,9 +107,9 @@ export function DocumentPreview({
         setArtifact={setArtifact}
       />
       <DocumentHeader
-        title={document.title}
-        kind={document.kind}
         isStreaming={artifact.status === 'streaming'}
+        kind={document.kind}
+        title={document.title}
       />
       <DocumentContent document={document} />
     </div>
@@ -179,11 +179,11 @@ const PureHitboxLayer = ({
 
   return (
     <div
-      className="absolute top-0 left-0 z-10 size-full rounded-xl"
-      ref={hitboxRef}
-      onClick={handleClick}
-      role="presentation"
       aria-hidden="true"
+      className="absolute top-0 left-0 z-10 size-full rounded-xl"
+      onClick={handleClick}
+      ref={hitboxRef}
+      role="presentation"
     >
       <div className="flex w-full items-center justify-end p-4">
         <div className="absolute top-[13px] right-[9px] rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700">
@@ -272,12 +272,12 @@ const DocumentContent = ({ document }: { document: Document }) => {
         </div>
       ) : document.kind === 'image' ? (
         <ImageEditor
-          title={document.title}
           content={document.content ?? ''}
-          isCurrentVersion={true}
           currentVersionIndex={0}
-          status={artifact.status}
+          isCurrentVersion={true}
           isInline={true}
+          status={artifact.status}
+          title={document.title}
         />
       ) : null}
     </div>

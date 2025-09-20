@@ -12,7 +12,7 @@ const iconsByType: Record<'success' | 'error', ReactNode> = {
 
 export function toast(props: Omit<ToastProps, 'id'>) {
   return sonnerToast.custom((id) => (
-    <Toast id={id} type={props.type} description={props.description} />
+    <Toast description={props.description} id={id} type={props.type} />
   ));
 }
 
@@ -42,23 +42,23 @@ function Toast(props: ToastProps) {
   return (
     <div className="flex toast-mobile:w-[356px] w-full justify-center">
       <div
-        data-testid="toast"
-        key={id}
         className={cn(
           'flex toast-mobile:w-fit w-full flex-row gap-3 rounded-lg bg-zinc-100 p-3',
           multiLine ? 'items-start' : 'items-center',
         )}
+        data-testid="toast"
+        key={id}
       >
         <div
-          data-type={type}
           className={cn(
             'data-[type=error]:text-red-600 data-[type=success]:text-green-600',
             { 'pt-1': multiLine },
           )}
+          data-type={type}
         >
           {iconsByType[type]}
         </div>
-        <div ref={descriptionRef} className="text-sm text-zinc-950">
+        <div className="text-sm text-zinc-950" ref={descriptionRef}>
           {description}
         </div>
       </div>

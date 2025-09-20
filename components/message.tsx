@@ -56,11 +56,11 @@ const PurePreviewMessage = ({
 
   return (
     <motion.div
-      data-testid={`message-${message.role}`}
-      className="group/message w-full"
-      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      className="group/message w-full"
       data-role={message.role}
+      data-testid={`message-${message.role}`}
+      initial={{ opacity: 0 }}
     >
       <div
         className={cn('flex w-full items-start gap-2 md:gap-3', {
@@ -92,17 +92,17 @@ const PurePreviewMessage = ({
         >
           {attachmentsFromMessage.length > 0 && (
             <div
-              data-testid={`message-attachments`}
               className="flex flex-row justify-end gap-2"
+              data-testid={`message-attachments`}
             >
               {attachmentsFromMessage.map((attachment) => (
                 <PreviewAttachment
-                  key={attachment.url}
                   attachment={{
                     name: attachment.filename ?? 'file',
                     contentType: attachment.mediaType,
                     url: attachment.url,
                   }}
+                  key={attachment.url}
                 />
               ))}
             </div>
@@ -115,8 +115,8 @@ const PurePreviewMessage = ({
             if (type === 'reasoning' && part.text?.trim().length > 0) {
               return (
                 <MessageReasoning
-                  key={key}
                   isLoading={isLoading}
+                  key={key}
                   reasoning={part.text}
                 />
               );
@@ -127,13 +127,13 @@ const PurePreviewMessage = ({
                 return (
                   <div key={key}>
                     <MessageContent
-                      data-testid="message-content"
                       className={cn({
                         'w-fit break-words rounded-2xl px-3 py-2 text-right text-white':
                           message.role === 'user',
                         'bg-transparent px-0 py-0 text-left':
                           message.role === 'assistant',
                       })}
+                      data-testid="message-content"
                       style={
                         message.role === 'user'
                           ? { backgroundColor: '#006cff' }
@@ -149,17 +149,17 @@ const PurePreviewMessage = ({
               if (mode === 'edit') {
                 return (
                   <div
-                    key={key}
                     className="flex w-full flex-row items-start gap-3"
+                    key={key}
                   >
                     <div className="size-8" />
                     <div className="min-w-0 flex-1">
                       <MessageEditor
                         key={message.id}
                         message={message}
-                        setMode={setMode}
-                        setMessages={setMessages}
                         regenerate={regenerate}
+                        setMessages={setMessages}
+                        setMode={setMode}
                       />
                     </div>
                   </div>
@@ -171,16 +171,16 @@ const PurePreviewMessage = ({
               const { toolCallId, state } = part;
 
               return (
-                <Tool key={toolCallId} defaultOpen={true}>
-                  <ToolHeader type="tool-getWeather" state={state} />
+                <Tool defaultOpen={true} key={toolCallId}>
+                  <ToolHeader state={state} type="tool-getWeather" />
                   <ToolContent>
                     {state === 'input-available' && (
                       <ToolInput input={part.input} />
                     )}
                     {state === 'output-available' && (
                       <ToolOutput
-                        output={<Weather weatherAtLocation={part.output} />}
                         errorText={undefined}
+                        output={<Weather weatherAtLocation={part.output} />}
                       />
                     )}
                   </ToolContent>
@@ -194,8 +194,8 @@ const PurePreviewMessage = ({
               if (part.output && 'error' in part.output) {
                 return (
                   <div
-                    key={toolCallId}
                     className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                    key={toolCallId}
                   >
                     Error creating document: {String(part.output.error)}
                   </div>
@@ -204,8 +204,8 @@ const PurePreviewMessage = ({
 
               return (
                 <DocumentPreview
-                  key={toolCallId}
                   isReadonly={isReadonly}
+                  key={toolCallId}
                   result={part.output}
                 />
               );
@@ -217,8 +217,8 @@ const PurePreviewMessage = ({
               if (part.output && 'error' in part.output) {
                 return (
                   <div
-                    key={toolCallId}
                     className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                    key={toolCallId}
                   >
                     Error updating document: {String(part.output.error)}
                   </div>
@@ -226,11 +226,11 @@ const PurePreviewMessage = ({
               }
 
               return (
-                <div key={toolCallId} className="relative">
+                <div className="relative" key={toolCallId}>
                   <DocumentPreview
+                    args={{ ...part.output, isUpdate: true }}
                     isReadonly={isReadonly}
                     result={part.output}
-                    args={{ ...part.output, isUpdate: true }}
                   />
                 </div>
               );
@@ -240,14 +240,15 @@ const PurePreviewMessage = ({
               const { toolCallId, state } = part;
 
               return (
-                <Tool key={toolCallId} defaultOpen={true}>
-                  <ToolHeader type="tool-requestSuggestions" state={state} />
+                <Tool defaultOpen={true} key={toolCallId}>
+                  <ToolHeader state={state} type="tool-requestSuggestions" />
                   <ToolContent>
                     {state === 'input-available' && (
                       <ToolInput input={part.input} />
                     )}
                     {state === 'output-available' && (
                       <ToolOutput
+                        errorText={undefined}
                         output={
                           'error' in part.output ? (
                             <div className="rounded border p-2 text-red-500">
@@ -255,13 +256,12 @@ const PurePreviewMessage = ({
                             </div>
                           ) : (
                             <DocumentToolResult
-                              type="request-suggestions"
-                              result={part.output}
                               isReadonly={isReadonly}
+                              result={part.output}
+                              type="request-suggestions"
                             />
                           )
                         }
-                        errorText={undefined}
                       />
                     )}
                   </ToolContent>
@@ -272,12 +272,12 @@ const PurePreviewMessage = ({
 
           {!isReadonly && (
             <MessageActions
-              key={`action-${message.id}`}
               chatId={chatId}
-              message={message}
-              vote={vote}
               isLoading={isLoading}
+              key={`action-${message.id}`}
+              message={message}
               setMode={setMode}
+              vote={vote}
             />
           )}
         </div>
@@ -305,11 +305,11 @@ export const ThinkingMessage = () => {
 
   return (
     <motion.div
-      data-testid="message-assistant-loading"
-      className="group/message w-full"
-      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      className="group/message w-full"
       data-role={role}
+      data-testid="message-assistant-loading"
+      initial={{ opacity: 0 }}
     >
       <div className="flex items-start justify-start gap-3">
         <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
@@ -330,11 +330,7 @@ const LoadingText = ({ children }: { children: React.ReactNode }) => {
   return (
     <motion.div
       animate={{ backgroundPosition: ['100% 50%', '-100% 50%'] }}
-      transition={{
-        duration: 1.5,
-        repeat: Number.POSITIVE_INFINITY,
-        ease: 'linear',
-      }}
+      className="flex items-center text-transparent"
       style={{
         background:
           'linear-gradient(90deg, hsl(var(--muted-foreground)) 0%, hsl(var(--muted-foreground)) 35%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground)) 65%, hsl(var(--muted-foreground)) 100%)',
@@ -342,7 +338,11 @@ const LoadingText = ({ children }: { children: React.ReactNode }) => {
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
       }}
-      className="flex items-center text-transparent"
+      transition={{
+        duration: 1.5,
+        repeat: Number.POSITIVE_INFINITY,
+        ease: 'linear',
+      }}
     >
       {children}
     </motion.div>

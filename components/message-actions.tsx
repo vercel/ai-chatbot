@@ -51,14 +51,14 @@ export function PureMessageActions({
         <div className="relative">
           {setMode && (
             <Action
-              tooltip="Edit"
-              onClick={() => setMode('edit')}
               className="-left-10 absolute top-0 opacity-0 transition-opacity group-hover/message:opacity-100"
+              onClick={() => setMode('edit')}
+              tooltip="Edit"
             >
               <PencilEditIcon />
             </Action>
           )}
-          <Action tooltip="Copy" onClick={handleCopy}>
+          <Action onClick={handleCopy} tooltip="Copy">
             <CopyIcon />
           </Action>
         </div>
@@ -68,12 +68,11 @@ export function PureMessageActions({
 
   return (
     <Actions className="-ml-0.5">
-      <Action tooltip="Copy" onClick={handleCopy}>
+      <Action onClick={handleCopy} tooltip="Copy">
         <CopyIcon />
       </Action>
 
       <Action
-        tooltip="Upvote Response"
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
         onClick={async () => {
@@ -115,12 +114,12 @@ export function PureMessageActions({
             error: 'Failed to upvote response.',
           });
         }}
+        tooltip="Upvote Response"
       >
         <ThumbUpIcon />
       </Action>
 
       <Action
-        tooltip="Downvote Response"
         data-testid="message-downvote"
         disabled={vote && !vote.isUpvoted}
         onClick={async () => {
@@ -162,6 +161,7 @@ export function PureMessageActions({
             error: 'Failed to downvote response.',
           });
         }}
+        tooltip="Downvote Response"
       >
         <ThumbDownIcon />
       </Action>

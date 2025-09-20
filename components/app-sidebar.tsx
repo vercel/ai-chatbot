@@ -28,11 +28,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         <SidebarMenu>
           <div className="flex flex-row items-center justify-between">
             <Link
+              className="flex flex-row items-center gap-3"
               href="/"
               onClick={() => {
                 setOpenMobile(false);
               }}
-              className="flex flex-row items-center gap-3"
             >
               <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
                 Chatbot
@@ -41,14 +41,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost"
-                  type="button"
                   className="h-8 p-1 md:h-fit md:p-2"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');
                     router.refresh();
                   }}
+                  type="button"
+                  variant="ghost"
                 >
                   <PlusIcon />
                 </Button>

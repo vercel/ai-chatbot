@@ -64,8 +64,8 @@ export default function Page() {
           <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
             {"Don't have an account? "}
             <Link
-              href="/register"
               className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
+              href="/register"
             >
               Sign up
             </Link>

@@ -160,39 +160,39 @@ export function Chat({
       <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
         <ChatHeader
           chatId={id}
-          selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
+          selectedVisibilityType={initialVisibilityType}
           session={session}
         />
 
         <Messages
           chatId={id}
+          isArtifactVisible={isArtifactVisible}
+          isReadonly={isReadonly}
+          messages={messages}
+          regenerate={regenerate}
+          selectedModelId={initialChatModel}
+          setMessages={setMessages}
           status={status}
           votes={votes}
-          messages={messages}
-          setMessages={setMessages}
-          regenerate={regenerate}
-          isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
-          selectedModelId={initialChatModel}
         />
 
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
           {!isReadonly && (
             <MultimodalInput
+              attachments={attachments}
               chatId={id}
               input={input}
+              messages={messages}
+              onModelChange={setCurrentModelId}
+              selectedModelId={currentModelId}
+              selectedVisibilityType={visibilityType}
+              sendMessage={sendMessage}
+              setAttachments={setAttachments}
               setInput={setInput}
+              setMessages={setMessages}
               status={status}
               stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              sendMessage={sendMessage}
-              selectedVisibilityType={visibilityType}
-              selectedModelId={currentModelId}
-              onModelChange={setCurrentModelId}
               usage={usage}
             />
           )}
@@ -200,26 +200,26 @@ export function Chat({
       </div>
 
       <Artifact
+        attachments={attachments}
         chatId={id}
         input={input}
+        isReadonly={isReadonly}
+        messages={messages}
+        regenerate={regenerate}
+        selectedModelId={currentModelId}
+        selectedVisibilityType={visibilityType}
+        sendMessage={sendMessage}
+        setAttachments={setAttachments}
         setInput={setInput}
+        setMessages={setMessages}
         status={status}
         stop={stop}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        sendMessage={sendMessage}
-        messages={messages}
-        setMessages={setMessages}
-        regenerate={regenerate}
         votes={votes}
-        isReadonly={isReadonly}
-        selectedVisibilityType={visibilityType}
-        selectedModelId={currentModelId}
       />
 
       <AlertDialog
-        open={showCreditCardAlert}
         onOpenChange={setShowCreditCardAlert}
+        open={showCreditCardAlert}
       >
         <AlertDialogContent>
           <AlertDialogHeader>

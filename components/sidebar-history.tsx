@@ -170,8 +170,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           <div className="flex flex-col">
             {[44, 32, 28, 64, 52].map((item) => (
               <div
-                key={item}
                 className="flex h-8 items-center gap-2 rounded-md px-2"
+                key={item}
               >
                 <div
                   className="h-4 max-w-(--skeleton-width) flex-1 rounded-md bg-sidebar-accent-foreground/10"
@@ -223,9 +223,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                         </div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
-                            key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
+                            key={chat.id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
@@ -243,9 +243,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                         </div>
                         {groupedChats.yesterday.map((chat) => (
                           <ChatItem
-                            key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
+                            key={chat.id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
@@ -263,9 +263,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                         </div>
                         {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
-                            key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
+                            key={chat.id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
@@ -283,9 +283,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                         </div>
                         {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
-                            key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
+                            key={chat.id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
@@ -303,9 +303,9 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                         </div>
                         {groupedChats.older.map((chat) => (
                           <ChatItem
-                            key={chat.id}
                             chat={chat}
                             isActive={chat.id === id}
+                            key={chat.id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
@@ -343,7 +343,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
         </SidebarGroupContent>
       </SidebarGroup>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

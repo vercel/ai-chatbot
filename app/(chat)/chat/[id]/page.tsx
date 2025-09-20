@@ -46,14 +46,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     return (
       <>
         <Chat
+          autoResume={true}
           id={chat.id}
-          initialMessages={uiMessages}
           initialChatModel={DEFAULT_CHAT_MODEL}
+          initialLastContext={chat.lastContext ?? undefined}
+          initialMessages={uiMessages}
           initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
           session={session}
-          autoResume={true}
-          initialLastContext={chat.lastContext ?? undefined}
         />
         <DataStreamHandler />
       </>
@@ -63,14 +63,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   return (
     <>
       <Chat
+        autoResume={true}
         id={chat.id}
-        initialMessages={uiMessages}
         initialChatModel={chatModelFromCookie.value}
+        initialLastContext={chat.lastContext ?? undefined}
+        initialMessages={uiMessages}
         initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}
         session={session}
-        autoResume={true}
-        initialLastContext={chat.lastContext ?? undefined}
       />
       <DataStreamHandler />
     </>

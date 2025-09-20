@@ -26,9 +26,9 @@ export function MessageReasoning({
   
   return (
     <Reasoning
-      isStreaming={isLoading}
-      defaultOpen={hasBeenStreaming}
       data-testid="message-reasoning"
+      defaultOpen={hasBeenStreaming}
+      isStreaming={isLoading}
     >
       <ReasoningTrigger />
       <ReasoningContent>{reasoning}</ReasoningContent>

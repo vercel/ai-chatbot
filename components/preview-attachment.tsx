@@ -19,16 +19,16 @@ export const PreviewAttachment = ({
 
   return (
     <div
-      data-testid="input-attachment-preview"
       className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
+      data-testid="input-attachment-preview"
     >
       {contentType?.startsWith('image') ? (
         <Image
-          src={url}
           alt={name ?? 'An image attachment'}
           className="size-full object-cover"
-          width={64}
           height={64}
+          src={url}
+          width={64}
         />
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
@@ -44,10 +44,10 @@ export const PreviewAttachment = ({
 
       {onRemove && !isUploading && (
         <Button
+          className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={onRemove}
           size="sm"
           variant="destructive"
-          className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
         >
           <CrossSmallIcon size={8} />
         </Button>

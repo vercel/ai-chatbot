@@ -80,11 +80,11 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   return consoleOutputs.length > 0 ? (
     <>
       <div
+        aria-valuenow={minHeight}
         className="fixed z-50 h-2 w-full cursor-ns-resize"
         onMouseDown={startResizing}
-        style={{ bottom: height - 4 }}
         role="slider"
-        aria-valuenow={minHeight}
+        style={{ bottom: height - 4 }}
       />
 
       <div
@@ -104,10 +104,10 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
             <div>Console</div>
           </div>
           <Button
-            variant="ghost"
             className="size-fit p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            size="icon"
             onClick={() => setConsoleOutputs([])}
+            size="icon"
+            variant="ghost"
           >
             <CrossSmallIcon />
           </Button>
@@ -116,8 +116,8 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         <div>
           {consoleOutputs.map((consoleOutput, index) => (
             <div
-              key={consoleOutput.id}
               className="flex flex-row border-zinc-200 border-b bg-zinc-50 px-4 py-2 font-mono text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              key={consoleOutput.id}
             >
               <div
                 className={cn('w-12 shrink-0', {
@@ -154,15 +154,15 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                     content.type === 'image' ? (
                       <picture key={`${consoleOutput.id}-${index}`}>
                         <img
-                          src={content.value}
                           alt="output"
                           className="w-full max-w-(--breakpoint-toast-mobile) rounded-md"
+                          src={content.value}
                         />
                       </picture>
                     ) : (
                       <div
-                        key={`${consoleOutput.id}-${index}`}
                         className="w-full whitespace-pre-line break-words"
+                        key={`${consoleOutput.id}-${index}`}
                       >
                         {content.value}
                       </div>

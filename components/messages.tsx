@@ -62,8 +62,8 @@ function PureMessages({
 
   return (
     <div
-      ref={messagesContainerRef}
       className="overscroll-behavior-contain -webkit-overflow-scrolling-touch flex-1 touch-pan-y overflow-y-scroll"
+      ref={messagesContainerRef}
       style={{ overflowAnchor: 'none' }}
     >
       <Conversation className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 md:gap-6">
@@ -72,24 +72,24 @@ function PureMessages({
 
           {messages.map((message, index) => (
             <PreviewMessage
-              key={message.id}
               chatId={chatId}
-              message={message}
+              isArtifactVisible={isArtifactVisible}
               isLoading={
                 status === 'streaming' && messages.length - 1 === index
               }
+              isReadonly={isReadonly}
+              key={message.id}
+              message={message}
+              regenerate={regenerate}
+              requiresScrollPadding={
+                hasSentMessage && index === messages.length - 1
+              }
+              setMessages={setMessages}
               vote={
                 votes
                   ? votes.find((vote) => vote.messageId === message.id)
                   : undefined
               }
-              setMessages={setMessages}
-              regenerate={regenerate}
-              isReadonly={isReadonly}
-              requiresScrollPadding={
-                hasSentMessage && index === messages.length - 1
-              }
-              isArtifactVisible={isArtifactVisible}
             />
           ))}
 
@@ -99,18 +99,18 @@ function PureMessages({
             selectedModelId !== 'chat-model-reasoning' && <ThinkingMessage />}
 
           <div
-            ref={messagesEndRef}
             className="min-h-[24px] min-w-[24px] shrink-0"
+            ref={messagesEndRef}
           />
         </ConversationContent>
       </Conversation>
 
       {!isAtBottom && (
         <button
+          aria-label="Scroll to bottom"
           className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
           onClick={() => scrollToBottom('smooth')}
           type="button"
-          aria-label="Scroll to bottom"
         >
           <ArrowDownIcon className="size-4" />
         </button>

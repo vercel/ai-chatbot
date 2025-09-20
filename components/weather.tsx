@@ -284,7 +284,7 @@ export function Weather({
 
       <div className="flex flex-row justify-between">
         {displayTimes.map((time, index) => (
-          <div key={time} className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-1" key={time}>
             <div className="text-blue-100 text-xs">
               {format(new Date(time), 'ha')}
             </div>

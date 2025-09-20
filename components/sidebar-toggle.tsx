@@ -19,10 +19,10 @@ export function SidebarToggle({
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          className="h-8 px-2 md:h-fit md:px-2"
           data-testid="sidebar-toggle-button"
           onClick={toggleSidebar}
           variant="outline"
-          className="h-8 px-2 md:h-fit md:px-2"
         >
           <SidebarLeftIcon size={16} />
         </Button>

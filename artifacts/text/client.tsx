@@ -72,7 +72,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       const oldContent = getDocumentContentById(currentVersionIndex - 1);
       const newContent = getDocumentContentById(currentVersionIndex);
 
-      return <DiffView oldContent={oldContent} newContent={newContent} />;
+      return <DiffView newContent={newContent} oldContent={oldContent} />;
     }
 
     return (
@@ -80,11 +80,11 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
         <div className="flex flex-row px-4 py-8 md:p-20">
           <Editor
             content={content}
-            suggestions={metadata ? metadata.suggestions : []}
-            isCurrentVersion={isCurrentVersion}
             currentVersionIndex={currentVersionIndex}
-            status={status}
+            isCurrentVersion={isCurrentVersion}
             onSaveContent={onSaveContent}
+            status={status}
+            suggestions={metadata ? metadata.suggestions : []}
           />
 
           {metadata?.suggestions && metadata.suggestions.length > 0 ? (

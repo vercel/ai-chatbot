@@ -34,12 +34,12 @@ function PureChatHeader({
 
       {(!open || windowWidth < 768) && (
         <Button
-          variant="outline"
           className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
           onClick={() => {
             router.push('/');
             router.refresh();
           }}
+          variant="outline"
         >
           <PlusIcon />
           <span className="md:sr-only">New Chat</span>
@@ -49,19 +49,19 @@ function PureChatHeader({
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
           className="order-1 md:order-2"
+          selectedVisibilityType={selectedVisibilityType}
         />
       )}
 
       <Button
-        className="order-3 hidden bg-zinc-900 px-2 text-zinc-50 hover:bg-zinc-800 md:ml-auto md:flex md:h-fit dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         asChild
+        className="order-3 hidden bg-zinc-900 px-2 text-zinc-50 hover:bg-zinc-800 md:ml-auto md:flex md:h-fit dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
       >
         <Link
           href={`https://vercel.com/templates/next.js/nextjs-ai-chatbot`}
-          target="_noblank"
           rel="noreferrer"
+          target="_noblank"
         >
           <VercelIcon size={16} />
           Deploy with Vercel

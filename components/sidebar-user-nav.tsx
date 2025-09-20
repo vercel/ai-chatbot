@@ -49,17 +49,17 @@ export function SidebarUserNav({ user }: { user: User }) {
               </SidebarMenuButton>
             ) : (
               <SidebarMenuButton
-                data-testid="user-nav-button"
                 className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                data-testid="user-nav-button"
               >
                 <Image
-                  src={`https://avatar.vercel.sh/${user.email}`}
                   alt={user.email ?? 'User Avatar'}
-                  width={24}
-                  height={24}
                   className="rounded-full"
+                  height={24}
+                  src={`https://avatar.vercel.sh/${user.email}`}
+                  width={24}
                 />
-                <span data-testid="user-email" className="truncate">
+                <span className="truncate" data-testid="user-email">
                   {isGuest ? 'Guest' : user?.email}
                 </span>
                 <ChevronUp className="ml-auto" />
@@ -67,13 +67,13 @@ export function SidebarUserNav({ user }: { user: User }) {
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent
+            className="w-(--radix-popper-anchor-width)"
             data-testid="user-nav-menu"
             side="top"
-            className="w-(--radix-popper-anchor-width)"
           >
             <DropdownMenuItem
-              data-testid="user-nav-item-theme"
               className="cursor-pointer"
+              data-testid="user-nav-item-theme"
               onSelect={() =>
                 setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
               }
@@ -83,7 +83,6 @@ export function SidebarUserNav({ user }: { user: User }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">
               <button
-                type="button"
                 className="w-full cursor-pointer"
                 onClick={() => {
                   if (status === 'loading') {
@@ -104,6 +103,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                     });
                   }
                 }}
+                type="button"
               >
                 {isGuest ? 'Login to your account' : 'Sign out'}
               </button>

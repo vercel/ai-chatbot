@@ -60,7 +60,7 @@ export function VisibilitySelector({
   );
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger
         asChild
         className={cn(
@@ -69,9 +69,9 @@ export function VisibilitySelector({
         )}
       >
         <Button
+          className="hidden h-8 md:flex md:h-fit md:px-2 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           data-testid="visibility-selector"
           variant="outline"
-          className="hidden h-8 md:flex md:h-fit md:px-2 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           {selectedVisibility?.icon}
           <span className="md:sr-only">{selectedVisibility?.label}</span>
@@ -82,14 +82,14 @@ export function VisibilitySelector({
       <DropdownMenuContent align="start" className="min-w-[300px]">
         {visibilities.map((visibility) => (
           <DropdownMenuItem
+            className="group/item flex flex-row items-center justify-between gap-4"
+            data-active={visibility.id === visibilityType}
             data-testid={`visibility-selector-item-${visibility.id}`}
             key={visibility.id}
             onSelect={() => {
               setVisibilityType(visibility.id);
               setOpen(false);
             }}
-            className="group/item flex flex-row items-center justify-between gap-4"
-            data-active={visibility.id === visibilityType}
           >
             <div className="flex flex-col items-start gap-1">
               {visibility.label}

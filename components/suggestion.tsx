@@ -40,12 +40,12 @@ export const Suggestion = ({
         </motion.div>
       ) : (
         <motion.div
-          key={suggestion.id}
-          className="-right-12 md:-right-16 absolute z-50 flex w-56 flex-col gap-3 rounded-2xl border bg-background p-3 font-sans text-sm shadow-xl"
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: -20 }}
+          className="-right-12 md:-right-16 absolute z-50 flex w-56 flex-col gap-3 rounded-2xl border bg-background p-3 font-sans text-sm shadow-xl"
           exit={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -10 }}
+          key={suggestion.id}
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           whileHover={{ scale: 1.05 }}
         >
           <div className="flex flex-row items-center justify-between">
@@ -54,20 +54,20 @@ export const Suggestion = ({
               <div className="font-medium">Assistant</div>
             </div>
             <button
-              type="button"
               className="cursor-pointer text-gray-500 text-xs"
               onClick={() => {
                 setIsExpanded(false);
               }}
+              type="button"
             >
               <CrossIcon size={12} />
             </button>
           </div>
           <div>{suggestion.description}</div>
           <Button
-            variant="outline"
             className="w-fit rounded-full px-3 py-1.5"
             onClick={onApply}
+            variant="outline"
           >
             Apply
           </Button>

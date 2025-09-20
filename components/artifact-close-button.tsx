@@ -8,9 +8,8 @@ function PureArtifactCloseButton() {
 
   return (
     <Button
-      data-testid="artifact-close-button"
-      variant="outline"
       className="h-fit p-2 dark:hover:bg-zinc-700"
+      data-testid="artifact-close-button"
       onClick={() => {
         setArtifact((currentArtifact) =>
           currentArtifact.status === 'streaming'
@@ -21,6 +20,7 @@ function PureArtifactCloseButton() {
             : { ...initialArtifactData, status: 'idle' },
         );
       }}
+      variant="outline"
     >
       <CrossIcon size={18} />
     </Button>

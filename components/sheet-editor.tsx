@@ -113,19 +113,19 @@ const PureSpreadsheetEditor = ({
     <DataGrid
       className={resolvedTheme === 'dark' ? 'rdg-dark' : 'rdg-light'}
       columns={columns}
-      rows={localRows}
+      defaultColumnOptions={{
+        resizable: true,
+        sortable: true,
+      }}
       enableVirtualization
-      onRowsChange={handleRowsChange}
       onCellClick={(args) => {
         if (args.column.key !== 'rowNumber') {
           args.selectCell(true);
         }
       }}
+      onRowsChange={handleRowsChange}
+      rows={localRows}
       style={{ height: '100%' }}
-      defaultColumnOptions={{
-        resizable: true,
-        sortable: true,
-      }}
     />
   );
 };

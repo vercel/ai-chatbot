@@ -35,11 +35,11 @@ export function ImageEditor({
       ) : (
         <picture>
           <img
+            alt={title}
             className={cn('h-fit w-full max-w-[800px]', {
               'p-0 md:p-20': !isInline,
             })}
             src={`data:image/png;base64,${content}`}
-            alt={title}
           />
         </picture>
       )}
