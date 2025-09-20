@@ -36,9 +36,9 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
 };
 
 export class ChatSDKError extends Error {
-  public type: ErrorType;
-  public surface: Surface;
-  public statusCode: number;
+  type: ErrorType;
+  surface: Surface;
+  statusCode: number;
 
   constructor(errorCode: ErrorCode, cause?: string) {
     super();
@@ -52,7 +52,7 @@ export class ChatSDKError extends Error {
     this.statusCode = getStatusCodeByType(this.type);
   }
 
-  public toResponse() {
+  toResponse() {
     const code: ErrorCode = `${this.type}:${this.surface}`;
     const visibility = visibilityBySurface[this.surface];
 

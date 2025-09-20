@@ -3,19 +3,19 @@ import { expect, type Page } from '@playwright/test';
 export class ArtifactPage {
   constructor(private page: Page) {}
 
-  public get artifact() {
+  get artifact() {
     return this.page.getByTestId('artifact');
   }
 
-  public get sendButton() {
+  get sendButton() {
     return this.artifact.getByTestId('send-button');
   }
 
-  public get stopButton() {
+  get stopButton() {
     return this.page.getByTestId('stop-button');
   }
 
-  public get multimodalInput() {
+  get multimodalInput() {
     return this.page.getByTestId('multimodal-input');
   }
 
