@@ -47,8 +47,6 @@
         /* Needs more work to fix */
         "noExcessiveCognitiveComplexity": "off",
 
-        "noStaticOnlyClass": "off",
-
         /* This one has false positives. It's a bit... iffy 😉 */
         "useSimplifiedLogicExpression": "off"
       },
