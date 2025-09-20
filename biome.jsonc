@@ -30,7 +30,6 @@
         /* Allowing magic numbers */
         "noMagicNumbers": "off",
 
-        "useCollapsedElseIf": "off",
         "noNestedTernary": "off",
         "noParameterProperties": "off",
 
