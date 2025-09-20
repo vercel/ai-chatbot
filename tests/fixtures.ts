@@ -8,7 +8,7 @@ type Fixtures = {
   curieContext: UserContext;
 };
 
-export const test = baseTest.extend<{}, Fixtures>({
+export const test = baseTest.extend<object, Fixtures>({
   adaContext: [
     async ({ browser }, use, workerInfo) => {
       const ada = await createAuthenticatedContext({

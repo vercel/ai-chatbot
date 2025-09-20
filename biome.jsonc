@@ -44,8 +44,9 @@
         "noNamespaceImport": "off"
       },
       "complexity": {
+        /* Needs more work to fix */
         "noExcessiveCognitiveComplexity": "off",
-        "noBannedTypes": "off",
+
         "noStaticOnlyClass": "off",
 
         /* This one has false positives. It's a bit... iffy 😉 */
