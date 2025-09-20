@@ -24,7 +24,6 @@
         "noUnusedTemplateLiteral": "off",
         "useConsistentObjectDefinitions": "off",
         "useCollapsedElseIf": "off",
-        "useNumericSeparators": "off",
         "noNestedTernary": "off",
         "useAtIndex": "off",
         "noParameterProperties": "off",

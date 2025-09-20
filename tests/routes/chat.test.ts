@@ -252,7 +252,7 @@ test.describe
 
       await firstResponse.text();
       await new Promise((resolve) => setTimeout(resolve, 15 * 1000));
-      await new Promise((resolve) => setTimeout(resolve, 15000));
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
       const secondResponse = await adaContext.request.get(
         `/api/chat/${chatId}/stream`,
       );

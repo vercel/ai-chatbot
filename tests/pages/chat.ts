@@ -227,7 +227,7 @@ export class ChatPage {
     );
   }
 
-  async waitForScrollToBottom(timeout = 5_000): Promise<void> {
+  async waitForScrollToBottom(timeout = 5000): Promise<void> {
     const start = Date.now();
 
     while (Date.now() - start < timeout) {

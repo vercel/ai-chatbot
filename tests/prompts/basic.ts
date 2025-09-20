@@ -89,10 +89,10 @@ export const TEST_PROMPTS: Record<string, ModelMessage> = {
         output: {
           type: 'json',
           value: {
-            latitude: 37.763283,
-            longitude: -122.41286,
-            generationtime_ms: 0.06449222564697266,
-            utc_offset_seconds: -25200,
+            latitude: 37.763_283,
+            longitude: -122.412_86,
+            generationtime_ms: 0.064_492_225_646_972_66,
+            utc_offset_seconds: -25_200,
             timezone: 'America/Los_Angeles',
             timezone_abbreviation: 'GMT-7',
             elevation: 18,
