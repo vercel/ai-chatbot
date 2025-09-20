@@ -42,7 +42,7 @@ import { generateHashedPassword } from './utils';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
-export async function getUser(email: string): Promise<Array<User>> {
+export async function getUser(email: string): Promise<User[]> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
@@ -149,7 +149,7 @@ export async function getChatsByUserId({
         .orderBy(desc(chat.createdAt))
         .limit(extendedLimit);
 
-    let filteredChats: Array<Chat> = [];
+    let filteredChats: Chat[] = [];
 
     if (startingAfter) {
       const [selectedChat] = await db
@@ -215,7 +215,7 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({
   messages,
 }: {
-  messages: Array<DBMessage>;
+  messages: DBMessage[];
 }) {
   try {
     return await db.insert(message).values(messages);
@@ -377,7 +377,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
 export async function saveSuggestions({
   suggestions,
 }: {
-  suggestions: Array<Suggestion>;
+  suggestions: Suggestion[];
 }) {
   try {
     return await db.insert(suggestion).values(suggestions);

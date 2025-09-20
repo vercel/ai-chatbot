@@ -14,7 +14,7 @@ type EditorProps = {
   status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  suggestions: Array<Suggestion>;
+  suggestions: Suggestion[];
 };
 
 function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {

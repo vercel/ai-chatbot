@@ -36,7 +36,7 @@ export function DocumentPreview({
   const { artifact, setArtifact } = useArtifact();
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<
-    Array<Document>
+    Document[]
   >(result ? `/api/document?id=${result.id}` : null, fetcher);
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);

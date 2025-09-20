@@ -15,7 +15,7 @@ import type { Suggestion } from '@/lib/db/schema';
 import { getSuggestions } from '../actions';
 
 interface TextArtifactMetadata {
-  suggestions: Array<Suggestion>;
+  suggestions: Suggestion[];
 }
 
 export const textArtifact = new Artifact<'text', TextArtifactMetadata>({

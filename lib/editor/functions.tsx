@@ -23,10 +23,10 @@ export const buildContentFromDocument = (document: Node) => {
 };
 
 export const createDecorations = (
-  suggestions: Array<UISuggestion>,
+  suggestions: UISuggestion[],
   view: EditorView,
 ) => {
-  const decorations: Array<Decoration> = [];
+  const decorations: Decoration[] = [];
 
   for (const suggestion of suggestions) {
     decorations.push(

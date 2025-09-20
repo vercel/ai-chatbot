@@ -13,7 +13,7 @@ import { Button } from './ui/button';
 
 interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
-  documents: Array<Document> | undefined;
+  documents: Document[] | undefined;
   currentVersionIndex: number;
 }
 

@@ -6,7 +6,7 @@ export interface ChatModel {
   description: string;
 }
 
-export const chatModels: Array<ChatModel> = [
+export const chatModels: ChatModel[] = [
   {
     id: 'chat-model',
     name: 'Grok Vision',

@@ -78,7 +78,7 @@ function PureArtifact({
   setAttachments: Dispatch<SetStateAction<Attachment[]>>;
   messages: ChatMessage[];
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
-  votes: Array<Vote> | undefined;
+  votes: Vote[] | undefined;
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
   isReadonly: boolean;
@@ -91,7 +91,7 @@ function PureArtifact({
     data: documents,
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
-  } = useSWR<Array<Document>>(
+  } = useSWR<Document[]>(
     artifact.documentId !== 'init' && artifact.status !== 'streaming'
       ? `/api/document?id=${artifact.documentId}`
       : null,
@@ -130,7 +130,7 @@ function PureArtifact({
     (updatedContent: string) => {
       if (!artifact) { return; }
 
-      mutate<Array<Document>>(
+      mutate<Document[]>(
         `/api/document?id=${artifact.documentId}`,
         async (currentDocuments) => {
           if (!currentDocuments) { return undefined; }

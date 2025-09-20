@@ -37,7 +37,7 @@ type GroupedChats = {
 };
 
 export interface ChatHistory {
-  chats: Array<Chat>;
+  chats: Chat[];
   hasMore: boolean;
 }
 

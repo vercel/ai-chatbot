@@ -66,13 +66,13 @@ export function generateUUID(): string {
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
 type ResponseMessage = ResponseMessageWithoutId & { id: string };
 
-export function getMostRecentUserMessage(messages: Array<UIMessage>) {
+export function getMostRecentUserMessage(messages: UIMessage[]) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
 
 export function getDocumentTimestampByIndex(
-  documents: Array<Document>,
+  documents: Document[],
   index: number,
 ) {
   if (!documents) { return new Date(); }
@@ -84,7 +84,7 @@ export function getDocumentTimestampByIndex(
 export function getTrailingMessageId({
   messages,
 }: {
-  messages: Array<ResponseMessage>;
+  messages: ResponseMessage[];
 }): string | null {
   const trailingMessage = messages.at(-1);
 

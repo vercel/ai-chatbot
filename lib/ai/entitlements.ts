@@ -3,7 +3,7 @@ import type { ChatModel } from './models';
 
 interface Entitlements {
   maxMessagesPerDay: number;
-  availableChatModelIds: Array<ChatModel['id']>;
+  availableChatModelIds: ChatModel['id'][];
 }
 
 export const entitlementsByUserType: Record<UserType, Entitlements> = {

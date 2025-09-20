@@ -67,9 +67,9 @@ function PureMultimodalInput({
   setInput: Dispatch<SetStateAction<string>>;
   status: UseChatHelpers<ChatMessage>['status'];
   stop: () => void;
-  attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<UIMessage>;
+  attachments: Attachment[];
+  setAttachments: Dispatch<SetStateAction<Attachment[]>>;
+  messages: UIMessage[];
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   className?: string;
@@ -125,7 +125,7 @@ function PureMultimodalInput({
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
+  const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);

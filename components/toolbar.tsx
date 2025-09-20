@@ -257,7 +257,7 @@ export const Tools = ({
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  tools: Array<ArtifactToolbarItem>;
+  tools: ArtifactToolbarItem[];
 }) => {
   const [primaryTool, ...secondaryTools] = tools;
 

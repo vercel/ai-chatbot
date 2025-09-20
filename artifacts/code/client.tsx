@@ -63,7 +63,7 @@ function detectRequiredHandlers(code: string): string[] {
 }
 
 interface Metadata {
-  outputs: Array<ConsoleOutput>;
+  outputs: ConsoleOutput[];
 }
 
 export const codeArtifact = new Artifact<'code', Metadata>({
@@ -118,7 +118,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       description: 'Execute code',
       onClick: async ({ content, setMetadata }) => {
         const runId = generateUUID();
-        const outputContent: Array<ConsoleOutputContent> = [];
+        const outputContent: ConsoleOutputContent[] = [];
 
         setMetadata((metadata) => ({
           ...metadata,

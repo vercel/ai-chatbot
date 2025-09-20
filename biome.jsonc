@@ -20,7 +20,6 @@
       },
       "style": {
         "noMagicNumbers": "off",
-        "useConsistentArrayType": "off",
         "noUnusedTemplateLiteral": "off",
         "useConsistentObjectDefinitions": "off",
         "noNegationElse": "off",

@@ -32,9 +32,7 @@ export const requestSuggestions = ({
         };
       }
 
-      const suggestions: Array<
-        Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
-      > = [];
+      const suggestions: Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>[] = [];
 
       const { elementStream } = streamObject({
         model: myProvider.languageModel('artifact-model'),

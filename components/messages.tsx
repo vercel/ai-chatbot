@@ -13,7 +13,7 @@ import { PreviewMessage, ThinkingMessage } from './message';
 interface MessagesProps {
   chatId: string;
   status: UseChatHelpers<ChatMessage>['status'];
-  votes: Array<Vote> | undefined;
+  votes: Vote[] | undefined;
   messages: ChatMessage[];
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];

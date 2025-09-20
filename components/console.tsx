@@ -20,12 +20,12 @@ export interface ConsoleOutputContent {
 export interface ConsoleOutput {
   id: string;
   status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
-  contents: Array<ConsoleOutputContent>;
+  contents: ConsoleOutputContent[];
 }
 
 interface ConsoleProps {
-  consoleOutputs: Array<ConsoleOutput>;
-  setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
+  consoleOutputs: ConsoleOutput[];
+  setConsoleOutputs: Dispatch<SetStateAction<ConsoleOutput[]>>;
 }
 
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
