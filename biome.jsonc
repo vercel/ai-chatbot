@@ -38,9 +38,6 @@
         /* Too many false positives */
         "noUnnecessaryConditions": "off"
       },
-      "performance": {
-        "noBarrelFile": "off"
-      },
       "complexity": {
         /* Needs more work to fix */
         "noExcessiveCognitiveComplexity": "off",
