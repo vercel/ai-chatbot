@@ -230,7 +230,7 @@ function PureMultimodalInput({
   );
 
   return (
-    <div className="flex relative flex-col gap-4 w-full">
+    <div className="relative flex w-full flex-col gap-4">
 
       {messages.length === 0 &&
         attachments.length === 0 &&
@@ -252,7 +252,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="p-3 rounded-xl border transition-all duration-200 border-border bg-background shadow-xs focus-within:border-border hover:border-muted-foreground/50"
+        className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -264,7 +264,7 @@ function PureMultimodalInput({
       >
         {(attachments.length > 0 || uploadQueue.length > 0) && (
           <div
-            className="flex overflow-x-scroll flex-row gap-2 items-end"
+            className="flex flex-row items-end gap-2 overflow-x-scroll"
             data-testid="attachments-preview"
           >
             {attachments.map((attachment) => (
@@ -295,10 +295,10 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className="flex flex-row gap-1 items-start sm:gap-2">
+        <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
             autoFocus
-            className="grow resize-none border-0! p-2 border-none! bg-transparent text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
             data-testid="multimodal-input"
             disableAutoResize={true}
             maxHeight={200}
@@ -325,7 +325,7 @@ function PureMultimodalInput({
             <StopButton setMessages={setMessages} stop={stop} />
           ) : (
             <PromptInputSubmit
-              className="rounded-full transition-colors duration-200 size-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
             >
@@ -366,7 +366,7 @@ function PureAttachmentsButton({
 
   return (
     <Button
-      className="p-1 h-8 rounded-lg transition-colors aspect-square hover:bg-accent"
+      className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
       data-testid="attachments-button"
       disabled={status !== 'ready' || isReasoningModel}
       onClick={(event) => {
@@ -414,11 +414,11 @@ function PureModelSelectorCompact({
       value={selectedModel?.name}
     >
       <SelectPrimitive.Trigger
-        className="flex gap-2 items-center px-2 h-8 rounded-lg border-0 shadow-none transition-colors bg-background text-foreground hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         type="button"
       >
         <CpuIcon size={16} />
-        <span className="hidden text-xs font-medium sm:block">
+        <span className="hidden font-medium text-xs sm:block">
           {selectedModel?.name}
         </span>
         <ChevronDownIcon size={16} />
@@ -431,9 +431,9 @@ function PureModelSelectorCompact({
               key={model.id}
               value={model.name}
             >
-              <div className="flex flex-col flex-1 gap-1 min-w-0">
-                <div className="text-xs font-medium truncate">{model.name}</div>
-                <div className="text-[10px] text-muted-foreground truncate leading-tight">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="truncate font-medium text-xs">{model.name}</div>
+                <div className="truncate text-[10px] text-muted-foreground leading-tight">
                   {model.description}
                 </div>
               </div>
@@ -456,7 +456,7 @@ function PureStopButton({
 }) {
   return (
     <Button
-      className="p-1 rounded-full transition-colors duration-200 size-7 bg-foreground text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
+      className="size-7 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
       data-testid="stop-button"
       onClick={(event) => {
         event.preventDefault();

@@ -37,7 +37,6 @@
         "useConsistentTypeDefinitions": "off",
         "noShadow": "off",
         "noUselessUndefined": "off",
-        "useSortedClasses": "off",
         "noUnnecessaryConditions": "off",
         "useImageSize": "off"
       },
