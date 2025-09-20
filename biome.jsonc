@@ -24,7 +24,6 @@
         "useConsistentObjectDefinitions": "off",
         "noNegationElse": "off",
         "useCollapsedElseIf": "off",
-        "noUselessElse": "off",
         "useNumericSeparators": "off",
         "noNestedTernary": "off",
         "useAtIndex": "off",
